@@ -43,7 +43,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         xmppService = XmppService(dbConnection: dbConnection);
         xmppService.updateJaxmppInstance();
-        xmppService.login();
         return true
     }
 

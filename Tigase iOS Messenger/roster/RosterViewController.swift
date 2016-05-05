@@ -80,8 +80,8 @@ class RosterViewController: UITableViewController, EventHandler {
                 let jidStr:String = cursor["jid"]!;
                 let jid = BareJID(jidStr);
                 let xmppClient = self.xmppService.getClient(BareJID(cursor["account"]!));
-                let presenceModule:PresenceModule = xmppClient.modulesManager.getModule(PresenceModule.ID)!;
-                let presence = presenceModule.presenceStore.getBestPresence(jid);
+                let presenceModule:PresenceModule? = xmppClient?.modulesManager.getModule(PresenceModule.ID);
+                let presence = presenceModule?.presenceStore.getBestPresence(jid);
                 cell.statusLabel.text = presence?.status ?? jidStr;
                 cell.avatarStatusView.setStatus(presence?.show);
                 cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.getAvatar(jid));
@@ -99,10 +99,14 @@ class RosterViewController: UITableViewController, EventHandler {
                 let account = BareJID(cursor["account"]!);
                 let jid = JID(cursor["jid"]!);
                 let xmppClient = self.xmppService.getClient(account);
-                let messageModule:MessageModule = xmppClient.modulesManager.getModule(MessageModule.ID)!;
+                let messageModule:MessageModule? = xmppClient?.modulesManager.getModule(MessageModule.ID);
                 
-                if !self.xmppService.dbChatStore.isFor(xmppClient.sessionObject, jid: jid.bareJid) {
-                    messageModule.createChat(jid);
+                guard messageModule != nil else {
+                    return;
+                }
+                
+                if !self.xmppService.dbChatStore.isFor(xmppClient!.sessionObject, jid: jid.bareJid) {
+                    messageModule!.createChat(jid);
                 }
                 
                 let destination = self.storyboard!.instantiateViewControllerWithIdentifier("ChatViewNavigationController") as! UINavigationController;

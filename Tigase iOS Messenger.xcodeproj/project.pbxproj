@@ -36,6 +36,7 @@
 		FE94E5471CCBA74F00FAE755 /* Tigase_iOS_MessengerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE94E5461CCBA74F00FAE755 /* Tigase_iOS_MessengerUITests.swift */; };
 		FE94E5551CCBA86500FAE755 /* TigaseSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE94E5541CCBA86500FAE755 /* TigaseSwift.framework */; };
 		FE94E55E1CCCC14E00FAE755 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FE94E55D1CCCC14E00FAE755 /* libsqlite3.tbd */; };
+		FEF80DB21CDBBBFE005645A7 /* AccountSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF80DB11CDBBBFE005645A7 /* AccountSettingsViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -92,6 +93,7 @@
 		FE94E5541CCBA86500FAE755 /* TigaseSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TigaseSwift.framework; path = "../../../Library/Developer/Xcode/DerivedData/workspace_ts-cggcwjpodibzegaecyuraswpljwr/Build/Products/Debug/TigaseSwift.framework"; sourceTree = "<group>"; };
 		FE94E55D1CCCC14E00FAE755 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		FE94E5621CCCC9D900FAE755 /* Tigase-iOS-Messenger-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Tigase-iOS-Messenger-Bridging-Header.h"; sourceTree = "<group>"; };
+		FEF80DB11CDBBBFE005645A7 /* AccountSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountSettingsViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -159,6 +161,7 @@
 				FE507A0B1CDB7B3B001A015C /* AccountTableViewCell.swift */,
 				FE507A0C1CDB7B3B001A015C /* AddAccountController.swift */,
 				FE507A0D1CDB7B3B001A015C /* SettingsViewController.swift */,
+				FEF80DB11CDBBBFE005645A7 /* AccountSettingsViewController.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -410,6 +413,7 @@
 				FE507A151CDB7B3B001A015C /* ChatsListTableViewCell.swift in Sources */,
 				FE507A1C1CDB7B3B001A015C /* DBRosterStore.swift in Sources */,
 				FE94E5251CCBA74F00FAE755 /* AppDelegate.swift in Sources */,
+				FEF80DB21CDBBBFE005645A7 /* AccountSettingsViewController.swift in Sources */,
 				FE507A231CDB7B3B001A015C /* CustomTabBarController.swift in Sources */,
 				FE507A1A1CDB7B3B001A015C /* DBChatStore.swift in Sources */,
 				FE507A251CDB7B3B001A015C /* AccountManager.swift in Sources */,

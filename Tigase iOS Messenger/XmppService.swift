@@ -46,35 +46,45 @@ public class XmppService: Logger, EventHandler {
         self.dbChatHistoryStore = DBChatHistoryStore(dbConnection: dbConnection);
         self.dbRosterStore = DBRosterStore(dbConnection: dbConnection);
         super.init()
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(XmppService.accountConfigurationChanged), name:"accountConfigurationChanged", object: nil);
     }
     
     public func updateJaxmppInstance() {
-        for var account in AccountManager.getAccounts() {
+        for account in AccountManager.getAccounts() {
             updateJaxmppInstance(BareJID(account));
         }
     }
     
     public func updateJaxmppInstance(userJid:BareJID) {
-        let client = clients[userJid] ?? XMPPClient();
-        
-        client.connectionConfiguration.setUserJID(userJid);
+        var client = clients[userJid];
         let password = AccountManager.getAccountPassword(userJid.stringValue);
-        client.connectionConfiguration.setUserPassword(password);
+        let config = AccountManager.getAccount(userJid.stringValue);
         
-        registerModules(client);
-        registerEventHandlers(client);
+        if client == nil {
+            if password == nil || config == nil || config?.active != true {
+                return;
+            }
+            client = XMPPClient()
+            registerModules(client!);
+            registerEventHandlers(client!);
+        } else {
+            client?.disconnect();
+            if password == nil || config == nil || config?.active != true {
+                clients.removeValueForKey(userJid);
+                unregisterEventHandlers(client!);
+                return;
+            }
+        }
+        
+        client?.connectionConfiguration.setUserJID(userJid);
+        client?.connectionConfiguration.setUserPassword(password);
         
         clients[userJid] = client;
+        client?.login();
     }
     
-    public func login() {
-        clients.values.forEach { (client) in
-            client.login();
-        }
-    }
-    
-    public func getClient(account:BareJID) -> XMPPClient {
-        return clients[account]!;
+    public func getClient(account:BareJID) -> XMPPClient? {
+        return clients[account];
     }
     
     private func registerModules(client:XMPPClient) {
@@ -98,6 +108,13 @@ public class XmppService: Logger, EventHandler {
         client.eventBus.register(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.register(holder.handler, events: holder.events);
+        }
+    }
+    
+    private func unregisterEventHandlers(client:XMPPClient) {
+        client.eventBus.unregister(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE);
+        for holder in eventHandlers {
+            client.eventBus.unregister(holder.handler, events: holder.events);
         }
     }
     
@@ -128,6 +145,12 @@ public class XmppService: Logger, EventHandler {
         for client in clients.values {
             client.eventBus.unregister(handler, events: events);
         }
+    }
+    
+    @objc public func accountConfigurationChanged(notification:NSNotification) {
+        let accountName = notification.userInfo!["account"] as! String;
+        let jid = BareJID(accountName);
+        updateJaxmppInstance(jid);
     }
     
     private class EventHandlerHolder {

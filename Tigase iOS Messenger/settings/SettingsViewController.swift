@@ -94,6 +94,11 @@ class SettingsViewController: UITableViewController {
                 self.showDetailViewController(addAccountController, sender: self);
             } else {
                 // show edit account dialog
+                let account = accounts[indexPath.row];
+                let navigation = storyboard?.instantiateViewControllerWithIdentifier("AccountSettingsNavigationController") as! UINavigationController;
+                let accountSettingsController = navigation.childViewControllers[0] as! AccountSettingsViewController;
+                accountSettingsController.account = account;
+                self.showDetailViewController(navigation, sender: self);
             }
         }
     }

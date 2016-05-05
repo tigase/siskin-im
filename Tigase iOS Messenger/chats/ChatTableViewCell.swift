@@ -24,7 +24,7 @@ import UIKit
 
 class ChatTableViewCell: UITableViewCell {
 
-    @IBOutlet var avatarView: UIImageView!
+    @IBOutlet var avatarView: UIImageView?
     @IBOutlet var messageTextView: UILabel!
     @IBOutlet var messageFrameView: UIView!
     @IBOutlet var timestampView: UILabel!
@@ -71,8 +71,8 @@ class ChatTableViewCell: UITableViewCell {
             messageFrameView.layer.cornerRadius = 6;
         }
         if avatarView != nil {
-            avatarView.layer.masksToBounds = true;
-            avatarView.layer.cornerRadius = avatarView.frame.height / 2;
+            avatarView!.layer.masksToBounds = true;
+            avatarView!.layer.cornerRadius = avatarView!.frame.height / 2;
         }
     }
 

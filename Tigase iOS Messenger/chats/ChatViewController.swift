@@ -149,10 +149,12 @@ class ChatViewController : UIViewController, UITableViewDataSource, UITextViewDe
         xmppService.dbChatHistoryStore.forEachMessage(account, jid: jid.bareJid, limit: 1, offset: indexPath.row) { (cursor) -> Void in
             let incoming = (cursor["state"]! % 2) == 0;
             let id = incoming ? "ChatTableViewCellIncoming" : "ChatTableViewCellOutgoing"
-            cell = tableView.dequeueReusableCellWithIdentifier(id, forIndexPath: indexPath) as! ChatTableViewCell;
-            cell!.avatarView.image = self.xmppService.avatarManager.getAvatar(self.jid.bareJid);
-            cell!.messageTextView.text = cursor["data"];
-            cell!.setTimestamp(cursor["timestamp"]!);
+            cell = tableView.dequeueReusableCellWithIdentifier(id, forIndexPath: indexPath) as? ChatTableViewCell;
+            if cell != nil {
+                cell!.avatarView?.image = self.xmppService.avatarManager.getAvatar(self.jid.bareJid);
+                cell!.messageTextView.text = cursor["data"];
+                cell!.setTimestamp(cursor["timestamp"]!);
+            }
         }
         cell?.setNeedsUpdateConstraints();
         cell?.updateConstraintsIfNeeded();
@@ -175,11 +177,12 @@ class ChatViewController : UIViewController, UITableViewDataSource, UITextViewDe
             return;
         }
         
-        let messageModule:MessageModule = xmppService.getClient(account).modulesManager.getModule(MessageModule.ID)!;
-        let chat = messageModule.chatManager.getChat(jid, thread: nil);
-        let msg = messageModule.sendMessage(chat!, body: text!);
-        xmppService.dbChatHistoryStore.appendMessage(account, message: msg);
-        messageField.text = nil;
+        let messageModule:MessageModule? = xmppService.getClient(account)?.modulesManager.getModule(MessageModule.ID);
+        if let chat = messageModule?.chatManager.getChat(jid, thread: nil) {
+            let msg = messageModule!.sendMessage(chat, body: text!);
+            xmppService.dbChatHistoryStore.appendMessage(account, message: msg);
+            messageField.text = nil;
+        }
     }
     
     func textViewShouldBeginEditing(textView: UITextView) -> Bool {

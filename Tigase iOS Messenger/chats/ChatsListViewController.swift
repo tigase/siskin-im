@@ -88,8 +88,8 @@ class ChatsListViewController: UITableViewController, EventHandler {
                 let formattedTS = self.formatTimestamp(cursor["timestamp"]!);
                 cell.timestampLabel.text = formattedTS;
                 let xmppClient = self.xmppService.getClient(BareJID(account));
-                let presenceModule:PresenceModule = xmppClient.modulesManager.getModule(PresenceModule.ID)!;
-                let presence = presenceModule.presenceStore.getBestPresence(jid);
+                let presenceModule:PresenceModule? = xmppClient?.modulesManager.getModule(PresenceModule.ID);
+                let presence = presenceModule?.presenceStore.getBestPresence(jid);
                 cell.avatarStatusView.setStatus(presence?.show);
             }
         } catch _ {
@@ -119,9 +119,9 @@ class ChatsListViewController: UITableViewController, EventHandler {
                         let thread:String? = cursor["thread_id"];
                         
                         let xmppClient = self.xmppService.getClient(account);
-                        let messageModule:MessageModule = xmppClient.modulesManager.getModule(MessageModule.ID)!;
-                        if let chat = messageModule.chatManager.getChat(jid, thread: thread) {
-                            messageModule.chatManager.close(chat);
+                        let messageModule:MessageModule? = xmppClient?.modulesManager.getModule(MessageModule.ID);
+                        if let chat = messageModule?.chatManager.getChat(jid, thread: thread) {
+                            messageModule?.chatManager.close(chat);
                         }
                     }
                 } catch _ {

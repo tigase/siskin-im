@@ -25,7 +25,7 @@ import UIKit
 class CustomTabBarController: UITabBarController {
  
     override func viewDidLoad() {
-        for var childController in self.childViewControllers {
+        for childController in self.childViewControllers {
             if childController is UINavigationController {
                 childController.view.backgroundColor = UIColor.whiteColor();
             }

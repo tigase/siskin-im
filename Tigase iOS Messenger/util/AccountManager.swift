@@ -96,7 +96,7 @@ public class AccountManager {
         query.removeValueForKey(String(kSecMatchLimit));
         query.removeValueForKey(String(kSecReturnAttributes));
         let lastResultCode:OSStatus = SecItemDelete(query);
-        print("got result code", lastResultCode);
+        NSNotificationCenter.defaultCenter().postNotificationName("accountConfigurationChanged", object: self, userInfo: ["account":name]);
     }
     
     private static func updateAccount(account:String, dataForUpdate: [String:NSObject]) {
@@ -127,6 +127,7 @@ public class AccountManager {
         } else {
             lastResultCode = SecItemUpdate(query, dataForUpdate);
         }
+        NSNotificationCenter.defaultCenter().postNotificationName("accountConfigurationChanged", object: self, userInfo: ["account": account]);
     }
     
     private static func getAccountQuery(name:String, withData:CFString = kSecReturnAttributes) -> [String:NSObject] {
@@ -147,7 +148,7 @@ public class AccountManager {
         
         public var active:Bool {
             get {
-                return (data["active"] as? Bool) ?? false;
+                return (data["active"] as? Bool) ?? true;
             }
             set {
                 data["active"] = newValue;

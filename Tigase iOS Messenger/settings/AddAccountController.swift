@@ -56,7 +56,7 @@ class AddAccountController: UITableViewController {
     
     @IBAction func signInClicked(sender: UIBarButtonItem) {
         print("sign in button clicked");
-        var account = AccountManager.Account(name: jidTextField.text!);
+        let account = AccountManager.Account(name: jidTextField.text!);
         AccountManager.updateAccount(account);
         account.password = passwordTextField.text!;
         self.navigationController?.popViewControllerAnimated(true);
