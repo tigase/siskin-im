@@ -44,7 +44,18 @@ class AccountSettingsViewController: UITableViewController {
         }
         return indexPath;
     }
-        
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "EditAccountSegue" {
+            let cell = sender as! UITableViewCell;
+            if let indexPath = tableView.indexPathForCell(cell) {
+                let navigation = segue.destinationViewController as! UINavigationController;
+                let destination = navigation.visibleViewController as! AddAccountController;
+                destination.account = account;
+            }
+        }
+    }
+    
     @IBAction func enabledSwitchChangedValue(sender: AnyObject) {
         if var config = AccountManager.getAccount(account) {
             config.active = enabledSwitch.on;

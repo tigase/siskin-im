@@ -24,41 +24,71 @@ import UIKit
 
 class AddAccountController: UITableViewController {
     
+    var account:String?;
     
     @IBOutlet var jidTextField: UITextField!
     
     @IBOutlet var passwordTextField: UITextField!
     
-    @IBOutlet var signInButton: UIBarButtonItem!
+    @IBOutlet var saveButton: UIBarButtonItem!
+    
+    @IBOutlet var cancelButton: UIBarButtonItem!
     
     override func viewDidLoad() {
         super.viewDidLoad();
+        if account != nil {
+            jidTextField.text = account;
+            passwordTextField.text = AccountManager.getAccountPassword(account!);
+            jidTextField.enabled = false;
+        } else {
+            navigationController?.navigationItem.leftBarButtonItem = nil;
+        }
     }
     
     override func viewWillAppear(animated: Bool) {
-        updateSignInButtonState();
+        updateSaveButtonState();
         super.viewWillAppear(animated);
     }
     
     
     @IBAction func jidTextFieldChanged(sender: UITextField) {
-        updateSignInButtonState();
+        updateSaveButtonState();
     }
     
     @IBAction func passwordTextFieldChanged(sender: AnyObject) {
-        updateSignInButtonState();
+        updateSaveButtonState();
     }
 
-    func updateSignInButtonState() {
+    func updateSaveButtonState() {
         let disable = (jidTextField.text?.isEmpty ?? true) || (passwordTextField.text?.isEmpty ?? true);
-        signInButton.enabled = !disable;
+        saveButton.enabled = !disable;
     }
     
-    @IBAction func signInClicked(sender: UIBarButtonItem) {
+    @IBAction func saveClicked(sender: UIBarButtonItem) {
         print("sign in button clicked");
-        let account = AccountManager.Account(name: jidTextField.text!);
+        let account = AccountManager.getAccount(jidTextField.text!) ?? AccountManager.Account(name: jidTextField.text!);
         AccountManager.updateAccount(account);
         account.password = passwordTextField.text!;
-        self.navigationController?.popViewControllerAnimated(true);
+
+        if self.account != nil {
+            navigationController?.dismissViewControllerAnimated(true, completion: nil);
+        } else {
+            navigationController?.popViewControllerAnimated(true);
+        }
+    }
+    
+    @IBAction func cancelClicked(sender: UIBarButtonItem) {
+        if self.account != nil {
+            navigationController?.dismissViewControllerAnimated(true, completion: nil);
+        } else {
+            navigationController?.popViewControllerAnimated(true);
+        }
+    }
+    
+    override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
+        if indexPath.section == 0 && indexPath.row == 0 && !jidTextField.enabled {
+            return nil;
+        }
+        return indexPath;
     }
 }

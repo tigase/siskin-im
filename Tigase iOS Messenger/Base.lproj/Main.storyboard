@@ -672,16 +672,22 @@
                     </tableView>
                     <extendedEdge key="edgesForExtendedLayout"/>
                     <navigationItem key="navigationItem" id="bgf-HZ-Jyd">
-                        <barButtonItem key="rightBarButtonItem" title="Sign in" id="khk-Xt-a7Q">
+                        <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="bzp-uL-yH8">
                             <connections>
-                                <action selector="signInClicked:" destination="tcY-hw-Evf" id="pNF-0k-200"/>
+                                <action selector="cancelClicked:" destination="tcY-hw-Evf" id="Spi-Nf-z75"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" systemItem="save" id="khk-Xt-a7Q">
+                            <connections>
+                                <action selector="saveClicked:" destination="tcY-hw-Evf" id="dTP-7l-f5N"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="cancelButton" destination="bzp-uL-yH8" id="H1s-es-EES"/>
                         <outlet property="jidTextField" destination="JI5-uf-BEn" id="t7T-kc-SyX"/>
                         <outlet property="passwordTextField" destination="BOA-WS-lM7" id="BXl-zx-7vF"/>
-                        <outlet property="signInButton" destination="khk-Xt-a7Q" id="BZ1-Nw-ZA4"/>
+                        <outlet property="saveButton" destination="khk-Xt-a7Q" id="GBe-ee-Krg"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="bbp-7R-sOg" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -770,6 +776,9 @@
                                                 <constraint firstAttribute="leadingMargin" secondItem="1qM-mA-BCH" secondAttribute="leading" id="ye9-h9-fi4"/>
                                             </constraints>
                                         </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="QGt-BC-Efk" kind="presentation" identifier="EditAccountSegue" id="gXq-qY-kXW"/>
+                                        </connections>
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
