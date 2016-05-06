@@ -47,7 +47,7 @@ public class DBChatHistoryStore: Logger, EventHandler {
         let state = incoming ? State.incoming_unread : State.outgoing;
         let jid = incoming ? message.from?.bareJid : message.to?.bareJid
         let author = incoming ? message.from?.bareJid : account;
-        let timestamp = NSDate();
+        let timestamp = message.delay?.stamp ?? NSDate();
         let params:[String:Any?] = ["account" : account.stringValue, "jid" : jid?.stringValue, "author_jid" : author?.stringValue, "timestamp": timestamp, "item_type": ItemType.message.rawValue, "data": message.body, "state": state.rawValue]
         try! msgAppendStmt.insert(params);
         let cu_params:[String:Any?] = ["account" : account.stringValue, "jid" : jid?.stringValue, "timestamp" : timestamp ];
