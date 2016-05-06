@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "FE94E5201CCBA74F00FAE755"
-               BuildableName = "Tigase iOS Messenger.app"
-               BlueprintName = "Tigase iOS Messenger"
-               ReferencedContainer = "container:Tigase iOS Messenger.xcodeproj">
+               BuildableName = "Tigase-iOS-Messenger.app"
+               BlueprintName = "Tigase-iOS-Messenger"
+               ReferencedContainer = "container:Tigase-iOS-Messenger.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "FE94E5361CCBA74F00FAE755"
-               BuildableName = "Tigase iOS MessengerTests.xctest"
-               BlueprintName = "Tigase iOS MessengerTests"
-               ReferencedContainer = "container:Tigase iOS Messenger.xcodeproj">
+               BuildableName = "Tigase-iOS-Messenger.xctest"
+               BlueprintName = "Tigase-iOS-MessengerTests"
+               ReferencedContainer = "container:Tigase-iOS-Messenger.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference
@@ -43,9 +43,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "FE94E5411CCBA74F00FAE755"
-               BuildableName = "Tigase iOS MessengerUITests.xctest"
-               BlueprintName = "Tigase iOS MessengerUITests"
-               ReferencedContainer = "container:Tigase iOS Messenger.xcodeproj">
+               BuildableName = "Tigase-iOS-Messenger.xctest"
+               BlueprintName = "Tigase-iOS-MessengerUITests"
+               ReferencedContainer = "container:Tigase-iOS-Messenger.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -53,9 +53,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "FE94E5201CCBA74F00FAE755"
-            BuildableName = "Tigase iOS Messenger.app"
-            BlueprintName = "Tigase iOS Messenger"
-            ReferencedContainer = "container:Tigase iOS Messenger.xcodeproj">
+            BuildableName = "Tigase-iOS-Messenger.app"
+            BlueprintName = "Tigase-iOS-Messenger"
+            ReferencedContainer = "container:Tigase-iOS-Messenger.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -76,9 +76,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "FE94E5201CCBA74F00FAE755"
-            BuildableName = "Tigase iOS Messenger.app"
-            BlueprintName = "Tigase iOS Messenger"
-            ReferencedContainer = "container:Tigase iOS Messenger.xcodeproj">
+            BuildableName = "Tigase-iOS-Messenger.app"
+            BlueprintName = "Tigase-iOS-Messenger"
+            ReferencedContainer = "container:Tigase-iOS-Messenger.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -95,9 +95,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "FE94E5201CCBA74F00FAE755"
-            BuildableName = "Tigase iOS Messenger.app"
-            BlueprintName = "Tigase iOS Messenger"
-            ReferencedContainer = "container:Tigase iOS Messenger.xcodeproj">
+            BuildableName = "Tigase-iOS-Messenger.app"
+            BlueprintName = "Tigase-iOS-Messenger"
+            ReferencedContainer = "container:Tigase-iOS-Messenger.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

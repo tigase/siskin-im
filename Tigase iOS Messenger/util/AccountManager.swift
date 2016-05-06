@@ -80,8 +80,9 @@ public class AccountManager {
         }
         
         if lastResultCode == noErr {
-            let data = result as! NSData;
-            return String(data: data, encoding: NSUTF8StringEncoding);
+            if let data = result as? NSData {
+                return String(data: data, encoding: NSUTF8StringEncoding);
+            }
         }
         return nil;
     }

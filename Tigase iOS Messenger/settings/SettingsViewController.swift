@@ -71,7 +71,7 @@ class SettingsViewController: UITableViewController {
                 cell.avatarStatusView.statusImageView.hidden = true;
             } else {
                 cell.nameLabel.text = "Add account";
-                cell.avatarStatusView.avatarImageView = nil;
+                cell.avatarStatusView.setAvatar(nil);
                 cell.avatarStatusView.hidden = true;
             }
         } else {
