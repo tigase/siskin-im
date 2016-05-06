@@ -30,10 +30,21 @@ public class XmppService: Logger, EventHandler {
     public let dbChatStore:DBChatStore;
     public let dbChatHistoryStore:DBChatHistoryStore;
     public let dbRosterStore:DBRosterStore;
+    private let reachability:Reachability;
     
     private var clients = [BareJID:XMPPClient]();
     
     private var eventHandlers:[EventHandlerHolder] = [];
+    
+    private var networkAvailable:Bool {
+        didSet {
+            if networkAvailable && !oldValue {
+                connectClients();
+            } else {
+                disconnectClients(true);
+            }
+        }
+    }
     
     var firstClient:XMPPClient? {
         return clients.values.first;
@@ -45,8 +56,12 @@ public class XmppService: Logger, EventHandler {
         self.dbChatStore = DBChatStore(dbConnection: dbConnection);
         self.dbChatHistoryStore = DBChatHistoryStore(dbConnection: dbConnection);
         self.dbRosterStore = DBRosterStore(dbConnection: dbConnection);
-        super.init()
+        self.reachability = Reachability();
+        self.networkAvailable = false;
+        super.init();
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(XmppService.accountConfigurationChanged), name:"accountConfigurationChanged", object: nil);
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(XmppService.connectivityChanged), name: Reachability.CONNECTIVITY_CHANGED, object: nil);
+        networkAvailable = reachability.isConnectedToNetwork();
     }
     
     public func updateJaxmppInstance() {
@@ -68,7 +83,11 @@ public class XmppService: Logger, EventHandler {
             registerModules(client!);
             registerEventHandlers(client!);
         } else {
-            client?.disconnect();
+            if client?.state != SocketConnector.State.disconnected {
+                client?.disconnect();
+                return;
+            }
+            
             if password == nil || config == nil || config?.active != true {
                 clients.removeValueForKey(userJid);
                 unregisterEventHandlers(client!);
@@ -80,7 +99,10 @@ public class XmppService: Logger, EventHandler {
         client?.connectionConfiguration.setUserPassword(password);
         
         clients[userJid] = client;
-        client?.login();
+        
+        if networkAvailable {
+            client?.login();
+        }
     }
     
     public func getClient(account:BareJID) -> XMPPClient? {
@@ -104,7 +126,7 @@ public class XmppService: Logger, EventHandler {
     }
     
     private func registerEventHandlers(client:XMPPClient) {
-        let handler = self;
+        client.eventBus.register(self, events: SocketConnector.DisconnectedEvent.TYPE);
         client.eventBus.register(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.register(holder.handler, events: holder.events);
@@ -112,6 +134,7 @@ public class XmppService: Logger, EventHandler {
     }
     
     private func unregisterEventHandlers(client:XMPPClient) {
+        client.eventBus.unregister(self, events: SocketConnector.DisconnectedEvent.TYPE);
         client.eventBus.unregister(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.unregister(holder.handler, events: holder.events);
@@ -120,6 +143,10 @@ public class XmppService: Logger, EventHandler {
     
     public func handleEvent(event: Event) {
         switch event {
+        case let e as SocketConnector.DisconnectedEvent:
+            if let jid = e.sessionObject.userBareJid {
+                updateJaxmppInstance(jid);
+            }
         default:
             log("received unsupported event", event);
         }
@@ -147,10 +174,27 @@ public class XmppService: Logger, EventHandler {
         }
     }
     
-    @objc public func accountConfigurationChanged(notification:NSNotification) {
+    @objc public func accountConfigurationChanged(notification: NSNotification) {
         let accountName = notification.userInfo!["account"] as! String;
         let jid = BareJID(accountName);
         updateJaxmppInstance(jid);
+    }
+    
+    @objc public func connectivityChanged(notification: NSNotification) {
+        self.networkAvailable = notification.userInfo!["connected"] as! Bool;
+        disconnectClients();
+    }
+    
+    private func connectClients() {
+        for client in clients.values {
+            client.login();
+        }
+    }
+    
+    private func disconnectClients(force:Bool = false) {
+        for client in clients.values {
+            client.disconnect(force);
+        }
     }
     
     private class EventHandlerHolder {

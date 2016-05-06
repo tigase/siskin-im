@@ -84,7 +84,7 @@ class ChatViewController : UIViewController, UITableViewDataSource, UITextViewDe
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.keyboardWillShow), name: UIKeyboardWillShowNotification, object: nil);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.keyboardWillHide), name: UIKeyboardWillHideNotification, object: nil);
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.newMessage), name: "newMessage", object: nil);
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         if isFirstTime {
             // scroll to bottom?
             let count = xmppService.dbChatHistoryStore.countMessages(account, jid: jid.bareJid);

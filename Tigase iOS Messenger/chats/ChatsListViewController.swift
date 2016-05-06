@@ -47,7 +47,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
     
     override func viewWillAppear(animated: Bool) {
         xmppService.registerEventHandler(self, events: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE);
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatsListViewController.newMessage), name: "newMessage", object: nil);
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatsListViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         tableView.reloadData();
         //(self.tabBarController as? CustomTabBarController)?.showTabBar();
         super.viewWillAppear(animated);

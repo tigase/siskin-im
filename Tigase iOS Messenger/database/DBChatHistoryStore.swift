@@ -25,6 +25,8 @@ import TigaseSwift
 
 public class DBChatHistoryStore: Logger, EventHandler {
     
+    public static let MESSAGE_NEW = "messengerMessageNew";
+    
     private static let CHAT_MSG_APPEND = "INSERT INTO chat_history (account, jid, author_jid, timestamp, item_type, data, state) VALUES (:account, :jid, :author_jid, :timestamp, :item_type, :data, :state)";
     private static let CHAT_MSGS_COUNT = "SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid";
     private static let CHAT_MSGS_GET = "SELECT id, author_jid, timestamp, item_type, data, state FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp LIMIT :limit OFFSET :offset"
@@ -50,7 +52,7 @@ public class DBChatHistoryStore: Logger, EventHandler {
         try! msgAppendStmt.insert(params);
         let cu_params:[String:Any?] = ["account" : account.stringValue, "jid" : jid?.stringValue, "timestamp" : timestamp ];
         try! chatUpdateTimestamp.execute(cu_params);
-        NSNotificationCenter.defaultCenter().postNotification(NSNotification(name:"newMessage", object:nil, userInfo: nil));
+        NSNotificationCenter.defaultCenter().postNotification(NSNotification(name: DBChatHistoryStore.MESSAGE_NEW, object: nil, userInfo: nil));
     }
     
     public func countMessages(account:BareJID, jid:BareJID) -> Int {
