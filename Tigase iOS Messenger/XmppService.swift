@@ -110,6 +110,7 @@ public class XmppService: Logger, EventHandler {
     }
     
     private func registerModules(client:XMPPClient) {
+        client.modulesManager.register(StreamManagementModule());
         client.modulesManager.register(AuthModule());
         client.modulesManager.register(StreamFeaturesModule());
         client.modulesManager.register(SaslModule());
@@ -182,7 +183,6 @@ public class XmppService: Logger, EventHandler {
     
     @objc public func connectivityChanged(notification: NSNotification) {
         self.networkAvailable = notification.userInfo!["connected"] as! Bool;
-        disconnectClients();
     }
     
     private func connectClients() {
