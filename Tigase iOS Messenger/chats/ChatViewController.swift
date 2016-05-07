@@ -81,10 +81,15 @@ class ChatViewController : UIViewController, UITableViewDataSource, UITextViewDe
     }
     
     override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.keyboardWillShow), name: UIKeyboardWillShowNotification, object: nil);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.keyboardWillHide), name: UIKeyboardWillHideNotification, object: nil);
         
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
+    }
+    
+    override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated);
         if isFirstTime {
             // scroll to bottom?
             let count = xmppService.dbChatHistoryStore.countMessages(account, jid: jid.bareJid);
@@ -94,7 +99,6 @@ class ChatViewController : UIViewController, UITableViewDataSource, UITextViewDe
                 isFirstTime = false;
             }
         }
-        
     }
     
     override func viewDidDisappear(animated: Bool) {
@@ -166,7 +170,7 @@ class ChatViewController : UIViewController, UITableViewDataSource, UITextViewDe
         let count = xmppService.dbChatHistoryStore.countMessages(account, jid: jid.bareJid);
         if count > 0 {
             let path = NSIndexPath(forRow: count - 1, inSection: 0);
-            self.tableView.scrollToRowAtIndexPath(path, atScrollPosition: UITableViewScrollPosition.Bottom, animated: false);
+            self.tableView.scrollToRowAtIndexPath(path, atScrollPosition: UITableViewScrollPosition.Bottom, animated: true);
             isFirstTime = false;
         }
     }
