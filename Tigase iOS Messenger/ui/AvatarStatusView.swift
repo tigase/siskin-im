@@ -49,21 +49,24 @@ class AvatarStatusView: UIView {
     
     func setStatus(status:Presence.Show?) {
         // default color as for offline contact
-        var color:UIColor = UIColor.lightGrayColor();
+        var image:UIImage? = UIImage(named: "presence_offline");
         if status != nil {
             switch status! {
-            case .online, .chat:
-                color = UIColor.greenColor();
+            case .chat:
+                image = UIImage(named: "presence_chat");
+            case .online:
+                image = UIImage(named: "presence_online")
             case .away:
-                color = UIColor.yellowColor();
+                image = UIImage(named: "presence_away");
             case .xa:
-                color = UIColor.orangeColor();
+                image = UIImage(named: "presence_xa");
             case .dnd:
-                color = UIColor.redColor();
+                image = UIImage(named: "presence_dnd");
             }
         }
-        let img = drawStatusIcon(statusImageView.frame.height, color: color);
-        statusImageView.image = img;
+        //let img = drawStatusIcon(statusImageView.frame.height, color: color);
+        //statusImageView.image = img;
+        statusImageView.image = image;
     }
     
     func drawStatusIcon(size: CGFloat, color:UIColor) -> UIImage {
@@ -81,4 +84,5 @@ class AvatarStatusView: UIView {
         
         return img;
     }
+    
 }
