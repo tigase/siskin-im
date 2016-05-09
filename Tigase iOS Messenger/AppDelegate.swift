@@ -24,12 +24,11 @@ import TigaseSwift
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
+    
     var window: UIWindow?
     var xmppService:XmppService!;
     var dbConnection:DBConnection!;
-
-
+    
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         do {
             dbConnection = try DBConnection(dbFilename: "mobile_messenger1.db");
@@ -43,6 +42,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         xmppService = XmppService(dbConnection: dbConnection);
         xmppService.updateJaxmppInstance();
+        application.registerUserNotificationSettings(UIUserNotificationSettings(forTypes: [.Alert, .Badge, .Sound], categories: nil));
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.newMessage), name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil);
+        
+        updateApplicationIconBadgeNumber();
         return true
     }
 
@@ -68,6 +72,47 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
 
-
+    func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
+        updateApplicationIconBadgeNumber();
+        print("notification clicked", notification.userInfo);
+    }
+    
+    func newMessage(notification: NSNotification) {
+        let sender = notification.userInfo?["sender"] as? BareJID;
+        let account = notification.userInfo?["account"] as? BareJID;
+        let incoming:Bool = (notification.userInfo?["incoming"] as? Bool) ?? false;
+        guard sender != nil && incoming else {
+            return;
+        }
+        
+        var senderName:String? = nil;
+        if let sessionObject = xmppService.getClient(account!)?.sessionObject {
+            senderName = RosterModule.getRosterStore(sessionObject).get(JID(sender!))?.name;
+        }
+        if senderName == nil {
+            senderName = sender!.stringValue;
+        }
+        
+        if UIApplication.sharedApplication().applicationState != .Active {
+            var userNotification = UILocalNotification();
+            userNotification.alertBody = "Received new message from " + senderName!;
+            userNotification.alertAction = "open";
+            userNotification.soundName = UILocalNotificationDefaultSoundName;
+            //userNotification.applicationIconBadgeNumber = UIApplication.sharedApplication().applicationIconBadgeNumber + 1;
+            userNotification.userInfo = ["account": account!.stringValue, "sender": account!.stringValue];
+            userNotification.category = "MESSAGE";
+            UIApplication.sharedApplication().presentLocalNotificationNow(userNotification);
+        }
+        updateApplicationIconBadgeNumber();
+    }
+    
+    func chatItemsUpdated(notification: NSNotification) {
+        updateApplicationIconBadgeNumber();
+    }
+    
+    func updateApplicationIconBadgeNumber() {
+        let unreadChats = xmppService.dbChatHistoryStore.countUnreadChats();
+        UIApplication.sharedApplication().applicationIconBadgeNumber = unreadChats;
+    }
 }
 

@@ -99,6 +99,7 @@ class ChatViewController : UIViewController, UITableViewDataSource, UITextViewDe
                 isFirstTime = false;
             }
         }
+        xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
     }
     
     override func viewDidDisappear(animated: Bool) {
@@ -166,13 +167,18 @@ class ChatViewController : UIViewController, UITableViewDataSource, UITextViewDe
     }
     
     func newMessage(notification:NSNotification) {
-        tableView.reloadData();
+        reloadData();
         let count = xmppService.dbChatHistoryStore.countMessages(account, jid: jid.bareJid);
         if count > 0 {
             let path = NSIndexPath(forRow: count - 1, inSection: 0);
             self.tableView.scrollToRowAtIndexPath(path, atScrollPosition: UITableViewScrollPosition.Bottom, animated: true);
             isFirstTime = false;
         }
+    }
+    
+    func reloadData() {
+        tableView.reloadData();
+        xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
     }
     
     @IBAction func sendClicked(sender: UIButton) {

@@ -254,6 +254,16 @@ public class DBStatement {
         return try execute(params)?.lastInsertRowId;
     }
     
+    public func update(params:Any?...) throws -> Int {
+        try execute(params);
+        return changesCount;
+    }
+
+    public func update(params:[String:Any?]) throws -> Int {
+        try execute(params);
+        return changesCount;
+    }
+    
     public func scalar(params:Any?...) throws -> Int? {
         return try execute(params)?.cursor[0];
     }

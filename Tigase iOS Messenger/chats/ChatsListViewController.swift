@@ -43,20 +43,25 @@ class ChatsListViewController: UITableViewController, EventHandler {
         //tableView.estimatedRowHeight = 66.0;
         tableView.dataSource = self;
 //        tableView.separatorStyle = .;
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatsListViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatsListViewController.chatItemsUpdated), name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil);
+        updateBadge();
     }
     
     override func viewWillAppear(animated: Bool) {
         xmppService.registerEventHandler(self, events: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE);
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatsListViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         tableView.reloadData();
         //(self.tabBarController as? CustomTabBarController)?.showTabBar();
         super.viewWillAppear(animated);
     }
 
     override func viewDidDisappear(animated: Bool) {
-        NSNotificationCenter.defaultCenter().removeObserver(self);
         super.viewDidDisappear(animated);
         xmppService.unregisterEventHandler(self, events: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE);
+    }
+
+    deinit {
+        NSNotificationCenter.defaultCenter().removeObserver(self);
     }
     
     override func didReceiveMemoryWarning() {
@@ -82,9 +87,11 @@ class ChatsListViewController: UITableViewController, EventHandler {
                 let account:String = (cursor["account"] ?? "");
                 let jidStr:String = cursor["jid"]!;
                 let jid = BareJID(jidStr);
+                let unread = cursor["unread"] ?? 0;
                 cell.nameLabel.text = cursor["name"] ?? jidStr;
                 cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.getAvatar(jid));
-                cell.lastMessageLabel.text = cursor["last_message"];
+                let last_message:String? = cursor["last_message"];
+                cell.lastMessageLabel.text = last_message == nil ? nil : ((unread > 0 ? "" : "\u{2713}") + last_message!);
                 let formattedTS = self.formatTimestamp(cursor["timestamp"]!);
                 cell.timestampLabel.text = formattedTS;
                 let xmppClient = self.xmppService.getClient(BareJID(account));
@@ -178,7 +185,22 @@ class ChatsListViewController: UITableViewController, EventHandler {
     }
     
     func newMessage(notification:NSNotification) {
-        tableView.reloadData();
+        if navigationController?.visibleViewController == self {
+            tableView.reloadData();
+        }
+        let incoming:Bool = notification.userInfo?["incoming"] as? Bool ?? false;
+        if incoming {
+            updateBadge();
+        }
+    }
+    
+    func chatItemsUpdated(notification: NSNotification) {
+        updateBadge();
+    }
+    
+    func updateBadge() {
+        let unreadChats = xmppService.dbChatHistoryStore.countUnreadChats();
+        navigationController?.tabBarItem.badgeValue = unreadChats == 0 ? nil : String(unreadChats);
     }
     
     private static let todaysFormatter = ({()-> NSDateFormatter in

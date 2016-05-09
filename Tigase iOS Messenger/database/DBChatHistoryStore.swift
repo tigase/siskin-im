@@ -26,16 +26,21 @@ import TigaseSwift
 public class DBChatHistoryStore: Logger, EventHandler {
     
     public static let MESSAGE_NEW = "messengerMessageNew";
+    public static let CHAT_ITEMS_UPDATED = "messengerChatUpdated";
     
     private static let CHAT_MSG_APPEND = "INSERT INTO chat_history (account, jid, author_jid, timestamp, item_type, data, state) VALUES (:account, :jid, :author_jid, :timestamp, :item_type, :data, :state)";
     private static let CHAT_MSGS_COUNT = "SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid";
+    private static let CHAT_MSGS_COUNT_UNREAD_CHATS = "select count(1) FROM (SELECT account, jid FROM chat_history WHERE state = \(State.incoming_unread.rawValue) GROUP BY account, jid) as x";
     private static let CHAT_MSGS_GET = "SELECT id, author_jid, timestamp, item_type, data, state FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp LIMIT :limit OFFSET :offset"
+    private static let CHAT_MSGS_MARK_AS_READ = "UPDATE chat_history SET state = \(State.incoming.rawValue) WHERE account = :account AND jid = :jid AND state = \(State.incoming_unread.rawValue)";
     
     private let dbConnection:DBConnection;
     
     private lazy var msgAppendStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSG_APPEND);
     private lazy var msgsCountStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_COUNT);
+    private lazy var msgsCountUnreadChatsStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_COUNT_UNREAD_CHATS);
     private lazy var msgsGetStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_GET);
+    private lazy var msgsMarkAsReadStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_MARK_AS_READ);
     private lazy var chatUpdateTimestamp:DBStatement! = try? self.dbConnection.prepareStatement("UPDATE chats SET timestamp = :timestamp WHERE account = :account AND jid = :jid");
     
     public init(dbConnection:DBConnection) {
@@ -52,7 +57,10 @@ public class DBChatHistoryStore: Logger, EventHandler {
         try! msgAppendStmt.insert(params);
         let cu_params:[String:Any?] = ["account" : account.stringValue, "jid" : jid?.stringValue, "timestamp" : timestamp ];
         try! chatUpdateTimestamp.execute(cu_params);
-        NSNotificationCenter.defaultCenter().postNotification(NSNotification(name: DBChatHistoryStore.MESSAGE_NEW, object: nil, userInfo: nil));
+        
+        let userInfo:[NSObject:AnyObject] = ["account": account, "sender": jid!, "incoming": incoming];
+        
+        NSNotificationCenter.defaultCenter().postNotification(NSNotification(name: DBChatHistoryStore.MESSAGE_NEW, object: nil, userInfo: userInfo));
     }
     
     public func countMessages(account:BareJID, jid:BareJID) -> Int {
@@ -72,6 +80,23 @@ public class DBChatHistoryStore: Logger, EventHandler {
         default:
             log("received unsupported event", event);
         }
+    }
+    
+    public func countUnreadChats() -> Int {
+        return try! msgsCountUnreadChatsStmt.scalar() ?? 0;
+    }
+    
+    public func markAsRead(account: BareJID, jid: BareJID) {
+        let params:[String:Any?] = ["account":account.stringValue, "jid":jid.stringValue];
+        let updatedRecords = try! msgsMarkAsReadStmt.update(params);
+        if updatedRecords > 0 {
+            chatItemsChanged(account, jid: jid);
+        }
+    }
+    
+    private func chatItemsChanged(account: BareJID, jid: BareJID) {
+        let userInfo:[NSObject:AnyObject] = ["account":account, "jid":jid];
+        NSNotificationCenter.defaultCenter().postNotificationName(DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil, userInfo: userInfo);
     }
     
     public enum State:Int {
