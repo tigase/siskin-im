@@ -31,6 +31,15 @@ public class XmppService: Logger, EventHandler {
     public let dbChatHistoryStore:DBChatHistoryStore;
     public let dbRosterStore:DBRosterStore;
     public let dbVCardsCache:DBVCardsCache;
+    
+    public var applicationState:ApplicationState {
+        didSet {
+            if oldValue != applicationState {
+                applicationStateChanged();
+            }
+        }
+    }
+    
     private let reachability:Reachability;
     
     private var clients = [BareJID:XMPPClient]();
@@ -47,10 +56,6 @@ public class XmppService: Logger, EventHandler {
         }
     }
     
-    var firstClient:XMPPClient? {
-        return clients.values.first;
-    }
-    
     init(dbConnection:DBConnection) {
         self.dbConnection = dbConnection;
         self.dbChatStore = DBChatStore(dbConnection: dbConnection);
@@ -59,6 +64,8 @@ public class XmppService: Logger, EventHandler {
         self.dbVCardsCache = DBVCardsCache(dbConnection: dbConnection);
         self.reachability = Reachability();
         self.networkAvailable = false;
+        self.applicationState = UIApplication.sharedApplication().applicationState == .Active ? .active : .inactive;
+
         super.init();
         self.avatarManager = AvatarManager(xmppService: self);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(XmppService.accountConfigurationChanged), name:"accountConfigurationChanged", object: nil);
@@ -121,6 +128,7 @@ public class XmppService: Logger, EventHandler {
         client.modulesManager.register(DiscoveryModule());
         client.modulesManager.register(SoftwareVersionModule());
         client.modulesManager.register(VCardModule());
+        client.modulesManager.register(MobileModeModule());
         let rosterModule =  client.modulesManager.register(RosterModule());
         rosterModule.rosterStore = DBRosterStoreWrapper(sessionObject: client.sessionObject, store: dbRosterStore);
         client.modulesManager.register(PresenceModule());
@@ -166,15 +174,34 @@ public class XmppService: Logger, EventHandler {
                 e.presence.show = Presence.Show.away;
                 e.presence.priority = 0;
             }
+        case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
+            if applicationState == .inactive {
+                if let mobileModeModule: MobileModeModule = getClient(e.sessionObject.userBareJid!)?.modulesManager.getModule(MobileModeModule.ID) {
+                    mobileModeModule.enable();
+                }
+            }
         default:
             log("received unsupported event", event);
         }
     }
     
-    public func sendAutoPresence() {
+    private func applicationStateChanged() {
+        sendAutoPresence();
         for client in clients.values {
-            if let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID) {
-                presenceModule.setPresence(.online, status: nil, priority: nil);
+            if client.state == .connected {
+                if let mobileModeModule: MobileModeModule = client.modulesManager.getModule(MobileModeModule.ID) {
+                    mobileModeModule.setState(applicationState == .inactive);
+                }
+            }
+        }
+    }
+    
+    private func sendAutoPresence() {
+        for client in clients.values {
+            if client.state == .connected {
+                if let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID) {
+                    presenceModule.setPresence(.online, status: nil, priority: nil);
+                }
             }
         }
     }
@@ -237,4 +264,8 @@ public class XmppService: Logger, EventHandler {
         }
     }
     
+    public enum ApplicationState {
+        case active
+        case inactive
+    }
 }
