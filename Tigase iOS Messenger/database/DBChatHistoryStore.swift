@@ -47,19 +47,27 @@ public class DBChatHistoryStore: Logger, EventHandler {
         self.dbConnection = dbConnection;
     }
     
-    public func appendMessage(account:BareJID, message: Message) {
+    public func appendMessage(account:BareJID, message: Message, carbonAction: MessageCarbonsModule.Action? = nil) {
+        let body = message.body;
+        // for now we support only messages with body
+        guard body != nil else {
+            return;
+        }
+        
         let incoming = message.from != nil && message.from?.bareJid.stringValue != account.stringValue;
         let state = incoming ? State.incoming_unread : State.outgoing;
         let jid = incoming ? message.from?.bareJid : message.to?.bareJid
         let author = incoming ? message.from?.bareJid : account;
         let timestamp = message.delay?.stamp ?? NSDate();
-        let params:[String:Any?] = ["account" : account.stringValue, "jid" : jid?.stringValue, "author_jid" : author?.stringValue, "timestamp": timestamp, "item_type": ItemType.message.rawValue, "data": message.body, "state": state.rawValue]
+        let params:[String:Any?] = ["account" : account.stringValue, "jid" : jid?.stringValue, "author_jid" : author?.stringValue, "timestamp": timestamp, "item_type": ItemType.message.rawValue, "data": body, "state": state.rawValue]
         try! msgAppendStmt.insert(params);
         let cu_params:[String:Any?] = ["account" : account.stringValue, "jid" : jid?.stringValue, "timestamp" : timestamp ];
         try! chatUpdateTimestamp.execute(cu_params);
         
-        let userInfo:[NSObject:AnyObject] = ["account": account, "sender": jid!, "incoming": incoming];
-        
+        var userInfo:[NSObject:AnyObject] = ["account": account, "sender": jid!, "incoming": incoming] ;
+        if carbonAction != nil {
+            userInfo["carbonAction"] = carbonAction!.rawValue;
+        }
         NSNotificationCenter.defaultCenter().postNotification(NSNotification(name: DBChatHistoryStore.MESSAGE_NEW, object: nil, userInfo: userInfo));
     }
     
@@ -77,6 +85,8 @@ public class DBChatHistoryStore: Logger, EventHandler {
         switch event {
         case let e as MessageModule.MessageReceivedEvent:
             appendMessage(e.sessionObject.userBareJid!, message: e.message);
+        case let e as MessageCarbonsModule.CarbonReceivedEvent:
+            appendMessage(e.sessionObject.userBareJid!, message: e.message, carbonAction: e.action);
         default:
             log("received unsupported event", event);
         }

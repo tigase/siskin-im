@@ -93,7 +93,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             senderName = sender!.stringValue;
         }
         
-        if UIApplication.sharedApplication().applicationState != .Active {
+        if UIApplication.sharedApplication().applicationState != .Active && notification.userInfo?["carbonAction"] == nil {
             var userNotification = UILocalNotification();
             userNotification.alertBody = "Received new message from " + senderName!;
             userNotification.alertAction = "open";

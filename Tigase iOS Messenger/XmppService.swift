@@ -127,19 +127,20 @@ public class XmppService: Logger, EventHandler {
         let messageModule = client.modulesManager.register(MessageModule());
         let chatManager = DefaultChatManager(context: client.context, chatStore: DBChatStoreWrapper(sessionObject: client.sessionObject, store: dbChatStore));
         messageModule.chatManager = chatManager;
+        client.modulesManager.register(MessageCarbonsModule());
     }
     
     private func registerEventHandlers(client:XMPPClient) {
-        client.eventBus.register(self, events: SocketConnector.DisconnectedEvent.TYPE);
-        client.eventBus.register(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE);
+        client.eventBus.register(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE);
+        client.eventBus.register(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.register(holder.handler, events: holder.events);
         }
     }
     
     private func unregisterEventHandlers(client:XMPPClient) {
-        client.eventBus.unregister(self, events: SocketConnector.DisconnectedEvent.TYPE);
-        client.eventBus.unregister(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE);
+        client.eventBus.unregister(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE);
+        client.eventBus.unregister(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.unregister(holder.handler, events: holder.events);
         }
@@ -150,6 +151,12 @@ public class XmppService: Logger, EventHandler {
         case let e as SocketConnector.DisconnectedEvent:
             if let jid = e.sessionObject.userBareJid {
                 updateJaxmppInstance(jid);
+            }
+        case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
+            if e.features.contains(MessageCarbonsModule.MC_XMLNS) {
+                if let messageCarbonsModule:MessageCarbonsModule = getClient(e.sessionObject.userBareJid!)?.modulesManager.getModule(MessageCarbonsModule.ID) {
+                    messageCarbonsModule.enable();
+                }
             }
         default:
             log("received unsupported event", event);
