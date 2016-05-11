@@ -20,7 +20,7 @@
 //
 
 
-import Foundation
+import UIKit
 import TigaseSwift
 
 public class XmppService: Logger, EventHandler {
@@ -131,7 +131,7 @@ public class XmppService: Logger, EventHandler {
     }
     
     private func registerEventHandlers(client:XMPPClient) {
-        client.eventBus.register(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE);
+        client.eventBus.register(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE);
         client.eventBus.register(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.register(holder.handler, events: holder.events);
@@ -139,7 +139,7 @@ public class XmppService: Logger, EventHandler {
     }
     
     private func unregisterEventHandlers(client:XMPPClient) {
-        client.eventBus.unregister(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE);
+        client.eventBus.unregister(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE);
         client.eventBus.unregister(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.unregister(holder.handler, events: holder.events);
@@ -158,8 +158,24 @@ public class XmppService: Logger, EventHandler {
                     messageCarbonsModule.enable();
                 }
             }
+        case let e as PresenceModule.BeforePresenceSendEvent:
+            if UIApplication.sharedApplication().applicationState == .Active {
+                e.presence.show = Presence.Show.online;
+                e.presence.priority = 5;
+            } else {
+                e.presence.show = Presence.Show.away;
+                e.presence.priority = 0;
+            }
         default:
             log("received unsupported event", event);
+        }
+    }
+    
+    public func sendAutoPresence() {
+        for client in clients.values {
+            if let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID) {
+                presenceModule.setPresence(.online, status: nil, priority: nil);
+            }
         }
     }
     
