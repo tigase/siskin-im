@@ -60,7 +60,7 @@ public class DBVCardsCache {
     }
     
     public func checkVCardPhotoHash(jid: BareJID, hash: String) -> Bool {
-        let params:[String:Any?] = ["jid": jid.stringValue, "avatar_hash": hash];
+        let params:[String:Any?] = ["jid": jid.stringValue, "avatar_hash": hash.lowercaseString];
         let count = try! chechPhotoHashStmt.scalar(params);
         return count == 1;
     }
