@@ -48,3 +48,16 @@ CREATE TABLE IF NOT EXISTS roster_items_groups (
     FOREIGN KEY(item_id) REFERENCES roster_items(id),
     FOREIGN KEY(group_id) REFERENCES roster_groups(id)
 );
+
+CREATE TABLE IF NOT EXISTS vcards_cache (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    jid TEXT NOT NULL,
+    data TEXT,
+    avatar BLOB,
+    avatar_hash TEXT,
+    timestamp INTEGER
+);
+
+CREATE INDEX IF NOT EXISTS vcards_cache_jid_idx on vcards_cache (
+    jid
+);

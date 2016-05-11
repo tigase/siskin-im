@@ -86,6 +86,8 @@ class ChatViewController : UIViewController, UITableViewDataSource, UITextViewDe
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.keyboardWillHide), name: UIKeyboardWillHideNotification, object: nil);
         
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.reloadData), name: AvatarManager.AVATAR_CHANGED, object: nil);
+
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -156,7 +158,7 @@ class ChatViewController : UIViewController, UITableViewDataSource, UITextViewDe
             let id = incoming ? "ChatTableViewCellIncoming" : "ChatTableViewCellOutgoing"
             cell = tableView.dequeueReusableCellWithIdentifier(id, forIndexPath: indexPath) as? ChatTableViewCell;
             if cell != nil {
-                cell!.avatarView?.image = self.xmppService.avatarManager.getAvatar(self.jid.bareJid);
+                cell!.avatarView?.image = self.xmppService.avatarManager.getAvatar(self.jid.bareJid, account: self.account);
                 cell!.messageTextView.text = cursor["data"];
                 cell!.setTimestamp(cursor["timestamp"]!);
             }
@@ -166,7 +168,7 @@ class ChatViewController : UIViewController, UITableViewDataSource, UITextViewDe
         return cell!;
     }
     
-    func newMessage(notification:NSNotification) {
+    func newMessage(notification: NSNotification) {
         reloadData();
         let count = xmppService.dbChatHistoryStore.countMessages(account, jid: jid.bareJid);
         if count > 0 {

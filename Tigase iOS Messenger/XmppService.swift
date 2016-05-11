@@ -26,10 +26,11 @@ import TigaseSwift
 public class XmppService: Logger, EventHandler {
     
     private let dbConnection:DBConnection;
-    public let avatarManager:AvatarManager;
+    public var avatarManager:AvatarManager!;
     public let dbChatStore:DBChatStore;
     public let dbChatHistoryStore:DBChatHistoryStore;
     public let dbRosterStore:DBRosterStore;
+    public let dbVCardsCache:DBVCardsCache;
     private let reachability:Reachability;
     
     private var clients = [BareJID:XMPPClient]();
@@ -52,13 +53,14 @@ public class XmppService: Logger, EventHandler {
     
     init(dbConnection:DBConnection) {
         self.dbConnection = dbConnection;
-        self.avatarManager = AvatarManager();
         self.dbChatStore = DBChatStore(dbConnection: dbConnection);
         self.dbChatHistoryStore = DBChatHistoryStore(dbConnection: dbConnection);
         self.dbRosterStore = DBRosterStore(dbConnection: dbConnection);
+        self.dbVCardsCache = DBVCardsCache(dbConnection: dbConnection);
         self.reachability = Reachability();
         self.networkAvailable = false;
         super.init();
+        self.avatarManager = AvatarManager(xmppService: self);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(XmppService.accountConfigurationChanged), name:"accountConfigurationChanged", object: nil);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(XmppService.connectivityChanged), name: Reachability.CONNECTIVITY_CHANGED, object: nil);
         networkAvailable = reachability.isConnectedToNetwork();
@@ -118,6 +120,7 @@ public class XmppService: Logger, EventHandler {
         client.modulesManager.register(SessionEstablishmentModule());
         client.modulesManager.register(DiscoveryModule());
         client.modulesManager.register(SoftwareVersionModule());
+        client.modulesManager.register(VCardModule());
         let rosterModule =  client.modulesManager.register(RosterModule());
         rosterModule.rosterStore = DBRosterStoreWrapper(sessionObject: client.sessionObject, store: dbRosterStore);
         client.modulesManager.register(PresenceModule());

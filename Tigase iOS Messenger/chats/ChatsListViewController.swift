@@ -52,12 +52,14 @@ class ChatsListViewController: UITableViewController, EventHandler {
         xmppService.registerEventHandler(self, events: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE);
         tableView.reloadData();
         //(self.tabBarController as? CustomTabBarController)?.showTabBar();
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatsListViewController.newMessage), name: AvatarManager.AVATAR_CHANGED, object: nil);
         super.viewWillAppear(animated);
     }
 
     override func viewDidDisappear(animated: Bool) {
         super.viewDidDisappear(animated);
         xmppService.unregisterEventHandler(self, events: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE);
+        NSNotificationCenter.defaultCenter().removeObserver(self, name: AvatarManager.AVATAR_CHANGED, object: nil);
     }
 
     deinit {
@@ -84,17 +86,17 @@ class ChatsListViewController: UITableViewController, EventHandler {
         let params:[String:Any?] = ["offset": indexPath.row];
         do {
             try getChat.query(params) { (cursor)->Void in
-                let account:String = (cursor["account"] ?? "");
+                let account = BareJID(cursor["account"] ?? "");
                 let jidStr:String = cursor["jid"]!;
                 let jid = BareJID(jidStr);
                 let unread = cursor["unread"] ?? 0;
                 cell.nameLabel.text = cursor["name"] ?? jidStr;
-                cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.getAvatar(jid));
+                cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.getAvatar(jid, account: account));
                 let last_message:String? = cursor["last_message"];
                 cell.lastMessageLabel.text = last_message == nil ? nil : ((unread > 0 ? "" : "\u{2713}") + last_message!);
                 let formattedTS = self.formatTimestamp(cursor["timestamp"]!);
                 cell.timestampLabel.text = formattedTS;
-                let xmppClient = self.xmppService.getClient(BareJID(account));
+                let xmppClient = self.xmppService.getClient(account);
                 let presenceModule:PresenceModule? = xmppClient?.modulesManager.getModule(PresenceModule.ID);
                 let presence = presenceModule?.presenceStore.getBestPresence(jid);
                 cell.avatarStatusView.setStatus(presence?.show);

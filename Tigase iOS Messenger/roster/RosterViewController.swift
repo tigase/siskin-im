@@ -51,14 +51,16 @@ class RosterViewController: UITableViewController, EventHandler {
     }
 
     override func viewWillAppear(animated: Bool) {
-        tableView.reloadData();
+        reloadData();
         xmppService.registerEventHandler(self, events: PresenceModule.ContactPresenceChanged.TYPE);
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(RosterViewController.reloadData), name: AvatarManager.AVATAR_CHANGED, object: nil);
         super.viewWillAppear(animated);
     }
     
     override func viewWillDisappear(animated: Bool) {
         xmppService.unregisterEventHandler(self, events: PresenceModule.ContactPresenceChanged.TYPE);
         super.viewWillDisappear(animated);
+        NSNotificationCenter.defaultCenter().removeObserver(self);
     }
 
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
@@ -79,12 +81,13 @@ class RosterViewController: UITableViewController, EventHandler {
                 cell.nameLabel.text = cursor["name"];
                 let jidStr:String = cursor["jid"]!;
                 let jid = BareJID(jidStr);
-                let xmppClient = self.xmppService.getClient(BareJID(cursor["account"]!));
+                let account = BareJID(cursor["account"]!);
+                let xmppClient = self.xmppService.getClient(account);
                 let presenceModule:PresenceModule? = xmppClient?.modulesManager.getModule(PresenceModule.ID);
                 let presence = presenceModule?.presenceStore.getBestPresence(jid);
                 cell.statusLabel.text = presence?.status ?? jidStr;
                 cell.avatarStatusView.setStatus(presence?.show);
-                cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.getAvatar(jid));
+                cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.getAvatar(jid, account: account));
             }
         } catch _ {
             cell.nameLabel.text = "DBError";
@@ -121,10 +124,14 @@ class RosterViewController: UITableViewController, EventHandler {
         }
     }
     
+    func reloadData() {
+        tableView.reloadData();
+    }
+    
     func handleEvent(event: Event) {
         switch event {
         case is PresenceModule.ContactPresenceChanged:
-            tableView.reloadData();
+            reloadData();
         default:
             break;
         }

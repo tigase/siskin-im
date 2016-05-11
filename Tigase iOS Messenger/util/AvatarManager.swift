@@ -23,17 +23,120 @@
 import UIKit
 import TigaseSwift
 
-public class AvatarManager {
+public class AvatarManager: EventHandler {
+    
+    public static let AVATAR_CHANGED = "messengerAvatarChanged";
     
     var defaultAvatar:UIImage;
+    var cache = NSCache();
+   
+    var xmppService: XmppService {
+        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate;
+        return appDelegate.xmppService;
+    }
     
-    public init() {
+    public init(xmppService: XmppService) {
         defaultAvatar = UIImage(named: "defaultAvatar")!;
+        xmppService.registerEventHandler(self, events: PresenceModule.ContactPresenceChanged.TYPE);
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AvatarManager.vcardUpdated), name: DBVCardsCache.VCARD_UPDATED, object: nil);
     }
     
-    public func getAvatar(jid:BareJID) -> UIImage {
-        // TODO: implement support for handling avatars
-        return defaultAvatar;
+    public func getAvatar(jid:BareJID, account:BareJID) -> UIImage {
+        let val = cache.objectForKey(jid.stringValue) as? AvatarHolder;
+        if val?.beginContentAccess() ?? false {
+            defer {
+                val?.endContentAccess();
+            }
+            return val!.image;
+        }
+        
+        let image = loadAvatar(jid) ?? defaultAvatar;
+        
+        // adding default avatar to cache to make sure we will not load data
+        // from database when retrieving avatars for jids without avatar
+        cache.setObject(AvatarHolder(image: image), forKey: jid.stringValue);
+        return image;
     }
     
+    public func handleEvent(event: Event) {
+        switch event {
+        case let cpc as PresenceModule.ContactPresenceChanged:
+            updateAvatarHash(cpc.sessionObject.userBareJid!, jid: cpc.presence.from!.bareJid, photoHash: cpc.presence.vcardTempPhoto);
+        default:
+            break;
+        }
+    }
+    
+    func updateAvatarHash(account: BareJID, jid: BareJID, photoHash: String?) {
+        guard photoHash != nil else {
+            return;
+        }
+
+        if !xmppService.dbVCardsCache.checkVCardPhotoHash(jid, hash: photoHash!) {
+            if let vcardModule:VCardModule = xmppService.getClient(account)?.modulesManager?.getModule(VCardModule.ID) {
+                vcardModule.retrieveVCard(JID(jid), onSuccess: { (vcard) in
+                    self.xmppService.dbVCardsCache.updateVCard(jid, vcard: vcard);
+                    }, onError: { (errorCondition:ErrorCondition?) in
+                    self.cache.removeObjectForKey(jid.stringValue);
+                });
+            }
+        }
+    }
+
+    func loadAvatar(jid: BareJID) -> UIImage? {
+        if let data = xmppService.dbVCardsCache.getPhoto(jid) {
+            return UIImage(data: data);
+        }
+        return nil;
+    }
+    
+    @objc func vcardUpdated(notification: NSNotification) {
+        if let jid = notification.userInfo?["jid"] as? BareJID {
+            cache.removeObjectForKey(jid.stringValue);
+            NSNotificationCenter.defaultCenter().postNotificationName(AvatarManager.AVATAR_CHANGED, object: nil, userInfo: ["jid": jid]);
+        }
+    }
+    
+    private class AvatarHolder: NSDiscardableContent {
+        
+        var counter = 0;
+        var image: UIImage!;
+        
+        private init?(data: NSData?) {
+            guard data != nil else {
+                return nil;
+            }
+            
+            image = UIImage(data: data!);
+            guard image != nil else {
+                return nil;
+            }
+        }
+        
+        private init(image: UIImage) {
+            self.image = image;
+        }
+        
+        @objc private func discardContentIfPossible() {
+            if counter == 0 {
+                image = nil;
+            }
+        }
+
+        @objc private func isContentDiscarded() -> Bool {
+            return image == nil;
+        }
+        
+        @objc private func beginContentAccess() -> Bool {
+            guard !isContentDiscarded() else {
+                return false;
+            }
+            counter += 1;
+            return true;
+        }
+        
+        @objc private func endContentAccess() {
+            counter -= 1;
+        }
+    }
 }

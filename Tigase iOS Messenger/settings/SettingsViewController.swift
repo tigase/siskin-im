@@ -67,7 +67,7 @@ class SettingsViewController: UITableViewController {
                 let account = AccountManager.getAccount(accounts[indexPath.row]);
                 cell.nameLabel.text = account?.name;
                 let jid = BareJID(account!.name);
-                cell.avatarStatusView.setAvatar(xmppService.avatarManager.getAvatar(jid));
+                cell.avatarStatusView.setAvatar(xmppService.avatarManager.getAvatar(jid, account: BareJID(account!.name)));
                 cell.avatarStatusView.statusImageView.hidden = true;
             } else {
                 cell.nameLabel.text = "Add account";

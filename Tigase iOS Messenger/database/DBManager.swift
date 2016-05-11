@@ -165,6 +165,8 @@ public class DBStatement {
             switch value {
             case let v as [UInt8]:
                 r = sqlite3_bind_blob(handle, pos, v, Int32(v.count), SQLITE_TRANSIENT);
+            case let v as NSData:
+                r = sqlite3_bind_blob(handle, pos, v.bytes, Int32(v.length), SQLITE_TRANSIENT);
             case let v as Double:
                 r = sqlite3_bind_double(handle, pos, v);
             case let v as Int:
@@ -329,6 +331,16 @@ public class DBCursor {
         let count = Int(sqlite3_column_bytes(handle, idx));
         return DBCursor.convert(count, data: ptr);
     }
+
+    subscript(index: Int) -> NSData? {
+        let idx = Int32(index);
+        let origPtr = sqlite3_column_blob(handle, idx);
+        if origPtr == nil {
+            return nil;
+        }
+        let count = Int(sqlite3_column_bytes(handle, idx));
+        return NSData(bytes: origPtr, length: count);
+    }
     
     subscript(index: Int) -> NSDate {
         let timestamp = Double(sqlite3_column_int64(handle, Int32(index))) / 1000;
@@ -366,6 +378,12 @@ public class DBCursor {
     }
 
     subscript(column: String) -> [UInt8]? {
+        return forColumn(column) {
+            return self[$0];
+        }
+    }
+    
+    subscript(column: String) -> NSData? {
         return forColumn(column) {
             return self[$0];
         }
