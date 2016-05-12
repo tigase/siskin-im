@@ -55,7 +55,7 @@ public class DBRosterStoreWrapper: RosterStore {
     
 }
 
-public class DBRosterStore {
+public class DBRosterStore: RosterCacheProvider {
     
     private let dbConnection: DBConnection;
     
@@ -153,6 +153,20 @@ public class DBRosterStore {
         }
     }
     
+    public func getCachedVersion(sessionObject: SessionObject) -> String? {
+        return AccountManager.getAccount(sessionObject.userBareJid!.stringValue)?.rosterVersion;
+    }
+    
+    public func loadCachedRoster(sessionObject: SessionObject) -> [RosterItem] {
+        return [RosterItem]();
+    }
+    
+    public func updateReceivedVersion(sessionObject: SessionObject, ver: String?) {
+        if let account = AccountManager.getAccount(sessionObject.userBareJid!.stringValue) {
+            account.rosterVersion = ver;
+            AccountManager.updateAccount(account, notifyChange: false);
+        }
+    }
 }
 
 extension RosterItemProtocol {

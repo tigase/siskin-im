@@ -131,6 +131,7 @@ public class XmppService: Logger, EventHandler {
         client.modulesManager.register(MobileModeModule());
         let rosterModule =  client.modulesManager.register(RosterModule());
         rosterModule.rosterStore = DBRosterStoreWrapper(sessionObject: client.sessionObject, store: dbRosterStore);
+        rosterModule.versionProvider = dbRosterStore;
         client.modulesManager.register(PresenceModule());
         let messageModule = client.modulesManager.register(MessageModule());
         let chatManager = DefaultChatManager(context: client.context, chatStore: DBChatStoreWrapper(sessionObject: client.sessionObject, store: dbChatStore));

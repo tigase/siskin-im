@@ -100,7 +100,7 @@ public class AccountManager {
         NSNotificationCenter.defaultCenter().postNotificationName("accountConfigurationChanged", object: self, userInfo: ["account":name]);
     }
     
-    private static func updateAccount(account:String, dataForUpdate: [String:NSObject]) {
+    private static func updateAccount(account:String, dataForUpdate: [String:NSObject], notifyChange: Bool = true) {
         var query = AccountManager.getAccountQuery(account);
         
         var result:AnyObject?;
@@ -128,17 +128,19 @@ public class AccountManager {
         } else {
             lastResultCode = SecItemUpdate(query, dataForUpdate);
         }
-        NSNotificationCenter.defaultCenter().postNotificationName("accountConfigurationChanged", object: self, userInfo: ["account": account]);
+        if notifyChange {
+            NSNotificationCenter.defaultCenter().postNotificationName("accountConfigurationChanged", object: self, userInfo: ["account": account]);
+        }
     }
     
     private static func getAccountQuery(name:String, withData:CFString = kSecReturnAttributes) -> [String:NSObject] {
         return [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitOne, String(withData) : kCFBooleanTrue, String(kSecAttrService) : "xmpp", String(kSecAttrAccount) : name ];
     }
     
-    static func updateAccount(account:Account) {
+    static func updateAccount(account:Account, notifyChange: Bool = true) {
         let data = NSKeyedArchiver.archivedDataWithRootObject(account.data);
         let update = [ String(kSecAttrGeneric) : data];
-        updateAccount(account.name, dataForUpdate: update);
+        updateAccount(account.name, dataForUpdate: update, notifyChange: notifyChange);
     }
     
     public class Account {
@@ -174,6 +176,19 @@ public class AccountManager {
                     data["serverHost"] = newValue;
                 } else {
                     data.removeValueForKey("serverHost");
+                }
+            }
+        }
+        
+        public var rosterVersion:String? {
+            get {
+                return data["rosterVersion"] as? String;
+            }
+            set {
+                if newValue != nil {
+                    data["rosterVersion"] = newValue;
+                } else {
+                    data.removeValueForKey("rosterVersion");
                 }
             }
         }
