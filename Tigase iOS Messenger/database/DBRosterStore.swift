@@ -62,7 +62,7 @@ public class DBRosterStore: RosterCacheProvider {
     private lazy var addItemGroupStmt: DBStatement! = try? self.dbConnection.prepareStatement("INSERT INT")
     private lazy var countItemsStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM roster_items WHERE account = :account");
     private lazy var deleteItemStmt: DBStatement! = try? self.dbConnection.prepareStatement("DELETE FROM roster_items WHERE account = :account AND jid = :jid");
-    private lazy var deleteItemGroupsStmt: DBStatement! = try? self.dbConnection.prepareStatement("DELETE FROM roster_items_groups WHERE item_id = IN (SELECT id FROM roster_items WHERE account = :account AND jid = :jid)");
+    private lazy var deleteItemGroupsStmt: DBStatement! = try? self.dbConnection.prepareStatement("DELETE FROM roster_items_groups WHERE item_id IN (SELECT id FROM roster_items WHERE account = :account AND jid = :jid)");
     private lazy var deleteItemsStmt: DBStatement! = try? self.dbConnection.prepareStatement("DELETE FROM roster_items WHERE account = :account");
     private lazy var deleteItemsGroupsStmt: DBStatement! = try? self.dbConnection.prepareStatement("DELETE FROM roster_items_groups WHERE item_id IN (SELECT id FROM roster_items WHERE account = :account)");
     
@@ -99,7 +99,8 @@ public class DBRosterStore: RosterCacheProvider {
             } else {
                 // updating roster item in DB
                 try updateItemStmt.execute(params);
-                try deleteItemGroupsStmt.execute(["account": sessionObject.userBareJid?.stringValue, "jid": dbItem.jid.stringValue]);
+                let itemGroupsDeleteParams:[String:Any?] = ["account": sessionObject.userBareJid?.stringValue, "jid": dbItem.jid.stringValue];
+                try deleteItemGroupsStmt.execute(itemGroupsDeleteParams);
             }
             
             for group in dbItem.groups {

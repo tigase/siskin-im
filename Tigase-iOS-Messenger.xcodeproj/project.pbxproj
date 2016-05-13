@@ -11,6 +11,7 @@
 		FE3024211CDCD0A300466497 /* TigaseSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE3024201CDCD0A300466497 /* TigaseSwift.framework */; };
 		FE3024221CDCD0A900466497 /* TigaseSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE3024201CDCD0A300466497 /* TigaseSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE3024321CE2036A00466497 /* DBVCardsCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3024311CE2036A00466497 /* DBVCardsCache.swift */; };
+		FE3A45CF1CE49D3300C36264 /* RosterItemEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */; };
 		FE5079DA1CCE56F3001A015C /* XmppService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5079D91CCE56F3001A015C /* XmppService.swift */; };
 		FE5079F01CD3CA91001A015C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE5079EF1CD3CA91001A015C /* Security.framework */; };
 		FE507A151CDB7B3B001A015C /* ChatsListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5079FE1CDB7B3B001A015C /* ChatsListTableViewCell.swift */; };
@@ -77,6 +78,7 @@
 		FE168ACC1CCD197A003F8B26 /* db-schema-1.0.0.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-1.0.0.sql"; sourceTree = "<group>"; };
 		FE3024201CDCD0A300466497 /* TigaseSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TigaseSwift.framework; path = "../../../Library/Developer/Xcode/DerivedData/workspace_ts-cggcwjpodibzegaecyuraswpljwr/Build/Products/Debug-iphoneos/TigaseSwift.framework"; sourceTree = "<group>"; };
 		FE3024311CE2036A00466497 /* DBVCardsCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBVCardsCache.swift; sourceTree = "<group>"; };
+		FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterItemEditViewController.swift; sourceTree = "<group>"; };
 		FE5079D91CCE56F3001A015C /* XmppService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XmppService.swift; sourceTree = "<group>"; };
 		FE5079EF1CD3CA91001A015C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		FE5079FE1CDB7B3B001A015C /* ChatsListTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatsListTableViewCell.swift; sourceTree = "<group>"; };
@@ -171,6 +173,7 @@
 			children = (
 				FE507A081CDB7B3B001A015C /* RosterItemTableViewCell.swift */,
 				FE507A091CDB7B3B001A015C /* RosterViewController.swift */,
+				FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */,
 			);
 			path = roster;
 			sourceTree = "<group>";
@@ -424,6 +427,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FE3A45CF1CE49D3300C36264 /* RosterItemEditViewController.swift in Sources */,
 				FE507A211CDB7B3B001A015C /* SettingsViewController.swift in Sources */,
 				FE507A191CDB7B3B001A015C /* DBChatHistoryStore.swift in Sources */,
 				FE507A1E1CDB7B3B001A015C /* RosterViewController.swift in Sources */,

@@ -239,7 +239,7 @@
                                             </tableViewCell>
                                         </prototypes>
                                     </tableView>
-                                    <view contentMode="bottom" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="HK7-Bq-Vwt">
+                                    <view contentMode="bottom" translatesAutoresizingMaskIntoConstraints="NO" id="HK7-Bq-Vwt">
                                         <rect key="frame" x="0.0" y="496" width="600" height="40"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" misplaced="YES" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="KBC-gg-OJe">
@@ -430,11 +430,127 @@
                             <outlet property="delegate" destination="mps-t3-QBq" id="ZYI-Wf-ZtU"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" id="SEz-IM-IWL"/>
+                    <navigationItem key="navigationItem" id="SEz-IM-IWL">
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="cDx-St-aU8">
+                            <connections>
+                                <action selector="addBtnClicked:" destination="mps-t3-QBq" id="MNQ-v3-5LQ"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="oko-Zq-ifa" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2844" y="-1677"/>
+        </scene>
+        <!--Roster item edit-->
+        <scene sceneID="NzJ-3d-n1O">
+            <objects>
+                <viewController id="xOr-7s-G00" userLabel="Roster item edit" customClass="RosterItemEditViewController" customModule="Tigase_iOS_Messenger" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="iKp-fv-PAn"/>
+                        <viewControllerLayoutGuide type="bottom" id="NQH-53-vGi"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="kkq-yP-EDG">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="Kii-pd-ddi">
+                                <rect key="frame" x="20" y="72" width="560" height="136"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="rzq-GE-Uqh">
+                                        <rect key="frame" x="0.0" y="0.0" width="560" height="30"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Account" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ktr-S6-XhV">
+                                                <rect key="frame" x="0.0" y="0.0" width="64" height="30"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Select account" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="CCz-ls-G0Q">
+                                                <rect key="frame" x="69" y="0.0" width="492" height="30"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <textInputTraits key="textInputTraits"/>
+                                            </textField>
+                                        </subviews>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="mpK-9h-bnJ">
+                                        <rect key="frame" x="0.0" y="35" width="560" height="30"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="JID" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zDI-r4-UdP">
+                                                <rect key="frame" x="0.0" y="0.0" width="64" height="30"/>
+                                                <accessibility key="accessibilityConfiguration" label="JID"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="user@example.com" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="LP3-5t-UJg">
+                                                <rect key="frame" x="68" y="0.0" width="493" height="30"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <textInputTraits key="textInputTraits"/>
+                                            </textField>
+                                        </subviews>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="GCC-vg-W3o">
+                                        <rect key="frame" x="0.0" y="70" width="560" height="30"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AeJ-RV-KyD">
+                                                <rect key="frame" x="0.0" y="0.0" width="64" height="30"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="John Doe" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="MtW-Gs-pNQ">
+                                                <rect key="frame" x="68" y="0.0" width="493" height="30"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <textInputTraits key="textInputTraits"/>
+                                            </textField>
+                                        </subviews>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="iOb-IP-ubS">
+                                        <rect key="frame" x="0.0" y="105" width="560" height="31"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" text="Request authorization" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wTw-W5-TQA">
+                                                <rect key="frame" x="0.0" y="0.0" width="278" height="31"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <switch opaque="NO" contentMode="right" horizontalHuggingPriority="751" verticalHuggingPriority="751" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" misplaced="YES" contentHorizontalAlignment="right" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zCc-ya-9VC">
+                                                <rect key="frame" x="282" y="0.0" width="280" height="31"/>
+                                            </switch>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="AeJ-RV-KyD" firstAttribute="width" secondItem="Ktr-S6-XhV" secondAttribute="width" id="77A-UK-Tl1"/>
+                                    <constraint firstItem="zDI-r4-UdP" firstAttribute="width" secondItem="Ktr-S6-XhV" secondAttribute="width" id="8pi-oF-gb6"/>
+                                </constraints>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="Kii-pd-ddi" firstAttribute="top" secondItem="iKp-fv-PAn" secondAttribute="bottom" constant="8" id="Adm-MB-MBW"/>
+                            <constraint firstItem="Kii-pd-ddi" firstAttribute="leading" secondItem="kkq-yP-EDG" secondAttribute="leadingMargin" id="kS3-tb-vvE"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="Kii-pd-ddi" secondAttribute="trailing" id="zJE-De-0ar"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="hVE-JM-jVD">
+                        <barButtonItem key="rightBarButtonItem" systemItem="save" id="8HH-Jw-de2">
+                            <connections>
+                                <action selector="saveBtnClicked:" destination="xOr-7s-G00" id="RdL-9J-lgU"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="accountTextField" destination="CCz-ls-G0Q" id="3JP-Pz-rde"/>
+                        <outlet property="jidTextField" destination="LP3-5t-UJg" id="O1s-9o-5Bc"/>
+                        <outlet property="nameTextField" destination="MtW-Gs-pNQ" id="PiQ-LG-cGK"/>
+                        <outlet property="requestAuthorizationSwith" destination="zCc-ya-9VC" id="uy2-gB-ick"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="BNT-gO-wep" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4618" y="-1753"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="brt-az-Ze8">
@@ -854,6 +970,24 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Nzv-3Y-whq" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="4778" y="778"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="blt-ba-aAx">
+            <objects>
+                <navigationController storyboardIdentifier="RosterItemEditNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="DqK-vA-tM9" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="c2l-7V-bZB">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="xOr-7s-G00" kind="relationship" relationship="rootViewController" id="4dP-n6-3mN"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="t6t-DJ-n1D" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3724" y="-1690"/>
         </scene>
     </scenes>
     <resources>
