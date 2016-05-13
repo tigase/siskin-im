@@ -35,6 +35,12 @@ class ChatsListViewController: UITableViewController, EventHandler {
     
     lazy var countChats:DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) AS count FROM chats");
     lazy var getChat:DBStatement! = try? self.dbConnection.prepareStatement("SELECT jid, account, timestamp, thread_id, (SELECT data FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND item_type = 0 ORDER BY timestamp DESC LIMIT 1) AS last_message, (SELECT count(ch.id) FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND state = 2) as unread, (SELECT name FROM roster_items ri WHERE ri.account = c.account AND ri.jid = c.jid) as name FROM chats as c ORDER BY timestamp DESC LIMIT 1 OFFSET :offset");
+    lazy var getChatTimestampFromHistoryByAccountAndJidStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT timestamp FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp DESC LIMIT 1 OFFSET :offset")
+    lazy var getChatTimestampByAccountAndJidStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT timestamp FROM chats WHERE account = :account AND jid = :jid")
+    lazy var getChatPositionByTimestampStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM chats WHERE timestamp > :timestamp");
+    lazy var getChatPositionByChatIdStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM chats WHERE timestamp > (SELECT timestamp FROM chats WHERE id = :id)");
+    
+    var closingChatPosition:Int? = nil
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -89,6 +95,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
                 let account = BareJID(cursor["account"] ?? "");
                 let jidStr:String = cursor["jid"]!;
                 let jid = BareJID(jidStr);
+                let name:String? = cursor["name"];
                 let unread = cursor["unread"] ?? 0;
                 cell.nameLabel.text = cursor["name"] ?? jidStr;
                 cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.getAvatar(jid, account: account));
@@ -130,7 +137,9 @@ class ChatsListViewController: UITableViewController, EventHandler {
                         let xmppClient = self.xmppService.getClient(account);
                         let messageModule:MessageModule? = xmppClient?.modulesManager.getModule(MessageModule.ID);
                         if let chat = messageModule?.chatManager.getChat(jid, thread: thread) {
+                            self.closingChatPosition = try! self.getChatPositionByChatIdStmt.scalar(chat.id!);
                             messageModule?.chatManager.close(chat);
+                            self.closingChatPosition = nil;
                         }
                     }
                 } catch _ {
@@ -168,19 +177,29 @@ class ChatsListViewController: UITableViewController, EventHandler {
     func handleEvent(event: Event) {
         switch event {
         case is MessageModule.ChatCreatedEvent:
-            tableView.beginUpdates();
             // we are adding rows always on top
             let index = NSIndexPath(forRow: 0, inSection: 0);
-            tableView.insertRowsAtIndexPaths([index], withRowAnimation: UITableViewRowAnimation.Automatic);
-            tableView.endUpdates();
+            tableView.insertRowsAtIndexPaths([index], withRowAnimation: UITableViewRowAnimation.Fade);
             
             // if above is not working we can reload
             //tableView.reloadData();
-        case is MessageModule.ChatClosedEvent:
+        case let e as MessageModule.ChatClosedEvent:
             // we do not know position of chat which was closed
-            tableView.reloadData();
-        case is PresenceModule.ContactPresenceChanged:
-            tableView.reloadData();
+            //tableView.reloadData();
+            if closingChatPosition != nil {
+                let indexPath = NSIndexPath(forRow: closingChatPosition!, inSection: 0);
+                tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade);
+            } else {
+                tableView.reloadData();
+            }
+        case let e as PresenceModule.ContactPresenceChanged:
+            //tableView.reloadData();
+            let timestamp: NSDate? = try! getChatTimestampByAccountAndJidStmt.query(e.sessionObject.userBareJid!.stringValue, e.presence.from!.bareJid.stringValue)?["timestamp"];
+            if timestamp != nil && timestamp?.timeIntervalSince1970 != 0 {
+                let pos = try! getChatPositionByTimestampStmt.scalar(timestamp!);
+                let indexPath = NSIndexPath(forRow: pos!, inSection: 0);
+                tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic);
+            }
         default:
             break;
         }
@@ -188,7 +207,21 @@ class ChatsListViewController: UITableViewController, EventHandler {
     
     func newMessage(notification:NSNotification) {
         if navigationController?.visibleViewController == self {
-            tableView.reloadData();
+//            tableView.reloadData();
+            let account = notification.userInfo!["account"] as? BareJID;
+            let jid = notification.userInfo!["jid"] as? BareJID;
+            if account != nil && jid != nil {
+                let timestamp: NSDate? = try! getChatTimestampByAccountAndJidStmt.query(account!.stringValue, jid!.stringValue, 1)?["timestamp"];
+                if timestamp == nil || timestamp!.timeIntervalSince1970 == 0 {
+                    tableView.reloadData();
+                } else {
+                    let pos = try! getChatPositionByTimestampStmt.scalar(timestamp!);
+                    let indexPath = NSIndexPath(forRow: pos!, inSection: 0);
+                    tableView.moveRowAtIndexPath(indexPath, toIndexPath: NSIndexPath(forRow: 0, inSection: 0));
+                }
+            } else {
+                tableView.reloadData();
+            }
         }
         let incoming:Bool = notification.userInfo?["incoming"] as? Bool ?? false;
         if incoming {

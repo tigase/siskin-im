@@ -64,7 +64,7 @@ public class DBChatHistoryStore: Logger, EventHandler {
         let cu_params:[String:Any?] = ["account" : account.stringValue, "jid" : jid?.stringValue, "timestamp" : timestamp ];
         try! chatUpdateTimestamp.execute(cu_params);
         
-        var userInfo:[NSObject:AnyObject] = ["account": account, "sender": jid!, "incoming": incoming] ;
+        var userInfo:[NSObject:AnyObject] = ["account": account, "sender": jid!, "incoming": incoming, "timestamp": timestamp] ;
         if carbonAction != nil {
             userInfo["carbonAction"] = carbonAction!.rawValue;
         }
