@@ -111,6 +111,8 @@ public class XmppService: Logger, EventHandler {
         
         if networkAvailable {
             client?.login();
+        } else {
+            client?.modulesManager.initIfRequired();
         }
     }
     
