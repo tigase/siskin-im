@@ -96,14 +96,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         
         if UIApplication.sharedApplication().applicationState != .Active && notification.userInfo?["carbonAction"] == nil {
-            var userNotification = UILocalNotification();
-            userNotification.alertBody = "Received new message from " + senderName!;
-            userNotification.alertAction = "open";
-            userNotification.soundName = UILocalNotificationDefaultSoundName;
-            //userNotification.applicationIconBadgeNumber = UIApplication.sharedApplication().applicationIconBadgeNumber + 1;
-            userNotification.userInfo = ["account": account!.stringValue, "sender": account!.stringValue];
-            userNotification.category = "MESSAGE";
-            UIApplication.sharedApplication().presentLocalNotificationNow(userNotification);
+            var alertBody: String?;
+            switch ((notification.userInfo?["type"] as? String) ?? "chat") {
+            case "muc":
+                if let body = (notification.userInfo?["body"] as? String) {
+                    if body.containsString(notification.userInfo!["roomNickname"] as! String) {
+                        alertBody = senderName! + " mentioned you";
+                    }
+                }
+            default:
+                alertBody = "Received new message from " + senderName!;
+            }
+            
+            if alertBody != nil {
+                var userNotification = UILocalNotification();
+                userNotification.alertAction = "open";
+                userNotification.alertBody = alertBody;
+                userNotification.soundName = UILocalNotificationDefaultSoundName;
+                //userNotification.applicationIconBadgeNumber = UIApplication.sharedApplication().applicationIconBadgeNumber + 1;
+                userNotification.userInfo = ["account": account!.stringValue, "sender": account!.stringValue];
+                userNotification.category = "MESSAGE";
+                UIApplication.sharedApplication().presentLocalNotificationNow(userNotification);
+            }
         }
         updateApplicationIconBadgeNumber();
     }

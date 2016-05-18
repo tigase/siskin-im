@@ -139,19 +139,23 @@ public class XmppService: Logger, EventHandler {
         let chatManager = DefaultChatManager(context: client.context, chatStore: DBChatStoreWrapper(sessionObject: client.sessionObject, store: dbChatStore));
         messageModule.chatManager = chatManager;
         client.modulesManager.register(MessageCarbonsModule());
+        let mucModule = MucModule();
+        mucModule.roomsManager = DBRoomsManager(store: dbChatStore);
+        client.modulesManager.register(mucModule);
+
     }
     
     private func registerEventHandlers(client:XMPPClient) {
-        client.eventBus.register(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE);
-        client.eventBus.register(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE);
+        client.eventBus.register(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE);
+        client.eventBus.register(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.register(holder.handler, events: holder.events);
         }
     }
     
     private func unregisterEventHandlers(client:XMPPClient) {
-        client.eventBus.unregister(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE);
-        client.eventBus.unregister(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE);
+        client.eventBus.unregister(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE);
+        client.eventBus.unregister(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.unregister(holder.handler, events: holder.events);
         }
@@ -183,6 +187,7 @@ public class XmppService: Logger, EventHandler {
                     mobileModeModule.enable();
                 }
             }
+            reconnectMucRooms(e.sessionObject.userBareJid!);
         default:
             log("received unsupported event", event);
         }
@@ -250,6 +255,21 @@ public class XmppService: Logger, EventHandler {
     private func disconnectClients(force:Bool = false) {
         for client in clients.values {
             client.disconnect(force);
+        }
+    }
+    
+    private func reconnectMucRooms(jid: BareJID) {
+        if let client = getClient(jid) {
+            guard client.state == .connected else {
+                return;
+            }
+            if let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) {
+                for room in mucModule.roomsManager.getRooms() {
+                    if room.state != .joined {
+                        room.rejoin();
+                    }
+                }
+            }
         }
     }
     

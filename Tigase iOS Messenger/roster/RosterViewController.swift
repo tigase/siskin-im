@@ -86,13 +86,12 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
         do {
             try rosterItemsList.query(params) { cursor -> Void in
                 cell.nameLabel.text = cursor["name"];
-                let jidStr:String = cursor["jid"]!;
-                let jid = BareJID(jidStr);
-                let account = BareJID(cursor["account"]!);
+                let jid: BareJID = cursor["jid"]!;
+                let account: BareJID = cursor["account"]!;
                 let xmppClient = self.xmppService.getClient(account);
                 let presenceModule:PresenceModule? = xmppClient?.modulesManager.getModule(PresenceModule.ID);
                 let presence = presenceModule?.presenceStore.getBestPresence(jid);
-                cell.statusLabel.text = presence?.status ?? jidStr;
+                cell.statusLabel.text = presence?.status ?? jid.stringValue;
                 cell.avatarStatusView.setStatus(presence?.show);
                 cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.getAvatar(jid, account: account));
             }
@@ -106,8 +105,8 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
         let params:[String:Any?] = ["offset": indexPath.row];
         do {
             try rosterItemsList.query(params) { cursor -> Void in
-                let account = BareJID(cursor["account"]!);
-                let jid = JID(cursor["jid"]!);
+                let account: BareJID = cursor["account"]!;
+                let jid: JID = cursor["jid"]!;
                 let xmppClient = self.xmppService.getClient(account);
                 let messageModule:MessageModule? = xmppClient?.modulesManager.getModule(MessageModule.ID);
                 
@@ -136,8 +135,8 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
             let params:[String:Any?] = ["offset": indexPath.row];
             do {
                 try rosterItemsList.query(params) { cursor -> Void in
-                    let account = BareJID(cursor["account"]!);
-                    let jid = JID(cursor["jid"]!);
+                    let account: BareJID = cursor["account"]!;
+                    let jid: JID = cursor["jid"]!;
                     if let rosterModule:RosterModule = self.xmppService.getClient(account)?.modulesManager.getModule(RosterModule.ID) {
                         rosterModule.rosterStore.remove(jid, onSuccess: nil, onError: { (errorCondition) in
                             let alert = UIAlertController.init(title: "Failure", message: "Server returned error: " + (errorCondition?.rawValue ?? "Operation timed out"), preferredStyle: .Alert);
@@ -164,8 +163,8 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
             let params:[String:Any?] = ["offset": indexPath.row];
             do {
                 try rosterItemsList.query(params) { cursor -> Void in
-                    let account = BareJID(cursor["account"]!);
-                    let jid = JID(cursor["jid"]!);
+                    let account: BareJID = cursor["account"]!;
+                    let jid: JID = cursor["jid"]!;
                     self.openEditItem(account, jid: jid);
                 }
             } catch _ {

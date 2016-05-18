@@ -39,6 +39,11 @@
 		FE94E53C1CCBA74F00FAE755 /* Tigase_iOS_MessengerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE94E53B1CCBA74F00FAE755 /* Tigase_iOS_MessengerTests.swift */; };
 		FE94E5471CCBA74F00FAE755 /* Tigase_iOS_MessengerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE94E5461CCBA74F00FAE755 /* Tigase_iOS_MessengerUITests.swift */; };
 		FE94E55E1CCCC14E00FAE755 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FE94E55D1CCCC14E00FAE755 /* libsqlite3.tbd */; };
+		FEAC71771CECA09B00ABABEF /* MucChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC71761CECA09B00ABABEF /* MucChatTableViewCell.swift */; };
+		FEC514221CEA3D2F003AF765 /* DBRoomsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514211CEA3D2E003AF765 /* DBRoomsManager.swift */; };
+		FEC514241CEB2FF7003AF765 /* MucJoinViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514231CEB2FF7003AF765 /* MucJoinViewController.swift */; };
+		FEC514261CEB74F8003AF765 /* BaseChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514251CEB74F8003AF765 /* BaseChatViewController.swift */; };
+		FEC514281CEB82E9003AF765 /* MucChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514271CEB82E9003AF765 /* MucChatViewController.swift */; };
 		FEF80DB21CDBBBFE005645A7 /* AccountSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF80DB11CDBBBFE005645A7 /* AccountSettingsViewController.swift */; };
 		FEF80DB41CDCB5B4005645A7 /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF80DB31CDCB5B4005645A7 /* Reachability.swift */; };
 /* End PBXBuildFile section */
@@ -113,6 +118,11 @@
 		FE94E5481CCBA74F00FAE755 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FE94E55D1CCCC14E00FAE755 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		FE94E5621CCCC9D900FAE755 /* Tigase-iOS-Messenger-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Tigase-iOS-Messenger-Bridging-Header.h"; sourceTree = "<group>"; };
+		FEAC71761CECA09B00ABABEF /* MucChatTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatTableViewCell.swift; sourceTree = "<group>"; };
+		FEC514211CEA3D2E003AF765 /* DBRoomsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBRoomsManager.swift; sourceTree = "<group>"; };
+		FEC514231CEB2FF7003AF765 /* MucJoinViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucJoinViewController.swift; sourceTree = "<group>"; };
+		FEC514251CEB74F8003AF765 /* BaseChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewController.swift; sourceTree = "<group>"; };
+		FEC514271CEB82E9003AF765 /* MucChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatViewController.swift; sourceTree = "<group>"; };
 		FEF80DB11CDBBBFE005645A7 /* AccountSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountSettingsViewController.swift; sourceTree = "<group>"; };
 		FEF80DB31CDCB5B4005645A7 /* Reachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -152,6 +162,10 @@
 				FE5079FF1CDB7B3B001A015C /* ChatsListViewController.swift */,
 				FE507A001CDB7B3B001A015C /* ChatTableViewCell.swift */,
 				FE507A011CDB7B3B001A015C /* ChatViewController.swift */,
+				FEC514231CEB2FF7003AF765 /* MucJoinViewController.swift */,
+				FEC514251CEB74F8003AF765 /* BaseChatViewController.swift */,
+				FEC514271CEB82E9003AF765 /* MucChatViewController.swift */,
+				FEAC71761CECA09B00ABABEF /* MucChatTableViewCell.swift */,
 			);
 			path = chats;
 			sourceTree = "<group>";
@@ -164,6 +178,7 @@
 				FE507A051CDB7B3B001A015C /* DBManager.swift */,
 				FE507A061CDB7B3B001A015C /* DBRosterStore.swift */,
 				FE3024311CE2036A00466497 /* DBVCardsCache.swift */,
+				FEC514211CEA3D2E003AF765 /* DBRoomsManager.swift */,
 			);
 			path = database;
 			sourceTree = "<group>";
@@ -435,8 +450,11 @@
 				FE507A161CDB7B3B001A015C /* ChatsListViewController.swift in Sources */,
 				FE507A1F1CDB7B3B001A015C /* AccountTableViewCell.swift in Sources */,
 				FE507A171CDB7B3B001A015C /* ChatTableViewCell.swift in Sources */,
+				FEC514221CEA3D2F003AF765 /* DBRoomsManager.swift in Sources */,
 				FE507A181CDB7B3B001A015C /* ChatViewController.swift in Sources */,
+				FEC514241CEB2FF7003AF765 /* MucJoinViewController.swift in Sources */,
 				FE507A201CDB7B3B001A015C /* AddAccountController.swift in Sources */,
+				FEAC71771CECA09B00ABABEF /* MucChatTableViewCell.swift in Sources */,
 				FE507A151CDB7B3B001A015C /* ChatsListTableViewCell.swift in Sources */,
 				FE507A1C1CDB7B3B001A015C /* DBRosterStore.swift in Sources */,
 				FE94E5251CCBA74F00FAE755 /* AppDelegate.swift in Sources */,
@@ -445,7 +463,9 @@
 				FE507A1A1CDB7B3B001A015C /* DBChatStore.swift in Sources */,
 				FE507A251CDB7B3B001A015C /* AccountManager.swift in Sources */,
 				FE507A221CDB7B3B001A015C /* AvatarStatusView.swift in Sources */,
+				FEC514261CEB74F8003AF765 /* BaseChatViewController.swift in Sources */,
 				FE507A1D1CDB7B3B001A015C /* RosterItemTableViewCell.swift in Sources */,
+				FEC514281CEB82E9003AF765 /* MucChatViewController.swift in Sources */,
 				FEF80DB41CDCB5B4005645A7 /* Reachability.swift in Sources */,
 				FE3024321CE2036A00466497 /* DBVCardsCache.swift in Sources */,
 				FE507A1B1CDB7B3B001A015C /* DBManager.swift in Sources */,

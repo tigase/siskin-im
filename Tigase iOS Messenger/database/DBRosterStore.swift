@@ -91,7 +91,7 @@ public class DBRosterStore: RosterCacheProvider {
     
     public func addItem(sessionObject: SessionObject, item:RosterItem) {
         do {
-            let params:[String:Any?] = [ "account": sessionObject.userBareJid?.stringValue, "jid": item.jid.stringValue, "name": item.name, "subscription": String(item.subscription.rawValue), "timestamp": NSDate(), "ask": item.ask ];
+            let params:[String:Any?] = [ "account": sessionObject.userBareJid, "jid": item.jid, "name": item.name, "subscription": String(item.subscription.rawValue), "timestamp": NSDate(), "ask": item.ask ];
             var dbItem = item as? DBRosterItem ?? DBRosterItem(rosterItem: item);
             if dbItem.id == nil {
                 // adding roster item to DB
@@ -99,7 +99,7 @@ public class DBRosterStore: RosterCacheProvider {
             } else {
                 // updating roster item in DB
                 try updateItemStmt.execute(params);
-                let itemGroupsDeleteParams:[String:Any?] = ["account": sessionObject.userBareJid?.stringValue, "jid": dbItem.jid.stringValue];
+                let itemGroupsDeleteParams:[String:Any?] = ["account": sessionObject.userBareJid, "jid": dbItem.jid];
                 try deleteItemGroupsStmt.execute(itemGroupsDeleteParams);
             }
             
@@ -118,7 +118,7 @@ public class DBRosterStore: RosterCacheProvider {
     public func get(sessionObject: SessionObject, jid:JID) -> RosterItem? {
         var item:DBRosterItem? = nil;
         do {
-            let params:[String:Any?] = [ "account" : sessionObject.userBareJid?.stringValue, "jid" : jid.stringValue ];
+            let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : jid ];
             try getItemStmt.query(params) { cursor -> Void in
                 item = DBRosterItem(jid: jid, id: cursor["id"]!);
                 item?.name = cursor["name"];
@@ -135,7 +135,7 @@ public class DBRosterStore: RosterCacheProvider {
     }
     
     public func removeAll(sessionObject: SessionObject) {
-        let params:[String:Any?] = ["account": sessionObject.userBareJid?.stringValue];
+        let params:[String:Any?] = ["account": sessionObject.userBareJid];
         do {
             try deleteItemsGroupsStmt.execute(params);
             try deleteItemsStmt.execute(params);
@@ -146,7 +146,7 @@ public class DBRosterStore: RosterCacheProvider {
     
     public func removeItem(sessionObject: SessionObject, jid:JID) {
         do {
-            let params:[String:Any?] = ["account": sessionObject.userBareJid?.stringValue, "jid": jid.stringValue];
+            let params:[String:Any?] = ["account": sessionObject.userBareJid, "jid": jid];
             try deleteItemGroupsStmt.execute(params);
             try deleteItemStmt.execute(params);
         } catch _ {

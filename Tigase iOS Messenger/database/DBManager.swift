@@ -21,6 +21,7 @@
 
 
 import Foundation
+import TigaseSwift
 
 let SQLITE_TRANSIENT = unsafeBitCast(-1, sqlite3_destructor_type.self)
 
@@ -178,6 +179,8 @@ public class DBStatement {
             case let v as NSDate:
                 let timestamp = Int64(v.timeIntervalSince1970 * 1000);
                 r = sqlite3_bind_int64(handle, pos, timestamp);
+            case let v as StringValue:
+                r = sqlite3_bind_text(handle, pos, v.stringValue, -1, SQLITE_TRANSIENT);
             default:
                 throw DBResult.Error(message: "Unsupported type \(value.self) for parameter \(pos)", code: SQLITE_FAIL, statement: self);
             }
@@ -347,6 +350,20 @@ public class DBCursor {
         return NSDate(timeIntervalSince1970: timestamp);
     }
     
+    subscript(index: Int) -> JID? {
+        if let str:String = self[index] {
+            return JID(str);
+        }
+        return nil;
+    }
+
+    subscript(index: Int) -> BareJID? {
+        if let str:String = self[index] {
+            return BareJID(str);
+        }
+        return nil;
+    }
+    
     subscript(column: String) -> Double? {
         return forColumn(column) {
             return self[$0];
@@ -390,6 +407,18 @@ public class DBCursor {
     }
     
     subscript(column: String) -> NSDate? {
+        return forColumn(column) {
+            return self[$0];
+        }
+    }
+    
+    subscript(column: String) -> JID? {
+        return forColumn(column) {
+            return self[$0];
+        }
+    }
+
+    subscript(column: String) -> BareJID? {
         return forColumn(column) {
             return self[$0];
         }

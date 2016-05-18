@@ -33,8 +33,10 @@ class ChatsListViewController: UITableViewController, EventHandler {
         return appDelegate.xmppService;
     }
     
+    @IBOutlet var addMucButton: UIBarButtonItem!
+    
     lazy var countChats:DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) AS count FROM chats");
-    lazy var getChat:DBStatement! = try? self.dbConnection.prepareStatement("SELECT jid, account, timestamp, thread_id, (SELECT data FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND item_type = 0 ORDER BY timestamp DESC LIMIT 1) AS last_message, (SELECT count(ch.id) FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND state = 2) as unread, (SELECT name FROM roster_items ri WHERE ri.account = c.account AND ri.jid = c.jid) as name FROM chats as c ORDER BY timestamp DESC LIMIT 1 OFFSET :offset");
+    lazy var getChat:DBStatement! = try? self.dbConnection.prepareStatement("SELECT jid, account, timestamp, thread_id, type, (SELECT data FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND item_type = 0 ORDER BY timestamp DESC LIMIT 1) AS last_message, (SELECT count(ch.id) FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND state = 2) as unread, (SELECT name FROM roster_items ri WHERE ri.account = c.account AND ri.jid = c.jid) as name FROM chats as c ORDER BY timestamp DESC LIMIT 1 OFFSET :offset");
     lazy var getChatTimestampFromHistoryByAccountAndJidStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT timestamp FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp DESC LIMIT 1 OFFSET :offset")
     lazy var getChatTimestampByAccountAndJidStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT timestamp FROM chats WHERE account = :account AND jid = :jid")
     lazy var getChatPositionByTimestampStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM chats WHERE timestamp > :timestamp");
@@ -148,32 +150,47 @@ class ChatsListViewController: UITableViewController, EventHandler {
         }
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "showChatTableInDetailSegue" {
-            let cell = sender as! ChatsListTableViewCell;
-            if let indexPath = tableView.indexPathForCell(cell) {
-                let navigation = segue.destinationViewController as! UINavigationController;
-                let destination = navigation.visibleViewController as! ChatViewController;
-                destination.hidesBottomBarWhenPushed = true;
-                do {
-                    let params:[String:Any?] = ["offset": indexPath.row];
-                    try getChat.query(params) { (cursor)->Void in
-                        let accountStr:String = cursor["account"]!;
-                        let jidStr:String = cursor["jid"]!;
-                        let account = BareJID(accountStr);
-                        let jid = JID(jidStr);
-                        
-                        destination.account = account;
-                        destination.jid = jid;
-                        
-                        self.tableView.deselectRowAtIndexPath(indexPath, animated: true);
-                    }
-                } catch _ {
+    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        tableView.deselectRowAtIndexPath(indexPath, animated: true);
+        do {
+            let params:[String:Any?] = ["offset": indexPath.row];
+            try getChat.query(params) { (cursor)->Void in
+                let type: Int = cursor["type"]!;
+                let account: BareJID = cursor["account"]!;
+                let jid: JID = cursor["jid"]!;
+                
+                var identifier: String!;
+                switch type {
+                case 1:
+                    identifier = "RoomViewNavigationController";
+                default:
+                    identifier = "ChatViewNavigationController";
+                }
+                
+                let controller = self.storyboard?.instantiateViewControllerWithIdentifier(identifier);
+                let navigationController = controller as? UINavigationController;
+                let destination = navigationController?.visibleViewController ?? controller;
+                
+                if let baseChatViewController = destination as? BaseChatViewController {
+                    baseChatViewController.account = account;
+                    baseChatViewController.jid = jid;
+                }
+                destination?.hidesBottomBarWhenPushed = true;
+                if controller != nil {
+                    self.showDetailViewController(controller!, sender: self);
                 }
             }
+        } catch _ {
         }
-    }    
+        
+    }
 
+    @IBAction func addMucButtonClicked(sender: UIBarButtonItem) {
+        print("add MUC button clicked");
+        let navigation = storyboard?.instantiateViewControllerWithIdentifier("MucJoinNavigationController") as! UINavigationController;
+        self.showDetailViewController(navigation, sender: self);
+    }
+    
     func handleEvent(event: Event) {
         switch event {
         case is MessageModule.ChatCreatedEvent:

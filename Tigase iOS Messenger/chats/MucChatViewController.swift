@@ -1,5 +1,5 @@
 //
-// ChatViewController.swift
+// MucChatViewController.swift
 //
 // Tigase iOS Messenger
 // Copyright (C) 2016 "Tigase, Inc." <office@tigase.com>
@@ -19,11 +19,12 @@
 // If not, see http://www.gnu.org/licenses/.
 //
 
-
 import UIKit
 import TigaseSwift
 
-class ChatViewController : BaseChatViewController, UITableViewDataSource {
+class MucChatViewController: BaseChatViewController, UITableViewDataSource {
+
+    var room: Room?;
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,13 +34,15 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource {
         
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        let mucModule: MucModule? = xmppService.getClient(account)?.modulesManager?.getModule(MucModule.ID);
+        room = mucModule?.roomsManager.get(jid.bareJid);
     }
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated);
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
-
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(MucChatViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(MucChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
+        
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -77,13 +80,19 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource {
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        var cell:ChatTableViewCell? = nil;
+        var cell:MucChatTableViewCell? = nil;
         xmppService.dbChatHistoryStore.forEachMessage(account, jid: jid.bareJid, limit: 1, offset: indexPath.row) { (cursor) -> Void in
-            let incoming = (cursor["state"]! % 2) == 0;
-            let id = incoming ? "ChatTableViewCellIncoming" : "ChatTableViewCellOutgoing"
-            cell = tableView.dequeueReusableCellWithIdentifier(id, forIndexPath: indexPath) as? ChatTableViewCell;
+            let nickname: String? = cursor["author_nickname"];
+            let incoming = nickname != self.room?.nickname;
+            let id = incoming ? "MucChatTableViewCellIncoming" : "MucChatTableViewCellOutgoing"
+            cell = tableView.dequeueReusableCellWithIdentifier(id, forIndexPath: indexPath) as? MucChatTableViewCell;
             if cell != nil {
-                cell!.avatarView?.image = self.xmppService.avatarManager.getAvatar(self.jid.bareJid, account: self.account);
+                cell!.nicknameLabel?.text = nickname;
+                if let authorJid: BareJID = cursor["author_jid"] {
+                    cell!.avatarView?.image = self.xmppService.avatarManager.getAvatar(authorJid, account: self.account);
+                } else {
+                    cell!.avatarView?.image = self.xmppService.avatarManager.defaultAvatar;
+                }
                 cell!.messageTextView.text = cursor["data"];
                 cell!.setTimestamp(cursor["timestamp"]!);
             }
@@ -105,6 +114,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource {
     }
     
     func avatarChanged(notification: NSNotification) {
+        // TODO: adjust this to make it work properly with MUC
         guard ((notification.userInfo?["jid"] as? BareJID) == jid.bareJid) else {
             return;
         }
@@ -131,5 +141,5 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource {
             messageField.text = nil;
         }
     }
-    
+
 }

@@ -28,10 +28,10 @@ public class DBChatHistoryStore: Logger, EventHandler {
     public static let MESSAGE_NEW = "messengerMessageNew";
     public static let CHAT_ITEMS_UPDATED = "messengerChatUpdated";
     
-    private static let CHAT_MSG_APPEND = "INSERT INTO chat_history (account, jid, author_jid, timestamp, item_type, data, state) VALUES (:account, :jid, :author_jid, :timestamp, :item_type, :data, :state)";
+    private static let CHAT_MSG_APPEND = "INSERT INTO chat_history (account, jid, author_jid, author_nickname, timestamp, item_type, data, state) VALUES (:account, :jid, :author_jid, :author_nickname, :timestamp, :item_type, :data, :state)";
     private static let CHAT_MSGS_COUNT = "SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid";
     private static let CHAT_MSGS_COUNT_UNREAD_CHATS = "select count(1) FROM (SELECT account, jid FROM chat_history WHERE state = \(State.incoming_unread.rawValue) GROUP BY account, jid) as x";
-    private static let CHAT_MSGS_GET = "SELECT id, author_jid, timestamp, item_type, data, state FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp LIMIT :limit OFFSET :offset"
+    private static let CHAT_MSGS_GET = "SELECT id, author_jid, author_nickname, timestamp, item_type, data, state FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp LIMIT :limit OFFSET :offset"
     private static let CHAT_MSGS_MARK_AS_READ = "UPDATE chat_history SET state = \(State.incoming.rawValue) WHERE account = :account AND jid = :jid AND state = \(State.incoming_unread.rawValue)";
     
     private let dbConnection:DBConnection;
@@ -55,15 +55,12 @@ public class DBChatHistoryStore: Logger, EventHandler {
         }
         
         let incoming = message.from != nil && message.from?.bareJid.stringValue != account.stringValue;
-        let state = incoming ? State.incoming_unread : State.outgoing;
         let jid = incoming ? message.from?.bareJid : message.to?.bareJid
         let author = incoming ? message.from?.bareJid : account;
         let timestamp = message.delay?.stamp ?? NSDate();
-        let params:[String:Any?] = ["account" : account.stringValue, "jid" : jid?.stringValue, "author_jid" : author?.stringValue, "timestamp": timestamp, "item_type": ItemType.message.rawValue, "data": body, "state": state.rawValue]
-        try! msgAppendStmt.insert(params);
-        let cu_params:[String:Any?] = ["account" : account.stringValue, "jid" : jid?.stringValue, "timestamp" : timestamp ];
-        try! chatUpdateTimestamp.execute(cu_params);
         
+        appendEntry(account, jid: jid!, incoming: incoming, authorJid: author, data: body!, timestamp: timestamp);
+
         var userInfo:[NSObject:AnyObject] = ["account": account, "sender": jid!, "incoming": incoming, "timestamp": timestamp] ;
         if carbonAction != nil {
             userInfo["carbonAction"] = carbonAction!.rawValue;
@@ -71,13 +68,40 @@ public class DBChatHistoryStore: Logger, EventHandler {
         NSNotificationCenter.defaultCenter().postNotification(NSNotification(name: DBChatHistoryStore.MESSAGE_NEW, object: nil, userInfo: userInfo));
     }
     
+    private func appendMucMessage(e: MucModule.MessageReceivedEvent) {
+        let body = e.message.body;
+        guard body != nil else {
+            return;
+        }
+        
+        let account = e.sessionObject.userBareJid!;
+        let authorJid: BareJID? = e.nickname == nil ? nil : e.room.presences[e.nickname!]?.jid?.bareJid;
+        
+        appendEntry(account, jid: e.room.roomJid, incoming: true, authorJid: authorJid, authorNickname: e.nickname, data: body!, timestamp: e.timestamp);
+
+        var userInfo:[NSObject:AnyObject] = ["account": account, "sender": e.room.roomJid, "incoming": true, "timestamp": e.timestamp, "type": "muc", "body": body!] ;
+        if e.nickname != nil {
+            userInfo["senderName"] = e.nickname!;
+        }
+        userInfo["roomNickname"] = e.room.nickname;
+        NSNotificationCenter.defaultCenter().postNotification(NSNotification(name: DBChatHistoryStore.MESSAGE_NEW, object: nil, userInfo: userInfo));
+    }
+    
+    private func appendEntry(account: BareJID, jid: BareJID, incoming: Bool, authorJid: BareJID?, authorNickname: String? = nil, itemType: ItemType = ItemType.message, data: String, timestamp: NSDate) {
+        let state = incoming ? State.incoming_unread : State.outgoing;
+        let params:[String:Any?] = ["account" : account, "jid" : jid, "author_jid" : authorJid, "author_nickname": authorNickname, "timestamp": timestamp, "item_type": itemType.rawValue, "data": data, "state": state.rawValue]
+        try! msgAppendStmt.insert(params);
+        let cu_params:[String:Any?] = ["account" : account, "jid" : jid, "timestamp" : timestamp ];
+        try! chatUpdateTimestamp.execute(cu_params);
+    }
+    
     public func countMessages(account:BareJID, jid:BareJID) -> Int {
-        let params:[String:Any?] = ["account":account.stringValue, "jid":jid.stringValue];
+        let params:[String:Any?] = ["account":account, "jid":jid];
         return try! msgsCountStmt.scalar(params) ?? 0;
     }
     
     public func forEachMessage(account:BareJID, jid:BareJID, limit:Int, offset: Int, forEach: (cursor:DBCursor)->Void) {
-        let params:[String:Any?] = ["account":account.stringValue, "jid":jid.stringValue, "limit": limit, "offset": offset];
+        let params:[String:Any?] = ["account":account, "jid":jid, "limit": limit, "offset": offset];
         try! msgsGetStmt.query(params, forEachRow: forEach);
     }
     
@@ -87,6 +111,8 @@ public class DBChatHistoryStore: Logger, EventHandler {
             appendMessage(e.sessionObject.userBareJid!, message: e.message);
         case let e as MessageCarbonsModule.CarbonReceivedEvent:
             appendMessage(e.sessionObject.userBareJid!, message: e.message, carbonAction: e.action);
+        case let e as MucModule.MessageReceivedEvent:
+            appendMucMessage(e);
         default:
             log("received unsupported event", event);
         }
@@ -97,7 +123,7 @@ public class DBChatHistoryStore: Logger, EventHandler {
     }
     
     public func markAsRead(account: BareJID, jid: BareJID) {
-        let params:[String:Any?] = ["account":account.stringValue, "jid":jid.stringValue];
+        let params:[String:Any?] = ["account":account, "jid":jid];
         let updatedRecords = try! msgsMarkAsReadStmt.update(params);
         if updatedRecords > 0 {
             chatItemsChanged(account, jid: jid);

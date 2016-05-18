@@ -42,7 +42,7 @@ public class DBVCardsCache {
         let avatar_data = vcard?.photoValBinary;
         let avatar_hash:String? = Digest.SHA1.digestToHex(avatar_data);
         
-        let params:[String:Any?] = ["jid" : jid.stringValue, "data": vcard?.stringValue, "avatar": avatar_data, "avatar_hash": avatar_hash, "timestamp": NSDate()];
+        let params:[String:Any?] = ["jid" : jid, "data": vcard, "avatar": avatar_data, "avatar_hash": avatar_hash, "timestamp": NSDate()];
         if try! updateVCardStmt.update(params) == 0 {
             try! insertVCardStmt.insert(params);
         }
@@ -51,7 +51,7 @@ public class DBVCardsCache {
     }
     
     public func getVCard(jid: BareJID) -> VCardModule.VCard? {
-        if let data:String = try! getVCardStmt.query(jid.stringValue)?["data"] {
+        if let data:String = try! getVCardStmt.query(jid)?["data"] {
             if let vcardEl = Element.fromString(data) {
                 return VCardModule.VCard(element: vcardEl);
             }
@@ -60,13 +60,13 @@ public class DBVCardsCache {
     }
     
     public func checkVCardPhotoHash(jid: BareJID, hash: String) -> Bool {
-        let params:[String:Any?] = ["jid": jid.stringValue, "avatar_hash": hash.lowercaseString];
+        let params:[String:Any?] = ["jid": jid, "avatar_hash": hash.lowercaseString];
         let count = try! chechPhotoHashStmt.scalar(params);
         return count == 1;
     }
     
     public func getPhoto(jid: BareJID) -> NSData? {
-        let cursor = try! getPhotoStmt.query(jid.stringValue);
+        let cursor = try! getPhotoStmt.query(jid);
         return cursor?["avatar"];
     }
 }
