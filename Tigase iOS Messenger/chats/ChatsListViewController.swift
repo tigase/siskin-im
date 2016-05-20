@@ -57,7 +57,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
     }
     
     override func viewWillAppear(animated: Bool) {
-        xmppService.registerEventHandler(self, events: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE);
+        xmppService.registerEventHandler(self, events: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.NewRoomCreatedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
         tableView.reloadData();
         //(self.tabBarController as? CustomTabBarController)?.showTabBar();
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatsListViewController.newMessage), name: AvatarManager.AVATAR_CHANGED, object: nil);
@@ -66,7 +66,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
 
     override func viewDidDisappear(animated: Bool) {
         super.viewDidDisappear(animated);
-        xmppService.unregisterEventHandler(self, events: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE);
+        xmppService.unregisterEventHandler(self, events: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.NewRoomCreatedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
         NSNotificationCenter.defaultCenter().removeObserver(self, name: AvatarManager.AVATAR_CHANGED, object: nil);
     }
 
@@ -94,21 +94,30 @@ class ChatsListViewController: UITableViewController, EventHandler {
         let params:[String:Any?] = ["offset": indexPath.row];
         do {
             try getChat.query(params) { (cursor)->Void in
-                let account = BareJID(cursor["account"] ?? "");
-                let jidStr:String = cursor["jid"]!;
-                let jid = BareJID(jidStr);
+                let account: BareJID = cursor["account"]!;
+                let jid: BareJID = cursor["jid"]!;
                 let name:String? = cursor["name"];
                 let unread = cursor["unread"] ?? 0;
-                cell.nameLabel.text = cursor["name"] ?? jidStr;
-                cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.getAvatar(jid, account: account));
-                let last_message:String? = cursor["last_message"];
+                let type: Int = cursor["type"] ?? 0;
+                
+                cell.nameLabel.text = name ?? jid.stringValue;
+                let last_message: String? = cursor["last_message"];
                 cell.lastMessageLabel.text = last_message == nil ? nil : ((unread > 0 ? "" : "\u{2713}") + last_message!);
                 let formattedTS = self.formatTimestamp(cursor["timestamp"]!);
                 cell.timestampLabel.text = formattedTS;
+
                 let xmppClient = self.xmppService.getClient(account);
-                let presenceModule:PresenceModule? = xmppClient?.modulesManager.getModule(PresenceModule.ID);
-                let presence = presenceModule?.presenceStore.getBestPresence(jid);
-                cell.avatarStatusView.setStatus(presence?.show);
+                switch type {
+                case 1:
+                    let mucModule: MucModule? = xmppClient?.modulesManager.getModule(MucModule.ID);
+                    cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.defaultAvatar);
+                    cell.avatarStatusView.setStatus(mucModule?.roomsManager.get(jid)?.state == .joined ? Presence.Show.online : nil);
+                default:
+                    cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.getAvatar(jid, account: account));
+                    let presenceModule: PresenceModule? = xmppClient?.modulesManager.getModule(PresenceModule.ID);
+                    let presence = presenceModule?.presenceStore.getBestPresence(jid);
+                    cell.avatarStatusView.setStatus(presence?.show);
+                }
             }
         } catch _ {
             cell.nameLabel.text = "DBError";
@@ -130,18 +139,27 @@ class ChatsListViewController: UITableViewController, EventHandler {
                 do {
                     let params:[String:Any?] = ["offset": indexPath.row];
                     try getChat.query(params) { (cursor)->Void in
-                        let accountStr:String = cursor["account"]!;
-                        let jidStr:String = cursor["jid"]!;
-                        let account = BareJID(accountStr);
-                        let jid = JID(jidStr);
-                        let thread:String? = cursor["thread_id"];
-                        
+                        let account: BareJID = cursor["account"]!;
+                        let jid: JID = cursor["jid"]!;
+                        let type: Int = cursor["type"] ?? 0;
                         let xmppClient = self.xmppService.getClient(account);
-                        let messageModule:MessageModule? = xmppClient?.modulesManager.getModule(MessageModule.ID);
-                        if let chat = messageModule?.chatManager.getChat(jid, thread: thread) {
-                            self.closingChatPosition = try! self.getChatPositionByChatIdStmt.scalar(chat.id!);
-                            messageModule?.chatManager.close(chat);
-                            self.closingChatPosition = nil;
+
+                        switch type {
+                        case 1:
+                            let mucModule: MucModule? = xmppClient?.modulesManager.getModule(MucModule.ID);
+                            if let room = mucModule?.roomsManager.get(jid.bareJid) {
+                                self.closingChatPosition = try! self.getChatPositionByChatIdStmt.scalar(room.id!);
+                                mucModule?.leave(room);
+                                self.closingChatPosition = nil;
+                            }
+                        default:
+                            let thread: String? = cursor["thread_id"];
+                            let messageModule: MessageModule? = xmppClient?.modulesManager.getModule(MessageModule.ID);
+                            if let chat = messageModule?.chatManager.getChat(jid, thread: thread) {
+                                self.closingChatPosition = try! self.getChatPositionByChatIdStmt.scalar(chat.id!);
+                                messageModule?.chatManager.close(chat);
+                                self.closingChatPosition = nil;
+                            }
                         }
                     }
                 } catch _ {
@@ -211,11 +229,28 @@ class ChatsListViewController: UITableViewController, EventHandler {
             }
         case let e as PresenceModule.ContactPresenceChanged:
             //tableView.reloadData();
-            let timestamp: NSDate? = try! getChatTimestampByAccountAndJidStmt.query(e.sessionObject.userBareJid!.stringValue, e.presence.from!.bareJid.stringValue)?["timestamp"];
+            let timestamp: NSDate? = try! getChatTimestampByAccountAndJidStmt.query(e.sessionObject.userBareJid!, e.presence.from!.bareJid)?["timestamp"];
             if timestamp != nil && timestamp?.timeIntervalSince1970 != 0 {
                 let pos = try! getChatPositionByTimestampStmt.scalar(timestamp!);
                 let indexPath = NSIndexPath(forRow: pos!, inSection: 0);
                 tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic);
+            }
+        case let e as MucModule.NewRoomCreatedEvent:
+            let index = NSIndexPath(forRow: 0, inSection: 0);
+            tableView.insertRowsAtIndexPaths([index], withRowAnimation: UITableViewRowAnimation.Fade);
+        case let e as MucModule.YouJoinedEvent:
+            let timestamp: NSDate? = try! getChatTimestampByAccountAndJidStmt.query(e.sessionObject.userBareJid, e.room.roomJid)?["timestamp"];
+            if timestamp != nil && timestamp?.timeIntervalSince1970 != 0 {
+                let pos = try! getChatPositionByTimestampStmt.scalar(timestamp!);
+                let indexPath = NSIndexPath(forRow: pos!, inSection: 0);
+                tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic);
+            }
+        case let e as MucModule.RoomClosedEvent:
+            if closingChatPosition != nil {
+                let indexPath = NSIndexPath(forRow: closingChatPosition!, inSection: 0);
+                tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade);
+            } else {
+                tableView.reloadData();
             }
         default:
             break;

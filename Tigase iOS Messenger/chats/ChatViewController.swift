@@ -102,6 +102,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource {
         let indexPath = NSIndexPath(forRow: pos, inSection: 0);
         tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Bottom);
         self.tableView.scrollToRowAtIndexPath(indexPath, atScrollPosition: .None, animated: false);
+        xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
     }
     
     func avatarChanged(notification: NSNotification) {

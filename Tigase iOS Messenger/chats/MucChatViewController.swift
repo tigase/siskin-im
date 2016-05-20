@@ -102,8 +102,19 @@ class MucChatViewController: BaseChatViewController, UITableViewDataSource {
         return cell!;
     }
     
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "showOccupants" {
+            if let navigation = segue.destinationViewController as? UINavigationController {
+                if let occupantsController = navigation.visibleViewController as? MucChatOccupantsTableViewController {
+                    occupantsController.room = room;
+                    occupantsController.account = account;
+                }
+            }
+        }
+    }
+    
     func newMessage(notification: NSNotification) {
-        guard ((notification.userInfo?["account"] as? BareJID) == account) && ((notification.userInfo?["jid"] as? BareJID) == jid.bareJid) else {
+        guard ((notification.userInfo?["account"] as? BareJID) == account) && ((notification.userInfo?["sender"] as? BareJID) == jid.bareJid) else {
             return;
         }
         //reloadData();
@@ -111,6 +122,7 @@ class MucChatViewController: BaseChatViewController, UITableViewDataSource {
         let indexPath = NSIndexPath(forRow: pos, inSection: 0);
         tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Bottom);
         self.tableView.scrollToRowAtIndexPath(indexPath, atScrollPosition: .None, animated: false);
+        xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
     }
     
     func avatarChanged(notification: NSNotification) {
@@ -133,13 +145,12 @@ class MucChatViewController: BaseChatViewController, UITableViewDataSource {
         guard !(text?.isEmpty != false) else {
             return;
         }
-        
-        let messageModule:MessageModule? = xmppService.getClient(account)?.modulesManager.getModule(MessageModule.ID);
-        if let chat = messageModule?.chatManager.getChat(jid, thread: nil) {
-            let msg = messageModule!.sendMessage(chat, body: text!);
-            xmppService.dbChatHistoryStore.appendMessage(account, message: msg);
-            messageField.text = nil;
-        }
-    }
 
+        guard room?.state == .joined else {
+            return;
+        }
+        room!.sendMessage(text);
+        messageField.text = nil;
+    }
+    
 }

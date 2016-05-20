@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS chat_history (
     timestamp INTEGER,
     item_type INTEGER,
     data TEXT,
+    stanza_id TEXT,
     state INTEGER
 );
 

@@ -40,6 +40,8 @@
 		FE94E5471CCBA74F00FAE755 /* Tigase_iOS_MessengerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE94E5461CCBA74F00FAE755 /* Tigase_iOS_MessengerUITests.swift */; };
 		FE94E55E1CCCC14E00FAE755 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FE94E55D1CCCC14E00FAE755 /* libsqlite3.tbd */; };
 		FEAC71771CECA09B00ABABEF /* MucChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC71761CECA09B00ABABEF /* MucChatTableViewCell.swift */; };
+		FEAC71791CECE50400ABABEF /* MucChatOccupantsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */; };
+		FEAC717B1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */; };
 		FEC514221CEA3D2F003AF765 /* DBRoomsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514211CEA3D2E003AF765 /* DBRoomsManager.swift */; };
 		FEC514241CEB2FF7003AF765 /* MucJoinViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514231CEB2FF7003AF765 /* MucJoinViewController.swift */; };
 		FEC514261CEB74F8003AF765 /* BaseChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514251CEB74F8003AF765 /* BaseChatViewController.swift */; };
@@ -119,6 +121,8 @@
 		FE94E55D1CCCC14E00FAE755 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		FE94E5621CCCC9D900FAE755 /* Tigase-iOS-Messenger-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Tigase-iOS-Messenger-Bridging-Header.h"; sourceTree = "<group>"; };
 		FEAC71761CECA09B00ABABEF /* MucChatTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatTableViewCell.swift; sourceTree = "<group>"; };
+		FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatOccupantsTableViewController.swift; sourceTree = "<group>"; };
+		FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatOccupantsTableViewCell.swift; sourceTree = "<group>"; };
 		FEC514211CEA3D2E003AF765 /* DBRoomsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBRoomsManager.swift; sourceTree = "<group>"; };
 		FEC514231CEB2FF7003AF765 /* MucJoinViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucJoinViewController.swift; sourceTree = "<group>"; };
 		FEC514251CEB74F8003AF765 /* BaseChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewController.swift; sourceTree = "<group>"; };
@@ -166,6 +170,8 @@
 				FEC514251CEB74F8003AF765 /* BaseChatViewController.swift */,
 				FEC514271CEB82E9003AF765 /* MucChatViewController.swift */,
 				FEAC71761CECA09B00ABABEF /* MucChatTableViewCell.swift */,
+				FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */,
+				FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */,
 			);
 			path = chats;
 			sourceTree = "<group>";
@@ -442,6 +448,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FEAC71791CECE50400ABABEF /* MucChatOccupantsTableViewController.swift in Sources */,
+				FEAC717B1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift in Sources */,
 				FE3A45CF1CE49D3300C36264 /* RosterItemEditViewController.swift in Sources */,
 				FE507A211CDB7B3B001A015C /* SettingsViewController.swift in Sources */,
 				FE507A191CDB7B3B001A015C /* DBChatHistoryStore.swift in Sources */,
