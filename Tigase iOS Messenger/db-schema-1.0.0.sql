@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS chat_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     account TEXT NOT NULL,
     jid TEXT NOT NULL,
-    author_jid TEXT NULL,
+    author_jid TEXT,
     author_nickname TEXT,
     timestamp INTEGER,
     item_type INTEGER,

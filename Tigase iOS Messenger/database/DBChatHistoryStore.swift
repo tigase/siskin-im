@@ -28,12 +28,12 @@ public class DBChatHistoryStore: Logger, EventHandler {
     public static let MESSAGE_NEW = "messengerMessageNew";
     public static let CHAT_ITEMS_UPDATED = "messengerChatUpdated";
     
-    private static let CHAT_MSG_APPEND = "INSERT INTO chat_history (account, jid, author_jid, author_nickname, timestamp, item_type, data, state) VALUES (:account, :jid, :author_jid, :author_nickname, :timestamp, :item_type, :data, :state)";
+    private static let CHAT_MSG_APPEND = "INSERT INTO chat_history (account, jid, author_jid, author_nickname, timestamp, item_type, data, stanza_id, state) VALUES (:account, :jid, :author_jid, :author_nickname, :timestamp, :item_type, :data, :stanza_id, :state)";
     private static let CHAT_MSGS_COUNT = "SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid";
     private static let CHAT_MSGS_COUNT_UNREAD_CHATS = "select count(1) FROM (SELECT account, jid FROM chat_history WHERE state = \(State.incoming_unread.rawValue) GROUP BY account, jid) as x";
     private static let CHAT_MSGS_GET = "SELECT id, author_jid, author_nickname, timestamp, item_type, data, state FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp LIMIT :limit OFFSET :offset"
     private static let CHAT_MSGS_MARK_AS_READ = "UPDATE chat_history SET state = \(State.incoming.rawValue) WHERE account = :account AND jid = :jid AND state = \(State.incoming_unread.rawValue)";
-    private static let MSG_ALREADY_ADDED = "SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND timestamp BETWEEN :ts_from AND :ts_to AND item_type = :item_type AND data = :data AND (:stanzaId IS NULL OR stanza_id = :stanza_id) AND (:item_type <> 0 OR author_jid = :author_jid) AND (:item_type <> 1 OR author_nickname = :author_nickname)";
+    private static let MSG_ALREADY_ADDED = "SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND timestamp BETWEEN :ts_from AND :ts_to AND item_type = :item_type AND data = :data AND (:stanza_id IS NULL OR (stanza_id IS NOT NULL AND stanza_id = :stanza_id)) AND (:item_type <> 0 OR author_jid = :author_jid) AND (:item_type <> 1 OR author_nickname = :author_nickname)";
     
     private let dbConnection:DBConnection;
     
@@ -97,23 +97,21 @@ public class DBChatHistoryStore: Logger, EventHandler {
         }
         
         let state = incoming ? State.incoming_unread : State.outgoing;
-        let params:[String:Any?] = ["account" : account, "jid" : jid, "author_jid" : authorJid, "author_nickname": authorNickname, "timestamp": timestamp, "item_type": itemType.rawValue, "data": data, "state": state.rawValue]
+        let params:[String:Any?] = ["account" : account, "jid" : jid, "author_jid" : authorJid, "author_nickname": authorNickname, "timestamp": timestamp, "item_type": itemType.rawValue, "data": data, "state": state.rawValue, "stanza_id": id]
         let insertedId = try! msgAppendStmt.insert(params);
         let cu_params:[String:Any?] = ["account" : account, "jid" : jid, "timestamp" : timestamp ];
         try! chatUpdateTimestamp.execute(cu_params);
-        return insertedId != 0;
+        return true;
     }
     
     private func isEntryAlreadyAdded(account: BareJID, jid: BareJID, authorJid: BareJID?, authorNickname: String? = nil, itemType: ItemType, data: String, timestamp: NSDate, id: String?) -> Bool {
-        
-        "SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND timestamp BETWEEN :ts_from AND :ts_to AND item_type = :item_type AND data = :data AND (:stanza_id IS NULL OR stanza_id = :stanza_id) AND (:item_type <> 0 OR author_jid = :author_jid) AND (:item_type <> 1 OR author_nickname = :author_nickname)"
         
         let range = id == nil ? 5.0 : 60.0;
         let ts_from = timestamp.dateByAddingTimeInterval(-60 * range);
         let ts_to = timestamp.dateByAddingTimeInterval(60 * range);
         
         let params:[String:Any?] = ["account": account, "jid": jid, "ts_from": ts_from, "ts_to": ts_to, "item_type": itemType.rawValue, "data": data, "stanza_id": id, "author_jid": authorJid, "author_nickname": authorNickname];
-        return try! msgAlreadyAddedStmt.scalar(params) == 0;
+        return try! msgAlreadyAddedStmt.scalar(params) != 0;
     }
     
     public func countMessages(account:BareJID, jid:BareJID) -> Int {

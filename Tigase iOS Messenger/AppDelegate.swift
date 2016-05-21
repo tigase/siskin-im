@@ -44,7 +44,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         xmppService.updateJaxmppInstance();
         application.registerUserNotificationSettings(UIUserNotificationSettings(forTypes: [.Alert, .Badge, .Sound], categories: nil));
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.newMessage), name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil);
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.chatItemsUpdated), name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil);
         
         updateApplicationIconBadgeNumber();
         return true
@@ -59,6 +59,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
         xmppService.applicationState = .inactive;
+        application.setKeepAliveTimeout(600) {
+            print("background execution handled called!");
+        }
     }
 
     func applicationWillEnterForeground(application: UIApplication) {
@@ -130,5 +133,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let unreadChats = xmppService.dbChatHistoryStore.countUnreadChats();
         UIApplication.sharedApplication().applicationIconBadgeNumber = unreadChats;
     }
+
 }
 

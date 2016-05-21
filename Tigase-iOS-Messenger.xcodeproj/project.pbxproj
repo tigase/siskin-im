@@ -626,14 +626,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer: andrzej@hi-low.eu (6X33GBJ8KU)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				HEADER_SEARCH_PATHS = "$(SDK_DIR)/usr/include";
 				INFOPLIST_FILE = "Tigase iOS Messenger/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "tigase.Tigase-iOS-Messenger";
 				PRODUCT_NAME = "Tigase-iOS-Messenger";
-				PROVISIONING_PROFILE = "a8c380d2-2b7e-46d8-b178-ccdf505fd22c";
+				PROVISIONING_PROFILE = "";
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/Modules/";
 			};
 			name = Debug;
@@ -642,14 +642,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer: andrzej@hi-low.eu (6X33GBJ8KU)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				HEADER_SEARCH_PATHS = "$(SDK_DIR)/usr/include";
 				INFOPLIST_FILE = "Tigase iOS Messenger/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "tigase.Tigase-iOS-Messenger";
 				PRODUCT_NAME = "Tigase-iOS-Messenger";
-				PROVISIONING_PROFILE = "a8c380d2-2b7e-46d8-b178-ccdf505fd22c";
+				PROVISIONING_PROFILE = "";
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/Modules/";
 			};
 			name = Release;

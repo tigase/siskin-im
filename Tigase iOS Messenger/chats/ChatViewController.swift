@@ -94,7 +94,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource {
     }
     
     func newMessage(notification: NSNotification) {
-        guard ((notification.userInfo?["account"] as? BareJID) == account) && ((notification.userInfo?["jid"] as? BareJID) == jid.bareJid) else {
+        guard ((notification.userInfo?["account"] as? BareJID) == account) && ((notification.userInfo?["sender"] as? BareJID) == jid.bareJid) else {
             return;
         }
         //reloadData();
