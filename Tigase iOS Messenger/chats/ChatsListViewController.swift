@@ -57,8 +57,8 @@ class ChatsListViewController: UITableViewController, EventHandler {
     }
     
     override func viewWillAppear(animated: Bool) {
-        xmppService.registerEventHandler(self, events: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.NewRoomCreatedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
         tableView.reloadData();
+        xmppService.registerEventHandler(self, events: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
         //(self.tabBarController as? CustomTabBarController)?.showTabBar();
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatsListViewController.newMessage), name: AvatarManager.AVATAR_CHANGED, object: nil);
         super.viewWillAppear(animated);
@@ -66,7 +66,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
 
     override func viewDidDisappear(animated: Bool) {
         super.viewDidDisappear(animated);
-        xmppService.unregisterEventHandler(self, events: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.NewRoomCreatedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
+        xmppService.unregisterEventHandler(self, events: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
         NSNotificationCenter.defaultCenter().removeObserver(self, name: AvatarManager.AVATAR_CHANGED, object: nil);
     }
 
@@ -181,6 +181,22 @@ class ChatsListViewController: UITableViewController, EventHandler {
                 switch type {
                 case 1:
                     identifier = "RoomViewNavigationController";
+                    let client = self.xmppService.getClient(account);
+                    let mucModule: MucModule? = client?.modulesManager?.getModule(MucModule.ID);
+                    let room = mucModule?.roomsManager.get(jid.bareJid);
+                    guard room != nil else {
+                        if client == nil {
+                            let alert = UIAlertController.init(title: "Warning", message: "Account is disabled.\nDo you want to enable account?", preferredStyle: .Alert);
+                            alert.addAction(UIAlertAction(title: "No", style: .Cancel, handler: nil));
+                            alert.addAction(UIAlertAction(title: "Yes", style: .Default, handler: {(alertAction) in
+                                if let accountInstance = AccountManager.getAccount(account.stringValue) {
+                                    accountInstance.active = true;
+                                    AccountManager.updateAccount(accountInstance);
+                                }
+                            }));
+                        }
+                        return;
+                    }
                 default:
                     identifier = "ChatViewNavigationController";
                 }
@@ -194,6 +210,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
                     baseChatViewController.jid = jid;
                 }
                 destination?.hidesBottomBarWhenPushed = true;
+                
                 if controller != nil {
                     self.showDetailViewController(controller!, sender: self);
                 }
@@ -235,7 +252,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
                 let indexPath = NSIndexPath(forRow: pos!, inSection: 0);
                 tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic);
             }
-        case let e as MucModule.NewRoomCreatedEvent:
+        case let e as MucModule.JoinRequestedEvent:
             let index = NSIndexPath(forRow: 0, inSection: 0);
             tableView.insertRowsAtIndexPaths([index], withRowAnimation: UITableViewRowAnimation.Fade);
         case let e as MucModule.YouJoinedEvent:

@@ -84,7 +84,8 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource {
             cell = tableView.dequeueReusableCellWithIdentifier(id, forIndexPath: indexPath) as? ChatTableViewCell;
             if cell != nil {
                 cell!.avatarView?.image = self.xmppService.avatarManager.getAvatar(self.jid.bareJid, account: self.account);
-                cell!.messageTextView.text = cursor["data"];
+                let text: String? = cursor["data"];
+                cell!.setMessageText(text);
                 cell!.setTimestamp(cursor["timestamp"]!);
             }
         }
@@ -125,11 +126,32 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource {
             return;
         }
         
-        let messageModule:MessageModule? = xmppService.getClient(account)?.modulesManager.getModule(MessageModule.ID);
-        if let chat = messageModule?.chatManager.getChat(jid, thread: nil) {
-            let msg = messageModule!.sendMessage(chat, body: text!);
-            xmppService.dbChatHistoryStore.appendMessage(account, message: msg);
-            messageField.text = nil;
+        let client = xmppService.getClient(account);
+        if client != nil && client!.state == .connected {
+            let messageModule:MessageModule? = client?.modulesManager.getModule(MessageModule.ID);
+            if let chat = messageModule?.chatManager.getChat(jid, thread: nil) {
+                let msg = messageModule!.sendMessage(chat, body: text!);
+                xmppService.dbChatHistoryStore.appendMessage(account, message: msg);
+                messageField.text = nil;
+            }
+        } else {
+            var alert: UIAlertController? = nil;
+            if client == nil {
+                alert = UIAlertController.init(title: "Warning", message: "Account is disabled.\nDo you want to enable account?", preferredStyle: .Alert);
+                alert?.addAction(UIAlertAction(title: "No", style: .Cancel, handler: nil));
+                alert?.addAction(UIAlertAction(title: "Yes", style: .Default, handler: {(alertAction) in
+                    if let account = AccountManager.getAccount(self.account.stringValue) {
+                        account.active = true;
+                        AccountManager.updateAccount(account);
+                    }
+                }));
+            } else if client?.state != .connected {
+                alert = UIAlertController.init(title: "Warning", message: "Account is disconnected.\nPlease wait until account will reconnect", preferredStyle: .Alert);
+                alert?.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil));
+            }
+            if alert != nil {
+                self.presentViewController(alert!, animated: true, completion: nil);
+            }
         }
     }
     

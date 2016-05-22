@@ -93,7 +93,7 @@ class MucChatViewController: BaseChatViewController, UITableViewDataSource {
                 } else {
                     cell!.avatarView?.image = self.xmppService.avatarManager.defaultAvatar;
                 }
-                cell!.messageTextView.text = cursor["data"];
+                cell!.setMessageText(cursor["data"]);
                 cell!.setTimestamp(cursor["timestamp"]!);
             }
         }
@@ -147,6 +147,9 @@ class MucChatViewController: BaseChatViewController, UITableViewDataSource {
         }
 
         guard room?.state == .joined else {
+            var alert: UIAlertController?  = UIAlertController.init(title: "Warning", message: "You are not connected to room.\nPlease wait reconnection to room", preferredStyle: .Alert);
+            alert?.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil));
+            self.presentViewController(alert!, animated: true, completion: nil);
             return;
         }
         room!.sendMessage(text);

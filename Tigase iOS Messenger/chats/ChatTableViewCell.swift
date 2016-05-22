@@ -28,7 +28,9 @@ class ChatTableViewCell: UITableViewCell {
     @IBOutlet var messageTextView: UILabel!
     @IBOutlet var messageFrameView: UIView!
     @IBOutlet var timestampView: UILabel!
- 
+    
+    private var longPressGestureRecognizer: UILongPressGestureRecognizer!;
+    
     private static let todaysFormatter = ({()-> NSDateFormatter in
         var f = NSDateFormatter();
         f.dateStyle = .NoStyle;
@@ -74,6 +76,9 @@ class ChatTableViewCell: UITableViewCell {
             avatarView!.layer.masksToBounds = true;
             avatarView!.layer.cornerRadius = avatarView!.frame.height / 2;
         }
+        longPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressDidFire));
+//        longPressGestureRecognizer.delegate = self;
+        messageTextView.addGestureRecognizer(longPressGestureRecognizer);
     }
 
     override func setSelected(selected: Bool, animated: Bool) {
@@ -86,4 +91,52 @@ class ChatTableViewCell: UITableViewCell {
         timestampView.text = formatTimestamp(ts);
     }
 
+    func setMessageText(text: String?) {
+        if text != nil && (text!.containsString("http:") || text!.containsString("https://")) {
+            var attrText = NSMutableAttributedString(string: text!);
+            
+            if let detect = try? NSDataDetector(types: NSTextCheckingType.Link.rawValue | NSTextCheckingType.PhoneNumber.rawValue | NSTextCheckingType.Address.rawValue) {
+                let matches = detect.matchesInString(text!, options: .ReportCompletion, range: NSMakeRange(0, text!.characters.count));
+                for match in matches {
+                    if match.URL != nil {
+                        attrText.addAttribute(NSLinkAttributeName, value: match.URL!, range: match.range);
+                    }
+                    if match.phoneNumber != nil {
+                        attrText.addAttribute(NSLinkAttributeName, value: NSURL(string: "tel:\(match.phoneNumber!)")!, range: match.range);
+                    }
+                    if match.addressComponents != nil {
+                        let query = match.addressComponents?.values.joinWithSeparator(",").stringByAddingPercentEncodingWithAllowedCharacters(.URLHostAllowedCharacterSet());
+                        attrText.addAttribute(NSLinkAttributeName, value: NSURL(string: "http://maps.apple.com/?q=\(query)")!, range: match.range);
+                    }
+                }
+            }
+            self.messageTextView.attributedText = attrText;
+        } else {
+            self.messageTextView.text = text;
+        }
+    }
+    
+    func longPressDidFire(recognizer: UILongPressGestureRecognizer) {
+        switch recognizer.state {
+        case .Began:
+            guard self.messageTextView.attributedText != nil else {
+                return;
+            }
+            
+            let point = recognizer.locationInView(self.messageTextView);
+            let layoutManager = NSLayoutManager();
+            let textStorage = NSTextStorage(attributedString: self.messageTextView.attributedText!);
+            textStorage.addLayoutManager(layoutManager);
+            let textContainer = NSTextContainer(size: self.messageTextView.bounds.size);
+            textContainer.lineFragmentPadding = 0;
+            textContainer.lineBreakMode = self.messageTextView.lineBreakMode;
+            layoutManager.addTextContainer(textContainer);
+            let idx = layoutManager.characterIndexForPoint(point, inTextContainer: textContainer, fractionOfDistanceBetweenInsertionPoints: nil);
+            if let url = self.messageTextView.attributedText?.attribute(NSLinkAttributeName, atIndex: idx, effectiveRange: nil) as? NSURL {
+                UIApplication.sharedApplication().openURL(url);
+            }
+        default:
+            break;
+        }
+    }
 }

@@ -43,6 +43,9 @@ class MucJoinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         accountPicker.dataSource = self;
         accountPicker.delegate = self;
         self.accountTextField.inputView = accountPicker;
+        let accounts = AccountManager.getAccounts();
+        // by default select first account
+        self.accountTextField.text = accounts[0];
         self.accountTextField.addTarget(self, action: #selector(MucJoinViewController.textFieldDidChange), forControlEvents: UIControlEvents.EditingChanged);
         self.serverTextField.addTarget(self, action: #selector(MucJoinViewController.textFieldDidChange), forControlEvents: UIControlEvents.EditingChanged);
         self.roomTextField.addTarget(self, action: #selector(MucJoinViewController.textFieldDidChange), forControlEvents: UIControlEvents.EditingChanged);
@@ -69,16 +72,34 @@ class MucJoinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         guard accountTextField.text?.isEmpty == false && serverTextField.text?.isEmpty == false && roomTextField.text?.isEmpty == false &&  nicknameTextField.text?.isEmpty == false else {
             return;
         }
-        let account = BareJID(accountTextField.text!);
+        let accountJid = BareJID(accountTextField.text!);
         let server = serverTextField.text!;
         let room = roomTextField.text!;
         let nickname = nicknameTextField.text!;
         let password = passwordTextField.text!;
         
-        let client = xmppService.getClient(account);
+        let client = xmppService.getClient(accountJid);
         if let mucModule: MucModule = client?.modulesManager.getModule(MucModule.ID) {
             mucModule.join(room, mucServer: server, nickname: nickname, password: password);
             self.navigationController?.popViewControllerAnimated(true);
+        } else {
+            var alert: UIAlertController? = nil;
+            if client == nil {
+                alert = UIAlertController.init(title: "Warning", message: "Account is disabled.\nDo you want to enable account?", preferredStyle: .Alert);
+                alert?.addAction(UIAlertAction(title: "No", style: .Cancel, handler: nil));
+                alert?.addAction(UIAlertAction(title: "Yes", style: .Default, handler: {(alertAction) in
+                    if let account = AccountManager.getAccount(accountJid.stringValue) {
+                        account.active = true;
+                        AccountManager.updateAccount(account);
+                    }
+                }));
+            } else if client?.state != .connected {
+                alert = UIAlertController.init(title: "Warning", message: "Account is disconnected.\nPlease wait until account will reconnect", preferredStyle: .Alert);
+                alert?.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil));
+            }
+            if alert != nil {
+                self.presentViewController(alert!, animated: true, completion: nil);
+            }
         }
     }
 
