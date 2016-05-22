@@ -89,6 +89,7 @@ public class XmppService: Logger, EventHandler {
                 return;
             }
             client = XMPPClient()
+            client!.keepaliveTimeout = 0;
             registerModules(client!);
             registerEventHandlers(client!);
         } else {
@@ -131,6 +132,7 @@ public class XmppService: Logger, EventHandler {
         client.modulesManager.register(SoftwareVersionModule());
         client.modulesManager.register(VCardModule());
         client.modulesManager.register(MobileModeModule());
+        client.modulesManager.register(PingModule());
         let rosterModule =  client.modulesManager.register(RosterModule());
         rosterModule.rosterStore = DBRosterStoreWrapper(sessionObject: client.sessionObject, store: dbRosterStore);
         rosterModule.versionProvider = dbRosterStore;
@@ -190,6 +192,12 @@ public class XmppService: Logger, EventHandler {
             reconnectMucRooms(e.sessionObject.userBareJid!);
         default:
             log("received unsupported event", event);
+        }
+    }
+    
+    public func keepalive() {
+        for client in clients.values {
+            client.keepalive();
         }
     }
     

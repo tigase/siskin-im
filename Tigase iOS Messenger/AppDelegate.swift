@@ -61,6 +61,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         xmppService.applicationState = .inactive;
         application.setKeepAliveTimeout(600) {
             print("background execution handled called!");
+            // this will fire once every 10 minutes - this is as frequent as possible
+            // due to restrictions enforced by OS.
+            self.xmppService.keepalive();
         }
     }
 
