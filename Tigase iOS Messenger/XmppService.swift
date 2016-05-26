@@ -56,6 +56,9 @@ public class XmppService: Logger, EventHandler {
         }
     }
     
+    private var backgroundFetchCompletionHandler: ((UIBackgroundFetchResult)->Void)?;
+    private var backgroundFetchTimer: Timer?;
+    
     init(dbConnection:DBConnection) {
         self.dbConnection = dbConnection;
         self.dbChatStore = DBChatStore(dbConnection: dbConnection);
@@ -252,6 +255,55 @@ public class XmppService: Logger, EventHandler {
     
     @objc public func connectivityChanged(notification: NSNotification) {
         self.networkAvailable = notification.userInfo!["connected"] as! Bool;
+    }
+    
+    public func preformFetch(completionHandler: (UIBackgroundFetchResult)->Void) {
+        guard applicationState != .active else {
+            print("skipping background fetch as application is active");
+            completionHandler(.NewData);
+            return;
+        }
+        guard networkAvailable == true else {
+            print("skipping background fetch as network is not available");
+            completionHandler(.Failed);
+            return;
+        }
+        
+        // count connections which needs to resume
+        var count = 0;
+        for client in clients.values {
+            // try to send keepalive to ensure connection is valid
+            // if it fails it will try to resume connection
+            client.keepalive();
+            if client.state != .connected {
+                if client.state == .disconnected {
+                    client.login();
+                }
+                count += 1;
+            }
+        }
+        
+        // we need to give connections time to read and process data
+        // so event if all are connected lets wait 5secs
+        self.backgroundFetchCompletionHandler = completionHandler;
+        backgroundFetchTimer = Timer(delayInSeconds: count > 0 ? 25 : 5, repeats: false, callback: {
+            self.backgroundFetchTimedOut();
+        });
+    }
+
+    private func backgroundFetchTimedOut() {
+        let callback = backgroundFetchCompletionHandler;
+        backgroundFetchCompletionHandler = nil;
+        if applicationState != .active {
+            // do not close here - may be race condtion with opening of an app!
+            //disconnectClients(true);
+            for client in clients.values {
+                if client.state == .connected {
+                    client.keepalive();
+                }
+            }
+        }
+        callback?(.NewData);
     }
     
     private func connectClients() {

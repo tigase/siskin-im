@@ -47,6 +47,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.chatItemsUpdated), name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil);
         
         updateApplicationIconBadgeNumber();
+        
+        // TODO: for now lets set 60, however we should use 600 in future
+        application.setMinimumBackgroundFetchInterval(60);
         return true
     }
 
@@ -59,12 +62,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
         xmppService.applicationState = .inactive;
-        application.setKeepAliveTimeout(600) {
-            print("background execution handled called!");
-            // this will fire once every 10 minutes - this is as frequent as possible
-            // due to restrictions enforced by OS.
-            self.xmppService.keepalive();
-        }
     }
 
     func applicationWillEnterForeground(application: UIApplication) {
@@ -83,6 +80,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
         updateApplicationIconBadgeNumber();
         print("notification clicked", notification.userInfo);
+    }
+    
+    func application(application: UIApplication, performFetchWithCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
+        let fetchStart = NSDate();
+        xmppService.preformFetch({(result) in
+            completionHandler(result);
+            let fetchEnd = NSDate();
+            let time = fetchEnd.timeIntervalSinceDate(fetchStart);
+            print("fetched date in \(time) seconds with result = \(result)");
+        });
     }
     
     func newMessage(notification: NSNotification) {
