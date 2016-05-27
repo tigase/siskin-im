@@ -25,11 +25,15 @@ import TigaseSwift
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
+    
     var window: UIWindow?
     var xmppService:XmppService!;
     var dbConnection:DBConnection!;
+    var defaultKeepOnlineOnAwayTime = NSTimeInterval(3 * 60);
+    var keepOnlineOnAwayTimer: Timer?;
     
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+        Log.initialize();
         do {
             dbConnection = try DBConnection(dbFilename: "mobile_messenger1.db");
             let resourcePath = NSBundle.mainBundle().resourcePath! + "/db-schema-1.0.0.sql";
@@ -60,12 +64,38 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationDidEnterBackground(application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
+        
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
         xmppService.applicationState = .inactive;
+        
+        self.keepOnlineOnAwayTimer?.cancel();
+        self.keepOnlineOnAwayTimer = nil;
+        
+        var taskId = UIBackgroundTaskInvalid;
+        taskId = application.beginBackgroundTaskWithExpirationHandler {
+            print("keep online on away background task expired", taskId);
+            self.applicationKeepOnlineOnAwayFinished(taskId);
+        }
+        
+        let timeout = min(defaultKeepOnlineOnAwayTime, application.backgroundTimeRemaining - 2);
+        print("keep online on away background task started at", NSDate(), "for", timeout, "s");
+        
+        self.keepOnlineOnAwayTimer = Timer(delayInSeconds: timeout, repeats: false, callback: {
+            self.applicationKeepOnlineOnAwayFinished(taskId);
+            application.endBackgroundTask(taskId);
+        });
     }
 
+    func applicationKeepOnlineOnAwayFinished(taskId: UIBackgroundTaskIdentifier) {
+        self.keepOnlineOnAwayTimer?.cancel();
+        self.keepOnlineOnAwayTimer = nil;
+        print("keep online timer finished at", taskId, NSDate());
+    }
+    
     func applicationWillEnterForeground(application: UIApplication) {
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
+        
+        
     }
 
     func applicationDidBecomeActive(application: UIApplication) {
