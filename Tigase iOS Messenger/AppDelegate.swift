@@ -68,39 +68,39 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
         xmppService.applicationState = .inactive;
         
-        self.keepOnlineOnAwayTimer?.cancel();
+        self.keepOnlineOnAwayTimer?.execute();
         self.keepOnlineOnAwayTimer = nil;
         
         var taskId = UIBackgroundTaskInvalid;
         taskId = application.beginBackgroundTaskWithExpirationHandler {
             print("keep online on away background task expired", taskId);
-            self.applicationKeepOnlineOnAwayFinished(taskId);
+            self.applicationKeepOnlineOnAwayFinished(application, taskId: taskId);
         }
         
-        let timeout = min(defaultKeepOnlineOnAwayTime, application.backgroundTimeRemaining - 2);
-        print("keep online on away background task started at", NSDate(), "for", timeout, "s");
+        let timeout = min(defaultKeepOnlineOnAwayTime, application.backgroundTimeRemaining - 8);
+        print("keep online on away background task", taskId, "started at", NSDate(), "for", timeout, "s");
         
         self.keepOnlineOnAwayTimer = Timer(delayInSeconds: timeout, repeats: false, callback: {
-            self.applicationKeepOnlineOnAwayFinished(taskId);
-            application.endBackgroundTask(taskId);
+            self.applicationKeepOnlineOnAwayFinished(application, taskId: taskId);
         });
     }
 
-    func applicationKeepOnlineOnAwayFinished(taskId: UIBackgroundTaskIdentifier) {
+    func applicationKeepOnlineOnAwayFinished(application: UIApplication, taskId: UIBackgroundTaskIdentifier) {
+        // make sure timer is cancelled
         self.keepOnlineOnAwayTimer?.cancel();
         self.keepOnlineOnAwayTimer = nil;
         print("keep online timer finished at", taskId, NSDate());
+        // mark background task as ended
+        application.endBackgroundTask(taskId);
     }
     
     func applicationWillEnterForeground(application: UIApplication) {
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
-        
-        
+        xmppService.applicationState = .active;
     }
 
     func applicationDidBecomeActive(application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-        xmppService.applicationState = .active;
     }
 
     func applicationWillTerminate(application: UIApplication) {
