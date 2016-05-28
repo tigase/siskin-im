@@ -125,7 +125,8 @@ public class XmppService: Logger, EventHandler {
     }
     
     private func registerModules(client:XMPPClient) {
-        client.modulesManager.register(StreamManagementModule());
+        let smModule = client.modulesManager.register(StreamManagementModule());
+        smModule.maxResumptionTimeout = 3600;
         client.modulesManager.register(AuthModule());
         client.modulesManager.register(StreamFeaturesModule());
         client.modulesManager.register(SaslModule());
