@@ -124,9 +124,12 @@ public class AccountManager {
             for (k,v) in dataForUpdate {
                 found?[k] = v;
             }
+            found?[String(kSecAttrAccessible)] = kSecAttrAccessibleAfterFirstUnlock;
             lastResultCode = SecItemAdd(found!, nil);
         } else {
-            lastResultCode = SecItemUpdate(query, dataForUpdate);
+            var data = dataForUpdate
+            data[String(kSecAttrAccessible)] = kSecAttrAccessibleAfterFirstUnlock;
+            lastResultCode = SecItemUpdate(query, data);
         }
         if notifyChange {
             NSNotificationCenter.defaultCenter().postNotificationName("accountConfigurationChanged", object: self, userInfo: ["account": account]);

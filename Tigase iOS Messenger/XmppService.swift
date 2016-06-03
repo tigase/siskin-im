@@ -25,6 +25,11 @@ import TigaseSwift
 
 public class XmppService: Logger, EventHandler {
     
+    public var fetchTimeShort: NSTimeInterval = 5;
+    public var fetchTimeLong: NSTimeInterval = 25;
+    
+    private var creationDate = NSDate();
+    
     private let dbConnection:DBConnection;
     public var avatarManager:AvatarManager!;
     public let dbChatStore:DBChatStore;
@@ -76,13 +81,14 @@ public class XmppService: Logger, EventHandler {
         networkAvailable = reachability.isConnectedToNetwork();
     }
     
-    public func updateJaxmppInstance() {
+    public func updateXmppClientInstance() {
         for account in AccountManager.getAccounts() {
-            updateJaxmppInstance(BareJID(account));
+            updateXmppClientInstance(BareJID(account));
         }
     }
     
-    public func updateJaxmppInstance(userJid:BareJID) {
+    public func updateXmppClientInstance(userJid:BareJID) {
+        print("updating xmppclient instance for", userJid);
         var client = clients[userJid];
         let password = AccountManager.getAccountPassword(userJid.stringValue);
         let config = AccountManager.getAccount(userJid.stringValue);
@@ -170,8 +176,9 @@ public class XmppService: Logger, EventHandler {
     public func handleEvent(event: Event) {
         switch event {
         case let e as SocketConnector.DisconnectedEvent:
+            increaseBackgroundFetchTimeIfNeeded();
             if let jid = e.sessionObject.userBareJid {
-                updateJaxmppInstance(jid);
+                updateXmppClientInstance(jid);
             }
         case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
             if e.features.contains(MessageCarbonsModule.MC_XMLNS) {
@@ -251,7 +258,7 @@ public class XmppService: Logger, EventHandler {
     @objc public func accountConfigurationChanged(notification: NSNotification) {
         let accountName = notification.userInfo!["account"] as! String;
         let jid = BareJID(accountName);
-        updateJaxmppInstance(jid);
+        updateXmppClientInstance(jid);
     }
     
     @objc public func connectivityChanged(notification: NSNotification) {
@@ -269,25 +276,25 @@ public class XmppService: Logger, EventHandler {
             completionHandler(.Failed);
             return;
         }
-        
         // count connections which needs to resume
         var count = 0;
         for client in clients.values {
             // try to send keepalive to ensure connection is valid
             // if it fails it will try to resume connection
-            client.keepalive();
             if client.state != .connected {
                 if client.state == .disconnected {
                     client.login();
                 }
                 count += 1;
+            } else {
+                client.keepalive();
             }
         }
         
         // we need to give connections time to read and process data
         // so event if all are connected lets wait 5secs
         self.backgroundFetchCompletionHandler = completionHandler;
-        backgroundFetchTimer = Timer(delayInSeconds: count > 0 ? 25 : 5, repeats: false, callback: {
+        backgroundFetchTimer = Timer(delayInSeconds: count > 0 ? fetchTimeLong : fetchTimeShort, repeats: false, callback: {
             self.backgroundFetchTimedOut();
         });
     }
@@ -305,6 +312,17 @@ public class XmppService: Logger, EventHandler {
             }
         }
         callback?(.NewData);
+    }
+    
+    private func increaseBackgroundFetchTimeIfNeeded() {
+        let timeout = backgroundFetchTimer?.timeout;
+        if timeout != nil && timeout! < fetchTimeLong {
+            let callback = backgroundFetchTimer!.callback;
+            if callback != nil {
+                backgroundFetchTimer?.cancel();
+                backgroundFetchTimer = Timer(delayInSeconds: min(UIApplication.sharedApplication().backgroundTimeRemaining - 5, fetchTimeLong), repeats: false, callback: callback!);
+            }
+        }
     }
     
     private func connectClients() {

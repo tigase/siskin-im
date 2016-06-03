@@ -45,7 +45,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             fatalError("Initialization of database failed!");
         }
         xmppService = XmppService(dbConnection: dbConnection);
-        xmppService.updateJaxmppInstance();
+        xmppService.updateXmppClientInstance();
         application.registerUserNotificationSettings(UIUserNotificationSettings(forTypes: [.Alert, .Badge, .Sound], categories: nil));
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.chatItemsUpdated), name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil);
@@ -105,6 +105,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillTerminate(application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+        print(NSDate(), "application terminated!")
     }
 
     func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
@@ -114,11 +115,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(application: UIApplication, performFetchWithCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
         let fetchStart = NSDate();
+        print(NSDate(), "starting fetching data");
         xmppService.preformFetch({(result) in
             completionHandler(result);
             let fetchEnd = NSDate();
             let time = fetchEnd.timeIntervalSinceDate(fetchStart);
-            print("fetched date in \(time) seconds with result = \(result)");
+            print(NSDate(), "fetched date in \(time) seconds with result = \(result)");
         });
     }
     

@@ -58,8 +58,8 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
     }
 
     override func viewWillAppear(animated: Bool) {
-        reloadData();
         xmppService.registerEventHandler(self, events: PresenceModule.ContactPresenceChanged.TYPE, RosterModule.ItemUpdatedEvent.TYPE);
+        reloadData();
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(RosterViewController.reloadData), name: AvatarManager.AVATAR_CHANGED, object: nil);
         super.viewWillAppear(animated);
     }
@@ -203,7 +203,11 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
             let indexPaths = indexPathsForJid(e.presence.from!.bareJid, account: e.sessionObject.userBareJid!);
             tableView.reloadRowsAtIndexPaths(indexPaths, withRowAnimation: .Automatic);
         case let e as RosterModule.ItemUpdatedEvent:
-            let position = try! rosterItemGetPositionByName.scalar(e.rosterItem.name ?? e.rosterItem.jid.stringValue);
+            guard e.rosterItem != nil else {
+                tableView.reloadData();
+                return;
+            }
+            let position = try! rosterItemGetPositionByName.scalar(e.rosterItem?.name ?? e.rosterItem!.jid.stringValue);
             let indexPath = NSIndexPath(forRow: position!, inSection: 0);
             switch e.action! {
             case .added:
