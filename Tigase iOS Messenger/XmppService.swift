@@ -177,8 +177,11 @@ public class XmppService: Logger, EventHandler {
         switch event {
         case let e as SocketConnector.DisconnectedEvent:
             increaseBackgroundFetchTimeIfNeeded();
+            networkAvailable = reachability.isConnectedToNetwork();
             if let jid = e.sessionObject.userBareJid {
-                updateXmppClientInstance(jid);
+                dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0)) {
+                    self.updateXmppClientInstance(jid);
+                }
             }
         case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
             if e.features.contains(MessageCarbonsModule.MC_XMLNS) {
@@ -282,9 +285,10 @@ public class XmppService: Logger, EventHandler {
             // try to send keepalive to ensure connection is valid
             // if it fails it will try to resume connection
             if client.state != .connected {
-                if client.state == .disconnected {
-                    client.login();
-                }
+                // it looks like this is causing an issue
+//                if client.state == .disconnected {
+//                    client.login();
+//                }
                 count += 1;
             } else {
                 client.keepalive();
@@ -307,7 +311,11 @@ public class XmppService: Logger, EventHandler {
             //disconnectClients(true);
             for client in clients.values {
                 if client.state == .connected {
-                    client.keepalive();
+                    if let streamManagement:StreamManagementModule = client.modulesManager.getModule(StreamManagementModule.ID) {
+                        streamManagement.sendAck();
+                    } else {
+                        client.keepalive();
+                    }
                 }
             }
         }
@@ -325,7 +333,7 @@ public class XmppService: Logger, EventHandler {
         }
     }
     
-    private func connectClients() {
+    private func connectClients(force: Bool = true) {
         for client in clients.values {
             client.login();
         }
