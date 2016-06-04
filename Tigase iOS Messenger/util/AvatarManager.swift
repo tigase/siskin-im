@@ -61,6 +61,9 @@ public class AvatarManager: EventHandler {
     public func handleEvent(event: Event) {
         switch event {
         case let cpc as PresenceModule.ContactPresenceChanged:
+            guard cpc.presence.from != nil else {
+                return;
+            }
             updateAvatarHash(cpc.sessionObject.userBareJid!, jid: cpc.presence.from!.bareJid, photoHash: cpc.presence.vcardTempPhoto);
         default:
             break;
