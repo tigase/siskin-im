@@ -151,6 +151,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
                                 self.closingChatPosition = try! self.getChatPositionByChatIdStmt.scalar(room.id!);
                                 mucModule?.leave(room);
                                 self.closingChatPosition = nil;
+                                self.xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
                             }
                         default:
                             let thread: String? = cursor["thread_id"];
@@ -159,6 +160,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
                                 self.closingChatPosition = try! self.getChatPositionByChatIdStmt.scalar(chat.id!);
                                 messageModule?.chatManager.close(chat);
                                 self.closingChatPosition = nil;
+                                self.xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
                             }
                         }
                     }
