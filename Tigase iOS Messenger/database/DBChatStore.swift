@@ -83,6 +83,7 @@ public class DBChatStore {
     
     public init(dbConnection:DBConnection) {
         self.dbConnection = dbConnection;
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(DBChatStore.accountRemoved), name: "accountRemoved", object: nil);
     }
     
     public func count(sessionObject: SessionObject) -> Int {
@@ -225,6 +226,13 @@ public class DBChatStore {
             }
         }
         return false;
+    }
+    
+    @objc public func accountRemoved(notification: NSNotification) {
+        if let data = notification.userInfo {
+            let accountStr = data["account"] as! String;
+            try! dbConnection.prepareStatement("DELETE FROM chats WHERE account = ?").execute(accountStr);
+        }
     }
     
     private func getContext(sessionObject: SessionObject) -> Context? {

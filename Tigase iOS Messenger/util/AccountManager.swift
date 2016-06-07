@@ -98,6 +98,7 @@ public class AccountManager {
         query.removeValueForKey(String(kSecReturnAttributes));
         let lastResultCode:OSStatus = SecItemDelete(query);
         NSNotificationCenter.defaultCenter().postNotificationName("accountConfigurationChanged", object: self, userInfo: ["account":name]);
+        NSNotificationCenter.defaultCenter().postNotificationName("accountRemoved", object: self, userInfo: ["account":name]);
     }
     
     private static func updateAccount(account:String, dataForUpdate: [String:NSObject], notifyChange: Bool = true) {

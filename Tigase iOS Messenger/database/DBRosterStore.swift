@@ -59,7 +59,6 @@ public class DBRosterStore: RosterCacheProvider {
     
     private let dbConnection: DBConnection;
     
-    private lazy var addItemGroupStmt: DBStatement! = try? self.dbConnection.prepareStatement("INSERT INT")
     private lazy var countItemsStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM roster_items WHERE account = :account");
     private lazy var deleteItemStmt: DBStatement! = try? self.dbConnection.prepareStatement("DELETE FROM roster_items WHERE account = :account AND jid = :jid");
     private lazy var deleteItemGroupsStmt: DBStatement! = try? self.dbConnection.prepareStatement("DELETE FROM roster_items_groups WHERE item_id IN (SELECT id FROM roster_items WHERE account = :account AND jid = :jid)");
@@ -77,6 +76,7 @@ public class DBRosterStore: RosterCacheProvider {
     
     public init(dbConnection:DBConnection) {
         self.dbConnection = dbConnection;
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(DBRosterStore.accountRemoved), name: "accountRemoved", object: nil);
     }
     
     public func count(sessionObject: SessionObject) -> Int {
@@ -168,6 +168,20 @@ public class DBRosterStore: RosterCacheProvider {
             AccountManager.updateAccount(account, notifyChange: false);
         }
     }
+    
+    @objc public func accountRemoved(notification: NSNotification) {
+        if let data = notification.userInfo {
+            let accountStr = data["account"] as! String;
+            let params:[String:Any?] = ["account": accountStr];
+            do {
+                try deleteItemsGroupsStmt.execute(params);
+                try deleteItemsStmt.execute(params);
+            } catch _ {
+                
+            }
+        }
+    }
+
 }
 
 extension RosterItemProtocol {

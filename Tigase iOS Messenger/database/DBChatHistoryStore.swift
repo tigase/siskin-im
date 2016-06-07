@@ -47,6 +47,8 @@ public class DBChatHistoryStore: Logger, EventHandler {
     
     public init(dbConnection:DBConnection) {
         self.dbConnection = dbConnection;
+        super.init();
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(DBChatHistoryStore.accountRemoved), name: "accountRemoved", object: nil);
     }
     
     public func appendMessage(account:BareJID, message: Message, carbonAction: MessageCarbonsModule.Action? = nil) {
@@ -146,6 +148,13 @@ public class DBChatHistoryStore: Logger, EventHandler {
         let updatedRecords = try! msgsMarkAsReadStmt.update(params);
         if updatedRecords > 0 {
             chatItemsChanged(account, jid: jid);
+        }
+    }
+    
+    @objc public func accountRemoved(notification: NSNotification) {
+        if let data = notification.userInfo {
+            let accountStr = data["account"] as! String;
+            try! dbConnection.prepareStatement("DELETE FROM chat_history WHERE account = ?").execute(accountStr);
         }
     }
     
