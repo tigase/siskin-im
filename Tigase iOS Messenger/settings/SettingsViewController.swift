@@ -23,7 +23,7 @@
 import UIKit
 import TigaseSwift
 
-class SettingsViewController: UITableViewController {
+class SettingsViewController: UITableViewController, EventHandler {
    
     var xmppService:XmppService {
         let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate;
@@ -32,7 +32,13 @@ class SettingsViewController: UITableViewController {
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated);
+        xmppService.registerEventHandler(self, events: SocketConnector.ConnectedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE);
         tableView.reloadData();
+    }
+    
+    override func viewDidDisappear(animated: Bool) {
+        super.viewDidDisappear(animated);
+        xmppService.unregisterEventHandler(self, events: SocketConnector.ConnectedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE);
     }
     
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
@@ -68,7 +74,21 @@ class SettingsViewController: UITableViewController {
                 cell.nameLabel.text = account?.name;
                 let jid = BareJID(account!.name);
                 cell.avatarStatusView.setAvatar(xmppService.avatarManager.getAvatar(jid, account: BareJID(account!.name)));
-                cell.avatarStatusView.statusImageView.hidden = true;
+                if let client = xmppService.getClient(jid) {
+                    cell.avatarStatusView.statusImageView.hidden = false;
+                    var status: Presence.Show? = nil;
+                    switch client.state {
+                    case .connected:
+                        status = .online;
+                    case .connecting, .disconnecting:
+                        status = Presence.Show.xa;
+                    default:
+                        break;
+                    }
+                    cell.avatarStatusView.setStatus(status);
+                } else {
+                    cell.avatarStatusView.statusImageView.hidden = true;
+                }
             } else {
                 cell.nameLabel.text = "Add account";
                 cell.avatarStatusView.setAvatar(nil);
@@ -121,6 +141,16 @@ class SettingsViewController: UITableViewController {
                     tableView.reloadData();
                 }
             }
+        }
+    }
+    
+    func handleEvent(event: Event) {
+        switch event {
+        case is SocketConnector.ConnectedEvent, is SocketConnector.DisconnectedEvent, is StreamManagementModule.ResumedEvent,
+             is SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
+            tableView.reloadData();
+        default:
+            break;
         }
     }
 }

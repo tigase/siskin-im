@@ -1071,12 +1071,16 @@
                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TMv-wH-5gK" customClass="AvatarStatusView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                                     <rect key="frame" x="8" y="4" width="36" height="36"/>
                                                     <subviews>
-                                                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UO0-fo-Khz">
-                                                            <rect key="frame" x="26" y="26" width="10" height="10"/>
-                                                        </imageView>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="252" verticalHuggingPriority="252" horizontalCompressionResistancePriority="48" verticalCompressionResistancePriority="48" translatesAutoresizingMaskIntoConstraints="NO" id="JTa-Zf-CiU">
-                                                            <rect key="frame" x="0.0" y="0.0" width="36" height="36"/>
+                                                            <rect key="frame" x="0.0" y="0.5" width="36" height="36"/>
                                                             <accessibility key="accessibilityConfiguration" identifier="accountAvatar"/>
+                                                        </imageView>
+                                                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="UO0-fo-Khz">
+                                                            <rect key="frame" x="26" y="26" width="10" height="10"/>
+                                                            <constraints>
+                                                                <constraint firstAttribute="width" constant="10" id="Ii3-m7-1ax"/>
+                                                                <constraint firstAttribute="height" constant="10" id="Ijt-m7-L0P"/>
+                                                            </constraints>
                                                         </imageView>
                                                     </subviews>
                                                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
