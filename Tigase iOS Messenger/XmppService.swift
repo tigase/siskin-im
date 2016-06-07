@@ -53,9 +53,13 @@ public class XmppService: Logger, EventHandler {
     
     private var networkAvailable:Bool {
         didSet {
-            if networkAvailable && !oldValue {
-                connectClients();
-            } else {
+            if networkAvailable {
+                if !oldValue {
+                    connectClients();
+                } else {
+                    keepalive();
+                }
+            } else if !networkAvailable && oldValue {
                 disconnectClients(true);
             }
         }
