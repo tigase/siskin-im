@@ -24,7 +24,7 @@ import Foundation
 public enum Settings: String {
     case DeleteChatHistoryOnChatClose
     case EnableMessageCarbons
-    
+    case StatusMessage
     
     private static var store: NSUserDefaults {
         return NSUserDefaults.standardUserDefaults();
@@ -38,13 +38,17 @@ public enum Settings: String {
         store.registerDefaults(defaults);
     }
     
-    public func setValue(value: AnyObject) {
+    public func setValue(value: AnyObject?) {
         Settings.store.setObject(value, forKey: self.rawValue);
         Settings.valueChanged(self);
     }
     
     public func getBool() -> Bool {
         return Settings.store.boolForKey(self.rawValue);
+    }
+    
+    public func getString() -> String? {
+        return Settings.store.stringForKey(self.rawValue);
     }
     
     private static func valueChanged(key: Settings) {

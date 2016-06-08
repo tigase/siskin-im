@@ -42,7 +42,7 @@ class SettingsViewController: UITableViewController, EventHandler {
     }
     
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 2;
+        return 3;
     }
     
     override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -50,17 +50,25 @@ class SettingsViewController: UITableViewController, EventHandler {
         case 0:
             return "Accounts";
         case 1:
-            return "Other"
+            return "Status";
+        case 2:
+            return "Other";
         default:
             return nil;
         }
     }
     
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 0 {
+        switch section {
+        case 0:
             return AccountManager.getAccounts().count + 1;
+        case 1:
+            return 1;
+        case 2:
+            return 2;
+        default:
+            return 0;
         }
-        return 2;
     }
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -93,6 +101,11 @@ class SettingsViewController: UITableViewController, EventHandler {
                 cell.avatarStatusView.setAvatar(nil);
                 cell.avatarStatusView.hidden = true;
             }
+            return cell;
+        } else if (indexPath.section == 1) {
+            var cell = tableView.dequeueReusableCellWithIdentifier("StatusTableViewCell", forIndexPath: indexPath);
+            let label = cell.viewWithTag(1)! as! UILabel;
+            label.text = Settings.StatusMessage.getString();
             return cell;
         } else {
             let setting = SettingsEnum(rawValue: indexPath.row)!;
@@ -134,6 +147,18 @@ class SettingsViewController: UITableViewController, EventHandler {
                 let accountSettingsController = navigation.childViewControllers[0] as! AccountSettingsViewController;
                 accountSettingsController.account = account;
                 self.showDetailViewController(navigation, sender: self);
+            }
+        } else if indexPath.section == 1 {
+            if indexPath.row == 0 {
+                var alert = UIAlertController(title: "Status", message: "Enter status message", preferredStyle: .Alert);
+                alert.addTextFieldWithConfigurationHandler({ (textField) in
+                    textField.text = Settings.StatusMessage.getString();
+                })
+                alert.addAction(UIAlertAction(title: "Set", style: .Default, handler: { (action) -> Void in
+                    Settings.StatusMessage.setValue((alert.textFields![0] as UITextField).text);
+                    self.tableView.reloadData();
+                }));
+                self.presentViewController(alert, animated: true, completion: nil);
             }
         }
     }

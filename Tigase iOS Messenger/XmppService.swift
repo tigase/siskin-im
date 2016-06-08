@@ -205,6 +205,7 @@ public class XmppService: Logger, EventHandler {
                 e.presence.show = Presence.Show.away;
                 e.presence.priority = 0;
             }
+            e.presence.status = Settings.StatusMessage.getString();
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
             if applicationState == .inactive {
                 if let mobileModeModule: MobileModeModule = getClient(e.sessionObject.userBareJid!)?.modulesManager.getModule(MobileModeModule.ID) {
@@ -289,6 +290,8 @@ public class XmppService: Logger, EventHandler {
                     messageCarbonsModule?.setState(value, callback: nil);
                 }
             }
+        case .StatusMessage:
+            sendAutoPresence();
         default:
             break;
         }

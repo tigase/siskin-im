@@ -197,6 +197,19 @@ public class AccountManager {
             }
         }
         
+        public var presenceDescription: String? {
+            get {
+                return data["presenceDescription"] as? String;
+            }
+            set {
+                if newValue != nil {
+                    data["presenceDescription"] = newValue;
+                } else {
+                    data.removeValueForKey("presenceDescription");
+                }
+            }
+        }
+        
         public init(name:String) {
             self.name = name;
             self.data = [String:AnyObject]();

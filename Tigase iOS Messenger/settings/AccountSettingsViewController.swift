@@ -34,8 +34,11 @@ class AccountSettingsViewController: UITableViewController {
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated);
+        navigationItem.title = account;
+
         let config = AccountManager.getAccount(account);
         enabledSwitch.on = config?.active ?? false;
+
     }
     
     override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
