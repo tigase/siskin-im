@@ -25,7 +25,6 @@ import TigaseSwift
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
-    
     var window: UIWindow?
     var xmppService:XmppService!;
     var dbConnection:DBConnection!;
@@ -34,6 +33,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         Log.initialize();
+        Settings.initialize();
         do {
             dbConnection = try DBConnection(dbFilename: "mobile_messenger1.db");
             let resourcePath = NSBundle.mainBundle().resourcePath! + "/db-schema-1.0.0.sql";

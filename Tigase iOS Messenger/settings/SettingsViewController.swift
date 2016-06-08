@@ -42,7 +42,7 @@ class SettingsViewController: UITableViewController, EventHandler {
     }
     
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 1;
+        return 2;
     }
     
     override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -64,10 +64,9 @@ class SettingsViewController: UITableViewController, EventHandler {
     }
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cellIdentifier = "AccountTableViewCell";
-        let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! AccountTableViewCell;
-        
         if (indexPath.section == 0) {
+            let cellIdentifier = "AccountTableViewCell";
+            let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! AccountTableViewCell;
             let accounts = AccountManager.getAccounts();
             if accounts.count > indexPath.row {
                 let account = AccountManager.getAccount(accounts[indexPath.row]);
@@ -94,11 +93,19 @@ class SettingsViewController: UITableViewController, EventHandler {
                 cell.avatarStatusView.setAvatar(nil);
                 cell.avatarStatusView.hidden = true;
             }
+            return cell;
         } else {
-            cell.nameLabel.text = "Item s:\(indexPath.section),r:\(indexPath.row)";
+            let setting = SettingsEnum(rawValue: indexPath.row)!;
+            switch setting {
+            case .DeleteChatHistoryOnClose:
+                let cell = tableView.dequeueReusableCellWithIdentifier("DeleteChatHistoryOnCloseTableViewCell", forIndexPath: indexPath) as! SwitchTableViewCell;
+                cell.switchView.on = Settings.DeleteChatHistoryOnChatClose;
+                cell.valueChangedListener = {(switchView) in
+                    Settings.DeleteChatHistoryOnChatClose = switchView.on;
+                }
+                return cell;
+            }
         }
-        
-        return cell;
     }
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
@@ -152,5 +159,9 @@ class SettingsViewController: UITableViewController, EventHandler {
         default:
             break;
         }
+    }
+    
+    public enum SettingsEnum: Int {
+        case DeleteChatHistoryOnClose = 0
     }
 }

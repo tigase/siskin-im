@@ -1123,6 +1123,45 @@
                                     <outlet property="nameLabel" destination="ZdW-n9-xVM" id="BUO-B9-GS7"/>
                                 </connections>
                             </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="deleteChatHistoryOnCloseCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="DeleteChatHistoryOnCloseTableViewCell" id="Zap-R6-bk9" userLabel="DeleteChatHistoryOnCloseTableViewCell" customClass="SwitchTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="157.5" width="600" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Zap-R6-bk9" id="7YF-y9-wH6">
+                                    <rect key="frame" x="0.0" y="0.0" width="600" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="JpU-cV-1Ph">
+                                            <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Delete chat history on chat close" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="t1g-II-CZp">
+                                                    <rect key="frame" x="8" y="4" width="525" height="36"/>
+                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="an9-LD-qi8">
+                                                    <rect key="frame" x="543" y="4" width="51" height="36"/>
+                                                    <connections>
+                                                        <action selector="valueChanged:" destination="Zap-R6-bk9" eventType="valueChanged" id="zSC-Z2-tSQ"/>
+                                                    </connections>
+                                                </switch>
+                                            </subviews>
+                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
+                                        </stackView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="trailing" secondItem="JpU-cV-1Ph" secondAttribute="trailing" id="0KW-y9-rb8"/>
+                                        <constraint firstAttribute="bottom" secondItem="JpU-cV-1Ph" secondAttribute="bottom" id="Biw-Q0-naR"/>
+                                        <constraint firstItem="JpU-cV-1Ph" firstAttribute="leading" secondItem="7YF-y9-wH6" secondAttribute="leading" id="Qwg-Uf-KaH"/>
+                                        <constraint firstItem="JpU-cV-1Ph" firstAttribute="top" secondItem="7YF-y9-wH6" secondAttribute="top" id="tms-Yd-0t6"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <accessibility key="accessibilityConfiguration" identifier="deleteChatHistoryOnCloseCell"/>
+                                <connections>
+                                    <outlet property="switchView" destination="an9-LD-qi8" id="K6w-hL-88x"/>
+                                </connections>
+                            </tableViewCell>
                         </prototypes>
                         <connections>
                             <outlet property="dataSource" destination="KC2-Lb-9cB" id="4FZ-Gk-WDd"/>
