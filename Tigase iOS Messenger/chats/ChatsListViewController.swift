@@ -151,7 +151,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
                                 self.closingChatPosition = try! self.getChatPositionByChatIdStmt.scalar(room.id!);
                                 mucModule?.leave(room);
                                 self.closingChatPosition = nil;
-                                if Settings.DeleteChatHistoryOnChatClose {
+                                if Settings.DeleteChatHistoryOnChatClose.getBool() {
                                     self.xmppService.dbChatHistoryStore.deleteMessages(account, jid: jid.bareJid);
                                 } else {
                                     self.xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
@@ -164,7 +164,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
                                 self.closingChatPosition = try! self.getChatPositionByChatIdStmt.scalar(chat.id!);
                                 messageModule?.chatManager.close(chat);
                                 self.closingChatPosition = nil;
-                                if Settings.DeleteChatHistoryOnChatClose {
+                                if Settings.DeleteChatHistoryOnChatClose.getBool() {
                                     self.xmppService.dbChatHistoryStore.deleteMessages(account, jid: jid.bareJid);
                                 } else {
                                     self.xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);

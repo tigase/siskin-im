@@ -21,25 +21,33 @@
 
 import Foundation
 
-public class Settings {
+public enum Settings: String {
+    case DeleteChatHistoryOnChatClose
+    case EnableMessageCarbons
+    
     
     private static var store: NSUserDefaults {
         return NSUserDefaults.standardUserDefaults();
     }
     
-    public static var DeleteChatHistoryOnChatClose: Bool {
-        get {
-            return store.boolForKey("DeleteChatHistoryOnChatClose");
-        }
-        set {
-            store.setBool(newValue, forKey: "DeleteChatHistoryOnChatClose");
-        }
-    }
-    
     public static func initialize() {
         let defaults: [String: AnyObject] = [
-            "DeleteChatHistoryOnChatClose" : false
+            "DeleteChatHistoryOnChatClose" : false,
+            "EnableMessageCarbons" : true
         ];
         store.registerDefaults(defaults);
+    }
+    
+    public func setValue(value: AnyObject) {
+        Settings.store.setObject(value, forKey: self.rawValue);
+        Settings.valueChanged(self);
+    }
+    
+    public func getBool() -> Bool {
+        return Settings.store.boolForKey(self.rawValue);
+    }
+    
+    private static func valueChanged(key: Settings) {
+        NSNotificationCenter.defaultCenter().postNotificationName("settingsChanged", object: nil, userInfo: ["key": key.rawValue]);
     }
 }

@@ -60,7 +60,7 @@ class SettingsViewController: UITableViewController, EventHandler {
         if section == 0 {
             return AccountManager.getAccounts().count + 1;
         }
-        return 1;
+        return 2;
     }
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -99,12 +99,20 @@ class SettingsViewController: UITableViewController, EventHandler {
             switch setting {
             case .DeleteChatHistoryOnClose:
                 let cell = tableView.dequeueReusableCellWithIdentifier("DeleteChatHistoryOnCloseTableViewCell", forIndexPath: indexPath) as! SwitchTableViewCell;
-                cell.switchView.on = Settings.DeleteChatHistoryOnChatClose;
+                cell.switchView.on = Settings.DeleteChatHistoryOnChatClose.getBool();
                 cell.valueChangedListener = {(switchView) in
-                    Settings.DeleteChatHistoryOnChatClose = switchView.on;
+                    Settings.DeleteChatHistoryOnChatClose.setValue(switchView.on);
+                }
+                return cell;
+            case .EnableMessageCarbons:
+                let cell = tableView.dequeueReusableCellWithIdentifier("EnableMessageCarbonsTableViewCell", forIndexPath: indexPath) as! SwitchTableViewCell;
+                cell.switchView.on = Settings.EnableMessageCarbons.getBool();
+                cell.valueChangedListener = {(switchView) in
+                    Settings.EnableMessageCarbons.setValue(switchView.on);
                 }
                 return cell;
             }
+            
         }
     }
     
@@ -163,5 +171,6 @@ class SettingsViewController: UITableViewController, EventHandler {
     
     public enum SettingsEnum: Int {
         case DeleteChatHistoryOnClose = 0
+        case EnableMessageCarbons = 1
     }
 }

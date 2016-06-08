@@ -1162,6 +1162,45 @@
                                     <outlet property="switchView" destination="an9-LD-qi8" id="K6w-hL-88x"/>
                                 </connections>
                             </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="enableMessageCarbonsCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="EnableMessageCarbonsTableViewCell" id="qIY-ys-N1z" userLabel="EnableMessageCarbonsTableViewCell" customClass="SwitchTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="201.5" width="600" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="qIY-ys-N1z" id="KGI-m5-d5U">
+                                    <rect key="frame" x="0.0" y="0.0" width="600" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="0NK-mV-K1z">
+                                            <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Message carbons" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Nqh-fl-O4x">
+                                                    <rect key="frame" x="8" y="4" width="525" height="36"/>
+                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iiB-Cv-ZB3">
+                                                    <rect key="frame" x="543" y="4" width="51" height="36"/>
+                                                    <connections>
+                                                        <action selector="valueChanged:" destination="qIY-ys-N1z" eventType="valueChanged" id="j6t-nZ-7nP"/>
+                                                    </connections>
+                                                </switch>
+                                            </subviews>
+                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
+                                        </stackView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="0NK-mV-K1z" firstAttribute="top" secondItem="KGI-m5-d5U" secondAttribute="top" id="74j-9h-jo9"/>
+                                        <constraint firstItem="0NK-mV-K1z" firstAttribute="leading" secondItem="KGI-m5-d5U" secondAttribute="leading" id="FQ9-xE-CTy"/>
+                                        <constraint firstAttribute="trailing" secondItem="0NK-mV-K1z" secondAttribute="trailing" id="Jxm-Y4-Xdb"/>
+                                        <constraint firstAttribute="bottom" secondItem="0NK-mV-K1z" secondAttribute="bottom" id="v9j-R0-LC7"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <accessibility key="accessibilityConfiguration" identifier="enableMessageCarbonsTableViewCell"/>
+                                <connections>
+                                    <outlet property="switchView" destination="iiB-Cv-ZB3" id="vLC-3R-zEW"/>
+                                </connections>
+                            </tableViewCell>
                         </prototypes>
                         <connections>
                             <outlet property="dataSource" destination="KC2-Lb-9cB" id="4FZ-Gk-WDd"/>

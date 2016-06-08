@@ -82,7 +82,9 @@ public class XmppService: Logger, EventHandler {
         self.avatarManager = AvatarManager(xmppService: self);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(XmppService.accountConfigurationChanged), name:"accountConfigurationChanged", object: nil);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(XmppService.connectivityChanged), name: Reachability.CONNECTIVITY_CHANGED, object: nil);
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(XmppService.settingsChanged), name: "settingsChanged", object: nil);
         networkAvailable = reachability.isConnectedToNetwork();
+    
     }
     
     public func updateXmppClientInstance() {
@@ -190,7 +192,9 @@ public class XmppService: Logger, EventHandler {
         case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
             if e.features.contains(MessageCarbonsModule.MC_XMLNS) {
                 if let messageCarbonsModule:MessageCarbonsModule = getClient(e.sessionObject.userBareJid!)?.modulesManager.getModule(MessageCarbonsModule.ID) {
-                    messageCarbonsModule.enable();
+                    if Settings.EnableMessageCarbons.getBool() {
+                        messageCarbonsModule.enable();
+                    }
                 }
             }
         case let e as PresenceModule.BeforePresenceSendEvent:
@@ -270,6 +274,24 @@ public class XmppService: Logger, EventHandler {
     
     @objc public func connectivityChanged(notification: NSNotification) {
         self.networkAvailable = notification.userInfo!["connected"] as! Bool;
+    }
+    
+    @objc public func settingsChanged(notification: NSNotification) {
+        guard let setting = Settings(rawValue: notification.userInfo!["key"] as! String) else {
+            return;
+        }
+        switch setting {
+        case .EnableMessageCarbons:
+            let value = setting.getBool();
+            for client in clients.values {
+                if client.state == .connected {
+                    let messageCarbonsModule: MessageCarbonsModule? = client.modulesManager.getModule(MessageCarbonsModule.ID);
+                    messageCarbonsModule?.setState(value, callback: nil);
+                }
+            }
+        default:
+            break;
+        }
     }
     
     public func preformFetch(completionHandler: (UIBackgroundFetchResult)->Void) {
