@@ -24,8 +24,23 @@ import TigaseSwift
 
 class AccountSettingsViewController: UITableViewController {
     
-    var account:String!;
-        
+    var xmppService: XmppService {
+        let delegate = UIApplication.sharedApplication().delegate as! AppDelegate;
+        return delegate.xmppService;
+    }
+    
+    var account: String! {
+        didSet {
+            accountJid = BareJID(account);
+        }
+    }
+    var accountJid: BareJID!;
+    
+    @IBOutlet var avatarView: UIImageView!
+    @IBOutlet var fullNameTextView: UILabel!
+    @IBOutlet var companyTextView: UILabel!
+    @IBOutlet var addressTextView: UILabel!
+    
     @IBOutlet var enabledSwitch: UISwitch!
     
     override func viewDidLoad() {
@@ -39,20 +54,33 @@ class AccountSettingsViewController: UITableViewController {
         let config = AccountManager.getAccount(account);
         enabledSwitch.on = config?.active ?? false;
 
+        if let vcard = xmppService.dbVCardsCache.getVCard(accountJid) {
+            update(vcard);
+        }
     }
     
     override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
-        if indexPath.row == 0 {
+        if indexPath.row == 0 && indexPath.section == 1 {
             return nil;
         }
         return indexPath;
     }
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "EditAccountSegue" {
+        guard segue.identifier != nil else {
+            return;
+        }
+        switch segue.identifier! {
+        case "EditAccountSegue":
             let navigation = segue.destinationViewController as! UINavigationController;
             let destination = navigation.visibleViewController as! AddAccountController;
             destination.account = account;
+        case "EditAccountVCardSegue":
+            let navigation = segue.destinationViewController as! UINavigationController;
+            let destination = navigation.visibleViewController as! VCardEditViewController;
+            destination.account = account;
+        default:
+            break;
         }
     }
     
@@ -60,6 +88,51 @@ class AccountSettingsViewController: UITableViewController {
         if let config = AccountManager.getAccount(account) {
             config.active = enabledSwitch.on;
             AccountManager.updateAccount(config);
+        }
+    }
+    
+    func update(vcard: VCardModule.VCard) {
+        avatarView.image = xmppService.avatarManager.getAvatar(accountJid, account: accountJid);
+        avatarView.layer.masksToBounds = true;
+        avatarView.layer.cornerRadius = avatarView.frame.width / 2;
+        
+        if let fn = vcard.fn {
+            fullNameTextView.text = fn;
+        } else if let family = vcard.familyName, let given = vcard.givenName {
+            fullNameTextView.text = "\(given) \(family)";
+        } else {
+            fullNameTextView.text = account;
+        }
+        
+        let company = vcard.orgName;
+        let role = vcard.role;
+        if role != nil && company != nil {
+            companyTextView.text = "\(role!) at \(company!)";
+        } else if company != nil {
+            companyTextView.text = company;
+        } else if role != nil {
+            companyTextView.text = role;
+        }
+        companyTextView.hidden = companyTextView.text == nil;
+        
+        var addresses = vcard.addresses.filter { (addr) -> Bool in
+            return !addr.isEmpty();
+        };
+        
+        if let address = addresses.first {
+            var tmp = [String]();
+            if address.street != nil {
+                tmp.append(address.street!);
+            }
+            if address.locality != nil {
+                tmp.append(address.locality!);
+            }
+            if address.country != nil {
+                tmp.append(address.country!);
+            }
+            addressTextView.text = tmp.joinWithSeparator(", ");
+        } else {
+            addressTextView.text = nil;
         }
     }
 }
