@@ -48,6 +48,12 @@ class AvatarStatusView: UIView {
     }
     
     func setStatus(status:Presence.Show?) {
+        var image:UIImage? = AvatarStatusView.getStatusImage(status);
+
+        statusImageView.image = image;
+    }
+    
+    static func getStatusImage(status: Presence.Show?) -> UIImage? {
         // default color as for offline contact
         var image:UIImage? = UIImage(named: "presence_offline");
         if status != nil {
@@ -64,9 +70,7 @@ class AvatarStatusView: UIView {
                 image = UIImage(named: "presence_dnd");
             }
         }
-        //let img = drawStatusIcon(statusImageView.frame.height, color: color);
-        //statusImageView.image = img;
-        statusImageView.image = image;
+        return image;
     }
     
     func drawStatusIcon(size: CGFloat, color:UIColor) -> UIImage {

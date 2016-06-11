@@ -23,7 +23,9 @@
 import UIKit
 import TigaseSwift
 
-class ChatViewController : BaseChatViewController, UITableViewDataSource {
+class ChatViewController : BaseChatViewController, UITableViewDataSource, EventHandler {
+    
+    var titleView: ChatTitleView!;
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,13 +35,41 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource {
         
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        
+        let navBarHeight = self.navigationController!.navigationBar.frame.size.height;
+        let width = CGFloat(220);
+
+        titleView = ChatTitleView(width: width, height: navBarHeight);
+        titleView.name = navigationItem.title;
+        
+        let buddyBtn = UIButton(type: .System);
+        buddyBtn.frame = CGRectMake(0,0, width, navBarHeight);
+        buddyBtn.addSubview(titleView);
+        
+        buddyBtn.addTarget(self, action: #selector(ChatViewController.showBuddyInfo), forControlEvents: .TouchDown);
+        self.navigationItem.titleView = buddyBtn;
+    }
+    
+    func showBuddyInfo(button: UIButton) {
+        print("open buddy info!");
+        let navigation = storyboard?.instantiateViewControllerWithIdentifier("ContactViewNavigationController") as! UINavigationController;
+        let contactView = navigation.visibleViewController as! ContactViewController;
+        contactView.account = account;
+        contactView.jid = jid.bareJid;
+        navigation.title = self.navigationItem.title;
+        self.showDetailViewController(navigation, sender: self);
+
     }
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
-
+        
+        xmppService.registerEventHandler(self, events: PresenceModule.ContactPresenceChanged.TYPE);
+        
+        let presenceModule: PresenceModule? = xmppService.getClient(account)?.modulesManager.getModule(PresenceModule.ID);
+        titleView.status = presenceModule?.presenceStore.getBestPresence(jid.bareJid);
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -59,6 +89,8 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource {
     override func viewDidDisappear(animated: Bool) {
         NSNotificationCenter.defaultCenter().removeObserver(self);
         super.viewDidDisappear(animated);
+        
+        xmppService.unregisterEventHandler(self, events: PresenceModule.ContactPresenceChanged.TYPE);
     }
     
     override func didReceiveMemoryWarning() {
@@ -92,6 +124,18 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource {
         cell?.setNeedsUpdateConstraints();
         cell?.updateConstraintsIfNeeded();
         return cell!;
+    }
+    
+    func handleEvent(event: Event) {
+        switch event {
+        case let cpc as PresenceModule.ContactPresenceChanged:
+            guard cpc.presence.from?.bareJid == self.jid.bareJid && cpc.sessionObject.userBareJid == account else {
+                return;
+            }
+            titleView.status = cpc.presence;
+        default:
+            break;
+        }
     }
     
     func newMessage(notification: NSNotification) {
@@ -154,5 +198,84 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource {
             }
         }
     }
-    
+ 
+    class ChatTitleView: UIView {
+        
+        let nameView: UILabel!;
+        let statusView: UILabel!;
+        let statusHeight: CGFloat!;
+        
+        var name: String? {
+            get {
+                return nameView.text;
+            }
+            set {
+                nameView.text = newValue;
+            }
+        }
+        
+        var status: Presence? {
+            didSet {
+                let statusIcon = NSTextAttachment();
+                statusIcon.image = AvatarStatusView.getStatusImage(status?.show);
+                statusIcon.bounds = CGRectMake(0, -3, statusHeight, statusHeight);
+                var desc = status?.status;
+                if desc == nil {
+                    var show = status?.show;
+                    if status == nil {
+                        desc = "Offline";
+                    } else {
+                        switch(show!) {
+                        case .online:
+                            desc = "Online";
+                        case .chat:
+                            desc = "Free for chat";
+                        case .away:
+                            desc = "Be right back";
+                        case .xa:
+                            desc = "Away";
+                        case .dnd:
+                            desc = "Do not disturb";
+                        }
+                    }
+                }
+                var statusText = NSMutableAttributedString(attributedString: NSAttributedString(attachment: statusIcon));
+                statusText.appendAttributedString(NSAttributedString(string: desc!));
+                statusView.attributedText = statusText;
+            }
+        }
+        
+        init(width: CGFloat, height: CGFloat) {
+            let spacing = (height * 0.23) / 3;
+            statusHeight = height * 0.32;
+            nameView = UILabel(frame: CGRectMake(0, spacing, width, height * 0.48));
+            statusView = UILabel(frame: CGRectMake(0, (height * 0.44) + (spacing * 2), width, statusHeight));
+            super.init(frame: CGRectMake(0, 0, width, height));
+            
+            
+            var font = nameView.font;
+            font = font.fontWithSize(font.pointSize);
+            nameView.font = font;
+            nameView.textAlignment = .Center;
+            nameView.adjustsFontSizeToFitWidth = true;
+            
+            font = statusView.font;
+            font = font.fontWithSize(font.pointSize - 5);
+            statusView.font = font;
+            statusView.textAlignment = .Center;
+            statusView.adjustsFontSizeToFitWidth = true;
+            
+            self.userInteractionEnabled = false;
+            
+            self.addSubview(nameView);
+            self.addSubview(statusView);
+        }
+        
+        required init?(coder aDecoder: NSCoder) {
+            statusHeight = nil;
+            statusView = nil;
+            nameView = nil;
+            super.init(coder: aDecoder);
+        }
+    }
 }
