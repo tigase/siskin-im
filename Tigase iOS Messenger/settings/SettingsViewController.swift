@@ -135,22 +135,28 @@ class SettingsViewController: UITableViewController, EventHandler {
         if indexPath.section == 0 {
             let accounts = AccountManager.getAccounts();
             if indexPath.row == accounts.count {
+                let alert = UIAlertController(title: nil, message: nil, preferredStyle: .ActionSheet);
+                alert.addAction(UIAlertAction(title: "Create new", style: .Default, handler: { (action) in
+                    self.showAddAccount(true);
+                }));
+                alert.addAction(UIAlertAction(title: "Add existing", style: .Default, handler: { (action) in
+                    self.showAddAccount(false);
+                }));
+                alert.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil));
                 
-                // show add account dialog
-                let addAccountController = storyboard!.instantiateViewControllerWithIdentifier("AddAccountController") as! UINavigationController;
-                addAccountController.visibleViewController!.hidesBottomBarWhenPushed = true;
-                self.showDetailViewController(addAccountController, sender: self);
+                self.presentViewController(alert, animated: true, completion: nil);
             } else {
                 // show edit account dialog
                 let account = accounts[indexPath.row];
                 let navigation = storyboard?.instantiateViewControllerWithIdentifier("AccountSettingsNavigationController") as! UINavigationController;
-                let accountSettingsController = navigation.childViewControllers[0] as! AccountSettingsViewController;
+                let accountSettingsController = navigation.visibleViewController! as! AccountSettingsViewController;
+                accountSettingsController.hidesBottomBarWhenPushed = true;
                 accountSettingsController.account = account;
                 self.showDetailViewController(navigation, sender: self);
             }
         } else if indexPath.section == 1 {
             if indexPath.row == 0 {
-                var alert = UIAlertController(title: "Status", message: "Enter status message", preferredStyle: .Alert);
+                let alert = UIAlertController(title: "Status", message: "Enter status message", preferredStyle: .Alert);
                 alert.addTextFieldWithConfigurationHandler({ (textField) in
                     textField.text = Settings.StatusMessage.getString();
                 })
@@ -177,8 +183,24 @@ class SettingsViewController: UITableViewController, EventHandler {
                 let accounts = AccountManager.getAccounts();
                 if accounts.count > indexPath.row {
                     let account = accounts[indexPath.row];
-                    AccountManager.deleteAccount(account);
-                    tableView.reloadData();
+                    let alert = UIAlertController(title: "Account removal", message: "Should account be removed from server as well?", preferredStyle: .ActionSheet);
+                    if let client = self.xmppService.getClient(BareJID(account)) {
+                        alert.addAction(UIAlertAction(title: "Remove", style: .Destructive, handler: { (action) in
+                            let regModule = client.modulesManager.register(InBandRegistrationModule());
+                            regModule.unregister({ (stanza) in
+                                dispatch_async(dispatch_get_main_queue()) {
+                                    AccountManager.deleteAccount(account);
+                                    self.tableView.reloadData();
+                                }
+                            })
+                        }));
+                    }
+                    alert.addAction(UIAlertAction(title: "Keep", style: .Default, handler: { (action) in
+                        AccountManager.deleteAccount(account);
+                        self.tableView.reloadData();
+                    }));
+                    alert.addAction(UIAlertAction(title: "Cancel", style: .Default, handler: nil));
+                    self.presentViewController(alert, animated: true, completion: nil);
                 }
             }
         }
@@ -192,6 +214,15 @@ class SettingsViewController: UITableViewController, EventHandler {
         default:
             break;
         }
+    }
+    
+    func showAddAccount(register: Bool) {
+        // show add account dialog
+        let navigationController = storyboard!.instantiateViewControllerWithIdentifier("AddAccountController") as! UINavigationController;
+        let addAccountController = navigationController.visibleViewController! as! AddAccountController;
+        addAccountController.hidesBottomBarWhenPushed = true;
+        addAccountController.registerAccount = register;
+        self.showDetailViewController(navigationController, sender: self);
     }
     
     public enum SettingsEnum: Int {

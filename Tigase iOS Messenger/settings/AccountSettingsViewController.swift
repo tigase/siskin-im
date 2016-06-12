@@ -54,9 +54,8 @@ class AccountSettingsViewController: UITableViewController {
         let config = AccountManager.getAccount(account);
         enabledSwitch.on = config?.active ?? false;
 
-        if let vcard = xmppService.dbVCardsCache.getVCard(accountJid) {
-            update(vcard);
-        }
+        let vcard = xmppService.dbVCardsCache.getVCard(accountJid);
+        update(vcard);
     }
     
     override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
@@ -91,35 +90,39 @@ class AccountSettingsViewController: UITableViewController {
         }
     }
     
-    func update(vcard: VCardModule.VCard) {
+    func update(vcard: VCardModule.VCard?) {
         avatarView.image = xmppService.avatarManager.getAvatar(accountJid, account: accountJid);
         avatarView.layer.masksToBounds = true;
         avatarView.layer.cornerRadius = avatarView.frame.width / 2;
         
-        if let fn = vcard.fn {
+        if let fn = vcard?.fn {
             fullNameTextView.text = fn;
-        } else if let family = vcard.familyName, let given = vcard.givenName {
+        } else if let family = vcard?.familyName, let given = vcard?.givenName {
             fullNameTextView.text = "\(given) \(family)";
         } else {
             fullNameTextView.text = account;
         }
         
-        let company = vcard.orgName;
-        let role = vcard.role;
+        let company = vcard?.orgName;
+        let role = vcard?.role;
         if role != nil && company != nil {
             companyTextView.text = "\(role!) at \(company!)";
+            companyTextView.hidden = false;
         } else if company != nil {
             companyTextView.text = company;
+            companyTextView.hidden = false;
         } else if role != nil {
             companyTextView.text = role;
+            companyTextView.hidden = false;
+        } else {
+            companyTextView.hidden = true;
         }
-        companyTextView.hidden = companyTextView.text == nil;
         
-        var addresses = vcard.addresses.filter { (addr) -> Bool in
+        var addresses = vcard?.addresses.filter { (addr) -> Bool in
             return !addr.isEmpty();
         };
         
-        if let address = addresses.first {
+        if let address = addresses?.first {
             var tmp = [String]();
             if address.street != nil {
                 tmp.append(address.street!);

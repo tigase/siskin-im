@@ -96,7 +96,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         super.viewDidLoad()
         
         // Do any additional setup after loading the view.
-        vcard = xmppService.dbVCardsCache.getVCard(accountJid);
+        vcard = xmppService.dbVCardsCache.getVCard(accountJid) ?? VCardModule.VCard();
         if vcard != nil {
             tableView.reloadData();
         }
@@ -295,6 +295,14 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
             if let vcardModule: VCardModule = client.modulesManager.getModule(VCardModule.ID) {
                 vcardModule.publishVCard(vcard, onSuccess: {
                     self.navigationController?.popViewControllerAnimated(true);
+                    
+                    let avatarHash = Digest.SHA1.digestToHex(self.vcard.photoValBinary);
+                    let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID)!;
+                    let x = Element(name: "x", xmlns: "vcard-temp:x:update");
+                    let photo = Element(name: "photo");
+                    photo.value = avatarHash;
+                    x.addChild(photo);
+                    presenceModule.setPresence(.online, status: nil, priority: nil, additionalElements: [x]);
                     }, onError: { (errorCondition) in
                         print("VCard publication failed", errorCondition);
                 });

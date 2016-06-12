@@ -21,6 +21,7 @@
 
 
 import UIKit
+import TigaseSwift
 
 class AddAccountController: UITableViewController {
     
@@ -34,6 +35,11 @@ class AddAccountController: UITableViewController {
     
     @IBOutlet var cancelButton: UIBarButtonItem!
     
+    var activityInditcator: UIActivityIndicatorView?;
+    
+    var registerAccount: Bool = false;
+    var xmppClient: XMPPClient?;
+    
     override func viewDidLoad() {
         super.viewDidLoad();
         if account != nil {
@@ -43,6 +49,12 @@ class AddAccountController: UITableViewController {
         } else {
             navigationController?.navigationItem.leftBarButtonItem = nil;
         }
+
+        if registerAccount {
+            saveButton.title = "Register";
+        } else {
+            saveButton.title = "Save";
+        }
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -50,6 +62,10 @@ class AddAccountController: UITableViewController {
         super.viewWillAppear(animated);
     }
     
+    
+    override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated);
+    }
     
     @IBAction func jidTextFieldChanged(sender: UITextField) {
         updateSaveButtonState();
@@ -65,6 +81,31 @@ class AddAccountController: UITableViewController {
     }
     
     @IBAction func saveClicked(sender: UIBarButtonItem) {
+        if (registerAccount) {
+            registerAccountOnServer();
+        } else {
+            saveAccount();
+        }
+    }
+    
+    func registerAccountOnServer() {
+        showIndicator();
+        
+        let userJid = BareJID(jidTextField.text!);
+        let password = passwordTextField.text;
+        
+        xmppClient = InBandRegistrationModule.connectAndRegister(userJid: userJid, password: password, email: nil, onSuccess: {
+            self.hideIndicator();
+            self.xmppClient = nil;
+            self.saveAccount();
+            }, onError: { (errorCondition) in
+                self.hideIndicator();
+                self.xmppClient = nil;
+                self.showError(errorCondition);
+        })
+    }
+    
+    func saveAccount() {
         print("sign in button clicked");
         let account = AccountManager.getAccount(jidTextField.text!) ?? AccountManager.Account(name: jidTextField.text!);
         AccountManager.updateAccount(account);
@@ -90,5 +131,44 @@ class AddAccountController: UITableViewController {
             return nil;
         }
         return indexPath;
+    }
+    
+    func showError(errorCondition: ErrorCondition?) {
+        var error = "Operation timed out";
+        if errorCondition != nil {
+            switch errorCondition! {
+            case .feature_not_implemented:
+                error = "This sever do not allow registration of accounts";
+            case .forbidden:
+                error = "Registration of account if forbidden on this server";
+            case .not_allowed:
+                error = "Registration of account is not allowed";
+            case .conflict:
+                error = "Account already exists";
+            default:
+                error = "Unknown error occurred";
+            }
+        }
+        let alert = UIAlertController(title: "Error", message:  error, preferredStyle: .Alert);
+        alert.addAction(UIAlertAction(title: "Close", style: .Cancel, handler: nil));
+        self.presentViewController(alert, animated: true, completion: nil);
+    }
+    
+    func showIndicator() {
+        if activityInditcator != nil {
+            hideIndicator();
+        }
+        activityInditcator = UIActivityIndicatorView(activityIndicatorStyle: .Gray);
+        activityInditcator?.center = CGPoint(x: view.frame.width/2, y: view.frame.height/2);
+        activityInditcator!.hidden = false;
+        activityInditcator!.startAnimating();
+        view.addSubview(activityInditcator!);
+        view.bringSubviewToFront(activityInditcator!);
+    }
+    
+    func hideIndicator() {
+        activityInditcator?.stopAnimating();
+        activityInditcator?.removeFromSuperview();
+        activityInditcator = nil;
     }
 }

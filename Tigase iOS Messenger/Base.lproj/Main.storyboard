@@ -1339,7 +1339,7 @@
                                 <action selector="cancelClicked:" destination="tcY-hw-Evf" id="Spi-Nf-z75"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" systemItem="save" id="khk-Xt-a7Q">
+                        <barButtonItem key="rightBarButtonItem" title="Done" id="khk-Xt-a7Q">
                             <connections>
                                 <action selector="saveClicked:" destination="tcY-hw-Evf" id="dTP-7l-f5N"/>
                             </connections>
