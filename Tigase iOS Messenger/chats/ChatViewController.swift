@@ -222,7 +222,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
                 var desc = status?.status;
                 if desc == nil {
                     var show = status?.show;
-                    if status == nil {
+                    if show == nil {
                         desc = "Offline";
                     } else {
                         switch(show!) {
