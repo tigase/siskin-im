@@ -72,20 +72,6 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         titleView.status = presenceModule?.presenceStore.getBestPresence(jid.bareJid);
     }
     
-    override func viewDidAppear(animated: Bool) {
-        super.viewDidAppear(animated);
-        if isFirstTime {
-            // scroll to bottom?
-            let count = xmppService.dbChatHistoryStore.countMessages(account, jid: jid.bareJid);
-            if count > 0 {
-                let path = NSIndexPath(forRow: count - 1, inSection: 0);
-                self.tableView.scrollToRowAtIndexPath(path, atScrollPosition: UITableViewScrollPosition.Bottom, animated: false);
-                isFirstTime = false;
-            }
-        }
-        xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
-    }
-    
     override func viewDidDisappear(animated: Bool) {
         NSNotificationCenter.defaultCenter().removeObserver(self);
         super.viewDidDisappear(animated);

@@ -91,7 +91,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
         super.viewDidAppear(animated);
         if isFirstTime {
             // scroll to bottom?
-            scrollToBottom(animateScrollToBottom);
+            scrollToBottomOnLoad();
             isFirstTime = false;
         }
         xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
@@ -163,7 +163,16 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
             return false;
         }
     }
-    
+
+    // performance of this function is better
+    func scrollToBottomOnLoad() {
+        // optimized version in case we have a lot to display
+        let bottomOffset = CGPointMake(0, (tableView.contentSize.height - tableView.bounds.size.height) - tableView.frame.height);
+        if (bottomOffset.y > 0) {
+            tableView.setContentOffset(bottomOffset, animated: false);
+        }
+    }
+  
     func scrollToBottom(animated: Bool) {
         let count = xmppService.dbChatHistoryStore.countMessages(account, jid: jid.bareJid);
         if count > 0 {
