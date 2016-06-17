@@ -29,9 +29,10 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
     @IBOutlet var sendButton: UIButton!
     @IBOutlet var bottomView: UIView!
     
+    var bottomViewBottomConstraint: NSLayoutConstraint?;
+    
     let PLACEHOLDER_TEXT = "Enter message...";
     
-    var kbHeight: CGFloat!;
     @IBInspectable var scrollToBottomOnShow: Bool = false;
     @IBInspectable var animateScrollToBottom: Bool = true;
     
@@ -65,6 +66,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
         }
         
         messageField.delegate = self;
+        messageField.scrollEnabled = false;
         
         tableView.rowHeight = UITableViewAutomaticDimension;
         tableView.estimatedRowHeight = 160.0;
@@ -74,6 +76,8 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
         
         bottomView.layer.borderColor = UIColor.lightGrayColor().CGColor;
         bottomView.layer.borderWidth = 1.0;
+        bottomViewBottomConstraint = view.bottomAnchor.constraintEqualToAnchor(bottomView.bottomAnchor, constant: 0);
+        bottomViewBottomConstraint?.active = true;
     }
 
     override func didReceiveMemoryWarning() {
@@ -103,28 +107,28 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
     }
     
     func keyboardWillShow(notification: NSNotification) {
-        if let userInfo = notification.userInfo {
-            if let keyboardSize = (userInfo[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.CGRectValue() {
-                kbHeight = keyboardSize.height;
-                self.animateTextField(true);
-            }
-        }
+        keyboardAnimateHideShow(notification, hide: false);
     }
     
     func keyboardWillHide(notification: NSNotification) {
-        self.animateTextField(false);
+        keyboardAnimateHideShow(notification, hide: true);
     }
     
-    func animateTextField(up:Bool) {
-        let movement = up ? -kbHeight : kbHeight;
-        if movement != nil {
-            UIView.animateWithDuration(0.3) {
-                //                if (up) {
-                //                    self.view.frame = CGRectIntersection(self.view.frame, CGRectOffset(self.view.frame, 0, movement));
-                //                } else {
-                let size = CGSize(width: self.view.frame.width, height: self.view.frame.height + movement);
-                //                }
-                self.view.frame = CGRect(origin: self.view.frame.origin, size:size);
+    func keyboardAnimateHideShow(notification: NSNotification, hide: Bool) {
+        if let userInfo = notification.userInfo {
+            if let keyboardSize = (userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.CGRectValue() {
+                let oldHeight = bottomViewBottomConstraint?.constant ?? CGFloat(0);
+                let newHeight = hide ? 0 : keyboardSize.height;
+                if (oldHeight - newHeight) != 0 {
+                    let duration = userInfo[UIKeyboardAnimationDurationUserInfoKey] as! NSTimeInterval;
+                    let curve = userInfo[UIKeyboardAnimationCurveUserInfoKey] as! UInt;
+                    bottomViewBottomConstraint?.constant = newHeight;
+                    UIView.animateWithDuration(duration, delay: 0.0, options: [UIViewAnimationOptions(rawValue: curve), UIViewAnimationOptions.LayoutSubviews, UIViewAnimationOptions.BeginFromCurrentState], animations: {
+                        self.view.layoutIfNeeded();
+                        self.scrollToBottom(true);
+                        
+                        }, completion: nil);
+                }
             }
         }
     }
@@ -163,11 +167,21 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
             return false;
         }
     }
-
+    
+    @IBAction func tableViewClicked(sender: AnyObject) {
+        messageField.resignFirstResponder();
+    }
+    
+    func textViewDidEndEditing(textView: UITextView) {
+        textView.resignFirstResponder();
+    }
+    
     // performance of this function is better
     func scrollToBottomOnLoad() {
         // optimized version in case we have a lot to display
-        let bottomOffset = CGPointMake(0, (tableView.contentSize.height - tableView.bounds.size.height) - tableView.frame.height);
+//        let bottomOffset = CGPointMake(0, (tableView.contentSize.height - tableView.bounds.size.height) - tableView.frame.height);
+        let bottomOffset = CGPointMake(0, (tableView.contentSize.height - tableView.bounds.size.height));
+        print(tableView.contentSize.height, tableView.bounds.size.height, tableView.frame.height, bottomOffset);
         if (bottomOffset.y > 0) {
             tableView.setContentOffset(bottomOffset, animated: false);
         }
