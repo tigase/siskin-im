@@ -245,7 +245,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
             
             // if above is not working we can reload
             //tableView.reloadData();
-        case let e as MessageModule.ChatClosedEvent:
+        case is MessageModule.ChatClosedEvent:
             // we do not know position of chat which was closed
             //tableView.reloadData();
             if closingChatPosition != nil {
@@ -256,13 +256,17 @@ class ChatsListViewController: UITableViewController, EventHandler {
             }
         case let e as PresenceModule.ContactPresenceChanged:
             //tableView.reloadData();
+            guard e.sessionObject.userBareJid != nil && e.presence.from != nil else {
+                // guard for possible malformed presence
+                return;
+            }
             let timestamp: NSDate? = try! getChatTimestampByAccountAndJidStmt.query(e.sessionObject.userBareJid!, e.presence.from!.bareJid)?["timestamp"];
             if timestamp != nil && timestamp?.timeIntervalSince1970 != 0 {
                 let pos = try! getChatPositionByTimestampStmt.scalar(timestamp!);
                 let indexPath = NSIndexPath(forRow: pos!, inSection: 0);
                 tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic);
             }
-        case let e as MucModule.JoinRequestedEvent:
+        case is MucModule.JoinRequestedEvent:
             let index = NSIndexPath(forRow: 0, inSection: 0);
             tableView.insertRowsAtIndexPaths([index], withRowAnimation: UITableViewRowAnimation.Fade);
         case let e as MucModule.YouJoinedEvent:
@@ -272,7 +276,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
                 let indexPath = NSIndexPath(forRow: pos!, inSection: 0);
                 tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic);
             }
-        case let e as MucModule.RoomClosedEvent:
+        case is MucModule.RoomClosedEvent:
             if closingChatPosition != nil {
                 let indexPath = NSIndexPath(forRow: closingChatPosition!, inSection: 0);
                 tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade);
