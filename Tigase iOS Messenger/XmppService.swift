@@ -123,6 +123,15 @@ public class XmppService: Logger, EventHandler {
         client?.connectionConfiguration.setUserJID(userJid);
         client?.connectionConfiguration.setUserPassword(password);
         
+        // Setting resource to use - using device name
+        client?.sessionObject.setUserProperty(SessionObject.RESOURCE, value: UIDevice.currentDevice().name);
+        
+        // Setting software name, version and OS name
+        client?.sessionObject.setUserProperty(SoftwareVersionModule.NAME_KEY, value: NSBundle.mainBundle().infoDictionary!["CFBundleName"] as! String);
+        client?.sessionObject.setUserProperty(SoftwareVersionModule.VERSION_KEY, value: NSBundle.mainBundle().infoDictionary!["CFBundleVersion"] as! String);
+        client?.sessionObject.setUserProperty(SoftwareVersionModule.OS_KEY, value: UIDevice.currentDevice().systemName);
+        
+        
         clients[userJid] = client;
         
         if networkAvailable {
