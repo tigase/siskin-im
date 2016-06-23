@@ -200,6 +200,11 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
         switch event {
         case let e as PresenceModule.ContactPresenceChanged:
             //reloadData();
+            guard e.sessionObject.userBareJid != nil && e.presence.from != nil else {
+                // guard for possible malformed presence
+                return;
+            }
+            
             let indexPaths = indexPathsForJid(e.presence.from!.bareJid, account: e.sessionObject.userBareJid!);
             tableView.reloadRowsAtIndexPaths(indexPaths, withRowAnimation: .Automatic);
         case let e as RosterModule.ItemUpdatedEvent:
