@@ -156,6 +156,7 @@ public class XmppService: Logger, EventHandler {
         client.modulesManager.register(DiscoveryModule());
         client.modulesManager.register(SoftwareVersionModule());
         client.modulesManager.register(VCardModule());
+        client.modulesManager.register(ClientStateIndicationModule());
         client.modulesManager.register(MobileModeModule());
         client.modulesManager.register(PingModule());
         let rosterModule =  client.modulesManager.register(RosterModule());
@@ -217,7 +218,12 @@ public class XmppService: Logger, EventHandler {
             e.presence.status = Settings.StatusMessage.getString();
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
             if applicationState == .inactive {
-                if let mobileModeModule: MobileModeModule = getClient(e.sessionObject.userBareJid!)?.modulesManager.getModule(MobileModeModule.ID) {
+                let client = getClient(e.sessionObject.userBareJid!);
+                let csiModule: ClientStateIndicationModule? = client?.modulesManager.getModule(ClientStateIndicationModule.ID);
+                if csiModule != nil && csiModule!.available {
+                    csiModule!.setState(applicationState == .active);
+                }
+                else if let mobileModeModule: MobileModeModule = client?.modulesManager.getModule(MobileModeModule.ID) {
                     mobileModeModule.enable();
                 }
             }
@@ -237,7 +243,11 @@ public class XmppService: Logger, EventHandler {
         sendAutoPresence();
         for client in clients.values {
             if client.state == .connected {
-                if let mobileModeModule: MobileModeModule = client.modulesManager.getModule(MobileModeModule.ID) {
+                let csiModule: ClientStateIndicationModule? = client.modulesManager.getModule(ClientStateIndicationModule.ID);
+                if csiModule != nil && csiModule!.available {
+                    csiModule!.setState(applicationState == .active);
+                }
+                else if let mobileModeModule: MobileModeModule = client.modulesManager.getModule(MobileModeModule.ID) {
                     mobileModeModule.setState(applicationState == .inactive);
                 }
             }
