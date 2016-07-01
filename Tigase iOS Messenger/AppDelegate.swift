@@ -49,7 +49,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         application.registerUserNotificationSettings(UIUserNotificationSettings(forTypes: [.Alert, .Badge, .Sound], categories: nil));
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.chatItemsUpdated), name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil);
-        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.serverCertificateError), name: "serverCertificateError", object: nil);
         updateApplicationIconBadgeNumber();
         
         // TODO: for now lets set 60, however we should use 600 in future
@@ -112,6 +112,39 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
         updateApplicationIconBadgeNumber();
         print("notification clicked", notification.userInfo);
+        if (notification.category == "ERROR") {
+            guard let userInfo = notification.userInfo else {
+                return;
+            }
+            if userInfo["cert-name"] != nil {
+                let accountJid = BareJID(userInfo["account"] as! String);
+                let certName = userInfo["cert-name"] as! String;
+                let certHash = userInfo["cert-hash-sha1"] as! String;
+                let issuerName = userInfo["issuer-name"] as? String;
+                let issuerHash = userInfo["issuer-hash-sha1"] as? String;
+                let issuer = issuerName != nil ? "\nissued by\n\(issuerName!)\n with fingerprint\n\(issuerHash!)" : "";
+                let alert = UIAlertController(title: "Certificate issue", message: "Server for domain \(accountJid.domain) provided invalid certificate for \(certName)\n with fingerprint\n\(certHash)\(issuer).\nDo you trust this certificate?", preferredStyle: .Alert);
+                alert.addAction(UIAlertAction(title: "No", style: UIAlertActionStyle.Cancel, handler: nil));
+                alert.addAction(UIAlertAction(title: "Yes", style: UIAlertActionStyle.Destructive, handler: {(action) in
+                    print("accepted certificate!");
+                    guard let account = AccountManager.getAccount(accountJid.stringValue) else {
+                        return;
+                    }
+                    var certInfo = account.serverCertificate;
+                    certInfo?["accepted"] = true;
+                    account.serverCertificate = certInfo;
+                    account.active = true;
+                    AccountManager.updateAccount(account);
+                }));
+            
+                var topController = UIApplication.sharedApplication().keyWindow?.rootViewController;
+                while (topController?.presentedViewController != nil) {
+                    topController = topController?.presentedViewController;
+                }
+                
+                topController?.presentViewController(alert, animated: true, completion: nil);
+            }
+        }
     }
     
     func application(application: UIApplication, performFetchWithCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
@@ -175,6 +208,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func updateApplicationIconBadgeNumber() {
         let unreadChats = xmppService.dbChatHistoryStore.countUnreadChats();
         UIApplication.sharedApplication().applicationIconBadgeNumber = unreadChats;
+    }
+    
+    func serverCertificateError(notification: NSNotification) {
+        guard let certInfo = notification.userInfo else {
+            return;
+        }
+        
+        let account = BareJID(certInfo["account"] as! String);
+        
+        var userNotification = UILocalNotification();
+        userNotification.alertAction = "fix";
+        userNotification.alertBody = "Connection to server \(account.domain) failed";
+        userNotification.userInfo = certInfo;
+        userNotification.category = "ERROR";
+        UIApplication.sharedApplication().presentLocalNotificationNow(userNotification);
     }
 
 }

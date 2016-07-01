@@ -68,6 +68,8 @@ public class XmppService: Logger, EventHandler {
     private var backgroundFetchCompletionHandler: ((UIBackgroundFetchResult)->Void)?;
     private var backgroundFetchTimer: Timer?;
     
+    private var sslCertificateValidator: ((SessionObject,SecTrust) -> Bool)?;
+    
     init(dbConnection:DBConnection) {
         self.dbConnection = dbConnection;
         self.dbChatStore = DBChatStore(dbConnection: dbConnection);
@@ -79,6 +81,11 @@ public class XmppService: Logger, EventHandler {
         self.applicationState = UIApplication.sharedApplication().applicationState == .Active ? .active : .inactive;
 
         super.init();
+
+        self.sslCertificateValidator = {(sessionObject: SessionObject, trust: SecTrust) -> Bool in
+            return self.validateSslCertificate(sessionObject, trust: trust);
+        };
+
         self.avatarManager = AvatarManager(xmppService: self);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(XmppService.accountConfigurationChanged), name:"accountConfigurationChanged", object: nil);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(XmppService.connectivityChanged), name: Reachability.CONNECTIVITY_CHANGED, object: nil);
@@ -107,6 +114,8 @@ public class XmppService: Logger, EventHandler {
             client!.keepaliveTimeout = 0;
             registerModules(client!);
             registerEventHandlers(client!);
+            
+            client?.sessionObject.setUserProperty(SocketConnector.SSL_CERTIFICATE_VALIDATOR, value: self.sslCertificateValidator);
         } else {
             if client?.state != SocketConnector.State.disconnected {
                 client?.disconnect();
@@ -174,7 +183,7 @@ public class XmppService: Logger, EventHandler {
     }
     
     private func registerEventHandlers(client:XMPPClient) {
-        client.eventBus.register(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE);
+        client.eventBus.register(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE);
         client.eventBus.register(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.register(holder.handler, events: holder.events);
@@ -182,7 +191,7 @@ public class XmppService: Logger, EventHandler {
     }
     
     private func unregisterEventHandlers(client:XMPPClient) {
-        client.eventBus.unregister(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE);
+        client.eventBus.unregister(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE);
         client.eventBus.unregister(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.unregister(holder.handler, events: holder.events);
@@ -191,6 +200,45 @@ public class XmppService: Logger, EventHandler {
     
     public func handleEvent(event: Event) {
         switch event {
+        case let e as SocketConnector.CertificateErrorEvent:
+            // at first let's disable account so it will not try to reconnect
+            // until user will take action
+            let certCount = SecTrustGetCertificateCount(e.trust);
+            print("cert count", certCount);
+            
+            var certInfo: [String: AnyObject] = [:];
+            
+            for i in 0..<certCount {
+                let cert = SecTrustGetCertificateAtIndex(e.trust, i);
+                let fingerprint = Digest.SHA1.digestToHex(SecCertificateCopyData(cert!) as NSData);
+                // on first cert got 03469208e5d8e580f65799497d73b2d3098e8c8a
+                // while openssl reports: SHA1 Fingerprint=03:46:92:08:E5:D8:E5:80:F6:57:99:49:7D:73:B2:D3:09:8E:8C:8A
+                let summary = SecCertificateCopySubjectSummary(cert!)
+                print("cert", cert!, "SUMMARY:", summary, "fingerprint:", fingerprint);
+                switch i {
+                case 0:
+                    certInfo["cert-name"] = summary;
+                    certInfo["cert-hash-sha1"] = fingerprint;
+                case 1:
+                    certInfo["issuer-name"] = summary;
+                    certInfo["issuer-hash-sha1"] = fingerprint;
+                default:
+                    break;
+                }
+            }
+            print("cert info =", certInfo);
+            
+            if let account = AccountManager.getAccount(e.sessionObject.userBareJid!.stringValue) {
+                account.active = false;
+                account.serverCertificate = certInfo;
+                AccountManager.updateAccount(account, notifyChange: false);
+            }
+            
+            var info = certInfo;
+            info["account"] = e.sessionObject.userBareJid!.stringValue;
+            
+            NSNotificationCenter.defaultCenter().postNotificationName("serverCertificateError", object: self, userInfo: info);
+            
         case let e as SocketConnector.DisconnectedEvent:
             increaseBackgroundFetchTimeIfNeeded();
             networkAvailable = reachability.isConnectedToNetwork();
@@ -406,6 +454,31 @@ public class XmppService: Logger, EventHandler {
                 }
             }
         }
+    }
+    
+    var accepedCertificates = [String]();
+    
+    private func validateSslCertificate(sessionObject: SessionObject, trust: SecTrust) -> Bool {
+        let policy = SecPolicyCreateSSL(false, sessionObject.userBareJid?.domain);
+        var secTrustResultType = SecTrustResultType();
+        SecTrustSetPolicies(trust, [policy]);
+        SecTrustEvaluate(trust, &secTrustResultType);
+
+        var valid = (Int(secTrustResultType) == kSecTrustResultProceed || Int(secTrustResultType) == kSecTrustResultUnspecified);
+        if !valid {
+            let certCount = SecTrustGetCertificateCount(trust);
+            
+            if certCount > 0 {
+                let cert = SecTrustGetCertificateAtIndex(trust, 0);
+                let fingerprint = Digest.SHA1.digestToHex(SecCertificateCopyData(cert!) as NSData);
+                let account = AccountManager.getAccount(sessionObject.userBareJid!.stringValue);
+                valid = fingerprint == (account?.serverCertificate?["cert-hash-sha1"] as? String) && ((account?.serverCertificate?["accepted"] as? Bool) ?? false);
+            }
+            else {
+                valid = false;
+            }
+        }
+        return valid;
     }
     
     private class EventHandlerHolder {

@@ -210,6 +210,19 @@ public class AccountManager {
             }
         }
         
+        public var serverCertificate: [String: AnyObject]? {
+            get {
+                return data["serverCert"] as? [String: AnyObject];
+            }
+            set {
+                if newValue != nil {
+                    data["serverCert"] = newValue;
+                } else {
+                    data.removeValueForKey("serverCert");
+                }
+            }
+        }
+        
         public init(name:String) {
             self.name = name;
             self.data = [String:AnyObject]();
