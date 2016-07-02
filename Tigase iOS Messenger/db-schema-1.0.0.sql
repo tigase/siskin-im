@@ -62,3 +62,27 @@ CREATE TABLE IF NOT EXISTS vcards_cache (
 CREATE INDEX IF NOT EXISTS vcards_cache_jid_idx on vcards_cache (
     jid
 );
+
+CREATE TABLE IF NOT EXISTS caps_features (
+    node TEXT NOT NULL,
+    feature TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS caps_features_node_idx on caps_features (
+    node
+);
+
+CREATE INDEX IF NOT EXISTS caps_features_feature_idx on caps_features (
+    feature
+);
+
+CREATE TABLE IF NOT EXISTS caps_identities (
+    node TEXT NOT NULL,
+    name TEXT,
+    type TEXT,
+    category TEXT
+);
+
+CREATE INDEX IF NOT EXISTS caps_indentities_node_idx on caps_identities (
+    node
+);

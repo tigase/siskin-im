@@ -30,14 +30,15 @@ public class XmppService: Logger, EventHandler {
     
     private var creationDate = NSDate();
     
-    private let dbConnection:DBConnection;
-    public var avatarManager:AvatarManager!;
-    public let dbChatStore:DBChatStore;
-    public let dbChatHistoryStore:DBChatHistoryStore;
-    public let dbRosterStore:DBRosterStore;
-    public let dbVCardsCache:DBVCardsCache;
+    private let dbConnection: DBConnection;
+    public var avatarManager: AvatarManager!;
+    public let dbCapsCache: DBCapabilitiesCache;
+    public let dbChatStore: DBChatStore;
+    public let dbChatHistoryStore: DBChatHistoryStore;
+    public let dbRosterStore: DBRosterStore;
+    public let dbVCardsCache: DBVCardsCache;
     
-    public var applicationState:ApplicationState {
+    public var applicationState: ApplicationState {
         didSet {
             if oldValue != applicationState {
                 applicationStateChanged();
@@ -45,11 +46,11 @@ public class XmppService: Logger, EventHandler {
         }
     }
     
-    private let reachability:Reachability;
+    private let reachability: Reachability;
     
     private var clients = [BareJID:XMPPClient]();
     
-    private var eventHandlers:[EventHandlerHolder] = [];
+    private var eventHandlers: [EventHandlerHolder] = [];
     
     private var networkAvailable:Bool {
         didSet {
@@ -72,6 +73,7 @@ public class XmppService: Logger, EventHandler {
     
     init(dbConnection:DBConnection) {
         self.dbConnection = dbConnection;
+        self.dbCapsCache = DBCapabilitiesCache(dbConnection: dbConnection);
         self.dbChatStore = DBChatStore(dbConnection: dbConnection);
         self.dbChatHistoryStore = DBChatHistoryStore(dbConnection: dbConnection);
         self.dbRosterStore = DBRosterStore(dbConnection: dbConnection);
@@ -179,7 +181,8 @@ public class XmppService: Logger, EventHandler {
         let mucModule = MucModule();
         mucModule.roomsManager = DBRoomsManager(store: dbChatStore);
         client.modulesManager.register(mucModule);
-
+        let capsModule = client.modulesManager.register(CapabilitiesModule());
+        capsModule.cache = dbCapsCache;
     }
     
     private func registerEventHandlers(client:XMPPClient) {

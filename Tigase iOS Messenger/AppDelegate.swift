@@ -41,7 +41,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let dbSchema = try String(contentsOfFile: resourcePath, encoding: NSUTF8StringEncoding);
             print("loaded schema:", dbSchema);
             try dbConnection.execute(dbSchema);
-        } catch _ {
+        } catch {
+            print("DB initialization error:", error);
             fatalError("Initialization of database failed!");
         }
         xmppService = XmppService(dbConnection: dbConnection);

@@ -32,6 +32,7 @@
 		FE507A241CDB7B3B001A015C /* GlobalSplitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A111CDB7B3B001A015C /* GlobalSplitViewController.swift */; };
 		FE507A251CDB7B3B001A015C /* AccountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A131CDB7B3B001A015C /* AccountManager.swift */; };
 		FE507A261CDB7B3B001A015C /* AvatarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A141CDB7B3B001A015C /* AvatarManager.swift */; };
+		FE7F645B1D281B1C00B9DF56 /* DBCapabilitiesCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7F645A1D281B1C00B9DF56 /* DBCapabilitiesCache.swift */; };
 		FE94E5251CCBA74F00FAE755 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE94E5241CCBA74F00FAE755 /* AppDelegate.swift */; };
 		FE94E52C1CCBA74F00FAE755 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE94E52A1CCBA74F00FAE755 /* Main.storyboard */; };
 		FE94E52E1CCBA74F00FAE755 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FE94E52D1CCBA74F00FAE755 /* Assets.xcassets */; };
@@ -116,6 +117,7 @@
 		FE507A111CDB7B3B001A015C /* GlobalSplitViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GlobalSplitViewController.swift; sourceTree = "<group>"; };
 		FE507A131CDB7B3B001A015C /* AccountManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountManager.swift; sourceTree = "<group>"; };
 		FE507A141CDB7B3B001A015C /* AvatarManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarManager.swift; sourceTree = "<group>"; };
+		FE7F645A1D281B1C00B9DF56 /* DBCapabilitiesCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBCapabilitiesCache.swift; sourceTree = "<group>"; };
 		FE94E5211CCBA74F00FAE755 /* Tigase-iOS-Messenger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Tigase-iOS-Messenger.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE94E5241CCBA74F00FAE755 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FE94E52B1CCBA74F00FAE755 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -205,6 +207,7 @@
 				FE507A061CDB7B3B001A015C /* DBRosterStore.swift */,
 				FE3024311CE2036A00466497 /* DBVCardsCache.swift */,
 				FEC514211CEA3D2E003AF765 /* DBRoomsManager.swift */,
+				FE7F645A1D281B1C00B9DF56 /* DBCapabilitiesCache.swift */,
 			);
 			path = database;
 			sourceTree = "<group>";
@@ -506,6 +509,7 @@
 				FEDE938C1D08AFE800CA60A9 /* VCardEditViewController.swift in Sources */,
 				FE507A161CDB7B3B001A015C /* ChatsListViewController.swift in Sources */,
 				FE507A1F1CDB7B3B001A015C /* AccountTableViewCell.swift in Sources */,
+				FE7F645B1D281B1C00B9DF56 /* DBCapabilitiesCache.swift in Sources */,
 				FEDE93891D081C3D00CA60A9 /* Settings.swift in Sources */,
 				FEDE93871D07564F00CA60A9 /* SwitchTableViewCell.swift in Sources */,
 				FE507A171CDB7B3B001A015C /* ChatTableViewCell.swift in Sources */,
