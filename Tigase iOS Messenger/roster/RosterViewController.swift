@@ -35,10 +35,10 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
         return appDelegate.xmppService;
     }
     
-    lazy var rosterItemsCount:DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM roster_items");
-    lazy var rosterItemsList:DBStatement! = try? self.dbConnection.prepareStatement("SELECT id, account, jid, name FROM roster_items ORDER BY coalesce(name, jid) LIMIT 1 OFFSET :offset");
-    lazy var rosterItemGetPositionByName:DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM roster_items WHERE coalesce(name,jid) < :name");
-    lazy var rosterItemsGetNamesByJidAndAccount:DBStatement! = try? self.dbConnection.prepareStatement("SELECT coalesce(name, jid) as display_name FROM roster_items WHERE jid = :jid AND (:account IS NULL OR account = :account)");
+    private lazy var rosterItemsCount:DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM roster_items");
+    private lazy var rosterItemsList:DBStatement! = try? self.dbConnection.prepareStatement("SELECT id, account, jid, name FROM roster_items ORDER BY coalesce(name, jid) LIMIT 1 OFFSET :offset");
+    private lazy var rosterItemGetPositionByName:DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM roster_items WHERE coalesce(name,jid) < :name");
+    private lazy var rosterItemsGetNamesByJidAndAccount:DBStatement! = try? self.dbConnection.prepareStatement("SELECT coalesce(name, jid) as display_name FROM roster_items WHERE jid = :jid AND (:account IS NULL OR account = :account)");
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -187,41 +187,50 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
     }
     
     func avatarChanged(notification: NSNotification) {
-        let jid = notification.userInfo!["jid"] as! BareJID;
-        let indexPaths = indexPathsForJid(jid);
-        tableView.reloadRowsAtIndexPaths(indexPaths, withRowAnimation: .Automatic);
+        dispatch_async(dispatch_get_main_queue()) {
+            let jid = notification.userInfo!["jid"] as! BareJID;
+            let indexPaths = self.indexPathsForJid(jid);
+            self.tableView.reloadRowsAtIndexPaths(indexPaths, withRowAnimation: .Automatic);
+        }
     }
     
     func reloadData() {
-        tableView.reloadData();
+        dispatch_async(dispatch_get_main_queue()) {
+            self.tableView.reloadData();
+        }
     }
     
     func handleEvent(event: Event) {
         switch event {
         case let e as PresenceModule.ContactPresenceChanged:
             //reloadData();
-            guard e.sessionObject.userBareJid != nil && e.presence.from != nil else {
+            guard e.sessionObject.userBareJid != nil, let from = e.presence.from else {
                 // guard for possible malformed presence
                 return;
             }
             
-            let indexPaths = indexPathsForJid(e.presence.from!.bareJid, account: e.sessionObject.userBareJid!);
-            tableView.reloadRowsAtIndexPaths(indexPaths, withRowAnimation: .Automatic);
+            dispatch_async(dispatch_get_main_queue()) {
+                let indexPaths = self.indexPathsForJid(from.bareJid, account: e.sessionObject.userBareJid!);
+                self.tableView.reloadRowsAtIndexPaths(indexPaths, withRowAnimation: .Automatic);
+            }
         case let e as RosterModule.ItemUpdatedEvent:
             guard e.rosterItem != nil else {
                 tableView.reloadData();
                 return;
             }
-            let position = try! rosterItemGetPositionByName.scalar(e.rosterItem?.name ?? e.rosterItem!.jid.stringValue);
-            let indexPath = NSIndexPath(forRow: position!, inSection: 0);
-            switch e.action! {
-            case .added:
-                tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Fade);
-            case .removed:
-                tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade);
-            default:
-                tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic);
-                break;
+
+            dispatch_async(dispatch_get_main_queue()) {
+                let position = try! self.rosterItemGetPositionByName.scalar(e.rosterItem?.name ?? e.rosterItem!.jid.stringValue);
+                let indexPath = NSIndexPath(forRow: position!, inSection: 0);
+                switch e.action! {
+                case .added:
+                    self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Fade);
+                case .removed:
+                    self.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade);
+                default:
+                    self.tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic);
+                    break;
+                }
             }
         default:
             break;

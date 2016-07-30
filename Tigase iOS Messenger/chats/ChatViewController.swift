@@ -27,7 +27,24 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
     
     var titleView: ChatTitleView!;
     
+    var numberOfMessages_: Int?;
+    var numberOfMessages: Int {
+        get {
+            if numberOfMessages_ == nil {
+                numberOfMessages_ = xmppService.dbChatHistoryStore.countMessages(account, jid: jid.bareJid);
+            }
+            return numberOfMessages_!;
+        }
+        set {
+            numberOfMessages_ = newValue;
+        }
+    }
+    var scrollToIndexPath: NSIndexPath?;
+    
+    private var getMessagesStmt: DBStatement!;
+    
     override func viewDidLoad() {
+        getMessagesStmt = xmppService.dbChatHistoryStore.getMessagesStatementForAccountAndJid();
         super.viewDidLoad()
         tableView.dataSource = self;
         // Uncomment the following line to preserve selection between presentations
@@ -62,6 +79,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
     }
     
     override func viewWillAppear(animated: Bool) {
+        numberOfMessages_ = nil;
         super.viewWillAppear(animated);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
@@ -91,12 +109,12 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return xmppService.dbChatHistoryStore.countMessages(account, jid: jid.bareJid);
+        return numberOfMessages;
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         var cell:ChatTableViewCell? = nil;
-        xmppService.dbChatHistoryStore.forEachMessage(account, jid: jid.bareJid, limit: 1, offset: indexPath.row) { (cursor) -> Void in
+        xmppService.dbChatHistoryStore.forEachMessage(getMessagesStmt, account: account, jid: jid.bareJid, limit: 1, offset: indexPath.row) { (cursor) -> Void in
             let incoming = (cursor["state"]! % 2) == 0;
             let id = incoming ? "ChatTableViewCellIncoming" : "ChatTableViewCellOutgoing"
             cell = tableView.dequeueReusableCellWithIdentifier(id, forIndexPath: indexPath) as? ChatTableViewCell;
@@ -118,7 +136,10 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
             guard cpc.presence.from?.bareJid == self.jid.bareJid && cpc.sessionObject.userBareJid == account else {
                 return;
             }
-            titleView.status = cpc.presence;
+            
+            dispatch_async(dispatch_get_main_queue()) {
+                self.titleView.status = cpc.presence;
+            }
         default:
             break;
         }
@@ -128,12 +149,15 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         guard ((notification.userInfo?["account"] as? BareJID) == account) && ((notification.userInfo?["sender"] as? BareJID) == jid.bareJid) else {
             return;
         }
-        //reloadData();
-        let pos = xmppService.dbChatHistoryStore.countMessages(account, jid: jid.bareJid) - 1;
-        let indexPath = NSIndexPath(forRow: pos, inSection: 0);
-        tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Bottom);
-        self.tableView.scrollToRowAtIndexPath(indexPath, atScrollPosition: .None, animated: false);
-        xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
+        
+        dispatch_sync(dispatch_get_main_queue()) {
+            let indexPath = NSIndexPath(forRow: self.numberOfMessages, inSection: 0);
+            self.numberOfMessages += 1;
+            self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Bottom);
+            self.scrollToIndexPath(indexPath);
+        }
+
+        self.xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
     }
     
     func avatarChanged(notification: NSNotification) {
@@ -146,6 +170,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
     }
     
     func reloadData() {
+        numberOfMessages_ = nil;
         tableView.reloadData();
         xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
     }
@@ -158,12 +183,14 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         
         let client = xmppService.getClient(account);
         if client != nil && client!.state == .connected {
-            let messageModule:MessageModule? = client?.modulesManager.getModule(MessageModule.ID);
-            if let chat = messageModule?.chatManager.getChat(jid, thread: nil) {
-                let msg = messageModule!.sendMessage(chat, body: text!);
-                xmppService.dbChatHistoryStore.appendMessage(account, message: msg);
-                messageField.text = nil;
+            dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0)) {
+                let messageModule:MessageModule? = client?.modulesManager.getModule(MessageModule.ID);
+                if let chat = messageModule?.chatManager.getChat(self.jid, thread: nil) {
+                    let msg = messageModule!.sendMessage(chat, body: text!);
+                    self.xmppService.dbChatHistoryStore.appendMessage(self.account, message: msg);
+                }
             }
+            messageField.text = nil;
         } else {
             var alert: UIAlertController? = nil;
             if client == nil {
@@ -183,6 +210,30 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
                 self.presentViewController(alert!, animated: true, completion: nil);
             }
         }
+    }
+    
+    func scrollToIndexPath(indexPath: NSIndexPath) {
+        self.scrollToIndexPath = indexPath;
+        
+        dispatch_after( dispatch_time(DISPATCH_TIME_NOW, 30 * Int64(NSEC_PER_MSEC)), dispatch_get_main_queue()) {
+            guard self.scrollToIndexPath != nil else {
+                return;
+            }
+            let index = self.scrollToIndexPath!;
+            self.scrollToIndexPath = nil;
+            
+            UIView.animateWithDuration(0, animations: { ()-> Void in
+                self.tableView.scrollToRowAtIndexPath(index, atScrollPosition: .Bottom, animated: false);
+            });
+        }
+    }
+    
+    override func scrollToBottom(animated: Bool) {
+        guard numberOfMessages != 0 else {
+            return;
+        }
+        let indexPath = NSIndexPath(forRow: numberOfMessages - 1, inSection: 0);
+        scrollToIndexPath(indexPath);
     }
  
     class ChatTitleView: UIView {
@@ -207,7 +258,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
                 statusIcon.bounds = CGRectMake(0, -3, statusHeight, statusHeight);
                 var desc = status?.status;
                 if desc == nil {
-                    var show = status?.show;
+                    let show = status?.show;
                     if show == nil {
                         desc = "Offline";
                     } else {
@@ -225,7 +276,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
                         }
                     }
                 }
-                var statusText = NSMutableAttributedString(attributedString: NSAttributedString(attachment: statusIcon));
+                let statusText = NSMutableAttributedString(attributedString: NSAttributedString(attachment: statusIcon));
                 statusText.appendAttributedString(NSAttributedString(string: desc!));
                 statusView.attributedText = statusText;
             }

@@ -55,7 +55,7 @@ public class DBRosterStoreWrapper: RosterStore {
     
 }
 
-public class DBRosterStore: RosterCacheProvider {
+public class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
     
     private let dbConnection: DBConnection;
     
@@ -74,8 +74,14 @@ public class DBRosterStore: RosterCacheProvider {
     private lazy var insertItemGroupStmt: DBStatement! = try? self.dbConnection.prepareStatement("INSERT INTO roster_items_groups (item_id, group_id) VALUES (:item_id, :group_id)");
     private lazy var updateItemStmt: DBStatement! = try? self.dbConnection.prepareStatement("UPDATE roster_items SET name = :name, subscription = :subscription, timestamp = :timestamp, ask = :ask WHERE account = :account AND jid = :jid");
     
+    public var queue: dispatch_queue_t = dispatch_queue_create("db_roster_store_queue", DISPATCH_QUEUE_SERIAL);
+    public var queueTag: UnsafeMutablePointer<Void>;
+    
     public init(dbConnection:DBConnection) {
         self.dbConnection = dbConnection;
+        self.queueTag = UnsafeMutablePointer<Void>(Unmanaged.passUnretained(self.queue).toOpaque());
+        dispatch_queue_set_specific(queue, queueTag, queueTag, nil);
+
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(DBRosterStore.accountRemoved), name: "accountRemoved", object: nil);
     }
     
@@ -92,15 +98,15 @@ public class DBRosterStore: RosterCacheProvider {
     public func addItem(sessionObject: SessionObject, item:RosterItem) {
         do {
             let params:[String:Any?] = [ "account": sessionObject.userBareJid, "jid": item.jid, "name": item.name, "subscription": String(item.subscription.rawValue), "timestamp": NSDate(), "ask": item.ask ];
-            var dbItem = item as? DBRosterItem ?? DBRosterItem(rosterItem: item);
+            let dbItem = item as? DBRosterItem ?? DBRosterItem(rosterItem: item);
             if dbItem.id == nil {
                 // adding roster item to DB
                 dbItem.id = try insertItemStmt.insert(params);
             } else {
                 // updating roster item in DB
-                try updateItemStmt.execute(params);
+                try updateItemStmt.update(params);
                 let itemGroupsDeleteParams:[String:Any?] = ["account": sessionObject.userBareJid, "jid": dbItem.jid];
-                try deleteItemGroupsStmt.execute(itemGroupsDeleteParams);
+                try deleteItemGroupsStmt.update(itemGroupsDeleteParams);
             }
             
             for group in dbItem.groups {
@@ -117,40 +123,52 @@ public class DBRosterStore: RosterCacheProvider {
     
     public func get(sessionObject: SessionObject, jid:JID) -> RosterItem? {
         var item:DBRosterItem? = nil;
-        do {
-            let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : jid ];
-            try getItemStmt.query(params) { cursor -> Void in
-                item = DBRosterItem(jid: jid, id: cursor["id"]!);
-                item?.name = cursor["name"];
-                item?.subscription = RosterItem.Subscription(rawValue: cursor["subscription"]!)!;
-                item?.ask = cursor["ask"]!;
-            }
-            try getItemGroupsStmt.query(["item_id": item?.id]) { cursor -> Void in
-                item?.groups.append(cursor["name"]!);
-            }
-        } catch _ {
+        let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : jid ];
+        var id: Int?;
+        var name: String?;
+        var subscription = RosterItem.Subscription.none;
+        var ask = false;
             
+        dispatch_sync_local_queue() {
+            try! self.getItemStmt.query(params) { cursor -> Void in
+                id = cursor["id"]!;
+                name = cursor["name"];
+                subscription = RosterItem.Subscription(rawValue: cursor["subscription"]!)!;
+                ask = cursor["ask"]!;
+            }
+            if (id != nil) {
+                var groups = [String]();
+                try! self.getItemGroupsStmt.query(["item_id": id]) { cursor -> Void in
+                    groups.append(cursor["name"]!);
+                }
+                item = DBRosterItem(jid: jid, id: id, name: name, subscription: subscription, groups: groups, ask: ask);
+            }
         }
         return item;
     }
     
     public func removeAll(sessionObject: SessionObject) {
         let params:[String:Any?] = ["account": sessionObject.userBareJid];
-        do {
-            try deleteItemsGroupsStmt.execute(params);
-            try deleteItemsStmt.execute(params);
-        } catch _ {
+        
+        dbConnection.dispatch_async_db_queue() {
+            do {
+                try self.deleteItemsGroupsStmt.execute(params);
+                try self.deleteItemsStmt.execute(params);
+            } catch _ {
             
+            }
         }
     }
     
     public func removeItem(sessionObject: SessionObject, jid:JID) {
-        do {
-            let params:[String:Any?] = ["account": sessionObject.userBareJid, "jid": jid];
-            try deleteItemGroupsStmt.execute(params);
-            try deleteItemStmt.execute(params);
-        } catch _ {
+        let params:[String:Any?] = ["account": sessionObject.userBareJid, "jid": jid];
+        dbConnection.dispatch_async_db_queue() {
+            do {
+                try self.deleteItemGroupsStmt.execute(params);
+                try self.deleteItemStmt.execute(params);
+            } catch _ {
             
+            }
         }
     }
     
@@ -173,11 +191,14 @@ public class DBRosterStore: RosterCacheProvider {
         if let data = notification.userInfo {
             let accountStr = data["account"] as! String;
             let params:[String:Any?] = ["account": accountStr];
-            do {
-                try deleteItemsGroupsStmt.execute(params);
-                try deleteItemsStmt.execute(params);
-            } catch _ {
+            
+            dbConnection.dispatch_async_db_queue() {
+                do {
+                    try self.deleteItemsGroupsStmt.execute(params);
+                    try self.deleteItemsStmt.execute(params);
+                } catch _ {
                 
+                }
             }
         }
     }
@@ -198,17 +219,17 @@ extension RosterItemProtocol {
 class DBRosterItem: RosterItem {
     var id:Int? = nil;
     
-    init(jid: JID, id: Int) {
+    init(jid: JID, id: Int?, name: String?, subscription: RosterItem.Subscription, groups: [String], ask: Bool) {
         self.id = id;
-        super.init(jid: jid);
+        super.init(jid: jid, name: name, subscription: subscription, groups: groups, ask: ask);
     }
     
     init(rosterItem item: RosterItem) {
-        super.init(jid: item.jid);
-        self.name = item.name;
-        self.subscription = item.subscription;
-        self.ask = item.ask;
-        self.groups = item.groups;
+        super.init(jid: item.jid, name: item.name, subscription: item.subscription, groups: item.groups, ask: item.ask);
+    }
+    
+    override func update(name: String?, subscription: RosterItem.Subscription, groups: [String], ask: Bool) -> RosterItem {
+        return DBRosterItem(jid: self.jid, id: self.id, name: name, subscription: subscription, groups: groups, ask: ask);
     }
 }
 

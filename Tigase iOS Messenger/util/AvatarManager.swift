@@ -29,7 +29,7 @@ public class AvatarManager: EventHandler {
     
     var defaultAvatar:UIImage;
     var cache = NSCache();
-   
+    
     var xmppService: XmppService {
         let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate;
         return appDelegate.xmppService;
@@ -54,7 +54,7 @@ public class AvatarManager: EventHandler {
         
         // adding default avatar to cache to make sure we will not load data
         // from database when retrieving avatars for jids without avatar
-        cache.setObject(AvatarHolder(image: image), forKey: jid.stringValue);
+        self.cache.setObject(AvatarHolder(image: image), forKey: jid.stringValue);
         return image;
     }
     
@@ -75,13 +75,18 @@ public class AvatarManager: EventHandler {
             return;
         }
 
-        if !xmppService.dbVCardsCache.checkVCardPhotoHash(jid, hash: photoHash!) {
-            if let vcardModule:VCardModule = xmppService.getClient(account)?.modulesManager?.getModule(VCardModule.ID) {
-                vcardModule.retrieveVCard(JID(jid), onSuccess: { (vcard) in
-                    self.xmppService.dbVCardsCache.updateVCard(jid, vcard: vcard);
-                    }, onError: { (errorCondition:ErrorCondition?) in
-                    self.cache.removeObjectForKey(jid.stringValue);
-                });
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0)) {
+            if !self.xmppService.dbVCardsCache.checkVCardPhotoHash(jid, hash: photoHash!) {
+                if let vcardModule:VCardModule = self.xmppService.getClient(account)?.modulesManager?.getModule(VCardModule.ID) {
+                    vcardModule.retrieveVCard(JID(jid), onSuccess: { (vcard) in
+                        
+                        dispatch_async(dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0)) {
+                            self.xmppService.dbVCardsCache.updateVCard(jid, vcard: vcard);
+                        }
+                        }, onError: { (errorCondition:ErrorCondition?) in
+                            self.cache.removeObjectForKey(jid.stringValue);
+                    });
+                }
             }
         }
     }

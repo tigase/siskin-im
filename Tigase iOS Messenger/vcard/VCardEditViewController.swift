@@ -126,12 +126,12 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         switch indexPath.section {
         case 0:
-            var cell = tableView.dequeueReusableCellWithIdentifier("BasicInfoCell") as! VCardEditBasicTableViewCell;
+            let cell = tableView.dequeueReusableCellWithIdentifier("BasicInfoCell") as! VCardEditBasicTableViewCell;
             cell.avatarManager = xmppService.avatarManager;
             cell.accountJid = accountJid;
             cell.vcard = vcard;
             
-            var singleTap = UITapGestureRecognizer(target: self, action: #selector(VCardEditViewController.photoClicked));
+            let singleTap = UITapGestureRecognizer(target: self, action: #selector(VCardEditViewController.photoClicked));
             cell.photoView.addGestureRecognizer(singleTap);
             cell.photoView.multipleTouchEnabled = true;
             cell.photoView.userInteractionEnabled = true;
@@ -139,33 +139,33 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
             return cell;
         case 1:
             if indexPath.row < phones.count {
-                var cell = tableView.dequeueReusableCellWithIdentifier("PhoneEditCell") as! VCardEditPhoneTableViewCell;
+                let cell = tableView.dequeueReusableCellWithIdentifier("PhoneEditCell") as! VCardEditPhoneTableViewCell;
                 cell.phone = phones[indexPath.row];
                 return cell;
             } else {
-                var cell = tableView.dequeueReusableCellWithIdentifier("PhoneAddCell");
+                let cell = tableView.dequeueReusableCellWithIdentifier("PhoneAddCell");
                 return cell!;
             }
         case 2:
             if indexPath.row < emails.count {
-                var cell = tableView.dequeueReusableCellWithIdentifier("EmailEditCell") as! VCardEditEmailTableViewCell;
+                let cell = tableView.dequeueReusableCellWithIdentifier("EmailEditCell") as! VCardEditEmailTableViewCell;
                 cell.email = emails[indexPath.row];
                 return cell;
             } else {
-                var cell = tableView.dequeueReusableCellWithIdentifier("EmailAddCell");
+                let cell = tableView.dequeueReusableCellWithIdentifier("EmailAddCell");
                 return cell!;
             }
         case 3:
             if indexPath.row < addresses.count {
-                var cell = tableView.dequeueReusableCellWithIdentifier("AddressEditCell") as! VCardEditAddressTableViewCell;
+                let cell = tableView.dequeueReusableCellWithIdentifier("AddressEditCell") as! VCardEditAddressTableViewCell;
                 cell.address = addresses[indexPath.row];
                 return cell;
             } else {
-                var cell = tableView.dequeueReusableCellWithIdentifier("AddressAddCell");
+                let cell = tableView.dequeueReusableCellWithIdentifier("AddressAddCell");
                 return cell!;
             }
         default:
-            var cell = tableView.dequeueReusableCellWithIdentifier("PhoneAddCell");
+            let cell = tableView.dequeueReusableCellWithIdentifier("PhoneAddCell");
             return cell!;
         }
     }
@@ -275,14 +275,20 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     }
     
     @IBAction func refreshVCard(sender: UIBarButtonItem) {
-        if let client = xmppService.getClient(accountJid) {
-            if let vcardModule: VCardModule = client.modulesManager.getModule(VCardModule.ID) {
-                vcardModule.retrieveVCard(onSuccess: { (vcard) in
-                    self.xmppService.dbVCardsCache.updateVCard(self.accountJid, vcard: vcard);
-                    self.vcard = vcard;
-                    self.tableView.reloadData();
-                    }, onError: { (errorCondition) in
-                });
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0)) {
+            if let client = self.xmppService.getClient(self.accountJid) {
+                if let vcardModule: VCardModule = client.modulesManager.getModule(VCardModule.ID) {
+                    vcardModule.retrieveVCard(onSuccess: { (vcard) in
+                        dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0)) {
+                            self.xmppService.dbVCardsCache.updateVCard(self.accountJid, vcard: vcard);
+                            self.vcard = vcard;
+                            dispatch_async(dispatch_get_main_queue()) {
+                                self.tableView.reloadData();
+                            }
+                        }
+                        }, onError: { (errorCondition) in
+                    });
+                }
             }
         }
     }
@@ -291,10 +297,13 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         vcard.telephones = phones;
         vcard.emails = emails;
         vcard.addresses = addresses;
-        if let client = xmppService.getClient(accountJid) {
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0)) {
+        if let client = self.xmppService.getClient(self.accountJid) {
             if let vcardModule: VCardModule = client.modulesManager.getModule(VCardModule.ID) {
-                vcardModule.publishVCard(vcard, onSuccess: {
-                    self.navigationController?.popViewControllerAnimated(true);
+                vcardModule.publishVCard(self.vcard, onSuccess: {
+                    dispatch_async(dispatch_get_main_queue()) {
+                        self.navigationController?.popViewControllerAnimated(true);
+                    }
                     
                     let avatarHash = Digest.SHA1.digestToHex(self.vcard.photoValBinary);
                     let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID)!;
@@ -307,6 +316,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                         print("VCard publication failed", errorCondition);
                 });
             }
+        }
         }
     }
     

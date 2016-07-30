@@ -61,7 +61,7 @@ public class DBChatStoreWrapper: ChatStore {
     }
 }
 
-public class DBChatStore {
+public class DBChatStore: LocalQueueDispatcher {
     
     private static let CHATS_GET = "SELECT id, type, thread_id, resource, timestamp FROM chats WHERE account = :account AND jid = :jid";
     private static let CHATS_LIST = "SELECT id, jid, type, thread_id, resource, nickname, password, timestamp FROM chats WHERE account = :account";
@@ -72,6 +72,8 @@ public class DBChatStore {
     private static let CHATS_COUNT = "SELECT count(id) as count FROM chats WHERE account = :account";
     
     private let dbConnection:DBConnection;
+    public let queue: dispatch_queue_t = dispatch_queue_create("db_chat_store_queue", DISPATCH_QUEUE_SERIAL);
+    public let queueTag: UnsafeMutablePointer<Void>;
     
     private lazy var getStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHATS_GET);
     private lazy var getAllStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHATS_LIST);
@@ -83,6 +85,9 @@ public class DBChatStore {
     
     public init(dbConnection:DBConnection) {
         self.dbConnection = dbConnection;
+        self.queueTag = UnsafeMutablePointer<Void>(Unmanaged.passUnretained(self.queue).toOpaque());
+        dispatch_queue_set_specific(queue, queueTag, queueTag, nil);
+
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(DBChatStore.accountRemoved), name: "accountRemoved", object: nil);
     }
     
@@ -97,9 +102,10 @@ public class DBChatStore {
     }
     
     public func get<T>(sessionObject: SessionObject, jid: BareJID, filter: ((T) -> Bool)?) -> T? {
-        do {
-            let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : jid ];
-            if let cursor = try getStmt.query(params) {
+        let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : jid ];
+        let context = getContext(sessionObject)!;
+        return dispatch_sync_with_result_local_queue() {
+            if let cursor = try! self.getStmt.query(params) {
                 repeat {
                     let type:Int = cursor["type"]!;
                     switch type {
@@ -107,7 +113,7 @@ public class DBChatStore {
                         let jid: BareJID = cursor["jid"]!;
                         let nickname: String = cursor["nickname"]!;
                         let password: String? = cursor["password"];
-                        if let r = DBRoom(context: getContext(sessionObject)!, roomJid: jid, nickname: nickname) as? T {
+                        if let r = DBRoom(context: context, roomJid: jid, nickname: nickname) as? T {
                             (r as! DBRoom).id = cursor["id"];
                             (r as! DBRoom).password = password;
                             (r as! DBRoom).lastMessageDate = cursor["timestamp"];
@@ -128,18 +134,16 @@ public class DBChatStore {
                     }
                 } while cursor.next()
             }
-        } catch _ {
-            
+            return nil;
         }
-        return nil;
     }
     
     public func getAll<T>(sessionObject:SessionObject) -> [T] {
         var result = [T]();
-        do {
-            let context = getContext(sessionObject);
+        let context = getContext(sessionObject);
+        dispatch_sync_local_queue() {
             let params:[String:Any?] = [ "account" : sessionObject.userBareJid ];
-            try getAllStmt.query(params) { (cursor) -> Bool in
+            try! self.getAllStmt.query(params) { (cursor) -> Bool in
                 let type:Int = cursor["type"]!;
                 let id: Int? = cursor["id"];
                 switch type {
@@ -166,23 +170,18 @@ public class DBChatStore {
                 }
                 return true;
             }
-        } catch _ {
-            
         }
         return result;
     }
     
     public func isFor(sessionObject:SessionObject, jid:BareJID) -> Bool {
-        do {
+        return dispatch_sync_with_result_local_queue() {
             let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : jid ];
-            let cursor = try isForStmt.query(params)!;
+            let cursor = try! self.isForStmt.query(params)!;
             
             let count:Int = cursor["count"] ?? 0;
             return count > 0;
-        } catch _ {
-            
         }
-        return false;
     }
     
     public func open<T>(sessionObject:SessionObject, chat:ChatProtocol) -> T? {
@@ -190,40 +189,30 @@ public class DBChatStore {
         if current?.allowFullJid == false {
             return current as? T;
         }
-        do {
-            switch chat {
-            case let c as Chat:
-                let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : c.jid.bareJid, "timestamp": NSDate(), "type" : 0, "resource" : c.jid.resource, "thread" : c.thread ];
-                let id = try openChatStmt.insert(params);
-                let dbChat = DBChat(jid: c.jid, thread: c.thread);
-                dbChat.id = id;
-                return dbChat as? T;
-            case let r as Room:
-                let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : r.jid.bareJid, "timestamp": NSDate(), "type" : 1, "nickname" : r.nickname, "password" : r.password ];
-                let id = try openRoomStmt.insert(params);
-                let dbRoom = DBRoom(context: r.context, roomJid: r.roomJid, nickname: r.nickname);
-                dbRoom.password = r.password;
-                dbRoom.id = id;
-                return dbRoom as? T;
-            default:
-                break;
-            }
-        } catch {
-            print("Error during inserting record: \(error)");
+        
+        switch chat {
+        case let c as Chat:
+            let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : c.jid.bareJid, "timestamp": NSDate(), "type" : 0, "resource" : c.jid.resource, "thread" : c.thread ];
+            let id = try! self.openChatStmt.insert(params);
+            let dbChat = DBChat(jid: c.jid, thread: c.thread);
+            dbChat.id = id;
+            return dbChat as? T;
+        case let r as Room:
+            let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : r.jid.bareJid, "timestamp": NSDate(), "type" : 1, "nickname" : r.nickname, "password" : r.password ];
+            let id = try! self.openRoomStmt.insert(params);
+            let dbRoom = DBRoom(context: r.context, roomJid: r.roomJid, nickname: r.nickname);
+            dbRoom.password = r.password;
+            dbRoom.id = id;
+            return dbRoom as? T;
+        default:
             return nil;
         }
-        return chat as? T;
     }
     
     public func close(chat:ChatProtocol) -> Bool {
         if let id = chat.id {
-            do {
-                let params:[String:Any?] = [ "id" : id ];
-                try closeChatStmt.execute(params);
-                return closeChatStmt.changesCount > 0;
-            } catch _ {
-                
-            }
+            let params:[String:Any?] = [ "id" : id ];
+            return try! closeChatStmt.update(params) > 0;
         }
         return false;
     }

@@ -118,7 +118,7 @@ class AccountSettingsViewController: UITableViewController {
             companyTextView.hidden = true;
         }
         
-        var addresses = vcard?.addresses.filter { (addr) -> Bool in
+        let addresses = vcard?.addresses.filter { (addr) -> Bool in
             return !addr.isEmpty();
         };
         

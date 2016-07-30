@@ -103,7 +103,7 @@ class SettingsViewController: UITableViewController, EventHandler {
             }
             return cell;
         } else if (indexPath.section == 1) {
-            var cell = tableView.dequeueReusableCellWithIdentifier("StatusTableViewCell", forIndexPath: indexPath);
+            let cell = tableView.dequeueReusableCellWithIdentifier("StatusTableViewCell", forIndexPath: indexPath);
             let label = cell.viewWithTag(1)! as! UILabel;
             label.text = Settings.StatusMessage.getString();
             return cell;
@@ -210,7 +210,9 @@ class SettingsViewController: UITableViewController, EventHandler {
         switch event {
         case is SocketConnector.ConnectedEvent, is SocketConnector.DisconnectedEvent, is StreamManagementModule.ResumedEvent,
              is SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
-            tableView.reloadData();
+            dispatch_async(dispatch_get_main_queue()) {
+                self.tableView.reloadData();
+            }
         default:
             break;
         }
@@ -225,7 +227,7 @@ class SettingsViewController: UITableViewController, EventHandler {
         self.showDetailViewController(navigationController, sender: self);
     }
     
-    public enum SettingsEnum: Int {
+    internal enum SettingsEnum: Int {
         case DeleteChatHistoryOnClose = 0
         case EnableMessageCarbons = 1
     }

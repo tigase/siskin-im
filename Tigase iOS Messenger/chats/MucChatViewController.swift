@@ -26,7 +26,24 @@ class MucChatViewController: BaseChatViewController, UITableViewDataSource {
 
     var room: Room?;
     
+    var numberOfMessages_: Int?;
+    var numberOfMessages: Int {
+        get {
+            if numberOfMessages_ == nil {
+                numberOfMessages_ = xmppService.dbChatHistoryStore.countMessages(account, jid: jid.bareJid);
+            }
+            return numberOfMessages_!;
+        }
+        set {
+            numberOfMessages_ = newValue;
+        }
+    }
+    var scrollToIndexPath: NSIndexPath?;
+    
+    private var getMessagesStmt: DBStatement!;
+    
     override func viewDidLoad() {
+        getMessagesStmt = xmppService.dbChatHistoryStore.getMessagesStatementForAccountAndJid();
         super.viewDidLoad()
         tableView.dataSource = self;
         // Uncomment the following line to preserve selection between presentations
@@ -39,6 +56,7 @@ class MucChatViewController: BaseChatViewController, UITableViewDataSource {
     }
     
     override func viewWillAppear(animated: Bool) {
+        numberOfMessages_ = nil;
         super.viewWillAppear(animated);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(MucChatViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(MucChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
@@ -62,12 +80,12 @@ class MucChatViewController: BaseChatViewController, UITableViewDataSource {
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return xmppService.dbChatHistoryStore.countMessages(account, jid: jid.bareJid);
+        return numberOfMessages;
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         var cell:MucChatTableViewCell? = nil;
-        xmppService.dbChatHistoryStore.forEachMessage(account, jid: jid.bareJid, limit: 1, offset: indexPath.row) { (cursor) -> Void in
+        xmppService.dbChatHistoryStore.forEachMessage(getMessagesStmt, account: account, jid: jid.bareJid, limit: 1, offset: indexPath.row) { (cursor) -> Void in
             let nickname: String? = cursor["author_nickname"];
             let incoming = nickname != self.room?.nickname;
             let id = incoming ? "MucChatTableViewCellIncoming" : "MucChatTableViewCellOutgoing"
@@ -103,11 +121,13 @@ class MucChatViewController: BaseChatViewController, UITableViewDataSource {
         guard ((notification.userInfo?["account"] as? BareJID) == account) && ((notification.userInfo?["sender"] as? BareJID) == jid.bareJid) else {
             return;
         }
-        //reloadData();
-        let pos = xmppService.dbChatHistoryStore.countMessages(account, jid: jid.bareJid) - 1;
-        let indexPath = NSIndexPath(forRow: pos, inSection: 0);
-        tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Bottom);
-        self.tableView.scrollToRowAtIndexPath(indexPath, atScrollPosition: .None, animated: false);
+        
+        dispatch_sync(dispatch_get_main_queue()) {
+            let indexPath = NSIndexPath(forRow: self.numberOfMessages, inSection: 0);
+            self.numberOfMessages += 1;
+            self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Bottom);
+            self.scrollToIndexPath(indexPath);
+        }
         xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
     }
     
@@ -116,12 +136,15 @@ class MucChatViewController: BaseChatViewController, UITableViewDataSource {
         guard ((notification.userInfo?["jid"] as? BareJID) == jid.bareJid) else {
             return;
         }
-        if let indexPaths = tableView.indexPathsForVisibleRows {
-            tableView.reloadRowsAtIndexPaths(indexPaths, withRowAnimation: .None);
+        dispatch_async(dispatch_get_main_queue()) {
+            if let indexPaths = self.tableView.indexPathsForVisibleRows {
+                self.tableView.reloadRowsAtIndexPaths(indexPaths, withRowAnimation: .None);
+            }
         }
     }
     
     func reloadData() {
+        numberOfMessages_ = nil;
         tableView.reloadData();
         xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
     }
@@ -133,13 +156,37 @@ class MucChatViewController: BaseChatViewController, UITableViewDataSource {
         }
 
         guard room?.state == .joined else {
-            var alert: UIAlertController?  = UIAlertController.init(title: "Warning", message: "You are not connected to room.\nPlease wait reconnection to room", preferredStyle: .Alert);
+            let alert: UIAlertController?  = UIAlertController.init(title: "Warning", message: "You are not connected to room.\nPlease wait reconnection to room", preferredStyle: .Alert);
             alert?.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil));
             self.presentViewController(alert!, animated: true, completion: nil);
             return;
         }
-        room!.sendMessage(text);
+        
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0)) {
+            self.room!.sendMessage(text);
+        }
         messageField.text = nil;
+    }
+        
+    func scrollToIndexPath(indexPath: NSIndexPath) {
+        self.scrollToIndexPath = indexPath;
+        
+        dispatch_after( dispatch_time(DISPATCH_TIME_NOW, 30 * Int64(NSEC_PER_MSEC)), dispatch_get_main_queue()) {
+            guard self.scrollToIndexPath != nil else {
+                return;
+            }
+            let index = self.scrollToIndexPath!;
+            self.scrollToIndexPath = nil;
+            
+            UIView.animateWithDuration(0, animations: { ()-> Void in
+                self.tableView.scrollToRowAtIndexPath(index, atScrollPosition: .None, animated: false);
+            });
+        }
+    }
+    
+    override func scrollToBottom(animated: Bool) {
+        let indexPath = NSIndexPath(forRow: numberOfMessages - 1, inSection: 0);
+        scrollToIndexPath(indexPath);
     }
     
 }

@@ -46,29 +46,35 @@ public class DBCapabilitiesCache: CapabilitiesCache {
     }
     
     public func getFeatures(node: String) -> [String]? {
-        var result = [String]();
-        try! getFeatureStmt.query(node, forEachRow: {(cursor)->Void in
-            result.append(cursor["feature"]!);
-        });
-        return result;
+        return dbConnection.dispatch_sync_with_result_local_queue() {
+            var result = [String]();
+            try! self.getFeatureStmt.query(node, forEachRow: {(cursor)->Void in
+                result.append(cursor["feature"]!);
+            });
+            return result;
+        }
     }
     
     public func getIdentity(node: String) -> DiscoveryModule.Identity? {
-        guard let cursor: DBCursor = try! getIdentityStmt.execute(node)?.cursor else {
-            return nil;
+        return dbConnection.dispatch_sync_with_result_local_queue() {
+            guard let cursor: DBCursor = try! self.getIdentityStmt.execute(node)?.cursor else {
+                return nil;
+            }
+            let category: String? = cursor["category"];
+            let type: String? = cursor["type"];
+            let name: String? = cursor["name"];
+            return DiscoveryModule.Identity(category: category!, type: type!, name: name);
         }
-        let category: String? = cursor["category"];
-        let type: String? = cursor["type"];
-        let name: String? = cursor["name"];
-        return DiscoveryModule.Identity(category: category!, type: type!, name: name);
     }
     
     public func getNodesWithFeature(feature: String) -> [String] {
-        var result = [String]();
-        try! getNodesWithFeatureStmt.query(feature, forEachRow: {(cursor)->Void in
-            result.append(cursor["node"]!);
-        });
-        return result;
+        return dbConnection.dispatch_sync_with_result_local_queue() {
+            var result = [String]();
+            try! self.getNodesWithFeatureStmt.query(feature, forEachRow: {(cursor)->Void in
+                result.append(cursor["node"]!);
+            });
+            return result;
+        }
     }
     
     public func isCached(node: String) -> Bool {

@@ -48,7 +48,7 @@ class AvatarStatusView: UIView {
     }
     
     func setStatus(status:Presence.Show?) {
-        var image:UIImage? = AvatarStatusView.getStatusImage(status);
+        let image:UIImage? = AvatarStatusView.getStatusImage(status);
 
         statusImageView.image = image;
     }

@@ -96,7 +96,7 @@ public class AccountManager {
         var query = AccountManager.getAccountQuery(name);
         query.removeValueForKey(String(kSecMatchLimit));
         query.removeValueForKey(String(kSecReturnAttributes));
-        let lastResultCode:OSStatus = SecItemDelete(query);
+        _ = SecItemDelete(query);
         NSNotificationCenter.defaultCenter().postNotificationName("accountConfigurationChanged", object: self, userInfo: ["account":name]);
         NSNotificationCenter.defaultCenter().postNotificationName("accountRemoved", object: self, userInfo: ["account":name]);
     }

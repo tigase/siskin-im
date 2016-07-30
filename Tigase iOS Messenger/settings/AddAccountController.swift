@@ -95,13 +95,17 @@ class AddAccountController: UITableViewController {
         let password = passwordTextField.text;
         
         xmppClient = InBandRegistrationModule.connectAndRegister(userJid: userJid, password: password, email: nil, onSuccess: {
-            self.hideIndicator();
-            self.xmppClient = nil;
-            self.saveAccount();
-            }, onError: { (errorCondition) in
+            dispatch_async(dispatch_get_main_queue()) {
                 self.hideIndicator();
                 self.xmppClient = nil;
-                self.showError(errorCondition);
+                self.saveAccount();
+            }
+            }, onError: { (errorCondition) in
+                dispatch_async(dispatch_get_main_queue()) {
+                    self.hideIndicator();
+                    self.xmppClient = nil;
+                    self.showError(errorCondition);
+                }
         })
     }
     

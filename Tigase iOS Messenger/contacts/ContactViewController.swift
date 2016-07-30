@@ -87,7 +87,9 @@ class ContactViewController: UITableViewController {
                     emails.append(e);
                 });
             }
-            tableView.reloadData();
+            dispatch_async(dispatch_get_main_queue()) {
+                self.tableView.reloadData();
+            }
         }
     }
     
@@ -119,13 +121,17 @@ class ContactViewController: UITableViewController {
     }
     
     func refreshVCard() {
-        if let vcardModule: VCardModule = xmppService.getClient(account)?.modulesManager.getModule(VCardModule.ID) {
-            vcardModule.retrieveVCard(JID(jid), onSuccess: { (vcard) in
-                self.xmppService.dbVCardsCache.updateVCard(self.jid, vcard: vcard);
-                self.vcard = vcard;
-                }, onError: { (errorCondition) in
-                    // retrieval failed - ignoring for now
-            })
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0)) {
+            if let vcardModule: VCardModule = self.xmppService.getClient(self.account)?.modulesManager.getModule(VCardModule.ID) {
+                vcardModule.retrieveVCard(JID(self.jid), onSuccess: { (vcard) in
+                    dispatch_async(dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0)) {
+                        self.xmppService.dbVCardsCache.updateVCard(self.jid, vcard: vcard);
+                        self.vcard = vcard;
+                    }
+                    }, onError: { (errorCondition) in
+                        // retrieval failed - ignoring for now
+                })
+            }
         }
     }
     

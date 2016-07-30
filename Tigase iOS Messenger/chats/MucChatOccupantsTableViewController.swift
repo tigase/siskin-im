@@ -78,8 +78,8 @@ class MucChatOccupantsTableViewController: UITableViewController, EventHandler {
         } else {
             cell.avatarStatusView.setAvatar(xmppService.avatarManager.defaultAvatar);
         }
-        cell.avatarStatusView.setStatus(occupant?.presence?.show);
-        cell.statusLabel.text = occupant?.presence?.status;
+        cell.avatarStatusView.setStatus(occupant?.presence.show);
+        cell.statusLabel.text = occupant?.presence.status;
         
         return cell
     }
@@ -103,7 +103,9 @@ class MucChatOccupantsTableViewController: UITableViewController, EventHandler {
     func handleEvent(event: Event) {
         switch event {
         case is MucModule.OccupantLeavedEvent, is MucModule.OccupantComesEvent, is MucModule.OccupantChangedPresenceEvent, is MucModule.OccupantChangedNickEvent:
-            tableView.reloadData();
+            dispatch_async(dispatch_get_main_queue()) {
+                self.tableView.reloadData();
+            }
         default:
             break;
         }

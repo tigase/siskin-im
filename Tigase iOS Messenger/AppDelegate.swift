@@ -53,7 +53,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.serverCertificateError), name: "serverCertificateError", object: nil);
         updateApplicationIconBadgeNumber();
         
-        // TODO: for now lets set 60, however we should use 600 in future
         application.setMinimumBackgroundFetchInterval(60);
         return true
     }
@@ -189,7 +188,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
             
             if alertBody != nil {
-                var userNotification = UILocalNotification();
+                let userNotification = UILocalNotification();
                 userNotification.alertAction = "open";
                 userNotification.alertBody = alertBody;
                 userNotification.soundName = UILocalNotificationDefaultSoundName;
@@ -207,8 +206,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func updateApplicationIconBadgeNumber() {
-        let unreadChats = xmppService.dbChatHistoryStore.countUnreadChats();
-        UIApplication.sharedApplication().applicationIconBadgeNumber = unreadChats;
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0)) {
+            let unreadChats = self.xmppService.dbChatHistoryStore.countUnreadChats();
+            dispatch_async(dispatch_get_main_queue()) {
+                UIApplication.sharedApplication().applicationIconBadgeNumber = unreadChats;
+            }
+        }
     }
     
     func serverCertificateError(notification: NSNotification) {
@@ -218,7 +221,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         let account = BareJID(certInfo["account"] as! String);
         
-        var userNotification = UILocalNotification();
+        let userNotification = UILocalNotification();
         userNotification.alertAction = "fix";
         userNotification.alertBody = "Connection to server \(account.domain) failed";
         userNotification.userInfo = certInfo;

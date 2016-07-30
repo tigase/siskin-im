@@ -93,7 +93,7 @@ class ChatTableViewCell: UITableViewCell {
 
     func setMessageText(text: String?) {
         if text != nil && (text!.containsString("http:") || text!.containsString("https://")) {
-            var attrText = NSMutableAttributedString(string: text!);
+            let attrText = NSMutableAttributedString(string: text!);
             
             if let detect = try? NSDataDetector(types: NSTextCheckingType.Link.rawValue | NSTextCheckingType.PhoneNumber.rawValue | NSTextCheckingType.Address.rawValue) {
                 let matches = detect.matchesInString(text!, options: .ReportCompletion, range: NSMakeRange(0, text!.characters.count));

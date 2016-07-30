@@ -42,7 +42,7 @@ public class DBChatHistoryStore: Logger, EventHandler {
     private lazy var msgsCountStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_COUNT);
     private lazy var msgsDeleteStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_DELETE);
     private lazy var msgsCountUnreadChatsStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_COUNT_UNREAD_CHATS);
-    private lazy var msgsGetStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_GET);
+    //private lazy var msgsGetStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_GET);
     private lazy var msgsMarkAsReadStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_MARK_AS_READ);
     private lazy var msgAlreadyAddedStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.MSG_ALREADY_ADDED);
     private lazy var chatUpdateTimestamp: DBStatement! = try? self.dbConnection.prepareStatement("UPDATE chats SET timestamp = :timestamp WHERE account = :account AND jid = :jid");
@@ -102,9 +102,11 @@ public class DBChatHistoryStore: Logger, EventHandler {
         
         let state = incoming ? State.incoming_unread : State.outgoing;
         let params:[String:Any?] = ["account" : account, "jid" : jid, "author_jid" : authorJid, "author_nickname": authorNickname, "timestamp": timestamp, "item_type": itemType.rawValue, "data": data, "state": state.rawValue, "stanza_id": id]
-        let insertedId = try! msgAppendStmt.insert(params);
-        let cu_params:[String:Any?] = ["account" : account, "jid" : jid, "timestamp" : timestamp ];
-        try! chatUpdateTimestamp.execute(cu_params);
+        dbConnection.dispatch_async_db_queue() {
+            _ = try! self.msgAppendStmt.insert(params);
+            let cu_params:[String:Any?] = ["account" : account, "jid" : jid, "timestamp" : timestamp ];
+            try! self.chatUpdateTimestamp.execute(cu_params);
+        }
         return true;
     }
     
@@ -123,9 +125,13 @@ public class DBChatHistoryStore: Logger, EventHandler {
         return try! msgsCountStmt.scalar(params) ?? 0;
     }
     
-    public func forEachMessage(account:BareJID, jid:BareJID, limit:Int, offset: Int, forEach: (cursor:DBCursor)->Void) {
+    public func forEachMessage(stmt: DBStatement, account:BareJID, jid:BareJID, limit:Int, offset: Int, forEach: (cursor:DBCursor)->Void) {
         let params:[String:Any?] = ["account":account, "jid":jid, "limit": limit, "offset": offset];
-        try! msgsGetStmt.query(params, forEachRow: forEach);
+        try! stmt.query(params, forEachRow: forEach);
+    }
+    
+    public func getMessagesStatementForAccountAndJid() -> DBStatement {
+        return try! self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_GET);
     }
     
     public func handleEvent(event:Event) {
@@ -146,16 +152,22 @@ public class DBChatHistoryStore: Logger, EventHandler {
     }
     
     public func markAsRead(account: BareJID, jid: BareJID) {
-        let params:[String:Any?] = ["account":account, "jid":jid];
-        let updatedRecords = try! msgsMarkAsReadStmt.update(params);
-        if updatedRecords > 0 {
-            chatItemsChanged(account, jid: jid);
+        dbConnection.dispatch_async_db_queue() {
+            let params:[String:Any?] = ["account":account, "jid":jid];
+            let updatedRecords = try! self.msgsMarkAsReadStmt.update(params);
+            if updatedRecords > 0 {
+                dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0)) {
+                    self.chatItemsChanged(account, jid: jid);
+                }
+            }
         }
     }
     
     public func deleteMessages(account: BareJID, jid: BareJID) {
         let params:[String:Any?] = ["account":account, "jid":jid];
-        try! msgsDeleteStmt.execute(params);
+        dbConnection.dispatch_async_db_queue() {
+            try! self.msgsDeleteStmt.execute(params);
+        }
     }
     
     @objc public func accountRemoved(notification: NSNotification) {

@@ -240,8 +240,9 @@ public class XmppService: Logger, EventHandler {
             var info = certInfo;
             info["account"] = e.sessionObject.userBareJid!.stringValue;
             
-            NSNotificationCenter.defaultCenter().postNotificationName("serverCertificateError", object: self, userInfo: info);
-            
+            dispatch_async(dispatch_get_main_queue()) {
+                NSNotificationCenter.defaultCenter().postNotificationName("serverCertificateError", object: self, userInfo: info);
+            }
         case let e as SocketConnector.DisconnectedEvent:
             increaseBackgroundFetchTimeIfNeeded();
             networkAvailable = reachability.isConnectedToNetwork();
@@ -252,7 +253,7 @@ public class XmppService: Logger, EventHandler {
             }
         case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
             if e.features.contains(MessageCarbonsModule.MC_XMLNS) {
-                if let messageCarbonsModule:MessageCarbonsModule = getClient(e.sessionObject.userBareJid!)?.modulesManager.getModule(MessageCarbonsModule.ID) {
+                if let messageCarbonsModule: MessageCarbonsModule = getClient(e.sessionObject.userBareJid!)?.modulesManager.getModule(MessageCarbonsModule.ID) {
                     if Settings.EnableMessageCarbons.getBool() {
                         messageCarbonsModule.enable();
                     }
@@ -450,9 +451,11 @@ public class XmppService: Logger, EventHandler {
                 return;
             }
             if let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) {
-                for room in mucModule.roomsManager.getRooms() {
-                    if room.state != .joined {
-                        room.rejoin();
+                dispatch_async(dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0)) {
+                    for room in mucModule.roomsManager.getRooms() {
+                        if room.state != .joined {
+                            room.rejoin();
+                        }
                     }
                 }
             }

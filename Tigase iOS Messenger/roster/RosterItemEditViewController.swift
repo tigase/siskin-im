@@ -127,8 +127,7 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
 
         let rosterModule:RosterModule = client!.modulesManager.getModule(RosterModule.ID)!;
         if let rosterItem = rosterModule.rosterStore.get(jid!) {
-            rosterItem.name = nameTextField.text;
-            rosterModule.rosterStore.update(rosterItem, onSuccess: onSuccess, onError: onError);
+            rosterModule.rosterStore.update(rosterItem, name: nameTextField.text, onSuccess: onSuccess, onError: onError);
         } else {
             rosterModule.rosterStore.add(jid!, name: nameTextField.text, onSuccess: onSuccess, onError: onError);
         }

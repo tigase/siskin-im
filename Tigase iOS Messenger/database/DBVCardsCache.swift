@@ -43,15 +43,19 @@ public class DBVCardsCache {
         let avatar_hash:String? = Digest.SHA1.digestToHex(avatar_data);
         
         let params:[String:Any?] = ["jid" : jid, "data": vcard, "avatar": avatar_data, "avatar_hash": avatar_hash, "timestamp": NSDate()];
-        if try! updateVCardStmt.update(params) == 0 {
-            try! insertVCardStmt.insert(params);
+        dbConnection.dispatch_async_db_queue() {
+            if try! self.updateVCardStmt.update(params) == 0 {
+                try! self.insertVCardStmt.insert(params);
+            }
         }
-        
         NSNotificationCenter.defaultCenter().postNotificationName(DBVCardsCache.VCARD_UPDATED, object: self, userInfo: ["jid": jid]);
     }
     
     public func getVCard(jid: BareJID) -> VCardModule.VCard? {
-        if let data:String = try! getVCardStmt.query(jid)?["data"] {
+        
+        if let data:String = dbConnection.dispatch_sync_with_result_local_queue({
+            return try! self.getVCardStmt.query(jid)?["data"];
+        }) {
             if let vcardEl = Element.fromString(data) {
                 return VCardModule.VCard(element: vcardEl);
             }
@@ -66,7 +70,9 @@ public class DBVCardsCache {
     }
     
     public func getPhoto(jid: BareJID) -> NSData? {
-        let cursor = try! getPhotoStmt.query(jid);
-        return cursor?["avatar"];
+        return dbConnection.dispatch_sync_with_result_local_queue(){
+            let cursor = try! self.getPhotoStmt.query(jid);
+            return cursor?["avatar"];
+        }
     }
 }
