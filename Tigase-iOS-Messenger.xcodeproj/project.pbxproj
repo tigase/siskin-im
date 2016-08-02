@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FE0A674D1D4F645F00124480 /* CachedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0A674C1D4F645F00124480 /* CachedViewController.swift */; };
 		FE168ACD1CCD197A003F8B26 /* db-schema-1.0.0.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE168ACC1CCD197A003F8B26 /* db-schema-1.0.0.sql */; };
 		FE3024211CDCD0A300466497 /* TigaseSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE3024201CDCD0A300466497 /* TigaseSwift.framework */; };
 		FE3024221CDCD0A900466497 /* TigaseSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE3024201CDCD0A300466497 /* TigaseSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -93,6 +94,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		FE0A674C1D4F645F00124480 /* CachedViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CachedViewController.swift; sourceTree = "<group>"; };
 		FE168ACC1CCD197A003F8B26 /* db-schema-1.0.0.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-1.0.0.sql"; sourceTree = "<group>"; };
 		FE3024201CDCD0A300466497 /* TigaseSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TigaseSwift.framework; path = "../../../Library/Developer/Xcode/DerivedData/workspace_ts-cggcwjpodibzegaecyuraswpljwr/Build/Products/Debug-iphoneos/TigaseSwift.framework"; sourceTree = "<group>"; };
 		FE3024311CE2036A00466497 /* DBVCardsCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBVCardsCache.swift; sourceTree = "<group>"; };
@@ -194,6 +196,7 @@
 				FEAC71761CECA09B00ABABEF /* MucChatTableViewCell.swift */,
 				FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */,
 				FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */,
+				FE0A674C1D4F645F00124480 /* CachedViewController.swift */,
 			);
 			path = chats;
 			sourceTree = "<group>";
@@ -515,6 +518,7 @@
 				FE507A171CDB7B3B001A015C /* ChatTableViewCell.swift in Sources */,
 				FEC514221CEA3D2F003AF765 /* DBRoomsManager.swift in Sources */,
 				FE507A181CDB7B3B001A015C /* ChatViewController.swift in Sources */,
+				FE0A674D1D4F645F00124480 /* CachedViewController.swift in Sources */,
 				FEC514241CEB2FF7003AF765 /* MucJoinViewController.swift in Sources */,
 				FE507A201CDB7B3B001A015C /* AddAccountController.swift in Sources */,
 				FEAC71771CECA09B00ABABEF /* MucChatTableViewCell.swift in Sources */,

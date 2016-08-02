@@ -930,10 +930,6 @@
                             </connections>
                         </barButtonItem>
                     </navigationItem>
-                    <userDefinedRuntimeAttributes>
-                        <userDefinedRuntimeAttribute type="boolean" keyPath="scrollToBottomOnShow" value="YES"/>
-                        <userDefinedRuntimeAttribute type="boolean" keyPath="animateScrollToBottom" value="YES"/>
-                    </userDefinedRuntimeAttributes>
                     <connections>
                         <outlet property="bottomView" destination="4tv-Y3-98F" id="VSZ-4K-SM1"/>
                         <outlet property="messageField" destination="PAE-fw-tjq" id="Q5i-Hr-iwD"/>

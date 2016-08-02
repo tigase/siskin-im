@@ -49,6 +49,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
     var account:BareJID!;
     var jid:JID!;
     
+    weak var scrollDelegate: BaseChatViewControllerScrollDelegate?;
     var isFirstTime = true;
     
     lazy var loadChatInfo:DBStatement! = try? self.dbConnection.prepareStatement("SELECT name FROM roster_items WHERE account = :account AND jid = :jid");
@@ -95,7 +96,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
         super.viewDidAppear(animated);
         if isFirstTime {
             // scroll to bottom?
-            scrollToBottomOnLoad();
+            scrollToNewestMessage(true);
             isFirstTime = false;
         }
         xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
@@ -125,7 +126,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
                     bottomViewBottomConstraint?.constant = newHeight;
                     UIView.animateWithDuration(duration, delay: 0.0, options: [UIViewAnimationOptions(rawValue: curve), UIViewAnimationOptions.LayoutSubviews, UIViewAnimationOptions.BeginFromCurrentState], animations: {
                         self.view.layoutIfNeeded();
-                        self.scrollToBottom(true);
+                        self.scrollToNewestMessage(true);
                         
                         }, completion: nil);
                 }
@@ -176,23 +177,28 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
         textView.resignFirstResponder();
     }
     
-    // performance of this function is better
-    func scrollToBottomOnLoad() {
-        // optimized version in case we have a lot to display
-//        let bottomOffset = CGPointMake(0, (tableView.contentSize.height - tableView.bounds.size.height) - tableView.frame.height);
-        let bottomOffset = CGPointMake(0, (tableView.contentSize.height - tableView.bounds.size.height));
-        print(tableView.contentSize.height, tableView.bounds.size.height, tableView.frame.height, bottomOffset);
-        if (bottomOffset.y > 0) {
-            tableView.setContentOffset(bottomOffset, animated: false);
+    func scrollToNewestMessage(animated: Bool) {
+        if scrollDelegate != nil {
+            scrollDelegate?.tableViewScrollToNewestMessage(animated)
+        } else {
+            scrollToNewestMessageImpl(animated);
         }
     }
-  
-    func scrollToBottom(animated: Bool) {
-        let count = xmppService.dbChatHistoryStore.countMessages(account, jid: jid.bareJid);
-        if count > 0 {
-            let path = NSIndexPath(forRow: count - 1, inSection: 0);
-            self.tableView.scrollToRowAtIndexPath(path, atScrollPosition: UITableViewScrollPosition.Bottom, animated: animated);
+    
+    func scrollToNewestMessageImpl(animated: Bool) {
+        func scrollToNewestMessage(animated: Bool) {
+            let count = xmppService.dbChatHistoryStore.countMessages(account, jid: jid.bareJid);
+            if count > 0 {
+                let path = NSIndexPath(forRow: count - 1, inSection: 0);
+                self.tableView.scrollToRowAtIndexPath(path, atScrollPosition: UITableViewScrollPosition.Bottom, animated: animated);
+            }
         }
     }
 
+}
+
+protocol BaseChatViewControllerScrollDelegate: class {
+    
+    func tableViewScrollToNewestMessage(animated: Bool);
+    
 }
