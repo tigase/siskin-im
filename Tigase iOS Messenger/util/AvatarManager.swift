@@ -37,6 +37,8 @@ public class AvatarManager: EventHandler {
     
     public init(xmppService: XmppService) {
         defaultAvatar = UIImage(named: "defaultAvatar")!;
+        cache.countLimit = 20;
+        cache.totalCostLimit = 20 * 1024 * 1024;
         xmppService.registerEventHandler(self, events: PresenceModule.ContactPresenceChanged.TYPE);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AvatarManager.vcardUpdated), name: DBVCardsCache.VCARD_UPDATED, object: nil);
     }
@@ -103,6 +105,10 @@ public class AvatarManager: EventHandler {
             cache.removeObjectForKey(jid.stringValue);
             NSNotificationCenter.defaultCenter().postNotificationName(AvatarManager.AVATAR_CHANGED, object: nil, userInfo: ["jid": jid]);
         }
+    }
+    
+    func clearCache() {
+        cache.removeAllObjects();
     }
     
     private class AvatarHolder: NSDiscardableContent {

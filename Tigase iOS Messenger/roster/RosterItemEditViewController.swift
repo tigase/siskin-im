@@ -54,8 +54,10 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
             self.accountTextField.enabled = false;
             
             if let sessionObject = xmppService.getClient(account!)?.sessionObject {
-                if let rosterItem = xmppService.dbRosterStore.get(sessionObject, jid: jid!) {
-                    self.nameTextField.text = rosterItem.name;
+                if let rosterStore: RosterStore = RosterModule.getRosterStore(sessionObject) {
+                    if let rosterItem = rosterStore.get(jid!) {
+                        self.nameTextField.text = rosterItem.name;
+                    }
                 }
             }
         }

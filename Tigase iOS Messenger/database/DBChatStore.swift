@@ -24,8 +24,11 @@ import TigaseSwift
 
 public class DBChatStoreWrapper: ChatStore {
     
-    private let store:DBChatStore;
-    private let sessionObject:SessionObject;
+    private let cache: NSCache?;
+    private let store: DBChatStore;
+    private let sessionObject: SessionObject;
+    
+    private var queue: dispatch_queue_t?;
     
     public var count:Int {
         return store.count(sessionObject);
@@ -35,12 +38,46 @@ public class DBChatStoreWrapper: ChatStore {
         return store.getAll(sessionObject);
     }
     
-    public init(sessionObject:SessionObject, store:DBChatStore) {
+    public init(sessionObject:SessionObject, store:DBChatStore, useCache: Bool = true) {
         self.sessionObject = sessionObject;
         self.store = store;
+        self.cache = useCache ? NSCache() : nil;
+        self.cache?.countLimit = 100;
+        self.cache?.totalCostLimit = 512 * 1024;
+        self.queue = useCache ? dispatch_queue_create("chat_store_queue", DISPATCH_QUEUE_SERIAL) : nil;
     }
     
-    public func get<T>(jid: BareJID, filter: (T) -> Bool) -> T? {
+    public func get<T: AnyObject>(jid: BareJID, filter: (T) -> Bool) -> T? {
+        var item: T?;
+        if cache != nil {
+            dispatch_sync(queue!) {
+                if let chats = self.cache!.objectForKey(jid.stringValue) as? [T] {
+                    for chat in chats {
+                        if filter(chat) {
+                            item = chat;
+                            return;
+                        }
+                    }
+                    return;
+                }
+                
+                if let chats: [T] = self.store.getAll(self.sessionObject, forJid: jid) {
+                    guard !chats.isEmpty else {
+                        return;
+                    }
+                    
+                    self.cache?.setObject(chats, forKey: jid.stringValue);
+                    
+                    for chat in chats {
+                        if filter(chat) {
+                            item = chat;
+                            return;
+                        }
+                    }
+                }
+            }
+            return item;
+        }
         return store.get(sessionObject, jid: jid, filter: filter);
     }
     
@@ -52,12 +89,26 @@ public class DBChatStoreWrapper: ChatStore {
         return store.isFor(sessionObject, jid: jid);
     }
     
-    public func open<T>(chat:ChatProtocol) -> T? {
-        return store.open(sessionObject, chat: chat);
+    public func open<T: AnyObject>(chat:ChatProtocol) -> T? {
+        let dbChat: T? = store.open(sessionObject, chat: chat);
+        if dbChat != nil && cache != nil {
+            dispatch_sync(queue!) {
+                var chats = (self.cache!.objectForKey(chat.jid.bareJid.stringValue) as? [T]) ?? [];
+                chats.append(dbChat!);
+                self.cache?.setObject(chats, forKey: chat.jid.bareJid.stringValue);
+            }
+        }
+        return dbChat;
     }
     
     public func close(chat:ChatProtocol) -> Bool {
-        return store.close(chat);
+        let closed = store.close(chat);
+        if closed && cache != nil {
+            dispatch_sync(queue!) {
+                self.cache?.removeObjectForKey(chat.jid.bareJid.stringValue);
+            }
+        }
+        return closed;
     }
 }
 
@@ -136,6 +187,40 @@ public class DBChatStore: LocalQueueDispatcher {
             }
             return nil;
         }
+    }
+    
+    public func getAll<T>(sessionObject: SessionObject, forJid: BareJID) -> [T] {
+        let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : forJid ];
+        let context = getContext(sessionObject)!;
+        var result = [T]();
+        dispatch_sync_local_queue() {
+            try! self.getStmt.query(params) { (cursor) -> Void in
+                let type:Int = cursor["type"]!;
+                switch type {
+                case 1:
+                    let jid: BareJID = cursor["jid"]!;
+                    let nickname: String = cursor["nickname"]!;
+                    let password: String? = cursor["password"];
+                    if let r = DBRoom(context: context, roomJid: jid, nickname: nickname) as? T {
+                        (r as! DBRoom).id = cursor["id"];
+                        (r as! DBRoom).password = password;
+                        (r as! DBRoom).lastMessageDate = cursor["timestamp"];
+                        result.append(r);
+                    }
+                    break;
+                default:
+                    let resource:String? = cursor["resource"];
+                    let thread:String? = cursor["thread_id"];
+                    let jid = JID(forJid, resource: resource);
+                    let c = DBChat(jid: jid, thread: thread);
+                    c.id = cursor["id"];
+                    if let chat = c as? T {
+                        result.append(chat);
+                    }
+                }
+            }
+        }
+        return result;
     }
     
     public func getAll<T>(sessionObject:SessionObject) -> [T] {

@@ -24,6 +24,8 @@ import TigaseSwift
 
 public class DBRosterStoreWrapper: RosterStore {
     
+    let cache: NSCache?;
+    
     let sessionObject: SessionObject;
     let store:DBRosterStore;
     
@@ -31,25 +33,38 @@ public class DBRosterStoreWrapper: RosterStore {
         return store.count(sessionObject);
     }
     
-    init(sessionObject: SessionObject, store: DBRosterStore) {
+    init(sessionObject: SessionObject, store: DBRosterStore, useCache: Bool = true) {
         self.sessionObject = sessionObject;
         self.store = store;
+        self.cache = useCache ? NSCache() : nil;
+        self.cache?.countLimit = 100;
+        self.cache?.totalCostLimit = 1 * 1024 * 1024;
         super.init();
     }
     
     override public func addItem(item:RosterItem) {
         store.addItem(sessionObject, item: item);
+        cache?.setObject(item, forKey: item.jid.stringValue);
     }
     
     override public func get(jid:JID) -> RosterItem? {
-        return store.get(sessionObject, jid: jid);
+        if let item = cache?.objectForKey(jid.stringValue) as? RosterItem {
+            return item;
+        }
+        if let item = store.get(sessionObject, jid: jid) {
+            cache?.setObject(item, forKey: jid.stringValue);
+            return item;
+        }
+        return nil;
     }
     
     override public func removeAll() {
+        cache?.removeAllObjects();
         store.removeAll(sessionObject);
     }
     
     override public func removeItem(jid:JID) {
+        cache?.removeObjectForKey(jid.stringValue);
         store.removeItem(sessionObject, jid: jid);
     }
     
@@ -95,7 +110,7 @@ public class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
         return 0;
     }
     
-    public func addItem(sessionObject: SessionObject, item:RosterItem) {
+    public func addItem(sessionObject: SessionObject, item:RosterItem) -> RosterItem? {
         do {
             let params:[String:Any?] = [ "account": sessionObject.userBareJid, "jid": item.jid, "name": item.name, "subscription": String(item.subscription.rawValue), "timestamp": NSDate(), "ask": item.ask ];
             let dbItem = item as? DBRosterItem ?? DBRosterItem(rosterItem: item);
@@ -116,8 +131,9 @@ public class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
                 }
                 try insertItemGroupStmt.insert(["item_id": item.id, "group_id": groupId]);
             }
+            return dbItem;
         } catch _ {
-            
+            return nil;
         }
     }
     

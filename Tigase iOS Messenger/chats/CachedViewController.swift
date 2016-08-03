@@ -51,7 +51,6 @@ extension CachedViewControllerProtocol {
     func scrollToIndexPath(indexPath: NSIndexPath, animated: Bool = true) {
         self.scrollToIndexPath = indexPath;
         
-        log.log("scrolling scheduled");
         dispatch_after( dispatch_time(DISPATCH_TIME_NOW, 30 * Int64(NSEC_PER_MSEC)), dispatch_get_main_queue()) {
             guard self.scrollToIndexPath != nil else {
                 return;
@@ -59,9 +58,7 @@ extension CachedViewControllerProtocol {
             let index = self.scrollToIndexPath!;
             self.scrollToIndexPath = nil;
             
-            self.log.log("scrolling started");
             self.tableView.scrollToRowAtIndexPath(index, atScrollPosition: .Bottom, animated: true);
-            self.log.log("scrolling finished");
         }
     }
     
@@ -94,14 +91,17 @@ class CachedViewDataSource<Item: AnyObject>: CachedViewDataSourceProtocol {
     var numberOfMessagesToFetch: Int = 25;
     
     init() {
+        cache.countLimit = 100;
+        cache.totalCostLimit = 10 * 1024 * 1024;
         numberOfMessages = getItemsCount();
     }
     
     func getItem(indexPath: NSIndexPath) -> Item {
-        var pos = (numberOfMessages - indexPath.row) - 1;
-        var item = cache.objectForKey(pos) as? Item;
+        let requestedPosition = (numberOfMessages - indexPath.row) - 1;
+        var item = cache.objectForKey(requestedPosition) as? Item;
         
         if (item == nil) {
+            var pos = requestedPosition;
             let down = pos > 0 && cache.objectForKey(pos-1) ==  nil;
             if (down) {
                 pos = (pos - numberOfMessagesToFetch) + 1;
@@ -110,12 +110,13 @@ class CachedViewDataSource<Item: AnyObject>: CachedViewDataSourceProtocol {
                 }
             }
             
-            loadData(pos, limit: numberOfMessagesToFetch, forEveryItem: { (item: Item)->Void in
-                self.cache.setObject(item, forKey: pos);
+            loadData(pos, limit: numberOfMessagesToFetch, forEveryItem: { (it: Item)->Void in
+                self.cache.setObject(it, forKey: pos);
+                if requestedPosition == pos {
+                    item = it;
+                }
                 pos += 1;
-            });
-            
-            item = cache.objectForKey((numberOfMessages - indexPath.row) - 1) as? Item;
+            });            
         }
         
         return item!;

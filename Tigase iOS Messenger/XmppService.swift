@@ -35,13 +35,16 @@ public class XmppService: Logger, EventHandler {
     public let dbCapsCache: DBCapabilitiesCache;
     public let dbChatStore: DBChatStore;
     public let dbChatHistoryStore: DBChatHistoryStore;
-    public let dbRosterStore: DBRosterStore;
+    private let dbRosterStore: DBRosterStore;
     public let dbVCardsCache: DBVCardsCache;
     
     public var applicationState: ApplicationState {
         didSet {
             if oldValue != applicationState {
                 applicationStateChanged();
+            }
+            if applicationState != .active {
+                avatarManager.clearCache();
             }
         }
     }
