@@ -165,10 +165,10 @@ public class DBStatement {
         sqlite3_finalize(handle);
     }
 
-    public func step() throws -> Bool  {
+    public func step(expect: Int32 = SQLITE_ROW) throws -> Bool  {
         return try connection.dispatch_sync_db_queue() {
             let result = try self.connection.check(sqlite3_step(self.handle));
-            return result == SQLITE_ROW;
+            return result == expect;
         }
     }
     
@@ -297,13 +297,25 @@ public class DBStatement {
     
     public func insert(params:Any?...) throws -> Int? {
         return try connection.dispatch_sync_db_queue() {
-            return try self.execute(params)?.lastInsertRowId;
+            if params.count > 0 {
+                try self.bind(params);
+            }
+            self.reset(false);
+            if try self.step(SQLITE_DONE) {
+                return self.lastInsertRowId;
+            }
+            return nil;
         }
     }
 
     public func insert(params:[String:Any?]) throws -> Int? {
         return try connection.dispatch_sync_db_queue() {
-            return try self.execute(params)?.lastInsertRowId;
+            try self.bind(params);
+            self.reset(false);
+            if try self.step(SQLITE_DONE) {
+                return self.lastInsertRowId;
+            }
+            return nil;
         }
     }
     
