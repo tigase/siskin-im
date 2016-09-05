@@ -51,6 +51,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.chatItemsUpdated), name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil);
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.serverCertificateError), name: "serverCertificateError", object: nil);
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.authenticationFailure), name: "authenticationFailure", object: nil);
         updateApplicationIconBadgeNumber();
         
         application.setMinimumBackgroundFetchInterval(60);
@@ -144,6 +145,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 
                 topController?.presentViewController(alert, animated: true, completion: nil);
             }
+            if let authError = userInfo["auth-error-type"] {
+                let accountJid = BareJID(userInfo["account"] as! String);
+                
+                let alert = UIAlertController(title: "Authentication issue", message: "Authentication for account \(accountJid) failed: \(authError)\nVerify provided account password.", preferredStyle: .Alert);
+                alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.Cancel, handler: nil));
+                
+                var topController = UIApplication.sharedApplication().keyWindow?.rootViewController;
+                while (topController?.presentedViewController != nil) {
+                    topController = topController?.presentedViewController;
+                }
+                
+                topController?.presentViewController(alert, animated: true, completion: nil);
+            }
         }
     }
     
@@ -225,6 +239,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         userNotification.alertAction = "fix";
         userNotification.alertBody = "Connection to server \(account.domain) failed";
         userNotification.userInfo = certInfo;
+        userNotification.category = "ERROR";
+        UIApplication.sharedApplication().presentLocalNotificationNow(userNotification);
+    }
+    
+    func authenticationFailure(notification: NSNotification) {
+        guard let info = notification.userInfo else {
+            return;
+        }
+        
+        let account = BareJID(info["account"] as! String);
+        let type = info["auth-error-type"] as! String;
+        
+        let userNotification = UILocalNotification();
+        userNotification.alertAction = "fix";
+        userNotification.alertBody = "Authentication for account \(account) failed: \(type)";
+        userNotification.userInfo = info;
         userNotification.category = "ERROR";
         UIApplication.sharedApplication().presentLocalNotificationNow(userNotification);
     }

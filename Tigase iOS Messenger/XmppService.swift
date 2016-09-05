@@ -26,7 +26,7 @@ import TigaseSwift
 public class XmppService: Logger, EventHandler {
     
     public var fetchTimeShort: NSTimeInterval = 5;
-    public var fetchTimeLong: NSTimeInterval = 25;
+    public var fetchTimeLong: NSTimeInterval = 20;
     
     private var creationDate = NSDate();
     
@@ -189,7 +189,7 @@ public class XmppService: Logger, EventHandler {
     }
     
     private func registerEventHandlers(client:XMPPClient) {
-        client.eventBus.register(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE);
+        client.eventBus.register(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE);
         client.eventBus.register(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.register(holder.handler, events: holder.events);
@@ -197,7 +197,7 @@ public class XmppService: Logger, EventHandler {
     }
     
     private func unregisterEventHandlers(client:XMPPClient) {
-        client.eventBus.unregister(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE);
+        client.eventBus.unregister(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE);
         client.eventBus.unregister(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.unregister(holder.handler, events: holder.events);
@@ -283,6 +283,17 @@ public class XmppService: Logger, EventHandler {
                 }
             }
             reconnectMucRooms(e.sessionObject.userBareJid!);
+        case let e as AuthModule.AuthFailedEvent:
+            if let account = AccountManager.getAccount(e.sessionObject.userBareJid!.stringValue) {
+                account.active = false;
+                AccountManager.updateAccount(account, notifyChange: true);
+            }
+            var info: [String: AnyObject] = [:];
+            info["account"] = e.sessionObject.userBareJid!.stringValue;
+            info["auth-error-type"] = e.error.rawValue;
+            dispatch_async(dispatch_get_main_queue()) {
+                NSNotificationCenter.defaultCenter().postNotificationName("authenticationFailure", object: self, userInfo: info);
+            }
         default:
             log("received unsupported event", event);
         }
