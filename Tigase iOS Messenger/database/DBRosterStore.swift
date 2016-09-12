@@ -125,11 +125,13 @@ public class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
             }
             
             for group in dbItem.groups {
-                var groupId = try? getGroupIdStmt.scalar(["name": group]);
+                let gparams:[String:Any?] = ["name": group];
+                var groupId = try! getGroupIdStmt.scalar(gparams);
                 if groupId == nil {
-                    groupId = try? insertGroupStmt.insert(["name": group]);
+                    groupId = try! insertGroupStmt.insert(gparams);
                 }
-                try insertItemGroupStmt.insert(["item_id": item.id, "group_id": groupId]);
+                let igparams:[String:Any?] = ["item_id": dbItem.id, "group_id": groupId];
+                try insertItemGroupStmt.insert(igparams);
             }
             return dbItem;
         } catch _ {

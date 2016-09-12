@@ -195,11 +195,11 @@ class SettingsViewController: UITableViewController, EventHandler {
                             })
                         }));
                     }
-                    alert.addAction(UIAlertAction(title: "Keep", style: .Default, handler: { (action) in
+                    alert.addAction(UIAlertAction(title: "Remove", style: .Default, handler: { (action) in
                         AccountManager.deleteAccount(account);
                         self.tableView.reloadData();
                     }));
-                    alert.addAction(UIAlertAction(title: "Cancel", style: .Default, handler: nil));
+                    alert.addAction(UIAlertAction(title: "Keep", style: .Default, handler: nil));
                     self.presentViewController(alert, animated: true, completion: nil);
                 }
             }
