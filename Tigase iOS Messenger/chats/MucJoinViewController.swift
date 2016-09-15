@@ -45,7 +45,9 @@ class MucJoinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         self.accountTextField.inputView = accountPicker;
         let accounts = AccountManager.getAccounts();
         // by default select first account
-        self.accountTextField.text = accounts[0];
+        if !accounts.isEmpty {
+            self.accountTextField.text = accounts[0];
+        }
         self.accountTextField.addTarget(self, action: #selector(MucJoinViewController.textFieldDidChange), forControlEvents: UIControlEvents.EditingChanged);
         self.serverTextField.addTarget(self, action: #selector(MucJoinViewController.textFieldDidChange), forControlEvents: UIControlEvents.EditingChanged);
         self.roomTextField.addTarget(self, action: #selector(MucJoinViewController.textFieldDidChange), forControlEvents: UIControlEvents.EditingChanged);
