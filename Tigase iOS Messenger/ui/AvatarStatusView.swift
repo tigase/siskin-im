@@ -43,17 +43,17 @@ class AvatarStatusView: UIView {
         avatarImageView.layer.cornerRadius = self.avatarImageView.frame.width / 2;
     }
     
-    func setAvatar(avatar: UIImage?) {
+    func setAvatar(_ avatar: UIImage?) {
         self.avatarImageView.image = avatar;
     }
     
-    func setStatus(status:Presence.Show?) {
+    func setStatus(_ status:Presence.Show?) {
         let image:UIImage? = AvatarStatusView.getStatusImage(status);
 
         statusImageView.image = image;
     }
     
-    static func getStatusImage(status: Presence.Show?) -> UIImage? {
+    static func getStatusImage(_ status: Presence.Show?) -> UIImage? {
         // default color as for offline contact
         var image:UIImage? = UIImage(named: "presence_offline");
         if status != nil {
@@ -73,20 +73,20 @@ class AvatarStatusView: UIView {
         return image;
     }
     
-    func drawStatusIcon(size: CGFloat, color:UIColor) -> UIImage {
-        UIGraphicsBeginImageContextWithOptions(CGSizeMake(size, size), false, 0);
+    func drawStatusIcon(_ size: CGFloat, color:UIColor) -> UIImage {
+        UIGraphicsBeginImageContextWithOptions(CGSize(width: size, height: size), false, 0);
         let ctx = UIGraphicsGetCurrentContext();
-        CGContextSaveGState(ctx);
+        ctx!.saveGState();
         
-        let rect  = CGRectMake(0, 0, size, size);
-        CGContextSetFillColorWithColor(ctx, color.CGColor);
-        CGContextFillEllipseInRect(ctx, rect);
+        let rect  = CGRect(x: 0, y: 0, width: size, height: size);
+        ctx!.setFillColor(color.cgColor);
+        ctx!.fillEllipse(in: rect);
         
-        CGContextRestoreGState(ctx);
+        ctx!.restoreGState();
         let img = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         
-        return img;
+        return img!;
     }
     
 }

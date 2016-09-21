@@ -51,8 +51,8 @@ class VCardEditBasicTableViewCell: UITableViewCell, UITextFieldDelegate {
         super.awakeFromNib()
         // Initialization code
         let datePicker = UIDatePicker();
-        datePicker.datePickerMode = .Date;
-        datePicker.addTarget(self, action: #selector(VCardEditBasicTableViewCell.bdayValueChanged), forControlEvents: .ValueChanged);
+        datePicker.datePickerMode = .date;
+        datePicker.addTarget(self, action: #selector(VCardEditBasicTableViewCell.bdayValueChanged), for: .valueChanged);
         birthdayView.inputView = datePicker;
         
         givenNameView.delegate = self;
@@ -62,21 +62,21 @@ class VCardEditBasicTableViewCell: UITableViewCell, UITextFieldDelegate {
         orgRoleView.delegate = self;
     }
 
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
     }
     
-    func bdayValueChanged(sender: UIDatePicker) {
-        let formatter = NSDateFormatter();
-        formatter.timeStyle = .NoStyle;
+    func bdayValueChanged(_ sender: UIDatePicker) {
+        let formatter = DateFormatter();
+        formatter.timeStyle = .none;
         formatter.dateFormat = "yyyy-MM-dd";
-        birthdayView.text = formatter.stringFromDate(sender.date);
+        birthdayView.text = formatter.string(from: sender.date);
         vcard.bday = birthdayView.text;
     }
     
-    func textFieldDidEndEditing(textField: UITextField) {
+    func textFieldDidEndEditing(_ textField: UITextField) {
         let text = textField.text;
         switch textField {
         case givenNameView:

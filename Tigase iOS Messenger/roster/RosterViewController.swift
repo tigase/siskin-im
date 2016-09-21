@@ -26,19 +26,19 @@ import TigaseSwift
 class RosterViewController: UITableViewController, EventHandler, UIGestureRecognizerDelegate {
 
     var dbConnection:DBConnection {
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate;
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
         return appDelegate.dbConnection;
     }
     
     var xmppService:XmppService {
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate;
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
         return appDelegate.xmppService;
     }
     
-    private lazy var rosterItemsCount:DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM roster_items");
-    private lazy var rosterItemsList:DBStatement! = try? self.dbConnection.prepareStatement("SELECT id, account, jid, name FROM roster_items ORDER BY coalesce(name, jid) LIMIT 1 OFFSET :offset");
-    private lazy var rosterItemGetPositionByName:DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM roster_items WHERE coalesce(name,jid) < :name");
-    private lazy var rosterItemsGetNamesByJidAndAccount:DBStatement! = try? self.dbConnection.prepareStatement("SELECT coalesce(name, jid) as display_name FROM roster_items WHERE jid = :jid AND (:account IS NULL OR account = :account)");
+    fileprivate lazy var rosterItemsCount:DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM roster_items");
+    fileprivate lazy var rosterItemsList:DBStatement! = try? self.dbConnection.prepareStatement("SELECT id, account, jid, name FROM roster_items ORDER BY coalesce(name, jid) LIMIT 1 OFFSET :offset");
+    fileprivate lazy var rosterItemGetPositionByName:DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM roster_items WHERE coalesce(name,jid) < :name");
+    fileprivate lazy var rosterItemsGetNamesByJidAndAccount:DBStatement! = try? self.dbConnection.prepareStatement("SELECT coalesce(name, jid) as display_name FROM roster_items WHERE jid = :jid AND (:account IS NULL OR account = :account)");
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -49,7 +49,7 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
         lpgr.minimumPressDuration = 2.0;
         lpgr.delegate = self;
         tableView.addGestureRecognizer(lpgr);
-        navigationItem.leftBarButtonItem = self.editButtonItem()
+        navigationItem.leftBarButtonItem = self.editButtonItem
     }
     
     override func didReceiveMemoryWarning() {
@@ -57,30 +57,30 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
         // Dispose of any resources that can be recreated.
     }
 
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         xmppService.registerEventHandler(self, events: PresenceModule.ContactPresenceChanged.TYPE, RosterModule.ItemUpdatedEvent.TYPE);
         reloadData();
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(RosterViewController.reloadData), name: AvatarManager.AVATAR_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(RosterViewController.reloadData), name: AvatarManager.AVATAR_CHANGED, object: nil);
         super.viewWillAppear(animated);
     }
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         xmppService.unregisterEventHandler(self, events: PresenceModule.ContactPresenceChanged.TYPE, RosterModule.ItemUpdatedEvent.TYPE);
         super.viewWillDisappear(animated);
-        NSNotificationCenter.defaultCenter().removeObserver(self);
+        NotificationCenter.default.removeObserver(self);
     }
 
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in: UITableView) -> Int {
         return 1;
     }
     
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return try! rosterItemsCount.scalar() ?? 0;
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cellIdentifier = "RosterItemTableViewCell";
-        let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! RosterItemTableViewCell;
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath as IndexPath) as! RosterItemTableViewCell;
         
         let params:[String:Any?] = ["offset": indexPath.row];
         do {
@@ -101,7 +101,7 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
         return cell;
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let params:[String:Any?] = ["offset": indexPath.row];
         do {
             try rosterItemsList.query(params) { cursor -> Void in
@@ -115,10 +115,10 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
                 }
                 
                 if !self.xmppService.dbChatStore.isFor(xmppClient!.sessionObject, jid: jid.bareJid) {
-                    messageModule!.createChat(jid);
+                    _ = messageModule!.createChat(jid);
                 }
                 
-                let destination = self.storyboard!.instantiateViewControllerWithIdentifier("ChatViewNavigationController") as! UINavigationController;
+                let destination = self.storyboard!.instantiateViewController(withIdentifier: "ChatViewNavigationController") as! UINavigationController;
                 let chatController = destination.childViewControllers[0] as! ChatViewController;
                 chatController.hidesBottomBarWhenPushed = true;
                 chatController.account = account;
@@ -130,8 +130,8 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
         }
     }
     
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
             let params:[String:Any?] = ["offset": indexPath.row];
             do {
                 try rosterItemsList.query(params) { cursor -> Void in
@@ -139,9 +139,9 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
                     let jid: JID = cursor["jid"]!;
                     if let rosterModule:RosterModule = self.xmppService.getClient(account)?.modulesManager.getModule(RosterModule.ID) {
                         rosterModule.rosterStore.remove(jid, onSuccess: nil, onError: { (errorCondition) in
-                            let alert = UIAlertController.init(title: "Failure", message: "Server returned error: " + (errorCondition?.rawValue ?? "Operation timed out"), preferredStyle: .Alert);
-                            alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil));
-                            self.presentViewController(alert, animated: true, completion: nil);
+                            let alert = UIAlertController.init(title: "Failure", message: "Server returned error: " + (errorCondition?.rawValue ?? "Operation timed out"), preferredStyle: .alert);
+                            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                            self.present(alert, animated: true, completion: nil);
                         })
                     }
                 }
@@ -151,13 +151,13 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
         }
     }
     
-    func handleLongPress(gestureRecognizer:UILongPressGestureRecognizer) {
-        guard gestureRecognizer.state == .Began else {
+    func handleLongPress(_ gestureRecognizer:UILongPressGestureRecognizer) {
+        guard gestureRecognizer.state == .began else {
             return
         }
 
-        let point = gestureRecognizer.locationInView(self.tableView);
-        if let indexPath = self.tableView.indexPathForRowAtPoint(point) {
+        let point = gestureRecognizer.location(in: self.tableView);
+        if let indexPath = self.tableView.indexPathForRow(at: point) {
             print("long press detected at", indexPath);
 
             let params:[String:Any?] = ["offset": indexPath.row];
@@ -174,33 +174,33 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
     }
     
     
-    @IBAction func addBtnClicked(sender: UIBarButtonItem) {
+    @IBAction func addBtnClicked(_ sender: UIBarButtonItem) {
         self.openEditItem(nil, jid: nil);
     }
     
-    func openEditItem(account: BareJID?, jid: JID?) {
-        let navigationController = self.storyboard?.instantiateViewControllerWithIdentifier("RosterItemEditNavigationController") as! UINavigationController;
+    func openEditItem(_ account: BareJID?, jid: JID?) {
+        let navigationController = self.storyboard?.instantiateViewController(withIdentifier: "RosterItemEditNavigationController") as! UINavigationController;
         let itemEditController = navigationController.visibleViewController as? RosterItemEditViewController;
         itemEditController?.account = account;
         itemEditController?.jid = jid;
         self.showDetailViewController(navigationController, sender: self);
     }
     
-    func avatarChanged(notification: NSNotification) {
-        dispatch_async(dispatch_get_main_queue()) {
+    func avatarChanged(_ notification: NSNotification) {
+       DispatchQueue.main.async() {
             let jid = notification.userInfo!["jid"] as! BareJID;
             let indexPaths = self.indexPathsForJid(jid);
-            self.tableView.reloadRowsAtIndexPaths(indexPaths, withRowAnimation: .Automatic);
+            self.tableView.reloadRows(at: indexPaths, with: .automatic);
         }
     }
     
     func reloadData() {
-        dispatch_async(dispatch_get_main_queue()) {
+        DispatchQueue.main.async() {
             self.tableView.reloadData();
         }
     }
     
-    func handleEvent(event: Event) {
+    func handleEvent(_ event: Event) {
         switch event {
         case let e as PresenceModule.ContactPresenceChanged:
             //reloadData();
@@ -209,9 +209,9 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
                 return;
             }
             
-            dispatch_async(dispatch_get_main_queue()) {
+           DispatchQueue.main.async() {
                 let indexPaths = self.indexPathsForJid(from.bareJid, account: e.sessionObject.userBareJid!);
-                self.tableView.reloadRowsAtIndexPaths(indexPaths, withRowAnimation: .Automatic);
+                self.tableView.reloadRows(at: indexPaths, with: .automatic);
             }
         case let e as RosterModule.ItemUpdatedEvent:
             guard e.rosterItem != nil else {
@@ -219,16 +219,16 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
                 return;
             }
 
-            dispatch_async(dispatch_get_main_queue()) {
+            DispatchQueue.main.async() {
                 let position = try! self.rosterItemGetPositionByName.scalar(e.rosterItem?.name ?? e.rosterItem!.jid.stringValue);
-                let indexPath = NSIndexPath(forRow: position!, inSection: 0);
+                let indexPath = IndexPath(row: position!, section: 0);
                 switch e.action! {
                 case .added:
-                    self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Fade);
+                    self.tableView.insertRows(at: [indexPath], with: .fade);
                 case .removed:
-                    self.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade);
+                    self.tableView.deleteRows(at: [indexPath], with: .fade);
                 default:
-                    self.tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic);
+                    self.tableView.reloadRows(at: [indexPath], with: .automatic);
                     break;
                 }
             }
@@ -239,13 +239,13 @@ class RosterViewController: UITableViewController, EventHandler, UIGestureRecogn
 
     // works properly only if item is still in database! 
     // for insert, upadate is OK, but not for delete
-    func indexPathsForJid(jid: BareJID, account: BareJID? = nil) -> [NSIndexPath] {
-        var indexPaths = [NSIndexPath]();
+    func indexPathsForJid(_ jid: BareJID, account: BareJID? = nil) -> [IndexPath] {
+        var indexPaths = [IndexPath]();
         do {
             try rosterItemsGetNamesByJidAndAccount.query(jid.stringValue, account?.stringValue) { (cursor)->Void in
                 let name:String = cursor["display_name"]!;
                 let row = try! self.rosterItemGetPositionByName.scalar(name);
-                indexPaths.append(NSIndexPath(forRow: row!, inSection: 0));
+                indexPaths.append(IndexPath(row: row!, section: 0));
             }
         } catch _ {
             

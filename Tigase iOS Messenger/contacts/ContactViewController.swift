@@ -25,7 +25,7 @@ import TigaseSwift
 class ContactViewController: UITableViewController {
 
     var xmppService: XmppService {
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate;
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
         return appDelegate.xmppService;
     }
     
@@ -36,12 +36,12 @@ class ContactViewController: UITableViewController {
             phones = [];
             vcard?.telephones.forEach { (telephone) in
                 let types = telephone.types;
-                let val = telephone.number?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet());
+                let val = telephone.number?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines);
                 guard val != nil && !val!.isEmpty else {
                     return;
                 }
                 if types.isEmpty {
-                    telephone.types = [VCardModule.VCard.Type.HOME];
+                    telephone.types = [VCardModule.VCard.EntryType.HOME];
                 }
                 telephone.types.forEach({ (type) in
                     let phone = VCardModule.VCard.Telephone()!;
@@ -57,7 +57,7 @@ class ContactViewController: UITableViewController {
                 }
                 let types = address.types;
                 if types.isEmpty {
-                    address.types = [VCardModule.VCard.Type.HOME];
+                    address.types = [VCardModule.VCard.EntryType.HOME];
                 }
                 address.types.forEach({ (type) in
                     let addr = VCardModule.VCard.Address()!;
@@ -73,12 +73,12 @@ class ContactViewController: UITableViewController {
             emails = [];
             vcard?.emails.forEach { (email) in
                 let types = email.types;
-                let val = email.address?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet());
+                let val = email.address?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines);
                 guard val != nil && !val!.isEmpty else {
                     return;
                 }
                 if types.isEmpty {
-                    email.types = [VCardModule.VCard.Type.HOME];
+                    email.types = [VCardModule.VCard.EntryType.HOME];
                 }
                 email.types.forEach({ (type) in
                     let e = VCardModule.VCard.Email()!;
@@ -87,7 +87,7 @@ class ContactViewController: UITableViewController {
                     emails.append(e);
                 });
             }
-            dispatch_async(dispatch_get_main_queue()) {
+            DispatchQueue.main.async() {
                 self.tableView.reloadData();
             }
         }
@@ -116,15 +116,15 @@ class ContactViewController: UITableViewController {
         // Dispose of any resources that can be recreated.
     }
 
-    @IBAction func refreshVCard(sender: UIBarButtonItem) {
+    @IBAction func refreshVCard(_ sender: UIBarButtonItem) {
         refreshVCard();
     }
     
     func refreshVCard() {
-        dispatch_async(dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0)) {
+        DispatchQueue.global(qos: .background).async() {
             if let vcardModule: VCardModule = self.xmppService.getClient(self.account)?.modulesManager.getModule(VCardModule.ID) {
                 vcardModule.retrieveVCard(JID(self.jid), onSuccess: { (vcard) in
-                    dispatch_async(dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0)) {
+                    DispatchQueue.global(qos: .background).async() {
                         self.xmppService.dbVCardsCache.updateVCard(self.jid, vcard: vcard);
                         self.vcard = vcard;
                     }
@@ -137,7 +137,7 @@ class ContactViewController: UITableViewController {
     
     // MARK: - Table view data source
 
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in: UITableView) -> Int {
         var i = 1;
         if phones.count > 0 {
             i += 1;
@@ -151,7 +151,7 @@ class ContactViewController: UITableViewController {
         return i;
     }
     
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
         case 0:
             return 1;
@@ -166,7 +166,7 @@ class ContactViewController: UITableViewController {
         }
     }
     
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch section {
         case 0:
             return nil;
@@ -181,7 +181,7 @@ class ContactViewController: UITableViewController {
         }
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch indexPath.section {
         case 0:
             return 76;
@@ -192,10 +192,10 @@ class ContactViewController: UITableViewController {
         }
     }
 
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.section {
         case 0:
-            let cell = tableView.dequeueReusableCellWithIdentifier("BasicInfoCell", forIndexPath: indexPath) as! ContactBasicTableViewCell;
+            let cell = tableView.dequeueReusableCell(withIdentifier: "BasicInfoCell", for: indexPath) as! ContactBasicTableViewCell;
         
             cell.account = account;
             cell.jid = jid;
@@ -204,27 +204,27 @@ class ContactViewController: UITableViewController {
         
             return cell;
         case 1:
-            let cell = tableView.dequeueReusableCellWithIdentifier("ContactFormCell", forIndexPath: indexPath) as! ContactFormTableViewCell;
+            let cell = tableView.dequeueReusableCell(withIdentifier: "ContactFormCell", for: indexPath) as! ContactFormTableViewCell;
             let phone = phones[indexPath.row];
-            let type = (phone.types.first ?? VCardModule.VCard.Type.HOME).rawValue.capitalizedString;
+            let type = (phone.types.first ?? VCardModule.VCard.EntryType.HOME).rawValue.capitalized;
             
             cell.typeView.text = type;
-            cell.labelView.text = phone.number?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet());
+            cell.labelView.text = phone.number?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines);
             
             return cell;
         case 2:
-            let cell = tableView.dequeueReusableCellWithIdentifier("ContactFormCell", forIndexPath: indexPath) as! ContactFormTableViewCell;
+            let cell = tableView.dequeueReusableCell(withIdentifier: "ContactFormCell", for: indexPath) as! ContactFormTableViewCell;
             let email = emails[indexPath.row];
-            let type = (email.types.first ?? VCardModule.VCard.Type.HOME).rawValue.capitalizedString;
+            let type = (email.types.first ?? VCardModule.VCard.EntryType.HOME).rawValue.capitalized;
             
             cell.typeView.text = type;
-            cell.labelView.text = email.address?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet());
+            cell.labelView.text = email.address?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines);
             
             return cell;
         case 3:
-            let cell = tableView.dequeueReusableCellWithIdentifier("AddressCell", forIndexPath: indexPath) as! ContactFormTableViewCell;
+            let cell = tableView.dequeueReusableCell(withIdentifier: "AddressCell", for: indexPath ) as! ContactFormTableViewCell;
             let address = addresses[indexPath.row];
-            let type = (address.types.first ?? VCardModule.VCard.Type.HOME).rawValue.capitalizedString;
+            let type = (address.types.first ?? VCardModule.VCard.EntryType.HOME).rawValue.capitalized;
             
             cell.typeView.text = type;
             
@@ -260,28 +260,28 @@ class ContactViewController: UITableViewController {
             
             return cell;
         default:
-            let cell = tableView.dequeueReusableCellWithIdentifier("ContactFormCell", forIndexPath: indexPath) as! ContactFormTableViewCell;
+            let cell = tableView.dequeueReusableCell(withIdentifier: "ContactFormCell", for: indexPath as IndexPath) as! ContactFormTableViewCell;
             return cell;
         }
     }
 
-    override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
+    override func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
         if indexPath.section == 0 {
             return nil;
         }
         return indexPath;
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath as IndexPath, animated: true)
         switch indexPath.section {
         case 1:
-            if let url = NSURL(string: "tel:" + phones[indexPath.row].number!) {
-                UIApplication.sharedApplication().openURL(url);
+            if let url = URL(string: "tel:" + phones[indexPath.row].number!) {
+                UIApplication.shared.openURL(url);
             }
         case 2:
-            if let url = NSURL(string: "mailto:" + emails[indexPath.row].address!) {
-                UIApplication.sharedApplication().openURL(url);
+            if let url = URL(string: "mailto:" + emails[indexPath.row].address!) {
+                UIApplication.shared.openURL(url);
             }
         case 3:
             let address = addresses[indexPath.row];
@@ -295,9 +295,9 @@ class ContactViewController: UITableViewController {
             if let country = address.country {
                 parts.append(country);
             }
-            let query = parts.joinWithSeparator(",").stringByAddingPercentEncodingWithAllowedCharacters(.URLHostAllowedCharacterSet())!;
-            if let url = NSURL(string: "http://maps.apple.com/?q=" + query) {
-                UIApplication.sharedApplication().openURL(url);
+            let query = parts.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!;
+            if let url = URL(string: "http://maps.apple.com/?q=" + query) {
+                UIApplication.shared.openURL(url);
             }
         default:
             break;

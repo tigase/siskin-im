@@ -26,26 +26,26 @@ import TigaseSwift
 class SettingsViewController: UITableViewController, EventHandler {
    
     var xmppService:XmppService {
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate;
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
         return appDelegate.xmppService;
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
         xmppService.registerEventHandler(self, events: SocketConnector.ConnectedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE);
         tableView.reloadData();
     }
     
-    override func viewDidDisappear(animated: Bool) {
+    override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated);
         xmppService.unregisterEventHandler(self, events: SocketConnector.ConnectedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE);
     }
     
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         return 3;
     }
     
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch section {
         case 0:
             return "Accounts";
@@ -58,7 +58,7 @@ class SettingsViewController: UITableViewController, EventHandler {
         }
     }
     
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
         case 0:
             return AccountManager.getAccounts().count + 1;
@@ -71,10 +71,10 @@ class SettingsViewController: UITableViewController, EventHandler {
         }
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if (indexPath.section == 0) {
             let cellIdentifier = "AccountTableViewCell";
-            let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! AccountTableViewCell;
+            let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! AccountTableViewCell;
             let accounts = AccountManager.getAccounts();
             if accounts.count > indexPath.row {
                 let account = AccountManager.getAccount(accounts[indexPath.row]);
@@ -82,7 +82,7 @@ class SettingsViewController: UITableViewController, EventHandler {
                 let jid = BareJID(account!.name);
                 cell.avatarStatusView.setAvatar(xmppService.avatarManager.getAvatar(jid, account: BareJID(account!.name)));
                 if let client = xmppService.getClient(jid) {
-                    cell.avatarStatusView.statusImageView.hidden = false;
+                    cell.avatarStatusView.statusImageView.isHidden = false;
                     var status: Presence.Show? = nil;
                     switch client.state {
                     case .connected:
@@ -94,34 +94,34 @@ class SettingsViewController: UITableViewController, EventHandler {
                     }
                     cell.avatarStatusView.setStatus(status);
                 } else {
-                    cell.avatarStatusView.statusImageView.hidden = true;
+                    cell.avatarStatusView.statusImageView.isHidden = true;
                 }
             } else {
                 cell.nameLabel.text = "Add account";
                 cell.avatarStatusView.setAvatar(nil);
-                cell.avatarStatusView.hidden = true;
+                cell.avatarStatusView.isHidden = true;
             }
             return cell;
         } else if (indexPath.section == 1) {
-            let cell = tableView.dequeueReusableCellWithIdentifier("StatusTableViewCell", forIndexPath: indexPath);
+            let cell = tableView.dequeueReusableCell(withIdentifier: "StatusTableViewCell", for: indexPath);
             let label = cell.viewWithTag(1)! as! UILabel;
             label.text = Settings.StatusMessage.getString();
             return cell;
         } else {
             let setting = SettingsEnum(rawValue: indexPath.row)!;
             switch setting {
-            case .DeleteChatHistoryOnClose:
-                let cell = tableView.dequeueReusableCellWithIdentifier("DeleteChatHistoryOnCloseTableViewCell", forIndexPath: indexPath) as! SwitchTableViewCell;
-                cell.switchView.on = Settings.DeleteChatHistoryOnChatClose.getBool();
-                cell.valueChangedListener = {(switchView) in
-                    Settings.DeleteChatHistoryOnChatClose.setValue(switchView.on);
+            case .deleteChatHistoryOnClose:
+                let cell = tableView.dequeueReusableCell(withIdentifier: "DeleteChatHistoryOnCloseTableViewCell", for: indexPath) as! SwitchTableViewCell;
+                cell.switchView.isOn = Settings.DeleteChatHistoryOnChatClose.getBool();
+                cell.valueChangedListener = {(switchView: UISwitch) in
+                    Settings.DeleteChatHistoryOnChatClose.setValue(switchView.isOn);
                 }
                 return cell;
-            case .EnableMessageCarbons:
-                let cell = tableView.dequeueReusableCellWithIdentifier("EnableMessageCarbonsTableViewCell", forIndexPath: indexPath) as! SwitchTableViewCell;
-                cell.switchView.on = Settings.EnableMessageCarbons.getBool();
-                cell.valueChangedListener = {(switchView) in
-                    Settings.EnableMessageCarbons.setValue(switchView.on);
+            case .enableMessageCarbons:
+                let cell = tableView.dequeueReusableCell(withIdentifier: "EnableMessageCarbonsTableViewCell", for: indexPath ) as! SwitchTableViewCell;
+                cell.switchView.isOn = Settings.EnableMessageCarbons.getBool();
+                cell.valueChangedListener = {(switchView: UISwitch) in
+                    Settings.EnableMessageCarbons.setValue(switchView.isOn);
                 }
                 return cell;
             }
@@ -129,26 +129,26 @@ class SettingsViewController: UITableViewController, EventHandler {
         }
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true);
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath as IndexPath, animated: true);
         
         if indexPath.section == 0 {
             let accounts = AccountManager.getAccounts();
             if indexPath.row == accounts.count {
-                let alert = UIAlertController(title: nil, message: nil, preferredStyle: .ActionSheet);
-                alert.addAction(UIAlertAction(title: "Create new", style: .Default, handler: { (action) in
+                let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
+                alert.addAction(UIAlertAction(title: "Create new", style: .default, handler: { (action) in
                     self.showAddAccount(true);
                 }));
-                alert.addAction(UIAlertAction(title: "Add existing", style: .Default, handler: { (action) in
+                alert.addAction(UIAlertAction(title: "Add existing", style: .default, handler: { (action) in
                     self.showAddAccount(false);
                 }));
-                alert.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil));
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
                 
-                self.presentViewController(alert, animated: true, completion: nil);
+                self.present(alert, animated: true, completion: nil);
             } else {
                 // show edit account dialog
                 let account = accounts[indexPath.row];
-                let navigation = storyboard?.instantiateViewControllerWithIdentifier("AccountSettingsNavigationController") as! UINavigationController;
+                let navigation = storyboard?.instantiateViewController(withIdentifier: "AccountSettingsNavigationController") as! UINavigationController;
                 let accountSettingsController = navigation.visibleViewController! as! AccountSettingsViewController;
                 accountSettingsController.hidesBottomBarWhenPushed = true;
                 accountSettingsController.account = account;
@@ -156,20 +156,20 @@ class SettingsViewController: UITableViewController, EventHandler {
             }
         } else if indexPath.section == 1 {
             if indexPath.row == 0 {
-                let alert = UIAlertController(title: "Status", message: "Enter status message", preferredStyle: .Alert);
-                alert.addTextFieldWithConfigurationHandler({ (textField) in
+                let alert = UIAlertController(title: "Status", message: "Enter status message", preferredStyle: .alert);
+                alert.addTextField(configurationHandler: { (textField) in
                     textField.text = Settings.StatusMessage.getString();
                 })
-                alert.addAction(UIAlertAction(title: "Set", style: .Default, handler: { (action) -> Void in
+                alert.addAction(UIAlertAction(title: "Set", style: .default, handler: { (action) -> Void in
                     Settings.StatusMessage.setValue((alert.textFields![0] as UITextField).text);
                     self.tableView.reloadData();
                 }));
-                self.presentViewController(alert, animated: true, completion: nil);
+                self.present(alert, animated: true, completion: nil);
             }
         }
     }
 
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         if (indexPath.section == 0) {
             let accounts = AccountManager.getAccounts();
             return accounts.count > indexPath.row
@@ -177,40 +177,40 @@ class SettingsViewController: UITableViewController, EventHandler {
         return false;
     }
     
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == UITableViewCellEditingStyle.Delete {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == UITableViewCellEditingStyle.delete {
             if indexPath.section == 0 {
                 let accounts = AccountManager.getAccounts();
                 if accounts.count > indexPath.row {
                     let account = accounts[indexPath.row];
-                    let alert = UIAlertController(title: "Account removal", message: "Should account be removed from server as well?", preferredStyle: .ActionSheet);
+                    let alert = UIAlertController(title: "Account removal", message: "Should account be removed from server as well?", preferredStyle: .actionSheet);
                     if let client = self.xmppService.getClient(BareJID(account)) {
-                        alert.addAction(UIAlertAction(title: "Remove", style: .Destructive, handler: { (action) in
+                        alert.addAction(UIAlertAction(title: "Remove", style: .destructive, handler: { (action) in
                             let regModule = client.modulesManager.register(InBandRegistrationModule());
                             regModule.unregister({ (stanza) in
-                                dispatch_async(dispatch_get_main_queue()) {
+                                DispatchQueue.main.async() {
                                     AccountManager.deleteAccount(account);
                                     self.tableView.reloadData();
                                 }
                             })
                         }));
                     }
-                    alert.addAction(UIAlertAction(title: "Remove", style: .Default, handler: { (action) in
+                    alert.addAction(UIAlertAction(title: "Remove", style: .default, handler: { (action) in
                         AccountManager.deleteAccount(account);
                         self.tableView.reloadData();
                     }));
-                    alert.addAction(UIAlertAction(title: "Keep", style: .Default, handler: nil));
-                    self.presentViewController(alert, animated: true, completion: nil);
+                    alert.addAction(UIAlertAction(title: "Keep", style: .default, handler: nil));
+                    self.present(alert, animated: true, completion: nil);
                 }
             }
         }
     }
     
-    func handleEvent(event: Event) {
+    func handleEvent(_ event: Event) {
         switch event {
         case is SocketConnector.ConnectedEvent, is SocketConnector.DisconnectedEvent, is StreamManagementModule.ResumedEvent,
              is SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
-            dispatch_async(dispatch_get_main_queue()) {
+            DispatchQueue.main.async() {
                 self.tableView.reloadData();
             }
         default:
@@ -218,9 +218,9 @@ class SettingsViewController: UITableViewController, EventHandler {
         }
     }
     
-    func showAddAccount(register: Bool) {
+    func showAddAccount(_ register: Bool) {
         // show add account dialog
-        let navigationController = storyboard!.instantiateViewControllerWithIdentifier("AddAccountController") as! UINavigationController;
+        let navigationController = storyboard!.instantiateViewController(withIdentifier: "AddAccountController") as! UINavigationController;
         let addAccountController = navigationController.visibleViewController! as! AddAccountController;
         addAccountController.hidesBottomBarWhenPushed = true;
         addAccountController.registerAccount = register;
@@ -228,7 +228,7 @@ class SettingsViewController: UITableViewController, EventHandler {
     }
     
     internal enum SettingsEnum: Int {
-        case DeleteChatHistoryOnClose = 0
-        case EnableMessageCarbons = 1
+        case deleteChatHistoryOnClose = 0
+        case enableMessageCarbons = 1
     }
 }

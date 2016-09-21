@@ -37,12 +37,12 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
     @IBInspectable var animateScrollToBottom: Bool = true;
     
     var dbConnection:DBConnection {
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate;
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
         return appDelegate.dbConnection;
     }
     
     var xmppService:XmppService! {
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate;
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
         return appDelegate.xmppService;
     }
     
@@ -58,7 +58,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
         super.viewDidLoad()
         isFirstTime = scrollToBottomOnShow;
 
-        navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem();
+        navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem;
         navigationItem.leftItemsSupplementBackButton = true;
         navigationItem.title = jid.stringValue;
         let params:[String:Any?] = ["account" : account, "jid" : jid.bareJid];
@@ -67,18 +67,18 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
         }
         
         messageField.delegate = self;
-        messageField.scrollEnabled = false;
+        messageField.isScrollEnabled = false;
         
         tableView.rowHeight = UITableViewAutomaticDimension;
         tableView.estimatedRowHeight = 160.0;
-        tableView.separatorStyle = .None;
+        tableView.separatorStyle = .none;
         
         applyPlaceHolderStyle(messageField);
         
-        bottomView.layer.borderColor = UIColor.lightGrayColor().CGColor;
+        bottomView.layer.borderColor = UIColor.lightGray.cgColor;
         bottomView.layer.borderWidth = 1.0;
-        bottomViewBottomConstraint = view.bottomAnchor.constraintEqualToAnchor(bottomView.bottomAnchor, constant: 0);
-        bottomViewBottomConstraint?.active = true;
+        bottomViewBottomConstraint = view.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor, constant: 0);
+        bottomViewBottomConstraint?.isActive = true;
     }
 
     override func didReceiveMemoryWarning() {
@@ -86,13 +86,13 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
         // Dispose of any resources that can be recreated.
     }
    
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.keyboardWillShow), name: UIKeyboardWillShowNotification, object: nil);
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.keyboardWillHide), name: UIKeyboardWillHideNotification, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillShow), name: NSNotification.Name.UIKeyboardWillShow, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillHide), name: NSNotification.Name.UIKeyboardWillHide, object: nil);
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated);
         if isFirstTime {
             // scroll to bottom?
@@ -102,29 +102,29 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
         xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
     }
     
-    override func viewDidDisappear(animated: Bool) {
-        NSNotificationCenter.defaultCenter().removeObserver(self);
+    override func viewDidDisappear(_ animated: Bool) {
+        NotificationCenter.default.removeObserver(self);
         super.viewDidDisappear(animated);
     }
     
-    func keyboardWillShow(notification: NSNotification) {
+    func keyboardWillShow(_ notification: NSNotification) {
         keyboardAnimateHideShow(notification, hide: false);
     }
     
-    func keyboardWillHide(notification: NSNotification) {
+    func keyboardWillHide(_ notification: NSNotification) {
         keyboardAnimateHideShow(notification, hide: true);
     }
     
-    func keyboardAnimateHideShow(notification: NSNotification, hide: Bool) {
+    func keyboardAnimateHideShow(_ notification: NSNotification, hide: Bool) {
         if let userInfo = notification.userInfo {
-            if let keyboardSize = (userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.CGRectValue() {
+            if let keyboardSize = (userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
                 let oldHeight = bottomViewBottomConstraint?.constant ?? CGFloat(0);
                 let newHeight = hide ? 0 : keyboardSize.height;
                 if (oldHeight - newHeight) != 0 {
-                    let duration = userInfo[UIKeyboardAnimationDurationUserInfoKey] as! NSTimeInterval;
+                    let duration = userInfo[UIKeyboardAnimationDurationUserInfoKey] as! TimeInterval;
                     let curve = userInfo[UIKeyboardAnimationCurveUserInfoKey] as! UInt;
                     bottomViewBottomConstraint?.constant = newHeight;
-                    UIView.animateWithDuration(duration, delay: 0.0, options: [UIViewAnimationOptions(rawValue: curve), UIViewAnimationOptions.LayoutSubviews, UIViewAnimationOptions.BeginFromCurrentState], animations: {
+                    UIView.animate(withDuration: duration, delay: 0.0, options: [UIViewAnimationOptions(rawValue: curve), UIViewAnimationOptions.layoutSubviews, UIViewAnimationOptions.beginFromCurrentState], animations: {
                         self.view.layoutIfNeeded();
                         self.scrollToNewestMessage(true);
                         
@@ -134,31 +134,31 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
         }
     }
 
-    func textViewShouldBeginEditing(textView: UITextView) -> Bool {
+    func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
         if textView == messageField && textView.text == PLACEHOLDER_TEXT {
-            dispatch_async(dispatch_get_main_queue()) {
+            DispatchQueue.main.async() {
                 textView.selectedRange = NSMakeRange(0, 0);
             }
         }
         return true;
     }
     
-    func applyPlaceHolderStyle(textView: UITextView) {
-        textView.textColor = UIColor.lightGrayColor();
+    func applyPlaceHolderStyle(_ textView: UITextView) {
+        textView.textColor = UIColor.lightGray;
         textView.text = PLACEHOLDER_TEXT;
-        dispatch_async(dispatch_get_main_queue()) {
+        DispatchQueue.main.async() {
             textView.selectedRange = NSMakeRange(0, 0);
         }
     }
     
-    func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         let newLength = textView.text.utf16.count + text.utf16.count - range.length;
         if newLength > 0 {
             if textView == messageField && textView.text == PLACEHOLDER_TEXT {
                 if text.utf16.count == 0 {
                     return false;
                 }
-                textView.textColor = UIColor.darkTextColor();
+                textView.textColor = UIColor.darkText;
                 textView.alpha = 1.0;
                 textView.text = "";
             }
@@ -169,15 +169,15 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
         }
     }
     
-    @IBAction func tableViewClicked(sender: AnyObject) {
+    @IBAction func tableViewClicked(_ sender: AnyObject) {
         messageField.resignFirstResponder();
     }
     
-    func textViewDidEndEditing(textView: UITextView) {
+    func textViewDidEndEditing(_ textView: UITextView) {
         textView.resignFirstResponder();
     }
     
-    func scrollToNewestMessage(animated: Bool) {
+    func scrollToNewestMessage(_ animated: Bool) {
         if scrollDelegate != nil {
             scrollDelegate?.tableViewScrollToNewestMessage(animated)
         } else {
@@ -185,12 +185,12 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
         }
     }
     
-    func scrollToNewestMessageImpl(animated: Bool) {
-        func scrollToNewestMessage(animated: Bool) {
+    func scrollToNewestMessageImpl(_ animated: Bool) {
+        func scrollToNewestMessage(_ animated: Bool) {
             let count = xmppService.dbChatHistoryStore.countMessages(account, jid: jid.bareJid);
             if count > 0 {
-                let path = NSIndexPath(forRow: count - 1, inSection: 0);
-                self.tableView.scrollToRowAtIndexPath(path, atScrollPosition: UITableViewScrollPosition.Bottom, animated: animated);
+                let path = IndexPath(row: count - 1, section: 0);
+                self.tableView.scrollToRow(at: path, at: .bottom, animated: animated);
             }
         }
     }
@@ -199,6 +199,6 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
 
 protocol BaseChatViewControllerScrollDelegate: class {
     
-    func tableViewScrollToNewestMessage(animated: Bool);
+    func tableViewScrollToNewestMessage(_ animated: Bool);
     
 }

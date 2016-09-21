@@ -22,20 +22,20 @@
 import Foundation
 import TigaseSwift
 
-public class DBRoomsManager: DefaultRoomsManager {
+open class DBRoomsManager: DefaultRoomsManager {
     
-    private let store: DBChatStore;
+    fileprivate let store: DBChatStore;
     
     public init(store: DBChatStore) {
         self.store = store;
     }
     
-    public override func createRoomInstance(roomJid: BareJID, nickname: String, password: String?) -> Room {
+    open override func createRoomInstance(_ roomJid: BareJID, nickname: String, password: String?) -> Room {
         let room = super.createRoomInstance(roomJid, nickname: nickname, password: password);
         return store.open(context.sessionObject, chat: room)!;
     }
     
-    public override func initialize() {
+    open override func initialize() {
         guard self.getRooms().count == 0 else {
             return;
         }
@@ -45,7 +45,7 @@ public class DBRoomsManager: DefaultRoomsManager {
         }
     }
     
-    public override func remove(room: Room) {
+    open override func remove(_ room: Room) {
         if store.close(room) {
             super.remove(room);
         }

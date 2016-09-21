@@ -25,7 +25,7 @@ import TigaseSwift
 class MucChatOccupantsTableViewController: UITableViewController, EventHandler {
     
     var xmppService:XmppService! {
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate;
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
         return appDelegate.xmppService;
     }
     
@@ -47,29 +47,29 @@ class MucChatOccupantsTableViewController: UITableViewController, EventHandler {
         // Dispose of any resources that can be recreated.
     }
 
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
         xmppService.registerEventHandler(self, events: MucModule.OccupantChangedPresenceEvent.TYPE, MucModule.OccupantComesEvent.TYPE, MucModule.OccupantLeavedEvent.TYPE);
     }
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         xmppService.unregisterEventHandler(self, events: MucModule.OccupantChangedPresenceEvent.TYPE, MucModule.OccupantComesEvent.TYPE, MucModule.OccupantLeavedEvent.TYPE);
         super.viewWillDisappear(animated);
     }
     
     // MARK: - Table view data source
 
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in: UITableView) -> Int {
         return 1;
     }
 
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return room.presences.count;
     }
 
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("MucChatOccupantsTableViewCell", forIndexPath: indexPath) as! MucChatOccupantsTableViewCell;
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "MucChatOccupantsTableViewCell", for: indexPath as IndexPath) as! MucChatOccupantsTableViewCell;
 
-        let nicknames = Array(room.presences.keys).sort();
+        let nicknames = Array(room.presences.keys).sorted();
         let nickname = nicknames[indexPath.row];
         let occupant = room.presences[nickname];
         cell.nicknameLabel.text = nickname;
@@ -84,7 +84,7 @@ class MucChatOccupantsTableViewController: UITableViewController, EventHandler {
         return cell
     }
     
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return false;
     }
 
@@ -100,10 +100,10 @@ class MucChatOccupantsTableViewController: UITableViewController, EventHandler {
     }
     */
     
-    func handleEvent(event: Event) {
+    func handleEvent(_ event: Event) {
         switch event {
         case is MucModule.OccupantLeavedEvent, is MucModule.OccupantComesEvent, is MucModule.OccupantChangedPresenceEvent, is MucModule.OccupantChangedNickEvent:
-            dispatch_async(dispatch_get_main_queue()) {
+            DispatchQueue.main.async() {
                 self.tableView.reloadData();
             }
         default:

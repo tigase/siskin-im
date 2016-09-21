@@ -26,26 +26,26 @@ import TigaseSwift
  Implementation of `CapabilitiesCache` which persists cached data in database 
  for reuse during next connection or after application restart.
  */
-public class DBCapabilitiesCache: CapabilitiesCache {
+open class DBCapabilitiesCache: CapabilitiesCache {
     
     let dbConnection: DBConnection;
     
-    private lazy var getFeatureStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT feature FROM caps_features WHERE node = :node");
-    private lazy var getIdentityStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT name, category, type FROM caps_identities WHERE node = :node");
-    private lazy var getNodesWithFeatureStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT node FROM caps_features WHERE feature = :features");
-    private lazy var insertFeatureStmt: DBStatement! = try? self.dbConnection.prepareStatement("INSERT INTO caps_features (node, feature) VALUES (:node, :feature)");
-    private lazy var insertIdentityStmt: DBStatement! = try? self.dbConnection.prepareStatement("INSERT INTO caps_identities (node, name, category, type) VALUES (:node, :name, :category, :type)");
-    private lazy var nodeIsCached: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(feature) FROM caps_features WHERE node = :node");
+    fileprivate lazy var getFeatureStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT feature FROM caps_features WHERE node = :node");
+    fileprivate lazy var getIdentityStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT name, category, type FROM caps_identities WHERE node = :node");
+    fileprivate lazy var getNodesWithFeatureStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT node FROM caps_features WHERE feature = :features");
+    fileprivate lazy var insertFeatureStmt: DBStatement! = try? self.dbConnection.prepareStatement("INSERT INTO caps_features (node, feature) VALUES (:node, :feature)");
+    fileprivate lazy var insertIdentityStmt: DBStatement! = try? self.dbConnection.prepareStatement("INSERT INTO caps_identities (node, name, category, type) VALUES (:node, :name, :category, :type)");
+    fileprivate lazy var nodeIsCached: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(feature) FROM caps_features WHERE node = :node");
     
     
-    private var features = [String: [String]]();
-    private var identities: [String: DiscoveryModule.Identity] = [:];
+    fileprivate var features = [String: [String]]();
+    fileprivate var identities: [String: DiscoveryModule.Identity] = [:];
     
     public init(dbConnection: DBConnection) {
         self.dbConnection = dbConnection;
     }
     
-    public func getFeatures(node: String) -> [String]? {
+    open func getFeatures(_ node: String) -> [String]? {
         return dbConnection.dispatch_sync_with_result_local_queue() {
             var result = [String]();
             try! self.getFeatureStmt.query(node, forEachRow: {(cursor)->Void in
@@ -55,7 +55,7 @@ public class DBCapabilitiesCache: CapabilitiesCache {
         }
     }
     
-    public func getIdentity(node: String) -> DiscoveryModule.Identity? {
+    open func getIdentity(_ node: String) -> DiscoveryModule.Identity? {
         return dbConnection.dispatch_sync_with_result_local_queue() {
             guard let cursor: DBCursor = try! self.getIdentityStmt.execute(node)?.cursor else {
                 return nil;
@@ -67,7 +67,7 @@ public class DBCapabilitiesCache: CapabilitiesCache {
         }
     }
     
-    public func getNodesWithFeature(feature: String) -> [String] {
+    open func getNodesWithFeature(_ feature: String) -> [String] {
         return dbConnection.dispatch_sync_with_result_local_queue() {
             var result = [String]();
             try! self.getNodesWithFeatureStmt.query(feature, forEachRow: {(cursor)->Void in
@@ -77,22 +77,22 @@ public class DBCapabilitiesCache: CapabilitiesCache {
         }
     }
     
-    public func isCached(node: String) -> Bool {
+    open func isCached(_ node: String) -> Bool {
         let count: Int? = try! nodeIsCached.scalar(node);
         return (count ?? 0) != 0;
     }
     
-    public func store(node: String, identity: DiscoveryModule.Identity?, features: [String]) {
+    open func store(_ node: String, identity: DiscoveryModule.Identity?, features: [String]) {
         guard !isCached(node) else {
             return;
         }
 
         for feature in features {
-            try! insertFeatureStmt.insert(node, feature);
+            _ = try! insertFeatureStmt.insert(node, feature);
         }
         
         if identity != nil {
-            try! insertIdentityStmt.insert(node, identity!.name, identity!.category, identity!.type);
+            _ = try! insertIdentityStmt.insert(node, identity!.name, identity!.category, identity!.type);
         }
     }
     

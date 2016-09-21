@@ -25,33 +25,35 @@ public enum Settings: String {
     case DeleteChatHistoryOnChatClose
     case EnableMessageCarbons
     case StatusMessage
+
+    public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     
-    private static var store: NSUserDefaults {
-        return NSUserDefaults.standardUserDefaults();
+    fileprivate static var store: UserDefaults {
+        return UserDefaults.standard;
     }
     
     public static func initialize() {
         let defaults: [String: AnyObject] = [
-            "DeleteChatHistoryOnChatClose" : false,
-            "EnableMessageCarbons" : true
+            "DeleteChatHistoryOnChatClose" : false as AnyObject,
+            "EnableMessageCarbons" : true as AnyObject
         ];
-        store.registerDefaults(defaults);
+        store.register(defaults: defaults);
     }
     
-    public func setValue(value: AnyObject?) {
-        Settings.store.setObject(value, forKey: self.rawValue);
+    public func setValue(_ value: Any?) {
+        Settings.store.set(value, forKey: self.rawValue);
         Settings.valueChanged(self);
     }
     
     public func getBool() -> Bool {
-        return Settings.store.boolForKey(self.rawValue);
+        return Settings.store.bool(forKey: self.rawValue);
     }
     
     public func getString() -> String? {
-        return Settings.store.stringForKey(self.rawValue);
+        return Settings.store.string(forKey: self.rawValue);
     }
     
-    private static func valueChanged(key: Settings) {
-        NSNotificationCenter.defaultCenter().postNotificationName("settingsChanged", object: nil, userInfo: ["key": key.rawValue]);
+    fileprivate static func valueChanged(_ key: Settings) {
+        NotificationCenter.default.post(name: Settings.SETTINGS_CHANGED, object: nil, userInfo: ["key": key.rawValue]);
     }
 }

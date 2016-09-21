@@ -22,19 +22,19 @@
 import UIKit
 import TigaseSwift
 
-public class DBChatStoreWrapper: ChatStore {
+open class DBChatStoreWrapper: ChatStore {
     
-    private let cache: NSCache?;
-    private let store: DBChatStore;
-    private let sessionObject: SessionObject;
+    fileprivate let cache: NSCache<NSString, AnyObject>?;
+    fileprivate let store: DBChatStore;
+    fileprivate let sessionObject: SessionObject;
     
-    private var queue: dispatch_queue_t?;
+    fileprivate var queue: DispatchQueue?;
     
-    public var count:Int {
+    open var count:Int {
         return store.count(sessionObject);
     }
     
-    public var items:[ChatProtocol] {
+    open var items:[ChatProtocol] {
         return store.getAll(sessionObject);
     }
     
@@ -44,14 +44,14 @@ public class DBChatStoreWrapper: ChatStore {
         self.cache = useCache ? NSCache() : nil;
         self.cache?.countLimit = 100;
         self.cache?.totalCostLimit = 512 * 1024;
-        self.queue = useCache ? dispatch_queue_create("chat_store_queue", DISPATCH_QUEUE_SERIAL) : nil;
+        self.queue = useCache ? DispatchQueue(label: "chat_store_queue") : nil;
     }
     
-    public func get<T: AnyObject>(jid: BareJID, filter: (T) -> Bool) -> T? {
+    open func get<T: AnyObject>(_ jid: BareJID, filter: @escaping (T) -> Bool) -> T? {
         var item: T?;
         if cache != nil {
-            dispatch_sync(queue!) {
-                if let chats = self.cache!.objectForKey(jid.stringValue) as? [T] {
+            queue!.sync {
+                if let chats = self.cache!.object(forKey: jid.stringValue as NSString) as? [T] {
                     for chat in chats {
                         if filter(chat) {
                             item = chat;
@@ -66,7 +66,7 @@ public class DBChatStoreWrapper: ChatStore {
                         return;
                     }
                     
-                    self.cache?.setObject(chats, forKey: jid.stringValue);
+                    self.cache?.setObject(chats as NSArray, forKey: jid.stringValue as NSString);
                     
                     for chat in chats {
                         if filter(chat) {
@@ -81,68 +81,72 @@ public class DBChatStoreWrapper: ChatStore {
         return store.get(sessionObject, jid: jid, filter: filter);
     }
     
-    public func getAll<T>() -> [T] {
+    open func getAll<T>() -> [T] {
         return store.getAll(sessionObject);
     }
     
-    public func isFor(jid: BareJID) -> Bool {
+    open func isFor(_ jid: BareJID) -> Bool {
         return store.isFor(sessionObject, jid: jid);
     }
     
-    public func open<T: AnyObject>(chat:ChatProtocol) -> T? {
+    open func open<T: AnyObject>(_ chat:ChatProtocol) -> T? {
         let dbChat: T? = store.open(sessionObject, chat: chat);
         if dbChat != nil && cache != nil {
-            dispatch_sync(queue!) {
-                var chats = (self.cache!.objectForKey(chat.jid.bareJid.stringValue) as? [T]) ?? [];
+            queue!.sync {
+                var chats = (self.cache!.object(forKey: chat.jid.bareJid.stringValue as NSString) as? [T]) ?? [];
                 chats.append(dbChat!);
-                self.cache?.setObject(chats, forKey: chat.jid.bareJid.stringValue);
+                self.cache?.setObject(chats as NSArray, forKey: chat.jid.bareJid.stringValue as NSString);
             }
         }
         return dbChat;
     }
     
-    public func close(chat:ChatProtocol) -> Bool {
+    open func close(_ chat:ChatProtocol) -> Bool {
         let closed = store.close(chat);
         if closed && cache != nil {
-            dispatch_sync(queue!) {
-                self.cache?.removeObjectForKey(chat.jid.bareJid.stringValue);
+            queue!.sync {
+                self.cache?.removeObject(forKey: chat.jid.bareJid.stringValue as NSString);
             }
         }
         return closed;
     }
 }
 
-public class DBChatStore: LocalQueueDispatcher {
+open class DBChatStore: LocalQueueDispatcher {
     
-    private static let CHATS_GET = "SELECT id, type, thread_id, resource, timestamp FROM chats WHERE account = :account AND jid = :jid";
-    private static let CHATS_LIST = "SELECT id, jid, type, thread_id, resource, nickname, password, timestamp FROM chats WHERE account = :account";
-    private static let CHAT_IS = "SELECT count(id) as count FROM chats WHERE account = :account AND jid = :jid";
-    private static let CHAT_OPEN = "INSERT INTO chats (account, jid, timestamp, type, resource, thread_id) VALUES (:account, :jid, :timestamp, :type, :resource, :thread)";
-    private static let ROOM_OPEN = "INSERT INTO chats (account, jid, timestamp, type, nickname, password) VALUES (:account, :jid, :timestamp, :type, :nickname, :password)";
-    private static let CHAT_CLOSE = "DELETE FROM chats WHERE id = :id";
-    private static let CHATS_COUNT = "SELECT count(id) as count FROM chats WHERE account = :account";
+    fileprivate static let CHATS_GET = "SELECT id, type, thread_id, resource, timestamp FROM chats WHERE account = :account AND jid = :jid";
+    fileprivate static let CHATS_LIST = "SELECT id, jid, type, thread_id, resource, nickname, password, timestamp FROM chats WHERE account = :account";
+    fileprivate static let CHAT_IS = "SELECT count(id) as count FROM chats WHERE account = :account AND jid = :jid";
+    fileprivate static let CHAT_OPEN = "INSERT INTO chats (account, jid, timestamp, type, resource, thread_id) VALUES (:account, :jid, :timestamp, :type, :resource, :thread)";
+    fileprivate static let ROOM_OPEN = "INSERT INTO chats (account, jid, timestamp, type, nickname, password) VALUES (:account, :jid, :timestamp, :type, :nickname, :password)";
+    fileprivate static let CHAT_CLOSE = "DELETE FROM chats WHERE id = :id";
+    fileprivate static let CHATS_COUNT = "SELECT count(id) as count FROM chats WHERE account = :account";
     
-    private let dbConnection:DBConnection;
-    public let queue: dispatch_queue_t = dispatch_queue_create("db_chat_store_queue", DISPATCH_QUEUE_SERIAL);
-    public let queueTag: UnsafeMutablePointer<Void>;
+    fileprivate let dbConnection:DBConnection;
+    open let queue: DispatchQueue = DispatchQueue(label: "db_chat_store_queue");
+    open let queueTag: DispatchSpecificKey<DispatchQueue?>;
     
-    private lazy var getStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHATS_GET);
-    private lazy var getAllStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHATS_LIST);
-    private lazy var isForStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHAT_IS);
-    private lazy var openChatStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHAT_OPEN);
-    private lazy var openRoomStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.ROOM_OPEN);
-    private lazy var closeChatStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHAT_CLOSE);
-    private lazy var countStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHATS_COUNT);
+    fileprivate lazy var getStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHATS_GET);
+    fileprivate lazy var getAllStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHATS_LIST);
+    fileprivate lazy var isForStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHAT_IS);
+    fileprivate lazy var openChatStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHAT_OPEN);
+    fileprivate lazy var openRoomStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.ROOM_OPEN);
+    fileprivate lazy var closeChatStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHAT_CLOSE);
+    fileprivate lazy var countStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHATS_COUNT);
     
     public init(dbConnection:DBConnection) {
         self.dbConnection = dbConnection;
-        self.queueTag = UnsafeMutablePointer<Void>(Unmanaged.passUnretained(self.queue).toOpaque());
-        dispatch_queue_set_specific(queue, queueTag, queueTag, nil);
+        self.queueTag = DispatchSpecificKey<DispatchQueue?>();
+        queue.setSpecific(key: queueTag, value: queue);
 
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(DBChatStore.accountRemoved), name: "accountRemoved", object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(DBChatStore.accountRemoved), name: NSNotification.Name(rawValue: "accountRemoved"), object: nil);
+    }
+
+    deinit {
+        queue.setSpecific(key: queueTag, value: nil);
     }
     
-    public func count(sessionObject: SessionObject) -> Int {
+    open func count(_ sessionObject: SessionObject) -> Int {
         let params:[String:Any?] = [ "account" : sessionObject.userBareJid?.description ];
         do {
             return try countStmt.scalar(params) ?? 0;
@@ -152,7 +156,7 @@ public class DBChatStore: LocalQueueDispatcher {
         return 0;
     }
     
-    public func get<T>(sessionObject: SessionObject, jid: BareJID, filter: ((T) -> Bool)?) -> T? {
+    open func get<T>(_ sessionObject: SessionObject, jid: BareJID, filter: ((T) -> Bool)?) -> T? {
         let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : jid ];
         let context = getContext(sessionObject)!;
         return dispatch_sync_with_result_local_queue() {
@@ -189,7 +193,7 @@ public class DBChatStore: LocalQueueDispatcher {
         }
     }
     
-    public func getAll<T>(sessionObject: SessionObject, forJid: BareJID) -> [T] {
+    open func getAll<T>(_ sessionObject: SessionObject, forJid: BareJID) -> [T] {
         let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : forJid ];
         let context = getContext(sessionObject)!;
         var result = [T]();
@@ -223,7 +227,7 @@ public class DBChatStore: LocalQueueDispatcher {
         return result;
     }
     
-    public func getAll<T>(sessionObject:SessionObject) -> [T] {
+    open func getAll<T>(_ sessionObject:SessionObject) -> [T] {
         var result = [T]();
         let context = getContext(sessionObject);
         dispatch_sync_local_queue() {
@@ -259,7 +263,7 @@ public class DBChatStore: LocalQueueDispatcher {
         return result;
     }
     
-    public func isFor(sessionObject:SessionObject, jid:BareJID) -> Bool {
+    open func isFor(_ sessionObject:SessionObject, jid:BareJID) -> Bool {
         return dispatch_sync_with_result_local_queue() {
             let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : jid ];
             let cursor = try! self.isForStmt.query(params)!;
@@ -269,7 +273,7 @@ public class DBChatStore: LocalQueueDispatcher {
         }
     }
     
-    public func open<T>(sessionObject:SessionObject, chat:ChatProtocol) -> T? {
+    open func open<T>(_ sessionObject:SessionObject, chat:ChatProtocol) -> T? {
         let current:ChatProtocol? = get(sessionObject, jid: chat.jid.bareJid, filter: nil);
         if current?.allowFullJid == false {
             return current as? T;
@@ -294,7 +298,7 @@ public class DBChatStore: LocalQueueDispatcher {
         }
     }
     
-    public func close(chat:ChatProtocol) -> Bool {
+    open func close(_ chat:ChatProtocol) -> Bool {
         if let id = chat.id {
             let params:[String:Any?] = [ "id" : id ];
             return try! closeChatStmt.update(params) > 0;
@@ -302,15 +306,15 @@ public class DBChatStore: LocalQueueDispatcher {
         return false;
     }
     
-    @objc public func accountRemoved(notification: NSNotification) {
+    @objc open func accountRemoved(_ notification: NSNotification) {
         if let data = notification.userInfo {
             let accountStr = data["account"] as! String;
-            try! dbConnection.prepareStatement("DELETE FROM chats WHERE account = ?").execute(accountStr);
+            _ = try! dbConnection.prepareStatement("DELETE FROM chats WHERE account = ?").execute(accountStr);
         }
     }
     
-    private func getContext(sessionObject: SessionObject) -> Context? {
-        return (UIApplication.sharedApplication().delegate as? AppDelegate)?.xmppService.getClient(sessionObject.userBareJid!)?.context;
+    fileprivate func getContext(_ sessionObject: SessionObject) -> Context? {
+        return (UIApplication.shared.delegate as? AppDelegate)?.xmppService.getClient(sessionObject.userBareJid!)?.context;
     }
 }
 

@@ -25,7 +25,7 @@ import TigaseSwift
 class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate {
 
     var xmppService:XmppService {
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate;
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
         return appDelegate.xmppService;
     }
     
@@ -45,13 +45,13 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
         accountPicker.dataSource = self;
         accountPicker.delegate = self;
         self.accountTextField.inputView = accountPicker;
-        self.accountTextField.addTarget(self, action: #selector(RosterItemEditViewController.textFieldDidChange), forControlEvents: UIControlEvents.EditingChanged);
-        self.jidTextField.addTarget(self, action: #selector(RosterItemEditViewController.textFieldDidChange), forControlEvents: UIControlEvents.EditingChanged);
+        self.accountTextField.addTarget(self, action: #selector(RosterItemEditViewController.textFieldDidChange), for: UIControlEvents.editingChanged);
+        self.jidTextField.addTarget(self, action: #selector(RosterItemEditViewController.textFieldDidChange), for: UIControlEvents.editingChanged);
         self.jidTextField.text = jid?.stringValue;
         self.accountTextField.text = account?.stringValue;
         if account != nil && jid != nil {
-            self.jidTextField.enabled = false;
-            self.accountTextField.enabled = false;
+            self.jidTextField.isEnabled = false;
+            self.accountTextField.isEnabled = false;
             
             if let sessionObject = xmppService.getClient(account!)?.sessionObject {
                 if let rosterStore: RosterStore = RosterModule.getRosterStore(sessionObject) {
@@ -61,7 +61,7 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
                 }
             }
         }
-        requestAuthorizationSwith.on = false;
+        requestAuthorizationSwith.isOn = false;
     }
 
     override func didReceiveMemoryWarning() {
@@ -69,19 +69,19 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
         // Dispose of any resources that can be recreated.
     }
     
-    func textFieldDidChange(textField: UITextField) {
+    func textFieldDidChange(_ textField: UITextField) {
         if textField.text?.isEmpty != false {
-            textField.layer.borderColor = UIColor.redColor().CGColor;
+            textField.layer.borderColor = UIColor.red.cgColor;
             textField.layer.borderWidth = 1;
             textField.layer.cornerRadius = 4;
         } else {
-            textField.layer.borderColor = UIColor(white: 1, alpha: 1).CGColor;
+            textField.layer.borderColor = UIColor(white: 1, alpha: 1).cgColor;
             textField.layer.borderWidth = 0;
             textField.layer.cornerRadius = 0;
         }
     }
 
-    @IBAction func saveBtnClicked(sender: UIBarButtonItem) {
+    @IBAction func saveBtnClicked(_ sender: UIBarButtonItem) {
         saveChanges()
     }
     
@@ -98,33 +98,33 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
         account = BareJID(accountTextField.text!);
         let client = xmppService.getClient(account!);
         guard client?.state == SocketConnector.State.connected else {
-            let alert = UIAlertController.init(title: "Warning", message: "Before changing roster you need to connect to server. Do you wish to do this now?", preferredStyle: .Alert);
-            alert.addAction(UIAlertAction(title: "No", style: .Cancel, handler: {(alertAction) in
-                self.navigationController?.popViewControllerAnimated(true);
+            let alert = UIAlertController.init(title: "Warning", message: "Before changing roster you need to connect to server. Do you wish to do this now?", preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: {(alertAction) in
+                self.navigationController?.popViewController(animated: true);
             }));
-            alert.addAction(UIAlertAction(title: "Yes", style: .Default, handler: {(alertAction) in
+            alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(alertAction) in
                 if let account = AccountManager.getAccount(self.account!.stringValue) {
                     account.active = true;
                     AccountManager.updateAccount(account);
                 }
             }));
-            self.presentViewController(alert, animated: true, completion: nil);
+            self.present(alert, animated: true, completion: nil);
             return;
         }
         
-        let requestAuth = self.requestAuthorizationSwith.on;
+        let requestAuth = self.requestAuthorizationSwith.isOn;
         let onSuccess = {(stanza:Stanza)->Void in
             if requestAuth {
                 if let presenceModule: PresenceModule = client?.modulesManager.getModule(PresenceModule.ID) {
                     presenceModule.subscribe(self.jid!);
                 }
             }
-            self.navigationController?.popViewControllerAnimated(true);
+            self.navigationController?.popViewController(animated: true);
         };
         let onError = {(errorCondition:ErrorCondition?)->Void in
-            let alert = UIAlertController.init(title: "Failure", message: "Server returned error: " + (errorCondition?.rawValue ?? "Operation timed out"), preferredStyle: .Alert);
-            alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil));
-            self.presentViewController(alert, animated: true, completion: nil);
+            let alert = UIAlertController.init(title: "Failure", message: "Server returned error: " + (errorCondition?.rawValue ?? "Operation timed out"), preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+            self.present(alert, animated: true, completion: nil);
         };
 
         let rosterModule:RosterModule = client!.modulesManager.getModule(RosterModule.ID)!;
@@ -144,19 +144,19 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
     }
     */
 
-    func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1;
     }
     
-    func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         return AccountManager.getAccounts().count;
     }
     
-    func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         return AccountManager.getAccounts()[row];
     }
     
-    func  pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+    func  pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         self.accountTextField.text = self.pickerView(pickerView, titleForRow: row, forComponent: component);
     }
     

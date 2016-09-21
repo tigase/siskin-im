@@ -22,27 +22,29 @@
 import Foundation
 import SystemConfiguration
 
-public class Reachability {
+open class Reachability {
     
-    public static let CONNECTIVITY_CHANGED = "messengerConnectivityChanged";
+    open static let CONNECTIVITY_CHANGED = Notification.Name("messengerConnectivityChanged");
     
-    private var defaultRouterReachability:SCNetworkReachability?;
+    fileprivate var defaultRouterReachability:SCNetworkReachability?;
     
     init() {
         var zeroAddress = sockaddr_in();
-        zeroAddress.sin_len = UInt8(sizeofValue(zeroAddress));
+        zeroAddress.sin_len = UInt8(MemoryLayout.size(ofValue: zeroAddress));
         zeroAddress.sin_family = sa_family_t(AF_INET);
-        defaultRouterReachability = withUnsafePointer(&zeroAddress) {
-            SCNetworkReachabilityCreateWithAddress(nil, UnsafePointer($0));
+        defaultRouterReachability = withUnsafePointer(to: &zeroAddress) {
+            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+                SCNetworkReachabilityCreateWithAddress(nil, $0);
+            }
         }
         var context = SCNetworkReachabilityContext();
-        withUnsafeMutablePointer(&context) {
-        SCNetworkReachabilitySetCallback(defaultRouterReachability!, { (reachability, flags, pointer) in
-            let connected = Reachability.isConnectedToNetwork(flags);
-            NSNotificationCenter.defaultCenter().postNotificationName(Reachability.CONNECTIVITY_CHANGED, object: nil, userInfo: ["connected": connected]);
+        _ = withUnsafeMutablePointer(to: &context) {
+            SCNetworkReachabilitySetCallback(defaultRouterReachability!, { (reachability, flags, pointer) in
+                let connected = Reachability.isConnectedToNetwork(flags);
+                NotificationCenter.default.post(name: Reachability.CONNECTIVITY_CHANGED, object: nil, userInfo: ["connected": connected]);
             }, UnsafeMutablePointer($0))
         }
-        SCNetworkReachabilityScheduleWithRunLoop(defaultRouterReachability!, NSRunLoop.currentRunLoop().getCFRunLoop(), NSDefaultRunLoopMode);
+        SCNetworkReachabilityScheduleWithRunLoop(defaultRouterReachability!, RunLoop.current.getCFRunLoop(), RunLoopMode.defaultRunLoopMode as CFString);
     }
     
     func isConnectedToNetwork() -> Bool {
@@ -53,7 +55,7 @@ public class Reachability {
         return Reachability.isConnectedToNetwork(flags);
     }
  
-    static func isConnectedToNetwork(flags:SCNetworkReachabilityFlags) -> Bool {
+    static func isConnectedToNetwork(_ flags:SCNetworkReachabilityFlags) -> Bool {
         let isReachable = (flags.rawValue & UInt32(kSCNetworkFlagsReachable)) != 0;
         let needsConnection = (flags.rawValue & UInt32(kSCNetworkFlagsConnectionRequired)) != 0;
         return isReachable && !needsConnection;

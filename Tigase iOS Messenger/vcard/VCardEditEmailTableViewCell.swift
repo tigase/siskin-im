@@ -29,7 +29,7 @@ class VCardEditEmailTableViewCell: UITableViewCell, UIPickerViewDelegate, UIPick
     
     var email: VCardModule.VCard.Email! {
         didSet {
-            typeView.text = email.types.first?.rawValue.capitalizedString;
+            typeView.text = email.types.first?.rawValue.capitalized;
             emailView.text = email.address;
         }
     }
@@ -45,31 +45,31 @@ class VCardEditEmailTableViewCell: UITableViewCell, UIPickerViewDelegate, UIPick
         emailView.delegate = self;
     }
 
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
     }
 
-    func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        let type = VCardModule.VCard.Type.allValues[row];
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        let type = VCardModule.VCard.EntryType.allValues[row];
         email.types = [type];
-        typeView.text = type.rawValue.capitalizedString;
+        typeView.text = type.rawValue.capitalized;
     }
     
-    func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        let type = VCardModule.VCard.Type.allValues[row];
-        return type.rawValue.capitalizedString;
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        let type = VCardModule.VCard.EntryType.allValues[row];
+        return type.rawValue.capitalized;
     }
     
-    func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1;
     }
-    func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return VCardModule.VCard.Type.allValues.count;
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return VCardModule.VCard.EntryType.allValues.count;
     }
     
-    func textFieldDidEndEditing(textField: UITextField) {
+    func textFieldDidEndEditing(_ textField: UITextField) {
         email.address = textField.text;
     }
     

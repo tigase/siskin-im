@@ -23,15 +23,15 @@
 import UIKit
 import TigaseSwift
 
-public class AvatarManager: EventHandler {
+open class AvatarManager: EventHandler {
     
-    public static let AVATAR_CHANGED = "messengerAvatarChanged";
+    open static let AVATAR_CHANGED = Notification.Name("messengerAvatarChanged");
     
     var defaultAvatar:UIImage;
-    var cache = NSCache();
+    fileprivate var cache = NSCache<NSString, AvatarHolder>();
     
     var xmppService: XmppService {
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate;
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
         return appDelegate.xmppService;
     }
     
@@ -40,11 +40,11 @@ public class AvatarManager: EventHandler {
         cache.countLimit = 20;
         cache.totalCostLimit = 20 * 1024 * 1024;
         xmppService.registerEventHandler(self, events: PresenceModule.ContactPresenceChanged.TYPE);
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AvatarManager.vcardUpdated), name: DBVCardsCache.VCARD_UPDATED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(AvatarManager.vcardUpdated), name: DBVCardsCache.VCARD_UPDATED, object: nil);
     }
     
-    public func getAvatar(jid:BareJID, account:BareJID) -> UIImage {
-        let val = cache.objectForKey(jid.stringValue) as? AvatarHolder;
+    open func getAvatar(_ jid:BareJID, account:BareJID) -> UIImage {
+        let val = cache.object(forKey: jid.stringValue as NSString);
         if val?.beginContentAccess() ?? false {
             defer {
                 val?.endContentAccess();
@@ -56,11 +56,11 @@ public class AvatarManager: EventHandler {
         
         // adding default avatar to cache to make sure we will not load data
         // from database when retrieving avatars for jids without avatar
-        self.cache.setObject(AvatarHolder(image: image), forKey: jid.stringValue);
+        self.cache.setObject(AvatarHolder(image: image), forKey: jid.stringValue as NSString);
         return image;
     }
     
-    public func handleEvent(event: Event) {
+    open func handleEvent(_ event: Event) {
         switch event {
         case let cpc as PresenceModule.ContactPresenceChanged:
             guard cpc.presence.from != nil else {
@@ -72,38 +72,38 @@ public class AvatarManager: EventHandler {
         }
     }
     
-    func updateAvatarHash(account: BareJID, jid: BareJID, photoHash: String?) {
+    func updateAvatarHash(_ account: BareJID, jid: BareJID, photoHash: String?) {
         guard photoHash != nil else {
             return;
         }
 
-        dispatch_async(dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0)) {
+        DispatchQueue.global(qos: .background).async() {
             if !self.xmppService.dbVCardsCache.checkVCardPhotoHash(jid, hash: photoHash!) {
                 if let vcardModule:VCardModule = self.xmppService.getClient(account)?.modulesManager?.getModule(VCardModule.ID) {
                     vcardModule.retrieveVCard(JID(jid), onSuccess: { (vcard) in
                         
-                        dispatch_async(dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0)) {
+                        DispatchQueue.global(qos: .background).async() {
                             self.xmppService.dbVCardsCache.updateVCard(jid, vcard: vcard);
                         }
                         }, onError: { (errorCondition:ErrorCondition?) in
-                            self.cache.removeObjectForKey(jid.stringValue);
+                            self.cache.removeObject(forKey: jid.stringValue as NSString);
                     });
                 }
             }
         }
     }
 
-    func loadAvatar(jid: BareJID) -> UIImage? {
+    func loadAvatar(_ jid: BareJID) -> UIImage? {
         if let data = xmppService.dbVCardsCache.getPhoto(jid) {
             return UIImage(data: data);
         }
         return nil;
     }
     
-    @objc func vcardUpdated(notification: NSNotification) {
+    @objc func vcardUpdated(_ notification: NSNotification) {
         if let jid = notification.userInfo?["jid"] as? BareJID {
-            cache.removeObjectForKey(jid.stringValue);
-            NSNotificationCenter.defaultCenter().postNotificationName(AvatarManager.AVATAR_CHANGED, object: nil, userInfo: ["jid": jid]);
+            cache.removeObject(forKey: jid.stringValue as NSString);
+            NotificationCenter.default.post(name: AvatarManager.AVATAR_CHANGED, object: nil, userInfo: ["jid": jid]);
         }
     }
     
@@ -111,37 +111,37 @@ public class AvatarManager: EventHandler {
         cache.removeAllObjects();
     }
     
-    private class AvatarHolder: NSDiscardableContent {
+    fileprivate class AvatarHolder: NSDiscardableContent {
         
         var counter = 0;
         var image: UIImage!;
         
-        private init?(data: NSData?) {
+        fileprivate init?(data: NSData?) {
             guard data != nil else {
                 return nil;
             }
             
-            image = UIImage(data: data!);
+            image = UIImage(data: data! as Data);
             guard image != nil else {
                 return nil;
             }
         }
         
-        private init(image: UIImage) {
+        fileprivate init(image: UIImage) {
             self.image = image;
         }
         
-        @objc private func discardContentIfPossible() {
+        @objc fileprivate func discardContentIfPossible() {
             if counter == 0 {
                 image = nil;
             }
         }
 
-        @objc private func isContentDiscarded() -> Bool {
+        @objc fileprivate func isContentDiscarded() -> Bool {
             return image == nil;
         }
         
-        @objc private func beginContentAccess() -> Bool {
+        @objc fileprivate func beginContentAccess() -> Bool {
             guard !isContentDiscarded() else {
                 return false;
             }
@@ -149,7 +149,7 @@ public class AvatarManager: EventHandler {
             return true;
         }
         
-        @objc private func endContentAccess() {
+        @objc fileprivate func endContentAccess() {
             counter -= 1;
         }
     }

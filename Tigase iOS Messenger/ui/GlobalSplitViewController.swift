@@ -29,13 +29,13 @@ class GlobalSplitViewController: UISplitViewController, UISplitViewControllerDel
         self.delegate = self;
     }
     
-    func splitViewController(splitViewController: UISplitViewController, collapseSecondaryViewController secondaryViewController: UIViewController, ontoPrimaryViewController primaryViewController: UIViewController) -> Bool{
+    func splitViewController(_ splitViewController: UISplitViewController, collapseSecondary secondaryViewController: UIViewController, onto primaryViewController: UIViewController) -> Bool{
         return true
     }
  
-    func splitViewController(splitViewController: UISplitViewController, showDetailViewController detailvc: UIViewController, sender: AnyObject?) -> Bool {
+    func splitViewController(_ splitViewController: UISplitViewController, showDetail detailvc: UIViewController, sender: Any?) -> Bool {
         let mastervc = splitViewController.viewControllers[0] as! UITabBarController;
-        if splitViewController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClass.Compact {
+        if splitViewController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClass.compact {
 //            mastervc.selectedViewController?.showViewController(detailvc, sender: sender);
             if let detail = detailvc as? UINavigationController {
                 (mastervc.selectedViewController as? UINavigationController)?.pushViewController(detail.viewControllers[0], animated: true);
@@ -48,11 +48,11 @@ class GlobalSplitViewController: UISplitViewController, UISplitViewControllerDel
         return true;
     }
     
-    func splitViewController(splitViewController: UISplitViewController, separateSecondaryViewControllerFromPrimaryViewController primaryViewController: UIViewController) -> UIViewController? {
+    func splitViewController(_ splitViewController: UISplitViewController, separateSecondaryFrom primaryViewController: UIViewController) -> UIViewController? {
         let mastervc = splitViewController.viewControllers[0] as! UITabBarController;
         if let uinav = mastervc.selectedViewController as? UINavigationController {
             if uinav.viewControllers.count > 1 {
-                return uinav.popViewControllerAnimated(false);
+                return uinav.popViewController(animated: false);
             }
         }
         return nil;

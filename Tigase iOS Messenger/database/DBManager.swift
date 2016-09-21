@@ -23,63 +23,64 @@
 import Foundation
 import TigaseSwift
 
-let SQLITE_TRANSIENT = unsafeBitCast(-1, sqlite3_destructor_type.self)
+let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
-public class DBConnection: LocalQueueDispatcher {
+open class DBConnection: LocalQueueDispatcher {
     
-    private var handle_:COpaquePointer = nil;
-    public var handle:COpaquePointer {
+    fileprivate var handle_:OpaquePointer? = nil;
+    open var handle:OpaquePointer {
         get {
-            return handle_;
+            return handle_!;
         }
     }
 
-    public let queue: dispatch_queue_t;
-    public let queueTag: UnsafeMutablePointer<Void>;
+    open let queue: DispatchQueue;
+    open let queueTag: DispatchSpecificKey<DispatchQueue?>;
     
-    public var lastInsertRowId: Int? {
+    open var lastInsertRowId: Int? {
         let rowid = sqlite3_last_insert_rowid(handle);
         return rowid > 0 ? Int(rowid) : nil;
     }
     
-    public var changesCount: Int {
+    open var changesCount: Int {
         return Int(sqlite3_changes(handle));
     }
     
     init(dbFilename:String) throws {
-        queue = dispatch_queue_create("db_queue", DISPATCH_QUEUE_SERIAL);
-        self.queueTag = UnsafeMutablePointer<Void>(Unmanaged.passUnretained(self.queue).toOpaque());
-        dispatch_queue_set_specific(queue, queueTag, queueTag, nil);
+        queue = DispatchQueue(label: "db_queue");
+        self.queueTag = DispatchSpecificKey<DispatchQueue?>();
+        queue.setSpecific(key: queueTag, value: queue);
         
         try dispatch_sync_db_queue() {
-            let paths = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true);
+            let paths = NSSearchPathForDirectoriesInDomains(FileManager.SearchPathDirectory.documentDirectory, FileManager.SearchPathDomainMask.userDomainMask, true);
             let documentDirectory = paths[0];
-            let path = documentDirectory.stringByAppendingString("/" + dbFilename);
+            let path = documentDirectory.appending("/" + dbFilename);
         
             let flags = SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE;
         
-            try self.check(sqlite3_open_v2(path, &self.handle_, flags | SQLITE_OPEN_FULLMUTEX, nil));
+            _ = try self.check(sqlite3_open_v2(path, &self.handle_, flags | SQLITE_OPEN_FULLMUTEX, nil));
         }
     }
     
     deinit {
         sqlite3_close(handle);
+        queue.setSpecific(key: queueTag, value: nil);
     }
     
-    public func dispatch_async_db_queue(block: () -> Void) {
-        dispatch_async(queue) {
+    open func dispatch_async_db_queue(_ block: @escaping () -> Void) {
+        queue.async {
             block();
         }
     }
     
-    public func dispatch_sync_db_queue<T>(block: () throws -> T) rethrows -> T {
-        if (dispatch_get_specific(queueTag) != nil) {
+    open func dispatch_sync_db_queue<T>(block: @escaping () throws -> T) rethrows -> T {
+        if (DispatchQueue.getSpecific(key: queueTag) != nil) {
             return try block();
         } else {
             var result: T?;
-            var err: ErrorType?;
+            var err: Error?;
             
-            dispatch_sync(queue) {
+            queue.sync {
                 do {
                     result = try block();
                 } catch {
@@ -95,20 +96,20 @@ public class DBConnection: LocalQueueDispatcher {
         }
     }
     
-    public func execute(query: String) throws {
+    open func execute(_ query: String) throws {
         try dispatch_sync_db_queue() {
-            try self.check(sqlite3_exec(self.handle, query, nil, nil, nil));
+            _ = try self.check(sqlite3_exec(self.handle, query, nil, nil, nil));
         }
     }
     
-    public func prepareStatement(query: String) throws -> DBStatement {
+    open func prepareStatement(_ query: String) throws -> DBStatement {
         return try dispatch_sync_db_queue() {
             return try DBStatement(connection: self, query: query);
         }
     }
     
     
-    private func check(result:Int32, statement:DBStatement? = nil) throws -> Int32 {
+    fileprivate func check(_ result:Int32, statement:DBStatement? = nil) throws -> Int32 {
         guard let error = DBResult(errorCode: result, connection: self, statement: statement) else {
             return result;
         }
@@ -118,66 +119,67 @@ public class DBConnection: LocalQueueDispatcher {
 
 }
 
-public enum DBResult: ErrorType {
+public enum DBResult: Error {
 
-    private static let successCodes = [ SQLITE_OK, SQLITE_ROW, SQLITE_DONE ];
+    fileprivate static let successCodes = [ SQLITE_OK, SQLITE_ROW, SQLITE_DONE ];
     
-    case Error(message:String, code: Int32, statement:DBStatement?)
+    case error(message:String, code: Int32, statement:DBStatement?)
     
     init?(errorCode: Int32, connection: DBConnection, statement:DBStatement?) {
         guard !DBResult.successCodes.contains(errorCode) else {
             return nil;
         }
         
-        let message = String.fromCString(sqlite3_errmsg(connection.handle))!;
-        self = Error(message: message, code: errorCode, statement: statement);
+        let tmp = sqlite3_errmsg(connection.handle);
+        let message = String(cString: tmp!);
+        self = .error(message: message, code: errorCode, statement: statement);
     }
     
 }
 
-public class DBStatement {
+open class DBStatement {
 
-    private var handle:COpaquePointer = nil;
-    private let connection:DBConnection;
+    fileprivate var handle:OpaquePointer? = nil;
+    fileprivate let connection:DBConnection;
     
-    public lazy var columnCount:Int = Int(sqlite3_column_count(self.handle));
+    open lazy var columnCount:Int = Int(sqlite3_column_count(self.handle));
     
-    public lazy var columnNames:[String] = (0..<Int32(self.columnCount)).map { (idx:Int32) -> String in
-        return String.fromCString(sqlite3_column_name(self.handle, idx))!;
+    open lazy var columnNames:[String] = (0..<Int32(self.columnCount)).map { (idx:Int32) -> String in
+        return String(cString: sqlite3_column_name(self.handle, idx)!);
     }
     
-    public lazy var cursor:DBCursor = DBCursor(statement: self);
+    open lazy var cursor:DBCursor = DBCursor(statement: self);
     
-    public var lastInsertRowId: Int? {
+    open var lastInsertRowId: Int? {
         return connection.lastInsertRowId;
     }
     
-    public var changesCount: Int {
+    open var changesCount: Int {
         return connection.changesCount;
     }
     
     init(connection:DBConnection, query:String) throws {
         self.connection = connection;
-        try connection.check(sqlite3_prepare_v2(connection.handle, query, -1, &handle, nil));
+        _ = try connection.check(sqlite3_prepare_v2(connection.handle, query, -1, &handle, nil));
     }
 
     deinit {
         sqlite3_finalize(handle);
     }
 
-    public func step(expect: Int32 = SQLITE_ROW) throws -> Bool  {
+    open func step(_ expect: Int32 = SQLITE_ROW) throws -> Bool  {
         return try connection.dispatch_sync_db_queue() {
             let result = try self.connection.check(sqlite3_step(self.handle));
             return result == expect;
         }
     }
     
-    public func bind(params:Any?...) throws -> DBStatement {
-        try bind(params);
+    open func bind(_ params:Any?...) throws -> DBStatement {
+        _ = try bind(params);
         return self;
     }
     
-    public func bind(params:[String:Any?]) throws -> DBStatement {
+    open func bind(_ params:[String:Any?]) throws -> DBStatement {
         reset()
         for (k,v) in params {
             let pos = sqlite3_bind_parameter_index(handle, ":"+k);
@@ -189,20 +191,20 @@ public class DBStatement {
         return self;
     }
     
-    public func bind(params:[Any?]) throws -> DBStatement {
+    open func bind(_ params:[Any?]) throws -> DBStatement {
         reset()
         for pos in 1...params.count {
-            try bind(params[pos-1], atIndex: pos);
+            _ = try bind(params[pos-1], atIndex: pos);
         }
         return self;
     }
     
-    public func bind(value:Any?, atIndex:Int) throws -> DBStatement {
+    open func bind(_ value:Any?, atIndex:Int) throws -> DBStatement {
         try bind(value, pos: Int32(atIndex));
         return self;
     }
     
-    private func bind(value_:Any?, pos:Int32) throws {
+    fileprivate func bind(_ value_:Any?, pos:Int32) throws {
         var r:Int32 = SQLITE_OK;
         if value_ == nil {
             r = sqlite3_bind_null(handle, pos);
@@ -210,8 +212,10 @@ public class DBStatement {
             switch value {
             case let v as [UInt8]:
                 r = sqlite3_bind_blob(handle, pos, v, Int32(v.count), SQLITE_TRANSIENT);
-            case let v as NSData:
-                r = sqlite3_bind_blob(handle, pos, v.bytes, Int32(v.length), SQLITE_TRANSIENT);
+            case let v as Data:
+                v.withUnsafeBytes() {
+                    r = sqlite3_bind_blob(handle, pos,$0, Int32(v.count), SQLITE_TRANSIENT);
+                }
             case let v as Double:
                 r = sqlite3_bind_double(handle, pos, v);
             case let v as Int:
@@ -220,46 +224,46 @@ public class DBStatement {
                 r = sqlite3_bind_int(handle, pos, Int32(v ? 1 : 0));
             case let v as String:
                 r = sqlite3_bind_text(handle, pos, v, -1, SQLITE_TRANSIENT);
-            case let v as NSDate:
+            case let v as Date:
                 let timestamp = Int64(v.timeIntervalSince1970 * 1000);
                 r = sqlite3_bind_int64(handle, pos, timestamp);
             case let v as StringValue:
                 r = sqlite3_bind_text(handle, pos, v.stringValue, -1, SQLITE_TRANSIENT);
             default:
-                throw DBResult.Error(message: "Unsupported type \(value.self) for parameter \(pos)", code: SQLITE_FAIL, statement: self);
+                throw DBResult.error(message: "Unsupported type \(value.self) for parameter \(pos)", code: SQLITE_FAIL, statement: self);
             }
         } else {
             sqlite3_bind_null(handle, pos)
         }
-        try check(r);
+        _ = try check(r);
     }
     
-    public func execute(params:[String:Any?]) throws -> DBStatement? {
-        try bind(params);
+    open func execute(_ params:[String:Any?]) throws -> DBStatement? {
+        _ = try bind(params);
         return try execute();
     }
     
-    public func execute(params:Any?...) throws -> DBStatement? {
+    open func execute(_ params:Any?...) throws -> DBStatement? {
         return try execute(params);
     }
 
-    private func execute(params:[Any?]) throws -> DBStatement? {
+    fileprivate func execute(_ params:[Any?]) throws -> DBStatement? {
         if params.count > 0 {
-            try bind(params);
+            _ = try bind(params);
         }
         reset(false);
         return try step() ? self : nil;
     }
     
-    public func query(params:[String:Any?]) throws -> DBCursor? {
+    open func query(_ params:[String:Any?]) throws -> DBCursor? {
         return try execute(params)?.cursor;
     }
 
-    public func query(params:Any?...) throws -> DBCursor? {
+    open func query(_ params:Any?...) throws -> DBCursor? {
         return try execute(params)?.cursor;
     }
 
-    public func query(params:[String:Any?], forEachRow: (DBCursor)->Bool) throws {
+    open func query(_ params:[String:Any?], forEachRow: (DBCursor)->Bool) throws {
         if let cursor = try execute(params)?.cursor {
             repeat {
                 if !forEachRow(cursor) {
@@ -269,7 +273,7 @@ public class DBStatement {
         }
     }
     
-    public func query(params:Any?..., forEachRow: (DBCursor)->Bool) throws {
+    open func query(_ params:Any?..., forEachRow: (DBCursor)->Bool) throws {
         if let cursor = try execute(params)?.cursor {
             repeat {
                 if !forEachRow(cursor) {
@@ -279,7 +283,7 @@ public class DBStatement {
         }
     }
 
-    public func query(params:[String:Any?], forEachRow: (DBCursor)->Void) throws {
+    open func query(_ params:[String:Any?], forEachRow: (DBCursor)->Void) throws {
         if let cursor = try execute(params)?.cursor {
             repeat {
                 forEachRow(cursor);
@@ -287,7 +291,7 @@ public class DBStatement {
         }
     }
     
-    public func query(params:Any?..., forEachRow: (DBCursor)->Void) throws {
+    open func query(_ params:Any?..., forEachRow: (DBCursor)->Void) throws {
         if let cursor = try execute(params)?.cursor {
             repeat {
                 forEachRow(cursor);
@@ -295,10 +299,10 @@ public class DBStatement {
         }
     }
     
-    public func insert(params:Any?...) throws -> Int? {
+    open func insert(_ params:Any?...) throws -> Int? {
         return try connection.dispatch_sync_db_queue() {
             if params.count > 0 {
-                try self.bind(params);
+                _ = try self.bind(params);
             }
             self.reset(false);
             if try self.step(SQLITE_DONE) {
@@ -308,9 +312,9 @@ public class DBStatement {
         }
     }
 
-    public func insert(params:[String:Any?]) throws -> Int? {
+    open func insert(_ params:[String:Any?]) throws -> Int? {
         return try connection.dispatch_sync_db_queue() {
-            try self.bind(params);
+            _ = try self.bind(params);
             self.reset(false);
             if try self.step(SQLITE_DONE) {
                 return self.lastInsertRowId;
@@ -319,61 +323,61 @@ public class DBStatement {
         }
     }
     
-    public func update(params:Any?...) throws -> Int {
+    open func update(_ params:Any?...) throws -> Int {
         return try connection.dispatch_sync_db_queue() {
-            try self.execute(params);
+            _ = try self.execute(params);
             return self.changesCount;
         }
     }
 
-    public func update(params:[String:Any?]) throws -> Int {
+    open func update(_ params:[String:Any?]) throws -> Int {
         return try connection.dispatch_sync_db_queue() {
-            try self.execute(params);
+            _ = try self.execute(params);
             return self.changesCount;
         }
     }
     
-    public func scalar(params:Any?...) throws -> Int? {
+    open func scalar(_ params:Any?...) throws -> Int? {
         return try connection.dispatch_sync_db_queue() {
             let cursor = try self.execute(params)?.cursor;
             return cursor?[0];
         }
     }
 
-    public func scalar(params:[String:Any?]) throws -> Int? {
+    open func scalar(_ params:[String:Any?]) throws -> Int? {
         return try connection.dispatch_sync_db_queue() {
             let cursor = try self.execute(params)?.cursor;
             return cursor?[0];
         }
     }
     
-    public func reset(bindings:Bool=true) {
+    open func reset(_ bindings:Bool=true) {
         sqlite3_reset(handle);
         if bindings {
             sqlite3_clear_bindings(handle);
         }
     }
     
-    private func check(result:Int32) throws -> Int32 {
+    fileprivate func check(_ result:Int32) throws -> Int32 {
         return try connection.check(result, statement: self);
     }
     
 }
 
-public class DBCursor {
+open class DBCursor {
 
-    private let connection: DBConnection;
-    private let handle:COpaquePointer;
+    fileprivate let connection: DBConnection;
+    fileprivate let handle:OpaquePointer;
 
-    public lazy var columnCount:Int = Int(sqlite3_column_count(self.handle));
+    open lazy var columnCount:Int = Int(sqlite3_column_count(self.handle));
     
-    public lazy var columnNames:[String] = (0..<Int32(self.columnCount)).map { (idx:Int32) -> String in
-        return String.fromCString(sqlite3_column_name(self.handle, idx))!;
+    open lazy var columnNames:[String] = (0..<Int32(self.columnCount)).map { (idx:Int32) -> String in
+        return String(cString: sqlite3_column_name(self.handle, idx)!);
     }
     
     init(statement:DBStatement) {
         self.connection = statement.connection;
-        self.handle = statement.handle;
+        self.handle = statement.handle!;
     }
 
     subscript(index: Int) -> Double {
@@ -389,7 +393,7 @@ public class DBCursor {
         if ptr == nil {
             return nil;
         }
-        return String.fromCString(UnsafePointer(ptr));
+        return String(cString: UnsafePointer(ptr!));
     }
     
     subscript(index: Int) -> Bool {
@@ -402,24 +406,24 @@ public class DBCursor {
         if origPtr == nil {
             return nil;
         }
-        let ptr = UnsafePointer<UInt8>(origPtr);
         let count = Int(sqlite3_column_bytes(handle, idx));
-        return DBCursor.convert(count, data: ptr);
+        let ptr = origPtr?.assumingMemoryBound(to: UInt8.self)
+        return DBCursor.convert(count, data: ptr!);
     }
 
-    subscript(index: Int) -> NSData? {
+    subscript(index: Int) -> Data? {
         let idx = Int32(index);
         let origPtr = sqlite3_column_blob(handle, idx);
         if origPtr == nil {
             return nil;
         }
         let count = Int(sqlite3_column_bytes(handle, idx));
-        return NSData(bytes: origPtr, length: count);
+        return Data(bytes: origPtr!, count: count);
     }
     
-    subscript(index: Int) -> NSDate {
+    subscript(index: Int) -> Date {
         let timestamp = Double(sqlite3_column_int64(handle, Int32(index))) / 1000;
-        return NSDate(timeIntervalSince1970: timestamp);
+        return Date(timeIntervalSince1970: timestamp);
     }
     
     subscript(index: Int) -> JID? {
@@ -448,7 +452,7 @@ public class DBCursor {
 //            print("for \(column), position \($0) got \(v)")
 //            return v;
 //        }
-        if let idx = columnNames.indexOf(column) {
+        if let idx = columnNames.index(of: column) {
             return self[idx];
         }
         return nil;
@@ -472,13 +476,13 @@ public class DBCursor {
         }
     }
     
-    subscript(column: String) -> NSData? {
+    subscript(column: String) -> Data? {
         return forColumn(column) {
             return self[$0];
         }
     }
     
-    subscript(column: String) -> NSDate? {
+    subscript(column: String) -> Date? {
         return forColumn(column) {
             return self[$0];
         }
@@ -496,25 +500,25 @@ public class DBCursor {
         }
     }
     
-    private func forColumn<T>(column:String, exec:(Int)->T?) -> T? {
-        if let idx = columnNames.indexOf(column) {
+    fileprivate func forColumn<T>(_ column:String, exec:(Int)->T?) -> T? {
+        if let idx = columnNames.index(of: column) {
             return exec(idx);
         }
         return nil;
     }
     
-    private static func convert<T>(count: Int, data: UnsafePointer<T>) -> [T] {
+    fileprivate static func convert<T>(_ count: Int, data: UnsafePointer<T>) -> [T] {
         let buffer = UnsafeBufferPointer(start: data, count: count);
         return Array(buffer)
     }
     
-    public func next() -> Bool {
+    open func next() -> Bool {
         return connection.dispatch_sync_db_queue() {
             return sqlite3_step(self.handle) == SQLITE_ROW;
         }
     }
     
-    public func next() -> DBCursor? {
+    open func next() -> DBCursor? {
         return next() ? self : nil;
     }
 }

@@ -33,36 +33,36 @@ protocol CachedViewControllerProtocol: BaseChatViewControllerScrollDelegate {
     var scrollToBottomOnShow: Bool { get set }
     var tableView: UITableView! { get set }
     var cachedDataSource: CachedViewDataSourceProtocol { get }
-    var scrollToIndexPath: NSIndexPath? { get set }
+    var scrollToIndexPath: IndexPath? { get set }
 }
 
 extension CachedViewControllerProtocol {
     
     func initialize() {
-        tableView.transform = cachedDataSource.inverted ? CGAffineTransformMake(1, 0, 0, -1, 0, 0) : CGAffineTransformIdentity;
+        tableView.transform = cachedDataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
     }
     
     func newItemAdded() {
         let indexPath = cachedDataSource.newItemAdded();
-        self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Top);
+        self.tableView.insertRows(at: [indexPath], with: .top);
         self.scrollToIndexPath(indexPath);
     }
     
-    func scrollToIndexPath(indexPath: NSIndexPath, animated: Bool = true) {
+    func scrollToIndexPath(_ indexPath: IndexPath, animated: Bool = true) {
         self.scrollToIndexPath = indexPath;
         
-        dispatch_after( dispatch_time(DISPATCH_TIME_NOW, 30 * Int64(NSEC_PER_MSEC)), dispatch_get_main_queue()) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime(uptimeNanoseconds: DispatchTime.now().uptimeNanoseconds + 30 * UInt64(NSEC_PER_MSEC))) {
             guard self.scrollToIndexPath != nil else {
                 return;
             }
             let index = self.scrollToIndexPath!;
             self.scrollToIndexPath = nil;
             
-            self.tableView.scrollToRowAtIndexPath(index, atScrollPosition: .Bottom, animated: true);
+            self.tableView.scrollToRow(at: index as IndexPath, at: .bottom, animated: true);
         }
     }
     
-    func tableViewScrollToNewestMessage(animated: Bool) {
+    func tableViewScrollToNewestMessage(_ animated: Bool) {
         guard let indexPath = cachedDataSource.newestItemIndex() else {
             return;
         }
@@ -76,15 +76,15 @@ protocol CachedViewDataSourceProtocol {
  
     var inverted: Bool { get set }
     
-    func newestItemIndex() -> NSIndexPath?;
+    func newestItemIndex() -> IndexPath?;
     
-    func newItemAdded() -> NSIndexPath;
+    func newItemAdded() -> IndexPath;
     
 }
 
 class CachedViewDataSource<Item: AnyObject>: CachedViewDataSourceProtocol {
     
-    var cache = NSCache();
+    var cache = NSCache<NSNumber,Item>();
     
     var inverted: Bool = true;
     var numberOfMessages: Int = 0;
@@ -96,13 +96,13 @@ class CachedViewDataSource<Item: AnyObject>: CachedViewDataSourceProtocol {
         numberOfMessages = getItemsCount();
     }
     
-    func getItem(indexPath: NSIndexPath) -> Item {
+    func getItem(_ indexPath: IndexPath) -> Item {
         let requestedPosition = (numberOfMessages - indexPath.row) - 1;
-        var item = cache.objectForKey(requestedPosition) as? Item;
+        var item = cache.object(forKey: requestedPosition as NSNumber);
         
         if (item == nil) {
             var pos = requestedPosition;
-            let down = pos > 0 && cache.objectForKey(pos-1) ==  nil;
+            let down = pos > 0 && cache.object(forKey: pos-1 as NSNumber) ==  nil;
             if (down) {
                 pos = (pos - numberOfMessagesToFetch) + 1;
                 if (pos < 0) {
@@ -111,7 +111,7 @@ class CachedViewDataSource<Item: AnyObject>: CachedViewDataSourceProtocol {
             }
             
             loadData(pos, limit: numberOfMessagesToFetch, forEveryItem: { (it: Item)->Void in
-                self.cache.setObject(it, forKey: pos);
+                self.cache.setObject(it, forKey: pos as NSNumber);
                 if requestedPosition == pos {
                     item = it;
                 }
@@ -122,16 +122,16 @@ class CachedViewDataSource<Item: AnyObject>: CachedViewDataSourceProtocol {
         return item!;
     }
     
-    func newestItemIndex() -> NSIndexPath? {
+    func newestItemIndex() -> IndexPath? {
         guard numberOfMessages > 0 else {
             return nil;
         }
         
-        return NSIndexPath(forRow: inverted ? 0 : (numberOfMessages - 1), inSection: 0);
+        return IndexPath(row: inverted ? 0 : (numberOfMessages - 1), section: 0);
     }
     
-    func newItemAdded() -> NSIndexPath {
-        let indexPath = NSIndexPath(forRow: inverted ? 0 : numberOfMessages, inSection: 0);
+    func newItemAdded() -> IndexPath {
+        let indexPath = IndexPath(row: inverted ? 0 : numberOfMessages, section: 0);
         self.numberOfMessages += 1;
         return indexPath;
     }
@@ -140,7 +140,7 @@ class CachedViewDataSource<Item: AnyObject>: CachedViewDataSourceProtocol {
         return -1;
     }
     
-    func loadData(offset: Int, limit: Int, forEveryItem: (Item)->Void) {
+    func loadData(_ offset: Int, limit: Int, forEveryItem: (Item)->Void) {
         
     }
 

@@ -45,7 +45,7 @@ class AddAccountController: UITableViewController {
         if account != nil {
             jidTextField.text = account;
             passwordTextField.text = AccountManager.getAccountPassword(account!);
-            jidTextField.enabled = false;
+            jidTextField.isEnabled = false;
         } else {
             navigationController?.navigationItem.leftBarButtonItem = nil;
         }
@@ -57,30 +57,30 @@ class AddAccountController: UITableViewController {
         }
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         updateSaveButtonState();
         super.viewWillAppear(animated);
     }
     
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated);
     }
     
-    @IBAction func jidTextFieldChanged(sender: UITextField) {
+    @IBAction func jidTextFieldChanged(_ sender: UITextField) {
         updateSaveButtonState();
     }
     
-    @IBAction func passwordTextFieldChanged(sender: AnyObject) {
+    @IBAction func passwordTextFieldChanged(_ sender: AnyObject) {
         updateSaveButtonState();
     }
 
     func updateSaveButtonState() {
         let disable = (jidTextField.text?.isEmpty ?? true) || (passwordTextField.text?.isEmpty ?? true);
-        saveButton.enabled = !disable;
+        saveButton.isEnabled = !disable;
     }
     
-    @IBAction func saveClicked(sender: UIBarButtonItem) {
+    @IBAction func saveClicked(_ sender: UIBarButtonItem) {
         if (registerAccount) {
             registerAccountOnServer();
         } else {
@@ -95,13 +95,13 @@ class AddAccountController: UITableViewController {
         let password = passwordTextField.text;
         
         xmppClient = InBandRegistrationModule.connectAndRegister(userJid: userJid, password: password, email: nil, onSuccess: {
-            dispatch_async(dispatch_get_main_queue()) {
+            DispatchQueue.main.async() {
                 self.hideIndicator();
                 self.xmppClient = nil;
                 self.saveAccount();
             }
             }, onError: { (errorCondition) in
-                dispatch_async(dispatch_get_main_queue()) {
+                DispatchQueue.main.async() {
                     self.hideIndicator();
                     self.xmppClient = nil;
                     self.showError(errorCondition);
@@ -116,28 +116,28 @@ class AddAccountController: UITableViewController {
         account.password = passwordTextField.text!;
 
         if self.account != nil {
-            navigationController?.dismissViewControllerAnimated(true, completion: nil);
+            navigationController?.dismiss(animated: true, completion: nil);
         } else {
-            navigationController?.popViewControllerAnimated(true);
+            navigationController?.popViewController(animated: true);
         }
     }
     
-    @IBAction func cancelClicked(sender: UIBarButtonItem) {
+    @IBAction func cancelClicked(_ sender: UIBarButtonItem) {
         if self.account != nil {
-            navigationController?.dismissViewControllerAnimated(true, completion: nil);
+            navigationController?.dismiss(animated: true, completion: nil);
         } else {
-            navigationController?.popViewControllerAnimated(true);
+            navigationController?.popViewController(animated: true);
         }
     }
     
-    override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
-        if indexPath.section == 0 && indexPath.row == 0 && !jidTextField.enabled {
+    override func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
+        if indexPath.section == 0 && indexPath.row == 0 && !jidTextField.isEnabled {
             return nil;
         }
         return indexPath;
     }
     
-    func showError(errorCondition: ErrorCondition?) {
+    func showError(_ errorCondition: ErrorCondition?) {
         var error = "Operation timed out";
         if errorCondition != nil {
             switch errorCondition! {
@@ -153,21 +153,21 @@ class AddAccountController: UITableViewController {
                 error = "Unknown error occurred";
             }
         }
-        let alert = UIAlertController(title: "Error", message:  error, preferredStyle: .Alert);
-        alert.addAction(UIAlertAction(title: "Close", style: .Cancel, handler: nil));
-        self.presentViewController(alert, animated: true, completion: nil);
+        let alert = UIAlertController(title: "Error", message:  error, preferredStyle: .alert);
+        alert.addAction(UIAlertAction(title: "Close", style: .cancel, handler: nil));
+        self.present(alert, animated: true, completion: nil);
     }
     
     func showIndicator() {
         if activityInditcator != nil {
             hideIndicator();
         }
-        activityInditcator = UIActivityIndicatorView(activityIndicatorStyle: .Gray);
+        activityInditcator = UIActivityIndicatorView(activityIndicatorStyle: .gray);
         activityInditcator?.center = CGPoint(x: view.frame.width/2, y: view.frame.height/2);
-        activityInditcator!.hidden = false;
+        activityInditcator!.isHidden = false;
         activityInditcator!.startAnimating();
         view.addSubview(activityInditcator!);
-        view.bringSubviewToFront(activityInditcator!);
+        view.bringSubview(toFront: activityInditcator!);
     }
     
     func hideIndicator() {

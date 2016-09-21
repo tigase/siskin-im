@@ -25,7 +25,7 @@ import TigaseSwift
 class AccountSettingsViewController: UITableViewController {
     
     var xmppService: XmppService {
-        let delegate = UIApplication.sharedApplication().delegate as! AppDelegate;
+        let delegate = UIApplication.shared.delegate as! AppDelegate;
         return delegate.xmppService;
     }
     
@@ -47,35 +47,35 @@ class AccountSettingsViewController: UITableViewController {
         super.viewDidLoad();
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
         navigationItem.title = account;
 
         let config = AccountManager.getAccount(account);
-        enabledSwitch.on = config?.active ?? false;
+        enabledSwitch.isOn = config?.active ?? false;
 
         let vcard = xmppService.dbVCardsCache.getVCard(accountJid);
         update(vcard);
     }
     
-    override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
+    override func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
         if indexPath.row == 0 && indexPath.section == 1 {
             return nil;
         }
         return indexPath;
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         guard segue.identifier != nil else {
             return;
         }
         switch segue.identifier! {
         case "EditAccountSegue":
-            let navigation = segue.destinationViewController as! UINavigationController;
+            let navigation = segue.destination as! UINavigationController;
             let destination = navigation.visibleViewController as! AddAccountController;
             destination.account = account;
         case "EditAccountVCardSegue":
-            let navigation = segue.destinationViewController as! UINavigationController;
+            let navigation = segue.destination as! UINavigationController;
             let destination = navigation.visibleViewController as! VCardEditViewController;
             destination.account = account;
         default:
@@ -83,14 +83,14 @@ class AccountSettingsViewController: UITableViewController {
         }
     }
     
-    @IBAction func enabledSwitchChangedValue(sender: AnyObject) {
+    @IBAction func enabledSwitchChangedValue(_ sender: AnyObject) {
         if let config = AccountManager.getAccount(account) {
-            config.active = enabledSwitch.on;
+            config.active = enabledSwitch.isOn;
             AccountManager.updateAccount(config);
         }
     }
     
-    func update(vcard: VCardModule.VCard?) {
+    func update(_ vcard: VCardModule.VCard?) {
         avatarView.image = xmppService.avatarManager.getAvatar(accountJid, account: accountJid);
         avatarView.layer.masksToBounds = true;
         avatarView.layer.cornerRadius = avatarView.frame.width / 2;
@@ -107,15 +107,15 @@ class AccountSettingsViewController: UITableViewController {
         let role = vcard?.role;
         if role != nil && company != nil {
             companyTextView.text = "\(role!) at \(company!)";
-            companyTextView.hidden = false;
+            companyTextView.isHidden = false;
         } else if company != nil {
             companyTextView.text = company;
-            companyTextView.hidden = false;
+            companyTextView.isHidden = false;
         } else if role != nil {
             companyTextView.text = role;
-            companyTextView.hidden = false;
+            companyTextView.isHidden = false;
         } else {
-            companyTextView.hidden = true;
+            companyTextView.isHidden = true;
         }
         
         let addresses = vcard?.addresses.filter { (addr) -> Bool in
@@ -133,7 +133,7 @@ class AccountSettingsViewController: UITableViewController {
             if address.country != nil {
                 tmp.append(address.country!);
             }
-            addressTextView.text = tmp.joinWithSeparator(", ");
+            addressTextView.text = tmp.joined(separator: ", ");
         } else {
             addressTextView.text = nil;
         }

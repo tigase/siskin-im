@@ -27,7 +27,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     let picker = UIImagePickerController();
 
     var xmppService: XmppService {
-        let delegate = UIApplication.sharedApplication().delegate as! AppDelegate;
+        let delegate = UIApplication.shared.delegate as! AppDelegate;
         return delegate.xmppService;
     }
     
@@ -44,7 +44,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
             vcard.telephones.forEach { (telephone) in
                 let types = telephone.types;
                 if types.isEmpty {
-                    telephone.types = [VCardModule.VCard.Type.HOME];
+                    telephone.types = [VCardModule.VCard.EntryType.HOME];
                 }
                 telephone.types.forEach({ (type) in
                     let phone = VCardModule.VCard.Telephone()!;
@@ -57,7 +57,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
             vcard.addresses.forEach { (address) in
                 let types = address.types;
                 if types.isEmpty {
-                    address.types = [VCardModule.VCard.Type.HOME];
+                    address.types = [VCardModule.VCard.EntryType.HOME];
                 }
                 address.types.forEach({ (type) in
                     let addr = VCardModule.VCard.Address()!;
@@ -74,7 +74,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
             vcard.emails.forEach { (email) in
                 let types = email.types;
                 if types.isEmpty {
-                    email.types = [VCardModule.VCard.Type.HOME];
+                    email.types = [VCardModule.VCard.EntryType.HOME];
                 }
                 email.types.forEach({ (type) in
                     let e = VCardModule.VCard.Email()!;
@@ -101,8 +101,8 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
             tableView.reloadData();
         }
 
-        tableView.editing = true;
-        tableView.separatorStyle = .None;
+        tableView.isEditing = true;
+        tableView.separatorStyle = .none;
     }
     
     
@@ -123,54 +123,54 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     }
     */
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.section {
         case 0:
-            let cell = tableView.dequeueReusableCellWithIdentifier("BasicInfoCell") as! VCardEditBasicTableViewCell;
+            let cell = tableView.dequeueReusableCell(withIdentifier: "BasicInfoCell") as! VCardEditBasicTableViewCell;
             cell.avatarManager = xmppService.avatarManager;
             cell.accountJid = accountJid;
             cell.vcard = vcard;
             
             let singleTap = UITapGestureRecognizer(target: self, action: #selector(VCardEditViewController.photoClicked));
             cell.photoView.addGestureRecognizer(singleTap);
-            cell.photoView.multipleTouchEnabled = true;
-            cell.photoView.userInteractionEnabled = true;
+            cell.photoView.isMultipleTouchEnabled = true;
+            cell.photoView.isUserInteractionEnabled = true;
             
             return cell;
         case 1:
             if indexPath.row < phones.count {
-                let cell = tableView.dequeueReusableCellWithIdentifier("PhoneEditCell") as! VCardEditPhoneTableViewCell;
+                let cell = tableView.dequeueReusableCell(withIdentifier: "PhoneEditCell") as! VCardEditPhoneTableViewCell;
                 cell.phone = phones[indexPath.row];
                 return cell;
             } else {
-                let cell = tableView.dequeueReusableCellWithIdentifier("PhoneAddCell");
+                let cell = tableView.dequeueReusableCell(withIdentifier: "PhoneAddCell");
                 return cell!;
             }
         case 2:
             if indexPath.row < emails.count {
-                let cell = tableView.dequeueReusableCellWithIdentifier("EmailEditCell") as! VCardEditEmailTableViewCell;
+                let cell = tableView.dequeueReusableCell(withIdentifier: "EmailEditCell") as! VCardEditEmailTableViewCell;
                 cell.email = emails[indexPath.row];
                 return cell;
             } else {
-                let cell = tableView.dequeueReusableCellWithIdentifier("EmailAddCell");
+                let cell = tableView.dequeueReusableCell(withIdentifier: "EmailAddCell");
                 return cell!;
             }
         case 3:
             if indexPath.row < addresses.count {
-                let cell = tableView.dequeueReusableCellWithIdentifier("AddressEditCell") as! VCardEditAddressTableViewCell;
+                let cell = tableView.dequeueReusableCell(withIdentifier: "AddressEditCell") as! VCardEditAddressTableViewCell;
                 cell.address = addresses[indexPath.row];
                 return cell;
             } else {
-                let cell = tableView.dequeueReusableCellWithIdentifier("AddressAddCell");
+                let cell = tableView.dequeueReusableCell(withIdentifier: "AddressAddCell");
                 return cell!;
             }
         default:
-            let cell = tableView.dequeueReusableCellWithIdentifier("PhoneAddCell");
+            let cell = tableView.dequeueReusableCell(withIdentifier: "PhoneAddCell");
             return cell!;
         }
     }
     
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         switch indexPath.section {
         case 0:
             return false;
@@ -185,7 +185,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         }
     }
     
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
         case 0:
             return 1;
@@ -200,7 +200,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         }
     }
     
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch section {
         case 0:
             return nil;
@@ -215,7 +215,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         }
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch indexPath.section {
         case 0:
             return 234;
@@ -226,8 +226,8 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         }
     }
 
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true);
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true);
         switch indexPath.section {
         case 0:
             return;
@@ -253,36 +253,36 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         }
     }
     
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == UITableViewCellEditingStyle.Delete {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == UITableViewCellEditingStyle.delete {
             if indexPath.section == 1 {
-                phones.removeAtIndex(indexPath.row);
+                phones.remove(at: indexPath.row);
                 tableView.reloadData();
             }
             if indexPath.section == 2 {
-                emails.removeAtIndex(indexPath.row);
+                emails.remove(at: indexPath.row);
                 tableView.reloadData();
             }
             if indexPath.section == 3 {
-                addresses.removeAtIndex(indexPath.row);
+                addresses.remove(at: indexPath.row);
                 tableView.reloadData();
             }
         }
     }
     
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         return 4;
     }
     
-    @IBAction func refreshVCard(sender: UIBarButtonItem) {
-        dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0)) {
+    @IBAction func refreshVCard(_ sender: UIBarButtonItem) {
+        DispatchQueue.global(qos: .default).async {
             if let client = self.xmppService.getClient(self.accountJid) {
                 if let vcardModule: VCardModule = client.modulesManager.getModule(VCardModule.ID) {
                     vcardModule.retrieveVCard(onSuccess: { (vcard) in
-                        dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0)) {
+                        DispatchQueue.global(qos: .default).async() {
                             self.xmppService.dbVCardsCache.updateVCard(self.accountJid, vcard: vcard);
                             self.vcard = vcard;
-                            dispatch_async(dispatch_get_main_queue()) {
+                            DispatchQueue.main.async() {
                                 self.tableView.reloadData();
                             }
                         }
@@ -293,19 +293,19 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         }
     }
     
-    @IBAction func publishVCard(sender: UIBarButtonItem) {
+    @IBAction func publishVCard(_ sender: UIBarButtonItem) {
         vcard.telephones = phones;
         vcard.emails = emails;
         vcard.addresses = addresses;
-        dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0)) {
+        DispatchQueue.global(qos: .default).async {
         if let client = self.xmppService.getClient(self.accountJid) {
             if let vcardModule: VCardModule = client.modulesManager.getModule(VCardModule.ID) {
                 vcardModule.publishVCard(self.vcard, onSuccess: {
-                    dispatch_async(dispatch_get_main_queue()) {
-                        self.navigationController?.popViewControllerAnimated(true);
+                    DispatchQueue.main.async() {
+                        self.navigationController?.popViewController(animated: true);
                     }
                     
-                    let avatarHash = Digest.SHA1.digestToHex(self.vcard.photoValBinary);
+                    let avatarHash = Digest.sha1.digestToHex(self.vcard.photoValBinary);
                     let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID)!;
                     let x = Element(name: "x", xmlns: "vcard-temp:x:update");
                     let photo = Element(name: "photo");
@@ -321,41 +321,41 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     }
     
     func photoClicked() {
-        if UIImagePickerController.isSourceTypeAvailable(.Camera) {
-            let alert = UIAlertController(title: nil, message: nil, preferredStyle: .ActionSheet);
-            alert.addAction(UIAlertAction(title: "Take photo", style: .Default, handler: { (action) in
-                self.selectPhoto(.Camera);
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
+            alert.addAction(UIAlertAction(title: "Take photo", style: .default, handler: { (action) in
+                self.selectPhoto(.camera);
             }));
-            alert.addAction(UIAlertAction(title: "Select photo", style: .Default, handler: { (action) in
-                self.selectPhoto(.PhotoLibrary);
+            alert.addAction(UIAlertAction(title: "Select photo", style: .default, handler: { (action) in
+                self.selectPhoto(.photoLibrary);
             }));
-            alert.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil));
-            presentViewController(alert, animated: true, completion: nil);
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+            present(alert, animated: true, completion: nil);
         } else {
-            selectPhoto(.PhotoLibrary);
+            selectPhoto(.photoLibrary);
         }
     }
     
-    func selectPhoto(source: UIImagePickerControllerSourceType) {
+    func selectPhoto(_ source: UIImagePickerControllerSourceType) {
         picker.delegate = self;
         picker.allowsEditing = true;
         picker.sourceType = source;
-        presentViewController(picker, animated: true, completion: nil);
+        present(picker, animated: true, completion: nil);
     }
     
-    func imagePickerController(picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
         var photo = (editingInfo?[UIImagePickerControllerEditedImage] as? UIImage) ?? image;
         
         // scalling photo to max of 180px
         var size: CGSize! = nil;
         if photo.size.height > photo.size.width {
-            size = CGSizeMake((photo.size.width/photo.size.height) * 180, 180);
+            size = CGSize(width: (photo.size.width/photo.size.height) * 180, height: 180);
         } else {
-            size = CGSizeMake(180, (photo.size.height/photo.size.width) * 180);
+            size = CGSize(width: 180, height: (photo.size.height/photo.size.width) * 180);
         }
         UIGraphicsBeginImageContextWithOptions(size, false, 0);
-        photo.drawInRect(CGRectMake(0, 0, size.width, size.height));
-        photo = UIGraphicsGetImageFromCurrentImageContext();
+        photo.draw(in: CGRect(x: 0, y: 0, width: size.width, height: size.height));
+        photo = UIGraphicsGetImageFromCurrentImageContext()!;
         UIGraphicsEndImageContext();
         
         // saving photo
@@ -364,10 +364,10 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
             vcard.photoType = "image/png";
         }
         tableView.reloadData();
-        picker.dismissViewControllerAnimated(true, completion: nil);
+        picker.dismiss(animated: true, completion: nil);
     }
     
-    func imagePickerControllerDidCancel(picker: UIImagePickerController) {
-        picker.dismissViewControllerAnimated(true, completion: nil);
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true, completion: nil);
     }
 }

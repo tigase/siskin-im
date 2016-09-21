@@ -28,17 +28,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     var xmppService:XmppService!;
     var dbConnection:DBConnection!;
-    var defaultKeepOnlineOnAwayTime = NSTimeInterval(3 * 60);
-    var keepOnlineOnAwayTimer: Timer?;
+    var defaultKeepOnlineOnAwayTime = TimeInterval(3 * 60);
+    var keepOnlineOnAwayTimer: TigaseSwift.Timer?;
     
-    func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         Log.initialize();
         Settings.initialize();
         do {
             dbConnection = try DBConnection(dbFilename: "mobile_messenger1.db");
-            let resourcePath = NSBundle.mainBundle().resourcePath! + "/db-schema-1.0.0.sql";
+            let resourcePath = Bundle.main.resourcePath! + "/db-schema-1.0.0.sql";
             print("loading SQL from file", resourcePath);
-            let dbSchema = try String(contentsOfFile: resourcePath, encoding: NSUTF8StringEncoding);
+            let dbSchema = try String(contentsOfFile: resourcePath, encoding: String.Encoding.utf8);
             print("loaded schema:", dbSchema);
             try dbConnection.execute(dbSchema);
         } catch {
@@ -47,23 +47,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         xmppService = XmppService(dbConnection: dbConnection);
         xmppService.updateXmppClientInstance();
-        application.registerUserNotificationSettings(UIUserNotificationSettings(forTypes: [.Alert, .Badge, .Sound], categories: nil));
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.chatItemsUpdated), name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil);
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.serverCertificateError), name: "serverCertificateError", object: nil);
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.authenticationFailure), name: "authenticationFailure", object: nil);
+        application.registerUserNotificationSettings(UIUserNotificationSettings(types: [UIUserNotificationType.alert, UIUserNotificationType.badge, UIUserNotificationType.sound], categories: nil));
+        NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.chatItemsUpdated), name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.serverCertificateError), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.authenticationFailure), name: XmppService.AUTHENTICATION_FAILURE, object: nil);
         updateApplicationIconBadgeNumber();
         
         application.setMinimumBackgroundFetchInterval(60);
         return true
     }
 
-    func applicationWillResignActive(application: UIApplication) {
+    func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
     }
 
-    func applicationDidEnterBackground(application: UIApplication) {
+    func applicationDidEnterBackground(_ application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
@@ -73,7 +73,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.keepOnlineOnAwayTimer = nil;
         
         var taskId = UIBackgroundTaskInvalid;
-        taskId = application.beginBackgroundTaskWithExpirationHandler {
+        taskId = application.beginBackgroundTask {
             print("keep online on away background task expired", taskId);
             self.applicationKeepOnlineOnAwayFinished(application, taskId: taskId);
         }
@@ -86,7 +86,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         });
     }
 
-    func applicationKeepOnlineOnAwayFinished(application: UIApplication, taskId: UIBackgroundTaskIdentifier) {
+    func applicationKeepOnlineOnAwayFinished(_ application: UIApplication, taskId: UIBackgroundTaskIdentifier) {
         // make sure timer is cancelled
         self.keepOnlineOnAwayTimer?.cancel();
         self.keepOnlineOnAwayTimer = nil;
@@ -95,22 +95,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         application.endBackgroundTask(taskId);
     }
     
-    func applicationWillEnterForeground(application: UIApplication) {
+    func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
         xmppService.applicationState = .active;
     }
 
-    func applicationDidBecomeActive(application: UIApplication) {
+    func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
         xmppService.applicationState = .active;
     }
 
-    func applicationWillTerminate(application: UIApplication) {
+    func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
         print(NSDate(), "application terminated!")
     }
 
-    func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
+    func application(_ application: UIApplication, didReceive notification: UILocalNotification) {
         updateApplicationIconBadgeNumber();
         print("notification clicked", notification.userInfo);
         if (notification.category == "ERROR") {
@@ -124,55 +124,55 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 let issuerName = userInfo["issuer-name"] as? String;
                 let issuerHash = userInfo["issuer-hash-sha1"] as? String;
                 let issuer = issuerName != nil ? "\nissued by\n\(issuerName!)\n with fingerprint\n\(issuerHash!)" : "";
-                let alert = UIAlertController(title: "Certificate issue", message: "Server for domain \(accountJid.domain) provided invalid certificate for \(certName)\n with fingerprint\n\(certHash)\(issuer).\nDo you trust this certificate?", preferredStyle: .Alert);
-                alert.addAction(UIAlertAction(title: "No", style: UIAlertActionStyle.Cancel, handler: nil));
-                alert.addAction(UIAlertAction(title: "Yes", style: UIAlertActionStyle.Destructive, handler: {(action) in
+                let alert = UIAlertController(title: "Certificate issue", message: "Server for domain \(accountJid.domain) provided invalid certificate for \(certName)\n with fingerprint\n\(certHash)\(issuer).\nDo you trust this certificate?", preferredStyle: .alert);
+                alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
+                alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: {(action) in
                     print("accepted certificate!");
                     guard let account = AccountManager.getAccount(accountJid.stringValue) else {
                         return;
                     }
                     var certInfo = account.serverCertificate;
-                    certInfo?["accepted"] = true;
+                    certInfo?["accepted"] = true as NSObject;
                     account.serverCertificate = certInfo;
                     account.active = true;
                     AccountManager.updateAccount(account);
                 }));
             
-                var topController = UIApplication.sharedApplication().keyWindow?.rootViewController;
+                var topController = UIApplication.shared.keyWindow?.rootViewController;
                 while (topController?.presentedViewController != nil) {
                     topController = topController?.presentedViewController;
                 }
                 
-                topController?.presentViewController(alert, animated: true, completion: nil);
+                topController?.present(alert, animated: true, completion: nil);
             }
             if let authError = userInfo["auth-error-type"] {
                 let accountJid = BareJID(userInfo["account"] as! String);
                 
-                let alert = UIAlertController(title: "Authentication issue", message: "Authentication for account \(accountJid) failed: \(authError)\nVerify provided account password.", preferredStyle: .Alert);
-                alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.Cancel, handler: nil));
+                let alert = UIAlertController(title: "Authentication issue", message: "Authentication for account \(accountJid) failed: \(authError)\nVerify provided account password.", preferredStyle: .alert);
+                alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
                 
-                var topController = UIApplication.sharedApplication().keyWindow?.rootViewController;
+                var topController = UIApplication.shared.keyWindow?.rootViewController;
                 while (topController?.presentedViewController != nil) {
                     topController = topController?.presentedViewController;
                 }
                 
-                topController?.presentViewController(alert, animated: true, completion: nil);
+                topController?.present(alert, animated: true, completion: nil);
             }
         }
     }
     
-    func application(application: UIApplication, performFetchWithCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
-        let fetchStart = NSDate();
-        print(NSDate(), "starting fetching data");
+    func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        let fetchStart = Date();
+        print(Date(), "starting fetching data");
         xmppService.preformFetch({(result) in
             completionHandler(result);
-            let fetchEnd = NSDate();
-            let time = fetchEnd.timeIntervalSinceDate(fetchStart);
-            print(NSDate(), "fetched date in \(time) seconds with result = \(result)");
+            let fetchEnd = Date();
+            let time = fetchEnd.timeIntervalSince(fetchStart);
+            print(Date(), "fetched date in \(time) seconds with result = \(result)");
         });
     }
     
-    func newMessage(notification: NSNotification) {
+    func newMessage(_ notification: NSNotification) {
         let sender = notification.userInfo?["sender"] as? BareJID;
         let account = notification.userInfo?["account"] as? BareJID;
         let incoming:Bool = (notification.userInfo?["incoming"] as? Bool) ?? false;
@@ -188,12 +188,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             senderName = sender!.stringValue;
         }
         
-        if UIApplication.sharedApplication().applicationState != .Active && notification.userInfo?["carbonAction"] == nil {
+        if UIApplication.shared.applicationState != .active && notification.userInfo?["carbonAction"] == nil {
             var alertBody: String?;
             switch ((notification.userInfo?["type"] as? String) ?? "chat") {
             case "muc":
                 if let body = (notification.userInfo?["body"] as? String) {
-                    if body.containsString(notification.userInfo!["roomNickname"] as! String) {
+                    if body.contains(notification.userInfo!["roomNickname"] as! String) {
                         alertBody = senderName! + " mentioned you";
                     }
                 }
@@ -209,26 +209,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 //userNotification.applicationIconBadgeNumber = UIApplication.sharedApplication().applicationIconBadgeNumber + 1;
                 userNotification.userInfo = ["account": account!.stringValue, "sender": account!.stringValue];
                 userNotification.category = "MESSAGE";
-                UIApplication.sharedApplication().presentLocalNotificationNow(userNotification);
+                UIApplication.shared.presentLocalNotificationNow(userNotification);
             }
         }
         updateApplicationIconBadgeNumber();
     }
     
-    func chatItemsUpdated(notification: NSNotification) {
+    func chatItemsUpdated(_ notification: NSNotification) {
         updateApplicationIconBadgeNumber();
     }
     
     func updateApplicationIconBadgeNumber() {
-        dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0)) {
+        DispatchQueue.global(qos: .default).async {
             let unreadChats = self.xmppService.dbChatHistoryStore.countUnreadChats();
-            dispatch_async(dispatch_get_main_queue()) {
-                UIApplication.sharedApplication().applicationIconBadgeNumber = unreadChats;
+            DispatchQueue.main.async {
+                UIApplication.shared.applicationIconBadgeNumber = unreadChats;
             }
         }
     }
     
-    func serverCertificateError(notification: NSNotification) {
+    func serverCertificateError(_ notification: NSNotification) {
         guard let certInfo = notification.userInfo else {
             return;
         }
@@ -240,10 +240,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         userNotification.alertBody = "Connection to server \(account.domain) failed";
         userNotification.userInfo = certInfo;
         userNotification.category = "ERROR";
-        UIApplication.sharedApplication().presentLocalNotificationNow(userNotification);
+        UIApplication.shared.presentLocalNotificationNow(userNotification);
     }
     
-    func authenticationFailure(notification: NSNotification) {
+    func authenticationFailure(_ notification: NSNotification) {
         guard let info = notification.userInfo else {
             return;
         }
@@ -256,7 +256,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         userNotification.alertBody = "Authentication for account \(account) failed: \(type)";
         userNotification.userInfo = info;
         userNotification.category = "ERROR";
-        UIApplication.sharedApplication().presentLocalNotificationNow(userNotification);
+        UIApplication.shared.presentLocalNotificationNow(userNotification);
     }
 
 }

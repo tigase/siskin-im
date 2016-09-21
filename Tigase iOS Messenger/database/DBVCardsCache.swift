@@ -22,36 +22,36 @@
 import Foundation
 import TigaseSwift
 
-public class DBVCardsCache {
+open class DBVCardsCache {
     
-    public static let VCARD_UPDATED = "messengerVCardUpdated";
+    open static let VCARD_UPDATED = Notification.Name("messengerVCardUpdated");
     
     let dbConnection: DBConnection;
     
-    private lazy var updateVCardStmt:DBStatement! = try? self.dbConnection.prepareStatement("UPDATE vcards_cache SET data = :data, avatar = :avatar, avatar_hash = :avatar_hash, timestamp = :timestamp WHERE jid = :jid");
-    private lazy var insertVCardStmt:DBStatement! = try? self.dbConnection.prepareStatement("INSERT INTO vcards_cache (jid, data, avatar, avatar_hash, timestamp) VALUES(:jid, :data, :avatar, :avatar_hash, :timestamp)");
-    private lazy var chechPhotoHashStmt:DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM vcards_cache WHERE jid = :jid AND avatar_hash IS NOT NULL AND avatar_hash = :avatar_hash");
-    private lazy var getPhotoStmt:DBStatement! = try? self.dbConnection.prepareStatement("SELECT avatar FROM vcards_cache WHERE jid = :jid");
-    private lazy var getVCardStmt:DBStatement! = try? self.dbConnection.prepareStatement("SELECT data FROM vcards_cache WHERE jid = :jid");
+    fileprivate lazy var updateVCardStmt:DBStatement! = try? self.dbConnection.prepareStatement("UPDATE vcards_cache SET data = :data, avatar = :avatar, avatar_hash = :avatar_hash, timestamp = :timestamp WHERE jid = :jid");
+    fileprivate lazy var insertVCardStmt:DBStatement! = try? self.dbConnection.prepareStatement("INSERT INTO vcards_cache (jid, data, avatar, avatar_hash, timestamp) VALUES(:jid, :data, :avatar, :avatar_hash, :timestamp)");
+    fileprivate lazy var chechPhotoHashStmt:DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM vcards_cache WHERE jid = :jid AND avatar_hash IS NOT NULL AND avatar_hash = :avatar_hash");
+    fileprivate lazy var getPhotoStmt:DBStatement! = try? self.dbConnection.prepareStatement("SELECT avatar FROM vcards_cache WHERE jid = :jid");
+    fileprivate lazy var getVCardStmt:DBStatement! = try? self.dbConnection.prepareStatement("SELECT data FROM vcards_cache WHERE jid = :jid");
     
     public init(dbConnection: DBConnection) {
         self.dbConnection = dbConnection;
     }
     
-    public func updateVCard(jid: BareJID, vcard: VCardModule.VCard?) {
+    open func updateVCard(_ jid: BareJID, vcard: VCardModule.VCard?) {
         let avatar_data = vcard?.photoValBinary;
-        let avatar_hash:String? = Digest.SHA1.digestToHex(avatar_data);
+        let avatar_hash:String? = Digest.sha1.digestToHex(avatar_data);
         
         let params:[String:Any?] = ["jid" : jid, "data": vcard, "avatar": avatar_data, "avatar_hash": avatar_hash, "timestamp": NSDate()];
         dbConnection.dispatch_async_db_queue() {
             if try! self.updateVCardStmt.update(params) == 0 {
-                try! self.insertVCardStmt.insert(params);
+                _ = try! self.insertVCardStmt.insert(params);
             }
         }
-        NSNotificationCenter.defaultCenter().postNotificationName(DBVCardsCache.VCARD_UPDATED, object: self, userInfo: ["jid": jid]);
+        NotificationCenter.default.post(name: DBVCardsCache.VCARD_UPDATED, object: self, userInfo: ["jid": jid]);
     }
     
-    public func getVCard(jid: BareJID) -> VCardModule.VCard? {
+    open func getVCard(_ jid: BareJID) -> VCardModule.VCard? {
         
         if let data:String = dbConnection.dispatch_sync_with_result_local_queue({
             return try! self.getVCardStmt.query(jid)?["data"];
@@ -63,13 +63,13 @@ public class DBVCardsCache {
         return nil;
     }
     
-    public func checkVCardPhotoHash(jid: BareJID, hash: String) -> Bool {
-        let params:[String:Any?] = ["jid": jid, "avatar_hash": hash.lowercaseString];
+    open func checkVCardPhotoHash(_ jid: BareJID, hash: String) -> Bool {
+        let params:[String:Any?] = ["jid": jid, "avatar_hash": hash.lowercased()];
         let count = try! chechPhotoHashStmt.scalar(params);
         return count == 1;
     }
     
-    public func getPhoto(jid: BareJID) -> NSData? {
+    open func getPhoto(_ jid: BareJID) -> Data? {
         return dbConnection.dispatch_sync_with_result_local_queue(){
             let cursor = try! self.getPhotoStmt.query(jid);
             return cursor?["avatar"];

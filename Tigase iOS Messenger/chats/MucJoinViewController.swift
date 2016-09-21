@@ -25,7 +25,7 @@ import TigaseSwift
 class MucJoinViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate {
 
     var xmppService:XmppService! {
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate;
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
         return appDelegate.xmppService;
     }
     
@@ -48,10 +48,10 @@ class MucJoinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         if !accounts.isEmpty {
             self.accountTextField.text = accounts[0];
         }
-        self.accountTextField.addTarget(self, action: #selector(MucJoinViewController.textFieldDidChange), forControlEvents: UIControlEvents.EditingChanged);
-        self.serverTextField.addTarget(self, action: #selector(MucJoinViewController.textFieldDidChange), forControlEvents: UIControlEvents.EditingChanged);
-        self.roomTextField.addTarget(self, action: #selector(MucJoinViewController.textFieldDidChange), forControlEvents: UIControlEvents.EditingChanged);
-        self.nicknameTextField.addTarget(self, action: #selector(MucJoinViewController.textFieldDidChange), forControlEvents: UIControlEvents.EditingChanged);
+        self.accountTextField.addTarget(self, action: #selector(MucJoinViewController.textFieldDidChange), for: UIControlEvents.editingChanged);
+        self.serverTextField.addTarget(self, action: #selector(MucJoinViewController.textFieldDidChange), for: UIControlEvents.editingChanged);
+        self.roomTextField.addTarget(self, action: #selector(MucJoinViewController.textFieldDidChange), for: UIControlEvents.editingChanged);
+        self.nicknameTextField.addTarget(self, action: #selector(MucJoinViewController.textFieldDidChange), for: UIControlEvents.editingChanged);
 
     }
 
@@ -70,7 +70,7 @@ class MucJoinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         // Pass the selected object to the new view controller.
     }
     */
-    @IBAction func joinBtnClicked(sender: UIBarButtonItem) {
+    @IBAction func joinBtnClicked(_ sender: UIBarButtonItem) {
         guard accountTextField.text?.isEmpty == false && serverTextField.text?.isEmpty == false && roomTextField.text?.isEmpty == false &&  nicknameTextField.text?.isEmpty == false else {
             return;
         }
@@ -83,53 +83,53 @@ class MucJoinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         let client = xmppService.getClient(accountJid);
         if let mucModule: MucModule = client?.modulesManager.getModule(MucModule.ID) {
             mucModule.join(room, mucServer: server, nickname: nickname, password: password);
-            self.navigationController?.popViewControllerAnimated(true);
+            self.navigationController?.popViewController(animated: true);
         } else {
             var alert: UIAlertController? = nil;
             if client == nil {
-                alert = UIAlertController.init(title: "Warning", message: "Account is disabled.\nDo you want to enable account?", preferredStyle: .Alert);
-                alert?.addAction(UIAlertAction(title: "No", style: .Cancel, handler: nil));
-                alert?.addAction(UIAlertAction(title: "Yes", style: .Default, handler: {(alertAction) in
+                alert = UIAlertController.init(title: "Warning", message: "Account is disabled.\nDo you want to enable account?", preferredStyle: .alert);
+                alert?.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
+                alert?.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(alertAction) in
                     if let account = AccountManager.getAccount(accountJid.stringValue) {
                         account.active = true;
                         AccountManager.updateAccount(account);
                     }
                 }));
             } else if client?.state != .connected {
-                alert = UIAlertController.init(title: "Warning", message: "Account is disconnected.\nPlease wait until account will reconnect", preferredStyle: .Alert);
-                alert?.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil));
+                alert = UIAlertController.init(title: "Warning", message: "Account is disconnected.\nPlease wait until account will reconnect", preferredStyle: .alert);
+                alert?.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
             }
             if alert != nil {
-                self.presentViewController(alert!, animated: true, completion: nil);
+                self.present(alert!, animated: true, completion: nil);
             }
         }
     }
 
-    func textFieldDidChange(textField: UITextField) {
+    func textFieldDidChange(_ textField: UITextField) {
         if textField.text?.isEmpty != false {
-            textField.layer.borderColor = UIColor.redColor().CGColor;
+            textField.layer.borderColor = UIColor.red.cgColor;
             textField.layer.borderWidth = 1;
             textField.layer.cornerRadius = 4;
         } else {
-            textField.layer.borderColor = UIColor(white: 1, alpha: 1).CGColor;
+            textField.layer.borderColor = UIColor(white: 1, alpha: 1).cgColor;
             textField.layer.borderWidth = 0;
             textField.layer.cornerRadius = 0;
         }
     }
     
-    func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1;
     }
     
-    func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         return AccountManager.getAccounts().count;
     }
     
-    func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         return AccountManager.getAccounts()[row];
     }
     
-    func  pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+    func  pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         self.accountTextField.text = self.pickerView(pickerView, titleForRow: row, forComponent: component);
     }
 }

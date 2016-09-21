@@ -28,7 +28,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
     var titleView: ChatTitleView!;
     
     let log: Logger = Logger();
-    var scrollToIndexPath: NSIndexPath? = nil;
+    var scrollToIndexPath: IndexPath? = nil;
     
     var dataSource: ChatDataSource!;
     var cachedDataSource: CachedViewDataSourceProtocol {
@@ -53,17 +53,17 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         titleView = ChatTitleView(width: width, height: navBarHeight);
         titleView.name = navigationItem.title;
         
-        let buddyBtn = UIButton(type: .System);
-        buddyBtn.frame = CGRectMake(0,0, width, navBarHeight);
+        let buddyBtn = UIButton(type: .system);
+        buddyBtn.frame = CGRect(x: 0, y: 0, width: width, height: navBarHeight);
         buddyBtn.addSubview(titleView);
         
-        buddyBtn.addTarget(self, action: #selector(ChatViewController.showBuddyInfo), forControlEvents: .TouchDown);
+        buddyBtn.addTarget(self, action: #selector(ChatViewController.showBuddyInfo), for: .touchDown);
         self.navigationItem.titleView = buddyBtn;
     }
     
-    func showBuddyInfo(button: UIButton) {
+    func showBuddyInfo(_ button: UIButton) {
         print("open buddy info!");
-        let navigation = storyboard?.instantiateViewControllerWithIdentifier("ContactViewNavigationController") as! UINavigationController;
+        let navigation = storyboard?.instantiateViewController(withIdentifier: "ContactViewNavigationController") as! UINavigationController;
         let contactView = navigation.visibleViewController as! ContactViewController;
         contactView.account = account;
         contactView.jid = jid.bareJid;
@@ -72,10 +72,10 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
 
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
         
         xmppService.registerEventHandler(self, events: PresenceModule.ContactPresenceChanged.TYPE);
         
@@ -83,8 +83,8 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         titleView.status = presenceModule?.presenceStore.getBestPresence(jid.bareJid);
     }
     
-    override func viewDidDisappear(animated: Bool) {
-        NSNotificationCenter.defaultCenter().removeObserver(self);
+    override func viewDidDisappear(_ animated: Bool) {
+        NotificationCenter.default.removeObserver(self);
         super.viewDidDisappear(animated);
         
         xmppService.unregisterEventHandler(self, events: PresenceModule.ContactPresenceChanged.TYPE);
@@ -97,20 +97,20 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
     
     // MARK: - Table view data source
     
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         return 1;
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return dataSource.numberOfMessages;
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let item = dataSource.getItem(indexPath);
         let incoming = (item.state % 2) == 0;
         let id = incoming ? "ChatTableViewCellIncoming" : "ChatTableViewCellOutgoing"
-        let cell:ChatTableViewCell = tableView.dequeueReusableCellWithIdentifier(id, forIndexPath: indexPath) as! ChatTableViewCell;
-        cell.transform = cachedDataSource.inverted ? CGAffineTransformMake(1, 0, 0, -1, 0, 0) : CGAffineTransformIdentity;
+        let cell: ChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
+        cell.transform = cachedDataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
         cell.avatarView?.image = self.xmppService.avatarManager.getAvatar(self.jid.bareJid, account: self.account);
         cell.setMessageText(item.data);
         cell.setTimestamp(item.timestamp);
@@ -122,7 +122,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
     class ChatViewItem {
         let state: Int;
         let data: String?;
-        let timestamp: NSDate;
+        let timestamp: Date;
         
         init(cursor: DBCursor) {
             state = cursor["state"]!;
@@ -132,14 +132,14 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         
     }
     
-    func handleEvent(event: Event) {
+    func handleEvent(_ event: Event) {
         switch event {
         case let cpc as PresenceModule.ContactPresenceChanged:
             guard cpc.presence.from?.bareJid == self.jid.bareJid && cpc.sessionObject.userBareJid == account else {
                 return;
             }
             
-            dispatch_async(dispatch_get_main_queue()) {
+            DispatchQueue.main.async() {
                 self.titleView.status = cpc.presence;
             }
         default:
@@ -147,28 +147,28 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         }
     }
     
-    func newMessage(notification: NSNotification) {
+    func newMessage(_ notification: NSNotification) {
         guard ((notification.userInfo?["account"] as? BareJID) == account) && ((notification.userInfo?["sender"] as? BareJID) == jid.bareJid) else {
             return;
         }
         
-        dispatch_sync(dispatch_get_main_queue()) {
+        DispatchQueue.main.sync() {
             self.newItemAdded();
         }
 
         self.xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
     }
     
-    func avatarChanged(notification: NSNotification) {
+    func avatarChanged(_ notification: NSNotification) {
         guard ((notification.userInfo?["jid"] as? BareJID) == jid.bareJid) else {
             return;
         }
         if let indexPaths = tableView.indexPathsForVisibleRows {
-            tableView.reloadRowsAtIndexPaths(indexPaths, withRowAnimation: .None);
+            tableView.reloadRows(at: indexPaths, with: .none);
         }
     }
     
-    @IBAction func sendClicked(sender: UIButton) {
+    @IBAction func sendClicked(_ sender: UIButton) {
         let text = messageField.text;
         guard !(text?.isEmpty != false) else {
             return;
@@ -176,7 +176,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         
         let client = xmppService.getClient(account);
         if client != nil && client!.state == .connected {
-            dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0)) {
+            DispatchQueue.global(qos: .default).async {
                 let messageModule:MessageModule? = client?.modulesManager.getModule(MessageModule.ID);
                 if let chat = messageModule?.chatManager.getChat(self.jid, thread: nil) {
                     let msg = messageModule!.sendMessage(chat, body: text!);
@@ -187,27 +187,27 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         } else {
             var alert: UIAlertController? = nil;
             if client == nil {
-                alert = UIAlertController.init(title: "Warning", message: "Account is disabled.\nDo you want to enable account?", preferredStyle: .Alert);
-                alert?.addAction(UIAlertAction(title: "No", style: .Cancel, handler: nil));
-                alert?.addAction(UIAlertAction(title: "Yes", style: .Default, handler: {(alertAction) in
+                alert = UIAlertController.init(title: "Warning", message: "Account is disabled.\nDo you want to enable account?", preferredStyle: .alert);
+                alert?.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
+                alert?.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(alertAction) in
                     if let account = AccountManager.getAccount(self.account.stringValue) {
                         account.active = true;
                         AccountManager.updateAccount(account);
                     }
                 }));
             } else if client?.state != .connected {
-                alert = UIAlertController.init(title: "Warning", message: "Account is disconnected.\nPlease wait until account will reconnect", preferredStyle: .Alert);
-                alert?.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil));
+                alert = UIAlertController.init(title: "Warning", message: "Account is disconnected.\nPlease wait until account will reconnect", preferredStyle: .alert);
+                alert?.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
             }
             if alert != nil {
-                self.presentViewController(alert!, animated: true, completion: nil);
+                self.present(alert!, animated: true, completion: nil);
             }
         }
     }
     
     class ChatDataSource: CachedViewDataSource<ChatViewItem> {
         
-        private let getMessagesStmt: DBStatement!;
+        fileprivate let getMessagesStmt: DBStatement!;
         
         weak var controller: ChatViewController?;
         
@@ -220,7 +220,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
             return controller!.xmppService.dbChatHistoryStore.countMessages(controller!.account, jid: controller!.jid.bareJid);
         }
         
-        override func loadData(offset: Int, limit: Int, forEveryItem: (ChatViewItem)->Void) {
+        override func loadData(_ offset: Int, limit: Int, forEveryItem: (ChatViewItem)->Void) {
             controller!.xmppService.dbChatHistoryStore.forEachMessage(getMessagesStmt, account: controller!.account, jid: controller!.jid.bareJid, limit: limit, offset: offset, forEach: { (cursor)-> Void in
                 forEveryItem(ChatViewItem(cursor: cursor));
             });
@@ -246,7 +246,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
             didSet {
                 let statusIcon = NSTextAttachment();
                 statusIcon.image = AvatarStatusView.getStatusImage(status?.show);
-                statusIcon.bounds = CGRectMake(0, -3, statusHeight, statusHeight);
+                statusIcon.bounds = CGRect(x: 0, y: -3, width: statusHeight, height: statusHeight);
                 var desc = status?.status;
                 if desc == nil {
                     let show = status?.show;
@@ -268,7 +268,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
                     }
                 }
                 let statusText = NSMutableAttributedString(attributedString: NSAttributedString(attachment: statusIcon));
-                statusText.appendAttributedString(NSAttributedString(string: desc!));
+                statusText.append(NSAttributedString(string: desc!));
                 statusView.attributedText = statusText;
             }
         }
@@ -276,24 +276,24 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         init(width: CGFloat, height: CGFloat) {
             let spacing = (height * 0.23) / 3;
             statusHeight = height * 0.32;
-            nameView = UILabel(frame: CGRectMake(0, spacing, width, height * 0.48));
-            statusView = UILabel(frame: CGRectMake(0, (height * 0.44) + (spacing * 2), width, statusHeight));
-            super.init(frame: CGRectMake(0, 0, width, height));
+            nameView = UILabel(frame: CGRect(x: 0, y: spacing, width: width, height: height * 0.48));
+            statusView = UILabel(frame: CGRect(x: 0, y: (height * 0.44) + (spacing * 2), width: width, height: statusHeight));
+            super.init(frame: CGRect(x: 0, y: 0, width: width, height: height));
             
             
             var font = nameView.font;
-            font = font.fontWithSize(font.pointSize);
+            font = font?.withSize((font?.pointSize)!);
             nameView.font = font;
-            nameView.textAlignment = .Center;
+            nameView.textAlignment = .center;
             nameView.adjustsFontSizeToFitWidth = true;
             
             font = statusView.font;
-            font = font.fontWithSize(font.pointSize - 5);
+            font = font?.withSize((font?.pointSize)! - 5);
             statusView.font = font;
-            statusView.textAlignment = .Center;
+            statusView.textAlignment = .center;
             statusView.adjustsFontSizeToFitWidth = true;
             
-            self.userInteractionEnabled = false;
+            self.isUserInteractionEnabled = false;
             
             self.addSubview(nameView);
             self.addSubview(statusView);

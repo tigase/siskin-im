@@ -29,37 +29,37 @@ class ChatTableViewCell: UITableViewCell {
     @IBOutlet var messageFrameView: UIView!
     @IBOutlet var timestampView: UILabel!
     
-    private var longPressGestureRecognizer: UILongPressGestureRecognizer!;
+    fileprivate var longPressGestureRecognizer: UILongPressGestureRecognizer!;
     
-    private static let todaysFormatter = ({()-> NSDateFormatter in
-        var f = NSDateFormatter();
-        f.dateStyle = .NoStyle;
-        f.timeStyle = .ShortStyle;
+    fileprivate static let todaysFormatter = ({()-> DateFormatter in
+        var f = DateFormatter();
+        f.dateStyle = .none;
+        f.timeStyle = .short;
         return f;
     })();
-    private static let defaultFormatter = ({()-> NSDateFormatter in
-        var f = NSDateFormatter();
-        f.dateFormat = NSDateFormatter.dateFormatFromTemplate("dd.MM, jj:mm", options: 0, locale: NSLocale.currentLocale());
+    fileprivate static let defaultFormatter = ({()-> DateFormatter in
+        var f = DateFormatter();
+        f.dateFormat = DateFormatter.dateFormat(fromTemplate: "dd.MM, jj:mm", options: 0, locale: NSLocale.current);
         //        f.timeStyle = .NoStyle;
         return f;
     })();
-    private static let fullFormatter = ({()-> NSDateFormatter in
-        var f = NSDateFormatter();
-        f.dateFormat = NSDateFormatter.dateFormatFromTemplate("dd.MM.yyyy, jj:mm", options: 0, locale: NSLocale.currentLocale());
+    fileprivate static let fullFormatter = ({()-> DateFormatter in
+        var f = DateFormatter();
+        f.dateFormat = DateFormatter.dateFormat(fromTemplate: "dd.MM.yyyy, jj:mm", options: 0, locale: NSLocale.current);
         //        f.timeStyle = .NoStyle;
         return f;
     })();
     
-    private func formatTimestamp(ts:NSDate) -> String {
-        let flags:NSCalendarUnit = [.Day, .Year];
-        let components = NSCalendar.currentCalendar().components(flags, fromDate: ts, toDate: NSDate(), options: []);
-        if (components.day < 1) {
-            return ChatTableViewCell.todaysFormatter.stringFromDate(ts);
+    fileprivate func formatTimestamp(_ ts: Date) -> String {
+        let flags: Set<Calendar.Component> = [.day, .year];
+        let components = Calendar.current.dateComponents(flags, from: ts, to: Date());
+        if (components.day! < 1) {
+            return ChatTableViewCell.todaysFormatter.string(from: ts);
         }
-        if (components.year != 0) {
-            return ChatTableViewCell.fullFormatter.stringFromDate(ts);
+        if (components.year! != 0) {
+            return ChatTableViewCell.fullFormatter.string(from: ts);
         } else {
-            return ChatTableViewCell.defaultFormatter.stringFromDate(ts);
+            return ChatTableViewCell.defaultFormatter.string(from: ts);
         }
         
     }
@@ -81,31 +81,31 @@ class ChatTableViewCell: UITableViewCell {
         messageTextView.addGestureRecognizer(longPressGestureRecognizer);
     }
 
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
     }
     
-    func setTimestamp(ts:NSDate) {
+    func setTimestamp(_ ts: Date) {
         timestampView.text = formatTimestamp(ts);
     }
 
-    func setMessageText(text: String?) {
-        if text != nil && (text!.containsString("http:") || text!.containsString("https://")) {
+    func setMessageText(_ text: String?) {
+        if text != nil && (text!.contains("http:") || text!.contains("https://")) {
             let attrText = NSMutableAttributedString(string: text!);
             
-            if let detect = try? NSDataDetector(types: NSTextCheckingType.Link.rawValue | NSTextCheckingType.PhoneNumber.rawValue | NSTextCheckingType.Address.rawValue) {
-                let matches = detect.matchesInString(text!, options: .ReportCompletion, range: NSMakeRange(0, text!.characters.count));
+            if let detect = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue) {
+                let matches = detect.matches(in: text!, options: .reportCompletion, range: NSMakeRange(0, text!.characters.count));
                 for match in matches {
-                    if match.URL != nil {
-                        attrText.addAttribute(NSLinkAttributeName, value: match.URL!, range: match.range);
+                    if match.url != nil {
+                        attrText.addAttribute(NSLinkAttributeName, value: match.url!, range: match.range);
                     }
                     if match.phoneNumber != nil {
                         attrText.addAttribute(NSLinkAttributeName, value: NSURL(string: "tel:\(match.phoneNumber!)")!, range: match.range);
                     }
                     if match.addressComponents != nil {
-                        let query = match.addressComponents?.values.joinWithSeparator(",").stringByAddingPercentEncodingWithAllowedCharacters(.URLHostAllowedCharacterSet());
+                        let query = match.addressComponents?.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
                         attrText.addAttribute(NSLinkAttributeName, value: NSURL(string: "http://maps.apple.com/?q=\(query)")!, range: match.range);
                     }
                 }
@@ -116,14 +116,14 @@ class ChatTableViewCell: UITableViewCell {
         }
     }
     
-    func longPressDidFire(recognizer: UILongPressGestureRecognizer) {
+    func longPressDidFire(_ recognizer: UILongPressGestureRecognizer) {
         switch recognizer.state {
-        case .Began:
+        case .began:
             guard self.messageTextView.attributedText != nil else {
                 return;
             }
             
-            let point = recognizer.locationInView(self.messageTextView);
+            let point = recognizer.location(in: self.messageTextView);
             let layoutManager = NSLayoutManager();
             let textStorage = NSTextStorage(attributedString: self.messageTextView.attributedText!);
             textStorage.addLayoutManager(layoutManager);
@@ -131,9 +131,9 @@ class ChatTableViewCell: UITableViewCell {
             textContainer.lineFragmentPadding = 0;
             textContainer.lineBreakMode = self.messageTextView.lineBreakMode;
             layoutManager.addTextContainer(textContainer);
-            let idx = layoutManager.characterIndexForPoint(point, inTextContainer: textContainer, fractionOfDistanceBetweenInsertionPoints: nil);
-            if let url = self.messageTextView.attributedText?.attribute(NSLinkAttributeName, atIndex: idx, effectiveRange: nil) as? NSURL {
-                UIApplication.sharedApplication().openURL(url);
+            let idx = layoutManager.characterIndex(for: point, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil);
+            if let url = self.messageTextView.attributedText?.attribute(NSLinkAttributeName, at: idx, effectiveRange: nil) as? NSURL {
+                UIApplication.shared.openURL(url as URL);
             }
         default:
             break;

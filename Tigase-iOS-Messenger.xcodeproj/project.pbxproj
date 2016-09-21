@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		FE04733E1D86E79300E6D6CE /* TigaseSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE04733D1D86E79300E6D6CE /* TigaseSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		FE04733F1D86E8A700E6D6CE /* TigaseSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE04733D1D86E79300E6D6CE /* TigaseSwift.framework */; };
 		FE0A674D1D4F645F00124480 /* CachedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0A674C1D4F645F00124480 /* CachedViewController.swift */; };
 		FE168ACD1CCD197A003F8B26 /* db-schema-1.0.0.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE168ACC1CCD197A003F8B26 /* db-schema-1.0.0.sql */; };
 		FE3024321CE2036A00466497 /* DBVCardsCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3024311CE2036A00466497 /* DBVCardsCache.swift */; };
@@ -34,6 +32,7 @@
 		FE507A251CDB7B3B001A015C /* AccountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A131CDB7B3B001A015C /* AccountManager.swift */; };
 		FE507A261CDB7B3B001A015C /* AvatarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A141CDB7B3B001A015C /* AvatarManager.swift */; };
 		FE7F645B1D281B1C00B9DF56 /* DBCapabilitiesCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7F645A1D281B1C00B9DF56 /* DBCapabilitiesCache.swift */; };
+		FE80BDA81D928AD2001914B0 /* TigaseSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE80BDA71D928AD2001914B0 /* TigaseSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE94E5251CCBA74F00FAE755 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE94E5241CCBA74F00FAE755 /* AppDelegate.swift */; };
 		FE94E52C1CCBA74F00FAE755 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE94E52A1CCBA74F00FAE755 /* Main.storyboard */; };
 		FE94E52E1CCBA74F00FAE755 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FE94E52D1CCBA74F00FAE755 /* Assets.xcassets */; };
@@ -86,7 +85,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				FE04733E1D86E79300E6D6CE /* TigaseSwift.framework in Embed Frameworks */,
+				FE80BDA81D928AD2001914B0 /* TigaseSwift.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -94,7 +93,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		FE04733D1D86E79300E6D6CE /* TigaseSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; name = TigaseSwift.framework; path = "/Users/andrzej/Library/Developer/Xcode/DerivedData/workspace_ts-cggcwjpodibzegaecyuraswpljwr/Build/Products/Debug-iphoneos/TigaseSwift.framework"; sourceTree = "<absolute>"; };
 		FE0A674C1D4F645F00124480 /* CachedViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CachedViewController.swift; sourceTree = "<group>"; };
 		FE168ACC1CCD197A003F8B26 /* db-schema-1.0.0.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-1.0.0.sql"; sourceTree = "<group>"; };
 		FE3024311CE2036A00466497 /* DBVCardsCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBVCardsCache.swift; sourceTree = "<group>"; };
@@ -120,6 +118,8 @@
 		FE507A131CDB7B3B001A015C /* AccountManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountManager.swift; sourceTree = "<group>"; };
 		FE507A141CDB7B3B001A015C /* AvatarManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarManager.swift; sourceTree = "<group>"; };
 		FE7F645A1D281B1C00B9DF56 /* DBCapabilitiesCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBCapabilitiesCache.swift; sourceTree = "<group>"; };
+		FE80BDA71D928AD2001914B0 /* TigaseSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TigaseSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE80BDA91D92974C001914B0 /* Tigase-iOS-Messenger.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Tigase-iOS-Messenger.entitlements"; sourceTree = "<group>"; };
 		FE94E5211CCBA74F00FAE755 /* Tigase-iOS-Messenger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Tigase-iOS-Messenger.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE94E5241CCBA74F00FAE755 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FE94E52B1CCBA74F00FAE755 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -160,7 +160,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE04733F1D86E8A700E6D6CE /* TigaseSwift.framework in Frameworks */,
 				FE5079F01CD3CA91001A015C /* Security.framework in Frameworks */,
 				FE94E55E1CCCC14E00FAE755 /* libsqlite3.tbd in Frameworks */,
 			);
@@ -261,7 +260,8 @@
 		FE94E5181CCBA74F00FAE755 = {
 			isa = PBXGroup;
 			children = (
-				FE04733D1D86E79300E6D6CE /* TigaseSwift.framework */,
+				FE80BDA91D92974C001914B0 /* Tigase-iOS-Messenger.entitlements */,
+				FE80BDA71D928AD2001914B0 /* TigaseSwift.framework */,
 				FE5079EF1CD3CA91001A015C /* Security.framework */,
 				FE94E55D1CCCC14E00FAE755 /* libsqlite3.tbd */,
 				FE94E5231CCBA74F00FAE755 /* Tigase iOS Messenger */,
@@ -410,24 +410,30 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = "Tigase, Inc.";
 				TargetAttributes = {
 					FE94E5201CCBA74F00FAE755 = {
 						CreatedOnToolsVersion = 7.3;
 						DevelopmentTeam = YBEYW6E35C;
+						LastSwiftMigration = 0800;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+							com.apple.Keychain = {
 								enabled = 1;
 							};
 						};
 					};
 					FE94E5361CCBA74F00FAE755 = {
 						CreatedOnToolsVersion = 7.3;
+						LastSwiftMigration = 0800;
 						TestTargetID = FE94E5201CCBA74F00FAE755;
 					};
 					FE94E5411CCBA74F00FAE755 = {
 						CreatedOnToolsVersion = 7.3;
+						LastSwiftMigration = 0800;
 						TestTargetID = FE94E5201CCBA74F00FAE755;
 					};
 				};
@@ -627,8 +633,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -675,8 +683,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -697,6 +707,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "Tigase iOS Messenger/Tigase-iOS-Messenger-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -706,6 +717,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "Tigase-iOS-Messenger.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEAD_CODE_STRIPPING = NO;
@@ -723,6 +735,7 @@
 				PROVISIONING_PROFILE = "";
 				STRIP_INSTALLED_PRODUCT = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/Modules/";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -730,6 +743,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "Tigase-iOS-Messenger.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEAD_CODE_STRIPPING = NO;
@@ -746,6 +760,7 @@
 				PROVISIONING_PROFILE = "";
 				STRIP_INSTALLED_PRODUCT = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/Modules/";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -757,6 +772,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "tigase.Tigase-iOS-MessengerTests";
 				PRODUCT_NAME = "Tigase-iOS-Messenger";
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tigase-iOS-Messenger.app/Tigase-iOS-Messenger";
 			};
 			name = Debug;
@@ -769,6 +785,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "tigase.Tigase-iOS-MessengerTests";
 				PRODUCT_NAME = "Tigase-iOS-Messenger";
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tigase-iOS-Messenger.app/Tigase-iOS-Messenger";
 			};
 			name = Release;
@@ -780,6 +797,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "tigase.Tigase-iOS-MessengerUITests";
 				PRODUCT_NAME = "Tigase-iOS-Messenger";
+				SWIFT_VERSION = 3.0;
 				TEST_TARGET_NAME = "Tigase iOS Messenger";
 			};
 			name = Debug;
@@ -791,6 +809,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "tigase.Tigase-iOS-MessengerUITests";
 				PRODUCT_NAME = "Tigase-iOS-Messenger";
+				SWIFT_VERSION = 3.0;
 				TEST_TARGET_NAME = "Tigase iOS Messenger";
 			};
 			name = Release;
