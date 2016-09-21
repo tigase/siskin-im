@@ -82,8 +82,8 @@ class MucJoinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         
         let client = xmppService.getClient(accountJid);
         if let mucModule: MucModule = client?.modulesManager.getModule(MucModule.ID) {
-            mucModule.join(room, mucServer: server, nickname: nickname, password: password);
-            self.navigationController?.popViewController(animated: true);
+            _ = mucModule.join(room, mucServer: server, nickname: nickname, password: password);
+            _ = self.navigationController?.popViewController(animated: true);
         } else {
             var alert: UIAlertController? = nil;
             if client == nil {

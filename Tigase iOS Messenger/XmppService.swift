@@ -165,28 +165,28 @@ open class XmppService: Logger, EventHandler {
     fileprivate func registerModules(_ client:XMPPClient) {
         let smModule = client.modulesManager.register(StreamManagementModule());
         smModule.maxResumptionTimeout = 3600;
-        client.modulesManager.register(AuthModule());
-        client.modulesManager.register(StreamFeaturesModule());
-        client.modulesManager.register(SaslModule());
-        client.modulesManager.register(ResourceBinderModule());
-        client.modulesManager.register(SessionEstablishmentModule());
-        client.modulesManager.register(DiscoveryModule());
-        client.modulesManager.register(SoftwareVersionModule());
-        client.modulesManager.register(VCardModule());
-        client.modulesManager.register(ClientStateIndicationModule());
-        client.modulesManager.register(MobileModeModule());
-        client.modulesManager.register(PingModule());
+        _ = client.modulesManager.register(AuthModule());
+        _ = client.modulesManager.register(StreamFeaturesModule());
+        _ = client.modulesManager.register(SaslModule());
+        _ = client.modulesManager.register(ResourceBinderModule());
+        _ = client.modulesManager.register(SessionEstablishmentModule());
+        _ = client.modulesManager.register(DiscoveryModule());
+        _ = client.modulesManager.register(SoftwareVersionModule());
+        _ = client.modulesManager.register(VCardModule());
+        _ = client.modulesManager.register(ClientStateIndicationModule());
+        _ = client.modulesManager.register(MobileModeModule());
+        _ = client.modulesManager.register(PingModule());
         let rosterModule =  client.modulesManager.register(RosterModule());
         rosterModule.rosterStore = DBRosterStoreWrapper(sessionObject: client.sessionObject, store: dbRosterStore);
         rosterModule.versionProvider = dbRosterStore;
-        client.modulesManager.register(PresenceModule());
+        _ = client.modulesManager.register(PresenceModule());
         let messageModule = client.modulesManager.register(MessageModule());
         let chatManager = DefaultChatManager(context: client.context, chatStore: DBChatStoreWrapper(sessionObject: client.sessionObject, store: dbChatStore));
         messageModule.chatManager = chatManager;
-        client.modulesManager.register(MessageCarbonsModule());
+        _ = client.modulesManager.register(MessageCarbonsModule());
         let mucModule = MucModule();
         mucModule.roomsManager = DBRoomsManager(store: dbChatStore);
-        client.modulesManager.register(mucModule);
+        _ = client.modulesManager.register(mucModule);
         let capsModule = client.modulesManager.register(CapabilitiesModule());
         capsModule.cache = dbCapsCache;
     }
@@ -279,7 +279,7 @@ open class XmppService: Logger, EventHandler {
                 let client = getClient(e.sessionObject.userBareJid!);
                 let csiModule: ClientStateIndicationModule? = client?.modulesManager.getModule(ClientStateIndicationModule.ID);
                 if csiModule != nil && csiModule!.available {
-                    csiModule!.setState(applicationState == .active);
+                    _ = csiModule!.setState(applicationState == .active);
                 }
                 else if let mobileModeModule: MobileModeModule = client?.modulesManager.getModule(MobileModeModule.ID) {
                     mobileModeModule.enable();
@@ -314,10 +314,10 @@ open class XmppService: Logger, EventHandler {
             if client.state == .connected {
                 let csiModule: ClientStateIndicationModule? = client.modulesManager.getModule(ClientStateIndicationModule.ID);
                 if csiModule != nil && csiModule!.available {
-                    csiModule!.setState(applicationState == .active);
+                    _ = csiModule!.setState(applicationState == .active);
                 }
                 else if let mobileModeModule: MobileModeModule = client.modulesManager.getModule(MobileModeModule.ID) {
-                    mobileModeModule.setState(applicationState == .inactive);
+                    _ = mobileModeModule.setState(applicationState == .inactive);
                 }
             }
         }

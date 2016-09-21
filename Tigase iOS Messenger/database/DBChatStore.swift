@@ -61,18 +61,17 @@ open class DBChatStoreWrapper: ChatStore {
                     return;
                 }
                 
-                if let chats: [T] = self.store.getAll(self.sessionObject, forJid: jid) {
-                    guard !chats.isEmpty else {
+                let chats: [T] = self.store.getAll(self.sessionObject, forJid: jid);
+                guard !chats.isEmpty else {
+                    return;
+                }
+                
+                self.cache?.setObject(chats as NSArray, forKey: jid.stringValue as NSString);
+                    
+                for chat in chats {
+                    if filter(chat) {
+                        item = chat;
                         return;
-                    }
-                    
-                    self.cache?.setObject(chats as NSArray, forKey: jid.stringValue as NSString);
-                    
-                    for chat in chats {
-                        if filter(chat) {
-                            item = chat;
-                            return;
-                        }
                     }
                 }
             }

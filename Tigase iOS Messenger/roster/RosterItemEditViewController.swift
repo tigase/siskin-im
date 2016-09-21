@@ -54,10 +54,9 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
             self.accountTextField.isEnabled = false;
             
             if let sessionObject = xmppService.getClient(account!)?.sessionObject {
-                if let rosterStore: RosterStore = RosterModule.getRosterStore(sessionObject) {
-                    if let rosterItem = rosterStore.get(jid!) {
-                        self.nameTextField.text = rosterItem.name;
-                    }
+                let rosterStore: RosterStore = RosterModule.getRosterStore(sessionObject)
+                if let rosterItem = rosterStore.get(jid!) {
+                    self.nameTextField.text = rosterItem.name;
                 }
             }
         }
@@ -100,7 +99,7 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
         guard client?.state == SocketConnector.State.connected else {
             let alert = UIAlertController.init(title: "Warning", message: "Before changing roster you need to connect to server. Do you wish to do this now?", preferredStyle: .alert);
             alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: {(alertAction) in
-                self.navigationController?.popViewController(animated: true);
+                _ = self.navigationController?.popViewController(animated: true);
             }));
             alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(alertAction) in
                 if let account = AccountManager.getAccount(self.account!.stringValue) {
@@ -119,7 +118,7 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
                     presenceModule.subscribe(self.jid!);
                 }
             }
-            self.navigationController?.popViewController(animated: true);
+            _ = self.navigationController?.popViewController(animated: true);
         };
         let onError = {(errorCondition:ErrorCondition?)->Void in
             let alert = UIAlertController.init(title: "Failure", message: "Server returned error: " + (errorCondition?.rawValue ?? "Operation timed out"), preferredStyle: .alert);

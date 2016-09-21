@@ -302,7 +302,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
             if let vcardModule: VCardModule = client.modulesManager.getModule(VCardModule.ID) {
                 vcardModule.publishVCard(self.vcard, onSuccess: {
                     DispatchQueue.main.async() {
-                        self.navigationController?.popViewController(animated: true);
+                        _ = self.navigationController?.popViewController(animated: true);
                     }
                     
                     let avatarHash = Digest.sha1.digestToHex(self.vcard.photoValBinary);

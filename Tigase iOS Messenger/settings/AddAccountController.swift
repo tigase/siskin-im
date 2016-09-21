@@ -118,7 +118,7 @@ class AddAccountController: UITableViewController {
         if self.account != nil {
             navigationController?.dismiss(animated: true, completion: nil);
         } else {
-            navigationController?.popViewController(animated: true);
+            _ = navigationController?.popViewController(animated: true);
         }
     }
     
@@ -126,7 +126,7 @@ class AddAccountController: UITableViewController {
         if self.account != nil {
             navigationController?.dismiss(animated: true, completion: nil);
         } else {
-            navigationController?.popViewController(animated: true);
+            _ = navigationController?.popViewController(animated: true);
         }
     }
     

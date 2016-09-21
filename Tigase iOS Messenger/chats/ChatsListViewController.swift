@@ -162,7 +162,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
                             let messageModule: MessageModule? = xmppClient?.modulesManager.getModule(MessageModule.ID);
                             if let chat = messageModule?.chatManager.getChat(jid, thread: thread) {
                                 self.closingChatPosition = try! self.getChatPositionByChatIdStmt.scalar(chat.id!);
-                                messageModule?.chatManager.close(chat);
+                                _ = messageModule?.chatManager.close(chat);
                                 self.closingChatPosition = nil;
                                 if Settings.DeleteChatHistoryOnChatClose.getBool() {
                                     self.xmppService.dbChatHistoryStore.deleteMessages(account, jid: jid.bareJid);

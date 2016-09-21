@@ -43,7 +43,7 @@ open class DBRosterStoreWrapper: RosterStore {
     }
     
     override open func addItem(_ item:RosterItem) {
-        store.addItem(sessionObject, item: item);
+        _ = store.addItem(sessionObject, item: item);
         cache?.setObject(item, forKey: item.jid.stringValue as NSString);
     }
     
@@ -174,8 +174,8 @@ open class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
         
         dbConnection.dispatch_async_db_queue() {
             do {
-                try self.deleteItemsGroupsStmt.execute(params);
-                try self.deleteItemsStmt.execute(params);
+                _ = try self.deleteItemsGroupsStmt.execute(params);
+                _ = try self.deleteItemsStmt.execute(params);
             } catch _ {
             
             }
@@ -186,8 +186,8 @@ open class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
         let params:[String:Any?] = ["account": sessionObject.userBareJid, "jid": jid];
         dbConnection.dispatch_async_db_queue() {
             do {
-                try self.deleteItemGroupsStmt.execute(params);
-                try self.deleteItemStmt.execute(params);
+                _ = try self.deleteItemGroupsStmt.execute(params);
+                _ = try self.deleteItemStmt.execute(params);
             } catch _ {
             
             }
@@ -216,8 +216,8 @@ open class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
             
             dbConnection.dispatch_async_db_queue() {
                 do {
-                    try self.deleteItemsGroupsStmt.execute(params);
-                    try self.deleteItemsStmt.execute(params);
+                    _ = try self.deleteItemsGroupsStmt.execute(params);
+                    _ = try self.deleteItemsStmt.execute(params);
                 } catch _ {
                 
                 }
