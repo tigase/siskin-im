@@ -128,7 +128,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
                 alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: {(action) in
                     print("accepted certificate!");
-                    guard let account = AccountManager.getAccount(accountJid.stringValue) else {
+                    guard let account = AccountManager.getAccount(forJid: accountJid.stringValue) else {
                         return;
                     }
                     var certInfo = account.serverCertificate;
@@ -181,8 +181,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         
         var senderName:String? = nil;
-        if let sessionObject = xmppService.getClient(account!)?.sessionObject {
-            senderName = RosterModule.getRosterStore(sessionObject).get(JID(sender!))?.name;
+        if let sessionObject = xmppService.getClient(forJid: account!)?.sessionObject {
+            senderName = RosterModule.getRosterStore(sessionObject).get(for: JID(sender!))?.name;
         }
         if senderName == nil {
             senderName = sender!.stringValue;

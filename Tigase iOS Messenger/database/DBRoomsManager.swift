@@ -30,24 +30,24 @@ open class DBRoomsManager: DefaultRoomsManager {
         self.store = store;
     }
     
-    open override func createRoomInstance(_ roomJid: BareJID, nickname: String, password: String?) -> Room {
-        let room = super.createRoomInstance(roomJid, nickname: nickname, password: password);
-        return store.open(context.sessionObject, chat: room)!;
+    open override func createRoomInstance(roomJid: BareJID, nickname: String, password: String?) -> Room {
+        let room = super.createRoomInstance(roomJid: roomJid, nickname: nickname, password: password);
+        return store.open(for: context.sessionObject, chat: room)!;
     }
     
     open override func initialize() {
         guard self.getRooms().count == 0 else {
             return;
         }
-        let rooms:[Room] = store.getAll(context.sessionObject);
+        let rooms:[Room] = store.getAll(for: context.sessionObject);
         for room in rooms {
-            register(room);
+            register(room: room);
         }
     }
     
-    open override func remove(_ room: Room) {
-        if store.close(room) {
-            super.remove(room);
+    open override func remove(room: Room) {
+        if store.close(chat: room) {
+            super.remove(room: room);
         }
     }
 }

@@ -45,7 +45,7 @@ open class DBCapabilitiesCache: CapabilitiesCache {
         self.dbConnection = dbConnection;
     }
     
-    open func getFeatures(_ node: String) -> [String]? {
+    open func getFeatures(for node: String) -> [String]? {
         return dbConnection.dispatch_sync_with_result_local_queue() {
             var result = [String]();
             try! self.getFeatureStmt.query(node, forEachRow: {(cursor)->Void in
@@ -55,7 +55,7 @@ open class DBCapabilitiesCache: CapabilitiesCache {
         }
     }
     
-    open func getIdentity(_ node: String) -> DiscoveryModule.Identity? {
+    open func getIdentity(for node: String) -> DiscoveryModule.Identity? {
         return dbConnection.dispatch_sync_with_result_local_queue() {
             guard let cursor: DBCursor = try! self.getIdentityStmt.execute(node)?.cursor else {
                 return nil;
@@ -67,7 +67,7 @@ open class DBCapabilitiesCache: CapabilitiesCache {
         }
     }
     
-    open func getNodesWithFeature(_ feature: String) -> [String] {
+    open func getNodes(withFeature feature: String) -> [String] {
         return dbConnection.dispatch_sync_with_result_local_queue() {
             var result = [String]();
             try! self.getNodesWithFeatureStmt.query(feature, forEachRow: {(cursor)->Void in
@@ -77,13 +77,13 @@ open class DBCapabilitiesCache: CapabilitiesCache {
         }
     }
     
-    open func isCached(_ node: String) -> Bool {
+    open func isCached(node: String) -> Bool {
         let count: Int? = try! nodeIsCached.scalar(node);
         return (count ?? 0) != 0;
     }
     
-    open func store(_ node: String, identity: DiscoveryModule.Identity?, features: [String]) {
-        guard !isCached(node) else {
+    open func store(node: String, identity: DiscoveryModule.Identity?, features: [String]) {
+        guard !isCached(node: node) else {
             return;
         }
 

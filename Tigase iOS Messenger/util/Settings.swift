@@ -42,7 +42,7 @@ public enum Settings: String {
     
     public func setValue(_ value: Any?) {
         Settings.store.set(value, forKey: self.rawValue);
-        Settings.valueChanged(self);
+        Settings.valueChanged(forKey: self);
     }
     
     public func getBool() -> Bool {
@@ -53,7 +53,7 @@ public enum Settings: String {
         return Settings.store.string(forKey: self.rawValue);
     }
     
-    fileprivate static func valueChanged(_ key: Settings) {
+    fileprivate static func valueChanged(forKey key: Settings) {
         NotificationCenter.default.post(name: Settings.SETTINGS_CHANGED, object: nil, userInfo: ["key": key.rawValue]);
     }
 }

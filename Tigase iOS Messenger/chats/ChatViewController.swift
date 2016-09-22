@@ -77,17 +77,17 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
         
-        xmppService.registerEventHandler(self, events: PresenceModule.ContactPresenceChanged.TYPE);
+        xmppService.registerEventHandler(self, for: PresenceModule.ContactPresenceChanged.TYPE);
         
-        let presenceModule: PresenceModule? = xmppService.getClient(account)?.modulesManager.getModule(PresenceModule.ID);
-        titleView.status = presenceModule?.presenceStore.getBestPresence(jid.bareJid);
+        let presenceModule: PresenceModule? = xmppService.getClient(forJid: account)?.modulesManager.getModule(PresenceModule.ID);
+        titleView.status = presenceModule?.presenceStore.getBestPresence(for: jid.bareJid);
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         NotificationCenter.default.removeObserver(self);
         super.viewDidDisappear(animated);
         
-        xmppService.unregisterEventHandler(self, events: PresenceModule.ContactPresenceChanged.TYPE);
+        xmppService.unregisterEventHandler(self, for: PresenceModule.ContactPresenceChanged.TYPE);
     }
     
     override func didReceiveMemoryWarning() {
@@ -106,12 +106,12 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let item = dataSource.getItem(indexPath);
+        let item = dataSource.getItem(for: indexPath);
         let incoming = (item.state % 2) == 0;
         let id = incoming ? "ChatTableViewCellIncoming" : "ChatTableViewCellOutgoing"
         let cell: ChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
         cell.transform = cachedDataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-        cell.avatarView?.image = self.xmppService.avatarManager.getAvatar(self.jid.bareJid, account: self.account);
+        cell.avatarView?.image = self.xmppService.avatarManager.getAvatar(for: self.jid.bareJid, account: self.account);
         cell.setMessageText(item.data);
         cell.setTimestamp(item.timestamp);
         cell.setNeedsUpdateConstraints();
@@ -132,7 +132,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         
     }
     
-    func handleEvent(_ event: Event) {
+    func handle(event: Event) {
         switch event {
         case let cpc as PresenceModule.ContactPresenceChanged:
             guard cpc.presence.from?.bareJid == self.jid.bareJid && cpc.sessionObject.userBareJid == account else {
@@ -156,7 +156,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
             self.newItemAdded();
         }
 
-        self.xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
+        self.xmppService.dbChatHistoryStore.markAsRead(for: account, with: jid.bareJid);
     }
     
     func avatarChanged(_ notification: NSNotification) {
@@ -174,13 +174,13 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
             return;
         }
         
-        let client = xmppService.getClient(account);
+        let client = xmppService.getClient(forJid: account);
         if client != nil && client!.state == .connected {
             DispatchQueue.global(qos: .default).async {
                 let messageModule:MessageModule? = client?.modulesManager.getModule(MessageModule.ID);
-                if let chat = messageModule?.chatManager.getChat(self.jid, thread: nil) {
-                    let msg = messageModule!.sendMessage(chat, body: text!);
-                    self.xmppService.dbChatHistoryStore.appendMessage(self.account, message: msg);
+                if let chat = messageModule?.chatManager.getChat(with: self.jid, thread: nil) {
+                    let msg = messageModule!.sendMessage(in: chat, body: text!);
+                    self.xmppService.dbChatHistoryStore.appendMessage(for: self.account, message: msg);
                 }
             }
             messageField.text = nil;
@@ -190,7 +190,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
                 alert = UIAlertController.init(title: "Warning", message: "Account is disabled.\nDo you want to enable account?", preferredStyle: .alert);
                 alert?.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
                 alert?.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(alertAction) in
-                    if let account = AccountManager.getAccount(self.account.stringValue) {
+                    if let account = AccountManager.getAccount(forJid: self.account.stringValue) {
                         account.active = true;
                         AccountManager.updateAccount(account);
                     }
@@ -217,11 +217,11 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         }
         
         override func getItemsCount() -> Int {
-            return controller!.xmppService.dbChatHistoryStore.countMessages(controller!.account, jid: controller!.jid.bareJid);
+            return controller!.xmppService.dbChatHistoryStore.countMessages(for: controller!.account, with: controller!.jid.bareJid);
         }
         
-        override func loadData(_ offset: Int, limit: Int, forEveryItem: (ChatViewItem)->Void) {
-            controller!.xmppService.dbChatHistoryStore.forEachMessage(getMessagesStmt, account: controller!.account, jid: controller!.jid.bareJid, limit: limit, offset: offset, forEach: { (cursor)-> Void in
+        override func loadData(offset: Int, limit: Int, forEveryItem: (ChatViewItem)->Void) {
+            controller!.xmppService.dbChatHistoryStore.forEachMessage(stmt: getMessagesStmt, account: controller!.account, jid: controller!.jid.bareJid, limit: limit, offset: offset, forEach: { (cursor)-> Void in
                 forEveryItem(ChatViewItem(cursor: cursor));
             });
         }

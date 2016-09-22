@@ -49,10 +49,10 @@ class MucChatOccupantsTableViewController: UITableViewController, EventHandler {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        xmppService.registerEventHandler(self, events: MucModule.OccupantChangedPresenceEvent.TYPE, MucModule.OccupantComesEvent.TYPE, MucModule.OccupantLeavedEvent.TYPE);
+        xmppService.registerEventHandler(self, for: MucModule.OccupantChangedPresenceEvent.TYPE, MucModule.OccupantComesEvent.TYPE, MucModule.OccupantLeavedEvent.TYPE);
     }
     override func viewWillDisappear(_ animated: Bool) {
-        xmppService.unregisterEventHandler(self, events: MucModule.OccupantChangedPresenceEvent.TYPE, MucModule.OccupantComesEvent.TYPE, MucModule.OccupantLeavedEvent.TYPE);
+        xmppService.unregisterEventHandler(self, for: MucModule.OccupantChangedPresenceEvent.TYPE, MucModule.OccupantComesEvent.TYPE, MucModule.OccupantLeavedEvent.TYPE);
         super.viewWillDisappear(animated);
     }
     
@@ -74,7 +74,7 @@ class MucChatOccupantsTableViewController: UITableViewController, EventHandler {
         let occupant = room.presences[nickname];
         cell.nicknameLabel.text = nickname;
         if occupant?.jid != nil {
-            cell.avatarStatusView.setAvatar(xmppService.avatarManager.getAvatar(occupant!.jid!.bareJid, account: account));
+            cell.avatarStatusView.setAvatar(xmppService.avatarManager.getAvatar(for: occupant!.jid!.bareJid, account: account));
         } else {
             cell.avatarStatusView.setAvatar(xmppService.avatarManager.defaultAvatar);
         }
@@ -100,7 +100,7 @@ class MucChatOccupantsTableViewController: UITableViewController, EventHandler {
     }
     */
     
-    func handleEvent(_ event: Event) {
+    func handle(event: Event) {
         switch event {
         case is MucModule.OccupantLeavedEvent, is MucModule.OccupantComesEvent, is MucModule.OccupantChangedPresenceEvent, is MucModule.OccupantChangedNickEvent:
             DispatchQueue.main.async() {

@@ -50,7 +50,7 @@ class ContactBasicTableViewCell: UITableViewCell {
                 companyView.text = org ?? role;
             }
             
-            avatarView.image = avatarManager.getAvatar(jid, account: account);
+            avatarView.image = avatarManager.getAvatar(for: jid, account: account);
         }
     }
     

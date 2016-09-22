@@ -45,8 +45,8 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
         
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
-        let mucModule: MucModule? = xmppService.getClient(account)?.modulesManager?.getModule(MucModule.ID);
-        room = mucModule?.roomsManager.get(jid.bareJid);
+        let mucModule: MucModule? = xmppService.getClient(forJid: account)?.modulesManager?.getModule(MucModule.ID);
+        room = mucModule?.roomsManager.getRoom(for: jid.bareJid);
 
         tableView.dataSource = self;
         
@@ -61,14 +61,14 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        xmppService.registerEventHandler(self, events: MucModule.YouJoinedEvent.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
+        xmppService.registerEventHandler(self, for: MucModule.YouJoinedEvent.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
         NotificationCenter.default.addObserver(self, selector: #selector(MucChatViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(MucChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
         refreshRoomInfo(room!);
     }
     
     override func viewDidDisappear(_ animated: Bool) {
-        xmppService.unregisterEventHandler(self, events: MucModule.YouJoinedEvent.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
+        xmppService.unregisterEventHandler(self, for: MucModule.YouJoinedEvent.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
         NotificationCenter.default.removeObserver(self);
         super.viewDidDisappear(animated);
     }
@@ -89,7 +89,7 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let item: MucChatViewItem = dataSource.getItem(indexPath);
+        let item: MucChatViewItem = dataSource.getItem(for: indexPath);
         
         let incoming = item.nickname != self.room?.nickname;
         let id = incoming ? "MucChatTableViewCellIncoming" : "MucChatTableViewCellOutgoing"
@@ -98,7 +98,7 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
         cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
         cell.nicknameLabel?.text = item.nickname;
         if item.authorJid != nil {
-            cell.avatarView?.image = self.xmppService.avatarManager.getAvatar(item.authorJid!, account: self.account);
+            cell.avatarView?.image = self.xmppService.avatarManager.getAvatar(for: item.authorJid!, account: self.account);
         } else {
             cell.avatarView?.image = self.xmppService.avatarManager.defaultAvatar;
         }
@@ -127,7 +127,7 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
         DispatchQueue.main.sync {
             self.newItemAdded();
         }
-        xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
+        xmppService.dbChatHistoryStore.markAsRead(for: account, with: jid.bareJid);
     }
     
     func avatarChanged(_ notification: NSNotification) {
@@ -161,7 +161,7 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
         messageField.text = nil;
     }
     
-    func handleEvent(_ event: Event) {
+    func handle(event: Event) {
         switch event {
         case let e as MucModule.JoinRequestedEvent:
             DispatchQueue.main.async {
@@ -196,11 +196,11 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
         }
         
         override func getItemsCount() -> Int {
-            return controller!.xmppService.dbChatHistoryStore.countMessages(controller!.account, jid: controller!.jid.bareJid);
+            return controller!.xmppService.dbChatHistoryStore.countMessages(for: controller!.account, with: controller!.jid.bareJid);
         }
         
-        override func loadData(_ offset: Int, limit: Int, forEveryItem: (MucChatViewItem)->Void) {
-            controller!.xmppService.dbChatHistoryStore.forEachMessage(getMessagesStmt, account: controller!.account, jid: controller!.jid.bareJid, limit: limit, offset: offset, forEach: { (cursor)-> Void in
+        override func loadData(offset: Int, limit: Int, forEveryItem: (MucChatViewItem)->Void) {
+            controller!.xmppService.dbChatHistoryStore.forEachMessage(stmt: getMessagesStmt, account: controller!.account, jid: controller!.jid.bareJid, limit: limit, offset: offset, forEach: { (cursor)-> Void in
                 forEveryItem(MucChatViewItem(cursor: cursor));
             });
         }

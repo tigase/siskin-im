@@ -50,7 +50,7 @@ open class AccountManager {
         return accounts;
     }
 
-    static func getAccount(_ account:String) -> Account? {
+    static func getAccount(forJid account:String) -> Account? {
         let query = AccountManager.getAccountQuery(account);
         
         var result:AnyObject?;
@@ -73,7 +73,7 @@ open class AccountManager {
     }
     
     
-    static func getAccountPassword(_ account:String) -> String? {
+    static func getAccountPassword(forJid account:String) -> String? {
         let query = AccountManager.getAccountQuery(account, withData: kSecReturnData);
 
         var result:AnyObject?;
@@ -90,12 +90,12 @@ open class AccountManager {
         return nil;
     }
     
-    static func updateAccountPassword(_ account:String, password:String) {
+    static func updateAccount(forJid account:String, password:String) {
         let update = [ String(kSecValueData) : password.data(using: String.Encoding.utf8)! ];
         updateAccount(account, dataForUpdate: update as [String : NSObject]);
     }
     
-    static func deleteAccount(_ name:String) {
+    static func deleteAccount(forJid name:String) {
         var query = AccountManager.getAccountQuery(name);
         query.removeValue(forKey: String(kSecMatchLimit));
         query.removeValue(forKey: String(kSecReturnAttributes));
@@ -167,10 +167,10 @@ open class AccountManager {
         
         open var password:String {
             get {
-                return AccountManager.getAccountPassword(name)!;
+                return AccountManager.getAccountPassword(forJid: name)!;
             }
             set {
-                AccountManager.updateAccountPassword(name, password: newValue);
+                AccountManager.updateAccount(forJid: name, password: newValue);
             }
         }
         

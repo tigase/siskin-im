@@ -44,7 +44,7 @@ class AddAccountController: UITableViewController {
         super.viewDidLoad();
         if account != nil {
             jidTextField.text = account;
-            passwordTextField.text = AccountManager.getAccountPassword(account!);
+            passwordTextField.text = AccountManager.getAccountPassword(forJid: account!);
             jidTextField.isEnabled = false;
         } else {
             navigationController?.navigationItem.leftBarButtonItem = nil;
@@ -104,14 +104,14 @@ class AddAccountController: UITableViewController {
                 DispatchQueue.main.async() {
                     self.hideIndicator();
                     self.xmppClient = nil;
-                    self.showError(errorCondition);
+                    self.showError(condition: errorCondition);
                 }
         })
     }
     
     func saveAccount() {
         print("sign in button clicked");
-        let account = AccountManager.getAccount(jidTextField.text!) ?? AccountManager.Account(name: jidTextField.text!);
+        let account = AccountManager.getAccount(forJid: jidTextField.text!) ?? AccountManager.Account(name: jidTextField.text!);
         AccountManager.updateAccount(account);
         account.password = passwordTextField.text!;
 
@@ -137,7 +137,7 @@ class AddAccountController: UITableViewController {
         return indexPath;
     }
     
-    func showError(_ errorCondition: ErrorCondition?) {
+    func showError(condition errorCondition: ErrorCondition?) {
         var error = "Operation timed out";
         if errorCondition != nil {
             switch errorCondition! {

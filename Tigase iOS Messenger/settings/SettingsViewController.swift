@@ -32,13 +32,13 @@ class SettingsViewController: UITableViewController, EventHandler {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        xmppService.registerEventHandler(self, events: SocketConnector.ConnectedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE);
+        xmppService.registerEventHandler(self, for: SocketConnector.ConnectedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE);
         tableView.reloadData();
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated);
-        xmppService.unregisterEventHandler(self, events: SocketConnector.ConnectedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE);
+        xmppService.unregisterEventHandler(self, for: SocketConnector.ConnectedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE);
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -77,11 +77,11 @@ class SettingsViewController: UITableViewController, EventHandler {
             let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! AccountTableViewCell;
             let accounts = AccountManager.getAccounts();
             if accounts.count > indexPath.row {
-                let account = AccountManager.getAccount(accounts[indexPath.row]);
+                let account = AccountManager.getAccount(forJid: accounts[indexPath.row]);
                 cell.nameLabel.text = account?.name;
                 let jid = BareJID(account!.name);
-                cell.avatarStatusView.setAvatar(xmppService.avatarManager.getAvatar(jid, account: BareJID(account!.name)));
-                if let client = xmppService.getClient(jid) {
+                cell.avatarStatusView.setAvatar(xmppService.avatarManager.getAvatar(for: jid, account: BareJID(account!.name)));
+                if let client = xmppService.getClient(forJid: jid) {
                     cell.avatarStatusView.statusImageView.isHidden = false;
                     var status: Presence.Show? = nil;
                     switch client.state {
@@ -137,10 +137,10 @@ class SettingsViewController: UITableViewController, EventHandler {
             if indexPath.row == accounts.count {
                 let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
                 alert.addAction(UIAlertAction(title: "Create new", style: .default, handler: { (action) in
-                    self.showAddAccount(true);
+                    self.showAddAccount(register: true);
                 }));
                 alert.addAction(UIAlertAction(title: "Add existing", style: .default, handler: { (action) in
-                    self.showAddAccount(false);
+                    self.showAddAccount(register: false);
                 }));
                 alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
                 
@@ -184,19 +184,19 @@ class SettingsViewController: UITableViewController, EventHandler {
                 if accounts.count > indexPath.row {
                     let account = accounts[indexPath.row];
                     let alert = UIAlertController(title: "Account removal", message: "Should account be removed from server as well?", preferredStyle: .actionSheet);
-                    if let client = self.xmppService.getClient(BareJID(account)) {
+                    if let client = self.xmppService.getClient(forJid: BareJID(account)) {
                         alert.addAction(UIAlertAction(title: "Remove", style: .destructive, handler: { (action) in
                             let regModule = client.modulesManager.register(InBandRegistrationModule());
                             regModule.unregister({ (stanza) in
                                 DispatchQueue.main.async() {
-                                    AccountManager.deleteAccount(account);
+                                    AccountManager.deleteAccount(forJid: account);
                                     self.tableView.reloadData();
                                 }
                             })
                         }));
                     }
                     alert.addAction(UIAlertAction(title: "Remove", style: .default, handler: { (action) in
-                        AccountManager.deleteAccount(account);
+                        AccountManager.deleteAccount(forJid: account);
                         self.tableView.reloadData();
                     }));
                     alert.addAction(UIAlertAction(title: "Keep", style: .default, handler: nil));
@@ -206,7 +206,7 @@ class SettingsViewController: UITableViewController, EventHandler {
         }
     }
     
-    func handleEvent(_ event: Event) {
+    func handle(event: Event) {
         switch event {
         case is SocketConnector.ConnectedEvent, is SocketConnector.DisconnectedEvent, is StreamManagementModule.ResumedEvent,
              is SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
@@ -218,7 +218,7 @@ class SettingsViewController: UITableViewController, EventHandler {
         }
     }
     
-    func showAddAccount(_ register: Bool) {
+    func showAddAccount(register: Bool) {
         // show add account dialog
         let navigationController = storyboard!.instantiateViewController(withIdentifier: "AddAccountController") as! UINavigationController;
         let addAccountController = navigationController.visibleViewController! as! AddAccountController;

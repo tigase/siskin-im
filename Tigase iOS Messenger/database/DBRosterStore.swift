@@ -30,7 +30,7 @@ open class DBRosterStoreWrapper: RosterStore {
     let store:DBRosterStore;
     
     override open var count: Int {
-        return store.count(sessionObject);
+        return store.count(for: sessionObject);
     }
     
     init(sessionObject: SessionObject, store: DBRosterStore, useCache: Bool = true) {
@@ -43,15 +43,15 @@ open class DBRosterStoreWrapper: RosterStore {
     }
     
     override open func addItem(_ item:RosterItem) {
-        _ = store.addItem(sessionObject, item: item);
+        _ = store.addItem(for: sessionObject, item: item);
         cache?.setObject(item, forKey: item.jid.stringValue as NSString);
     }
     
-    override open func get(_ jid:JID) -> RosterItem? {
+    override open func get(for jid:JID) -> RosterItem? {
         if let item = cache?.object(forKey: jid.stringValue as NSString) {
             return item;
         }
-        if let item = store.get(sessionObject, jid: jid) {
+        if let item = store.get(for: sessionObject, jid: jid) {
             cache?.setObject(item, forKey: jid.stringValue as NSString);
             return item;
         }
@@ -60,12 +60,12 @@ open class DBRosterStoreWrapper: RosterStore {
     
     override open func removeAll() {
         cache?.removeAllObjects();
-        store.removeAll(sessionObject);
+        store.removeAll(for: sessionObject);
     }
     
-    override open func removeItem(_ jid:JID) {
+    override open func removeItem(for jid:JID) {
         cache?.removeObject(forKey: jid.stringValue as NSString);
-        store.removeItem(sessionObject, jid: jid);
+        store.removeItem(for: sessionObject, jid: jid);
     }
     
 }
@@ -104,7 +104,7 @@ open class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
         queue.setSpecific(key: queueTag, value: nil);
     }
     
-    open func count(_ sessionObject: SessionObject) -> Int {
+    open func count(for sessionObject: SessionObject) -> Int {
         do {
             let params:[String:Any?] = ["account" : sessionObject.userBareJid!.stringValue];
             return try countItemsStmt.scalar(params) ?? 0;
@@ -114,7 +114,7 @@ open class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
         return 0;
     }
     
-    open func addItem(_ sessionObject: SessionObject, item:RosterItem) -> RosterItem? {
+    open func addItem(for sessionObject: SessionObject, item:RosterItem) -> RosterItem? {
         do {
             let params:[String:Any?] = [ "account": sessionObject.userBareJid, "jid": item.jid, "name": item.name, "subscription": String(item.subscription.rawValue), "timestamp": NSDate(), "ask": item.ask ];
             let dbItem = item as? DBRosterItem ?? DBRosterItem(rosterItem: item);
@@ -143,7 +143,7 @@ open class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
         }
     }
     
-    open func get(_ sessionObject: SessionObject, jid:JID) -> RosterItem? {
+    open func get(for sessionObject: SessionObject, jid:JID) -> RosterItem? {
         var item:DBRosterItem? = nil;
         let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : jid ];
         var id: Int?;
@@ -169,7 +169,7 @@ open class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
         return item;
     }
     
-    open func removeAll(_ sessionObject: SessionObject) {
+    open func removeAll(for sessionObject: SessionObject) {
         let params:[String:Any?] = ["account": sessionObject.userBareJid];
         
         dbConnection.dispatch_async_db_queue() {
@@ -182,7 +182,7 @@ open class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
         }
     }
     
-    open func removeItem(_ sessionObject: SessionObject, jid:JID) {
+    open func removeItem(for sessionObject: SessionObject, jid:JID) {
         let params:[String:Any?] = ["account": sessionObject.userBareJid, "jid": jid];
         dbConnection.dispatch_async_db_queue() {
             do {
@@ -195,7 +195,7 @@ open class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
     }
     
     open func getCachedVersion(_ sessionObject: SessionObject) -> String? {
-        return AccountManager.getAccount(sessionObject.userBareJid!.stringValue)?.rosterVersion;
+        return AccountManager.getAccount(forJid: sessionObject.userBareJid!.stringValue)?.rosterVersion;
     }
     
     open func loadCachedRoster(_ sessionObject: SessionObject) -> [RosterItem] {
@@ -203,7 +203,7 @@ open class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
     }
     
     open func updateReceivedVersion(_ sessionObject: SessionObject, ver: String?) {
-        if let account = AccountManager.getAccount(sessionObject.userBareJid!.stringValue) {
+        if let account = AccountManager.getAccount(forJid: sessionObject.userBareJid!.stringValue) {
             account.rosterVersion = ver;
             AccountManager.updateAccount(account, notifyChange: false);
         }
@@ -250,7 +250,7 @@ class DBRosterItem: RosterItem {
         super.init(jid: item.jid, name: item.name, subscription: item.subscription, groups: item.groups, ask: item.ask);
     }
     
-    override func update(_ name: String?, subscription: RosterItem.Subscription, groups: [String], ask: Bool) -> RosterItem {
+    override func update(name: String?, subscription: RosterItem.Subscription, groups: [String], ask: Bool) -> RosterItem {
         return DBRosterItem(jid: self.jid, id: self.id, name: name, subscription: subscription, groups: groups, ask: ask);
     }
 }

@@ -53,7 +53,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
         NotificationCenter.default.addObserver(self, selector: #selector(DBChatHistoryStore.accountRemoved), name: NSNotification.Name(rawValue: "accountRemoved"), object: nil);
     }
     
-    open func appendMessage(_ account:BareJID, message: Message, carbonAction: MessageCarbonsModule.Action? = nil) {
+    open func appendMessage(for account:BareJID, message: Message, carbonAction: MessageCarbonsModule.Action? = nil) {
         let body = message.body;
         // for now we support only messages with body
         guard body != nil else {
@@ -65,7 +65,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
         let author = incoming ? message.from?.bareJid : account;
         let timestamp = message.delay?.stamp ?? Date();
         
-        if appendEntry(account, jid: jid!, incoming: incoming, authorJid: author, data: body!, timestamp: timestamp, id: message.id) {
+        if appendEntry(for: account, jid: jid!, incoming: incoming, authorJid: author, data: body!, timestamp: timestamp, id: message.id) {
 
             var userInfo:[AnyHashable: Any] = ["account": account, "sender": jid!, "incoming": incoming, "timestamp": timestamp] ;
             if carbonAction != nil {
@@ -75,7 +75,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
         }
     }
     
-    fileprivate func appendMucMessage(_ e: MucModule.MessageReceivedEvent) {
+    fileprivate func appendMucMessage(event e: MucModule.MessageReceivedEvent) {
         let body = e.message.body;
         guard body != nil else {
             return;
@@ -84,7 +84,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
         let account = e.sessionObject.userBareJid!;
         let authorJid: BareJID? = e.nickname == nil ? nil : e.room.presences[e.nickname!]?.jid?.bareJid;
         
-        if appendEntry(account, jid: e.room.roomJid, incoming: true, authorJid: authorJid, authorNickname: e.nickname, data: body!, timestamp: e.timestamp, id: e.message.id) {
+        if appendEntry(for: account, jid: e.room.roomJid, incoming: true, authorJid: authorJid, authorNickname: e.nickname, data: body!, timestamp: e.timestamp, id: e.message.id) {
 
             var userInfo:[AnyHashable: Any] = ["account": account, "sender": e.room.roomJid, "incoming": true, "timestamp": e.timestamp, "type": "muc", "body": body!] ;
             if e.nickname != nil {
@@ -95,8 +95,8 @@ open class DBChatHistoryStore: Logger, EventHandler {
         }
     }
     
-    fileprivate func appendEntry(_ account: BareJID, jid: BareJID, incoming: Bool, authorJid: BareJID?, authorNickname: String? = nil, itemType: ItemType = ItemType.message, data: String, timestamp: Date, id: String?) -> Bool {
-        guard !isEntryAlreadyAdded(account, jid: jid, authorJid: authorJid, itemType: itemType, data: data, timestamp: timestamp, id: id) else {
+    fileprivate func appendEntry(for account: BareJID, jid: BareJID, incoming: Bool, authorJid: BareJID?, authorNickname: String? = nil, itemType: ItemType = ItemType.message, data: String, timestamp: Date, id: String?) -> Bool {
+        guard !isEntryAlreadyAdded(for: account, jid: jid, authorJid: authorJid, itemType: itemType, data: data, timestamp: timestamp, id: id) else {
             return false;
         }
         
@@ -110,7 +110,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
         return true;
     }
     
-    fileprivate func isEntryAlreadyAdded(_ account: BareJID, jid: BareJID, authorJid: BareJID?, authorNickname: String? = nil, itemType: ItemType, data: String, timestamp: Date, id: String?) -> Bool {
+    fileprivate func isEntryAlreadyAdded(for account: BareJID, jid: BareJID, authorJid: BareJID?, authorNickname: String? = nil, itemType: ItemType, data: String, timestamp: Date, id: String?) -> Bool {
         
         let range = id == nil ? 5.0 : 60.0;
         let ts_from = timestamp.addingTimeInterval(-60 * range);
@@ -120,12 +120,12 @@ open class DBChatHistoryStore: Logger, EventHandler {
         return try! msgAlreadyAddedStmt.scalar(params) != 0;
     }
     
-    open func countMessages(_ account:BareJID, jid:BareJID) -> Int {
+    open func countMessages(for account:BareJID, with jid:BareJID) -> Int {
         let params:[String:Any?] = ["account":account, "jid":jid];
         return try! msgsCountStmt.scalar(params) ?? 0;
     }
     
-    open func forEachMessage(_ stmt: DBStatement, account:BareJID, jid:BareJID, limit:Int, offset: Int, forEach: (_ cursor:DBCursor)->Void) {
+    open func forEachMessage(stmt: DBStatement, account:BareJID, jid:BareJID, limit:Int, offset: Int, forEach: (_ cursor:DBCursor)->Void) {
         let params:[String:Any?] = ["account":account, "jid":jid, "limit": limit, "offset": offset];
         try! stmt.query(params, forEachRow: forEach);
     }
@@ -134,14 +134,14 @@ open class DBChatHistoryStore: Logger, EventHandler {
         return try! self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_GET);
     }
     
-    open func handleEvent(_ event:Event) {
+    open func handle(event:Event) {
         switch event {
         case let e as MessageModule.MessageReceivedEvent:
-            appendMessage(e.sessionObject.userBareJid!, message: e.message);
+            appendMessage(for: e.sessionObject.userBareJid!, message: e.message);
         case let e as MessageCarbonsModule.CarbonReceivedEvent:
-            appendMessage(e.sessionObject.userBareJid!, message: e.message, carbonAction: e.action);
+            appendMessage(for: e.sessionObject.userBareJid!, message: e.message, carbonAction: e.action);
         case let e as MucModule.MessageReceivedEvent:
-            appendMucMessage(e);
+            appendMucMessage(event: e);
         default:
             log("received unsupported event", event);
         }
@@ -151,19 +151,19 @@ open class DBChatHistoryStore: Logger, EventHandler {
         return try! msgsCountUnreadChatsStmt.scalar() ?? 0;
     }
     
-    open func markAsRead(_ account: BareJID, jid: BareJID) {
+    open func markAsRead(for account: BareJID, with jid: BareJID) {
         dbConnection.dispatch_async_db_queue() {
             let params:[String:Any?] = ["account":account, "jid":jid];
             let updatedRecords = try! self.msgsMarkAsReadStmt.update(params);
             if updatedRecords > 0 {
                 DispatchQueue.global(qos: .default).async() {
-                    self.chatItemsChanged(account, jid: jid);
+                    self.chatItemsChanged(for: account, with: jid);
                 }
             }
         }
     }
     
-    open func deleteMessages(_ account: BareJID, jid: BareJID) {
+    open func deleteMessages(for account: BareJID, with jid: BareJID) {
         let params:[String:Any?] = ["account":account, "jid":jid];
         dbConnection.dispatch_async_db_queue() {
             _ = try! self.msgsDeleteStmt.execute(params);
@@ -177,7 +177,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
         }
     }
     
-    fileprivate func chatItemsChanged(_ account: BareJID, jid: BareJID) {
+    fileprivate func chatItemsChanged(for account: BareJID, with jid: BareJID) {
         let userInfo:[AnyHashable: Any] = ["account":account, "jid":jid];
         NotificationCenter.default.post(name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil, userInfo: userInfo);
     }

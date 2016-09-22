@@ -38,9 +38,9 @@ open class DBVCardsCache {
         self.dbConnection = dbConnection;
     }
     
-    open func updateVCard(_ jid: BareJID, vcard: VCardModule.VCard?) {
+    open func updateVCard(for jid: BareJID, vcard: VCardModule.VCard?) {
         let avatar_data = vcard?.photoValBinary;
-        let avatar_hash:String? = Digest.sha1.digestToHex(avatar_data);
+        let avatar_hash:String? = Digest.sha1.digest(toHex: avatar_data);
         
         let params:[String:Any?] = ["jid" : jid, "data": vcard, "avatar": avatar_data, "avatar_hash": avatar_hash, "timestamp": NSDate()];
         dbConnection.dispatch_async_db_queue() {
@@ -51,25 +51,25 @@ open class DBVCardsCache {
         NotificationCenter.default.post(name: DBVCardsCache.VCARD_UPDATED, object: self, userInfo: ["jid": jid]);
     }
     
-    open func getVCard(_ jid: BareJID) -> VCardModule.VCard? {
+    open func getVCard(for jid: BareJID) -> VCardModule.VCard? {
         
         if let data:String = dbConnection.dispatch_sync_with_result_local_queue({
             return try! self.getVCardStmt.query(jid)?["data"];
         }) {
-            if let vcardEl = Element.fromString(data) {
+            if let vcardEl = Element.from(string: data) {
                 return VCardModule.VCard(element: vcardEl);
             }
         }
         return nil;
     }
     
-    open func checkVCardPhotoHash(_ jid: BareJID, hash: String) -> Bool {
+    open func checkVCardPhotoHash(for jid: BareJID, hash: String) -> Bool {
         let params:[String:Any?] = ["jid": jid, "avatar_hash": hash.lowercased()];
         let count = try! chechPhotoHashStmt.scalar(params);
         return count == 1;
     }
     
-    open func getPhoto(_ jid: BareJID) -> Data? {
+    open func getPhoto(for jid: BareJID) -> Data? {
         return dbConnection.dispatch_sync_with_result_local_queue(){
             let cursor = try! self.getPhotoStmt.query(jid);
             return cursor?["avatar"];

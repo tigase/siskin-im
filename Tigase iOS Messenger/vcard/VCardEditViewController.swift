@@ -96,7 +96,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         super.viewDidLoad()
         
         // Do any additional setup after loading the view.
-        vcard = xmppService.dbVCardsCache.getVCard(accountJid) ?? VCardModule.VCard();
+        vcard = xmppService.dbVCardsCache.getVCard(for: accountJid) ?? VCardModule.VCard();
         if vcard != nil {
             tableView.reloadData();
         }
@@ -276,11 +276,11 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     
     @IBAction func refreshVCard(_ sender: UIBarButtonItem) {
         DispatchQueue.global(qos: .default).async {
-            if let client = self.xmppService.getClient(self.accountJid) {
+            if let client = self.xmppService.getClient(forJid: self.accountJid) {
                 if let vcardModule: VCardModule = client.modulesManager.getModule(VCardModule.ID) {
                     vcardModule.retrieveVCard(onSuccess: { (vcard) in
                         DispatchQueue.global(qos: .default).async() {
-                            self.xmppService.dbVCardsCache.updateVCard(self.accountJid, vcard: vcard);
+                            self.xmppService.dbVCardsCache.updateVCard(for: self.accountJid, vcard: vcard);
                             self.vcard = vcard;
                             DispatchQueue.main.async() {
                                 self.tableView.reloadData();
@@ -298,20 +298,20 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         vcard.emails = emails;
         vcard.addresses = addresses;
         DispatchQueue.global(qos: .default).async {
-        if let client = self.xmppService.getClient(self.accountJid) {
+        if let client = self.xmppService.getClient(forJid: self.accountJid) {
             if let vcardModule: VCardModule = client.modulesManager.getModule(VCardModule.ID) {
                 vcardModule.publishVCard(self.vcard, onSuccess: {
                     DispatchQueue.main.async() {
                         _ = self.navigationController?.popViewController(animated: true);
                     }
                     
-                    let avatarHash = Digest.sha1.digestToHex(self.vcard.photoValBinary);
+                    let avatarHash = Digest.sha1.digest(toHex: self.vcard.photoValBinary);
                     let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID)!;
                     let x = Element(name: "x", xmlns: "vcard-temp:x:update");
                     let photo = Element(name: "photo");
                     photo.value = avatarHash;
                     x.addChild(photo);
-                    presenceModule.setPresence(.online, status: nil, priority: nil, additionalElements: [x]);
+                    presenceModule.setPresence(show: .online, status: nil, priority: nil, additionalElements: [x]);
                     }, onError: { (errorCondition) in
                         print("VCard publication failed", errorCondition);
                 });

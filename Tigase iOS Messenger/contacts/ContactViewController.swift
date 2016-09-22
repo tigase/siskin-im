@@ -105,7 +105,7 @@ class ContactViewController: UITableViewController {
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
-        vcard = xmppService.dbVCardsCache.getVCard(jid);
+        vcard = xmppService.dbVCardsCache.getVCard(for: jid);
         if vcard == nil {
             refreshVCard();
         }
@@ -122,10 +122,10 @@ class ContactViewController: UITableViewController {
     
     func refreshVCard() {
         DispatchQueue.global(qos: .background).async() {
-            if let vcardModule: VCardModule = self.xmppService.getClient(self.account)?.modulesManager.getModule(VCardModule.ID) {
-                vcardModule.retrieveVCard(JID(self.jid), onSuccess: { (vcard) in
+            if let vcardModule: VCardModule = self.xmppService.getClient(forJid: self.account)?.modulesManager.getModule(VCardModule.ID) {
+                vcardModule.retrieveVCard(from: JID(self.jid), onSuccess: { (vcard) in
                     DispatchQueue.global(qos: .background).async() {
-                        self.xmppService.dbVCardsCache.updateVCard(self.jid, vcard: vcard);
+                        self.xmppService.dbVCardsCache.updateVCard(for: self.jid, vcard: vcard);
                         self.vcard = vcard;
                     }
                     }, onError: { (errorCondition) in

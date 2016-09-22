@@ -45,10 +45,10 @@ extension CachedViewControllerProtocol {
     func newItemAdded() {
         let indexPath = cachedDataSource.newItemAdded();
         self.tableView.insertRows(at: [indexPath], with: .top);
-        self.scrollToIndexPath(indexPath);
+        self.scroll(to: indexPath);
     }
     
-    func scrollToIndexPath(_ indexPath: IndexPath, animated: Bool = true) {
+    func scroll(to indexPath: IndexPath, animated: Bool = true) {
         self.scrollToIndexPath = indexPath;
         
         DispatchQueue.main.asyncAfter(deadline: DispatchTime(uptimeNanoseconds: DispatchTime.now().uptimeNanoseconds + 30 * UInt64(NSEC_PER_MSEC))) {
@@ -62,12 +62,12 @@ extension CachedViewControllerProtocol {
         }
     }
     
-    func tableViewScrollToNewestMessage(_ animated: Bool) {
+    func tableViewScrollToNewestMessage(animated: Bool) {
         guard let indexPath = cachedDataSource.newestItemIndex() else {
             return;
         }
         
-        scrollToIndexPath(indexPath, animated: animated);
+        scroll(to: indexPath, animated: animated);
     }
     
 }
@@ -96,7 +96,7 @@ class CachedViewDataSource<Item: AnyObject>: CachedViewDataSourceProtocol {
         numberOfMessages = getItemsCount();
     }
     
-    func getItem(_ indexPath: IndexPath) -> Item {
+    func getItem(for indexPath: IndexPath) -> Item {
         let requestedPosition = (numberOfMessages - indexPath.row) - 1;
         var item = cache.object(forKey: requestedPosition as NSNumber);
         
@@ -110,7 +110,7 @@ class CachedViewDataSource<Item: AnyObject>: CachedViewDataSourceProtocol {
                 }
             }
             
-            loadData(pos, limit: numberOfMessagesToFetch, forEveryItem: { (it: Item)->Void in
+            loadData(offset: pos, limit: numberOfMessagesToFetch, forEveryItem: { (it: Item)->Void in
                 self.cache.setObject(it, forKey: pos as NSNumber);
                 if requestedPosition == pos {
                     item = it;
@@ -140,7 +140,7 @@ class CachedViewDataSource<Item: AnyObject>: CachedViewDataSourceProtocol {
         return -1;
     }
     
-    func loadData(_ offset: Int, limit: Int, forEveryItem: (Item)->Void) {
+    func loadData(offset: Int, limit: Int, forEveryItem: (Item)->Void) {
         
     }
 

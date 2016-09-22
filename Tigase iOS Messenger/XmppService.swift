@@ -67,7 +67,7 @@ open class XmppService: Logger, EventHandler {
                     keepalive();
                 }
             } else if !networkAvailable && oldValue {
-                disconnectClients(true);
+                disconnectClients(force: true);
             }
         }
     }
@@ -104,15 +104,15 @@ open class XmppService: Logger, EventHandler {
     
     open func updateXmppClientInstance() {
         for account in AccountManager.getAccounts() {
-            updateXmppClientInstance(BareJID(account));
+            updateXmppClientInstance(forJid: BareJID(account));
         }
     }
     
-    open func updateXmppClientInstance(_ userJid:BareJID) {
+    open func updateXmppClientInstance(forJid userJid:BareJID) {
         print("updating xmppclient instance for", userJid);
         var client = clients[userJid];
-        let password = AccountManager.getAccountPassword(userJid.stringValue);
-        let config = AccountManager.getAccount(userJid.stringValue);
+        let password = AccountManager.getAccountPassword(forJid: userJid.stringValue);
+        let config = AccountManager.getAccount(forJid: userJid.stringValue);
         
         if client == nil {
             if password == nil || config == nil || config?.active != true {
@@ -158,7 +158,7 @@ open class XmppService: Logger, EventHandler {
         }
     }
     
-    open func getClient(_ account:BareJID) -> XMPPClient? {
+    open func getClient(forJid account:BareJID) -> XMPPClient? {
         return clients[account];
     }
     
@@ -192,22 +192,22 @@ open class XmppService: Logger, EventHandler {
     }
     
     fileprivate func registerEventHandlers(_ client:XMPPClient) {
-        client.eventBus.register(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE);
-        client.eventBus.register(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE);
+        client.eventBus.register(handler: self, for: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE);
+        client.eventBus.register(handler: dbChatHistoryStore, for: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE);
         for holder in eventHandlers {
-            client.eventBus.register(holder.handler, events: holder.events);
+            client.eventBus.register(handler: holder.handler, for: holder.events);
         }
     }
     
     fileprivate func unregisterEventHandlers(_ client:XMPPClient) {
-        client.eventBus.unregister(self, events: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE);
-        client.eventBus.unregister(dbChatHistoryStore, events: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE);
+        client.eventBus.unregister(handler: self, for: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE);
+        client.eventBus.unregister(handler: dbChatHistoryStore, for: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE);
         for holder in eventHandlers {
-            client.eventBus.unregister(holder.handler, events: holder.events);
+            client.eventBus.unregister(handler: holder.handler, for: holder.events);
         }
     }
     
-    open func handleEvent(_ event: Event) {
+    open func handle(event: Event) {
         switch event {
         case let e as SocketConnector.CertificateErrorEvent:
             // at first let's disable account so it will not try to reconnect
@@ -219,7 +219,7 @@ open class XmppService: Logger, EventHandler {
             
             for i in 0..<certCount {
                 let cert = SecTrustGetCertificateAtIndex(e.trust, i);
-                let fingerprint = Digest.sha1.digestToHex(SecCertificateCopyData(cert!) as Data);
+                let fingerprint = Digest.sha1.digest(toHex: SecCertificateCopyData(cert!) as Data);
                 // on first cert got 03469208e5d8e580f65799497d73b2d3098e8c8a
                 // while openssl reports: SHA1 Fingerprint=03:46:92:08:E5:D8:E5:80:F6:57:99:49:7D:73:B2:D3:09:8E:8C:8A
                 let summary = SecCertificateCopySubjectSummary(cert!)
@@ -237,7 +237,7 @@ open class XmppService: Logger, EventHandler {
             }
             print("cert info =", certInfo);
             
-            if let account = AccountManager.getAccount(e.sessionObject.userBareJid!.stringValue) {
+            if let account = AccountManager.getAccount(forJid: e.sessionObject.userBareJid!.stringValue) {
                 account.active = false;
                 account.serverCertificate = certInfo;
                 AccountManager.updateAccount(account, notifyChange: false);
@@ -254,12 +254,12 @@ open class XmppService: Logger, EventHandler {
             networkAvailable = reachability.isConnectedToNetwork();
             if let jid = e.sessionObject.userBareJid {
                 DispatchQueue.global(qos: .default).async {
-                    self.updateXmppClientInstance(jid);
+                    self.updateXmppClientInstance(forJid: jid);
                 }
             }
         case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
             if e.features.contains(MessageCarbonsModule.MC_XMLNS) {
-                if let messageCarbonsModule: MessageCarbonsModule = getClient(e.sessionObject.userBareJid!)?.modulesManager.getModule(MessageCarbonsModule.ID) {
+                if let messageCarbonsModule: MessageCarbonsModule = getClient(forJid: e.sessionObject.userBareJid!)?.modulesManager.getModule(MessageCarbonsModule.ID) {
                     if Settings.EnableMessageCarbons.getBool() {
                         messageCarbonsModule.enable();
                     }
@@ -276,7 +276,7 @@ open class XmppService: Logger, EventHandler {
             e.presence.status = Settings.StatusMessage.getString();
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
             if applicationState == .inactive {
-                let client = getClient(e.sessionObject.userBareJid!);
+                let client = getClient(forJid: e.sessionObject.userBareJid!);
                 let csiModule: ClientStateIndicationModule? = client?.modulesManager.getModule(ClientStateIndicationModule.ID);
                 if csiModule != nil && csiModule!.available {
                     _ = csiModule!.setState(applicationState == .active);
@@ -285,9 +285,9 @@ open class XmppService: Logger, EventHandler {
                     mobileModeModule.enable();
                 }
             }
-            reconnectMucRooms(e.sessionObject.userBareJid!);
+            reconnectMucRooms(forAccountJid: e.sessionObject.userBareJid!);
         case let e as AuthModule.AuthFailedEvent:
-            if let account = AccountManager.getAccount(e.sessionObject.userBareJid!.stringValue) {
+            if let account = AccountManager.getAccount(forJid: e.sessionObject.userBareJid!.stringValue) {
                 account.active = false;
                 AccountManager.updateAccount(account, notifyChange: true);
             }
@@ -327,21 +327,21 @@ open class XmppService: Logger, EventHandler {
         for client in clients.values {
             if client.state == .connected {
                 if let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID) {
-                    presenceModule.setPresence(.online, status: nil, priority: nil);
+                    presenceModule.setPresence(show: .online, status: nil, priority: nil);
                 }
             }
         }
     }
     
-    open func registerEventHandler(_ handler:EventHandler, events:Event...) {
+    open func registerEventHandler(_ handler:EventHandler, for events:Event...) {
         log("registered event handler", handler, "for", events);
         eventHandlers.append(EventHandlerHolder(handler: handler, events: events));
         for client in clients.values {
-            client.eventBus.register(handler, events: events);
+            client.eventBus.register(handler: handler, for: events);
         }
     }
     
-    open func unregisterEventHandler(_ handler:EventHandler, events:Event...) {
+    open func unregisterEventHandler(_ handler:EventHandler, for events:Event...) {
         if let idx = eventHandlers.index(where: { (holder) -> Bool in
             return holder.matches(handler, events: events);
         }) {
@@ -351,14 +351,14 @@ open class XmppService: Logger, EventHandler {
             log("failed to remove event handler", handler, "for", events);
         }
         for client in clients.values {
-            client.eventBus.unregister(handler, events: events);
+            client.eventBus.unregister(handler: handler, for: events);
         }
     }
     
     @objc open func accountConfigurationChanged(_ notification: NSNotification) {
         let accountName = notification.userInfo!["account"] as! String;
         let jid = BareJID(accountName);
-        updateXmppClientInstance(jid);
+        updateXmppClientInstance(forJid: jid);
     }
     
     @objc open func connectivityChanged(_ notification: NSNotification) {
@@ -450,20 +450,20 @@ open class XmppService: Logger, EventHandler {
         }
     }
     
-    fileprivate func connectClients(_ force: Bool = true) {
+    fileprivate func connectClients(force: Bool = true) {
         for client in clients.values {
             client.login();
         }
     }
     
-    fileprivate func disconnectClients(_ force:Bool = false) {
+    fileprivate func disconnectClients(force:Bool = false) {
         for client in clients.values {
             client.disconnect(force);
         }
     }
     
-    fileprivate func reconnectMucRooms(_ jid: BareJID) {
-        if let client = getClient(jid) {
+    fileprivate func reconnectMucRooms(forAccountJid jid: BareJID) {
+        if let client = getClient(forJid: jid) {
             guard client.state == .connected else {
                 return;
             }
@@ -493,8 +493,8 @@ open class XmppService: Logger, EventHandler {
             
             if certCount > 0 {
                 let cert = SecTrustGetCertificateAtIndex(trust, 0);
-                let fingerprint = Digest.sha1.digestToHex(SecCertificateCopyData(cert!) as Data);
-                let account = AccountManager.getAccount(sessionObject.userBareJid!.stringValue);
+                let fingerprint = Digest.sha1.digest(toHex: SecCertificateCopyData(cert!) as Data);
+                let account = AccountManager.getAccount(forJid: sessionObject.userBareJid!.stringValue);
                 valid = fingerprint == (account?.serverCertificate?["cert-hash-sha1"] as? String) && ((account?.serverCertificate?["accepted"] as? Bool) ?? false);
             }
             else {

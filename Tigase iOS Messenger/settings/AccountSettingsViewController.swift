@@ -51,11 +51,11 @@ class AccountSettingsViewController: UITableViewController {
         super.viewWillAppear(animated);
         navigationItem.title = account;
 
-        let config = AccountManager.getAccount(account);
+        let config = AccountManager.getAccount(forJid: account);
         enabledSwitch.isOn = config?.active ?? false;
 
-        let vcard = xmppService.dbVCardsCache.getVCard(accountJid);
-        update(vcard);
+        let vcard = xmppService.dbVCardsCache.getVCard(for: accountJid);
+        update(vcard: vcard);
     }
     
     override func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
@@ -84,14 +84,14 @@ class AccountSettingsViewController: UITableViewController {
     }
     
     @IBAction func enabledSwitchChangedValue(_ sender: AnyObject) {
-        if let config = AccountManager.getAccount(account) {
+        if let config = AccountManager.getAccount(forJid: account) {
             config.active = enabledSwitch.isOn;
             AccountManager.updateAccount(config);
         }
     }
     
-    func update(_ vcard: VCardModule.VCard?) {
-        avatarView.image = xmppService.avatarManager.getAvatar(accountJid, account: accountJid);
+    func update(vcard: VCardModule.VCard?) {
+        avatarView.image = xmppService.avatarManager.getAvatar(for: accountJid, account: accountJid);
         avatarView.layer.masksToBounds = true;
         avatarView.layer.cornerRadius = avatarView.frame.width / 2;
         

@@ -58,7 +58,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
     
     override func viewWillAppear(_ animated: Bool) {
         tableView.reloadData();
-        xmppService.registerEventHandler(self, events: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
+        xmppService.registerEventHandler(self, for: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
         //(self.tabBarController as? CustomTabBarController)?.showTabBar();
         NotificationCenter.default.addObserver(self, selector: #selector(ChatsListViewController.newMessage), name: AvatarManager.AVATAR_CHANGED, object: nil);
         super.viewWillAppear(animated);
@@ -66,7 +66,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated);
-        xmppService.unregisterEventHandler(self, events: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
+        xmppService.unregisterEventHandler(self, for: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
         NotificationCenter.default.removeObserver(self, name: AvatarManager.AVATAR_CHANGED, object: nil);
     }
 
@@ -106,16 +106,16 @@ class ChatsListViewController: UITableViewController, EventHandler {
                 let formattedTS = self.formatTimestamp(cursor["timestamp"]!);
                 cell.timestampLabel.text = formattedTS;
 
-                let xmppClient = self.xmppService.getClient(account);
+                let xmppClient = self.xmppService.getClient(forJid: account);
                 switch type {
                 case 1:
                     let mucModule: MucModule? = xmppClient?.modulesManager.getModule(MucModule.ID);
                     cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.defaultAvatar);
-                    cell.avatarStatusView.setStatus(mucModule?.roomsManager.get(jid)?.state == .joined ? Presence.Show.online : nil);
+                    cell.avatarStatusView.setStatus(mucModule?.roomsManager.getRoom(for: jid)?.state == .joined ? Presence.Show.online : nil);
                 default:
-                    cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.getAvatar(jid, account: account));
+                    cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.getAvatar(for: jid, account: account));
                     let presenceModule: PresenceModule? = xmppClient?.modulesManager.getModule(PresenceModule.ID);
-                    let presence = presenceModule?.presenceStore.getBestPresence(jid);
+                    let presence = presenceModule?.presenceStore.getBestPresence(for: jid);
                     cell.avatarStatusView.setStatus(presence?.show);
                 }
             }
@@ -142,32 +142,32 @@ class ChatsListViewController: UITableViewController, EventHandler {
                         let account: BareJID = cursor["account"]!;
                         let jid: JID = cursor["jid"]!;
                         let type: Int = cursor["type"] ?? 0;
-                        let xmppClient = self.xmppService.getClient(account);
+                        let xmppClient = self.xmppService.getClient(forJid: account);
 
                         switch type {
                         case 1:
                             let mucModule: MucModule? = xmppClient?.modulesManager.getModule(MucModule.ID);
-                            if let room = mucModule?.roomsManager.get(jid.bareJid) {
+                            if let room = mucModule?.roomsManager.getRoom(for: jid.bareJid) {
                                 self.closingChatPosition = try! self.getChatPositionByChatIdStmt.scalar(room.id!);
-                                mucModule?.leave(room);
+                                mucModule?.leave(room: room);
                                 self.closingChatPosition = nil;
                                 if Settings.DeleteChatHistoryOnChatClose.getBool() {
-                                    self.xmppService.dbChatHistoryStore.deleteMessages(account, jid: jid.bareJid);
+                                    self.xmppService.dbChatHistoryStore.deleteMessages(for: account, with: jid.bareJid);
                                 } else {
-                                    self.xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
+                                    self.xmppService.dbChatHistoryStore.markAsRead(for: account, with: jid.bareJid);
                                 }
                             }
                         default:
                             let thread: String? = cursor["thread_id"];
                             let messageModule: MessageModule? = xmppClient?.modulesManager.getModule(MessageModule.ID);
-                            if let chat = messageModule?.chatManager.getChat(jid, thread: thread) {
+                            if let chat = messageModule?.chatManager.getChat(with: jid, thread: thread) {
                                 self.closingChatPosition = try! self.getChatPositionByChatIdStmt.scalar(chat.id!);
-                                _ = messageModule?.chatManager.close(chat);
+                                _ = messageModule?.chatManager.close(chat: chat);
                                 self.closingChatPosition = nil;
                                 if Settings.DeleteChatHistoryOnChatClose.getBool() {
-                                    self.xmppService.dbChatHistoryStore.deleteMessages(account, jid: jid.bareJid);
+                                    self.xmppService.dbChatHistoryStore.deleteMessages(for: account, with: jid.bareJid);
                                 } else {
-                                    self.xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
+                                    self.xmppService.dbChatHistoryStore.markAsRead(for: account, with: jid.bareJid);
                                 }
                             }
                         }
@@ -191,15 +191,15 @@ class ChatsListViewController: UITableViewController, EventHandler {
                 switch type {
                 case 1:
                     identifier = "RoomViewNavigationController";
-                    let client = self.xmppService.getClient(account);
+                    let client = self.xmppService.getClient(forJid: account);
                     let mucModule: MucModule? = client?.modulesManager?.getModule(MucModule.ID);
-                    let room = mucModule?.roomsManager.get(jid.bareJid);
+                    let room = mucModule?.roomsManager.getRoom(for: jid.bareJid);
                     guard room != nil else {
                         if client == nil {
                             let alert = UIAlertController.init(title: "Warning", message: "Account is disabled.\nDo you want to enable account?", preferredStyle: .alert);
                             alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
                             alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(alertAction) in
-                                if let accountInstance = AccountManager.getAccount(account.stringValue) {
+                                if let accountInstance = AccountManager.getAccount(forJid: account.stringValue) {
                                     accountInstance.active = true;
                                     AccountManager.updateAccount(accountInstance);
                                 }
@@ -236,7 +236,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
         self.showDetailViewController(navigation, sender: self);
     }
     
-    func handleEvent(_ event: Event) {
+    func handle(event: Event) {
         switch event {
         case is MessageModule.ChatCreatedEvent:
             // we are adding rows always on top

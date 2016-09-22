@@ -53,9 +53,9 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
             self.jidTextField.isEnabled = false;
             self.accountTextField.isEnabled = false;
             
-            if let sessionObject = xmppService.getClient(account!)?.sessionObject {
+            if let sessionObject = xmppService.getClient(forJid: account!)?.sessionObject {
                 let rosterStore: RosterStore = RosterModule.getRosterStore(sessionObject)
-                if let rosterItem = rosterStore.get(jid!) {
+                if let rosterItem = rosterStore.get(for: jid!) {
                     self.nameTextField.text = rosterItem.name;
                 }
             }
@@ -95,14 +95,14 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
         }
         jid = JID(jidTextField.text!);
         account = BareJID(accountTextField.text!);
-        let client = xmppService.getClient(account!);
+        let client = xmppService.getClient(forJid: account!);
         guard client?.state == SocketConnector.State.connected else {
             let alert = UIAlertController.init(title: "Warning", message: "Before changing roster you need to connect to server. Do you wish to do this now?", preferredStyle: .alert);
             alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: {(alertAction) in
                 _ = self.navigationController?.popViewController(animated: true);
             }));
             alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(alertAction) in
-                if let account = AccountManager.getAccount(self.account!.stringValue) {
+                if let account = AccountManager.getAccount(forJid: self.account!.stringValue) {
                     account.active = true;
                     AccountManager.updateAccount(account);
                 }
@@ -115,7 +115,7 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
         let onSuccess = {(stanza:Stanza)->Void in
             if requestAuth {
                 if let presenceModule: PresenceModule = client?.modulesManager.getModule(PresenceModule.ID) {
-                    presenceModule.subscribe(self.jid!);
+                    presenceModule.subscribe(to: self.jid!);
                 }
             }
             _ = self.navigationController?.popViewController(animated: true);
@@ -127,10 +127,10 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
         };
 
         let rosterModule:RosterModule = client!.modulesManager.getModule(RosterModule.ID)!;
-        if let rosterItem = rosterModule.rosterStore.get(jid!) {
-            rosterModule.rosterStore.update(rosterItem, name: nameTextField.text, onSuccess: onSuccess, onError: onError);
+        if let rosterItem = rosterModule.rosterStore.get(for: jid!) {
+            rosterModule.rosterStore.update(item: rosterItem, name: nameTextField.text, onSuccess: onSuccess, onError: onError);
         } else {
-            rosterModule.rosterStore.add(jid!, name: nameTextField.text, onSuccess: onSuccess, onError: onError);
+            rosterModule.rosterStore.add(jid: jid!, name: nameTextField.text, onSuccess: onSuccess, onError: onError);
         }
     }
     /*

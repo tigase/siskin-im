@@ -96,10 +96,10 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
         super.viewDidAppear(animated);
         if isFirstTime {
             // scroll to bottom?
-            scrollToNewestMessage(true);
+            scrollToNewestMessage(animated: true);
             isFirstTime = false;
         }
-        xmppService.dbChatHistoryStore.markAsRead(account, jid: jid.bareJid);
+        xmppService.dbChatHistoryStore.markAsRead(for: account, with: jid.bareJid);
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -126,7 +126,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
                     bottomViewBottomConstraint?.constant = newHeight;
                     UIView.animate(withDuration: duration, delay: 0.0, options: [UIViewAnimationOptions(rawValue: curve), UIViewAnimationOptions.layoutSubviews, UIViewAnimationOptions.beginFromCurrentState], animations: {
                         self.view.layoutIfNeeded();
-                        self.scrollToNewestMessage(true);
+                        self.scrollToNewestMessage(animated: true);
                         
                         }, completion: nil);
                 }
@@ -177,17 +177,17 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
         textView.resignFirstResponder();
     }
     
-    func scrollToNewestMessage(_ animated: Bool) {
+    func scrollToNewestMessage(animated: Bool) {
         if scrollDelegate != nil {
-            scrollDelegate?.tableViewScrollToNewestMessage(animated)
+            scrollDelegate?.tableViewScrollToNewestMessage(animated: animated)
         } else {
-            scrollToNewestMessageImpl(animated);
+            scrollToNewestMessageImpl(animated: animated);
         }
     }
     
-    func scrollToNewestMessageImpl(_ animated: Bool) {
+    func scrollToNewestMessageImpl(animated: Bool) {
         func scrollToNewestMessage(_ animated: Bool) {
-            let count = xmppService.dbChatHistoryStore.countMessages(account, jid: jid.bareJid);
+            let count = xmppService.dbChatHistoryStore.countMessages(for: account, with: jid.bareJid);
             if count > 0 {
                 let path = IndexPath(row: count - 1, section: 0);
                 self.tableView.scrollToRow(at: path, at: .bottom, animated: animated);
@@ -199,6 +199,6 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
 
 protocol BaseChatViewControllerScrollDelegate: class {
     
-    func tableViewScrollToNewestMessage(_ animated: Bool);
+    func tableViewScrollToNewestMessage(animated: Bool);
     
 }

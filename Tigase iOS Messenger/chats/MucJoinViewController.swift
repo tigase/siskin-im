@@ -80,9 +80,9 @@ class MucJoinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         let nickname = nicknameTextField.text!;
         let password = passwordTextField.text!;
         
-        let client = xmppService.getClient(accountJid);
+        let client = xmppService.getClient(forJid: accountJid);
         if let mucModule: MucModule = client?.modulesManager.getModule(MucModule.ID) {
-            _ = mucModule.join(room, mucServer: server, nickname: nickname, password: password);
+            _ = mucModule.join(roomName: room, mucServer: server, nickname: nickname, password: password);
             _ = self.navigationController?.popViewController(animated: true);
         } else {
             var alert: UIAlertController? = nil;
@@ -90,7 +90,7 @@ class MucJoinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
                 alert = UIAlertController.init(title: "Warning", message: "Account is disabled.\nDo you want to enable account?", preferredStyle: .alert);
                 alert?.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
                 alert?.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(alertAction) in
-                    if let account = AccountManager.getAccount(accountJid.stringValue) {
+                    if let account = AccountManager.getAccount(forJid: accountJid.stringValue) {
                         account.active = true;
                         AccountManager.updateAccount(account);
                     }

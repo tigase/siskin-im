@@ -31,11 +31,11 @@ open class DBChatStoreWrapper: ChatStore {
     fileprivate var queue: DispatchQueue?;
     
     open var count:Int {
-        return store.count(sessionObject);
+        return store.count(for: sessionObject);
     }
     
     open var items:[ChatProtocol] {
-        return store.getAll(sessionObject);
+        return store.getAll(for: sessionObject);
     }
     
     public init(sessionObject:SessionObject, store:DBChatStore, useCache: Bool = true) {
@@ -47,7 +47,7 @@ open class DBChatStoreWrapper: ChatStore {
         self.queue = useCache ? DispatchQueue(label: "chat_store_queue") : nil;
     }
     
-    open func get<T: AnyObject>(_ jid: BareJID, filter: @escaping (T) -> Bool) -> T? {
+    open func getChat<T: AnyObject>(with jid: BareJID, filter: @escaping (T) -> Bool) -> T? {
         var item: T?;
         if cache != nil {
             queue!.sync {
@@ -61,7 +61,7 @@ open class DBChatStoreWrapper: ChatStore {
                     return;
                 }
                 
-                let chats: [T] = self.store.getAll(self.sessionObject, forJid: jid);
+                let chats: [T] = self.store.getAll(for: self.sessionObject, with: jid);
                 guard !chats.isEmpty else {
                     return;
                 }
@@ -77,19 +77,19 @@ open class DBChatStoreWrapper: ChatStore {
             }
             return item;
         }
-        return store.get(sessionObject, jid: jid, filter: filter);
+        return store.get(for: sessionObject, with: jid, filter: filter);
     }
     
-    open func getAll<T>() -> [T] {
-        return store.getAll(sessionObject);
+    open func getAllChats<T>() -> [T] {
+        return store.getAll(for: sessionObject);
     }
     
-    open func isFor(_ jid: BareJID) -> Bool {
+    open func isFor(jid: BareJID) -> Bool {
         return store.isFor(sessionObject, jid: jid);
     }
     
-    open func open<T: AnyObject>(_ chat:ChatProtocol) -> T? {
-        let dbChat: T? = store.open(sessionObject, chat: chat);
+    open func open<T: AnyObject>(chat:ChatProtocol) -> T? {
+        let dbChat: T? = store.open(for: sessionObject, chat: chat);
         if dbChat != nil && cache != nil {
             queue!.sync {
                 var chats = (self.cache!.object(forKey: chat.jid.bareJid.stringValue as NSString) as? [T]) ?? [];
@@ -100,8 +100,8 @@ open class DBChatStoreWrapper: ChatStore {
         return dbChat;
     }
     
-    open func close(_ chat:ChatProtocol) -> Bool {
-        let closed = store.close(chat);
+    open func close(chat:ChatProtocol) -> Bool {
+        let closed = store.close(chat: chat);
         if closed && cache != nil {
             queue!.sync {
                 self.cache?.removeObject(forKey: chat.jid.bareJid.stringValue as NSString);
@@ -145,7 +145,7 @@ open class DBChatStore: LocalQueueDispatcher {
         queue.setSpecific(key: queueTag, value: nil);
     }
     
-    open func count(_ sessionObject: SessionObject) -> Int {
+    open func count(for sessionObject: SessionObject) -> Int {
         let params:[String:Any?] = [ "account" : sessionObject.userBareJid?.description ];
         do {
             return try countStmt.scalar(params) ?? 0;
@@ -155,7 +155,7 @@ open class DBChatStore: LocalQueueDispatcher {
         return 0;
     }
     
-    open func get<T>(_ sessionObject: SessionObject, jid: BareJID, filter: ((T) -> Bool)?) -> T? {
+    open func get<T>(for sessionObject: SessionObject, with jid: BareJID, filter: ((T) -> Bool)?) -> T? {
         let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : jid ];
         let context = getContext(sessionObject)!;
         return dispatch_sync_with_result_local_queue() {
@@ -192,7 +192,7 @@ open class DBChatStore: LocalQueueDispatcher {
         }
     }
     
-    open func getAll<T>(_ sessionObject: SessionObject, forJid: BareJID) -> [T] {
+    open func getAll<T>(for sessionObject: SessionObject, with forJid: BareJID) -> [T] {
         let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : forJid ];
         let context = getContext(sessionObject)!;
         var result = [T]();
@@ -226,7 +226,7 @@ open class DBChatStore: LocalQueueDispatcher {
         return result;
     }
     
-    open func getAll<T>(_ sessionObject:SessionObject) -> [T] {
+    open func getAll<T>(for sessionObject:SessionObject) -> [T] {
         var result = [T]();
         let context = getContext(sessionObject);
         dispatch_sync_local_queue() {
@@ -272,8 +272,8 @@ open class DBChatStore: LocalQueueDispatcher {
         }
     }
     
-    open func open<T>(_ sessionObject:SessionObject, chat:ChatProtocol) -> T? {
-        let current:ChatProtocol? = get(sessionObject, jid: chat.jid.bareJid, filter: nil);
+    open func open<T>(for sessionObject:SessionObject, chat:ChatProtocol) -> T? {
+        let current:ChatProtocol? = get(for: sessionObject, with: chat.jid.bareJid, filter: nil);
         if current?.allowFullJid == false {
             return current as? T;
         }
@@ -297,7 +297,7 @@ open class DBChatStore: LocalQueueDispatcher {
         }
     }
     
-    open func close(_ chat:ChatProtocol) -> Bool {
+    open func close(chat:ChatProtocol) -> Bool {
         if let id = chat.id {
             let params:[String:Any?] = [ "id" : id ];
             return try! closeChatStmt.update(params) > 0;
@@ -313,7 +313,7 @@ open class DBChatStore: LocalQueueDispatcher {
     }
     
     fileprivate func getContext(_ sessionObject: SessionObject) -> Context? {
-        return (UIApplication.shared.delegate as? AppDelegate)?.xmppService.getClient(sessionObject.userBareJid!)?.context;
+        return (UIApplication.shared.delegate as? AppDelegate)?.xmppService.getClient(forJid: sessionObject.userBareJid!)?.context;
     }
 }
 
