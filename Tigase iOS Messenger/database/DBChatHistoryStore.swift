@@ -53,14 +53,16 @@ open class DBChatHistoryStore: Logger, EventHandler {
         NotificationCenter.default.addObserver(self, selector: #selector(DBChatHistoryStore.accountRemoved), name: NSNotification.Name(rawValue: "accountRemoved"), object: nil);
     }
     
-    open func appendMessage(for account:BareJID, message: Message, carbonAction: MessageCarbonsModule.Action? = nil) {
+    open func appendMessage(for sessionObject: SessionObject, message: Message, carbonAction: MessageCarbonsModule.Action? = nil) {
         let body = message.body;
         // for now we support only messages with body
         guard body != nil else {
             return;
         }
         
-        let incoming = message.from != nil && message.from?.bareJid.stringValue != account.stringValue;
+        let incoming = message.from != nil && message.from != ResourceBinderModule.getBindedJid(sessionObject);
+        
+        let account = sessionObject.userBareJid!;
         let jid = incoming ? message.from?.bareJid : message.to?.bareJid
         let author = incoming ? message.from?.bareJid : account;
         let timestamp = message.delay?.stamp ?? Date();
@@ -137,9 +139,9 @@ open class DBChatHistoryStore: Logger, EventHandler {
     open func handle(event:Event) {
         switch event {
         case let e as MessageModule.MessageReceivedEvent:
-            appendMessage(for: e.sessionObject.userBareJid!, message: e.message);
+            appendMessage(for: e.sessionObject, message: e.message);
         case let e as MessageCarbonsModule.CarbonReceivedEvent:
-            appendMessage(for: e.sessionObject.userBareJid!, message: e.message, carbonAction: e.action);
+            appendMessage(for: e.sessionObject, message: e.message, carbonAction: e.action);
         case let e as MucModule.MessageReceivedEvent:
             appendMucMessage(event: e);
         default:

@@ -177,10 +177,10 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         let client = xmppService.getClient(forJid: account);
         if client != nil && client!.state == .connected {
             DispatchQueue.global(qos: .default).async {
-                let messageModule:MessageModule? = client?.modulesManager.getModule(MessageModule.ID);
+                let messageModule: MessageModule? = client?.modulesManager.getModule(MessageModule.ID);
                 if let chat = messageModule?.chatManager.getChat(with: self.jid, thread: nil) {
                     let msg = messageModule!.sendMessage(in: chat, body: text!);
-                    self.xmppService.dbChatHistoryStore.appendMessage(for: self.account, message: msg);
+                    self.xmppService.dbChatHistoryStore.appendMessage(for: client!.sessionObject, message: msg);
                 }
             }
             messageField.text = nil;
