@@ -23,7 +23,7 @@
 import UIKit
 import TigaseSwift
 
-class AddAccountController: UITableViewController {
+class AddAccountController: UITableViewController, UITextFieldDelegate {
     
     var account:String?;
     
@@ -57,6 +57,8 @@ class AddAccountController: UITableViewController {
         } else {
             saveButton.title = "Save";
         }
+        jidTextField.delegate = self;
+        passwordTextField.delegate = self;
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -142,6 +144,18 @@ class AddAccountController: UITableViewController {
             return nil;
         }
         return indexPath;
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        if textField == jidTextField {
+            passwordTextField.becomeFirstResponder();
+        } else {
+            DispatchQueue.main.async {
+                self.saveAccount();
+            }
+        }
+        textField.resignFirstResponder();
+        return false;
     }
     
     func showError(condition errorCondition: ErrorCondition?) {
