@@ -185,7 +185,7 @@ class SettingsViewController: UITableViewController, EventHandler {
                     let account = accounts[indexPath.row];
                     let alert = UIAlertController(title: "Account removal", message: "Should account be removed from server as well?", preferredStyle: .actionSheet);
                     if let client = self.xmppService.getClient(forJid: BareJID(account)) {
-                        alert.addAction(UIAlertAction(title: "Remove", style: .destructive, handler: { (action) in
+                        alert.addAction(UIAlertAction(title: "Remove from server", style: .destructive, handler: { (action) in
                             let regModule = client.modulesManager.register(InBandRegistrationModule());
                             regModule.unregister({ (stanza) in
                                 DispatchQueue.main.async() {
@@ -195,11 +195,11 @@ class SettingsViewController: UITableViewController, EventHandler {
                             })
                         }));
                     }
-                    alert.addAction(UIAlertAction(title: "Remove", style: .default, handler: { (action) in
+                    alert.addAction(UIAlertAction(title: "Remove from application", style: .default, handler: { (action) in
                         AccountManager.deleteAccount(forJid: account);
                         self.tableView.reloadData();
                     }));
-                    alert.addAction(UIAlertAction(title: "Keep", style: .default, handler: nil));
+                    alert.addAction(UIAlertAction(title: "Keep account", style: .default, handler: nil));
                     self.present(alert, animated: true, completion: nil);
                 }
             }

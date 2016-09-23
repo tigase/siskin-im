@@ -40,6 +40,8 @@ class AddAccountController: UITableViewController {
     var registerAccount: Bool = false;
     var xmppClient: XMPPClient?;
     
+    var onAccountAdded: (() -> Void)?;
+    
     override func viewDidLoad() {
         super.viewDidLoad();
         if account != nil {
@@ -115,19 +117,24 @@ class AddAccountController: UITableViewController {
         AccountManager.updateAccount(account);
         account.password = passwordTextField.text!;
 
-        if self.account != nil {
-            navigationController?.dismiss(animated: true, completion: nil);
-        } else {
-            _ = navigationController?.popViewController(animated: true);
-        }
+        onAccountAdded?();
+        dismissView();
     }
     
     @IBAction func cancelClicked(_ sender: UIBarButtonItem) {
-        if self.account != nil {
+        dismissView();
+    }
+    
+    func dismissView() {
+        let dismiss = onAccountAdded != nil;
+        onAccountAdded = nil;
+        
+        if self.account != nil || dismiss {
             navigationController?.dismiss(animated: true, completion: nil);
         } else {
             _ = navigationController?.popViewController(animated: true);
         }
+        
     }
     
     override func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {

@@ -55,6 +55,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         updateApplicationIconBadgeNumber();
         
         application.setMinimumBackgroundFetchInterval(60);
+        
+        if AccountManager.getAccounts().isEmpty {
+            self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SetupViewController");
+        }
+        
         return true
     }
 
@@ -259,5 +264,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UIApplication.shared.presentLocalNotificationNow(userNotification);
     }
 
+    func hideSetupGuide() {
+        self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateInitialViewController();
+    }
 }
 
