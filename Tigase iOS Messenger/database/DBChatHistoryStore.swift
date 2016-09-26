@@ -60,7 +60,9 @@ open class DBChatHistoryStore: Logger, EventHandler {
             return;
         }
         
-        let incoming = message.from != nil && message.from != ResourceBinderModule.getBindedJid(sessionObject);
+        let incoming = message.from != nil && (carbonAction == nil
+            ? message.from != ResourceBinderModule.getBindedJid(sessionObject)
+            : message.from?.bareJid != sessionObject.userBareJid);
         
         let account = sessionObject.userBareJid!;
         let jid = incoming ? message.from?.bareJid : message.to?.bareJid

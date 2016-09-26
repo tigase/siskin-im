@@ -56,6 +56,10 @@ class AccountSettingsViewController: UITableViewController {
 
         let vcard = xmppService.dbVCardsCache.getVCard(for: accountJid);
         update(vcard: vcard);
+
+        avatarView.sizeToFit();
+        avatarView.layer.masksToBounds = true;
+        avatarView.layer.cornerRadius = avatarView.frame.width / 2;
     }
     
     override func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
@@ -92,8 +96,6 @@ class AccountSettingsViewController: UITableViewController {
     
     func update(vcard: VCardModule.VCard?) {
         avatarView.image = xmppService.avatarManager.getAvatar(for: accountJid, account: accountJid);
-        avatarView.layer.masksToBounds = true;
-        avatarView.layer.cornerRadius = avatarView.frame.width / 2;
         
         if let fn = vcard?.fn {
             fullNameTextView.text = fn;
