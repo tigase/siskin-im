@@ -25,6 +25,8 @@ public enum Settings: String {
     case DeleteChatHistoryOnChatClose
     case EnableMessageCarbons
     case StatusMessage
+    case RosterType
+    case RosterItemsOrder
 
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     
@@ -35,7 +37,9 @@ public enum Settings: String {
     public static func initialize() {
         let defaults: [String: AnyObject] = [
             "DeleteChatHistoryOnChatClose" : false as AnyObject,
-            "EnableMessageCarbons" : true as AnyObject
+            "EnableMessageCarbons" : true as AnyObject,
+            "RosterType" : "flat" as AnyObject,
+            "RosterItemsOrder" : RosterSortingOrder.alphabetical.rawValue as AnyObject
         ];
         store.register(defaults: defaults);
     }

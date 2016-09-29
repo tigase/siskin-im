@@ -65,7 +65,7 @@ class SettingsViewController: UITableViewController, EventHandler {
         case 1:
             return 1;
         case 2:
-            return 2;
+            return 3;
         default:
             return 0;
         }
@@ -122,6 +122,13 @@ class SettingsViewController: UITableViewController, EventHandler {
                 cell.switchView.isOn = Settings.EnableMessageCarbons.getBool();
                 cell.valueChangedListener = {(switchView: UISwitch) in
                     Settings.EnableMessageCarbons.setValue(switchView.isOn);
+                }
+                return cell;
+            case .rosterType:
+                let cell = tableView.dequeueReusableCell(withIdentifier: "RosterTypeTableViewCell", for: indexPath ) as! SwitchTableViewCell;
+                cell.switchView.isOn = Settings.RosterType.getString() == RosterType.grouped.rawValue;
+                cell.valueChangedListener = {(switchView: UISwitch) in
+                    Settings.RosterType.setValue((switchView.isOn ? RosterType.grouped : RosterType.flat).rawValue);
                 }
                 return cell;
             }
@@ -230,5 +237,6 @@ class SettingsViewController: UITableViewController, EventHandler {
     internal enum SettingsEnum: Int {
         case deleteChatHistoryOnClose = 0
         case enableMessageCarbons = 1
+        case rosterType = 2
     }
 }
