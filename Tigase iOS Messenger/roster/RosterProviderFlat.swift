@@ -26,9 +26,9 @@ public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>,
     
     fileprivate var items: [RosterProviderFlatItem];
     
-    override init(order: RosterSortingOrder, updateNotificationName: Notification.Name) {
+    override init(order: RosterSortingOrder, availableOnly: Bool, updateNotificationName: Notification.Name) {
         self.items = [];
-        super.init(order: order, updateNotificationName: updateNotificationName);
+        super.init(order: order, availableOnly: availableOnly, updateNotificationName: updateNotificationName);
     }
     
     func numberOfSections() -> Int {
@@ -106,7 +106,7 @@ public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>,
     }
     
     override func updateItems() -> Bool {
-        var items = queryString == nil ? allItems : allItems.filter({ (item) -> Bool in
+        var items = queryString == nil ? (!availableOnly ? allItems : allItems.filter { (item) -> Bool in item.presence?.show != nil }) : allItems.filter({ (item) -> Bool in
             if (item.name?.lowercased().contains(queryString!))! {
                 return true;
             }

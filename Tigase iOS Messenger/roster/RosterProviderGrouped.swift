@@ -1,5 +1,5 @@
 //
-// RosterProviderGrouped.swift
+//  RosterProviderGrouped.swift
 //
 // Tigase iOS Messenger
 // Copyright (C) 2016 "Tigase, Inc." <office@tigase.com>
@@ -28,9 +28,9 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
     
     var groups = [String]();
     
-    override init(order: RosterSortingOrder, updateNotificationName: Notification.Name) {
+    override init(order: RosterSortingOrder, availableOnly: Bool, updateNotificationName: Notification.Name) {
         self.items = [:];
-        super.init(order: order, updateNotificationName: updateNotificationName);
+        super.init(order: order, availableOnly: availableOnly, updateNotificationName: updateNotificationName);
     }
     
     func numberOfSections() -> Int {
@@ -115,7 +115,7 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
     
     override func updateItems() -> Bool {
         var groups: Set<String> = [];
-        let items = queryString == nil ? allItems : allItems.filter({ (item) -> Bool in
+        let items = queryString == nil ? (!availableOnly ? allItems : allItems.filter { (item) -> Bool in item.presence?.show != nil }) : allItems.filter({ (item) -> Bool in
             if (item.name?.lowercased().contains(queryString!))! {
                 return true;
             }

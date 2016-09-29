@@ -62,6 +62,10 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
         lpgr.delegate = self;
         tableView.addGestureRecognizer(lpgr);
         navigationItem.leftBarButtonItem = self.editButtonItem
+        let availabilityFilterSelector = UISegmentedControl(items: ["All", "Available"]);
+        navigationItem.titleView = availabilityFilterSelector;
+        availabilityFilterSelector.selectedSegmentIndex = Settings.RosterAvailableOnly.getBool() ? 1 : 0;
+        availabilityFilterSelector.addTarget(self, action: #selector(RosterViewController.availabilityFilterChanged), for: .valueChanged);
     }
     
     override func didReceiveMemoryWarning() {
@@ -76,11 +80,12 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
         NotificationCenter.default.addObserver(self, selector: #selector(RosterViewController.rowUpdated), name: RosterViewController.UPDATE_NOTIFICATION_NAME, object: nil);
         let sortOrder = RosterSortingOrder(rawValue: Settings.RosterItemsOrder.getString() ?? "") ?? .alphabetical;
         let rosterType = RosterType(rawValue: Settings.RosterType.getString() ?? "") ?? RosterType.flat;
+        let availableOnly = Settings.RosterAvailableOnly.getBool();
         switch rosterType {
         case .flat:
-            roster = RosterProviderFlat(order: sortOrder, updateNotificationName: RosterViewController.UPDATE_NOTIFICATION_NAME);
+            roster = RosterProviderFlat(order: sortOrder, availableOnly: availableOnly, updateNotificationName: RosterViewController.UPDATE_NOTIFICATION_NAME);
         case .grouped:
-            roster = RosterProviderGrouped(order: sortOrder, updateNotificationName: RosterViewController.UPDATE_NOTIFICATION_NAME);
+            roster = RosterProviderGrouped(order: sortOrder, availableOnly: availableOnly, updateNotificationName: RosterViewController.UPDATE_NOTIFICATION_NAME);
         }
         switch roster.order {
             case .alphabetical:
@@ -170,6 +175,12 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
     func searchBar(_ searchBar: UISearchBar, selectedScopeButtonIndexDidChange selectedScope: Int) {
         roster.order = selectedScope == 0 ? .alphabetical : .availability
         Settings.RosterItemsOrder.setValue(roster.order.rawValue);
+        tableView.reloadData();
+    }
+    
+    func availabilityFilterChanged(_ control: UISegmentedControl) {
+        roster.availableOnly = control.selectedSegmentIndex == 1;
+        Settings.RosterAvailableOnly.setValue(roster.availableOnly);
         tableView.reloadData();
     }
     

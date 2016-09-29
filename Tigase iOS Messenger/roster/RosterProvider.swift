@@ -23,6 +23,8 @@ import UIKit
 import TigaseSwift
 
 protocol RosterProvider: EventHandler {
+    
+    var availableOnly: Bool { get set }
 
     var order: RosterSortingOrder { get set };
     
@@ -59,10 +61,18 @@ public class RosterProviderAbstract<Item: RosterProviderItem> {
         return appDelegate.xmppService;
     }
     
+    var availableOnly: Bool = false {
+        didSet {
+            if oldValue != availableOnly {
+                _ = updateItems();
+            }
+        }
+    }
+    
     var order: RosterSortingOrder {
         didSet {
             if oldValue != order {
-                updateItems();
+                _ = updateItems();
             }
         }
     }
@@ -73,11 +83,12 @@ public class RosterProviderAbstract<Item: RosterProviderItem> {
     
     internal var queryString: String? = nil;
     
-    init(order: RosterSortingOrder, updateNotificationName: Notification.Name) {
+    init(order: RosterSortingOrder, availableOnly: Bool, updateNotificationName: Notification.Name) {
         self.order = order;
         self.updateNotificationName = updateNotificationName;
+        self.availableOnly = availableOnly;
         self.allItems = self.loadItems();
-        updateItems();
+        _ = updateItems();
     }
     
     public func handle(event: Event) {
@@ -145,7 +156,7 @@ public class RosterProviderAbstract<Item: RosterProviderItem> {
         if queryString != nil && queryString!.isEmpty {
             queryString = nil;
         }
-        updateItems();
+        _ = updateItems();
     }
     
     func loadItems() -> [Item] {
