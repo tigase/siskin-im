@@ -28,27 +28,22 @@ open class DBVCardsCache {
     
     let dbConnection: DBConnection;
     
-    fileprivate lazy var updateVCardStmt:DBStatement! = try? self.dbConnection.prepareStatement("UPDATE vcards_cache SET data = :data, avatar = :avatar, avatar_hash = :avatar_hash, timestamp = :timestamp WHERE jid = :jid");
-    fileprivate lazy var insertVCardStmt:DBStatement! = try? self.dbConnection.prepareStatement("INSERT INTO vcards_cache (jid, data, avatar, avatar_hash, timestamp) VALUES(:jid, :data, :avatar, :avatar_hash, :timestamp)");
-    fileprivate lazy var chechPhotoHashStmt:DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM vcards_cache WHERE jid = :jid AND avatar_hash IS NOT NULL AND avatar_hash = :avatar_hash");
-    fileprivate lazy var getPhotoStmt:DBStatement! = try? self.dbConnection.prepareStatement("SELECT avatar FROM vcards_cache WHERE jid = :jid");
+    fileprivate lazy var updateVCardStmt:DBStatement! = try? self.dbConnection.prepareStatement("UPDATE vcards_cache SET data = :data, timestamp = :timestamp WHERE jid = :jid");
+    fileprivate lazy var insertVCardStmt:DBStatement! = try? self.dbConnection.prepareStatement("INSERT INTO vcards_cache (jid, data, timestamp) VALUES(:jid, :data, :timestamp)");
     fileprivate lazy var getVCardStmt:DBStatement! = try? self.dbConnection.prepareStatement("SELECT data FROM vcards_cache WHERE jid = :jid");
     
     public init(dbConnection: DBConnection) {
         self.dbConnection = dbConnection;
     }
     
-    open func updateVCard(for jid: BareJID, vcard: VCardModule.VCard?) {
-        let avatar_data = vcard?.photoValBinary;
-        let avatar_hash:String? = Digest.sha1.digest(toHex: avatar_data);
-        
-        let params:[String:Any?] = ["jid" : jid, "data": vcard, "avatar": avatar_data, "avatar_hash": avatar_hash, "timestamp": NSDate()];
+    open func updateVCard(for jid: BareJID, on account: BareJID, vcard: VCardModule.VCard?) {
+        let params:[String:Any?] = ["jid" : jid, "data": vcard, "timestamp": NSDate()];
         dbConnection.dispatch_async_db_queue() {
             if try! self.updateVCardStmt.update(params) == 0 {
                 _ = try! self.insertVCardStmt.insert(params);
             }
         }
-        NotificationCenter.default.post(name: DBVCardsCache.VCARD_UPDATED, object: self, userInfo: ["jid": jid]);
+        NotificationCenter.default.post(name: DBVCardsCache.VCARD_UPDATED, object: self, userInfo: ["jid": jid, "account": account]);
     }
     
     open func getVCard(for jid: BareJID) -> VCardModule.VCard? {
@@ -63,16 +58,10 @@ open class DBVCardsCache {
         return nil;
     }
     
-    open func checkVCardPhotoHash(for jid: BareJID, hash: String) -> Bool {
-        let params:[String:Any?] = ["jid": jid, "avatar_hash": hash.lowercased()];
-        let count = try! chechPhotoHashStmt.scalar(params);
-        return count == 1;
-    }
-    
     open func getPhoto(for jid: BareJID) -> Data? {
-        return dbConnection.dispatch_sync_with_result_local_queue(){
-            let cursor = try! self.getPhotoStmt.query(jid);
-            return cursor?["avatar"];
+        if let vcard = getVCard(for: jid) {
+            return vcard.photoValBinary;
         }
+        return nil;
     }
 }

@@ -57,7 +57,13 @@ class AccountSettingsViewController: UITableViewController {
         let vcard = xmppService.dbVCardsCache.getVCard(for: accountJid);
         update(vcard: vcard);
 
-        avatarView.sizeToFit();
+        //avatarView.sizeToFit();
+        avatarView.layer.masksToBounds = true;
+        avatarView.layer.cornerRadius = avatarView.frame.width / 2;
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        //avatarView.sizeToFit();
         avatarView.layer.masksToBounds = true;
         avatarView.layer.cornerRadius = avatarView.frame.width / 2;
     }

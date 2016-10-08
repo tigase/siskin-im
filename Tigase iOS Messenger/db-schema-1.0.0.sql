@@ -54,8 +54,6 @@ CREATE TABLE IF NOT EXISTS vcards_cache (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     jid TEXT NOT NULL,
     data TEXT,
-    avatar BLOB,
-    avatar_hash TEXT,
     timestamp INTEGER
 );
 
@@ -85,4 +83,16 @@ CREATE TABLE IF NOT EXISTS caps_identities (
 
 CREATE INDEX IF NOT EXISTS caps_indentities_node_idx on caps_identities (
     node
+);
+
+CREATE TABLE IF NOT EXISTS avatars_cache (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    jid TEXT NOT NULL,
+    account TEXT NOT NULL,
+    hash TEXT NOT NULL,
+    type TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS avatars_cache_jid_idx on avatars_cache (
+    jid
 );

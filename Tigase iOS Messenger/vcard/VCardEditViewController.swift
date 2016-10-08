@@ -280,7 +280,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                 if let vcardModule: VCardModule = client.modulesManager.getModule(VCardModule.ID) {
                     vcardModule.retrieveVCard(onSuccess: { (vcard) in
                         DispatchQueue.global(qos: .default).async() {
-                            self.xmppService.dbVCardsCache.updateVCard(for: self.accountJid, vcard: vcard);
+                            self.xmppService.dbVCardsCache.updateVCard(for: self.accountJid, on: self.accountJid, vcard: vcard);
                             self.vcard = vcard;
                             DispatchQueue.main.async() {
                                 self.tableView.reloadData();
@@ -359,14 +359,37 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         UIGraphicsEndImageContext();
         
         // saving photo
-        if let data = UIImagePNGRepresentation(photo) {
+        let data = UIImagePNGRepresentation(photo)
+        if data != nil {
             vcard.photoValBinary = data;
             vcard.photoType = "image/png";
         }
         tableView.reloadData();
         picker.dismiss(animated: true, completion: nil);
+        
+        if data != nil, let client = self.xmppService.getClient(forJid: self.accountJid) {
+            if let pepUserAvatarModule:PEPUserAvatarModule = client.modulesManager.getModule(PEPUserAvatarModule.ID) {
+                if pepUserAvatarModule.isPepAvailable {
+                    let question = UIAlertController(title: nil, message: "Do you wish to publish this photo as avatar?", preferredStyle: .actionSheet);
+                    question.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
+                        pepUserAvatarModule.publishAvatar(data: data!, mimeType: "image/png", onSuccess: {
+                            print("PEP: user avatar published");
+                            }, onError: { (errorCondition, pubsubErrorCondition) in
+                                DispatchQueue.main.async {
+                                    let alert = UIAlertController(title: "Error", message: "User avatar publication failed.\nReason: " + ((pubsubErrorCondition?.rawValue ?? errorCondition?.rawValue) ?? "unknown"), preferredStyle: .alert);
+                                    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+                                    self.present(alert, animated: true, completion: nil);
+                                }
+                                print("PEP: user avatar publication failed", errorCondition, pubsubErrorCondition);
+                        })
+                    }));
+                    question.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
+                    present(question, animated: true, completion: nil);
+                }
+            }
+        }
     }
-    
+
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil);
     }

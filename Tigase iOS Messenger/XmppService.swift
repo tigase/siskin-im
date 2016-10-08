@@ -40,7 +40,7 @@ open class XmppService: Logger, EventHandler {
     open let dbChatHistoryStore: DBChatHistoryStore;
     fileprivate let dbRosterStore: DBRosterStore;
     open let dbVCardsCache: DBVCardsCache;
-    
+    fileprivate let avatarStore: AvatarStore;
     open var applicationState: ApplicationState {
         didSet {
             if oldValue != applicationState {
@@ -84,6 +84,7 @@ open class XmppService: Logger, EventHandler {
         self.dbChatHistoryStore = DBChatHistoryStore(dbConnection: dbConnection);
         self.dbRosterStore = DBRosterStore(dbConnection: dbConnection);
         self.dbVCardsCache = DBVCardsCache(dbConnection: dbConnection);
+        self.avatarStore = AvatarStore(dbConnection: dbConnection);
         self.reachability = Reachability();
         self.networkAvailable = false;
         self.applicationState = UIApplication.shared.applicationState == .active ? .active : .inactive;
@@ -94,7 +95,7 @@ open class XmppService: Logger, EventHandler {
             return self.validateSslCertificate(sessionObject, trust: trust);
         };
 
-        self.avatarManager = AvatarManager(xmppService: self);
+        self.avatarManager = AvatarManager(xmppService: self, store: avatarStore);
         NotificationCenter.default.addObserver(self, selector: #selector(XmppService.accountConfigurationChanged), name: AccountManager.ACCOUNT_CONFIGURATION_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(XmppService.connectivityChanged), name: Reachability.CONNECTIVITY_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(XmppService.settingsChanged), name: Settings.SETTINGS_CHANGED, object: nil);
@@ -176,6 +177,8 @@ open class XmppService: Logger, EventHandler {
         _ = client.modulesManager.register(ClientStateIndicationModule());
         _ = client.modulesManager.register(MobileModeModule());
         _ = client.modulesManager.register(PingModule());
+        _ = client.modulesManager.register(PubSubModule());
+        _ = client.modulesManager.register(PEPUserAvatarModule());
         let rosterModule =  client.modulesManager.register(RosterModule());
         rosterModule.rosterStore = DBRosterStoreWrapper(sessionObject: client.sessionObject, store: dbRosterStore);
         rosterModule.versionProvider = dbRosterStore;
@@ -297,6 +300,8 @@ open class XmppService: Logger, EventHandler {
             DispatchQueue.main.async {
                 NotificationCenter.default.post(name: XmppService.AUTHENTICATION_FAILURE, object: self, userInfo: info);
             }
+        case let e as PEPUserAvatarModule.AvatarChangedEvent:
+            log("AVATAR_CHANGED!!! from =", e.jid, ", id =", e.itemId, ", hash =", e.info.first?.id, ", size=", e.info.first?.size)
         default:
             log("received unsupported event", event);
         }

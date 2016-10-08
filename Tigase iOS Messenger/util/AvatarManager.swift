@@ -28,6 +28,7 @@ open class AvatarManager: EventHandler {
     open static let AVATAR_CHANGED = Notification.Name("messengerAvatarChanged");
     
     var defaultAvatar:UIImage;
+    var store: AvatarStore;
     fileprivate var cache = NSCache<NSString, AvatarHolder>();
     
     var xmppService: XmppService {
@@ -35,11 +36,12 @@ open class AvatarManager: EventHandler {
         return appDelegate.xmppService;
     }
     
-    public init(xmppService: XmppService) {
+    public init(xmppService: XmppService, store: AvatarStore) {
         defaultAvatar = UIImage(named: "defaultAvatar")!;
         cache.countLimit = 20;
         cache.totalCostLimit = 20 * 1024 * 1024;
-        xmppService.registerEventHandler(self, for: PresenceModule.ContactPresenceChanged.TYPE);
+        self.store = store;
+        xmppService.registerEventHandler(self, for: PresenceModule.ContactPresenceChanged.TYPE, PEPUserAvatarModule.AvatarChangedEvent.TYPE);
         NotificationCenter.default.addObserver(self, selector: #selector(AvatarManager.vcardUpdated), name: DBVCardsCache.VCARD_UPDATED, object: nil);
     }
     
@@ -52,7 +54,7 @@ open class AvatarManager: EventHandler {
             return val!.image;
         }
         
-        let image = loadAvatar(for: jid) ?? defaultAvatar;
+        let image = loadAvatar(for: jid, on: account) ?? defaultAvatar;
         
         // adding default avatar to cache to make sure we will not load data
         // from database when retrieving avatars for jids without avatar
@@ -66,45 +68,115 @@ open class AvatarManager: EventHandler {
             guard cpc.presence.from != nil else {
                 return;
             }
-            updateAvatarHash(account: cpc.sessionObject.userBareJid!, for: cpc.presence.from!.bareJid, photoHash: cpc.presence.vcardTempPhoto);
+            updateAvatarHashFromVCard(account: cpc.sessionObject.userBareJid!, for: cpc.presence.from!.bareJid, photoHash: cpc.presence.vcardTempPhoto);
+        case let ace as PEPUserAvatarModule.AvatarChangedEvent:
+            let item = ace.info.first(where: { (info) -> Bool in
+                return info.url == nil;
+            })
+            updateAvatarHashFromUserAvatar(account: ace.sessionObject.userBareJid!, for: ace.jid.bareJid, photoHash: item?.id);
         default:
             break;
         }
     }
     
-    func updateAvatarHash(account: BareJID, for jid: BareJID, photoHash: String?) {
+    func updateAvatarHashFromVCard(account: BareJID, for jid: BareJID, photoHash: String?) {
         guard photoHash != nil else {
             return;
         }
-
+        
         DispatchQueue.global(qos: .background).async() {
-            if !self.xmppService.dbVCardsCache.checkVCardPhotoHash(for: jid, hash: photoHash!) {
+            guard !self.store.isAvatarAvailable(hash: photoHash!) else {
+                return;
+            }
+            
+            let photoData = self.xmppService.dbVCardsCache.getPhoto(for: jid);
+            let hash = Digest.sha1.digest(toHex: photoData);
+            
+            if hash != photoHash {
                 if let vcardModule:VCardModule = self.xmppService.getClient(forJid: account)?.modulesManager?.getModule(VCardModule.ID) {
                     vcardModule.retrieveVCard(from: JID(jid), onSuccess: { (vcard) in
                         
                         DispatchQueue.global(qos: .background).async() {
-                            self.xmppService.dbVCardsCache.updateVCard(for: jid, vcard: vcard);
+                            self.xmppService.dbVCardsCache.updateVCard(for: jid, on: account, vcard: vcard);
                         }
                         }, onError: { (errorCondition:ErrorCondition?) in
                             self.cache.removeObject(forKey: jid.stringValue as NSString);
                     });
                 }
+            } else if hash != nil {
+                self.store.storeAvatar(data: photoData!, hash: hash!);
+                self.notifyAvatarChanged(hash: hash!, type: .vcardTemp, for: jid, on: account);
             }
         }
     }
-
-    func loadAvatar(for jid: BareJID) -> UIImage? {
-        if let data = xmppService.dbVCardsCache.getPhoto(for: jid) {
-            return UIImage(data: data);
+    
+    func updateAvatarHashFromUserAvatar(account: BareJID, for jid: BareJID, photoHash: String?) {
+        DispatchQueue.global(qos: .background).async() {
+            guard photoHash != nil else {
+                _ = self.store.updateAvatar(hash: nil, type: .pepUserAvatar, for: jid, on: account);
+                return;
+            }
+            guard !self.store.isAvatarAvailable(hash: photoHash!) else {
+                return;
+            }
+            self.retrievePepUserAvatar(for: jid, on: account, photoHash: photoHash!);
         }
+    }
+
+    func loadAvatar(for jid: BareJID, on account: BareJID) -> UIImage? {
+        let hashes = store.getAvatarHashes(for: jid, on: account);
+        if let hash = hashes[AvatarType.pepUserAvatar] {
+            if let image = store.getAvatar(hash: hash) {
+                return image;
+            }
+            DispatchQueue.global(qos: .background).async {
+                self.retrievePepUserAvatar(for: jid, on: account, photoHash: hash);
+            }
+        }
+        if let hash = hashes[AvatarType.vcardTemp] {
+            if let image = store.getAvatar(hash: hash) {
+                return image;
+            }
+            if let data = self.xmppService.dbVCardsCache.getPhoto(for: jid) {
+                store.storeAvatar(data: data, hash: hash);
+                return UIImage(data: data);
+            }
+        }
+        
         return nil;
+    }
+
+    func retrievePepUserAvatar(for jid: BareJID, on account: BareJID, photoHash: String) {
+        if let pepUserAvatarModule: PEPUserAvatarModule = self.xmppService.getClient(forJid: account)?.modulesManager.getModule(PEPUserAvatarModule.ID) {
+            pepUserAvatarModule.retrieveAvatar(from: jid, itemId: photoHash, onSuccess: { (jid, hash, photoData) in
+                DispatchQueue.global(qos: .background).async {
+                    guard photoData != nil else  {
+                        self.notifyAvatarChanged(hash: nil, type: .pepUserAvatar, for: jid, on: account);
+                        return;
+                    }
+                    self.store.storeAvatar(data: photoData!, hash: hash);
+                    self.notifyAvatarChanged(hash: hash, type: .pepUserAvatar, for: jid, on: account);
+                }
+                }, onError: nil);
+        }
     }
     
     @objc func vcardUpdated(_ notification: NSNotification) {
-        if let jid = notification.userInfo?["jid"] as? BareJID {
-            cache.removeObject(forKey: jid.stringValue as NSString);
-            NotificationCenter.default.post(name: AvatarManager.AVATAR_CHANGED, object: nil, userInfo: ["jid": jid]);
+        if let jid = notification.userInfo?["jid"] as? BareJID, let account = notification.userInfo?["account"] as? BareJID {
+            if let data = self.xmppService.dbVCardsCache.getPhoto(for: jid) {
+                let hash = Digest.sha1.digest(toHex: data);
+                store.storeAvatar(data: data, hash: hash!);
+                notifyAvatarChanged(hash: hash, type: .vcardTemp, for: jid, on: account);
+            } else {
+                notifyAvatarChanged(hash: nil, type: .vcardTemp, for: jid, on: account);
+            }
         }
+    }
+    
+    func notifyAvatarChanged(hash: String?, type: AvatarType, for jid: BareJID, on account: BareJID) {
+        _ = self.store.updateAvatar(hash: hash, type: type, for: jid, on: account);
+        cache.removeObject(forKey: jid.stringValue as NSString);
+        NotificationCenter.default.post(name: AvatarManager.AVATAR_CHANGED, object: nil, userInfo: ["jid": jid]);
     }
     
     func clearCache() {

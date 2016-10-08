@@ -125,7 +125,7 @@ class ContactViewController: UITableViewController {
             if let vcardModule: VCardModule = self.xmppService.getClient(forJid: self.account)?.modulesManager.getModule(VCardModule.ID) {
                 vcardModule.retrieveVCard(from: JID(self.jid), onSuccess: { (vcard) in
                     DispatchQueue.global(qos: .background).async() {
-                        self.xmppService.dbVCardsCache.updateVCard(for: self.jid, vcard: vcard);
+                        self.xmppService.dbVCardsCache.updateVCard(for: self.jid, on: self.account, vcard: vcard);
                         self.vcard = vcard;
                     }
                     }, onError: { (errorCondition) in
