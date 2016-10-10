@@ -164,7 +164,6 @@ open class DBChatStore: LocalQueueDispatcher {
                     let type:Int = cursor["type"]!;
                     switch type {
                     case 1:
-                        let jid: BareJID = cursor["jid"]!;
                         let nickname: String = cursor["nickname"]!;
                         let password: String? = cursor["password"];
                         if let r = DBRoom(context: context, roomJid: jid, nickname: nickname) as? T {
@@ -201,7 +200,7 @@ open class DBChatStore: LocalQueueDispatcher {
                 let type:Int = cursor["type"]!;
                 switch type {
                 case 1:
-                    let jid: BareJID = cursor["jid"]!;
+                    let jid: BareJID = forJid;
                     let nickname: String = cursor["nickname"]!;
                     let password: String? = cursor["password"];
                     if let r = DBRoom(context: context, roomJid: jid, nickname: nickname) as? T {

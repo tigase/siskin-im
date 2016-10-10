@@ -170,7 +170,7 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
         var paths = [IndexPath]();
         
         item.groups.forEach { group in
-            if let idx = self.items[group]!.index(where: { $0.jid == item.jid && $0.account == item.account }) {
+            if let idx = self.items[group]?.index(where: { $0.jid == item.jid && $0.account == item.account }) {
                 let gidx = groups.index(of: group);
                 paths.append(IndexPath(row: idx, section: gidx!));
             }

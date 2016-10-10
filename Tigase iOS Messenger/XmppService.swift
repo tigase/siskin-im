@@ -308,8 +308,6 @@ open class XmppService: Logger, EventHandler {
             DispatchQueue.main.async {
                 NotificationCenter.default.post(name: XmppService.AUTHENTICATION_FAILURE, object: self, userInfo: info);
             }
-        case let e as PEPUserAvatarModule.AvatarChangedEvent:
-            log("AVATAR_CHANGED!!! from =", e.jid, ", id =", e.itemId, ", hash =", e.info.first?.id, ", size=", e.info.first?.size)
         default:
             log("received unsupported event", event);
         }
