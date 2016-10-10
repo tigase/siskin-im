@@ -47,11 +47,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         xmppService = XmppService(dbConnection: dbConnection);
         xmppService.updateXmppClientInstance();
-        application.registerUserNotificationSettings(UIUserNotificationSettings(types: [UIUserNotificationType.alert, UIUserNotificationType.badge, UIUserNotificationType.sound], categories: nil));
+        registerUserNotificationSettings(application: application);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.chatItemsUpdated), name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.serverCertificateError), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.authenticationFailure), name: XmppService.AUTHENTICATION_FAILURE, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.presenceAuthorizationRequest), name: XmppService.PRESENCE_AUTHORIZATION_REQUEST, object: nil);
         updateApplicationIconBadgeNumber();
         
         application.setMinimumBackgroundFetchInterval(60);
@@ -164,6 +165,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 topController?.present(alert, animated: true, completion: nil);
             }
         }
+        if notification.category == "SUBSCRIPTION_REQUEST", let userInfo = notification.userInfo {
+            let senderJid = BareJID(userInfo["sender"] as! String);
+            let accountJid = BareJID(userInfo["account"] as! String);
+            var senderName = userInfo["senderName"] as! String;
+            if senderName != senderJid.stringValue {
+                senderName = "\(senderName) (\(senderJid.stringValue))";
+            }
+            let alert = UIAlertController(title: "Subscription request", message: "Received presence subscription request from\n\(senderName)\non account \(accountJid.stringValue)", preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: "Accept", style: .default, handler: {(action) in
+                guard let presenceModule: PresenceModule = self.xmppService.getClient(forJid: accountJid)?.context.modulesManager.getModule(PresenceModule.ID) else {
+                    return;
+                }
+                presenceModule.subscribed(by: JID(senderJid));
+            }));
+            alert.addAction(UIAlertAction(title: "Reject", style: .destructive, handler: {(action) in
+                guard let presenceModule: PresenceModule = self.xmppService.getClient(forJid: accountJid)?.context.modulesManager.getModule(PresenceModule.ID) else {
+                    return;
+                }
+                presenceModule.unsubscribed(by: JID(senderJid));
+            }));
+            
+            var topController = UIApplication.shared.keyWindow?.rootViewController;
+            while (topController?.presentedViewController != nil) {
+                topController = topController?.presentedViewController;
+            }
+            
+            topController?.present(alert, animated: true, completion: nil);
+        }
     }
     
     func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
@@ -175,6 +204,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let time = fetchEnd.timeIntervalSince(fetchStart);
             print(Date(), "fetched date in \(time) seconds with result = \(result)");
         });
+    }
+    
+    func registerUserNotificationSettings(application: UIApplication) {
+        var settings = UIUserNotificationSettings(types: [UIUserNotificationType.alert, UIUserNotificationType.badge, UIUserNotificationType.sound], categories: nil);
+        application.registerUserNotificationSettings(settings);
     }
     
     func newMessage(_ notification: NSNotification) {
@@ -222,6 +256,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func chatItemsUpdated(_ notification: NSNotification) {
         updateApplicationIconBadgeNumber();
+    }
+    
+    func presenceAuthorizationRequest(_ notification: NSNotification) {
+        let sender = notification.userInfo?["sender"] as? BareJID;
+        let account = notification.userInfo?["account"] as? BareJID;
+        var senderName:String? = nil;
+        if let sessionObject = xmppService.getClient(forJid: account!)?.sessionObject {
+            senderName = RosterModule.getRosterStore(sessionObject).get(for: JID(sender!))?.name;
+        }
+        if senderName == nil {
+            senderName = sender!.stringValue;
+        }
+        
+        let userNotification = UILocalNotification();
+        userNotification.alertAction = "fix";
+        userNotification.alertBody = "Received presence subscription request from " + senderName!;
+        userNotification.userInfo = ["sender": sender!.stringValue as NSString, "account": account!.stringValue as NSString, "senderName": senderName! as NSString];
+        userNotification.category = "SUBSCRIPTION_REQUEST";
+        
+        UIApplication.shared.presentLocalNotificationNow(userNotification);
     }
     
     func updateApplicationIconBadgeNumber() {

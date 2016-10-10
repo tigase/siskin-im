@@ -32,7 +32,8 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
     @IBOutlet var accountTextField: UITextField!
     @IBOutlet var jidTextField: UITextField!
     @IBOutlet var nameTextField: UITextField!
-    @IBOutlet var requestAuthorizationSwith: UISwitch!
+    @IBOutlet var sendPresenceUpdatesSwitch: UISwitch!
+    @IBOutlet var receivePresenceUpdatesSwitch: UISwitch!
     
     var account:BareJID?;
     var jid:JID?;
@@ -49,6 +50,8 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
         self.jidTextField.addTarget(self, action: #selector(RosterItemEditViewController.textFieldDidChange), for: UIControlEvents.editingChanged);
         self.jidTextField.text = jid?.stringValue;
         self.accountTextField.text = account?.stringValue;
+        self.sendPresenceUpdatesSwitch.isOn = true;
+        self.receivePresenceUpdatesSwitch.isOn = true;
         if account != nil && jid != nil {
             self.jidTextField.isEnabled = false;
             self.accountTextField.isEnabled = false;
@@ -57,10 +60,11 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
                 let rosterStore: RosterStore = RosterModule.getRosterStore(sessionObject)
                 if let rosterItem = rosterStore.get(for: jid!) {
                     self.nameTextField.text = rosterItem.name;
+                    self.sendPresenceUpdatesSwitch.isOn = rosterItem.subscription.isFrom;
+                    self.receivePresenceUpdatesSwitch.isOn = rosterItem.subscription.isTo;
                 }
             }
         }
-        requestAuthorizationSwith.isOn = false;
     }
 
     override func didReceiveMemoryWarning() {
@@ -111,14 +115,11 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
             return;
         }
         
-        let requestAuth = self.requestAuthorizationSwith.isOn;
         let onSuccess = {(stanza:Stanza)->Void in
-            if requestAuth {
-                if let presenceModule: PresenceModule = client?.modulesManager.getModule(PresenceModule.ID) {
-                    presenceModule.subscribe(to: self.jid!);
-                }
+            self.updateSubscriptions(client: client!);
+            DispatchQueue.main.async {
+                _ = self.navigationController?.popViewController(animated: true);
             }
-            _ = self.navigationController?.popViewController(animated: true);
         };
         let onError = {(errorCondition:ErrorCondition?)->Void in
             let alert = UIAlertController.init(title: "Failure", message: "Server returned error: " + (errorCondition?.rawValue ?? "Operation timed out"), preferredStyle: .alert);
@@ -128,9 +129,35 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
 
         let rosterModule:RosterModule = client!.modulesManager.getModule(RosterModule.ID)!;
         if let rosterItem = rosterModule.rosterStore.get(for: jid!) {
-            rosterModule.rosterStore.update(item: rosterItem, name: nameTextField.text, onSuccess: onSuccess, onError: onError);
+            if rosterItem.name == nameTextField.text {
+                updateSubscriptions(client: client!);
+            } else {
+                rosterModule.rosterStore.update(item: rosterItem, name: nameTextField.text, onSuccess: onSuccess, onError: onError);
+            }
         } else {
             rosterModule.rosterStore.add(jid: jid!, name: nameTextField.text, onSuccess: onSuccess, onError: onError);
+        }
+    }
+    
+    fileprivate func updateSubscriptions(client: XMPPClient) {
+        let rosterModule:RosterModule = client.modulesManager.getModule(RosterModule.ID)!;
+        if let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID) {
+            guard let rosterItem = rosterModule.rosterStore.get(for: self.jid!) else {
+                return;
+            }
+            if self.receivePresenceUpdatesSwitch.isOn && !rosterItem.subscription.isTo {
+                presenceModule.subscribe(to: self.jid!);
+            }
+            if !self.receivePresenceUpdatesSwitch.isOn && rosterItem.subscription.isTo {
+                presenceModule.unsubscribe(from: self.jid!);
+            }
+            if self.sendPresenceUpdatesSwitch.isOn && !rosterItem.subscription.isFrom {
+                presenceModule.subscribed(by: self.jid!);
+            }
+            if !self.sendPresenceUpdatesSwitch.isOn && rosterItem.subscription.isFrom {
+                presenceModule.unsubscribed(by: self.jid!);
+            }
+            _ = self.navigationController?.popViewController(animated: true);
         }
     }
     /*

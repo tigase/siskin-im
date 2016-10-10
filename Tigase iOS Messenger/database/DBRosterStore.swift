@@ -43,8 +43,9 @@ open class DBRosterStoreWrapper: RosterStore {
     }
     
     override open func addItem(_ item:RosterItem) {
-        _ = store.addItem(for: sessionObject, item: item);
-        cache?.setObject(item, forKey: item.jid.stringValue as NSString);
+        if let dbItem = store.addItem(for: sessionObject, item: item) {
+            cache?.setObject(dbItem, forKey: dbItem.jid.stringValue as NSString);
+        }
     }
     
     override open func get(for jid:JID) -> RosterItem? {

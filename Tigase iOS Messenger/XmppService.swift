@@ -27,6 +27,7 @@ open class XmppService: Logger, EventHandler {
     
     open static let SERVER_CERTIFICATE_ERROR = Notification.Name("serverCertificateError");
     open static let AUTHENTICATION_FAILURE = Notification.Name("authenticationFailure");
+    open static let PRESENCE_AUTHORIZATION_REQUEST = Notification.Name("presenceAuthorizationRequest");
     
     open var fetchTimeShort: TimeInterval = 5;
     open var fetchTimeLong: TimeInterval = 20;
@@ -195,7 +196,7 @@ open class XmppService: Logger, EventHandler {
     }
     
     fileprivate func registerEventHandlers(_ client:XMPPClient) {
-        client.eventBus.register(handler: self, for: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE);
+        client.eventBus.register(handler: self, for: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, PresenceModule.SubscribeRequestEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE);
         client.eventBus.register(handler: dbChatHistoryStore, for: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.register(handler: holder.handler, for: holder.events);
@@ -203,7 +204,7 @@ open class XmppService: Logger, EventHandler {
     }
     
     fileprivate func unregisterEventHandlers(_ client:XMPPClient) {
-        client.eventBus.unregister(handler: self, for: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE);
+        client.eventBus.unregister(handler: self, for: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, PresenceModule.SubscribeRequestEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE);
         client.eventBus.unregister(handler: dbChatHistoryStore, for: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.unregister(handler: holder.handler, for: holder.events);
@@ -277,6 +278,13 @@ open class XmppService: Logger, EventHandler {
                 e.presence.priority = 0;
             }
             e.presence.status = Settings.StatusMessage.getString();
+        case let e as PresenceModule.SubscribeRequestEvent:
+            var info: [String: AnyObject] = [:];
+            info["account"] = e.sessionObject.userBareJid!;
+            info["sender"] = e.presence.from!.bareJid;
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: XmppService.PRESENCE_AUTHORIZATION_REQUEST, object: self, userInfo: info);
+            }
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
             if applicationState == .inactive {
                 let client = getClient(forJid: e.sessionObject.userBareJid!);
