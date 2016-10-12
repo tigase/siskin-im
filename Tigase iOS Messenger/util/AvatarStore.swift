@@ -52,9 +52,17 @@ open class AvatarStore {
     open func getAvatarHashes(for jid: BareJID, on account: BareJID) -> [AvatarType:String] {
         let params = ["account": account, "jid": jid] as [String : Any?];
         var hashes: [AvatarType:String] = [:];
-        try! findAvatarHashForJidStmt.query(params, forEachRow: { (cursor) -> Void in
-            hashes[AvatarType(rawValue: cursor["type"]!)!] = cursor["hash"]!;
-        })
+        dbConnection.dispatch_sync_db_queue {
+            try! self.findAvatarHashForJidStmt.query(params, forEachRow: { (cursor) -> Void in
+                guard let typeRawValue: String = cursor["type"], let hash: String = cursor["hash"] else {
+                    return;
+                }
+                guard let avatarType = AvatarType(rawValue: typeRawValue) else {
+                    return;
+                }
+                hashes[avatarType] = hash;
+            });
+        }
         return hashes;
     }
     
@@ -66,26 +74,36 @@ open class AvatarStore {
         return FileManager.default.fileExists(atPath: avatarCacheUrl.appendingPathComponent(hash).path);
     }
     
-    open func updateAvatar(hash: String?, type: AvatarType, for jid: BareJID, on account: BareJID) -> Bool {
-        let oldHash = getAvatarHashes(for: jid, on: account)[type];
-        guard oldHash != hash else {
-            return false;
-        }
+    open func updateAvatar(hash: String?, type: AvatarType, for jid: BareJID, on account: BareJID, onFinish: @escaping ()->Void) {
+        dbConnection.dispatch_async_db_queue {
+            let oldHash = self.getAvatarHashes(for: jid, on: account)[type];
+            guard oldHash != hash else {
+//                return false;
+                return;
+            }
         
-        if oldHash != nil {
-            removeAvatar(hash: oldHash!);
-        }
+            if oldHash != nil {
+                DispatchQueue.global(qos: .background).async {
+                    self.removeAvatar(hash: oldHash!);
+                }
+            }
         
-        var params = ["account": account, "jid": jid, "type": type.rawValue] as [String : Any?];
-        _ = try! deleteAvatarHashForJidStmt.update(params);
+            var params = ["account": account, "jid": jid, "type": type.rawValue] as [String : Any?];
+            _ = try! self.deleteAvatarHashForJidStmt.update(params);
     
-        guard hash != nil else {
-            return true;
-        }
+            guard hash != nil else {
+//                return true;
+                return;
+            }
         
-        params["hash"] = hash!;
-        _ = try! insertAvatarHashForJidStmt.insert(params);
-        return true;
+            params["hash"] = hash!;
+            _ = try! self.insertAvatarHashForJidStmt.insert(params);
+            
+            DispatchQueue.global(qos: .background).async {
+                onFinish();
+            }
+        }
+//        return true;
     }
 }
 

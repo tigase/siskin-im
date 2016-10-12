@@ -113,7 +113,7 @@ open class DBChatStoreWrapper: ChatStore {
 
 open class DBChatStore: LocalQueueDispatcher {
     
-    fileprivate static let CHATS_GET = "SELECT id, type, thread_id, resource, timestamp FROM chats WHERE account = :account AND jid = :jid";
+    fileprivate static let CHATS_GET = "SELECT id, type, thread_id, resource, nickname, password, timestamp FROM chats WHERE account = :account AND jid = :jid";
     fileprivate static let CHATS_LIST = "SELECT id, jid, type, thread_id, resource, nickname, password, timestamp FROM chats WHERE account = :account";
     fileprivate static let CHAT_IS = "SELECT count(id) as count FROM chats WHERE account = :account AND jid = :jid";
     fileprivate static let CHAT_OPEN = "INSERT INTO chats (account, jid, timestamp, type, resource, thread_id) VALUES (:account, :jid, :timestamp, :type, :resource, :thread)";

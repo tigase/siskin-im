@@ -113,7 +113,7 @@ open class AvatarManager: EventHandler {
     func updateAvatarHashFromUserAvatar(account: BareJID, for jid: BareJID, photoHash: String?) {
         DispatchQueue.global(qos: .background).async() {
             guard photoHash != nil else {
-                _ = self.store.updateAvatar(hash: nil, type: .pepUserAvatar, for: jid, on: account);
+                self.notifyAvatarChanged(hash: nil, type: .pepUserAvatar, for: jid, on: account);
                 return;
             }
             guard !self.store.isAvatarAvailable(hash: photoHash!) else {
@@ -174,9 +174,10 @@ open class AvatarManager: EventHandler {
     }
     
     func notifyAvatarChanged(hash: String?, type: AvatarType, for jid: BareJID, on account: BareJID) {
-        _ = self.store.updateAvatar(hash: hash, type: type, for: jid, on: account);
-        cache.removeObject(forKey: jid.stringValue as NSString);
-        NotificationCenter.default.post(name: AvatarManager.AVATAR_CHANGED, object: nil, userInfo: ["jid": jid]);
+        self.store.updateAvatar(hash: hash, type: type, for: jid, on: account) {
+            self.cache.removeObject(forKey: jid.stringValue as NSString);
+            NotificationCenter.default.post(name: AvatarManager.AVATAR_CHANGED, object: nil, userInfo: ["jid": jid]);
+        }
     }
     
     func clearCache() {
