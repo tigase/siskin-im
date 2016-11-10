@@ -33,6 +33,8 @@ open class XmppService: Logger, EventHandler {
     open var fetchTimeLong: TimeInterval = 20;
     
     fileprivate var creationDate = NSDate();
+    fileprivate var fetchClientsWaitingForReconnection: [BareJID] = [];
+    fileprivate var fetchStart = NSDate();
     
     fileprivate let dbConnection: DBConnection;
     open var avatarManager: AvatarManager!;
@@ -196,7 +198,7 @@ open class XmppService: Logger, EventHandler {
     }
     
     fileprivate func registerEventHandlers(_ client:XMPPClient) {
-        client.eventBus.register(handler: self, for: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, PresenceModule.SubscribeRequestEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE);
+        client.eventBus.register(handler: self, for: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, PresenceModule.SubscribeRequestEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE);
         client.eventBus.register(handler: dbChatHistoryStore, for: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.register(handler: holder.handler, for: holder.events);
@@ -204,7 +206,7 @@ open class XmppService: Logger, EventHandler {
     }
     
     fileprivate func unregisterEventHandlers(_ client:XMPPClient) {
-        client.eventBus.unregister(handler: self, for: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, PresenceModule.SubscribeRequestEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE);
+        client.eventBus.unregister(handler: self, for: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, PresenceModule.SubscribeRequestEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE);
         client.eventBus.unregister(handler: dbChatHistoryStore, for: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.unregister(handler: holder.handler, for: holder.events);
@@ -308,6 +310,9 @@ open class XmppService: Logger, EventHandler {
             DispatchQueue.main.async {
                 NotificationCenter.default.post(name: XmppService.AUTHENTICATION_FAILURE, object: self, userInfo: info);
             }
+        case let e as StreamManagementModule.ResumedEvent:
+            // here we should notify messenger that connection was resumed and we can end soon
+            self.clientConnected(account: e.sessionObject.userBareJid!);
         default:
             log("received unsupported event", event);
         }
@@ -409,10 +414,13 @@ open class XmppService: Logger, EventHandler {
         }
         // count connections which needs to resume
         var count = 0;
+        self.fetchStart = NSDate();
+        self.fetchClientsWaitingForReconnection = [];
         for client in clients.values {
             // try to send keepalive to ensure connection is valid
             // if it fails it will try to resume connection
             if client.state != .connected {
+                self.fetchClientsWaitingForReconnection.append(client.sessionObject.userBareJid!);
                 // it looks like this is causing an issue
 //                if client.state == .disconnected {
 //                    client.login();
@@ -423,12 +431,29 @@ open class XmppService: Logger, EventHandler {
             }
         }
         
+        log("waiting for clients", self.fetchClientsWaitingForReconnection, "to reconnect");
         // we need to give connections time to read and process data
         // so event if all are connected lets wait 5secs
         self.backgroundFetchCompletionHandler = completionHandler;
         backgroundFetchTimer = TigaseSwift.Timer(delayInSeconds: count > 0 ? fetchTimeLong : fetchTimeShort, repeats: false, callback: {
             self.backgroundFetchTimedOut();
         });
+    }
+    
+    fileprivate func clientConnected(account: BareJID) {
+        DispatchQueue.main.async {
+            self.log("conencted client for account", account);
+            if let idx = self.fetchClientsWaitingForReconnection.index(of: account) {
+                self.fetchClientsWaitingForReconnection.remove(at: idx);
+                self.log("still waiting for accounts to reconnect", self.fetchClientsWaitingForReconnection);
+                if (self.fetchClientsWaitingForReconnection.isEmpty && ((self.fetchTimeLong - 4) + self.fetchStart.timeIntervalSinceNow) > 0) {
+                    self.backgroundFetchTimer?.cancel();
+                    self.backgroundFetchTimer = TigaseSwift.Timer(delayInSeconds: 2, repeats: false, callback: {
+                        self.backgroundFetchTimedOut();
+                    })
+                }
+            }
+        }
     }
 
     fileprivate func backgroundFetchTimedOut() {
@@ -447,6 +472,7 @@ open class XmppService: Logger, EventHandler {
                 }
             }
         }
+        self.fetchClientsWaitingForReconnection = [];
         callback?(.newData);
     }
     
