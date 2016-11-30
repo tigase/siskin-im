@@ -300,15 +300,19 @@ open class XmppService: Logger, EventHandler {
             }
             reconnectMucRooms(forAccountJid: e.sessionObject.userBareJid!);
         case let e as AuthModule.AuthFailedEvent:
-            if let account = AccountManager.getAccount(forJid: e.sessionObject.userBareJid!.stringValue) {
-                account.active = false;
-                AccountManager.updateAccount(account, notifyChange: true);
-            }
-            var info: [String: AnyObject] = [:];
-            info["account"] = e.sessionObject.userBareJid!.stringValue as NSString;
-            info["auth-error-type"] = e.error.rawValue as NSString;
-            DispatchQueue.main.async {
-                NotificationCenter.default.post(name: XmppService.AUTHENTICATION_FAILURE, object: self, userInfo: info);
+            if e.error != SaslError.aborted {
+                if let account = AccountManager.getAccount(forJid: e.sessionObject.userBareJid!.stringValue) {
+                    account.active = false;
+                    AccountManager.updateAccount(account, notifyChange: true);
+                }
+                var info: [String: AnyObject] = [:];
+                info["account"] = e.sessionObject.userBareJid!.stringValue as NSString;
+                info["auth-error-type"] = e.error.rawValue as NSString;
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: XmppService.AUTHENTICATION_FAILURE, object: self, userInfo: info);
+                }
+            } else {
+                self.updateXmppClientInstance(forJid: e.sessionObject.userBareJid!);
             }
         case let e as StreamManagementModule.ResumedEvent:
             // here we should notify messenger that connection was resumed and we can end soon
