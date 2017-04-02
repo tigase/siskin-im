@@ -28,9 +28,9 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
     
     var groups = [String]();
     
-    override init(order: RosterSortingOrder, availableOnly: Bool, updateNotificationName: Notification.Name) {
+    override init(order: RosterSortingOrder, availableOnly: Bool, displayHiddenGroup: Bool, updateNotificationName: Notification.Name) {
         self.items = [:];
-        super.init(order: order, availableOnly: availableOnly, updateNotificationName: updateNotificationName);
+        super.init(order: order, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup, updateNotificationName: updateNotificationName);
     }
     
     func numberOfSections() -> Int {
@@ -113,17 +113,36 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
         }
     }
     
+    func filterItems() -> [RosterProviderGroupedItem] {
+        if queryString != nil {
+            return allItems.filter { (item) -> Bool in
+                if (item.name?.lowercased().contains(queryString!))! {
+                    return true;
+                }
+                if item.jid.stringValue.lowercased().contains(queryString!) {
+                    return true;
+                }
+                return false;
+            };
+        } else {
+            var items = allItems;
+            if availableOnly {
+                items = items.filter { (item) -> Bool in
+                    item.presence?.show != nil
+                }
+            }
+            if !displayHiddenGroup {
+                items = items.filter { (item) -> Bool in
+                    item.groups.index(of: "Hidden") == nil
+                }
+            }
+            return items;
+        }
+    }
+    
     override func updateItems() -> Bool {
         var groups: Set<String> = [];
-        let items = queryString == nil ? (!availableOnly ? allItems : allItems.filter { (item) -> Bool in item.presence?.show != nil }) : allItems.filter({ (item) -> Bool in
-            if (item.name?.lowercased().contains(queryString!))! {
-                return true;
-            }
-            if item.jid.stringValue.lowercased().contains(queryString!) {
-                return true;
-            }
-            return false;
-        });
+        let items = filterItems();
         var groupedItems: [String:[RosterProviderGroupedItem]] = [:];
         items.forEach { item in
             groups = groups.union(item.groups)

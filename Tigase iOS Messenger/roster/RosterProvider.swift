@@ -24,8 +24,10 @@ import TigaseSwift
 
 protocol RosterProvider: EventHandler {
     
-    var availableOnly: Bool { get set }
+    var availableOnly: Bool { get set };
 
+    var displayHiddenGroup: Bool { get set };
+    
     var order: RosterSortingOrder { get set };
     
     func numberOfSections() -> Int;
@@ -69,6 +71,14 @@ public class RosterProviderAbstract<Item: RosterProviderItem> {
         }
     }
     
+    var displayHiddenGroup: Bool = false {
+        didSet {
+            if oldValue != displayHiddenGroup {
+                _ = updateItems();
+            }
+        }
+    }
+    
     var order: RosterSortingOrder {
         didSet {
             if oldValue != order {
@@ -83,10 +93,11 @@ public class RosterProviderAbstract<Item: RosterProviderItem> {
     
     internal var queryString: String? = nil;
     
-    init(order: RosterSortingOrder, availableOnly: Bool, updateNotificationName: Notification.Name) {
+    init(order: RosterSortingOrder, availableOnly: Bool, displayHiddenGroup: Bool, updateNotificationName: Notification.Name) {
         self.order = order;
         self.updateNotificationName = updateNotificationName;
         self.availableOnly = availableOnly;
+        self.displayHiddenGroup = displayHiddenGroup;
         self.allItems = self.loadItems();
         _ = updateItems();
     }
@@ -182,6 +193,7 @@ public protocol RosterProviderItem {
     var jid: JID { get }
     var presence: Presence? { get }
     var displayName: String { get }
-    
+
 }
+
 

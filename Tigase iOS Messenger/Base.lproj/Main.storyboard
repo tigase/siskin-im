@@ -1335,6 +1335,45 @@
                                     <outlet property="switchView" destination="vwi-OJ-bbr" id="dyE-f4-Glb"/>
                                 </connections>
                             </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="rosterHiddenGroupCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="RosterHiddenGroupTableViewCell" id="9NK-3y-SSq" userLabel="RosterHiddenGroupTableViewCell" customClass="SwitchTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="275.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="9NK-3y-SSq" id="PGl-pG-iAZ">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="EJ2-WP-sSE">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Display &quot;Hidden&quot; group" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bZb-uT-nKZ">
+                                                    <rect key="frame" x="8" y="4" width="300" height="35.5"/>
+                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GD0-Ya-fjo">
+                                                    <rect key="frame" x="318" y="4" width="51" height="35.5"/>
+                                                    <connections>
+                                                        <action selector="valueChanged:" destination="9NK-3y-SSq" eventType="valueChanged" id="ZwS-Jh-era"/>
+                                                    </connections>
+                                                </switch>
+                                            </subviews>
+                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
+                                        </stackView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="EJ2-WP-sSE" firstAttribute="top" secondItem="PGl-pG-iAZ" secondAttribute="top" id="EKW-jv-GMb"/>
+                                        <constraint firstAttribute="trailing" secondItem="EJ2-WP-sSE" secondAttribute="trailing" id="TmI-GW-Vb4"/>
+                                        <constraint firstAttribute="bottom" secondItem="EJ2-WP-sSE" secondAttribute="bottom" id="Vx1-pd-VYs"/>
+                                        <constraint firstItem="EJ2-WP-sSE" firstAttribute="leading" secondItem="PGl-pG-iAZ" secondAttribute="leading" id="gUh-eh-K87"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <accessibility key="accessibilityConfiguration" identifier="enableMessageCarbonsTableViewCell"/>
+                                <connections>
+                                    <outlet property="switchView" destination="GD0-Ya-fjo" id="P4O-VT-41x"/>
+                                </connections>
+                            </tableViewCell>
                         </prototypes>
                         <connections>
                             <outlet property="dataSource" destination="KC2-Lb-9cB" id="4FZ-Gk-WDd"/>

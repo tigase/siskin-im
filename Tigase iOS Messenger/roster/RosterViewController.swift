@@ -81,11 +81,12 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
         let sortOrder = RosterSortingOrder(rawValue: Settings.RosterItemsOrder.getString() ?? "") ?? .alphabetical;
         let rosterType = RosterType(rawValue: Settings.RosterType.getString() ?? "") ?? RosterType.flat;
         let availableOnly = Settings.RosterAvailableOnly.getBool();
+        let displayHiddenGroup = Settings.RosterDisplayHiddenGroup.getBool();
         switch rosterType {
         case .flat:
-            roster = RosterProviderFlat(order: sortOrder, availableOnly: availableOnly, updateNotificationName: RosterViewController.UPDATE_NOTIFICATION_NAME);
+            roster = RosterProviderFlat(order: sortOrder, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup,  updateNotificationName: RosterViewController.UPDATE_NOTIFICATION_NAME);
         case .grouped:
-            roster = RosterProviderGrouped(order: sortOrder, availableOnly: availableOnly, updateNotificationName: RosterViewController.UPDATE_NOTIFICATION_NAME);
+            roster = RosterProviderGrouped(order: sortOrder, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup, updateNotificationName: RosterViewController.UPDATE_NOTIFICATION_NAME);
         }
         switch roster.order {
             case .alphabetical:

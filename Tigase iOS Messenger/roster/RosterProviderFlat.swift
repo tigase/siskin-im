@@ -26,9 +26,9 @@ public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>,
     
     fileprivate var items: [RosterProviderFlatItem];
     
-    override init(order: RosterSortingOrder, availableOnly: Bool, updateNotificationName: Notification.Name) {
+    override init(order: RosterSortingOrder, availableOnly: Bool, displayHiddenGroup: Bool, updateNotificationName: Notification.Name) {
         self.items = [];
-        super.init(order: order, availableOnly: availableOnly, updateNotificationName: updateNotificationName);
+        super.init(order: order, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup, updateNotificationName: updateNotificationName);
     }
     
     func numberOfSections() -> Int {
@@ -105,16 +105,35 @@ public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>,
         }
     }
     
+    func filterItems() -> [RosterProviderFlatItem] {
+        if queryString != nil {
+            return allItems.filter { (item) -> Bool in
+                if (item.name?.lowercased().contains(queryString!))! {
+                    return true;
+                }
+                if item.jid.stringValue.lowercased().contains(queryString!) {
+                    return true;
+                }
+                return false;
+            };
+        } else {
+            var items = allItems;
+            if availableOnly {
+                items = items.filter { (item) -> Bool in
+                    item.presence?.show != nil
+                }
+            }
+            if !displayHiddenGroup {
+                items = items.filter { (item) -> Bool in
+                    !item.hidden
+                }
+            }
+            return items;
+        }
+    }
+    
     override func updateItems() -> Bool {
-        var items = queryString == nil ? (!availableOnly ? allItems : allItems.filter { (item) -> Bool in item.presence?.show != nil }) : allItems.filter({ (item) -> Bool in
-            if (item.name?.lowercased().contains(queryString!))! {
-                return true;
-            }
-            if item.jid.stringValue.lowercased().contains(queryString!) {
-                return true;
-            }
-            return false;
-        });
+        var items = filterItems();
         switch order {
         case .alphabetical:
             items.sort { (i1, i2) -> Bool in
@@ -138,6 +157,22 @@ public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>,
         return items.index { $0.jid == item.jid && $0.account == item.account };
     }
     
+    override func loadItems() -> [RosterProviderFlatItem] {
+        let items = super.loadItems();
+        
+        var hidden: [JID] = [];
+        try! self.dbConnection.prepareStatement("SELECT ri.jid FROM roster_items ri INNER JOIN roster_items_groups rig ON ri.id = rig.item_id INNER JOIN roster_groups rg ON rg.id = rig.group_id where rg.name = 'Hidden'").query() { (it) -> Void in
+            let jid: JID = it["jid"]!;
+            
+            hidden.append(jid);
+        }
+        
+        items.forEach { (item) in
+            item.hidden = hidden.index(of: item.jid) != nil;
+        }
+        
+        return items;
+    }
     
     override func processDBloadQueryResult(it: DBCursor) -> RosterProviderFlatItem? {
         let account: BareJID = it["account"]!;
@@ -163,6 +198,8 @@ public class RosterProviderFlatItem: RosterProviderItem {
     public var displayName: String {
         return name != nil ? name! : jid.stringValue;
     }
+    
+    public var hidden: Bool = false;
     
     public init(account: BareJID, jid: JID, name:String?, presence: Presence?) {
         self.account = account;

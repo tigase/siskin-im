@@ -28,6 +28,7 @@ public enum Settings: String {
     case RosterType
     case RosterItemsOrder
     case RosterAvailableOnly
+    case RosterDisplayHiddenGroup
 
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     
@@ -41,7 +42,8 @@ public enum Settings: String {
             "EnableMessageCarbons" : true as AnyObject,
             "RosterType" : "flat" as AnyObject,
             "RosterItemsOrder" : RosterSortingOrder.alphabetical.rawValue as AnyObject,
-            "RosterAvailableOnly" : false as AnyObject
+            "RosterAvailableOnly" : false as AnyObject,
+            "RosterDisplayHiddenGroup" : false as AnyObject
         ];
         store.register(defaults: defaults);
     }
