@@ -51,7 +51,7 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
         self.jidTextField.text = jid?.stringValue;
         self.accountTextField.text = account?.stringValue;
         self.sendPresenceUpdatesSwitch.isOn = true;
-        self.receivePresenceUpdatesSwitch.isOn = true;
+        self.receivePresenceUpdatesSwitch.isOn = Settings.AutoSubscribeOnAcceptedSubscriptionRequest.getBool();
         if account != nil && jid != nil {
             self.jidTextField.isEnabled = false;
             self.accountTextField.isEnabled = false;

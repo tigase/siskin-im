@@ -1374,6 +1374,45 @@
                                     <outlet property="switchView" destination="GD0-Ya-fjo" id="P4O-VT-41x"/>
                                 </connections>
                             </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="autoSubscribeOnAccptedSubscriptionRequestCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="AutoSubscribeOnAcceptedSubscriptionRequestTableViewCell" id="kWw-fb-Bbd" userLabel="AutoSubscribeOnAcceptedSubscriptionRequestTableViewCell" customClass="SwitchTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="319.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="kWw-fb-Bbd" id="QRR-m7-Xgk">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="VKi-cv-KWN">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Subscribe to new contact presence" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ore-r0-HAI">
+                                                    <rect key="frame" x="8" y="4" width="300" height="35.5"/>
+                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="wsm-L5-x48">
+                                                    <rect key="frame" x="318" y="4" width="51" height="35.5"/>
+                                                    <connections>
+                                                        <action selector="valueChanged:" destination="kWw-fb-Bbd" eventType="valueChanged" id="irO-R3-Oqx"/>
+                                                    </connections>
+                                                </switch>
+                                            </subviews>
+                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
+                                        </stackView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="VKi-cv-KWN" firstAttribute="leading" secondItem="QRR-m7-Xgk" secondAttribute="leading" id="8tg-Lz-Tp1"/>
+                                        <constraint firstItem="VKi-cv-KWN" firstAttribute="top" secondItem="QRR-m7-Xgk" secondAttribute="top" id="Hma-kc-QD4"/>
+                                        <constraint firstAttribute="bottom" secondItem="VKi-cv-KWN" secondAttribute="bottom" id="IPF-P3-dbS"/>
+                                        <constraint firstAttribute="trailing" secondItem="VKi-cv-KWN" secondAttribute="trailing" id="Kni-uL-TrT"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <accessibility key="accessibilityConfiguration" identifier="autoSubscribeOnAcceptedSubscriptionRequestTableViewCell"/>
+                                <connections>
+                                    <outlet property="switchView" destination="wsm-L5-x48" id="Dsj-C0-Nuc"/>
+                                </connections>
+                            </tableViewCell>
                         </prototypes>
                         <connections>
                             <outlet property="dataSource" destination="KC2-Lb-9cB" id="4FZ-Gk-WDd"/>

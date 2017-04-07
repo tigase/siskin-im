@@ -178,6 +178,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     return;
                 }
                 presenceModule.subscribed(by: JID(senderJid));
+                if let sessionObject = self.xmppService.getClient(forJid: accountJid)?.context.sessionObject {
+                    let subscription = RosterModule.getRosterStore(sessionObject).get(for: JID(senderJid))?.subscription ?? RosterItem.Subscription.none;
+                    guard !subscription.isTo else {
+                        return;
+                    }
+                }
+                if (Settings.AutoSubscribeOnAcceptedSubscriptionRequest.getBool()) {
+                    presenceModule.subscribe(to: JID(senderJid));
+                } else {
+                    let alert2 = UIAlertController(title: "Subscribe to " + senderName, message: "Do you wish to subscribe to \n\(senderName)\non account \(accountJid.stringValue)", preferredStyle: .alert);
+                    alert2.addAction(UIAlertAction(title: "Accept", style: .default, handler: {(action) in
+                        presenceModule.subscribe(to: JID(senderJid));
+                    }));
+                    alert2.addAction(UIAlertAction(title: "Reject", style: .destructive, handler: nil));
+
+                    var topController = UIApplication.shared.keyWindow?.rootViewController;
+                    while (topController?.presentedViewController != nil) {
+                        topController = topController?.presentedViewController;
+                    }
+                    
+                    topController?.present(alert2, animated: true, completion: nil);
+                }
             }));
             alert.addAction(UIAlertAction(title: "Reject", style: .destructive, handler: {(action) in
                 guard let presenceModule: PresenceModule = self.xmppService.getClient(forJid: accountJid)?.context.modulesManager.getModule(PresenceModule.ID) else {

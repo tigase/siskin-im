@@ -65,7 +65,7 @@ class SettingsViewController: UITableViewController, EventHandler {
         case 1:
             return 1;
         case 2:
-            return 4;
+            return 5;
         default:
             return 0;
         }
@@ -138,8 +138,14 @@ class SettingsViewController: UITableViewController, EventHandler {
                     Settings.RosterDisplayHiddenGroup.setValue(switchView.isOn);
                 }
                 return cell;
+            case .autoSubscribeOnAcceptedSubscriptionRequest:
+                let cell = tableView.dequeueReusableCell(withIdentifier: "AutoSubscribeOnAcceptedSubscriptionRequestTableViewCell", for: indexPath) as! SwitchTableViewCell;
+                cell.switchView.isOn = Settings.AutoSubscribeOnAcceptedSubscriptionRequest.getBool();
+                cell.valueChangedListener = {(switchView: UISwitch) in
+                    Settings.AutoSubscribeOnAcceptedSubscriptionRequest.setValue(switchView.isOn);
+                }
+                return cell;
             }
-            
         }
     }
     
@@ -246,5 +252,6 @@ class SettingsViewController: UITableViewController, EventHandler {
         case enableMessageCarbons = 1
         case rosterType = 2
         case rosterDisplayHiddenGroup = 3
+        case autoSubscribeOnAcceptedSubscriptionRequest = 4
     }
 }

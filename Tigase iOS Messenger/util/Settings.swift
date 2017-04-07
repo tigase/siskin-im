@@ -29,6 +29,7 @@ public enum Settings: String {
     case RosterItemsOrder
     case RosterAvailableOnly
     case RosterDisplayHiddenGroup
+    case AutoSubscribeOnAcceptedSubscriptionRequest
 
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     
@@ -43,7 +44,8 @@ public enum Settings: String {
             "RosterType" : "flat" as AnyObject,
             "RosterItemsOrder" : RosterSortingOrder.alphabetical.rawValue as AnyObject,
             "RosterAvailableOnly" : false as AnyObject,
-            "RosterDisplayHiddenGroup" : false as AnyObject
+            "RosterDisplayHiddenGroup" : false as AnyObject,
+            "AutoSubscribeOnAcceptedSubscriptionRequest" : true as AnyObject
         ];
         store.register(defaults: defaults);
     }
