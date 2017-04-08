@@ -198,7 +198,7 @@ open class XmppService: Logger, EventHandler {
     }
     
     fileprivate func registerEventHandlers(_ client:XMPPClient) {
-        client.eventBus.register(handler: self, for: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, PresenceModule.SubscribeRequestEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE);
+        client.eventBus.register(handler: self, for: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, PresenceModule.SubscribeRequestEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, MucModule.NewRoomCreatedEvent.TYPE);
         client.eventBus.register(handler: dbChatHistoryStore, for: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.register(handler: holder.handler, for: holder.events);
@@ -206,7 +206,7 @@ open class XmppService: Logger, EventHandler {
     }
     
     fileprivate func unregisterEventHandlers(_ client:XMPPClient) {
-        client.eventBus.unregister(handler: self, for: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, PresenceModule.SubscribeRequestEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE);
+        client.eventBus.unregister(handler: self, for: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, PresenceModule.SubscribeRequestEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, MucModule.NewRoomCreatedEvent.TYPE);
         client.eventBus.unregister(handler: dbChatHistoryStore, for: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.unregister(handler: holder.handler, for: holder.events);
@@ -317,6 +317,15 @@ open class XmppService: Logger, EventHandler {
         case let e as StreamManagementModule.ResumedEvent:
             // here we should notify messenger that connection was resumed and we can end soon
             self.clientConnected(account: e.sessionObject.userBareJid!);
+        case let e as MucModule.NewRoomCreatedEvent:
+            guard let mucModule:MucModule = self.getClient(forJid: e.sessionObject.userBareJid!)?.context.modulesManager.getModule(MucModule.ID) else {
+                return;
+            }
+            mucModule.getRoomConfiguration(roomJid: e.room.jid, onSuccess: {(config) in
+                mucModule.setRoomConfiguration(roomJid: e.room.jid, configuration: config, onSuccess: {
+                    self.log("unlocked room", e.room.jid);
+                }, onError: nil);
+            }, onError: nil);
         default:
             log("received unsupported event", event);
         }
