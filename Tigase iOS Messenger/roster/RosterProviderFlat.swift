@@ -48,6 +48,9 @@ public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>,
     }
     
     override func handle(presenceEvent e: PresenceModule.ContactPresenceChanged) {
+        guard e.presence.from != nil else {
+            return;
+        }
         if let item = findItemFor(account: e.sessionObject.userBareJid!, jid: e.presence.from!) {
             let presence = PresenceModule.getPresenceStore(e.sessionObject).getBestPresence(for: e.presence.from!.bareJid);
             let changed = order != .alphabetical && item.presence?.show != presence?.show;
