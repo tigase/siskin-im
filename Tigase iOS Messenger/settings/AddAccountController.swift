@@ -31,9 +31,9 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     
     @IBOutlet var passwordTextField: UITextField!
     
-    @IBOutlet var saveButton: UIBarButtonItem!
+    @IBOutlet var cancelButton: UIBarButtonItem!;
     
-    @IBOutlet var cancelButton: UIBarButtonItem!
+    @IBOutlet var saveButton: UIBarButtonItem!
     
     var activityInditcator: UIActivityIndicatorView?;
     
@@ -69,6 +69,11 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated);
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        onAccountAdded = nil;
+        super.viewWillDisappear(animated);
     }
     
     @IBAction func jidTextFieldChanged(_ sender: UITextField) {
@@ -131,10 +136,14 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         let dismiss = onAccountAdded != nil;
         onAccountAdded = nil;
         
-        if self.account != nil || dismiss {
+        if dismiss {
             navigationController?.dismiss(animated: true, completion: nil);
         } else {
-            _ = navigationController?.popViewController(animated: true);
+            let newController = navigationController?.popViewController(animated: true);
+            if newController == nil || newController != self {
+                let emptyDetailController = storyboard!.instantiateViewController(withIdentifier: "emptyDetailViewController");
+                self.showDetailViewController(emptyDetailController, sender: self);
+            }
         }
         
     }

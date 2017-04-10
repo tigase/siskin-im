@@ -313,7 +313,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                     x.addChild(photo);
                     presenceModule.setPresence(show: .online, status: nil, priority: nil, additionalElements: [x]);
                     }, onError: { (errorCondition) in
-                        print("VCard publication failed", errorCondition);
+                        print("VCard publication failed", errorCondition ?? "nil");
                 });
             }
         }
@@ -330,6 +330,9 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                 self.selectPhoto(.photoLibrary);
             }));
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+            let cell = self.tableView(tableView, cellForRowAt: IndexPath(row: 0, section: 0)) as! VCardEditBasicTableViewCell;
+            alert.popoverPresentationController?.sourceView = cell.photoView;
+            alert.popoverPresentationController?.sourceRect = cell.photoView!.bounds;
             present(alert, animated: true, completion: nil);
         } else {
             selectPhoto(.photoLibrary);
@@ -380,10 +383,14 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                                     alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
                                     self.present(alert, animated: true, completion: nil);
                                 }
-                                print("PEP: user avatar publication failed", errorCondition, pubsubErrorCondition);
+                                print("PEP: user avatar publication failed", errorCondition ?? "nil", pubsubErrorCondition ?? "nil");
                         })
                     }));
                     question.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
+                    let cell = self.tableView(tableView, cellForRowAt: IndexPath(row: 0, section: 0)) as! VCardEditBasicTableViewCell;
+                    question.popoverPresentationController?.sourceView = cell.photoView;
+                    question.popoverPresentationController?.sourceRect = cell.photoView!.bounds;
+
                     present(question, animated: true, completion: nil);
                 }
             }

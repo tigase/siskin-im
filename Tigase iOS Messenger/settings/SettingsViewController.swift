@@ -163,7 +163,10 @@ class SettingsViewController: UITableViewController, EventHandler {
                     self.showAddAccount(register: false);
                 }));
                 alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
-                
+                let cell = self.tableView(tableView, cellForRowAt: indexPath);
+                alert.popoverPresentationController?.sourceView = cell.contentView;
+                alert.popoverPresentationController?.sourceRect = cell.contentView.bounds;
+
                 self.present(alert, animated: true, completion: nil);
             } else {
                 // show edit account dialog
@@ -220,6 +223,10 @@ class SettingsViewController: UITableViewController, EventHandler {
                         self.tableView.reloadData();
                     }));
                     alert.addAction(UIAlertAction(title: "Keep account", style: .default, handler: nil));
+                    let cell = self.tableView(tableView, cellForRowAt: indexPath);
+                    alert.popoverPresentationController?.sourceView = cell.contentView;
+                    alert.popoverPresentationController?.sourceRect = cell.contentView.bounds;
+
                     self.present(alert, animated: true, completion: nil);
                 }
             }

@@ -57,6 +57,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum);
         
+        (self.window?.rootViewController as? UISplitViewController)?.preferredDisplayMode = .allVisible;
         if AccountManager.getAccounts().isEmpty {
             self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SetupViewController");
         }

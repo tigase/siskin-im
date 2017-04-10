@@ -88,6 +88,18 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
         saveChanges()
     }
     
+    @IBAction func cancelBtnClicked(_ sender: UIBarButtonItem) {
+        dismissView();
+    }
+    
+    func dismissView() {
+        let newController = navigationController?.popViewController(animated: true);
+        if newController == nil || newController != self {
+            let emptyDetailController = storyboard!.instantiateViewController(withIdentifier: "emptyDetailViewController");
+            self.showDetailViewController(emptyDetailController, sender: self);
+        }
+    }
+    
     func saveChanges() {
         guard jidTextField.text?.isEmpty != true else {
             textFieldDidChange(jidTextField);
@@ -118,6 +130,7 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
         let onSuccess = {(stanza:Stanza)->Void in
             self.updateSubscriptions(client: client!);
             DispatchQueue.main.async {
+                self.dismissView();
                 _ = self.navigationController?.popViewController(animated: true);
             }
         };

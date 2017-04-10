@@ -81,18 +81,16 @@ class AccountSettingsViewController: UITableViewController {
         }
         switch segue.identifier! {
         case "EditAccountSegue":
-            let navigation = segue.destination as! UINavigationController;
-            let destination = navigation.visibleViewController as! AddAccountController;
+            let destination = segue.destination as! AddAccountController;
             destination.account = account;
         case "EditAccountVCardSegue":
-            let navigation = segue.destination as! UINavigationController;
-            let destination = navigation.visibleViewController as! VCardEditViewController;
+            let destination = segue.destination as! VCardEditViewController;
             destination.account = account;
         default:
             break;
         }
     }
-    
+        
     @IBAction func enabledSwitchChangedValue(_ sender: AnyObject) {
         if let config = AccountManager.getAccount(forJid: account) {
             config.active = enabledSwitch.isOn;

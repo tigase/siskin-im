@@ -318,7 +318,7 @@
         <!--View Controller-->
         <scene sceneID="hqR-ti-YNP">
             <objects>
-                <viewController id="sks-Bw-Z68" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="emptyDetailViewController" id="sks-Bw-Z68" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="MzK-x5-6cY"/>
                         <viewControllerLayoutGuide type="bottom" id="ksi-ls-bkm"/>
@@ -629,6 +629,11 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="hVE-JM-jVD">
+                        <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="HCq-Wc-3UE">
+                            <connections>
+                                <action selector="cancelBtnClicked:" destination="xOr-7s-G00" id="FQB-Fu-phH"/>
+                            </connections>
+                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" systemItem="save" id="8HH-Jw-de2">
                             <connections>
                                 <action selector="saveBtnClicked:" destination="xOr-7s-G00" id="RdL-9J-lgU"/>
@@ -783,6 +788,11 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="BUU-eK-7cD">
+                        <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="mfx-wP-qhk">
+                            <connections>
+                                <action selector="cancelBtnClicked:" destination="Krc-iV-CRx" id="RX5-c1-8gc"/>
+                            </connections>
+                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" title="Join" id="a6C-tU-aPZ">
                             <connections>
                                 <action selector="joinBtnClicked:" destination="Krc-iV-CRx" id="sLH-IN-E10"/>
@@ -1623,7 +1633,7 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                         <connections>
-                                            <segue destination="yDi-cE-eX4" kind="showDetail" identifier="EditAccountVCardSegue" id="69p-TF-zxs"/>
+                                            <segue destination="2RH-Wn-2bR" kind="show" identifier="EditAccountVCardSegue" id="EfZ-Pp-mOv"/>
                                         </connections>
                                     </tableViewCell>
                                 </cells>
@@ -1684,7 +1694,7 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                         <connections>
-                                            <segue destination="QGt-BC-Efk" kind="presentation" identifier="EditAccountSegue" id="cUy-fq-aJ6"/>
+                                            <segue destination="tcY-hw-Evf" kind="show" identifier="EditAccountSegue" id="5su-Sb-5lN"/>
                                         </connections>
                                     </tableViewCell>
                                 </cells>
@@ -2173,24 +2183,6 @@
             </objects>
             <point key="canvasLocation" x="4998" y="-43"/>
         </scene>
-        <!--Navigation Controller-->
-        <scene sceneID="Dx8-6j-N40">
-            <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="yDi-cE-eX4" sceneMemberID="viewController">
-                    <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="tIN-M2-EOq">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                    </navigationBar>
-                    <nil name="viewControllers"/>
-                    <connections>
-                        <segue destination="2RH-Wn-2bR" kind="relationship" relationship="rootViewController" id="5me-db-2Ig"/>
-                    </connections>
-                </navigationController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="H9A-e4-7uG" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="5143" y="1751"/>
-        </scene>
         <!--Informations-->
         <scene sceneID="kJ5-M5-UxC">
             <objects>
@@ -2356,4 +2348,7 @@
         <image name="defaultAvatar" width="192" height="192"/>
         <image name="first" width="30" height="30"/>
     </resources>
+    <inferredMetricsTieBreakers>
+        <segue reference="5su-Sb-5lN"/>
+    </inferredMetricsTieBreakers>
 </document>

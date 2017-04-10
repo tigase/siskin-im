@@ -83,7 +83,7 @@ class MucJoinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         let client = xmppService.getClient(forJid: accountJid);
         if let mucModule: MucModule = client?.modulesManager.getModule(MucModule.ID) {
             _ = mucModule.join(roomName: room, mucServer: server, nickname: nickname, password: password);
-            _ = self.navigationController?.popViewController(animated: true);
+            dismissView();
         } else {
             var alert: UIAlertController? = nil;
             if client == nil {
@@ -102,6 +102,18 @@ class MucJoinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
             if alert != nil {
                 self.present(alert!, animated: true, completion: nil);
             }
+        }
+    }
+    
+    @IBAction func cancelBtnClicked(_ sender: UIBarButtonItem) {
+        dismissView();
+    }
+    
+    func dismissView() {
+        let newController = navigationController?.popViewController(animated: true);
+        if newController == nil || newController != self {
+            let emptyDetailController = storyboard!.instantiateViewController(withIdentifier: "emptyDetailViewController");
+            self.showDetailViewController(emptyDetailController, sender: self);
         }
     }
 
