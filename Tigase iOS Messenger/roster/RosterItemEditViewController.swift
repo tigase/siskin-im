@@ -131,7 +131,6 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
             self.updateSubscriptions(client: client!);
             DispatchQueue.main.async {
                 self.dismissView();
-                _ = self.navigationController?.popViewController(animated: true);
             }
         };
         let onError = {(errorCondition:ErrorCondition?)->Void in
@@ -144,6 +143,7 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
         if let rosterItem = rosterModule.rosterStore.get(for: jid!) {
             if rosterItem.name == nameTextField.text {
                 updateSubscriptions(client: client!);
+                self.dismissView();
             } else {
                 rosterModule.rosterStore.update(item: rosterItem, name: nameTextField.text, onSuccess: onSuccess, onError: onError);
             }
@@ -170,7 +170,6 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
             if !self.sendPresenceUpdatesSwitch.isOn && rosterItem.subscription.isFrom {
                 presenceModule.unsubscribed(by: self.jid!);
             }
-            _ = self.navigationController?.popViewController(animated: true);
         }
     }
     /*
