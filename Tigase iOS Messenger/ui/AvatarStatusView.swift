@@ -39,8 +39,7 @@ class AvatarStatusView: UIView {
     override func awakeFromNib() {
         super.awakeFromNib();
         //avatarImageView.image = UIImage(named: "first");
-        avatarImageView.layer.masksToBounds = true;
-        avatarImageView.layer.cornerRadius = self.avatarImageView.frame.width / 2;
+        updateCornerRadius();
     }
     
     func setAvatar(_ avatar: UIImage?) {
@@ -87,6 +86,16 @@ class AvatarStatusView: UIView {
         UIGraphicsEndImageContext();
         
         return img!;
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews();
+        updateCornerRadius();
+    }
+    
+    func updateCornerRadius() {
+        avatarImageView.layer.masksToBounds = true;
+        avatarImageView.layer.cornerRadius = self.frame.height / 2;
     }
     
 }

@@ -343,6 +343,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func hideSetupGuide() {
         self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateInitialViewController();
+        (self.window?.rootViewController as? UISplitViewController)?.preferredDisplayMode = .allVisible;
     }
 }
 

@@ -77,6 +77,7 @@ class SettingsViewController: UITableViewController, EventHandler {
             let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! AccountTableViewCell;
             let accounts = AccountManager.getAccounts();
             if accounts.count > indexPath.row {
+                cell.avatarStatusView.isHidden = false;
                 let account = AccountManager.getAccount(forJid: accounts[indexPath.row]);
                 cell.nameLabel.text = account?.name;
                 let jid = BareJID(account!.name);
@@ -96,6 +97,7 @@ class SettingsViewController: UITableViewController, EventHandler {
                 } else {
                     cell.avatarStatusView.statusImageView.isHidden = true;
                 }
+                cell.avatarStatusView.updateCornerRadius();
             } else {
                 cell.nameLabel.text = "Add account";
                 cell.avatarStatusView.setAvatar(nil);
@@ -146,6 +148,12 @@ class SettingsViewController: UITableViewController, EventHandler {
                 }
                 return cell;
             }
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if let accountCell = cell as? AccountTableViewCell {
+            accountCell.avatarStatusView.updateCornerRadius();
         }
     }
     
@@ -247,10 +255,15 @@ class SettingsViewController: UITableViewController, EventHandler {
     
     func showAddAccount(register: Bool) {
         // show add account dialog
-        let navigationController = storyboard!.instantiateViewController(withIdentifier: "AddAccountController") as! UINavigationController;
-        let addAccountController = navigationController.visibleViewController! as! AddAccountController;
-        addAccountController.hidesBottomBarWhenPushed = true;
-        addAccountController.registerAccount = register;
+        let navigationController = storyboard!.instantiateViewController(withIdentifier: register ? "RegisterAccountController" : "AddAccountController") as! UINavigationController;
+        if !register {
+            let addAccountController = navigationController.visibleViewController! as! AddAccountController;
+            addAccountController.hidesBottomBarWhenPushed = true;
+            addAccountController.registerAccount = register;
+        } else {
+            let registerAccountController = navigationController.visibleViewController! as! RegisterAccountController;
+            registerAccountController.hidesBottomBarWhenPushed = true;
+        }
         self.showDetailViewController(navigationController, sender: self);
     }
     
