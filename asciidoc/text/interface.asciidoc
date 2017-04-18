@@ -1,0 +1,133 @@
+= Tigase Messenger for iOS Interface
+Tigase Team <team@tigase.net>
+:toc:
+:numbered:
+:website: http://tigase.net
+:Date: 2017-04-10
+
+The menu interface for Tigase Messenger for iOS is broken up into three main panels; xref:recent[Recent], xref:contacts[Contacts] and xref:more[More].  This can be brought up from any screen by swiping right from the left side of the screen, or tapping the back option on the top left.
+
+[recent]
+== Recent
+The recent menu displays recent conversations with other users, and also serves as a way to navigate between multi-user chatrooms (MUCs).  Each conversation will be displayed here along with an icon indicating user or room status.
+
+image::images\recent.png[]
+
+Tapping one of these conversations will bring up the chat, MUC or one on one.  This panel also serves as an archive of sorts, and previous conversations with users will be accessable in this panel.
+NOTE: Conversations will only be saved if they took place on this device, it uses local storage only and cannot retrieve messages from the server using message archiving or offline messages.
+
+You may clear conversations from the archive by dragging the name or MUC conversation to the left and selecting delete. If you are removing a MUC chat, you will leave the chatroom.
+
+=== New/Join MUC
+Tapping the plus button on the top right will bring up the new/join muc panel.  This interface will allow you to either join an existing or create a new MUC on your chosen server.
+
+image::images\joinchat.PNG[]
+
+- Account: This is the account that will handle data for the MUC chatroom. This is available for users who have multiple accounts logged in.
+
+- Server: The server the chatroom is located on, in many cases the muc server will be muc.servername.com, but may be different.
+
+- Room: The name of the chatroom you wish to create or join.
+
+- Nickname: Your name for use inside the MUC. This will become `yournickname@muc.server.com`.  MUC conversations do not leak your XMPP account, so a nickname is required.
+
+- Password: The password for the MUC room.  If you are creating a new chatroom, this will serve as the chat room password.
+
+Once you are finished, tap Join and you will join, or the room will be opened for you.
+
+image::images\recent2.PNG[]
+
+The recent panel will now display the chatroom, tap it to enter the MUC interface.
+
+When in a chatroom, you may view the occupants by tapping Occupants, and will be given a list and statuses of the room participants.
+
+image::images\occupants.PNG[]
+
+[contacts]
+== Contacts
+The contacts panel serves as your Roster, displaying all the contacts you have on your roster, and displaying statuses, avatars along with thier names.
+
+image::images\roster.PNG[]
+
+Contacts with green icons are available or free to chat status.
+Contacts with yellow icons are away or extended away.
+Contacts with red icons are in do not disturb status.
+Contacts with grey icons are offline or unavailable.
+
+You may remove contacts by dragging a contact to the left and tapping Delete.  This will remove the contact from your roster, and remove any presence sharing permissions from the contact.  You may also remove multiple contacts by tapping Edit, and then tapping the remove symbols for contacts you wish to remove.
+
+image::images\deluser.PNG[]
+
+You may also filter contacts by status by selecting All to display all users, or Available to hide users that are offline or unavailable.
+
+=== Adding a contact
+To add a contact, tap the plus button in the upper left and the add contact screen will show.
+
+image::images\adduserfull.PNG[]
+
+First, select the account roster you wish the new contact to be added too. Then type in the JID of the user, do not use resources, just bare JID.  You may enter a friendly nickname for the contact to be added to your roster, this is optional.
+When adding users, you have two options to select:
+
+- Send presence updates - This will allow sending of presence status and changes to this user on your roster.  You may disable this to reduce network usage, however you will not be able to obtain status information.
+- Receive presence updates - Turning this on will enable the applications to send presence changes to this person on the roster. You may disable this to reduce network usage, however they will not receieve notifications if you turn off the phone
+
+NOTE: These options are on by default and enable Tigase Messenger for iOS to behave like a traditional client.
+
+If you do decide to receieve presence updates when adding a new contact, you will be presented with this screen when they add you back:
+
+image::images\presreq.PNG[]
+
+By tapping yes, you will recieve notifications of presence changes from your contact.  This subscription will be maintained by the server, and will stay active with your roster.
+
+[more]
+== More
+The more panel is your program and account settings panel, from here you can change program settings and general account information.
+
+image::images\settings.PNG[]
+
+=== Accounts
+This will list your current accounts, if an avatar has been defined for the account, it will show on the left side but by default the Tigase logo will be used.
+If you wish to remove an account, swipe left and select Delete.  You will be asked for a confirmation whether you want to remove it from the application, and if the server supports it, you may delete it from the server removing roster, presence subscriptions, and potentially saved history.
+
+image::images\Delacct.PNG[]
+
+WARNING: Deleting your account from the server is a permanent and non-reversible action.
+
+You may also add an account from this screen.
+
+=== Status
+Below accounts is a status setting for all connected and online accounts.  Editing this text section will change the `<show>` tags in your status, you will not be able to change your status tags as they are managed automatically.
+
+image::images\status.PNG[]
+
+To save data usage, your account status will be managed automatically using the following rules:
+|===
+
+|Status | Behavior
+
+|Online | Application has focus on the device.
+
+|Away / XA | Application is running in the background.
+
+|Offline | Application is killed or disconnected.  If the device is turned off for a period of time, this will also set status to offline.
+
+|===
+
+[settings]
+=== Settings
+Below are some settings for the operation and behavior of the application.
+
+- Delete Chat history on chat close: +
+  If this is enabled, when you close chats from the recent screen, all local history on the device will be deleted.  This does not affect operation of offline or server-stored message archives. +
+
+- Message carbons: +
+  Enables or disables message carbons to deliver to all resources.  This is on by default, however some servers may not support this. +
+
+- Display contacts in groups: +
+  Whether to use display contacts in groups defined by roster.  If this is disabled, contacts will be listed in alphabetical order. +
+
+- Display "Hidden" group: +
+  If you are using groups, you may choose to display contacts that are hidden, such as offline or blocked contacts. +
+
+- Subscribe to new contact presence: +
+  If this option is on, new contacts adding you will have recieve a request from the application subscribing to thier presence as well.  You may disable this if you are not interested in receiving presence information from other contacts, this can reduce data use. +

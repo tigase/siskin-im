@@ -1,0 +1,70 @@
+= Welcome
+Tigase Team <team@tigase.net>
+:toc:
+:numbered:
+:website: http://tigase.net
+:Date: 2017-04-10
+
+Welcome to the documentation for Tigase Messenger for iOS.
+
+== Minimum Requirements
+Tigase Messenger for iOS requires an apple device running iOS v9 or later.  Compatable devices are listed below:
+
+*iPhone* +
+- iPhone 4S +
+- iPhone 5 +
+- iPhone 5C +
+- iPhone 5S +
+- iPhone 6 +
+- iPhone 6 Plus +
+- iPhone 6S +
+- iPhone 6S Plus +
+- iPhone 7 +
+- iPhone 7 Plus +
+- iPhone SE +
+
+*iPod Touch* +
+- iPod Touch (5th generation) +
+- iPod Touch (6th generation)
+
+*iPad* +
+- iPad 2 +
+- iPad (3rd generation) +
+- iPad (4th generation) +
+- iPad Air +
+- iPad Air 2 +
+- iPad Mini (1st generation) +
+- iPad Mini 2 +
+- iPad Mini 3 +
+- iPad Mini 4 +
+- iPad Pro +
+
+== Installation
+Tigase Messenger for iOS can be installed the same way any apple approved app can be found: through the appstore.  Search for Tigase in the store search function and then tap install and follow the prompts to install Tigase Messenger.
+
+== Account Setup
+Upon running Tigase Meseenger for iOS for the first time, you will be greeted with the following screen:
+
+image::images\Home.png[]
+
+Your options are to xref:reg[register] for a new account, or to use an xref:existing[existing] account.
+
+[register]
+=== Registering for a New Account
+The application supports creating a new account registration using in-band registration.  This means that on servers supporting it, you can sign up for a new account straight from the client!  A list of servers that support this is located link:https://list.jabber.at/[here].
+
+image::images\register.png[]
+
+Choose your username and add the appropiate domain, and enter the password for the account.
+
+Once you tap Register, the application will connect and register your account with the server.
+
+[existing]
+=== Use an Existing Account
+If you already have an XMPP account on a server, select this option to login usint Tigase Messenger for iOS.  Enter your username and password as normal and tap Save to add the account.
+
+NOTE: Your device name will serve as the resource for your account.  iPad or iPhone will automatically be used as the resource.
+
+You may recieve certificate errors from servers that may not have certificate chains installed, invalid, or expired certificates.  Servers with these errors will ask the user to accept or deny these security exceptions:
+
+image::images\certerr.PNG[]

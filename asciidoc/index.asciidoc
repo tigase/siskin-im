@@ -1,0 +1,13 @@
+= Tigase Messenger for iOS
+Tigase Team <team@tigase.net>
+:toc:
+:numbered:
+:website: http://tigase.net
+:Date: 2017-04-10
+
+Welcome to Tigase Messenger for iOS
+
+:leveloffset: 1
+
+include::text/welcome.asciidoc[]
+include::text/interface.asciidoc[]
