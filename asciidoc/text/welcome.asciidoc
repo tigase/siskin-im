@@ -45,7 +45,7 @@ Tigase Messenger for iOS can be installed the same way any apple approved app ca
 == Account Setup
 Upon running Tigase Meseenger for iOS for the first time, you will be greeted with the following screen:
 
-image::images\Home.png[]
+image::images\Home.PNG[]
 
 Your options are to xref:reg[register] for a new account, or to use an xref:existing[existing] account.
 
@@ -53,7 +53,7 @@ Your options are to xref:reg[register] for a new account, or to use an xref:exis
 === Registering for a New Account
 The application supports creating a new account registration using in-band registration.  This means that on servers supporting it, you can sign up for a new account straight from the client!  A list of servers that support this is located link:https://list.jabber.at/[here].
 
-image::images\register.png[]
+image::images\register.PNG[]
 
 Choose your username and add the appropiate domain, and enter the password for the account.
 
