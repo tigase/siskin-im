@@ -119,7 +119,7 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
     func filterItems() -> [RosterProviderGroupedItem] {
         if queryString != nil {
             return allItems.filter { (item) -> Bool in
-                if (item.name?.lowercased().contains(queryString!))! {
+                if item.name?.lowercased().contains(queryString!) ?? false {
                     return true;
                 }
                 if item.jid.stringValue.lowercased().contains(queryString!) {

@@ -35,30 +35,23 @@ class ChatsListViewController: UITableViewController, EventHandler {
     
     @IBOutlet var addMucButton: UIBarButtonItem!
     
-    fileprivate lazy var countChats:DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) AS count FROM chats");
-    fileprivate lazy var getChat:DBStatement! = try? self.dbConnection.prepareStatement("SELECT jid, account, timestamp, thread_id, type, (SELECT data FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND item_type = 0 ORDER BY timestamp DESC LIMIT 1) AS last_message, (SELECT count(ch.id) FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND state = 2) as unread, (SELECT name FROM roster_items ri WHERE ri.account = c.account AND ri.jid = c.jid) as name FROM chats as c ORDER BY timestamp DESC LIMIT 1 OFFSET :offset");
-    fileprivate lazy var getChatTimestampFromHistoryByAccountAndJidStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT timestamp FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp DESC LIMIT 1 OFFSET :offset")
-    fileprivate lazy var getChatTimestampByAccountAndJidStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT timestamp FROM chats WHERE account = :account AND jid = :jid")
-    fileprivate lazy var getChatPositionByTimestampStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM chats WHERE timestamp > :timestamp");
-    fileprivate lazy var getChatPositionByChatIdStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM chats WHERE timestamp > (SELECT timestamp FROM chats WHERE id = :id)");
-    
-    var closingChatPosition:Int? = nil
+    var dataSource: ChatsDataSource!;
     
     override func viewDidLoad() {
-        super.viewDidLoad()
+        dataSource = ChatsDataSource(controller: self);
+        super.viewDidLoad();
         
         tableView.rowHeight = 66.0;//UITableViewAutomaticDimension;
         //tableView.estimatedRowHeight = 66.0;
         tableView.dataSource = self;
-//        tableView.separatorStyle = .;
         NotificationCenter.default.addObserver(self, selector: #selector(ChatsListViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(ChatsListViewController.chatItemsUpdated), name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil);
         updateBadge();
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        tableView.reloadData();
-        xmppService.registerEventHandler(self, for: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
+        dataSource.reloadData();
+        self.xmppService.registerEventHandler(self, for: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
         //(self.tabBarController as? CustomTabBarController)?.showTabBar();
         NotificationCenter.default.addObserver(self, selector: #selector(ChatsListViewController.newMessage), name: AvatarManager.AVATAR_CHANGED, object: nil);
         super.viewWillAppear(animated);
@@ -84,43 +77,32 @@ class ChatsListViewController: UITableViewController, EventHandler {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return try! countChats.scalar() ?? 0;
+        return dataSource.count;
+        //return try! countChats.scalar() ?? 0;
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cellIdentifier = "ChatsListTableViewCell";
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath as IndexPath) as! ChatsListTableViewCell;
         
-        let params:[String:Any?] = ["offset": indexPath.row];
-        do {
-            try getChat.query(params) { (cursor)->Void in
-                let account: BareJID = cursor["account"]!;
-                let jid: BareJID = cursor["jid"]!;
-                let name:String? = cursor["name"];
-                let unread = cursor["unread"] ?? 0;
-                let type: Int = cursor["type"] ?? 0;
-                
-                cell.nameLabel.text = name ?? jid.stringValue;
-                let last_message: String? = cursor["last_message"];
-                cell.lastMessageLabel.text = last_message == nil ? nil : ((unread > 0 ? "" : "\u{2713}") + last_message!);
-                let formattedTS = self.formatTimestamp(cursor["timestamp"]!);
-                cell.timestampLabel.text = formattedTS;
+        let item = dataSource.item(at: indexPath);
+        cell.nameLabel.text = item.name ?? item.key.jid.stringValue;
+        cell.lastMessageLabel.text = item.lastMessage == nil ? nil : ((item.unread > 0 ? "" : "\u{2713}") + item.lastMessage!);
+        
+        let formattedTS = self.formatTimestamp(item.key.timestamp);
+        cell.timestampLabel.text = formattedTS;
 
-                let xmppClient = self.xmppService.getClient(forJid: account);
-                switch type {
-                case 1:
-                    let mucModule: MucModule? = xmppClient?.modulesManager.getModule(MucModule.ID);
-                    cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.defaultAvatar);
-                    cell.avatarStatusView.setStatus(mucModule?.roomsManager.getRoom(for: jid)?.state == .joined ? Presence.Show.online : nil);
-                default:
-                    cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.getAvatar(for: jid, account: account));
-                    let presenceModule: PresenceModule? = xmppClient?.modulesManager.getModule(PresenceModule.ID);
-                    let presence = presenceModule?.presenceStore.getBestPresence(for: jid);
-                    cell.avatarStatusView.setStatus(presence?.show);
-                }
-            }
-        } catch _ {
-            cell.nameLabel.text = "DBError";
+        let xmppClient = self.xmppService.getClient(forJid: item.key.account);
+        switch item.key.type {
+        case 1:
+            let mucModule: MucModule? = xmppClient?.modulesManager.getModule(MucModule.ID);
+            cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.defaultAvatar);
+            cell.avatarStatusView.setStatus(mucModule?.roomsManager.getRoom(for: item.key.jid)?.state == .joined ? Presence.Show.online : nil);
+        default:
+            cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.getAvatar(for: item.key.jid, account: item.key.account));
+            let presenceModule: PresenceModule? = xmppClient?.modulesManager.getModule(PresenceModule.ID);
+            let presence = presenceModule?.presenceStore.getBestPresence(for: item.key.jid);
+            cell.avatarStatusView.setStatus(presence?.show);
         }
         
         return cell;
@@ -136,43 +118,31 @@ class ChatsListViewController: UITableViewController, EventHandler {
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == UITableViewCellEditingStyle.delete {
             if indexPath.section == 0 {
-                do {
-                    let params:[String:Any?] = ["offset": indexPath.row];
-                    try getChat.query(params) { (cursor)->Void in
-                        let account: BareJID = cursor["account"]!;
-                        let jid: JID = cursor["jid"]!;
-                        let type: Int = cursor["type"] ?? 0;
-                        let xmppClient = self.xmppService.getClient(forJid: account);
-
-                        switch type {
-                        case 1:
-                            let mucModule: MucModule? = xmppClient?.modulesManager.getModule(MucModule.ID);
-                            if let room = mucModule?.roomsManager.getRoom(for: jid.bareJid) {
-                                self.closingChatPosition = try! self.getChatPositionByChatIdStmt.scalar(room.id!);
-                                mucModule?.leave(room: room);
-                                self.closingChatPosition = nil;
-                                if Settings.DeleteChatHistoryOnChatClose.getBool() {
-                                    self.xmppService.dbChatHistoryStore.deleteMessages(for: account, with: jid.bareJid);
-                                } else {
-                                    self.xmppService.dbChatHistoryStore.markAsRead(for: account, with: jid.bareJid);
-                                }
-                            }
-                        default:
-                            let thread: String? = cursor["thread_id"];
-                            let messageModule: MessageModule? = xmppClient?.modulesManager.getModule(MessageModule.ID);
-                            if let chat = messageModule?.chatManager.getChat(with: jid, thread: thread) {
-                                self.closingChatPosition = try! self.getChatPositionByChatIdStmt.scalar(chat.id!);
-                                _ = messageModule?.chatManager.close(chat: chat);
-                                self.closingChatPosition = nil;
-                                if Settings.DeleteChatHistoryOnChatClose.getBool() {
-                                    self.xmppService.dbChatHistoryStore.deleteMessages(for: account, with: jid.bareJid);
-                                } else {
-                                    self.xmppService.dbChatHistoryStore.markAsRead(for: account, with: jid.bareJid);
-                                }
-                            }
+                let item = dataSource.itemKey(at: indexPath);
+                let xmppClient = self.xmppService.getClient(forJid: item.account);
+                
+                switch item.type {
+                case 1:
+                    let mucModule: MucModule? = xmppClient?.modulesManager.getModule(MucModule.ID);
+                    if let room = mucModule?.roomsManager.getRoom(for: item.jid) {
+                        mucModule?.leave(room: room);
+                        if Settings.DeleteChatHistoryOnChatClose.getBool() {
+                            self.xmppService.dbChatHistoryStore.deleteMessages(for: item.account, with: item.jid);
+                        } else {
+                            self.xmppService.dbChatHistoryStore.markAsRead(for: item.account, with: item.jid);
                         }
                     }
-                } catch _ {
+                default:
+                    let thread: String? = nil;
+                    let messageModule: MessageModule? = xmppClient?.modulesManager.getModule(MessageModule.ID);
+                    if let chat = messageModule?.chatManager.getChat(with: JID(item.jid), thread: thread) {
+                        _ = messageModule?.chatManager.close(chat: chat);
+                        if Settings.DeleteChatHistoryOnChatClose.getBool() {
+                            self.xmppService.dbChatHistoryStore.deleteMessages(for: item.account, with: item.jid);
+                        } else {
+                            self.xmppService.dbChatHistoryStore.markAsRead(for: item.account, with: item.jid);
+                        }
+                    }
                 }
             }
         }
@@ -181,49 +151,43 @@ class ChatsListViewController: UITableViewController, EventHandler {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath as IndexPath, animated: true);
         do {
-            let params:[String:Any?] = ["offset": indexPath.row];
-            try getChat.query(params) { (cursor)->Void in
-                let type: Int = cursor["type"]!;
-                let account: BareJID = cursor["account"]!;
-                let jid: JID = cursor["jid"]!;
-                
-                var identifier: String!;
-                switch type {
-                case 1:
-                    identifier = "RoomViewNavigationController";
-                    let client = self.xmppService.getClient(forJid: account);
-                    let mucModule: MucModule? = client?.modulesManager?.getModule(MucModule.ID);
-                    let room = mucModule?.roomsManager.getRoom(for: jid.bareJid);
-                    guard room != nil else {
-                        if client == nil {
-                            let alert = UIAlertController.init(title: "Warning", message: "Account is disabled.\nDo you want to enable account?", preferredStyle: .alert);
-                            alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
-                            alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(alertAction) in
-                                if let accountInstance = AccountManager.getAccount(forJid: account.stringValue) {
-                                    accountInstance.active = true;
-                                    AccountManager.updateAccount(accountInstance);
-                                }
-                            }));
-                        }
-                        return;
+            let item = dataSource.itemKey(at: indexPath);
+            var identifier: String!;
+            switch item.type {
+            case 1:
+                identifier = "RoomViewNavigationController";
+                let client = self.xmppService.getClient(forJid: item.account);
+                let mucModule: MucModule? = client?.modulesManager?.getModule(MucModule.ID);
+                let room = mucModule?.roomsManager.getRoom(for: item.jid);
+                guard room != nil else {
+                    if client == nil {
+                        let alert = UIAlertController.init(title: "Warning", message: "Account is disabled.\nDo you want to enable account?", preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
+                        alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(alertAction) in
+                            if let accountInstance = AccountManager.getAccount(forJid: item.account.stringValue) {
+                                accountInstance.active = true;
+                                AccountManager.updateAccount(accountInstance);
+                            }
+                        }));
                     }
-                default:
-                    identifier = "ChatViewNavigationController";
+                    return;
                 }
+            default:
+                identifier = "ChatViewNavigationController";
+            }
+            
+            let controller = self.storyboard?.instantiateViewController(withIdentifier: identifier);
+            let navigationController = controller as? UINavigationController;
+            let destination = navigationController?.visibleViewController ?? controller;
+            
+            if let baseChatViewController = destination as? BaseChatViewController {
+                baseChatViewController.account = item.account;
+                baseChatViewController.jid = JID(item.jid);
+            }
+            destination?.hidesBottomBarWhenPushed = true;
                 
-                let controller = self.storyboard?.instantiateViewController(withIdentifier: identifier);
-                let navigationController = controller as? UINavigationController;
-                let destination = navigationController?.visibleViewController ?? controller;
-                
-                if let baseChatViewController = destination as? BaseChatViewController {
-                    baseChatViewController.account = account;
-                    baseChatViewController.jid = jid;
-                }
-                destination?.hidesBottomBarWhenPushed = true;
-                
-                if controller != nil {
-                    self.showDetailViewController(controller!, sender: self);
-                }
+            if controller != nil {
+                self.showDetailViewController(controller!, sender: self);
             }
         } catch _ {
         }
@@ -238,24 +202,18 @@ class ChatsListViewController: UITableViewController, EventHandler {
     
     func handle(event: Event) {
         switch event {
-        case is MessageModule.ChatCreatedEvent:
+        case let e as MessageModule.ChatCreatedEvent:
             // we are adding rows always on top
-            let index = IndexPath(row: 0, section: 0);
-            DispatchQueue.main.sync() {
-                self.tableView.insertRows(at: [index], with: .fade);
+            DispatchQueue.main.async() {
+                self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.chat.jid.bareJid, type: 0, timestamp: Date());
             }
             // if above is not working we can reload
             //tableView.reloadData();
-        case is MessageModule.ChatClosedEvent:
+        case let e as MessageModule.ChatClosedEvent:
             // we do not know position of chat which was closed
             //tableView.reloadData();
-            DispatchQueue.main.sync() {
-                if self.closingChatPosition != nil {
-                    let indexPath = IndexPath(row: self.closingChatPosition!, section: 0);
-                    self.tableView.deleteRows(at: [indexPath], with: .fade);
-                } else {
-                    self.tableView.reloadData();
-                }
+            DispatchQueue.main.async() {
+                self.dataSource.removeChat(for: e.sessionObject.userBareJid!, with: e.chat.jid.bareJid);
             }
         case let e as PresenceModule.ContactPresenceChanged:
             //tableView.reloadData();
@@ -264,35 +222,19 @@ class ChatsListViewController: UITableViewController, EventHandler {
                 return;
             }
             DispatchQueue.main.async() {
-                let timestamp: Date? = try! self.getChatTimestampByAccountAndJidStmt.query(e.sessionObject.userBareJid!, from.bareJid)?["timestamp"];
-                if timestamp != nil && timestamp?.timeIntervalSince1970 != 0 {
-                    let pos = try! self.getChatPositionByTimestampStmt.scalar(timestamp!);
-                    let indexPath = IndexPath(row: pos!, section: 0);
-                    self.tableView.reloadRows(at: [indexPath], with: .automatic);
-                }
+                self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: from.bareJid);
             }
-        case is MucModule.JoinRequestedEvent:
-            let index = IndexPath(row: 0, section: 0);
-            DispatchQueue.main.sync() {
-                self.tableView.insertRows(at: [index], with: .fade);
+        case let e as MucModule.JoinRequestedEvent:
+            DispatchQueue.main.async() {
+                self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid, type: 1, timestamp: Date());
             }
         case let e as MucModule.YouJoinedEvent:
             DispatchQueue.main.async() {
-                let timestamp: Date? = try! self.getChatTimestampByAccountAndJidStmt.query(e.sessionObject.userBareJid, e.room.roomJid)?["timestamp"];
-                if timestamp != nil && timestamp?.timeIntervalSince1970 != 0 {
-                    let pos = try! self.getChatPositionByTimestampStmt.scalar(timestamp!);
-                    let indexPath = IndexPath(row: pos!, section: 0);
-                    self.tableView.reloadRows(at: [indexPath], with: .automatic);
-                }
+                self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid);
             }
-        case is MucModule.RoomClosedEvent:
-            DispatchQueue.main.sync() {
-                if self.closingChatPosition != nil {
-                    let indexPath = IndexPath(row: self.closingChatPosition!, section: 0);
-                    self.tableView.deleteRows(at: [indexPath], with: .fade);
-                } else {
-                    self.tableView.reloadData();
-                }
+        case let e as MucModule.RoomClosedEvent:
+            DispatchQueue.main.async() {
+                self.dataSource.removeChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid);
             }
         default:
             break;
@@ -303,21 +245,10 @@ class ChatsListViewController: UITableViewController, EventHandler {
         if navigationController?.visibleViewController == self {
 //            tableView.reloadData();
             let account = notification.userInfo!["account"] as? BareJID;
-            let jid = notification.userInfo!["jid"] as? BareJID;
+            let jid = notification.userInfo!["sender"] as? BareJID;
             if account != nil && jid != nil {
-                let timestamp: Date? = try! self.getChatTimestampByAccountAndJidStmt.query(account!.stringValue, jid!.stringValue, 1)?["timestamp"];
-                DispatchQueue.main.async() {
-                    if timestamp == nil || timestamp!.timeIntervalSince1970 == 0 {
-                        self.tableView.reloadData();
-                    } else {
-                        let pos = try! self.getChatPositionByTimestampStmt.scalar(timestamp!);
-                        let indexPath = IndexPath(row: pos!, section: 0);
-                        self.tableView.moveRow(at: indexPath, to: IndexPath(row: 0, section: 0));
-                    }
-                }
-            } else {
-                DispatchQueue.main.async() {
-                    self.tableView.reloadData();
+                DispatchQueue.main.async {
+                    self.dataSource.updateChat(for: account!, with: jid!, type: nil, timestamp: notification.userInfo!["timestamp"] as? Date);
                 }
             }
         }
@@ -375,5 +306,157 @@ class ChatsListViewController: UITableViewController, EventHandler {
         
     }
 
+    class ChatsViewItemKey {
+        let account: BareJID;
+        let jid: BareJID;
+        var timestamp: Date;
+        var type: Int;
+        
+        init(cursor: DBCursor) {
+            self.account = cursor["account"]!;
+            self.jid = cursor["jid"]!;
+            self.timestamp = cursor["timestamp"]!;
+            self.type = cursor["type"]!;
+        }
+        
+        init(account: BareJID, jid: BareJID, type: Int, timestamp: Date) {
+            self.account = account;
+            self.jid = jid;
+            self.timestamp = timestamp;
+            self.type = type;
+        }
+    }
+    
+    class ChatsViewItem {
+        let key: ChatsViewItemKey;
+        var name: String?;
+        var unread: Int = 0;
+        var lastMessage: String?;
+        
+        init(key: ChatsViewItemKey) {
+            self.key = key;
+        }
+        
+        func load(from cursor: DBCursor) {
+            self.name = cursor["name"];
+            self.unread = cursor["unread"]!;
+            self.lastMessage = cursor["last_message"];
+        }
+    }
+    
+    class ChatsDataSource {
+        
+        fileprivate var getChatsList:DBStatement!;
+        fileprivate var getChatDetails:DBStatement!;
+        
+        weak var controller: ChatsListViewController?;
+
+        fileprivate var list: [ChatsViewItemKey] = [];
+        
+        var count: Int {
+            return list.count;
+        }
+        
+        init(controller: ChatsListViewController) {
+            self.controller = controller;
+//            self.getChats = try? controller.dbConnection.prepareStatement("SELECT id, jid, account, timestamp, thread_id, type, (SELECT data FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND item_type = 0 ORDER BY timestamp DESC LIMIT 1) AS last_message, (SELECT count(ch.id) FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND state = 2) as unread, (SELECT name FROM roster_items ri WHERE ri.account = c.account AND ri.jid = c.jid) as name FROM chats as c ORDER BY timestamp DESC");
+
+            self.getChatsList = try? controller.dbConnection.prepareStatement("SELECT jid, account, type, timestamp FROM chats as c ORDER BY timestamp DESC");
+            self.getChatDetails = try? controller.dbConnection.prepareStatement("SELECT type, (SELECT data FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND item_type = 0 ORDER BY timestamp DESC LIMIT 1) AS last_message, (SELECT count(ch.id) FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND state = 2) as unread, (SELECT name FROM roster_items ri WHERE ri.account = c.account AND ri.jid = c.jid) as name FROM chats as c WHERE c.account = :account AND c.jid = :jid");
+        }
+        
+        func item(at position: IndexPath) -> ChatsViewItem {
+            let key = list[position.row];
+            let params: [String: Any?] = [ "account" : key.account, "jid" : key.jid];
+            let item = ChatsViewItem(key: key);
+            try! getChatDetails.query(params) { (cursor)->Void in
+                item.load(from: cursor);
+            }
+            return item;
+        }
+        
+        func itemKey(at position: IndexPath) -> ChatsViewItemKey {
+            return list[position.row];
+        }
+        
+        func reloadData() {
+            var list: [ChatsViewItemKey] = [];
+            try! getChatsList.query() { (cursor)->Void in
+                let item = ChatsViewItemKey(cursor: cursor);
+                list.append(item);
+            }
+            update(list: list);
+            controller?.tableView.reloadData();
+        }
+        
+        func updateChat(for account: BareJID, with jid: BareJID, type: Int? = nil, timestamp: Date? = nil) {
+            let fromPosition = positionFor(account: account, jid: jid);
+            var list = self.list;
+            if fromPosition == nil {
+                if type != nil && timestamp != nil {
+                    let item = ChatsViewItemKey(account: account, jid: jid, type: type!, timestamp: timestamp!);
+                    list.append(item);
+                } else {
+                    return;
+                }
+            } else {
+                let item = self.list[fromPosition!];
+                if timestamp != nil {
+                    item.timestamp = timestamp!;
+                }
+            }
+            if (timestamp != nil) {
+                update(list: list);
+                let toPosition = positionFor(account: account, jid: jid);
+                notify(from: fromPosition, to: toPosition);
+            } else {
+                notify(from: fromPosition, to: fromPosition);
+            }
+        }
+
+        func removeChat(for account: BareJID, with jid: BareJID) {
+            let fromPosition = positionFor(account: account, jid: jid);
+            guard fromPosition != nil else {
+                return;
+            }
+            
+            var list = self.list;
+            list.remove(at: fromPosition!);
+            update(list: list);
+            notify(from: fromPosition, to: nil);
+        }
+        
+        func positionFor(account: BareJID, jid: BareJID) -> Int? {
+            return list.index { $0.jid == jid && $0.account == account };
+        }
+        
+        func update(list: [ChatsViewItemKey]) {
+            self.list = list.sorted { (i1, i2) -> Bool in
+                i1.timestamp.compare(i2.timestamp) == .orderedDescending
+            };
+        }
+        
+        func notify(from: Int?, to: Int?) {
+            guard from != nil || to != nil else {
+                return;
+            }
+            notify(from: from != nil ? IndexPath(row: from!, section: 0) : nil, to: to != nil ? IndexPath(row: to!, section: 0) : nil);
+        }
+        
+        func notify(from: IndexPath?, to: IndexPath?) {
+            if from != nil && to != nil {
+                if from == to {
+                    controller?.tableView.reloadRows(at: [from!], with: .fade);
+                } else {
+                    controller?.tableView.moveRow(at: from!, to: to!);
+                }
+            } else if to == nil {
+                controller?.tableView.deleteRows(at: [from!], with: .fade);
+            } else {
+                controller?.tableView.insertRows(at: [to!], with: .fade);
+            }
+            
+        }
+    }
 }
 
