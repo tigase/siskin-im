@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<properties>
-		<packaging.type>pom</packaging.type>		
+		<packaging.type>pom</packaging.type>
 		<dist_path>.</dist_path>
 		<guide_name>Tigase_Swift</guide_name>
 		<guide_path>${dist_path}/docs/${guide_name}_Guide</guide_path>
@@ -14,10 +14,10 @@
 	<name>Tigase iOS Messenger Documentation</name>
 
 	<packaging>pom</packaging>
-	
+
 	<groupId>iosdocs</groupId>
 	<version>v1.0</version>
-	
+
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -63,7 +63,7 @@
 					</executions>
 					<configuration>
 						<gemPath>gems-provided</gemPath>
-						<sourceDirectory>./asciidoc</sourceDirectory>
+						<sourceDirectory>./Documentation</sourceDirectory>
 						<sourceDocumentName>index.asciidoc</sourceDocumentName>
 						<attributes>
 							<endpoint-url>http://docs.tigase.org</endpoint-url>
@@ -110,10 +110,10 @@
 								<ignoreImageScaling>true</ignoreImageScaling>
 								<postProcess>
 									<copy todir="${guide_path}/webhelp/css">
-										<fileset dir="asciidoc/css"></fileset>
+										<fileset dir="Documentation/css"></fileset>
 									</copy>
 									<copy todir="${guide_path}/webhelp/images">
-										<fileset dir="asciidoc/images"></fileset>
+										<fileset dir="Documentation/images"></fileset>
 									</copy>
 								</postProcess>
 
@@ -215,10 +215,6 @@
 						<phase>generate-resources</phase>
 						<id>generate-webhelp</id>
 					</execution>
-					<execution>
-						<phase>generate-resources</phase>
-						<id>generate-epub3</id>
-					</execution>
 				</executions>
 			</plugin>
 
@@ -232,7 +228,7 @@
 				</executions>
 			</plugin>
 		</plugins>
-		
+
 	</build>
 
 	<pluginRepositories>
@@ -249,4 +245,3 @@
 		</pluginRepository>
 	</pluginRepositories>
 </project>
-
