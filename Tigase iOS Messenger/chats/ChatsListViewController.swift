@@ -445,17 +445,15 @@ class ChatsListViewController: UITableViewController, EventHandler {
         
         func notify(from: IndexPath?, to: IndexPath?) {
             if from != nil && to != nil {
-                if from == to {
-                    controller?.tableView.reloadRows(at: [from!], with: .fade);
-                } else {
+                if from != to {
                     controller?.tableView.moveRow(at: from!, to: to!);
                 }
+                controller?.tableView.reloadRows(at: [to!], with: .fade);
             } else if to == nil {
                 controller?.tableView.deleteRows(at: [from!], with: .fade);
             } else {
                 controller?.tableView.insertRows(at: [to!], with: .fade);
             }
-            
         }
     }
 }
