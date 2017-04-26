@@ -185,7 +185,7 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
         
         self.items = groupedItems;
         
-        return oldGroups == self.groups;
+        return oldGroups != self.groups;
     }
     
     func positionsFor(item: RosterProviderGroupedItem) -> [IndexPath] {
