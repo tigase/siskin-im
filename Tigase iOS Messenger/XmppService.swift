@@ -272,7 +272,7 @@ open class XmppService: Logger, EventHandler {
                 }
             }
         case let e as PresenceModule.BeforePresenceSendEvent:
-            if UIApplication.shared.applicationState == .active {
+            if applicationState == .active {
                 e.presence.show = Presence.Show.online;
                 e.presence.priority = 5;
             } else {
@@ -315,6 +315,15 @@ open class XmppService: Logger, EventHandler {
                 self.updateXmppClientInstance(forJid: e.sessionObject.userBareJid!);
             }
         case let e as StreamManagementModule.ResumedEvent:
+            let client = getClient(forJid: e.sessionObject.userBareJid!);
+            let csiModule: ClientStateIndicationModule? = client?.modulesManager.getModule(ClientStateIndicationModule.ID);
+            if csiModule != nil && csiModule!.available {
+                _ = csiModule!.setState(applicationState == .active);
+            }
+            else if let mobileModeModule: MobileModeModule = client?.modulesManager.getModule(MobileModeModule.ID) {
+                _ = mobileModeModule.setState(applicationState == .inactive);
+            }
+
             // here we should notify messenger that connection was resumed and we can end soon
             self.clientConnected(account: e.sessionObject.userBareJid!);
         case let e as MucModule.NewRoomCreatedEvent:
