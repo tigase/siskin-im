@@ -164,6 +164,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 }
                 
                 topController?.present(alert, animated: true, completion: nil);
+            } else {
+                let alert = UIAlertController(title: notification.alertTitle, message: notification.alertBody, preferredStyle: .alert);
+                alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
+                
+                var topController = UIApplication.shared.keyWindow?.rootViewController;
+                while (topController?.presentedViewController != nil) {
+                    topController = topController?.presentedViewController;
+                }
+                
+                topController?.present(alert, animated: true, completion: nil);
             }
         }
         if notification.category == "SUBSCRIPTION_REQUEST", let userInfo = notification.userInfo {
@@ -216,6 +226,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             
             topController?.present(alert, animated: true, completion: nil);
         }
+        if notification.category == "MESSAGE", let userInfo = notification.userInfo {
+            let senderJid = BareJID(userInfo["sender"] as! String);
+            let accountJid = BareJID(userInfo["account"] as! String);
+
+            var topController = UIApplication.shared.keyWindow?.rootViewController;
+            while (topController?.presentedViewController != nil) {
+                topController = topController?.presentedViewController;
+            }
+            
+            if topController != nil {
+                let controller = topController!.storyboard?.instantiateViewController(withIdentifier: "ChatViewNavigationController");
+                let navigationController = controller as? UINavigationController;
+                let destination = navigationController?.visibleViewController ?? controller;
+            
+                if let baseChatViewController = destination as? BaseChatViewController {
+                    baseChatViewController.account = accountJid;
+                    baseChatViewController.jid = JID(senderJid);
+                }
+                destination?.hidesBottomBarWhenPushed = true;
+            
+                topController!.showDetailViewController(controller!, sender: self);
+            } else {
+                print("No top controller!");
+            }
+        }
     }
     
     func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
@@ -229,50 +264,96 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         });
     }
     
+    func application(_ application: UIApplication, didRegister notificationSettings: UIUserNotificationSettings) {
+        if notificationSettings.types != .none {
+            application.registerForRemoteNotifications()
+        }
+    }
+    
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        let tokenString = deviceToken.reduce("", {$0 + String(format: "%02X", $1)});
+        
+        print("Device Token:", tokenString)
+        Settings.DeviceToken.setValue(tokenString);
+    }
+    
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("Failed to register:", error);
+        Settings.DeviceToken.setValue(nil);
+    }
+    
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any]) {
+        print("Push notification received: \(userInfo)");
+    }
+    
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        print("Push notification received with fetch request: \(userInfo)");
+        let fetchStart = Date();
+        if let account = JID(userInfo[AnyHashable("account")] as? String), let sender = JID(userInfo[AnyHashable("sender")] as? String) {
+            if let body = userInfo[AnyHashable("body")] as? String {
+                notifyNewMessage(account: account, sender: sender, body: body, type: "chat", data: userInfo);
+            }
+            print(Date(), "starting fetching data");
+            xmppService.preformFetch(for: account.bareJid) {(result) in
+                completionHandler(result);
+                let fetchEnd = Date();
+                let time = fetchEnd.timeIntervalSince(fetchStart);
+                print(Date(), "fetched date in \(time) seconds with result = \(result)");
+            };
+        }
+    }
+    
     func registerUserNotificationSettings(application: UIApplication) {
         var settings = UIUserNotificationSettings(types: [UIUserNotificationType.alert, UIUserNotificationType.badge, UIUserNotificationType.sound], categories: nil);
         application.registerUserNotificationSettings(settings);
+    }
+    
+    func notifyNewMessage(account: JID, sender: JID, body: String, type: String?, data userInfo: [AnyHashable:Any]) {
+        guard userInfo["carbonAction"] == nil else {
+            return;
+        }
+        
+        var senderName:String? = nil;
+        if let sessionObject = xmppService.getClient(forJid: account.bareJid)?.sessionObject {
+            senderName = RosterModule.getRosterStore(sessionObject).get(for: sender.withoutResource)?.name;
+        }
+        if senderName == nil {
+            senderName = sender.stringValue;
+        }
+        
+        var alertBody: String?;
+        switch (type ?? "chat") {
+        case "muc":
+            if body.contains(userInfo["roomNickname"] as! String) {
+                alertBody = senderName! + " mentioned you";
+            } else {
+                return;
+            }
+        default:
+            alertBody = body;
+        }
+        
+        let userNotification = UILocalNotification();
+        userNotification.alertTitle = "Received new message from \(senderName!)";
+        userNotification.alertAction = "open";
+        userNotification.alertBody = alertBody;
+        userNotification.soundName = UILocalNotificationDefaultSoundName;
+        //userNotification.applicationIconBadgeNumber = UIApplication.sharedApplication().applicationIconBadgeNumber + 1;
+        userNotification.userInfo = ["account": account.stringValue, "sender": sender.bareJid.stringValue];
+        userNotification.category = "MESSAGE";
+        UIApplication.shared.presentLocalNotificationNow(userNotification);
     }
     
     func newMessage(_ notification: NSNotification) {
         let sender = notification.userInfo?["sender"] as? BareJID;
         let account = notification.userInfo?["account"] as? BareJID;
         let incoming:Bool = (notification.userInfo?["incoming"] as? Bool) ?? false;
-        guard sender != nil && incoming else {
+        guard sender != nil && account != nil && incoming else {
             return;
         }
         
-        var senderName:String? = nil;
-        if let sessionObject = xmppService.getClient(forJid: account!)?.sessionObject {
-            senderName = RosterModule.getRosterStore(sessionObject).get(for: JID(sender!))?.name;
-        }
-        if senderName == nil {
-            senderName = sender!.stringValue;
-        }
-        
-        if UIApplication.shared.applicationState != .active && notification.userInfo?["carbonAction"] == nil {
-            var alertBody: String?;
-            switch ((notification.userInfo?["type"] as? String) ?? "chat") {
-            case "muc":
-                if let body = (notification.userInfo?["body"] as? String) {
-                    if body.contains(notification.userInfo!["roomNickname"] as! String) {
-                        alertBody = senderName! + " mentioned you";
-                    }
-                }
-            default:
-                alertBody = "Received new message from " + senderName!;
-            }
-            
-            if alertBody != nil {
-                let userNotification = UILocalNotification();
-                userNotification.alertAction = "open";
-                userNotification.alertBody = alertBody;
-                userNotification.soundName = UILocalNotificationDefaultSoundName;
-                //userNotification.applicationIconBadgeNumber = UIApplication.sharedApplication().applicationIconBadgeNumber + 1;
-                userNotification.userInfo = ["account": account!.stringValue, "sender": account!.stringValue];
-                userNotification.category = "MESSAGE";
-                UIApplication.shared.presentLocalNotificationNow(userNotification);
-            }
+        if UIApplication.shared.applicationState != .active {
+            notifyNewMessage(account: JID(account!), sender: JID(sender!), body: notification.userInfo!["body"] as! String, type: notification.userInfo?["type"] as? String, data: notification.userInfo!);
         }
         updateApplicationIconBadgeNumber();
     }

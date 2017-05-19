@@ -71,7 +71,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
         
         if appendEntry(for: account, jid: jid!, incoming: incoming, authorJid: author, data: body!, timestamp: timestamp, id: message.id) {
 
-            var userInfo:[AnyHashable: Any] = ["account": account, "sender": jid!, "incoming": incoming, "timestamp": timestamp] ;
+            var userInfo:[AnyHashable: Any] = ["account": account, "sender": jid!, "incoming": incoming, "timestamp": timestamp, "body": body!] ;
             if carbonAction != nil {
                 userInfo["carbonAction"] = carbonAction!.rawValue;
             }

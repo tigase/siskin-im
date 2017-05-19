@@ -32,6 +32,9 @@ open class XmppService: Logger, EventHandler {
     open var fetchTimeShort: TimeInterval = 5;
     open var fetchTimeLong: TimeInterval = 20;
     
+    // TODO - needs to be changed to real push service jid
+    fileprivate static let pushServiceJid = JID("push.zeus");
+    
     fileprivate var creationDate = NSDate();
     fileprivate var fetchClientsWaitingForReconnection: [BareJID] = [];
     fileprivate var fetchStart = NSDate();
@@ -152,6 +155,11 @@ open class XmppService: Logger, EventHandler {
         client?.sessionObject.setUserProperty(SoftwareVersionModule.VERSION_KEY, value: Bundle.main.infoDictionary!["CFBundleVersion"] as! String);
         client?.sessionObject.setUserProperty(SoftwareVersionModule.OS_KEY, value: UIDevice.current.systemName);
         
+        if let pushModule: TigasePushNotificationsModule = client?.modulesManager.getModule(TigasePushNotificationsModule.ID) {
+            pushModule.pushServiceNode = config?.pushServiceNode;
+            pushModule.deviceId = Settings.DeviceToken.getString();
+            pushModule.enabled = config?.pushNotifications ?? false;
+        }
         
         clients[userJid] = client;
         
@@ -193,6 +201,8 @@ open class XmppService: Logger, EventHandler {
         let mucModule = MucModule();
         mucModule.roomsManager = DBRoomsManager(store: dbChatStore);
         _ = client.modulesManager.register(mucModule);
+        _ = client.modulesManager.register(AdHocCommandsModule());
+        _ = client.modulesManager.register(TigasePushNotificationsModule(pushServiceJid: XmppService.pushServiceJid));
         let capsModule = client.modulesManager.register(CapabilitiesModule());
         capsModule.cache = dbCapsCache;
     }
@@ -418,12 +428,19 @@ open class XmppService: Logger, EventHandler {
             }
         case .StatusMessage:
             sendAutoPresence();
+        case .DeviceToken:
+            let newDeviceId = notification.userInfo?["newValue"] as? String;
+            for client in clients.values {
+                if let pushModule: TigasePushNotificationsModule = client.modulesManager.getModule(PushNotificationsModule.ID) {
+                    pushModule.deviceId = newDeviceId;
+                }
+            }
         default:
             break;
         }
     }
     
-    open func preformFetch(_ completionHandler: @escaping (UIBackgroundFetchResult)->Void) {
+    open func preformFetch(for account: BareJID? = nil, _ completionHandler: @escaping (UIBackgroundFetchResult)->Void) {
         guard applicationState != .active else {
             print("skipping background fetch as application is active");
             completionHandler(.newData);
@@ -438,18 +455,32 @@ open class XmppService: Logger, EventHandler {
         var count = 0;
         self.fetchStart = NSDate();
         self.fetchClientsWaitingForReconnection = [];
-        for client in clients.values {
-            // try to send keepalive to ensure connection is valid
-            // if it fails it will try to resume connection
-            if client.state != .connected {
-                self.fetchClientsWaitingForReconnection.append(client.sessionObject.userBareJid!);
+        if (account != nil) {
+            if let client = getClient(forJid: account!) {
+                if (client.state != .connected) {
+                    self.fetchClientsWaitingForReconnection.append(client.sessionObject.userBareJid!);
+                    count += 1;
+                } else {
+                    client.keepalive();
+                }
+            } else {
+                completionHandler(.failed);
+                return;
+            }
+        } else {
+            for client in clients.values {
+                // try to send keepalive to ensure connection is valid
+                // if it fails it will try to resume connection
+                if client.state != .connected {
+                    self.fetchClientsWaitingForReconnection.append(client.sessionObject.userBareJid!);
                 // it looks like this is causing an issue
 //                if client.state == .disconnected {
 //                    client.login();
 //                }
-                count += 1;
-            } else {
-                client.keepalive();
+                    count += 1;
+                } else {
+                    client.keepalive();
+                }
             }
         }
         

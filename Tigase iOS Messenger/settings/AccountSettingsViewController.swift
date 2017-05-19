@@ -42,6 +42,7 @@ class AccountSettingsViewController: UITableViewController {
     @IBOutlet var addressTextView: UILabel!
     
     @IBOutlet var enabledSwitch: UISwitch!
+    @IBOutlet var pushNotificationSwitch: UISwitch!;
     
     override func viewDidLoad() {
         super.viewDidLoad();
@@ -53,6 +54,10 @@ class AccountSettingsViewController: UITableViewController {
 
         let config = AccountManager.getAccount(forJid: account);
         enabledSwitch.isOn = config?.active ?? false;
+        pushNotificationSwitch.isOn = config?.pushNotifications ?? false;
+        let client = xmppService.getClient(forJid: accountJid);
+        let pushModule: TigasePushNotificationsModule? = client?.modulesManager.getModule(TigasePushNotificationsModule.ID);
+        pushNotificationSwitch.isEnabled = (pushModule?.deviceId != nil) && (pushModule?.isAvailable ?? false);
 
         let vcard = xmppService.dbVCardsCache.getVCard(for: accountJid);
         update(vcard: vcard);
@@ -97,6 +102,14 @@ class AccountSettingsViewController: UITableViewController {
             AccountManager.updateAccount(config);
         }
     }
+    
+    @IBAction func pushNotificationSwitchChangedValue(_ sender: AnyObject) {
+        if let config = AccountManager.getAccount(forJid: account) {
+            config.pushNotifications = pushNotificationSwitch.isOn;
+            AccountManager.updateAccount(config);
+        }
+    }
+    
     
     func update(vcard: VCardModule.VCard?) {
         avatarView.image = xmppService.avatarManager.getAvatar(for: accountJid, account: accountJid);
