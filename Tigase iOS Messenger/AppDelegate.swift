@@ -85,7 +85,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             self.applicationKeepOnlineOnAwayFinished(application, taskId: taskId);
         }
         
-        let timeout = min(defaultKeepOnlineOnAwayTime, application.backgroundTimeRemaining - 8);
+        let timeout = min(defaultKeepOnlineOnAwayTime, application.backgroundTimeRemaining - 11);
         print("keep online on away background task", taskId, "started at", NSDate(), "for", timeout, "s");
         
         self.keepOnlineOnAwayTimer = Timer(delayInSeconds: timeout, repeats: false, callback: {
@@ -98,18 +98,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.keepOnlineOnAwayTimer?.cancel();
         self.keepOnlineOnAwayTimer = nil;
         print("keep online timer finished at", taskId, NSDate());
-        // mark background task as ended
-        application.endBackgroundTask(taskId);
+        if (self.xmppService.backgroundTaskFinished()) {
+            _ = Timer(delayInSeconds: 3.5, repeats: false, callback: {
+                print("finshed disconnection of push accounts", taskId);
+                application.endBackgroundTask(taskId);
+            });
+        } else {
+            // mark background task as ended
+            application.endBackgroundTask(taskId);
+        }
     }
     
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
-        xmppService.applicationState = .active;
+        //xmppService.applicationState = .active;
+        //self.keepOnlineOnAwayTimer?.execute();
+        //self.keepOnlineOnAwayTimer = nil;
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
         xmppService.applicationState = .active;
+        self.keepOnlineOnAwayTimer?.execute();
+        self.keepOnlineOnAwayTimer = nil;
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
@@ -288,18 +299,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         print("Push notification received with fetch request: \(userInfo)");
-        let fetchStart = Date();
+        //let fetchStart = Date();
         if let account = JID(userInfo[AnyHashable("account")] as? String), let sender = JID(userInfo[AnyHashable("sender")] as? String) {
             if let body = userInfo[AnyHashable("body")] as? String {
                 notifyNewMessage(account: account, sender: sender, body: body, type: "chat", data: userInfo);
             }
-            print(Date(), "starting fetching data");
-            xmppService.preformFetch(for: account.bareJid) {(result) in
-                completionHandler(result);
-                let fetchEnd = Date();
-                let time = fetchEnd.timeIntervalSince(fetchStart);
-                print(Date(), "fetched date in \(time) seconds with result = \(result)");
-            };
+            // what is the point of fetching data/offline messages here?
+            // we should do this on user request!
+//            print(Date(), "starting fetching data");
+//            xmppService.preformFetch(for: account.bareJid) {(result) in
+//                completionHandler(result);
+//                let fetchEnd = Date();
+//                let time = fetchEnd.timeIntervalSince(fetchStart);
+//                print(Date(), "fetched date in \(time) seconds with result = \(result)");
+//            };
         }
     }
     

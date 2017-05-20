@@ -33,7 +33,7 @@ open class XmppService: Logger, EventHandler {
     open var fetchTimeLong: TimeInterval = 20;
     
     // TODO - needs to be changed to real push service jid
-    fileprivate static let pushServiceJid = JID("push.zeus");
+    fileprivate static let pushServiceJid = JID("push.tigase.im");
     
     fileprivate var creationDate = NSDate();
     fileprivate var fetchClientsWaitingForReconnection: [BareJID] = [];
@@ -163,7 +163,7 @@ open class XmppService: Logger, EventHandler {
         
         clients[userJid] = client;
         
-        if networkAvailable {
+        if networkAvailable && (applicationState == .active || (config?.pushNotifications ?? false) == false) {
             client?.login();
         } else {
             client?.modulesManager.initIfRequired();
@@ -369,6 +369,13 @@ open class XmppService: Logger, EventHandler {
                 }
             }
         }
+        if applicationState == .active {
+            for client in clients.values {
+                if client.state == .disconnected && client.pushNotificationsEnabled {
+                    updateXmppClientInstance(forJid: client.sessionObject.userBareJid!);
+                }
+            }
+        }
     }
     
     fileprivate func sendAutoPresence() {
@@ -440,6 +447,22 @@ open class XmppService: Logger, EventHandler {
         }
     }
     
+    open func backgroundTaskFinished() -> Bool {
+        guard applicationState != .active else {
+            return false;
+        }
+        var stopping = 0;
+        for client in clients.values {
+            if client.state == .connected && client.pushNotificationsEnabled {
+                // we need to close connection so that push notifications will be delivered to us!
+                // this is in generic case, some severs may have optimizations to improve this
+                client.disconnect();
+                stopping += 1;
+            }
+        }
+        return stopping > 0;
+    }
+    
     open func preformFetch(for account: BareJID? = nil, _ completionHandler: @escaping (UIBackgroundFetchResult)->Void) {
         guard applicationState != .active else {
             print("skipping background fetch as application is active");
@@ -452,16 +475,20 @@ open class XmppService: Logger, EventHandler {
             return;
         }
         // count connections which needs to resume
-        var count = 0;
+        var countLong = 0;
+        var countShort = 0;
         self.fetchStart = NSDate();
         self.fetchClientsWaitingForReconnection = [];
         if (account != nil) {
             if let client = getClient(forJid: account!) {
-                if (client.state != .connected) {
-                    self.fetchClientsWaitingForReconnection.append(client.sessionObject.userBareJid!);
-                    count += 1;
+                if client.state != .connected {
+                    if !client.pushNotificationsEnabled {
+                        self.fetchClientsWaitingForReconnection.append(client.sessionObject.userBareJid!);
+                        countLong += 1;
+                    }
                 } else {
                     client.keepalive();
+                    countShort += 1;
                 }
             } else {
                 completionHandler(.failed);
@@ -472,14 +499,17 @@ open class XmppService: Logger, EventHandler {
                 // try to send keepalive to ensure connection is valid
                 // if it fails it will try to resume connection
                 if client.state != .connected {
-                    self.fetchClientsWaitingForReconnection.append(client.sessionObject.userBareJid!);
+                    if !client.pushNotificationsEnabled {
+                        self.fetchClientsWaitingForReconnection.append(client.sessionObject.userBareJid!);
+                        countLong += 1;
+                    }
                 // it looks like this is causing an issue
 //                if client.state == .disconnected {
 //                    client.login();
 //                }
-                    count += 1;
                 } else {
                     client.keepalive();
+                    countShort += 1;
                 }
             }
         }
@@ -487,8 +517,13 @@ open class XmppService: Logger, EventHandler {
         log("waiting for clients", self.fetchClientsWaitingForReconnection, "to reconnect");
         // we need to give connections time to read and process data
         // so event if all are connected lets wait 5secs
+        guard countLong > 0 || countShort > 0 else {
+            // only push based connections!
+            completionHandler(.newData);
+            return;
+        }
         self.backgroundFetchCompletionHandler = completionHandler;
-        backgroundFetchTimer = TigaseSwift.Timer(delayInSeconds: count > 0 ? fetchTimeLong : fetchTimeShort, repeats: false, callback: {
+        backgroundFetchTimer = TigaseSwift.Timer(delayInSeconds: countLong > 0 ? fetchTimeLong : fetchTimeShort, repeats: false, callback: {
             self.backgroundFetchTimedOut();
         });
     }
@@ -612,4 +647,13 @@ open class XmppService: Logger, EventHandler {
         case active
         case inactive
     }
+}
+
+extension XMPPClient {
+    
+    var  pushNotificationsEnabled: Bool {
+        let pushNotificationModule: TigasePushNotificationsModule? = self.modulesManager.getModule(TigasePushNotificationsModule.ID);
+        return pushNotificationModule?.enabled ?? false;
+    }
+    
 }
