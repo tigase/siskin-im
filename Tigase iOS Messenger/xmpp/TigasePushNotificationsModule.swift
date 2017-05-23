@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import UserNotifications
 import TigaseSwift
 
 open class TigasePushNotificationsModule: PushNotificationsModule, EventHandler {
@@ -109,9 +110,9 @@ open class TigasePushNotificationsModule: PushNotificationsModule, EventHandler 
             }
             if deviceId != nil && pushServiceNode != nil && !enabled {
                 self.unregisterDevice(onSuccess: {
-                    print("unregistered device", self.deviceId, "for push notifications");
+                    print("unregistered device", self.deviceId ?? "nil", "for push notifications");
                 }, onError: { (error) in
-                    print("unregistration failed", self.deviceId, "with error", error);
+                    print("unregistration failed", self.deviceId ?? "nil", "with error", error ?? "nil");
                 })
             }
         }
@@ -119,7 +120,7 @@ open class TigasePushNotificationsModule: PushNotificationsModule, EventHandler 
     
     func registerDevice() {
         self.registerDevice(onSuccess: {
-            print("registered device", self.deviceId, "for push notifications at", self.pushServiceNode);
+            print("registered device", self.deviceId, "for push notifications at", self.pushServiceNode ?? "nil");
         }, onError: { (error) in
             let accountJid = self.context.sessionObject.userBareJid!.stringValue;
             if let account = AccountManager.getAccount(forJid: accountJid) {
@@ -127,15 +128,14 @@ open class TigasePushNotificationsModule: PushNotificationsModule, EventHandler 
                 self.enabled = false;
                 AccountManager.updateAccount(account, notifyChange: false);
                 
-                let notification = UILocalNotification();
-                notification.alertTitle = "Error";
-                notification.alertAction = "fix";
+                let notification = UNMutableNotificationContent();
+                notification.title = "Error";
                 notification.userInfo = ["account": accountJid];
-                notification.alertBody = "Push Notifications for account \(accountJid) disabled due to error during registration in Push Notification servce: \(error)";
-                notification.soundName = UILocalNotificationDefaultSoundName;
-                notification.category = "ERROR";
+                notification.body = "Push Notifications for account \(accountJid) disabled due to error during registration in Push Notification servce: \(error)";
+                notification.sound = UNNotificationSound.default();
+                notification.categoryIdentifier = "ERROR";
                 DispatchQueue.main.async {
-                    UIApplication.shared.presentLocalNotificationNow(notification);
+                    UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "push-notifications-" + accountJid, content: notification, trigger: nil));
                 }
             }
         })

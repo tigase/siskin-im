@@ -20,10 +20,11 @@
 //
 
 import UIKit
+import UserNotifications
 import TigaseSwift
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     
     var window: UIWindow?
     var xmppService:XmppService!;
@@ -47,7 +48,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         xmppService = XmppService(dbConnection: dbConnection);
         xmppService.updateXmppClientInstance();
-        registerUserNotificationSettings(application: application);
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
+            // sending notifications not granted!
+        }
+        UNUserNotificationCenter.current().delegate = self;
+        application.registerForRemoteNotifications();
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.chatItemsUpdated), name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.serverCertificateError), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
@@ -128,13 +133,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         print(NSDate(), "application terminated!")
     }
 
-    func application(_ application: UIApplication, didReceive notification: UILocalNotification) {
-        updateApplicationIconBadgeNumber();
-        print("notification clicked", notification.userInfo);
-        if (notification.category == "ERROR") {
-            guard let userInfo = notification.userInfo else {
-                return;
-            }
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        let content = response.notification.request.content;
+        let userInfo = content.userInfo;
+        if content.categoryIdentifier == "ERROR" {
             if userInfo["cert-name"] != nil {
                 let accountJid = BareJID(userInfo["account"] as! String);
                 let certName = userInfo["cert-name"] as! String;
@@ -155,7 +157,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     account.active = true;
                     AccountManager.updateAccount(account);
                 }));
-            
+                
                 var topController = UIApplication.shared.keyWindow?.rootViewController;
                 while (topController?.presentedViewController != nil) {
                     topController = topController?.presentedViewController;
@@ -176,7 +178,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 
                 topController?.present(alert, animated: true, completion: nil);
             } else {
-                let alert = UIAlertController(title: notification.alertTitle, message: notification.alertBody, preferredStyle: .alert);
+                let alert = UIAlertController(title: content.title, message: content.body, preferredStyle: .alert);
                 alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
                 
                 var topController = UIApplication.shared.keyWindow?.rootViewController;
@@ -187,7 +189,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 topController?.present(alert, animated: true, completion: nil);
             }
         }
-        if notification.category == "SUBSCRIPTION_REQUEST", let userInfo = notification.userInfo {
+        if content.categoryIdentifier == "SUBSCRIPTION_REQUEST" {
+            let userInfo = content.userInfo;
             let senderJid = BareJID(userInfo["sender"] as! String);
             let accountJid = BareJID(userInfo["account"] as! String);
             var senderName = userInfo["senderName"] as! String;
@@ -214,7 +217,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                         presenceModule.subscribe(to: JID(senderJid));
                     }));
                     alert2.addAction(UIAlertAction(title: "Reject", style: .destructive, handler: nil));
-
+                    
                     var topController = UIApplication.shared.keyWindow?.rootViewController;
                     while (topController?.presentedViewController != nil) {
                         topController = topController?.presentedViewController;
@@ -237,10 +240,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             
             topController?.present(alert, animated: true, completion: nil);
         }
-        if notification.category == "MESSAGE", let userInfo = notification.userInfo {
+        if content.categoryIdentifier == "MESSAGE" {
             let senderJid = BareJID(userInfo["sender"] as! String);
             let accountJid = BareJID(userInfo["account"] as! String);
-
+            
             var topController = UIApplication.shared.keyWindow?.rootViewController;
             while (topController?.presentedViewController != nil) {
                 topController = topController?.presentedViewController;
@@ -250,18 +253,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 let controller = topController!.storyboard?.instantiateViewController(withIdentifier: "ChatViewNavigationController");
                 let navigationController = controller as? UINavigationController;
                 let destination = navigationController?.visibleViewController ?? controller;
-            
+                
                 if let baseChatViewController = destination as? BaseChatViewController {
                     baseChatViewController.account = accountJid;
                     baseChatViewController.jid = JID(senderJid);
                 }
                 destination?.hidesBottomBarWhenPushed = true;
-            
+                
                 topController!.showDetailViewController(controller!, sender: self);
             } else {
                 print("No top controller!");
             }
         }
+
     }
     
     func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
@@ -273,12 +277,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let time = fetchEnd.timeIntervalSince(fetchStart);
             print(Date(), "fetched date in \(time) seconds with result = \(result)");
         });
-    }
-    
-    func application(_ application: UIApplication, didRegister notificationSettings: UIUserNotificationSettings) {
-        if notificationSettings.types != .none {
-            application.registerForRemoteNotifications()
-        }
     }
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
@@ -316,11 +314,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
-    func registerUserNotificationSettings(application: UIApplication) {
-        var settings = UIUserNotificationSettings(types: [UIUserNotificationType.alert, UIUserNotificationType.badge, UIUserNotificationType.sound], categories: nil);
-        application.registerUserNotificationSettings(settings);
-    }
-    
     func notifyNewMessage(account: JID, sender: JID, body: String, type: String?, data userInfo: [AnyHashable:Any]) {
         guard userInfo["carbonAction"] == nil else {
             return;
@@ -346,15 +339,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             alertBody = body;
         }
         
-        let userNotification = UILocalNotification();
-        userNotification.alertTitle = "Received new message from \(senderName!)";
-        userNotification.alertAction = "open";
-        userNotification.alertBody = alertBody;
-        userNotification.soundName = UILocalNotificationDefaultSoundName;
+        let content = UNMutableNotificationContent();
+        content.title = "Received new message from \(senderName!)";
+        content.body = alertBody!;
+        content.sound = UNNotificationSound.default();
         //userNotification.applicationIconBadgeNumber = UIApplication.sharedApplication().applicationIconBadgeNumber + 1;
-        userNotification.userInfo = ["account": account.stringValue, "sender": sender.bareJid.stringValue];
-        userNotification.category = "MESSAGE";
-        UIApplication.shared.presentLocalNotificationNow(userNotification);
+        content.userInfo = ["account": account.stringValue, "sender": sender.bareJid.stringValue];
+        content.categoryIdentifier = "MESSAGE";
+        content.threadIdentifier = "account=" + account.stringValue + "|sender=" + sender.bareJid.stringValue;
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
     
     func newMessage(_ notification: NSNotification) {
@@ -386,13 +379,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             senderName = sender!.stringValue;
         }
         
-        let userNotification = UILocalNotification();
-        userNotification.alertAction = "fix";
-        userNotification.alertBody = "Received presence subscription request from " + senderName!;
-        userNotification.userInfo = ["sender": sender!.stringValue as NSString, "account": account!.stringValue as NSString, "senderName": senderName! as NSString];
-        userNotification.category = "SUBSCRIPTION_REQUEST";
-        
-        UIApplication.shared.presentLocalNotificationNow(userNotification);
+        let content = UNMutableNotificationContent();
+        content.body = "Received presence subscription request from " + senderName!;
+        content.userInfo = ["sender": sender!.stringValue as NSString, "account": account!.stringValue as NSString, "senderName": senderName! as NSString];
+        content.categoryIdentifier = "SUBSCRIPTION_REQUEST";
+        content.threadIdentifier = "account=" + account!.stringValue + "|sender=" + sender!.stringValue;
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
     
     func updateApplicationIconBadgeNumber() {
@@ -411,12 +403,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         let account = BareJID(certInfo["account"] as! String);
         
-        let userNotification = UILocalNotification();
-        userNotification.alertAction = "fix";
-        userNotification.alertBody = "Connection to server \(account.domain) failed";
-        userNotification.userInfo = certInfo;
-        userNotification.category = "ERROR";
-        UIApplication.shared.presentLocalNotificationNow(userNotification);
+        let content = UNMutableNotificationContent();
+        content.body = "Connection to server \(account.domain) failed";
+        content.userInfo = certInfo;
+        content.categoryIdentifier = "ERROR";
+        content.threadIdentifier = "account=" + account.stringValue;
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
     
     func authenticationFailure(_ notification: NSNotification) {
@@ -427,12 +419,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let account = BareJID(info["account"] as! String);
         let type = info["auth-error-type"] as! String;
         
-        let userNotification = UILocalNotification();
-        userNotification.alertAction = "fix";
-        userNotification.alertBody = "Authentication for account \(account) failed: \(type)";
-        userNotification.userInfo = info;
-        userNotification.category = "ERROR";
-        UIApplication.shared.presentLocalNotificationNow(userNotification);
+        let content = UNMutableNotificationContent();
+        content.body = "Authentication for account \(account) failed: \(type)";
+        content.userInfo = info;
+        content.categoryIdentifier = "ERROR";
+        content.threadIdentifier = "account=" + account.stringValue;
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
 
     func hideSetupGuide() {
