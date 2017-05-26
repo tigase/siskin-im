@@ -11,3 +11,4 @@ Welcome to Tigase Messenger for iOS
 
 include::text/welcome.asciidoc[]
 include::text/interface.asciidoc[]
+include::text/advanced.asciidoc[]

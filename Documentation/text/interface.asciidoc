@@ -14,6 +14,7 @@ The recent menu displays recent conversations with other users, and also serves 
 image::images\recent.png[]
 
 Tapping one of these conversations will bring up the chat, MUC or one on one.  This panel also serves as an archive of sorts, and previous conversations with users will be accessable in this panel.
+
 NOTE: Conversations will only be saved if they took place on this device, it uses local storage only and cannot retrieve messages from the server using message archiving or offline messages.
 
 You may clear conversations from the archive by dragging the name or MUC conversation to the left and selecting delete. If you are removing a MUC chat, you will leave the chatroom.
@@ -45,14 +46,16 @@ image::images\occupants.PNG[]
 
 [contacts]
 == Contacts
-The contacts panel serves as your Roster, displaying all the contacts you have on your roster, and displaying statuses, avatars along with thier names.
+The contacts panel serves as your Roster, displaying all the contacts you have on your roster, and displaying statuses along with thier names.  Tigase Messenger for iOS supports vCard-Temp Avatars and will retrieve them if they are uploaded by a user.
 
 image::images\roster.PNG[]
 
-Contacts with green icons are available or free to chat status.
-Contacts with yellow icons are away or extended away.
-Contacts with red icons are in do not disturb status.
-Contacts with grey icons are offline or unavailable.
+Contacts with green icons are available or free to chat status. +
+Contacts with yellow icons are away or extended away. +
+Contacts with red icons are in do not disturb status. +
+Contacts with grey icons are offline or unavailable. +
+
+Note that contacts will remain grey if you decide not to allow presence notifications in the settings.
 
 You may remove contacts by dragging a contact to the left and tapping Delete.  This will remove the contact from your roster, and remove any presence sharing permissions from the contact.  You may also remove multiple contacts by tapping Edit, and then tapping the remove symbols for contacts you wish to remove.
 
