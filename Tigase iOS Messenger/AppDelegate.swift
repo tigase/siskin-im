@@ -268,6 +268,56 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     }
     
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        if notification.request.content.categoryIdentifier == "MESSAGE" {
+            let account = notification.request.content.userInfo["account"] as? String;
+            let sender = notification.request.content.userInfo["sender"] as? String;
+            if (isChatVisible(account: account, with: sender)) {
+                completionHandler([]);
+            } else {
+                completionHandler([.alert, .sound]);
+            }
+        } else {
+            completionHandler([]);
+        }
+    }
+    
+    func isChatVisible(account: String?, with jid: String?) -> Bool {
+        var topController = UIApplication.shared.keyWindow?.rootViewController;
+        while (topController?.presentedViewController != nil) {
+            topController = topController?.presentedViewController;
+        }
+        print("top controller", topController);
+        guard let splitViewController = topController as? UISplitViewController else {
+            return false;
+        }
+        
+        print("visible controllers", splitViewController.viewControllers);
+        guard let selectedTabController = splitViewController.viewControllers.map({(controller) in controller as? UITabBarController }).filter({ (controller) -> Bool in
+            controller != nil
+        }).map({(controller) in controller! }).first?.selectedViewController else {
+            return false;
+        }
+        
+        print("selected tab controller", selectedTabController);
+        var baseChatController: BaseChatViewController? = nil;
+        if let navigationController = selectedTabController as? UINavigationController {
+            if let presented = navigationController.viewControllers.last {
+                print("presented", presented);
+                baseChatController = presented as? BaseChatViewController;
+            }
+        } else {
+            baseChatController = selectedTabController as? BaseChatViewController;
+        }
+        
+        guard baseChatController != nil else {
+            return false;
+        }
+        
+        print("comparing", baseChatController!.account.stringValue, account, baseChatController!.jid.stringValue, jid);
+        return (baseChatController!.account.stringValue == account) && (baseChatController!.jid.bareJid.stringValue == jid);
+    }
+    
     func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         let fetchStart = Date();
         print(Date(), "starting fetching data");
@@ -357,7 +407,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         content.threadIdentifier = threadId;
         let id = threadId + ":body=" + (body.characters.count > 400 ? body.substring(to: body.index(body.startIndex, offsetBy: 400)) : body);
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil));
-        //userNotification.applicationIconBadgeNumber = UIApplication.sharedApplication().applicationIconBadgeNumber + 1;
     }
     
     func newMessage(_ notification: NSNotification) {
@@ -368,9 +417,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             return;
         }
         
-        if UIApplication.shared.applicationState != .active {
-            notifyNewMessage(account: JID(account!), sender: JID(sender!), body: notification.userInfo!["body"] as! String, type: notification.userInfo?["type"] as? String, data: notification.userInfo!, isPush: false);
-        }
+        notifyNewMessage(account: JID(account!), sender: JID(sender!), body: notification.userInfo!["body"] as! String, type: notification.userInfo?["type"] as? String, data: notification.userInfo!, isPush: false);
         updateApplicationIconBadgeNumber();
     }
     
