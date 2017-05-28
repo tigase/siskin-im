@@ -351,7 +351,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         if let account = JID(userInfo[AnyHashable("account")] as? String), let unreadMessages = userInfo["unread-messages"] as? Int {
             if let sender = JID(userInfo[AnyHashable("sender")] as? String) {
                 if let body = userInfo[AnyHashable("body")] as? String {
-                    notifyNewMessage(account: account, sender: sender, body: body, type: "chat", data: userInfo, isPush: true);
+                    notifyNewMessage(account: account, sender: sender, body: body, type: "chat", data: userInfo, isPush: true) {
+                        completionHandler(.newData);
+                    }
+                    return;
                 }
             // what is the point of fetching data/offline messages here?
             // we should do this on user request!
@@ -364,14 +367,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 //            };
             }
             else if unreadMessages == 0 {
-                dismissPushNotifications(for: account);
+                let state = self.xmppService.getClient(forJid: account.bareJid)?.state;
+                print("unread messages retrieved, client state =", state);
+                if state != .connected {
+                    dismissPushNotifications(for: account) {
+                        completionHandler(.newData);
+                    }
+                    return;
+                }
             }
         }
         
         completionHandler(.newData);
     }
     
-    func notifyNewMessage(account: JID, sender: JID, body: String, type: String?, data userInfo: [AnyHashable:Any], isPush: Bool) {
+    func notifyNewMessage(account: JID, sender: JID, body: String, type: String?, data userInfo: [AnyHashable:Any], isPush: Bool, completionHandler: (()->Void)?) {
         guard userInfo["carbonAction"] == nil else {
             return;
         }
@@ -398,15 +408,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
         let threadId = "account=" + account.stringValue + "|sender=" + sender.bareJid.stringValue;
         
-        let content = UNMutableNotificationContent();
-        content.title = "Received new message from \(senderName!)";
-        content.body = alertBody!;
-        content.sound = UNNotificationSound.default();
-        content.userInfo = ["account": account.stringValue, "sender": sender.bareJid.stringValue, "push": isPush];
-        content.categoryIdentifier = "MESSAGE";
-        content.threadIdentifier = threadId;
         let id = threadId + ":body=" + (body.characters.count > 400 ? body.substring(to: body.index(body.startIndex, offsetBy: 400)) : body);
-        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil));
+        UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
+            if notifications.filter({(notification) in  notification.request.identifier == id}).isEmpty {
+                let content = UNMutableNotificationContent();
+                content.title = "Received new message from \(senderName!)";
+                content.body = alertBody!;
+                content.sound = UNNotificationSound.default();
+                content.userInfo = ["account": account.stringValue, "sender": sender.bareJid.stringValue, "push": isPush];
+                content.categoryIdentifier = "MESSAGE";
+                content.threadIdentifier = threadId;
+                
+                UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil), withCompletionHandler: {(error) in
+                    print("message notification error", error);
+                    self.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
+                });
+            }
+        }
     }
     
     func newMessage(_ notification: NSNotification) {
@@ -417,20 +435,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             return;
         }
         
-        notifyNewMessage(account: JID(account!), sender: JID(sender!), body: notification.userInfo!["body"] as! String, type: notification.userInfo?["type"] as? String, data: notification.userInfo!, isPush: false);
-        updateApplicationIconBadgeNumber();
+        notifyNewMessage(account: JID(account!), sender: JID(sender!), body: notification.userInfo!["body"] as! String, type: notification.userInfo?["type"] as? String, data: notification.userInfo!, isPush: false, completionHandler: nil);
     }
     
-    func dismissPushNotifications(for account: JID) {
+    func dismissPushNotifications(for account: JID, completionHandler: (()-> Void)?) {
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
             let toRemove = notifications.filter({ (notification) in notification.request.content.categoryIdentifier == "MESSAGE" }).filter({ (notification) in (notification.request.content.userInfo["account"] as? String) == account.stringValue && (notification.request.content.userInfo["push"] as? Bool ?? false) }).map({ (notification) in notification.request.identifier });
             UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
-            self.updateApplicationIconBadgeNumber();
+            self.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
         }
     }
     
     func chatItemsUpdated(_ notification: NSNotification) {
-        updateApplicationIconBadgeNumber();
+        updateApplicationIconBadgeNumber(completionHandler: nil);
     }
     
     func presenceAuthorizationRequest(_ notification: NSNotification) {
@@ -452,13 +469,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
     
-    func updateApplicationIconBadgeNumber() {
-//        DispatchQueue.global(qos: .default).async {
-//            let unreadChats = self.xmppService.dbChatHistoryStore.countUnreadChats();
-//            DispatchQueue.main.async {
-//                UIApplication.shared.applicationIconBadgeNumber = unreadChats;
-//            }
-//        }
+    func updateApplicationIconBadgeNumber(completionHandler: (()->Void)?) {
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
             var unreadChats = Set(notifications.map({ (notification) in
                 return notification.request.content.threadIdentifier;
@@ -471,6 +482,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 DispatchQueue.main.async {
                     print("setting badge to", badge);
                     UIApplication.shared.applicationIconBadgeNumber = badge;
+                    completionHandler?();
                 }
             }
         }
