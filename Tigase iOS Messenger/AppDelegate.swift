@@ -58,6 +58,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.serverCertificateError), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.authenticationFailure), name: XmppService.AUTHENTICATION_FAILURE, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.presenceAuthorizationRequest), name: XmppService.PRESENCE_AUTHORIZATION_REQUEST, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.pushNotificationRegistrationFailed), name: Notification.Name("pushNotificationsRegistrationFailed"), object: nil);
 //        updateApplicationIconBadgeNumber();
         
         application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum);
@@ -265,7 +266,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 print("No top controller!");
             }
         }
-
+        
+        completionHandler();
     }
     
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
@@ -278,7 +280,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 completionHandler([.alert, .sound]);
             }
         } else {
-            completionHandler([]);
+            completionHandler([.alert, .sound]);
         }
     }
     
@@ -469,9 +471,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
     
+    func pushNotificationRegistrationFailed(_ notification: NSNotification) {
+        let account = notification.userInfo?["account"] as? BareJID;
+        let errorCondition = (notification.userInfo?["errorCondition"] as? ErrorCondition) ?? ErrorCondition.internal_server_error;
+        let content = UNMutableNotificationContent();
+        switch errorCondition {
+        case .remote_server_timeout:
+            content.body = "It was not possible to contact push notification component.\nTry again later."
+        case .remote_server_not_found:
+            content.body = "It was not possible to contact push notification component."
+        case .service_unavailable:
+            content.body = "Push notifications not available";
+        default:
+            content.body = "It was not possible to contact push notification component: \(errorCondition.rawValue)";
+        }
+        content.threadIdentifier = "account=" + account!.stringValue;
+        content.categoryIdentifier = "ERROR";
+        content.userInfo = ["account": account!.stringValue];
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
+    }
+    
     func updateApplicationIconBadgeNumber(completionHandler: (()->Void)?) {
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
-            var unreadChats = Set(notifications.map({ (notification) in
+            var unreadChats = Set(notifications.filter({(notification) in notification.request.content.categoryIdentifier == "MESSAGE" }).map({ (notification) in
                 return notification.request.content.threadIdentifier;
             }));
             self.dbConnection.dispatch_async_db_queue {

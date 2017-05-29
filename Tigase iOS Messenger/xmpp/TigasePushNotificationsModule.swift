@@ -53,7 +53,7 @@ open class TigasePushNotificationsModule: PushNotificationsModule, EventHandler 
         }
     }
 
-    fileprivate let provider = "apns-binary-api";
+    fileprivate let provider = "tigase:messenger:apns:1";
     
     public init(pushServiceJid: JID) {
         super.init();
@@ -139,5 +139,73 @@ open class TigasePushNotificationsModule: PushNotificationsModule, EventHandler 
                 }
             }
         })
+    }
+    
+    func findPushComponent(completionHandler: @escaping (JID?)->Void) {
+        guard let discoModule: DiscoveryModule = context.modulesManager.getModule(DiscoveryModule.ID) else {
+            completionHandler(nil);
+            return;
+        }
+        discoModule.getItems(for: JID(context.sessionObject.userBareJid!.domain)!, node: nil, onItemsReceived: {(node, items) in
+            let result = DiscoResults(items: items) { (jids) in
+                print("found proper push components at", jids);
+                completionHandler(jids.first);
+            };
+            items.forEach({ (item) in
+                discoModule.getInfo(for: item.jid, node: item.node, onInfoReceived: { (node, identities, features) in
+                    if identities.filter({ (identity) -> Bool in
+                        identity.category == "pubsub" && identity.type == "push"
+                    }).isEmpty || features.index(of: "urn:xmpp:push:0") == nil || features.index(of: "tigase:messenger:apns:1") == nil {
+                        result.failure();
+                    } else {
+                        result.found(item.jid);
+                    }
+                }, onError: {(errorCondition) in
+                    print("error:", errorCondition);
+                    result.failure();
+                });
+            });
+            result.checkFinished();
+        }, onError: {(errorCondition) in
+            print("error:", errorCondition);
+            completionHandler(nil);
+        });
+    }
+    
+    private class DiscoResults {
+        
+        let items: [DiscoveryModule.Item];
+        let completionHandler: (([JID])->Void);
+        
+        var responses = 0;
+        var found: [JID] = [];
+        
+        init(items: [DiscoveryModule.Item], completionHandler: @escaping (([JID])->Void)) {
+            self.items = items;
+            self.completionHandler = completionHandler;
+        }
+        
+        func found(_ jid: JID) {
+            DispatchQueue.main.async {
+                self.found.append(jid);
+                self.responses += 1;
+                self.checkFinished();
+                
+            }
+        }
+        
+        func failure() {
+            DispatchQueue.main.async {
+                self.responses += 1;
+                self.checkFinished();
+            }
+        }
+        
+        func checkFinished() {
+            if (self.responses == items.count) {
+                self.completionHandler(found);
+            }
+        }
+        
     }
 }

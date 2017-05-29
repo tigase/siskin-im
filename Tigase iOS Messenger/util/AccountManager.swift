@@ -223,6 +223,19 @@ open class AccountManager {
             }
         }
         
+        open var pushServiceJid: JID? {
+            get {
+                return JID(data["pushServiceJid"] as? String);
+            }
+            set {
+                if newValue != nil {
+                    data["pushServiceJid"] = newValue!.stringValue as AnyObject?;
+                } else {
+                    data.removeValue(forKey: "pushServiceJid");
+                }
+            }
+        }
+        
         open var pushServiceNode: String? {
             get {
                 return data["pushServiceNode"] as? String;

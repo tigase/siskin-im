@@ -32,8 +32,7 @@ open class XmppService: Logger, EventHandler {
     open var fetchTimeShort: TimeInterval = 5;
     open var fetchTimeLong: TimeInterval = 20;
     
-    // TODO - needs to be changed to real push service jid
-    fileprivate static let pushServiceJid = JID("push.tigase.im");
+    open static let pushServiceJid = JID("push.tigase.im");
     
     fileprivate var creationDate = NSDate();
     fileprivate var fetchClientsWaitingForReconnection: [BareJID] = [];
@@ -156,6 +155,7 @@ open class XmppService: Logger, EventHandler {
         client?.sessionObject.setUserProperty(SoftwareVersionModule.OS_KEY, value: UIDevice.current.systemName);
         
         if let pushModule: TigasePushNotificationsModule = client?.modulesManager.getModule(TigasePushNotificationsModule.ID) {
+            pushModule.pushServiceJid = config?.pushServiceJid ?? XmppService.pushServiceJid;
             pushModule.pushServiceNode = config?.pushServiceNode;
             pushModule.deviceId = Settings.DeviceToken.getString();
             pushModule.enabled = config?.pushNotifications ?? false;
