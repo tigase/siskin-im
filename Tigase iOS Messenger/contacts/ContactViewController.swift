@@ -277,11 +277,11 @@ class ContactViewController: UITableViewController {
         switch indexPath.section {
         case 1:
             if let url = URL(string: "tel:" + phones[indexPath.row].number!) {
-                UIApplication.shared.openURL(url);
+                UIApplication.shared.open(url);
             }
         case 2:
             if let url = URL(string: "mailto:" + emails[indexPath.row].address!) {
-                UIApplication.shared.openURL(url);
+                UIApplication.shared.open(url);
             }
         case 3:
             let address = addresses[indexPath.row];
@@ -297,7 +297,7 @@ class ContactViewController: UITableViewController {
             }
             let query = parts.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!;
             if let url = URL(string: "http://maps.apple.com/?q=" + query) {
-                UIApplication.shared.openURL(url);
+                UIApplication.shared.open(url);
             }
         default:
             break;

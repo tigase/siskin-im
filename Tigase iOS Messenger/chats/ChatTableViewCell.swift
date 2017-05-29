@@ -133,7 +133,7 @@ class ChatTableViewCell: UITableViewCell {
             layoutManager.addTextContainer(textContainer);
             let idx = layoutManager.characterIndex(for: point, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil);
             if let url = self.messageTextView.attributedText?.attribute(NSLinkAttributeName, at: idx, effectiveRange: nil) as? NSURL {
-                UIApplication.shared.openURL(url as URL);
+                UIApplication.shared.open(url as URL);
             }
         default:
             break;

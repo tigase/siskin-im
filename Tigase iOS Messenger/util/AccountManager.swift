@@ -22,6 +22,7 @@
 
 import Foundation
 import Security
+import TigaseSwift
 
 
 open class AccountManager {
@@ -209,6 +210,41 @@ open class AccountManager {
                     data["presenceDescription"] = newValue as AnyObject?;
                 } else {
                     data.removeValue(forKey: "presenceDescription");
+                }
+            }
+        }
+        
+        open var pushNotifications: Bool {
+            get {
+                return (data["pushNotifications"] as? Bool) ?? false;
+            }
+            set {
+                data["pushNotifications"] = newValue as AnyObject?;
+            }
+        }
+        
+        open var pushServiceJid: JID? {
+            get {
+                return JID(data["pushServiceJid"] as? String);
+            }
+            set {
+                if newValue != nil {
+                    data["pushServiceJid"] = newValue!.stringValue as AnyObject?;
+                } else {
+                    data.removeValue(forKey: "pushServiceJid");
+                }
+            }
+        }
+        
+        open var pushServiceNode: String? {
+            get {
+                return data["pushServiceNode"] as? String;
+            }
+            set {
+                if newValue != nil {
+                    data["pushServiceNode"] = newValue as AnyObject?;
+                } else {
+                    data.removeValue(forKey: "pushServiceNode");
                 }
             }
         }

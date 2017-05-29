@@ -20,6 +20,7 @@
 //
 
 import UIKit
+import UserNotifications
 import TigaseSwift
 
 class BaseChatViewController: UIViewController, UITextViewDelegate {
@@ -99,7 +100,18 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
             scrollToNewestMessage(animated: true);
             isFirstTime = false;
         }
-        xmppService.dbChatHistoryStore.markAsRead(for: account, with: jid.bareJid);
+        let accountStr = account.stringValue;
+        let jidStr = jid.bareJid.stringValue;
+        UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
+            var toRemove = [String]();
+            for notification in notifications {
+                if (notification.request.content.userInfo["account"] as? String) == accountStr && (notification.request.content.userInfo["sender"] as? String) == jidStr {
+                    toRemove.append(notification.request.identifier);
+                }
+            }
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
+            self.xmppService.dbChatHistoryStore.markAsRead(for: self.account, with: self.jid.bareJid);
+        }
     }
     
     override func viewDidDisappear(_ animated: Bool) {

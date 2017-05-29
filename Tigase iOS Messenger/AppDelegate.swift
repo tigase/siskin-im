@@ -20,10 +20,11 @@
 //
 
 import UIKit
+import UserNotifications
 import TigaseSwift
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     
     var window: UIWindow?
     var xmppService:XmppService!;
@@ -47,13 +48,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         xmppService = XmppService(dbConnection: dbConnection);
         xmppService.updateXmppClientInstance();
-        registerUserNotificationSettings(application: application);
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
+            // sending notifications not granted!
+        }
+        UNUserNotificationCenter.current().delegate = self;
+        application.registerForRemoteNotifications();
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.chatItemsUpdated), name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.serverCertificateError), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.authenticationFailure), name: XmppService.AUTHENTICATION_FAILURE, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.presenceAuthorizationRequest), name: XmppService.PRESENCE_AUTHORIZATION_REQUEST, object: nil);
-        updateApplicationIconBadgeNumber();
+        NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.pushNotificationRegistrationFailed), name: Notification.Name("pushNotificationsRegistrationFailed"), object: nil);
+//        updateApplicationIconBadgeNumber();
         
         application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum);
         
@@ -85,7 +91,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             self.applicationKeepOnlineOnAwayFinished(application, taskId: taskId);
         }
         
-        let timeout = min(defaultKeepOnlineOnAwayTime, application.backgroundTimeRemaining - 8);
+        let timeout = min(defaultKeepOnlineOnAwayTime, application.backgroundTimeRemaining - 11);
         print("keep online on away background task", taskId, "started at", NSDate(), "for", timeout, "s");
         
         self.keepOnlineOnAwayTimer = Timer(delayInSeconds: timeout, repeats: false, callback: {
@@ -98,18 +104,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.keepOnlineOnAwayTimer?.cancel();
         self.keepOnlineOnAwayTimer = nil;
         print("keep online timer finished at", taskId, NSDate());
-        // mark background task as ended
-        application.endBackgroundTask(taskId);
+        if (self.xmppService.backgroundTaskFinished()) {
+            _ = Timer(delayInSeconds: 7, repeats: false, callback: {
+                print("finshed disconnection of push accounts", taskId);
+                application.endBackgroundTask(taskId);
+            });
+        } else {
+            // mark background task as ended
+            application.endBackgroundTask(taskId);
+        }
     }
     
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
-        xmppService.applicationState = .active;
+        //xmppService.applicationState = .active;
+        //self.keepOnlineOnAwayTimer?.execute();
+        //self.keepOnlineOnAwayTimer = nil;
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
         xmppService.applicationState = .active;
+        self.keepOnlineOnAwayTimer?.execute();
+        self.keepOnlineOnAwayTimer = nil;
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
@@ -117,13 +134,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         print(NSDate(), "application terminated!")
     }
 
-    func application(_ application: UIApplication, didReceive notification: UILocalNotification) {
-        updateApplicationIconBadgeNumber();
-        print("notification clicked", notification.userInfo);
-        if (notification.category == "ERROR") {
-            guard let userInfo = notification.userInfo else {
-                return;
-            }
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        let content = response.notification.request.content;
+        let userInfo = content.userInfo;
+        if content.categoryIdentifier == "ERROR" {
             if userInfo["cert-name"] != nil {
                 let accountJid = BareJID(userInfo["account"] as! String);
                 let certName = userInfo["cert-name"] as! String;
@@ -144,7 +158,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     account.active = true;
                     AccountManager.updateAccount(account);
                 }));
-            
+                
                 var topController = UIApplication.shared.keyWindow?.rootViewController;
                 while (topController?.presentedViewController != nil) {
                     topController = topController?.presentedViewController;
@@ -164,9 +178,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 }
                 
                 topController?.present(alert, animated: true, completion: nil);
+            } else {
+                let alert = UIAlertController(title: content.title, message: content.body, preferredStyle: .alert);
+                alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
+                
+                var topController = UIApplication.shared.keyWindow?.rootViewController;
+                while (topController?.presentedViewController != nil) {
+                    topController = topController?.presentedViewController;
+                }
+                
+                topController?.present(alert, animated: true, completion: nil);
             }
         }
-        if notification.category == "SUBSCRIPTION_REQUEST", let userInfo = notification.userInfo {
+        if content.categoryIdentifier == "SUBSCRIPTION_REQUEST" {
+            let userInfo = content.userInfo;
             let senderJid = BareJID(userInfo["sender"] as! String);
             let accountJid = BareJID(userInfo["account"] as! String);
             var senderName = userInfo["senderName"] as! String;
@@ -193,7 +218,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                         presenceModule.subscribe(to: JID(senderJid));
                     }));
                     alert2.addAction(UIAlertAction(title: "Reject", style: .destructive, handler: nil));
-
+                    
                     var topController = UIApplication.shared.keyWindow?.rootViewController;
                     while (topController?.presentedViewController != nil) {
                         topController = topController?.presentedViewController;
@@ -216,6 +241,83 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             
             topController?.present(alert, animated: true, completion: nil);
         }
+        if content.categoryIdentifier == "MESSAGE" {
+            let senderJid = BareJID(userInfo["sender"] as! String);
+            let accountJid = BareJID(userInfo["account"] as! String);
+            
+            var topController = UIApplication.shared.keyWindow?.rootViewController;
+            while (topController?.presentedViewController != nil) {
+                topController = topController?.presentedViewController;
+            }
+            
+            if topController != nil {
+                let controller = topController!.storyboard?.instantiateViewController(withIdentifier: "ChatViewNavigationController");
+                let navigationController = controller as? UINavigationController;
+                let destination = navigationController?.visibleViewController ?? controller;
+                
+                if let baseChatViewController = destination as? BaseChatViewController {
+                    baseChatViewController.account = accountJid;
+                    baseChatViewController.jid = JID(senderJid);
+                }
+                destination?.hidesBottomBarWhenPushed = true;
+                
+                topController!.showDetailViewController(controller!, sender: self);
+            } else {
+                print("No top controller!");
+            }
+        }
+        
+        completionHandler();
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        if notification.request.content.categoryIdentifier == "MESSAGE" {
+            let account = notification.request.content.userInfo["account"] as? String;
+            let sender = notification.request.content.userInfo["sender"] as? String;
+            if (isChatVisible(account: account, with: sender)) {
+                completionHandler([]);
+            } else {
+                completionHandler([.alert, .sound]);
+            }
+        } else {
+            completionHandler([.alert, .sound]);
+        }
+    }
+    
+    func isChatVisible(account: String?, with jid: String?) -> Bool {
+        var topController = UIApplication.shared.keyWindow?.rootViewController;
+        while (topController?.presentedViewController != nil) {
+            topController = topController?.presentedViewController;
+        }
+        print("top controller", topController);
+        guard let splitViewController = topController as? UISplitViewController else {
+            return false;
+        }
+        
+        print("visible controllers", splitViewController.viewControllers);
+        guard let selectedTabController = splitViewController.viewControllers.map({(controller) in controller as? UITabBarController }).filter({ (controller) -> Bool in
+            controller != nil
+        }).map({(controller) in controller! }).first?.selectedViewController else {
+            return false;
+        }
+        
+        print("selected tab controller", selectedTabController);
+        var baseChatController: BaseChatViewController? = nil;
+        if let navigationController = selectedTabController as? UINavigationController {
+            if let presented = navigationController.viewControllers.last {
+                print("presented", presented);
+                baseChatController = presented as? BaseChatViewController;
+            }
+        } else {
+            baseChatController = selectedTabController as? BaseChatViewController;
+        }
+        
+        guard baseChatController != nil else {
+            return false;
+        }
+        
+        print("comparing", baseChatController!.account.stringValue, account, baseChatController!.jid.stringValue, jid);
+        return (baseChatController!.account.stringValue == account) && (baseChatController!.jid.bareJid.stringValue == jid);
     }
     
     func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
@@ -229,56 +331,125 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         });
     }
     
-    func registerUserNotificationSettings(application: UIApplication) {
-        var settings = UIUserNotificationSettings(types: [UIUserNotificationType.alert, UIUserNotificationType.badge, UIUserNotificationType.sound], categories: nil);
-        application.registerUserNotificationSettings(settings);
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        let tokenString = deviceToken.reduce("", {$0 + String(format: "%02X", $1)});
+        
+        print("Device Token:", tokenString)
+        Settings.DeviceToken.setValue(tokenString);
+    }
+    
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("Failed to register:", error);
+        Settings.DeviceToken.setValue(nil);
+    }
+    
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any]) {
+        print("Push notification received: \(userInfo)");
+    }
+    
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        print("Push notification received with fetch request: \(userInfo)");
+        //let fetchStart = Date();
+        if let account = JID(userInfo[AnyHashable("account")] as? String), let unreadMessages = userInfo["unread-messages"] as? Int {
+            if let sender = JID(userInfo[AnyHashable("sender")] as? String) {
+                if let body = userInfo[AnyHashable("body")] as? String {
+                    notifyNewMessage(account: account, sender: sender, body: body, type: "chat", data: userInfo, isPush: true) {
+                        completionHandler(.newData);
+                    }
+                    return;
+                }
+            // what is the point of fetching data/offline messages here?
+            // we should do this on user request!
+//            print(Date(), "starting fetching data");
+//            xmppService.preformFetch(for: account.bareJid) {(result) in
+//                completionHandler(result);
+//                let fetchEnd = Date();
+//                let time = fetchEnd.timeIntervalSince(fetchStart);
+//                print(Date(), "fetched date in \(time) seconds with result = \(result)");
+//            };
+            }
+            else if unreadMessages == 0 {
+                let state = self.xmppService.getClient(forJid: account.bareJid)?.state;
+                print("unread messages retrieved, client state =", state);
+                if state != .connected {
+                    dismissPushNotifications(for: account) {
+                        completionHandler(.newData);
+                    }
+                    return;
+                }
+            }
+        }
+        
+        completionHandler(.newData);
+    }
+    
+    func notifyNewMessage(account: JID, sender: JID, body: String, type: String?, data userInfo: [AnyHashable:Any], isPush: Bool, completionHandler: (()->Void)?) {
+        guard userInfo["carbonAction"] == nil else {
+            return;
+        }
+        
+        var senderName:String? = nil;
+        if let sessionObject = xmppService.getClient(forJid: account.bareJid)?.sessionObject {
+            senderName = RosterModule.getRosterStore(sessionObject).get(for: sender.withoutResource)?.name;
+        }
+        if senderName == nil {
+            senderName = sender.stringValue;
+        }
+        
+        var alertBody: String?;
+        switch (type ?? "chat") {
+        case "muc":
+            if body.contains(userInfo["roomNickname"] as! String) {
+                alertBody = senderName! + " mentioned you";
+            } else {
+                return;
+            }
+        default:
+            alertBody = body;
+        }
+        
+        let threadId = "account=" + account.stringValue + "|sender=" + sender.bareJid.stringValue;
+        
+        let id = threadId + ":body=" + (body.characters.count > 400 ? body.substring(to: body.index(body.startIndex, offsetBy: 400)) : body);
+        UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
+            if notifications.filter({(notification) in  notification.request.identifier == id}).isEmpty {
+                let content = UNMutableNotificationContent();
+                content.title = "Received new message from \(senderName!)";
+                content.body = alertBody!;
+                content.sound = UNNotificationSound.default();
+                content.userInfo = ["account": account.stringValue, "sender": sender.bareJid.stringValue, "push": isPush];
+                content.categoryIdentifier = "MESSAGE";
+                content.threadIdentifier = threadId;
+                
+                UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil), withCompletionHandler: {(error) in
+                    print("message notification error", error);
+                    self.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
+                });
+            }
+        }
     }
     
     func newMessage(_ notification: NSNotification) {
         let sender = notification.userInfo?["sender"] as? BareJID;
         let account = notification.userInfo?["account"] as? BareJID;
         let incoming:Bool = (notification.userInfo?["incoming"] as? Bool) ?? false;
-        guard sender != nil && incoming else {
+        guard sender != nil && account != nil && incoming else {
             return;
         }
         
-        var senderName:String? = nil;
-        if let sessionObject = xmppService.getClient(forJid: account!)?.sessionObject {
-            senderName = RosterModule.getRosterStore(sessionObject).get(for: JID(sender!))?.name;
+        notifyNewMessage(account: JID(account!), sender: JID(sender!), body: notification.userInfo!["body"] as! String, type: notification.userInfo?["type"] as? String, data: notification.userInfo!, isPush: false, completionHandler: nil);
+    }
+    
+    func dismissPushNotifications(for account: JID, completionHandler: (()-> Void)?) {
+        UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
+            let toRemove = notifications.filter({ (notification) in notification.request.content.categoryIdentifier == "MESSAGE" }).filter({ (notification) in (notification.request.content.userInfo["account"] as? String) == account.stringValue && (notification.request.content.userInfo["push"] as? Bool ?? false) }).map({ (notification) in notification.request.identifier });
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
+            self.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
         }
-        if senderName == nil {
-            senderName = sender!.stringValue;
-        }
-        
-        if UIApplication.shared.applicationState != .active && notification.userInfo?["carbonAction"] == nil {
-            var alertBody: String?;
-            switch ((notification.userInfo?["type"] as? String) ?? "chat") {
-            case "muc":
-                if let body = (notification.userInfo?["body"] as? String) {
-                    if body.contains(notification.userInfo!["roomNickname"] as! String) {
-                        alertBody = senderName! + " mentioned you";
-                    }
-                }
-            default:
-                alertBody = "Received new message from " + senderName!;
-            }
-            
-            if alertBody != nil {
-                let userNotification = UILocalNotification();
-                userNotification.alertAction = "open";
-                userNotification.alertBody = alertBody;
-                userNotification.soundName = UILocalNotificationDefaultSoundName;
-                //userNotification.applicationIconBadgeNumber = UIApplication.sharedApplication().applicationIconBadgeNumber + 1;
-                userNotification.userInfo = ["account": account!.stringValue, "sender": account!.stringValue];
-                userNotification.category = "MESSAGE";
-                UIApplication.shared.presentLocalNotificationNow(userNotification);
-            }
-        }
-        updateApplicationIconBadgeNumber();
     }
     
     func chatItemsUpdated(_ notification: NSNotification) {
-        updateApplicationIconBadgeNumber();
+        updateApplicationIconBadgeNumber(completionHandler: nil);
     }
     
     func presenceAuthorizationRequest(_ notification: NSNotification) {
@@ -292,20 +463,49 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             senderName = sender!.stringValue;
         }
         
-        let userNotification = UILocalNotification();
-        userNotification.alertAction = "fix";
-        userNotification.alertBody = "Received presence subscription request from " + senderName!;
-        userNotification.userInfo = ["sender": sender!.stringValue as NSString, "account": account!.stringValue as NSString, "senderName": senderName! as NSString];
-        userNotification.category = "SUBSCRIPTION_REQUEST";
-        
-        UIApplication.shared.presentLocalNotificationNow(userNotification);
+        let content = UNMutableNotificationContent();
+        content.body = "Received presence subscription request from " + senderName!;
+        content.userInfo = ["sender": sender!.stringValue as NSString, "account": account!.stringValue as NSString, "senderName": senderName! as NSString];
+        content.categoryIdentifier = "SUBSCRIPTION_REQUEST";
+        content.threadIdentifier = "account=" + account!.stringValue + "|sender=" + sender!.stringValue;
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
     
-    func updateApplicationIconBadgeNumber() {
-        DispatchQueue.global(qos: .default).async {
-            let unreadChats = self.xmppService.dbChatHistoryStore.countUnreadChats();
-            DispatchQueue.main.async {
-                UIApplication.shared.applicationIconBadgeNumber = unreadChats;
+    func pushNotificationRegistrationFailed(_ notification: NSNotification) {
+        let account = notification.userInfo?["account"] as? BareJID;
+        let errorCondition = (notification.userInfo?["errorCondition"] as? ErrorCondition) ?? ErrorCondition.internal_server_error;
+        let content = UNMutableNotificationContent();
+        switch errorCondition {
+        case .remote_server_timeout:
+            content.body = "It was not possible to contact push notification component.\nTry again later."
+        case .remote_server_not_found:
+            content.body = "It was not possible to contact push notification component."
+        case .service_unavailable:
+            content.body = "Push notifications not available";
+        default:
+            content.body = "It was not possible to contact push notification component: \(errorCondition.rawValue)";
+        }
+        content.threadIdentifier = "account=" + account!.stringValue;
+        content.categoryIdentifier = "ERROR";
+        content.userInfo = ["account": account!.stringValue];
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
+    }
+    
+    func updateApplicationIconBadgeNumber(completionHandler: (()->Void)?) {
+        UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
+            var unreadChats = Set(notifications.filter({(notification) in notification.request.content.categoryIdentifier == "MESSAGE" }).map({ (notification) in
+                return notification.request.content.threadIdentifier;
+            }));
+            self.dbConnection.dispatch_async_db_queue {
+                self.xmppService.dbChatHistoryStore.forEachUnreadChat(forEach: { (account, jid) in
+                    unreadChats.insert("account=" + account.stringValue + "|sender=" + jid.stringValue);
+                });
+                let badge = unreadChats.count;
+                DispatchQueue.main.async {
+                    print("setting badge to", badge);
+                    UIApplication.shared.applicationIconBadgeNumber = badge;
+                    completionHandler?();
+                }
             }
         }
     }
@@ -317,12 +517,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         let account = BareJID(certInfo["account"] as! String);
         
-        let userNotification = UILocalNotification();
-        userNotification.alertAction = "fix";
-        userNotification.alertBody = "Connection to server \(account.domain) failed";
-        userNotification.userInfo = certInfo;
-        userNotification.category = "ERROR";
-        UIApplication.shared.presentLocalNotificationNow(userNotification);
+        let content = UNMutableNotificationContent();
+        content.body = "Connection to server \(account.domain) failed";
+        content.userInfo = certInfo;
+        content.categoryIdentifier = "ERROR";
+        content.threadIdentifier = "account=" + account.stringValue;
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
     
     func authenticationFailure(_ notification: NSNotification) {
@@ -333,12 +533,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let account = BareJID(info["account"] as! String);
         let type = info["auth-error-type"] as! String;
         
-        let userNotification = UILocalNotification();
-        userNotification.alertAction = "fix";
-        userNotification.alertBody = "Authentication for account \(account) failed: \(type)";
-        userNotification.userInfo = info;
-        userNotification.category = "ERROR";
-        UIApplication.shared.presentLocalNotificationNow(userNotification);
+        let content = UNMutableNotificationContent();
+        content.body = "Authentication for account \(account) failed: \(type)";
+        content.userInfo = info;
+        content.categoryIdentifier = "ERROR";
+        content.threadIdentifier = "account=" + account.stringValue;
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
 
     func hideSetupGuide() {

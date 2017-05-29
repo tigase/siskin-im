@@ -30,6 +30,7 @@ public enum Settings: String {
     case RosterAvailableOnly
     case RosterDisplayHiddenGroup
     case AutoSubscribeOnAcceptedSubscriptionRequest
+    case DeviceToken
 
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     
@@ -50,9 +51,22 @@ public enum Settings: String {
         store.register(defaults: defaults);
     }
     
-    public func setValue(_ value: Any?) {
+    public func setValue(_ value: String?) {
+        let currValue = getString();
+        guard currValue != value else {
+            return;
+        }
         Settings.store.set(value, forKey: self.rawValue);
-        Settings.valueChanged(forKey: self);
+        Settings.valueChanged(forKey: self, oldValue: currValue, newValue: value);
+    }
+    
+    public func setValue(_ value: Bool) {
+        let currValue = getBool();
+        guard currValue != value else {
+            return;
+        }
+        Settings.store.set(value, forKey: self.rawValue);
+        Settings.valueChanged(forKey: self, oldValue: currValue, newValue: value);
     }
     
     public func getBool() -> Bool {
@@ -63,7 +77,14 @@ public enum Settings: String {
         return Settings.store.string(forKey: self.rawValue);
     }
     
-    fileprivate static func valueChanged(forKey key: Settings) {
-        NotificationCenter.default.post(name: Settings.SETTINGS_CHANGED, object: nil, userInfo: ["key": key.rawValue]);
+    fileprivate static func valueChanged(forKey key: Settings, oldValue: Any?, newValue: Any?) {
+        var data: [AnyHashable:Any] = ["key": key.rawValue];
+        if oldValue != nil {
+            data["oldValue"] = oldValue!;
+        }
+        if newValue != nil {
+            data["newValue"] = newValue!;
+        }
+        NotificationCenter.default.post(name: Settings.SETTINGS_CHANGED, object: nil, userInfo: data);
     }
 }

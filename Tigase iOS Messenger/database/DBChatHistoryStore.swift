@@ -46,6 +46,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
     fileprivate lazy var msgsMarkAsReadStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_MARK_AS_READ);
     fileprivate lazy var msgAlreadyAddedStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.MSG_ALREADY_ADDED);
     fileprivate lazy var chatUpdateTimestamp: DBStatement! = try? self.dbConnection.prepareStatement("UPDATE chats SET timestamp = :timestamp WHERE account = :account AND jid = :jid");
+    fileprivate lazy var listUnreadChatsStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT DISTINCT account, jid FROM chat_history WHERE state = \(State.incoming_unread.rawValue)");
     
     public init(dbConnection:DBConnection) {
         self.dbConnection = dbConnection;
@@ -71,7 +72,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
         
         if appendEntry(for: account, jid: jid!, incoming: incoming, authorJid: author, data: body!, timestamp: timestamp, id: message.id) {
 
-            var userInfo:[AnyHashable: Any] = ["account": account, "sender": jid!, "incoming": incoming, "timestamp": timestamp] ;
+            var userInfo:[AnyHashable: Any] = ["account": account, "sender": jid!, "incoming": incoming, "timestamp": timestamp, "body": body!] ;
             if carbonAction != nil {
                 userInfo["carbonAction"] = carbonAction!.rawValue;
             }
@@ -153,6 +154,14 @@ open class DBChatHistoryStore: Logger, EventHandler {
     
     open func countUnreadChats() -> Int {
         return try! msgsCountUnreadChatsStmt.scalar() ?? 0;
+    }
+    
+    open func forEachUnreadChat(forEach: (_ account: BareJID, _ jid: BareJID)->Void) {
+        try! listUnreadChatsStmt.query(forEachRow: { (cursor) -> Void in
+            let account: BareJID = cursor["account"]!;
+            let jid: BareJID = cursor["jid"]!;
+            forEach(account, jid);
+        });
     }
     
     open func markAsRead(for account: BareJID, with jid: BareJID) {

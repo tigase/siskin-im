@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FE01ADA91E224CF400FA7E65 /* TigasePushNotificationsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE01ADA81E224CF400FA7E65 /* TigasePushNotificationsModule.swift */; };
 		FE0A674D1D4F645F00124480 /* CachedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0A674C1D4F645F00124480 /* CachedViewController.swift */; };
 		FE168ACD1CCD197A003F8B26 /* db-schema-1.0.0.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE168ACC1CCD197A003F8B26 /* db-schema-1.0.0.sql */; };
 		FE1DCCA21EA52CE200850563 /* DataFormController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1DCCA11EA52CE200850563 /* DataFormController.swift */; };
@@ -102,6 +103,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		FE01ADA81E224CF400FA7E65 /* TigasePushNotificationsModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TigasePushNotificationsModule.swift; sourceTree = "<group>"; };
 		FE0A674C1D4F645F00124480 /* CachedViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CachedViewController.swift; sourceTree = "<group>"; };
 		FE168ACC1CCD197A003F8B26 /* db-schema-1.0.0.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-1.0.0.sql"; sourceTree = "<group>"; };
 		FE1DCCA11EA52CE200850563 /* DataFormController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataFormController.swift; sourceTree = "<group>"; };
@@ -127,6 +129,7 @@
 		FE507A111CDB7B3B001A015C /* GlobalSplitViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GlobalSplitViewController.swift; sourceTree = "<group>"; };
 		FE507A131CDB7B3B001A015C /* AccountManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountManager.swift; sourceTree = "<group>"; };
 		FE507A141CDB7B3B001A015C /* AvatarManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarManager.swift; sourceTree = "<group>"; };
+		FE60F29B1ED48B470030D411 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
 		FE65455F1E9E7B85006A14AC /* RegisterAccountController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegisterAccountController.swift; sourceTree = "<group>"; };
 		FE6545611E9E7FDE006A14AC /* AccountDomainTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountDomainTableViewCell.swift; sourceTree = "<group>"; };
 		FE6545631E9E8B67006A14AC /* ServerSelectorTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerSelectorTableViewCell.swift; sourceTree = "<group>"; };
@@ -200,6 +203,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		FE01ADA11E214CEA00FA7E65 /* xmpp */ = {
+			isa = PBXGroup;
+			children = (
+				FE01ADA81E224CF400FA7E65 /* TigasePushNotificationsModule.swift */,
+			);
+			path = xmpp;
+			sourceTree = "<group>";
+		};
 		FE5079FD1CDB7B3B001A015C /* chats */ = {
 			isa = PBXGroup;
 			children = (
@@ -284,6 +295,14 @@
 			path = util;
 			sourceTree = "<group>";
 		};
+		FE60F29A1ED48B470030D411 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				FE60F29B1ED48B470030D411 /* libxml2.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		FE94E5181CCBA74F00FAE755 = {
 			isa = PBXGroup;
 			children = (
@@ -295,6 +314,7 @@
 				FE94E53A1CCBA74F00FAE755 /* Tigase iOS MessengerTests */,
 				FE94E5451CCBA74F00FAE755 /* Tigase iOS MessengerUITests */,
 				FE94E5221CCBA74F00FAE755 /* Products */,
+				FE60F29A1ED48B470030D411 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -311,6 +331,7 @@
 		FE94E5231CCBA74F00FAE755 /* Tigase iOS Messenger */ = {
 			isa = PBXGroup;
 			children = (
+				FE01ADA11E214CEA00FA7E65 /* xmpp */,
 				FEDE93951D0C200C00CA60A9 /* contacts */,
 				FEDE938A1D08A4DD00CA60A9 /* vcard */,
 				FE5079FD1CDB7B3B001A015C /* chats */,
@@ -451,6 +472,9 @@
 							com.apple.Keychain = {
 								enabled = 1;
 							};
+							com.apple.Push = {
+								enabled = 1;
+							};
 						};
 					};
 					FE94E5361CCBA74F00FAE755 = {
@@ -563,6 +587,7 @@
 				FEDCBF691D9C53BA00AE9129 /* RosterProviderGrouped.swift in Sources */,
 				FEDE938C1D08AFE800CA60A9 /* VCardEditViewController.swift in Sources */,
 				FE507A161CDB7B3B001A015C /* ChatsListViewController.swift in Sources */,
+				FE01ADA91E224CF400FA7E65 /* TigasePushNotificationsModule.swift in Sources */,
 				FE507A1F1CDB7B3B001A015C /* AccountTableViewCell.swift in Sources */,
 				FE7F645B1D281B1C00B9DF56 /* DBCapabilitiesCache.swift in Sources */,
 				FEDE93891D081C3D00CA60A9 /* Settings.swift in Sources */,
@@ -702,6 +727,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "Tigase iOS Messenger/Tigase-iOS-Messenger-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Debug;
 		};
@@ -745,6 +771,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "Tigase iOS Messenger/Tigase-iOS-Messenger-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -764,8 +791,12 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				HEADER_SEARCH_PATHS = "$(SDK_DIR)/usr/include";
+				HEADER_SEARCH_PATHS = (
+					"$(SDK_DIR)/usr/include",
+					"$(SDK_DIR)/usr/include/libxml2/**",
+				);
 				INFOPLIST_FILE = "Tigase iOS Messenger/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.mobile;
 				PRODUCT_NAME = "Tigase-iOS-Messenger";
@@ -790,8 +821,12 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				HEADER_SEARCH_PATHS = "$(SDK_DIR)/usr/include";
+				HEADER_SEARCH_PATHS = (
+					"$(SDK_DIR)/usr/include",
+					"$(SDK_DIR)/usr/include/libxml2/**",
+				);
 				INFOPLIST_FILE = "Tigase iOS Messenger/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.mobile;
 				PRODUCT_NAME = "Tigase-iOS-Messenger";
