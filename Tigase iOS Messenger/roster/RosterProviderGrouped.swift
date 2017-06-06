@@ -1,5 +1,5 @@
 //
-//  RosterProviderGrouped.swift
+// RosterProviderGrouped.swift
 //
 // Tigase iOS Messenger
 // Copyright (C) 2016 "Tigase, Inc." <office@tigase.com>
