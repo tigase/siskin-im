@@ -21,6 +21,7 @@
 
 
 import UIKit
+import UserNotifications
 import TigaseSwift
 
 class ChatsListViewController: UITableViewController, EventHandler {
@@ -121,22 +122,35 @@ class ChatsListViewController: UITableViewController, EventHandler {
                 let item = dataSource.itemKey(at: indexPath);
                 let xmppClient = self.xmppService.getClient(forJid: item.account);
                 
+                var discardNotifications = false;
                 switch item.type {
                 case 1:
                     let mucModule: MucModule? = xmppClient?.modulesManager.getModule(MucModule.ID);
                     if let room = mucModule?.roomsManager.getRoom(for: item.jid) {
                         mucModule?.leave(room: room);
-                        if Settings.DeleteChatHistoryOnChatClose.getBool() {
-                            self.xmppService.dbChatHistoryStore.deleteMessages(for: item.account, with: item.jid);
-                        } else {
-                            self.xmppService.dbChatHistoryStore.markAsRead(for: item.account, with: item.jid);
-                        }
+                        discardNotifications = true;
                     }
                 default:
                     let thread: String? = nil;
                     let messageModule: MessageModule? = xmppClient?.modulesManager.getModule(MessageModule.ID);
                     if let chat = messageModule?.chatManager.getChat(with: JID(item.jid), thread: thread) {
                         _ = messageModule?.chatManager.close(chat: chat);
+                        discardNotifications = true;
+                    }
+                }
+                
+                if discardNotifications {
+                    let accountStr = item.account.stringValue;
+                    let jidStr = item.jid.stringValue;
+                    UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
+                        var toRemove = [String]();
+                        for notification in notifications {
+                            if (notification.request.content.userInfo["account"] as? String) == accountStr && (notification.request.content.userInfo["sender"] as? String) == jidStr {
+                                toRemove.append(notification.request.identifier);
+                            }
+                        }
+                        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
+                    
                         if Settings.DeleteChatHistoryOnChatClose.getBool() {
                             self.xmppService.dbChatHistoryStore.deleteMessages(for: item.account, with: item.jid);
                         } else {
