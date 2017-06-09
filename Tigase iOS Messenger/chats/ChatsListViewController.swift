@@ -248,7 +248,11 @@ class ChatsListViewController: UITableViewController, EventHandler {
             }
         case let e as MucModule.RoomClosedEvent:
             DispatchQueue.main.async() {
-                self.dataSource.removeChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid);
+                if e.room.state == .destroyed {
+                    self.dataSource.removeChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid);
+                } else {
+                    self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid);
+                }
             }
         default:
             break;
