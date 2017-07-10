@@ -314,8 +314,9 @@ open class XmppService: Logger, EventHandler {
                 NotificationCenter.default.post(name: XmppService.PRESENCE_AUTHORIZATION_REQUEST, object: self, userInfo: info);
             }
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
+            let client = getClient(forJid: e.sessionObject.userBareJid!);
+            client?.sessionObject.setProperty(XmppService.CONNECTION_RETRY_NO_KEY, value: nil);
             if applicationState == .inactive {
-                let client = getClient(forJid: e.sessionObject.userBareJid!);
                 let csiModule: ClientStateIndicationModule? = client?.modulesManager.getModule(ClientStateIndicationModule.ID);
                 if csiModule != nil && csiModule!.available {
                     _ = csiModule!.setState(applicationState == .active);
@@ -342,6 +343,7 @@ open class XmppService: Logger, EventHandler {
             }
         case let e as StreamManagementModule.ResumedEvent:
             let client = getClient(forJid: e.sessionObject.userBareJid!);
+            client?.sessionObject.setProperty(XmppService.CONNECTION_RETRY_NO_KEY, value: nil);
             let csiModule: ClientStateIndicationModule? = client?.modulesManager.getModule(ClientStateIndicationModule.ID);
             if csiModule != nil && csiModule!.available {
                 _ = csiModule!.setState(applicationState == .active);
