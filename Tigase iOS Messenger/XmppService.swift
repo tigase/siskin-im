@@ -34,6 +34,8 @@ open class XmppService: Logger, EventHandler {
     
     open static let pushServiceJid = JID("push.tigase.im");
     
+    fileprivate static let CONNECTION_RETRY_NO_KEY = "CONNECTION_RETRY_NO_KEY";
+    
     fileprivate var creationDate = NSDate();
     fileprivate var fetchClientsWaitingForReconnection: [BareJID] = [];
     fileprivate var fetchStart = NSDate();
@@ -141,6 +143,7 @@ open class XmppService: Logger, EventHandler {
                 unregisterEventHandlers(client!);
                 return;
             }
+            
         }
         
         client?.connectionConfiguration.setUserJID(userJid);
@@ -164,7 +167,16 @@ open class XmppService: Logger, EventHandler {
         clients[userJid] = client;
         
         if networkAvailable && (applicationState == .active || (config?.pushNotifications ?? false) == false) {
-            client?.login();
+            let retryNo = client!.sessionObject.getProperty(XmppService.CONNECTION_RETRY_NO_KEY, defValue: 0) - 2;
+            if (retryNo > 0) {
+                let delay = min((Double(retryNo) * 5.0), 30.0);
+                print("scheduling reconnection", retryNo, "after", delay, "seconds");
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: {
+                    client?.login();
+                });
+            } else {
+                client?.login();
+            }
         } else {
             client?.modulesManager.initIfRequired();
         }
@@ -270,7 +282,11 @@ open class XmppService: Logger, EventHandler {
             networkAvailable = reachability.isConnectedToNetwork();
             if let jid = e.sessionObject.userBareJid {
                 DispatchQueue.global(qos: .default).async {
-                    self.updateXmppClientInstance(forJid: jid);
+                    if let client = self.getClient(forJid: jid) {
+                        let retryNo = client.sessionObject.getProperty(XmppService.CONNECTION_RETRY_NO_KEY, defValue: 0) + 1;
+                        client.sessionObject.setProperty(XmppService.CONNECTION_RETRY_NO_KEY, value: retryNo);
+                        self.updateXmppClientInstance(forJid: jid);
+                    }
                 }
             }
         case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
@@ -371,8 +387,10 @@ open class XmppService: Logger, EventHandler {
         }
         if applicationState == .active {
             for client in clients.values {
-                if client.state == .disconnected && client.pushNotificationsEnabled {
-                    updateXmppClientInstance(forJid: client.sessionObject.userBareJid!);
+                client.sessionObject.setProperty(XmppService.CONNECTION_RETRY_NO_KEY, value: nil);
+                if client.state == .disconnected { // && client.pushNotificationsEnabled {
+                    client.login();
+                    //updateXmppClientInstance(forJid: client.sessionObject.userBareJid!);
                 }
             }
         }
@@ -577,6 +595,7 @@ open class XmppService: Logger, EventHandler {
     
     fileprivate func connectClients(force: Bool = true) {
         for client in clients.values {
+            client.sessionObject.setProperty(XmppService.CONNECTION_RETRY_NO_KEY, value: nil);
             client.login();
         }
     }

@@ -259,7 +259,6 @@ class SettingsViewController: UITableViewController, EventHandler {
         if !register {
             let addAccountController = navigationController.visibleViewController! as! AddAccountController;
             addAccountController.hidesBottomBarWhenPushed = true;
-            addAccountController.registerAccount = register;
         } else {
             let registerAccountController = navigationController.visibleViewController! as! RegisterAccountController;
             registerAccountController.hidesBottomBarWhenPushed = true;

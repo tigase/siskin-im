@@ -37,8 +37,9 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     
     var activityInditcator: UIActivityIndicatorView?;
     
-    var registerAccount: Bool = false;
     var xmppClient: XMPPClient?;
+    
+    var accountValidatorTask: AccountValidatorTask?;
     
     var onAccountAdded: (() -> Void)?;
     
@@ -52,11 +53,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
             navigationController?.navigationItem.leftBarButtonItem = nil;
         }
 
-        if registerAccount {
-            saveButton.title = "Register";
-        } else {
-            saveButton.title = "Save";
-        }
+        saveButton.title = "Save";
         jidTextField.delegate = self;
         passwordTextField.delegate = self;
     }
@@ -90,32 +87,16 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     }
     
     @IBAction func saveClicked(_ sender: UIBarButtonItem) {
-        if (registerAccount) {
-            registerAccountOnServer();
-        } else {
-            saveAccount();
-        }
+        //saveAccount();
+        validateAccount();
     }
     
-    func registerAccountOnServer() {
+    func validateAccount() {
+        self.saveButton.isEnabled = false;
         showIndicator();
         
-        let userJid = BareJID(jidTextField.text!);
-        let password = passwordTextField.text;
-        
-        xmppClient = InBandRegistrationModule.connectAndRegister(userJid: userJid, password: password, email: nil, onSuccess: {
-            DispatchQueue.main.async() {
-                self.hideIndicator();
-                self.xmppClient = nil;
-                self.saveAccount();
-            }
-            }, onError: { (errorCondition) in
-                DispatchQueue.main.async() {
-                    self.hideIndicator();
-                    self.xmppClient = nil;
-                    self.showError(condition: errorCondition);
-                }
-        })
+        self.accountValidatorTask = AccountValidatorTask();
+        self.accountValidatorTask?.check(account: BareJID(self.jidTextField.text)!, password: self.passwordTextField.text!, callback: self.handleResult);
     }
     
     func saveAccount() {
@@ -135,6 +116,8 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     func dismissView() {
         let dismiss = onAccountAdded != nil;
         onAccountAdded = nil;
+        accountValidatorTask?.finish();
+        accountValidatorTask = nil;
         
         if dismiss {
             navigationController?.dismiss(animated: true, completion: nil);
@@ -167,25 +150,24 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         return false;
     }
     
-    func showError(condition errorCondition: ErrorCondition?) {
-        var error = "Operation timed out";
+    func handleResult(condition errorCondition: ErrorCondition?) {
+        self.hideIndicator();
+        self.accountValidatorTask = nil;
         if errorCondition != nil {
+            self.saveButton.isEnabled = true;
+            var error = "";
             switch errorCondition! {
-            case .feature_not_implemented:
-                error = "This sever do not allow registration of accounts";
-            case .forbidden:
-                error = "Registration of account if forbidden on this server";
-            case .not_allowed:
-                error = "Registration of account is not allowed";
-            case .conflict:
-                error = "Account already exists";
+            case .not_authorized:
+                error = "Login and password do not match.";
             default:
-                error = "Unknown error occurred";
+                error = "It was not possible to contact XMPP server and sign in.";
             }
+            let alert = UIAlertController(title: "Error", message:  error, preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: "Close", style: .cancel, handler: nil));
+            self.present(alert, animated: true, completion: nil);
+        } else {
+            self.saveAccount();
         }
-        let alert = UIAlertController(title: "Error", message:  error, preferredStyle: .alert);
-        alert.addAction(UIAlertAction(title: "Close", style: .cancel, handler: nil));
-        self.present(alert, animated: true, completion: nil);
     }
     
     func showIndicator() {
@@ -204,5 +186,62 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         activityInditcator?.stopAnimating();
         activityInditcator?.removeFromSuperview();
         activityInditcator = nil;
+    }
+    
+    class AccountValidatorTask: EventHandler {
+        
+        var client: XMPPClient? {
+            willSet {
+                if newValue != nil {
+                    newValue?.eventBus.register(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE);
+                }
+            }
+            didSet {
+                if oldValue != nil {
+                    oldValue?.disconnect(true);
+                    oldValue?.eventBus.unregister(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE);
+                }
+            }
+        }
+        
+        var callback: ((ErrorCondition?)->Void)? = nil;
+        
+        init() {
+            initClient();
+        }
+        
+        fileprivate func initClient() {
+            self.client = XMPPClient();
+            _ = client?.modulesManager.register(StreamFeaturesModule());
+            _ = client?.modulesManager.register(SaslModule());
+            _ = client?.modulesManager.register(AuthModule());
+        }
+        
+        public func check(account: BareJID, password: String, callback: @escaping (ErrorCondition?)->Void) {
+            self.callback = callback;
+            client?.connectionConfiguration.setUserJID(account);
+            client?.connectionConfiguration.setUserPassword(password);
+            client?.login();
+        }
+        
+        public func handle(event: Event) {
+            let callback = self.callback;
+            finish();
+            DispatchQueue.main.async {
+                switch event {
+                case is SaslModule.SaslAuthSuccessEvent:
+                    callback?(nil);
+                case is SaslModule.SaslAuthFailedEvent:
+                    callback?(ErrorCondition.not_authorized);
+                default:
+                    callback?(ErrorCondition.service_unavailable);
+                }
+            }
+        }
+        
+        public func finish() {
+            self.callback = nil;
+            self.client = nil;
+        }
     }
 }
