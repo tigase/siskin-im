@@ -9,8 +9,10 @@ Tigase Team <team@tigase.net>
 This section contains information about advanced settings and options that are available to the application, but may not be typically considered for users.
 
 == Push Component Support
-Tigase Messenger for iOS supports link:https://xmpp.org/extensions/xep-0357.html[XEP-0357 Push Notifications] which will receive notifications even when the accounts are logged off.
-Devices must be registered for push notifications and must register them VIA the Tigase XMPP Push Component.  This can be done using an ad-hoc command sent to the hosting component.
-Deregistration of a device may be accomplished by a similar ad-hoc command.
+Tigase Messenger for iOS supports link:https://xmpp.org/extensions/xep-0357.html[XEP-0357 Push Notifications] which will receive notifications even when accounts are logged off.
+Devices must be registered for push notifications and must register them VIA the Tigase XMPP Push Component.
+This can be done using an ad-hoc command sent to the hosting component.  Tigase push component has a specific ad-hoc command known as `register-device` for this purpose.
+
+Deregistration of a device may be accomplished by a similar ad-hoc command, using the `unregister-device` command on the Tigase push component.
 
 For more information on the push component and its' capabilities, visit link:http://docs.tigase.org/tigase-push/snapshot/Tigase_Push_Notifications_Guide/html/[push component documentation].
