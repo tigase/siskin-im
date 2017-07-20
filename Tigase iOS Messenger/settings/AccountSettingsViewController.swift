@@ -44,6 +44,11 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
     @IBOutlet var enabledSwitch: UISwitch!
     @IBOutlet var pushNotificationSwitch: UISwitch!;
     
+    @IBOutlet var archivingEnabledSwitch: UISwitch!;
+    @IBOutlet var messageSyncAutomaticSwitch: UISwitch!;
+    @IBOutlet var messageSyncPeriodLabel: UILabel!;
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad();
     }
@@ -57,6 +62,9 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
         let config = AccountManager.getAccount(forJid: account);
         enabledSwitch.isOn = config?.active ?? false;
         pushNotificationSwitch.isOn = config?.pushNotifications ?? false;
+        archivingEnabledSwitch.isOn = false;
+        messageSyncAutomaticSwitch.isEnabled = false;
+
 
         updateView();
         
@@ -87,10 +95,50 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
         return indexPath;
     }
     
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: false);
+        if indexPath.section == 2 && indexPath.row == 2 {
+            let controller = TablePickerViewController();
+            let hoursArr = [0.0, 12.0, 24.0, 3*24.0, 7*24.0, 14 * 24.0, 356 * 24.0];
+            controller.selected = hoursArr.index(of: AccountSettings.MessageSyncPeriod(account).getDouble()) ?? 0;
+            controller.items = hoursArr.map({ (it)->TablePickerViewItemsProtocol in
+                return SyncTimeItem(hours: it);
+            });
+            //controller.selected = 1;
+            controller.onSelectionChange = { (_item) -> Void in
+                let item = _item as! SyncTimeItem;
+                print("select sync of last", item.hours, "hours");
+                AccountSettings.MessageSyncPeriod(self.account).set(double: item.hours);
+            };
+            self.navigationController?.pushViewController(controller, animated: true);
+        }
+    }
+    
     func updateView() {
         let client = xmppService.getClient(forJid: accountJid);
         let pushModule: TigasePushNotificationsModule? = client?.modulesManager.getModule(TigasePushNotificationsModule.ID);
         pushNotificationSwitch.isEnabled = (pushModule?.deviceId != nil) && (pushModule?.isAvailable ?? false);
+        
+        messageSyncAutomaticSwitch.isOn = AccountSettings.MessageSyncAutomatic(accountJid.description).getBool();
+        archivingEnabledSwitch.isEnabled = false;
+        if let mamModule: MessageArchiveManagementModule = client?.modulesManager.getModule(MessageArchiveManagementModule.ID) {
+            mamModule.retrieveSettings(onSuccess: { (
+                defValue, always, never) in
+                DispatchQueue.main.async {
+                    self.archivingEnabledSwitch.isEnabled = true;
+                    self.archivingEnabledSwitch.isOn = defValue == MessageArchiveManagementModule.DefaultValue.always;
+                    self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
+                }
+            }, onError: { (error, stanza) in
+                DispatchQueue.main.async {
+                    self.archivingEnabledSwitch.isOn = false;
+                    self.archivingEnabledSwitch.isEnabled = false;
+                    self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
+
+                }
+            })
+        }
+        messageSyncPeriodLabel.text = SyncTimeItem.descriptionFromHours(hours: AccountSettings.MessageSyncPeriod(account).getDouble());
     }
     
     func handle(event: Event) {
@@ -187,6 +235,35 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
         }
     }
     
+    @IBAction func archivingSwitchChangedValue(_ sender: Any) {
+        let client = xmppService.getClient(forJid: accountJid);
+        if let mamModule: MessageArchiveManagementModule = client?.modulesManager.getModule(MessageArchiveManagementModule.ID) {
+            let defValue = archivingEnabledSwitch.isOn ? MessageArchiveManagementModule.DefaultValue.always : MessageArchiveManagementModule.DefaultValue.never;
+            mamModule.retrieveSettings(onSuccess: { (oldDefValue, always, never) in
+                mamModule.updateSettings(defaultValue: defValue, always: always, never: never, onSuccess: { (newDefValue, always1, never1)->Void in
+                    DispatchQueue.main.async {
+                        self.archivingEnabledSwitch.isOn = newDefValue == MessageArchiveManagementModule.DefaultValue.always;
+                        self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
+                    }
+                }, onError: {(error,stanza)->Void in
+                    DispatchQueue.main.async {
+                        self.archivingEnabledSwitch.isOn = oldDefValue == MessageArchiveManagementModule.DefaultValue.always;
+                        self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
+                    }
+                });
+            }, onError: {(error, stanza)->Void in
+                DispatchQueue.main.async {
+                    self.archivingEnabledSwitch.isOn = !self.archivingEnabledSwitch.isOn;
+                    self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
+                }
+            });
+        }
+    }
+    
+    @IBAction func messageSyncAutomaticSwitchChangedValue(_ sender: Any) {
+        AccountSettings.MessageSyncAutomatic(accountJid.description).set(bool: self.messageSyncAutomaticSwitch.isOn);
+    }
+    
     
     func update(vcard: VCardModule.VCard?) {
         avatarView.image = xmppService.avatarManager.getAvatar(for: accountJid, account: accountJid);
@@ -233,5 +310,29 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
         } else {
             addressTextView.text = nil;
         }
+    }
+    
+    class SyncTimeItem: TablePickerViewItemsProtocol {
+        
+        public static func descriptionFromHours(hours: Double) -> String {
+            if (hours == 0) {
+                return "Nothing";
+            } else if (hours >= 24*365) {
+                return "All";
+            } else if (hours > 24) {
+                return "Last \(Int(hours/24)) days"
+            } else {
+                return "Last \(Int(hours)) hours";
+            }
+        }
+        
+        let description: String;
+        let hours: Double;
+        
+        init(hours: Double) {
+            self.hours = hours;
+            self.description = SyncTimeItem.descriptionFromHours(hours: hours);
+        }
+        
     }
 }

@@ -43,9 +43,13 @@ extension CachedViewControllerProtocol {
     }
     
     func newItemAdded() {
-        let indexPath = cachedDataSource.newItemAdded();
-        self.tableView.insertRows(at: [indexPath], with: .top);
-        self.scroll(to: indexPath);
+        DispatchQueue.main.async {
+            self.cachedDataSource.newItemAdded();
+            if let indexPath = self.cachedDataSource.newestItemIndex() {
+                self.tableView.insertRows(at: [indexPath], with: .automatic);
+                self.scroll(to: indexPath);
+            }
+        }
     }
     
     func scroll(to indexPath: IndexPath, animated: Bool = true) {
@@ -78,7 +82,9 @@ protocol CachedViewDataSourceProtocol {
     
     func newestItemIndex() -> IndexPath?;
     
-    func newItemAdded() -> IndexPath;
+    func newItemAdded();
+    
+    func reset();
     
 }
 
@@ -94,6 +100,11 @@ class CachedViewDataSource<Item: AnyObject>: CachedViewDataSourceProtocol {
         cache.countLimit = 100;
         cache.totalCostLimit = 10 * 1024 * 1024;
         numberOfMessages = getItemsCount();
+    }
+
+    func reset() {
+        numberOfMessages = getItemsCount();
+        cache.removeAllObjects();
     }
     
     func getItem(for indexPath: IndexPath) -> Item {
@@ -130,10 +141,8 @@ class CachedViewDataSource<Item: AnyObject>: CachedViewDataSourceProtocol {
         return IndexPath(row: inverted ? 0 : (numberOfMessages - 1), section: 0);
     }
     
-    func newItemAdded() -> IndexPath {
-        let indexPath = IndexPath(row: inverted ? 0 : numberOfMessages, section: 0);
+    func newItemAdded() {
         self.numberOfMessages += 1;
-        return indexPath;
     }
     
     func getItemsCount() -> Int {

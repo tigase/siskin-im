@@ -419,7 +419,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
                 }
             } else {
                 let item = self.list[fromPosition!];
-                if timestamp != nil {
+                if timestamp != nil && item.timestamp.compare(timestamp!) == ComparisonResult.orderedAscending {
                     item.timestamp = timestamp!;
                 }
             }

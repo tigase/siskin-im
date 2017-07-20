@@ -210,6 +210,7 @@ open class XmppService: Logger, EventHandler {
         let chatManager = DefaultChatManager(context: client.context, chatStore: DBChatStoreWrapper(sessionObject: client.sessionObject, store: dbChatStore));
         messageModule.chatManager = chatManager;
         _ = client.modulesManager.register(MessageCarbonsModule());
+        _ = client.modulesManager.register(MessageArchiveManagementModule());
         let mucModule = MucModule();
         mucModule.roomsManager = DBRoomsManager(store: dbChatStore);
         _ = client.modulesManager.register(mucModule);
@@ -221,7 +222,7 @@ open class XmppService: Logger, EventHandler {
     
     fileprivate func registerEventHandlers(_ client:XMPPClient) {
         client.eventBus.register(handler: self, for: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, PresenceModule.SubscribeRequestEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, MucModule.NewRoomCreatedEvent.TYPE);
-        client.eventBus.register(handler: dbChatHistoryStore, for: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE);
+        client.eventBus.register(handler: dbChatHistoryStore, for: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE, MessageArchiveManagementModule.ArchivedMessageReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.register(handler: holder.handler, for: holder.events);
         }
@@ -229,7 +230,7 @@ open class XmppService: Logger, EventHandler {
     
     fileprivate func unregisterEventHandlers(_ client:XMPPClient) {
         client.eventBus.unregister(handler: self, for: SocketConnector.DisconnectedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, PresenceModule.SubscribeRequestEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, MucModule.NewRoomCreatedEvent.TYPE);
-        client.eventBus.unregister(handler: dbChatHistoryStore, for: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE);
+        client.eventBus.unregister(handler: dbChatHistoryStore, for: MessageModule.MessageReceivedEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE, MessageArchiveManagementModule.ArchivedMessageReceivedEvent.TYPE);
         for holder in eventHandlers {
             client.eventBus.unregister(handler: holder.handler, for: holder.events);
         }
@@ -298,6 +299,19 @@ open class XmppService: Logger, EventHandler {
                 }
             }
         case let e as PresenceModule.BeforePresenceSendEvent:
+            let account = e.sessionObject.userBareJid!;
+            if AccountSettings.MessageSyncAutomatic(account.description).getBool() {
+            let messageSyncPeriod = AccountSettings.MessageSyncPeriod(account.description).getDouble();
+                if messageSyncPeriod > 0 {
+                    if let messageSyncTime = AccountSettings.MessageSyncTime(account.description).getDate() {
+                        syncMessages(account: account, start: messageSyncTime);
+                    } else {
+                        var start = Date().addingTimeInterval(-1 * messageSyncPeriod * 60 * 60);
+                        self.syncMessages(account: account, start: start);
+                    }
+                }
+            }
+            
             if applicationState == .active {
                 e.presence.show = Presence.Show.online;
                 e.presence.priority = 5;
@@ -546,6 +560,25 @@ open class XmppService: Logger, EventHandler {
         backgroundFetchTimer = TigaseSwift.Timer(delayInSeconds: countLong > 0 ? fetchTimeLong : fetchTimeShort, repeats: false, callback: {
             self.backgroundFetchTimedOut();
         });
+    }
+    
+    fileprivate func syncMessages(account: BareJID, start: Date?, rsmQuery: RSM.Query? = nil) {
+        if let client = self.getClient(forJid: account) {
+            if let mamModule: MessageArchiveManagementModule = client.modulesManager.getModule(MessageArchiveManagementModule.ID) {
+                //let rsmQuery = RSM.Query(max: 100);
+                
+                mamModule.queryItems(start: start, queryId: "archive-1", rsm: rsmQuery ?? RSM.Query(lastItems: 100), onSuccess: {(queryid,complete,rsmResponse) in
+                    self.log("received items from archive", queryid, complete, rsmResponse);
+                    if rsmResponse != nil && rsmResponse!.index != 0 && rsmResponse?.first != nil {
+                        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1){
+                            self.syncMessages(account: account, start: start, rsmQuery: rsmResponse?.previous(100));
+                        }
+                    }
+                }, onError: {(error,stanza) in
+                    self.log("failed to retrieve items from archive", error, stanza);
+                });
+            }
+        }
     }
     
     fileprivate func clientConnected(account: BareJID) {

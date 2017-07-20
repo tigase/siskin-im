@@ -101,6 +101,7 @@ open class AccountManager {
         query.removeValue(forKey: String(kSecMatchLimit));
         query.removeValue(forKey: String(kSecReturnAttributes));
         _ = SecItemDelete(query as CFDictionary);
+        AccountSettings.removeSettings(for: name);
         NotificationCenter.default.post(name: AccountManager.ACCOUNT_CONFIGURATION_CHANGED, object: self, userInfo: ["account":name]);
         NotificationCenter.default.post(name: AccountManager.ACCOUNT_REMOVED, object: self, userInfo: ["account":name]);
     }

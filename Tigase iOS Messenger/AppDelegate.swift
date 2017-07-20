@@ -35,6 +35,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         Log.initialize();
         Settings.initialize();
+        AccountSettings.initialize();
         do {
             dbConnection = try DBConnection(dbFilename: "mobile_messenger1.db");
             let resourcePath = Bundle.main.resourcePath! + "/db-schema-1.0.0.sql";
@@ -433,7 +434,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         let sender = notification.userInfo?["sender"] as? BareJID;
         let account = notification.userInfo?["account"] as? BareJID;
         let incoming:Bool = (notification.userInfo?["incoming"] as? Bool) ?? false;
-        guard sender != nil && account != nil && incoming else {
+        let fromArchive: Bool = (notification.userInfo?["fromArchive"] as? Bool) ?? false;
+        guard sender != nil && account != nil && incoming && !fromArchive else {
             return;
         }
         

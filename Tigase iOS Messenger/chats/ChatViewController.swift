@@ -35,6 +35,9 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         return dataSource as CachedViewDataSourceProtocol;
     }
     
+    var refreshControl: UIRefreshControl!;
+    var syncInProgress = false;
+    
     override func viewDidLoad() {
         dataSource = ChatDataSource(controller: self);
         scrollDelegate = self;
@@ -59,6 +62,10 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         
         buddyBtn.addTarget(self, action: #selector(ChatViewController.showBuddyInfo), for: .touchDown);
         self.navigationItem.titleView = buddyBtn;
+
+        self.refreshControl = UIRefreshControl();
+        self.refreshControl?.addTarget(self, action: #selector(ChatViewController.refreshChatHistory), for: UIControlEvents.valueChanged);
+        self.tableView.addSubview(refreshControl);
     }
     
     func showBuddyInfo(_ button: UIButton) {
@@ -102,6 +109,15 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if dataSource.numberOfMessages == 0 {
+            let label = UILabel(frame: CGRect(x: 0, y:0, width: self.view.bounds.size.width, height: self.view.bounds.size.height));
+            label.text = "No messages available. Pull up to refresh message history.";
+            label.numberOfLines = 0;
+            label.textAlignment = .center;
+            label.transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0);
+            label.sizeToFit();
+            self.tableView.backgroundView = label;
+        }
         return dataSource.numberOfMessages;
     }
     
@@ -152,11 +168,21 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
             return;
         }
         
-        DispatchQueue.main.sync() {
-            self.newItemAdded();
+        guard notification.userInfo?["fromArchive"] as? Bool ?? false == false else {
+            if !self.syncInProgress {
+                cachedDataSource.reset();
+                tableView.reloadData();
+            }
+            return;
         }
+        
+        self.newItemAdded();
 
-        self.xmppService.dbChatHistoryStore.markAsRead(for: account, with: jid.bareJid);
+        if let state = notification.userInfo?["state"] as? DBChatHistoryStore.State {
+            if state == .incoming_unread {
+                self.xmppService.dbChatHistoryStore.markAsRead(for: account, with: jid.bareJid);
+            }
+        }
     }
     
     func avatarChanged(_ notification: NSNotification) {
@@ -166,6 +192,48 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         if let indexPaths = tableView.indexPathsForVisibleRows {
             tableView.reloadRows(at: indexPaths, with: .none);
         }
+    }
+    
+    @objc func refreshChatHistory() {
+        let syncPeriod = AccountSettings.MessageSyncPeriod(account.stringValue).getDouble();
+        guard syncPeriod != 0 else {
+            self.refreshControl.endRefreshing();
+            return;
+        }
+
+        let date = Date().addingTimeInterval(syncPeriod * -60.0 * 60);
+        syncInProgress = true;
+        syncHistory(start: date);
+    }
+    
+    func syncHistory(start: Date, rsm rsmQuery: RSM.Query? = nil) {
+        guard let mamModule: MessageArchiveManagementModule = self.xmppService.getClient(forJid: self.account)?.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
+            syncInProgress = false;
+            self.refreshControl.endRefreshing();
+            return;
+        }
+        
+        mamModule.queryItems(with: jid, start: start, queryId: "sync-2", rsm: rsmQuery ?? RSM.Query(lastItems: 100), onSuccess: {(queryid,complete,rsmResponse) in
+            self.log("received items from archive", queryid, complete, rsmResponse);
+            if rsmResponse != nil && rsmResponse!.index != 0 && rsmResponse?.first != nil {
+                self.syncHistory(start: start, rsm: rsmResponse?.previous(100));
+            } else {
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
+                    self.cachedDataSource.reset();
+                    self.syncInProgress = false;
+                    self.tableView.reloadData();
+                    self.refreshControl.endRefreshing();
+                }
+            }
+        }, onError: {(error,stanza) in
+            self.log("failed to retrieve items from archive", error, stanza);
+            DispatchQueue.main.async {
+                self.cachedDataSource.reset();
+                self.syncInProgress = false;
+                self.tableView.reloadData();
+                self.refreshControl.endRefreshing();
+            }
+        });
     }
     
     @IBAction func sendClicked(_ sender: UIButton) {

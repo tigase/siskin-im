@@ -45,8 +45,11 @@ open class DBChatHistoryStore: Logger, EventHandler {
     //private lazy var msgsGetStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_GET);
     fileprivate lazy var msgsMarkAsReadStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_MARK_AS_READ);
     fileprivate lazy var msgAlreadyAddedStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.MSG_ALREADY_ADDED);
-    fileprivate lazy var chatUpdateTimestamp: DBStatement! = try? self.dbConnection.prepareStatement("UPDATE chats SET timestamp = :timestamp WHERE account = :account AND jid = :jid");
+    fileprivate lazy var chatUpdateTimestamp: DBStatement! = try? self.dbConnection.prepareStatement("UPDATE chats SET timestamp = :timestamp WHERE account = :account AND jid = :jid AND timestamp < :timestamp");
     fileprivate lazy var listUnreadChatsStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT DISTINCT account, jid FROM chat_history WHERE state = \(State.incoming_unread.rawValue)");
+    fileprivate lazy var lastMessageTimestampForAccount: DBStatement! = try? self.dbConnection.prepareStatement("SELECT max(timestamp) AS timestamp FROM chat_history WHERE account = :account GROUP BY account");
+    fileprivate lazy var getMessagePositionStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id < :msgId AND timestamp < (SELECT timestamp FROM chat_history WHERE id = :msgId)");
+    fileprivate lazy var getMessagePositionStmtInverted: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id < :msgId AND timestamp > (SELECT timestamp FROM chat_history WHERE id = :msgId)");
     
     public init(dbConnection:DBConnection) {
         self.dbConnection = dbConnection;
@@ -54,7 +57,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
         NotificationCenter.default.addObserver(self, selector: #selector(DBChatHistoryStore.accountRemoved), name: NSNotification.Name(rawValue: "accountRemoved"), object: nil);
     }
     
-    open func appendMessage(for sessionObject: SessionObject, message: Message, carbonAction: MessageCarbonsModule.Action? = nil) {
+    open func appendMessage(for sessionObject: SessionObject, message: Message, carbonAction: MessageCarbonsModule.Action? = nil, fromArchive: Bool = false) {
         let body = message.body;
         // for now we support only messages with body
         guard body != nil else {
@@ -69,14 +72,17 @@ open class DBChatHistoryStore: Logger, EventHandler {
         let jid = incoming ? message.from?.bareJid : message.to?.bareJid
         let author = incoming ? message.from?.bareJid : account;
         let timestamp = message.delay?.stamp ?? Date();
+        let state = incoming ? (fromArchive ? State.incoming : State.incoming_unread) : State.outgoing;
         
-        if appendEntry(for: account, jid: jid!, incoming: incoming, authorJid: author, data: body!, timestamp: timestamp, id: message.id) {
+        appendEntry(for: account, jid: jid!, state: state, authorJid: author, data: body!, timestamp: timestamp, id: message.id) { (msgId) in
 
-            var userInfo:[AnyHashable: Any] = ["account": account, "sender": jid!, "incoming": incoming, "timestamp": timestamp, "body": body!] ;
+            var userInfo:[AnyHashable: Any] = ["account": account, "sender": jid!, "incoming": incoming, "timestamp": timestamp, "body": body!, "state": state] ;
             if carbonAction != nil {
                 userInfo["carbonAction"] = carbonAction!.rawValue;
             }
+            userInfo["fromArchive"] = fromArchive;
             NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: nil, userInfo: userInfo);
+            AccountSettings.MessageSyncTime(account.description).set(date: timestamp, condition: ComparisonResult.orderedAscending);
         }
     }
     
@@ -89,30 +95,54 @@ open class DBChatHistoryStore: Logger, EventHandler {
         let account = e.sessionObject.userBareJid!;
         let authorJid: BareJID? = e.nickname == nil ? nil : e.room.presences[e.nickname!]?.jid?.bareJid;
         
-        if appendEntry(for: account, jid: e.room.roomJid, incoming: true, authorJid: authorJid, authorNickname: e.nickname, data: body!, timestamp: e.timestamp, id: e.message.id) {
+        appendEntry(for: account, jid: e.room.roomJid, state: .incoming_unread, authorJid: authorJid, authorNickname: e.nickname, data: body!, timestamp: e.timestamp, id: e.message.id) { (msgId) in
 
-            var userInfo:[AnyHashable: Any] = ["account": account, "sender": e.room.roomJid, "incoming": true, "timestamp": e.timestamp, "type": "muc", "body": body!] ;
+            var userInfo:[AnyHashable: Any] = ["account": account, "sender": e.room.roomJid, "incoming": true, "timestamp": e.timestamp, "type": "muc", "body": body!, "state": State.incoming_unread] ;
             if e.nickname != nil {
                 userInfo["senderName"] = e.nickname!;
             }
             userInfo["roomNickname"] = e.room.nickname;
             NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: nil, userInfo: userInfo);
+            AccountSettings.MessageSyncTime(account.description).set(date: e.timestamp, condition: ComparisonResult.orderedAscending);
         }
     }
     
-    fileprivate func appendEntry(for account: BareJID, jid: BareJID, incoming: Bool, authorJid: BareJID?, authorNickname: String? = nil, itemType: ItemType = ItemType.message, data: String, timestamp: Date, id: String?) -> Bool {
+    func appendMessage(event e: MessageArchiveManagementModule.ArchivedMessageReceivedEvent) {
+        let message = e.message!;
+        guard let body = message.body else {
+            return;
+        }
+
+        let account = e.sessionObject.userBareJid!;
+        let state = message.from != nil && message.from!.bareJid != account ? State.incoming : State.outgoing;
+        let jid = state == .incoming ? message.from?.bareJid : message.to?.bareJid
+        let author = state == .incoming ? message.from?.bareJid : account;
+        
+        appendEntry(for: account, jid: jid!, state: state, authorJid: author, data: body, timestamp: e.timestamp, id: message.id) { (msgId) in
+            
+            var userInfo:[AnyHashable: Any] = ["account": account, "sender": jid!, "incoming": state == .incoming, "timestamp": e.timestamp, "body": body, "state": state] ;
+            userInfo["fromArchive"] = true;
+            userInfo["msgId"] = msgId;
+            NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: nil, userInfo: userInfo);
+            AccountSettings.MessageSyncTime(account.description).set(date: e.timestamp, condition: ComparisonResult.orderedAscending);
+        }
+    }
+    
+    fileprivate func appendEntry(for account: BareJID, jid: BareJID, state: State, authorJid: BareJID?, authorNickname: String? = nil, itemType: ItemType = ItemType.message, data: String, timestamp: Date, id: String?, callback: @escaping (Int)->Void) {
         guard !isEntryAlreadyAdded(for: account, jid: jid, authorJid: authorJid, itemType: itemType, data: data, timestamp: timestamp, id: id) else {
-            return false;
+            return;
         }
         
-        let state = incoming ? State.incoming_unread : State.outgoing;
         let params:[String:Any?] = ["account" : account, "jid" : jid, "author_jid" : authorJid, "author_nickname": authorNickname, "timestamp": timestamp, "item_type": itemType.rawValue, "data": data, "state": state.rawValue, "stanza_id": id]
         dbConnection.dispatch_async_db_queue() {
-            _ = try! self.msgAppendStmt.insert(params);
+            let msgId = try! self.msgAppendStmt.insert(params);
             let cu_params:[String:Any?] = ["account" : account, "jid" : jid, "timestamp" : timestamp ];
             _ = try! self.chatUpdateTimestamp.execute(cu_params);
+            
+            DispatchQueue.main.async {
+                callback(msgId!);
+            }
         }
-        return true;
     }
     
     fileprivate func isEntryAlreadyAdded(for account: BareJID, jid: BareJID, authorJid: BareJID?, authorNickname: String? = nil, itemType: ItemType, data: String, timestamp: Date, id: String?) -> Bool {
@@ -139,6 +169,31 @@ open class DBChatHistoryStore: Logger, EventHandler {
         return try! self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_GET);
     }
     
+    open func getMessagePosition(for account: BareJID, with jid: BareJID, msgId: Int, inverted: Bool) -> Int {
+        var pos = -2;
+        self.dbConnection.dispatch_sync_local_queue {
+            let params:[String:Any?] = ["account":account, "jid":jid, "msgId":msgId];
+            if inverted {
+                pos = try! getMessagePositionStmtInverted.scalar(params)!;
+            } else {
+                pos = try! getMessagePositionStmt.scalar(params)!;
+            }
+        }
+        return pos;
+    }
+    
+    open func checkLastMessageTimeFor(account: BareJID, callback: @escaping (Date?, String?)->Void) {
+        self.dbConnection.dispatch_async_db_queue {
+            let params: [String:Any?] = ["account": account.description];
+            let cursor = try! self.lastMessageTimestampForAccount.query(params);
+            let date: Date? = cursor?["timestamp"];
+            let msgId: String? = nil;
+            DispatchQueue.global().async {
+                callback(date, msgId);
+            }
+        }
+    }
+    
     open func handle(event:Event) {
         switch event {
         case let e as MessageModule.MessageReceivedEvent:
@@ -147,6 +202,8 @@ open class DBChatHistoryStore: Logger, EventHandler {
             appendMessage(for: e.sessionObject, message: e.message, carbonAction: e.action);
         case let e as MucModule.MessageReceivedEvent:
             appendMucMessage(event: e);
+        case let e as MessageArchiveManagementModule.ArchivedMessageReceivedEvent:
+            appendMessage(event: e);
         default:
             log("received unsupported event", event);
         }
