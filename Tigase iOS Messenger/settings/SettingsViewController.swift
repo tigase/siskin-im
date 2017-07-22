@@ -65,7 +65,7 @@ class SettingsViewController: UITableViewController, EventHandler {
         case 1:
             return 1;
         case 2:
-            return 5;
+            return 6;
         default:
             return 0;
         }
@@ -145,6 +145,13 @@ class SettingsViewController: UITableViewController, EventHandler {
                 cell.switchView.isOn = Settings.AutoSubscribeOnAcceptedSubscriptionRequest.getBool();
                 cell.valueChangedListener = {(switchView: UISwitch) in
                     Settings.AutoSubscribeOnAcceptedSubscriptionRequest.setValue(switchView.isOn);
+                }
+                return cell;
+            case .notificationsFromUnknown:
+                let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationsFromUnknownTableViewCell", for: indexPath) as! SwitchTableViewCell;
+                cell.switchView.isOn = Settings.NotificationsFromUnknown.getBool();
+                cell.valueChangedListener = {(switchView: UISwitch) in
+                    Settings.NotificationsFromUnknown.setValue(switchView.isOn);
                 }
                 return cell;
             }
@@ -272,5 +279,6 @@ class SettingsViewController: UITableViewController, EventHandler {
         case rosterType = 2
         case rosterDisplayHiddenGroup = 3
         case autoSubscribeOnAcceptedSubscriptionRequest = 4
+        case notificationsFromUnknown = 5
     }
 }

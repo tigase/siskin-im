@@ -275,7 +275,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         if notification.request.content.categoryIdentifier == "MESSAGE" {
             let account = notification.request.content.userInfo["account"] as? String;
             let sender = notification.request.content.userInfo["sender"] as? String;
-            if (isChatVisible(account: account, with: sender)) {
+            if (isChatVisible(account: account, with: sender) && xmppService.applicationState == .active) {
                 completionHandler([]);
             } else {
                 completionHandler([.alert, .sound]);
@@ -389,24 +389,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             return;
         }
         
-        var senderName:String? = nil;
-        if let sessionObject = xmppService.getClient(forJid: account.bareJid)?.sessionObject {
-            senderName = RosterModule.getRosterStore(sessionObject).get(for: sender.withoutResource)?.name;
-        }
-        if senderName == nil {
-            senderName = sender.stringValue;
-        }
-        
         var alertBody: String?;
         switch (type ?? "chat") {
         case "muc":
-            if body.contains(userInfo["roomNickname"] as! String) {
-                alertBody = senderName! + " mentioned you";
-            } else {
+            guard body.contains(userInfo["roomNickname"] as! String), let nick = userInfo["senderName"] as? String else {
                 return;
             }
+            alertBody = "\(nick) mentioned you: \(body)";
         default:
-            alertBody = body;
+            guard let sessionObject = xmppService.getClient(forJid: account.bareJid)?.sessionObject else {
+                return;
+            }
+            
+            if let senderRosterItem = RosterModule.getRosterStore(sessionObject).get(for: sender.withoutResource) {
+                let senderName = senderRosterItem.name ?? sender.withoutResource.stringValue;
+                alertBody = "\(senderName): \(body)";
+            } else {
+                guard Settings.NotificationsFromUnknown.getBool() else {
+                    return;
+                }
+                alertBody = "Message from unknown: " + sender.withoutResource.stringValue;
+            }
         }
         
         let threadId = "account=" + account.stringValue + "|sender=" + sender.bareJid.stringValue;
@@ -415,7 +418,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
             if notifications.filter({(notification) in  notification.request.identifier == id}).isEmpty {
                 let content = UNMutableNotificationContent();
-                content.title = "Received new message from \(senderName!)";
+                //content.title = "Received new message from \(senderName!)";
                 content.body = alertBody!;
                 content.sound = UNNotificationSound.default();
                 content.userInfo = ["account": account.stringValue, "sender": sender.bareJid.stringValue, "push": isPush];

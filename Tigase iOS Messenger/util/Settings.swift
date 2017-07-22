@@ -31,6 +31,7 @@ public enum Settings: String {
     case RosterDisplayHiddenGroup
     case AutoSubscribeOnAcceptedSubscriptionRequest
     case DeviceToken
+    case NotificationsFromUnknown
 
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     
@@ -46,7 +47,8 @@ public enum Settings: String {
             "RosterItemsOrder" : RosterSortingOrder.alphabetical.rawValue as AnyObject,
             "RosterAvailableOnly" : false as AnyObject,
             "RosterDisplayHiddenGroup" : false as AnyObject,
-            "AutoSubscribeOnAcceptedSubscriptionRequest" : true as AnyObject
+            "AutoSubscribeOnAcceptedSubscriptionRequest" : true as AnyObject,
+            "NotificationsFromUnknown" : true as AnyObject
         ];
         store.register(defaults: defaults);
     }

@@ -1432,6 +1432,45 @@
                                     <outlet property="switchView" destination="wsm-L5-x48" id="Dsj-C0-Nuc"/>
                                 </connections>
                             </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="notificationsFromUnknownTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="NotificationsFromUnknownTableViewCell" id="svB-cP-zBG" userLabel="NotificationsFromUnknownTableViewCell" customClass="SwitchTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="363.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="svB-cP-zBG" id="dLn-he-rc5">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="N1q-ug-CTW">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Notifications from unknown" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="APG-xU-AgB">
+                                                    <rect key="frame" x="8" y="4" width="300" height="35.5"/>
+                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="M4t-1i-7df">
+                                                    <rect key="frame" x="318" y="4" width="51" height="35.5"/>
+                                                    <connections>
+                                                        <action selector="valueChanged:" destination="svB-cP-zBG" eventType="valueChanged" id="3wH-s2-9lW"/>
+                                                    </connections>
+                                                </switch>
+                                            </subviews>
+                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
+                                        </stackView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="N1q-ug-CTW" firstAttribute="leading" secondItem="dLn-he-rc5" secondAttribute="leading" id="9tO-r0-OUT"/>
+                                        <constraint firstAttribute="bottom" secondItem="N1q-ug-CTW" secondAttribute="bottom" id="FUD-pE-UCq"/>
+                                        <constraint firstItem="N1q-ug-CTW" firstAttribute="top" secondItem="dLn-he-rc5" secondAttribute="top" id="uo1-oD-lOA"/>
+                                        <constraint firstAttribute="trailing" secondItem="N1q-ug-CTW" secondAttribute="trailing" id="xI7-CF-oJ5"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <accessibility key="accessibilityConfiguration" identifier="notificationsFromUnknownTableViewCell"/>
+                                <connections>
+                                    <outlet property="switchView" destination="M4t-1i-7df" id="IrL-oA-aVm"/>
+                                </connections>
+                            </tableViewCell>
                         </prototypes>
                         <connections>
                             <outlet property="dataSource" destination="KC2-Lb-9cB" id="4FZ-Gk-WDd"/>
