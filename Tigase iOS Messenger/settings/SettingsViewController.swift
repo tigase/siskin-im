@@ -52,7 +52,7 @@ class SettingsViewController: UITableViewController, EventHandler {
         case 1:
             return "Status";
         case 2:
-            return "Other";
+            return "Settings";
         default:
             return nil;
         }
@@ -65,7 +65,7 @@ class SettingsViewController: UITableViewController, EventHandler {
         case 1:
             return 1;
         case 2:
-            return 6;
+            return 3;
         default:
             return 0;
         }
@@ -110,49 +110,17 @@ class SettingsViewController: UITableViewController, EventHandler {
             label.text = Settings.StatusMessage.getString();
             return cell;
         } else {
-            let setting = SettingsEnum(rawValue: indexPath.row)!;
-            switch setting {
-            case .deleteChatHistoryOnClose:
-                let cell = tableView.dequeueReusableCell(withIdentifier: "DeleteChatHistoryOnCloseTableViewCell", for: indexPath) as! SwitchTableViewCell;
-                cell.switchView.isOn = Settings.DeleteChatHistoryOnChatClose.getBool();
-                cell.valueChangedListener = {(switchView: UISwitch) in
-                    Settings.DeleteChatHistoryOnChatClose.setValue(switchView.isOn);
-                }
+            if indexPath.row == 0 {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "ChatSettingsViewCell", for: indexPath);
+                cell.accessoryType = .disclosureIndicator;
                 return cell;
-            case .enableMessageCarbons:
-                let cell = tableView.dequeueReusableCell(withIdentifier: "EnableMessageCarbonsTableViewCell", for: indexPath ) as! SwitchTableViewCell;
-                cell.switchView.isOn = Settings.EnableMessageCarbons.getBool();
-                cell.valueChangedListener = {(switchView: UISwitch) in
-                    Settings.EnableMessageCarbons.setValue(switchView.isOn);
-                }
+            } else if indexPath.row == 1 {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "ContactsSettingsViewCell", for: indexPath);
+                cell.accessoryType = .disclosureIndicator;
                 return cell;
-            case .rosterType:
-                let cell = tableView.dequeueReusableCell(withIdentifier: "RosterTypeTableViewCell", for: indexPath ) as! SwitchTableViewCell;
-                cell.switchView.isOn = Settings.RosterType.getString() == RosterType.grouped.rawValue;
-                cell.valueChangedListener = {(switchView: UISwitch) in
-                    Settings.RosterType.setValue((switchView.isOn ? RosterType.grouped : RosterType.flat).rawValue);
-                }
-                return cell;
-            case .rosterDisplayHiddenGroup:
-                let cell = tableView.dequeueReusableCell(withIdentifier: "RosterHiddenGroupTableViewCell", for: indexPath) as! SwitchTableViewCell;
-                cell.switchView.isOn = Settings.RosterDisplayHiddenGroup.getBool();
-                cell.valueChangedListener = {(switchView: UISwitch) in
-                    Settings.RosterDisplayHiddenGroup.setValue(switchView.isOn);
-                }
-                return cell;
-            case .autoSubscribeOnAcceptedSubscriptionRequest:
-                let cell = tableView.dequeueReusableCell(withIdentifier: "AutoSubscribeOnAcceptedSubscriptionRequestTableViewCell", for: indexPath) as! SwitchTableViewCell;
-                cell.switchView.isOn = Settings.AutoSubscribeOnAcceptedSubscriptionRequest.getBool();
-                cell.valueChangedListener = {(switchView: UISwitch) in
-                    Settings.AutoSubscribeOnAcceptedSubscriptionRequest.setValue(switchView.isOn);
-                }
-                return cell;
-            case .notificationsFromUnknown:
-                let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationsFromUnknownTableViewCell", for: indexPath) as! SwitchTableViewCell;
-                cell.switchView.isOn = Settings.NotificationsFromUnknown.getBool();
-                cell.valueChangedListener = {(switchView: UISwitch) in
-                    Settings.NotificationsFromUnknown.setValue(switchView.isOn);
-                }
+            } else {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationSettingsViewCell", for: indexPath);
+                cell.accessoryType = .disclosureIndicator;
                 return cell;
             }
         }
@@ -273,12 +241,4 @@ class SettingsViewController: UITableViewController, EventHandler {
         self.showDetailViewController(navigationController, sender: self);
     }
     
-    internal enum SettingsEnum: Int {
-        case deleteChatHistoryOnClose = 0
-        case enableMessageCarbons = 1
-        case rosterType = 2
-        case rosterDisplayHiddenGroup = 3
-        case autoSubscribeOnAcceptedSubscriptionRequest = 4
-        case notificationsFromUnknown = 5
-    }
 }

@@ -42,8 +42,8 @@ class ChatsListViewController: UITableViewController, EventHandler {
         dataSource = ChatsDataSource(controller: self);
         super.viewDidLoad();
         
-        tableView.rowHeight = 66.0;//UITableViewAutomaticDimension;
-        //tableView.estimatedRowHeight = 66.0;
+        tableView.rowHeight = UITableViewAutomaticDimension;
+        tableView.estimatedRowHeight = 66.0;
         tableView.dataSource = self;
         NotificationCenter.default.addObserver(self, selector: #selector(ChatsListViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(ChatsListViewController.chatItemsUpdated), name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil);
@@ -89,6 +89,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
         let item = dataSource.item(at: indexPath);
         cell.nameLabel.text = item.name ?? item.key.jid.stringValue;
         cell.lastMessageLabel.text = item.lastMessage == nil ? nil : ((item.unread > 0 ? "" : "\u{2713}") + item.lastMessage!);
+        cell.lastMessageLabel.numberOfLines = Settings.RecentsMessageLinesNo.getInt();
         
         let formattedTS = self.formatTimestamp(item.key.timestamp);
         cell.timestampLabel.text = formattedTS;
@@ -105,8 +106,15 @@ class ChatsListViewController: UITableViewController, EventHandler {
             let presence = presenceModule?.presenceStore.getBestPresence(for: item.key.jid);
             cell.avatarStatusView.setStatus(presence?.show);
         }
+        cell.avatarStatusView.updateCornerRadius();
         
         return cell;
+    }
+    
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if let accountCell = cell as? AccountTableViewCell {
+            accountCell.avatarStatusView.updateCornerRadius();
+        }
     }
     
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {

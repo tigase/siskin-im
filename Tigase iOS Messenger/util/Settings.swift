@@ -32,6 +32,7 @@ public enum Settings: String {
     case AutoSubscribeOnAcceptedSubscriptionRequest
     case DeviceToken
     case NotificationsFromUnknown
+    case RecentsMessageLinesNo
 
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     
@@ -48,7 +49,8 @@ public enum Settings: String {
             "RosterAvailableOnly" : false as AnyObject,
             "RosterDisplayHiddenGroup" : false as AnyObject,
             "AutoSubscribeOnAcceptedSubscriptionRequest" : true as AnyObject,
-            "NotificationsFromUnknown" : true as AnyObject
+            "NotificationsFromUnknown" : true as AnyObject,
+            "RecentsMessageLinesNo" : 2 as AnyObject
         ];
         store.register(defaults: defaults);
     }
@@ -71,12 +73,20 @@ public enum Settings: String {
         Settings.valueChanged(forKey: self, oldValue: currValue, newValue: value);
     }
     
+    public func setValue(_ value: Int) {
+        Settings.store.set(value, forKey: self.rawValue);
+    }
+    
     public func getBool() -> Bool {
         return Settings.store.bool(forKey: self.rawValue);
     }
     
     public func getString() -> String? {
         return Settings.store.string(forKey: self.rawValue);
+    }
+    
+    public func getInt() -> Int {
+        return Settings.store.integer(forKey: self.rawValue);
     }
     
     fileprivate static func valueChanged(forKey key: Settings, oldValue: Any?, newValue: Any?) {
