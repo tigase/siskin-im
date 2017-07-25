@@ -689,7 +689,7 @@
                     <extendedEdge key="edgesForExtendedLayout"/>
                     <tabBarItem key="tabBarItem" systemItem="recents" id="acW-dT-cKf"/>
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="7zK-CH-Y1Y">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="7zK-CH-Y1Y">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -846,7 +846,7 @@
             <objects>
                 <navigationController storyboardIdentifier="ChatViewNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="XmR-SP-8PN" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="ZXL-ae-Ls9">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="ZXL-ae-Ls9">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -1157,7 +1157,7 @@
                 <navigationController storyboardIdentifier="SettingsNavigationController" title="Settings" automaticallyAdjustsScrollViewInsets="NO" id="QmM-dZ-y90" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" systemItem="more" id="3k8-Tx-9T7"/>
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="fdx-BY-Abw">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="fdx-BY-Abw">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -1293,8 +1293,42 @@
                                     <segue destination="BXr-hT-f7o" kind="showDetail" id="fJW-PL-VVR"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="notificationSettingsViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="NotificationSettingsViewCell" id="l26-yU-mGg" userLabel="NotificationSettingsViewCell">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="statusTypeSettingsViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="StatusTypeSettingsViewCell" id="oad-Vk-tOm" userLabel="StatusTypeSettingsViewCell">
                                 <rect key="frame" x="0.0" y="187.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="oad-Vk-tOm" id="zkZ-pd-TKs">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="LO4-73-g8P">
+                                            <rect key="frame" x="8" y="8" width="27.5" height="27.5"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" secondItem="LO4-73-g8P" secondAttribute="height" multiplier="1:1" id="KEW-Ac-fKS"/>
+                                                <constraint firstAttribute="height" constant="27.5" id="g3i-VP-w6z"/>
+                                            </constraints>
+                                        </imageView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Status Type" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="M6R-Q4-837">
+                                            <rect key="frame" x="43.5" y="8" width="323.5" height="27.5"/>
+                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="LO4-73-g8P" firstAttribute="top" secondItem="zkZ-pd-TKs" secondAttribute="topMargin" id="BvV-7t-T8U"/>
+                                        <constraint firstAttribute="bottomMargin" secondItem="LO4-73-g8P" secondAttribute="bottom" id="CXE-5z-tQH"/>
+                                        <constraint firstItem="M6R-Q4-837" firstAttribute="top" secondItem="zkZ-pd-TKs" secondAttribute="topMargin" id="FQJ-21-KAO"/>
+                                        <constraint firstItem="M6R-Q4-837" firstAttribute="leading" secondItem="LO4-73-g8P" secondAttribute="trailing" constant="8" id="FlY-tl-AJI"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="M6R-Q4-837" secondAttribute="trailing" id="IfX-Jd-gDG"/>
+                                        <constraint firstAttribute="bottomMargin" secondItem="M6R-Q4-837" secondAttribute="bottom" id="PK0-fN-5a4"/>
+                                        <constraint firstItem="LO4-73-g8P" firstAttribute="leading" secondItem="zkZ-pd-TKs" secondAttribute="leadingMargin" id="rQi-zf-58J"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <accessibility key="accessibilityConfiguration" identifier="statusTypeSettingsViewCell"/>
+                            </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="notificationSettingsViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="NotificationSettingsViewCell" id="l26-yU-mGg" userLabel="NotificationSettingsViewCell">
+                                <rect key="frame" x="0.0" y="231.5" width="375" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="l26-yU-mGg" id="Ocp-c7-zYe">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
@@ -1321,7 +1355,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="contactsSettingsViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ContactsSettingsViewCell" id="kGD-mS-9P3" userLabel="ContactsSettingsViewCell">
-                                <rect key="frame" x="0.0" y="231.5" width="375" height="44"/>
+                                <rect key="frame" x="0.0" y="275.5" width="375" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="kGD-mS-9P3" id="tvc-z7-Jmm">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
@@ -1818,7 +1852,7 @@
             <objects>
                 <navigationController storyboardIdentifier="AddAccountController" automaticallyAdjustsScrollViewInsets="NO" id="QGt-BC-Efk" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="htm-Zf-FaY">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="htm-Zf-FaY">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -2122,7 +2156,7 @@
                 <navigationController title="Contacts" automaticallyAdjustsScrollViewInsets="NO" id="Ndx-if-NHK" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" selectedImage="first" systemItem="contacts" id="W52-LN-wzX"/>
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="QfB-Do-9or">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="QfB-Do-9or">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -2225,7 +2259,7 @@
             <objects>
                 <navigationController storyboardIdentifier="AccountSettingsNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="Hc9-ng-Yjk" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="3ZH-BK-FcN">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="3ZH-BK-FcN">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -2598,7 +2632,7 @@
             <objects>
                 <navigationController storyboardIdentifier="RosterItemEditNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="DqK-vA-tM9" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="c2l-7V-bZB">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="c2l-7V-bZB">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -2616,7 +2650,7 @@
             <objects>
                 <navigationController storyboardIdentifier="MucJoinNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="mIc-q9-TYC" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="qsY-r9-Dg8">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="qsY-r9-Dg8">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -2634,7 +2668,7 @@
             <objects>
                 <navigationController storyboardIdentifier="RoomViewNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="EOg-N2-aev" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="bMi-Cc-EWG">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="bMi-Cc-EWG">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -2652,7 +2686,7 @@
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="xOG-Hs-wgM" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="53E-2e-FeU">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="53E-2e-FeU">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -2812,7 +2846,7 @@
             <objects>
                 <navigationController restorationIdentifier="ContactViewNavigationController" storyboardIdentifier="ContactViewNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="JIC-ew-OGP" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="26o-Nz-6qA">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="26o-Nz-6qA">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -2830,7 +2864,7 @@
             <objects>
                 <navigationController restorationIdentifier="RegisterAccountController" storyboardIdentifier="RegisterAccountController" automaticallyAdjustsScrollViewInsets="NO" id="tbl-ag-IFY" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="Vhl-hf-QEr">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="Vhl-hf-QEr">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>

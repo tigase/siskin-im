@@ -25,6 +25,14 @@ import TigaseSwift
 
 class SettingsViewController: UITableViewController, EventHandler {
    
+    var statusNames = [
+        "chat" : "Chat",
+        "online" : "Online",
+        "away" : "Away",
+        "xa" : "Extended away",
+        "dnd" : "Do not disturb"
+    ];
+    
     var xmppService:XmppService {
         let appDelegate = UIApplication.shared.delegate as! AppDelegate;
         return appDelegate.xmppService;
@@ -63,7 +71,7 @@ class SettingsViewController: UITableViewController, EventHandler {
         case 0:
             return AccountManager.getAccounts().count + 1;
         case 1:
-            return 1;
+            return 2;
         case 2:
             return 3;
         default:
@@ -105,10 +113,24 @@ class SettingsViewController: UITableViewController, EventHandler {
             }
             return cell;
         } else if (indexPath.section == 1) {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "StatusTableViewCell", for: indexPath);
-            let label = cell.viewWithTag(1)! as! UILabel;
-            label.text = Settings.StatusMessage.getString();
-            return cell;
+            if indexPath.row == 1 {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "StatusTableViewCell", for: indexPath);
+                let label = cell.viewWithTag(1)! as! UILabel;
+                label.text = Settings.StatusMessage.getString();
+                return cell;
+            } else {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "StatusTypeSettingsViewCell", for: indexPath);
+                let type = Settings.StatusType.getString();
+                if let image = type != nil ? getStatusIconForActionIcon(named: "presence_\(type!)") : nil {
+                    (cell.contentView.subviews[0] as? UIImageView)?.image = image;
+                    (cell.contentView.subviews[0] as? UIImageView)?.isHidden = false;
+                } else {
+                    (cell.contentView.subviews[0] as? UIImageView)?.isHidden = true;
+                }
+                (cell.contentView.subviews[1] as? UILabel)?.text = type != nil ? self.statusNames[type!] : "Automatic";
+                cell.accessoryType = .disclosureIndicator;
+                return cell;
+            }
         } else {
             if indexPath.row == 0 {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "ChatSettingsViewCell", for: indexPath);
@@ -162,6 +184,29 @@ class SettingsViewController: UITableViewController, EventHandler {
             }
         } else if indexPath.section == 1 {
             if indexPath.row == 0 {
+                let alert = UIAlertController(title: "Select status", message: nil, preferredStyle: .actionSheet);
+                [nil, "chat", "online", "away", "xa", "dnd"].forEach { (type)->Void in
+                    let name = type == nil ? "Automatic" : self.statusNames[type!];
+                    let action = UIAlertAction(title: name, style: .default) { (a) in
+                        Settings.StatusType.setValue(type);
+                        self.tableView.reloadData();                        
+                    };
+                    if type != nil {
+                        action.setValue(getStatusIconForActionIcon(named: "presence_\(type!)"), forKey: "image")
+                    }
+                    alert.addAction(action);
+                }
+            
+                let action = UIAlertAction(title: "Cancel", style: .cancel, handler: nil);
+                alert.addAction(action);
+                
+                let cell = self.tableView(tableView, cellForRowAt: indexPath);
+                alert.popoverPresentationController?.sourceView = cell.contentView;
+                alert.popoverPresentationController?.sourceRect = cell.contentView.bounds;
+                
+                self.present(alert, animated: true, completion: nil);
+            }
+            else if indexPath.row == 1 {
                 let alert = UIAlertController(title: "Status", message: "Enter status message", preferredStyle: .alert);
                 alert.addTextField(configurationHandler: { (textField) in
                     textField.text = Settings.StatusMessage.getString();
@@ -241,4 +286,15 @@ class SettingsViewController: UITableViewController, EventHandler {
         self.showDetailViewController(navigationController, sender: self);
     }
     
+    fileprivate func getStatusIconForActionIcon(named: String) -> UIImage? {
+        guard var image = UIImage(named: named) else {
+            return nil;
+        }
+        let newSize = CGSize(width: image.size.width * 0.5, height: image.size.height * 0.5);
+        UIGraphicsBeginImageContextWithOptions(newSize, false, 0);
+        image.draw(in: CGRect(origin: CGPoint(x: 0, y: 0), size: newSize));
+        image = UIGraphicsGetImageFromCurrentImageContext()!;
+        UIGraphicsEndImageContext();
+        return image.withRenderingMode(.alwaysOriginal);
+    }
 }

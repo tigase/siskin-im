@@ -299,25 +299,15 @@ open class XmppService: Logger, EventHandler {
                 }
             }
         case let e as PresenceModule.BeforePresenceSendEvent:
-            let account = e.sessionObject.userBareJid!;
-            if AccountSettings.MessageSyncAutomatic(account.description).getBool() {
-            let messageSyncPeriod = AccountSettings.MessageSyncPeriod(account.description).getDouble();
-                if messageSyncPeriod > 0 {
-                    if let messageSyncTime = AccountSettings.MessageSyncTime(account.description).getDate() {
-                        syncMessages(account: account, start: messageSyncTime);
-                    } else {
-                        var start = Date().addingTimeInterval(-1 * messageSyncPeriod * 60 * 60);
-                        self.syncMessages(account: account, start: start);
-                    }
-                }
-            }
-            
             if applicationState == .active {
                 e.presence.show = Presence.Show.online;
                 e.presence.priority = 5;
             } else {
                 e.presence.show = Presence.Show.away;
                 e.presence.priority = 0;
+            }
+            if let manualShow = Settings.StatusType.getString() {
+                e.presence.show = Presence.Show(rawValue: manualShow);
             }
             e.presence.status = Settings.StatusMessage.getString();
         case let e as PresenceModule.SubscribeRequestEvent:
@@ -328,6 +318,19 @@ open class XmppService: Logger, EventHandler {
                 NotificationCenter.default.post(name: XmppService.PRESENCE_AUTHORIZATION_REQUEST, object: self, userInfo: info);
             }
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
+            let account = e.sessionObject.userBareJid!;
+            if AccountSettings.MessageSyncAutomatic(account.description).getBool() {
+                let messageSyncPeriod = AccountSettings.MessageSyncPeriod(account.description).getDouble();
+                if messageSyncPeriod > 0 {
+                    if let messageSyncTime = AccountSettings.MessageSyncTime(account.description).getDate() {
+                        syncMessages(account: account, start: messageSyncTime);
+                    } else {
+                        var start = Date().addingTimeInterval(-1 * messageSyncPeriod * 60 * 60);
+                        self.syncMessages(account: account, start: start);
+                    }
+                }
+            }
+
             let client = getClient(forJid: e.sessionObject.userBareJid!);
             client?.sessionObject.setProperty(XmppService.CONNECTION_RETRY_NO_KEY, value: nil);
             if applicationState == .inactive {
@@ -467,7 +470,7 @@ open class XmppService: Logger, EventHandler {
                     messageCarbonsModule?.setState(value, callback: nil);
                 }
             }
-        case .StatusMessage:
+        case .StatusMessage, .StatusType:
             sendAutoPresence();
         case .DeviceToken:
             let newDeviceId = notification.userInfo?["newValue"] as? String;

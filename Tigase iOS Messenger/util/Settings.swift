@@ -24,6 +24,7 @@ import Foundation
 public enum Settings: String {
     case DeleteChatHistoryOnChatClose
     case EnableMessageCarbons
+    case StatusType
     case StatusMessage
     case RosterType
     case RosterItemsOrder
