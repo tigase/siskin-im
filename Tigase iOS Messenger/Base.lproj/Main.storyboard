@@ -1290,7 +1290,7 @@
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="settingsViewCell"/>
                                 <connections>
-                                    <segue destination="BXr-hT-f7o" kind="showDetail" id="fJW-PL-VVR"/>
+                                    <segue destination="BXr-hT-f7o" kind="showDetail" customClass="NavigationControllerWrappingSegue" customModule="Tigase_iOS_Messenger" customModuleProvider="target" id="fJW-PL-VVR"/>
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="statusTypeSettingsViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="StatusTypeSettingsViewCell" id="oad-Vk-tOm" userLabel="StatusTypeSettingsViewCell">
@@ -1351,7 +1351,7 @@
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="notificationSettingsViewCell"/>
                                 <connections>
-                                    <segue destination="tEp-wj-ECQ" kind="showDetail" id="gO4-3p-bMZ"/>
+                                    <segue destination="tEp-wj-ECQ" kind="showDetail" customClass="NavigationControllerWrappingSegue" customModule="Tigase_iOS_Messenger" customModuleProvider="target" id="gO4-3p-bMZ"/>
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="contactsSettingsViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ContactsSettingsViewCell" id="kGD-mS-9P3" userLabel="ContactsSettingsViewCell">
@@ -1378,7 +1378,7 @@
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="contactsSettingsViewCell"/>
                                 <connections>
-                                    <segue destination="CeL-yr-IHB" kind="showDetail" id="QW8-OP-mJ4"/>
+                                    <segue destination="CeL-yr-IHB" kind="showDetail" customClass="NavigationControllerWrappingSegue" customModule="Tigase_iOS_Messenger" customModuleProvider="target" id="QW8-OP-mJ4"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>

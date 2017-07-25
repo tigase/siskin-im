@@ -261,6 +261,10 @@ class SettingsViewController: UITableViewController, EventHandler {
         }
     }
     
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        (segue.destination as? UINavigationController)?.visibleViewController?.hidesBottomBarWhenPushed = true;
+    }
+    
     func handle(event: Event) {
         switch event {
         case is SocketConnector.ConnectedEvent, is SocketConnector.DisconnectedEvent, is StreamManagementModule.ResumedEvent,

@@ -51,6 +51,7 @@
 		FE9E136F1F26049A005C0EE5 /* NotificationSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E136E1F26049A005C0EE5 /* NotificationSettingsViewController.swift */; };
 		FE9E13711F2606E9005C0EE5 /* ContactsSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E13701F2606E9005C0EE5 /* ContactsSettingsViewController.swift */; };
 		FE9E13731F260B33005C0EE5 /* StepperTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E13721F260B33005C0EE5 /* StepperTableViewCell.swift */; };
+		FEA308D01F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA308CF1F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift */; };
 		FEAC71771CECA09B00ABABEF /* MucChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC71761CECA09B00ABABEF /* MucChatTableViewCell.swift */; };
 		FEAC71791CECE50400ABABEF /* MucChatOccupantsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */; };
 		FEAC717B1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */; };
@@ -161,6 +162,7 @@
 		FE9E136E1F26049A005C0EE5 /* NotificationSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NotificationSettingsViewController.swift; sourceTree = "<group>"; };
 		FE9E13701F2606E9005C0EE5 /* ContactsSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactsSettingsViewController.swift; sourceTree = "<group>"; };
 		FE9E13721F260B33005C0EE5 /* StepperTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StepperTableViewCell.swift; sourceTree = "<group>"; };
+		FEA308CF1F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavigationControllerWrappingSegue.swift; sourceTree = "<group>"; };
 		FEAC71761CECA09B00ABABEF /* MucChatTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatTableViewCell.swift; sourceTree = "<group>"; };
 		FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatOccupantsTableViewController.swift; sourceTree = "<group>"; };
 		FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatOccupantsTableViewCell.swift; sourceTree = "<group>"; };
@@ -294,6 +296,7 @@
 				FE1DCCA11EA52CE200850563 /* DataFormController.swift */,
 				FEE097611F1FCE1800B1CEAB /* TablePicketViewController.swift */,
 				FE9E13721F260B33005C0EE5 /* StepperTableViewCell.swift */,
+				FEA308CF1F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -646,6 +649,7 @@
 				FE507A1B1CDB7B3B001A015C /* DBManager.swift in Sources */,
 				FE507A241CDB7B3B001A015C /* GlobalSplitViewController.swift in Sources */,
 				FE507A261CDB7B3B001A015C /* AvatarManager.swift in Sources */,
+				FEA308D01F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
