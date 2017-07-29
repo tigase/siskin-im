@@ -43,6 +43,7 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
     
     @IBOutlet var enabledSwitch: UISwitch!
     @IBOutlet var pushNotificationSwitch: UISwitch!;
+    @IBOutlet var pushNotificationsForAwaySwitch: UISwitch!
     
     @IBOutlet var archivingEnabledSwitch: UISwitch!;
     @IBOutlet var messageSyncAutomaticSwitch: UISwitch!;
@@ -64,7 +65,7 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
         pushNotificationSwitch.isOn = config?.pushNotifications ?? false;
         archivingEnabledSwitch.isOn = false;
         messageSyncAutomaticSwitch.isEnabled = false;
-
+        pushNotificationsForAwaySwitch.isOn = pushNotificationSwitch.isOn && AccountSettings.PushNotificationsForAway(account).getBool();
 
         updateView();
         
@@ -97,7 +98,7 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: false);
-        if indexPath.section == 2 && indexPath.row == 2 {
+        if indexPath.section == 3 && indexPath.row == 2 {
             let controller = TablePickerViewController();
             let hoursArr = [0.0, 12.0, 24.0, 3*24.0, 7*24.0, 14 * 24.0, 356 * 24.0];
             controller.selected = hoursArr.index(of: AccountSettings.MessageSyncPeriod(account).getDouble()) ?? 0;
@@ -118,9 +119,11 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
         let client = xmppService.getClient(forJid: accountJid);
         let pushModule: TigasePushNotificationsModule? = client?.modulesManager.getModule(TigasePushNotificationsModule.ID);
         pushNotificationSwitch.isEnabled = (pushModule?.deviceId != nil) && (pushModule?.isAvailable ?? false);
+        pushNotificationsForAwaySwitch.isEnabled = pushNotificationSwitch.isEnabled && (pushModule?.isAvailablePushForAway ?? false);
         
         messageSyncAutomaticSwitch.isOn = AccountSettings.MessageSyncAutomatic(accountJid.description).getBool();
-        archivingEnabledSwitch.isEnabled = false;
+        archivingEnabledSwitch.isEnabled = AccountSettings.PushNotificationsForAway(account).getBool();
+
         if let mamModule: MessageArchiveManagementModule = client?.modulesManager.getModule(MessageArchiveManagementModule.ID) {
             mamModule.retrieveSettings(onSuccess: { (
                 defValue, always, never) in
@@ -134,7 +137,6 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
                     self.archivingEnabledSwitch.isOn = false;
                     self.archivingEnabledSwitch.isEnabled = false;
                     self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
-
                 }
             })
         }
@@ -180,6 +182,7 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
         let value = pushNotificationSwitch.isOn;
         if !value {
             self.setPushNotificationsEnabled(forJid: account, value: value);
+            pushNotificationsForAwaySwitch.isOn = false;
         } else {
             let alert = UIAlertController(title: "Push Notifications", message: "Tigase iOS Messenger can be automatically notified by compatible XMPP servers about new messages when it is in background or stopped.\nIf enabled, notifications about new messages will be forwarded to our push component and delivered to the device. These notifications will contain message senders jid and part of a message.\nDo you want to enable push notifications?", preferredStyle: .alert);
             alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: self.enablePushNotifications));
@@ -218,14 +221,58 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
                 }, onError: { (errorCondition) in
                     DispatchQueue.main.async {
                         self.pushNotificationSwitch.isOn = false;
+                        self.pushNotificationsForAwaySwitch.isOn = false;
                     }
                     onError(errorCondition);
                 })
             });
         } else {
             pushNotificationSwitch.isOn = false;
+            pushNotificationsForAwaySwitch.isOn = false;
             onError(ErrorCondition.service_unavailable);
         }
+    }
+    
+    @IBAction func pushNotificationsForAwaySwitchChangedValue(_ sender: Any) {
+        guard self.pushNotificationSwitch.isOn else {
+            self.pushNotificationsForAwaySwitch.isOn = false;
+            return;
+        }
+        
+        AccountSettings.PushNotificationsForAway(account).set(bool: self.pushNotificationsForAwaySwitch.isOn);
+        guard let pushModule: TigasePushNotificationsModule = xmppService.getClient(forJid: accountJid)?.modulesManager.getModule(TigasePushNotificationsModule.ID) else {
+            return;
+        }
+        
+        guard let serviceJid = pushModule.pushServiceJid, let node = pushModule.pushServiceNode else {
+            return;
+        }
+        pushModule.enable(serviceJid: serviceJid, node: node, enableForAway: self.pushNotificationsForAwaySwitch.isOn, onSuccess: { (stanza) in
+            print("PUSH enabled!");
+            DispatchQueue.main.async {
+                guard self.pushNotificationsForAwaySwitch.isOn else {
+                    return;
+                }
+                let syncPeriod = AccountSettings.MessageSyncPeriod(self.account).getDouble();
+                if !AccountSettings.MessageSyncAutomatic(self.account).getBool() || syncPeriod < 12 {
+                    let alert = UIAlertController(title: "Enable automatic message synchronization", message: "For best experience it is suggested to enable Message Archving with automatic message synchronization of at least last 12 hours.\nDo you wish to do this now?", preferredStyle: .alert);
+                    alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
+                    alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(action) in
+                        AccountSettings.MessageSyncAutomatic(self.account).set(bool: true);
+                        if (syncPeriod < 12) {
+                            AccountSettings.MessageSyncPeriod(self.account).set(double: 12.0);
+                        }
+                        self.updateView();
+                    }));
+                    self.present(alert, animated: true, completion: nil);
+                }
+            }
+        }, onError: {(errorCondition) in
+            DispatchQueue.main.async {
+                self.pushNotificationsForAwaySwitch.isOn = !self.pushNotificationsForAwaySwitch.isOn;
+                AccountSettings.PushNotificationsForAway(self.account).set(bool: self.pushNotificationsForAwaySwitch.isOn);
+            }
+        });
     }
     
     func setPushNotificationsEnabled(forJid account: String, value: Bool) {

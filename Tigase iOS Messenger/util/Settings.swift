@@ -106,6 +106,7 @@ public enum AccountSettings {
     case MessageSyncAutomatic(String)
     case MessageSyncPeriod(String)
     case MessageSyncTime(String)
+    case PushNotificationsForAway(String)
     
     public func getAccount() -> String {
         switch self {
@@ -114,6 +115,8 @@ public enum AccountSettings {
         case .MessageSyncPeriod(let account):
             return account;
         case .MessageSyncTime(let account):
+            return account;
+        case .PushNotificationsForAway(let account):
             return account;
         }
     }
@@ -126,6 +129,8 @@ public enum AccountSettings {
             return "MessageSyncPeriod";
         case .MessageSyncTime( _):
             return "MessageSyncTime";
+        case .PushNotificationsForAway( _):
+            return "PushNotificationsForAway";
         }
     }
     

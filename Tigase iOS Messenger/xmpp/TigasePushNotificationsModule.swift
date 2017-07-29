@@ -25,6 +25,8 @@ import TigaseSwift
 
 open class TigasePushNotificationsModule: PushNotificationsModule, EventHandler {
     
+    fileprivate static let PUSH_FOR_AWAY_XMLNS = "tigase:push:away:0";
+    
     fileprivate var oldDeviceId: String? = nil;
     open var deviceId: String? = "?" {
         willSet {
@@ -53,6 +55,13 @@ open class TigasePushNotificationsModule: PushNotificationsModule, EventHandler 
         }
     }
     
+    open var isAvailablePushForAway: Bool {
+        if let features: [String] = context.sessionObject.getProperty(DiscoveryModule.SERVER_FEATURES_KEY) {
+            return features.contains(TigasePushNotificationsModule.PUSH_FOR_AWAY_XMLNS);
+        }
+        return false;
+    }
+    
     override open var context: Context! {
         willSet {
             if context != nil {
@@ -76,7 +85,7 @@ open class TigasePushNotificationsModule: PushNotificationsModule, EventHandler 
     open func registerDevice(onSuccess: @escaping ()-> Void, onError: @escaping (ErrorCondition?)->Void) {
         self.registerDevice(serviceJid: self.pushServiceJid!, provider: self.provider, deviceId: self.deviceId!, onSuccess: { (node) in
             self.pushServiceNode = node;
-            self.enable(serviceJid: self.pushServiceJid!, node: node, onSuccess: { (stanza) in
+            self.enable(serviceJid: self.pushServiceJid!, node: node, enableForAway: AccountSettings.PushNotificationsForAway(self.context.sessionObject.userBareJid!.stringValue).getBool(), onSuccess: { (stanza) in
                 onSuccess();
             }, onError: onError);
         }, onError: onError);
