@@ -36,8 +36,8 @@ open class DBVCardsCache {
         self.dbConnection = dbConnection;
     }
     
-    open func updateVCard(for jid: BareJID, on account: BareJID, vcard: VCardModule.VCard?) {
-        let params:[String:Any?] = ["jid" : jid, "data": vcard, "timestamp": NSDate()];
+    open func updateVCard(for jid: BareJID, on account: BareJID, vcard: VCard?) {
+        let params:[String:Any?] = ["jid" : jid, "data": vcard?.toVCard4(), "timestamp": NSDate()];
         dbConnection.dispatch_async_db_queue() {
             if try! self.updateVCardStmt.update(params) == 0 {
                 _ = try! self.insertVCardStmt.insert(params);
@@ -46,22 +46,44 @@ open class DBVCardsCache {
         NotificationCenter.default.post(name: DBVCardsCache.VCARD_UPDATED, object: self, userInfo: ["jid": jid, "account": account]);
     }
     
-    open func getVCard(for jid: BareJID) -> VCardModule.VCard? {
+    open func getVCard(for jid: BareJID) -> VCard? {
         
         if let data:String = dbConnection.dispatch_sync_with_result_local_queue({
             return try! self.getVCardStmt.query(jid)?["data"];
         }) {
             if let vcardEl = Element.from(string: data) {
-                return VCardModule.VCard(element: vcardEl);
+                return VCard(vcard4: vcardEl) ?? VCard(vcardTemp: vcardEl);
             }
         }
         return nil;
     }
     
-    open func getPhoto(for jid: BareJID) -> Data? {
-        if let vcard = getVCard(for: jid) {
-            return vcard.photoValBinary;
+    open func fetchPhoto(for jid: BareJID, callback: @escaping (Data?)->Void) {
+        if let photo = getVCard(for: jid)?.photos.first {
+            fetchPhoto(photo: photo, callback: callback);
+        } else {
+            callback(nil);
         }
-        return nil;
     }
+    
+    open func fetchPhoto(photo: VCard.Photo, callback: @escaping (Data?)->Void) {
+        if photo.binval != nil {
+            callback(Data(base64Encoded: photo.binval!, options: NSData.Base64DecodingOptions(rawValue: 0)));
+        } else if photo.uri != nil {
+            if photo.uri!.hasPrefix("data:image") && photo.uri!.contains(";base64,") {
+                if let idx = photo.uri!.characters.index(of: ",") {
+                    let data = photo.uri!.substring(from: photo.uri!.index(after: idx));
+                    callback(Data(base64Encoded: data, options: NSData.Base64DecodingOptions(rawValue: 0)));
+                    return;
+                }
+            }
+            let url = URL(string: photo.uri!);
+            URLSession.shared.dataTask(with: url!) { (data, response, err) in
+                callback(data);
+            }
+        } else {
+            callback(nil);
+        }
+    }
+    
 }

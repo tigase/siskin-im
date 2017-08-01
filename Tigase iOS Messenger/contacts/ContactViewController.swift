@@ -31,71 +31,23 @@ class ContactViewController: UITableViewController {
     
     var account: BareJID!;
     var jid: BareJID!;
-    var vcard: VCardModule.VCard? {
+    var vcard: VCard? {
         didSet {
-            phones = [];
-            vcard?.telephones.forEach { (telephone) in
-                let types = telephone.types;
-                let val = telephone.number?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines);
-                guard val != nil && !val!.isEmpty else {
-                    return;
-                }
-                if types.isEmpty {
-                    telephone.types = [VCardModule.VCard.EntryType.HOME];
-                }
-                telephone.types.forEach({ (type) in
-                    let phone = VCardModule.VCard.Telephone()!;
-                    phone.types = [type];
-                    phone.number = val;
-                    phones.append(phone);
-                });
-            };
-            addresses = [];
-            vcard?.addresses.forEach { (address) in
-                if address.isEmpty() {
-                    return;
-                }
-                let types = address.types;
-                if types.isEmpty {
-                    address.types = [VCardModule.VCard.EntryType.HOME];
-                }
-                address.types.forEach({ (type) in
-                    let addr = VCardModule.VCard.Address()!;
-                    addr.types = [type];
-                    addr.country = address.country;
-                    addr.locality = address.locality;
-                    addr.postalCode = address.postalCode;
-                    addr.region = address.region;
-                    addr.street = address.street;
-                    addresses.append(addr);
-                });
-            }
-            emails = [];
-            vcard?.emails.forEach { (email) in
-                let types = email.types;
-                let val = email.address?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines);
-                guard val != nil && !val!.isEmpty else {
-                    return;
-                }
-                if types.isEmpty {
-                    email.types = [VCardModule.VCard.EntryType.HOME];
-                }
-                email.types.forEach({ (type) in
-                    let e = VCardModule.VCard.Email()!;
-                    e.types = [type];
-                    e.address = val;
-                    emails.append(e);
-                });
-            }
             DispatchQueue.main.async() {
                 self.tableView.reloadData();
             }
         }
     }
     
-    var addresses: [VCardModule.VCard.Address]!;
-    var phones: [VCardModule.VCard.Telephone]!;
-    var emails: [VCardModule.VCard.Email]!;
+    var addresses: [VCard.Address] {
+        return vcard!.addresses;
+    }
+    var phones: [VCard.Telephone] {
+        return vcard!.telephones;
+    }
+    var emails: [VCard.Email] {
+        return vcard!.emails;
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -122,16 +74,11 @@ class ContactViewController: UITableViewController {
     
     func refreshVCard() {
         DispatchQueue.global(qos: .background).async() {
-            if let vcardModule: VCardModule = self.xmppService.getClient(forJid: self.account)?.modulesManager.getModule(VCardModule.ID) {
-                vcardModule.retrieveVCard(from: JID(self.jid), onSuccess: { (vcard) in
-                    DispatchQueue.global(qos: .background).async() {
-                        self.xmppService.dbVCardsCache.updateVCard(for: self.jid, on: self.account, vcard: vcard);
-                        self.vcard = vcard;
-                    }
-                    }, onError: { (errorCondition) in
-                        // retrieval failed - ignoring for now
-                })
-            }
+            self.xmppService.refreshVCard(account: self.account, for: self.jid, onSuccess: { (vcard) in
+                self.vcard = vcard;
+            }, onError: { (errorCondition) in
+                
+            });
         }
     }
     
@@ -206,7 +153,7 @@ class ContactViewController: UITableViewController {
         case 1:
             let cell = tableView.dequeueReusableCell(withIdentifier: "ContactFormCell", for: indexPath) as! ContactFormTableViewCell;
             let phone = phones[indexPath.row];
-            let type = (phone.types.first ?? VCardModule.VCard.EntryType.HOME).rawValue.capitalized;
+            let type = getVCardEntryTypeLabel(for: phone.types.first ?? VCard.EntryType.home);
             
             cell.typeView.text = type;
             cell.labelView.text = phone.number?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines);
@@ -215,7 +162,7 @@ class ContactViewController: UITableViewController {
         case 2:
             let cell = tableView.dequeueReusableCell(withIdentifier: "ContactFormCell", for: indexPath) as! ContactFormTableViewCell;
             let email = emails[indexPath.row];
-            let type = (email.types.first ?? VCardModule.VCard.EntryType.HOME).rawValue.capitalized;
+            let type = getVCardEntryTypeLabel(for: email.types.first ?? VCard.EntryType.home);
             
             cell.typeView.text = type;
             cell.labelView.text = email.address?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines);
@@ -224,7 +171,7 @@ class ContactViewController: UITableViewController {
         case 3:
             let cell = tableView.dequeueReusableCell(withIdentifier: "AddressCell", for: indexPath ) as! ContactFormTableViewCell;
             let address = addresses[indexPath.row];
-            let type = (address.types.first ?? VCardModule.VCard.EntryType.HOME).rawValue.capitalized;
+            let type = getVCardEntryTypeLabel(for: address.types.first ?? VCard.EntryType.home);
             
             cell.typeView.text = type;
             
@@ -304,6 +251,14 @@ class ContactViewController: UITableViewController {
         }
     }
     
+    func getVCardEntryTypeLabel(for type: VCard.EntryType) -> String? {
+        switch type {
+        case .home:
+            return "Home";
+        case .work:
+            return "Work";
+        }
+    }
     /*
     // MARK: - Navigation
 

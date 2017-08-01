@@ -22,16 +22,14 @@
 import UIKit
 import TigaseSwift
 
-class VCardEditPhoneTableViewCell: UITableViewCell, UIPickerViewDelegate, UIPickerViewDataSource, UITextFieldDelegate {
-    
-    @IBOutlet var typeView: UITextField!
+class VCardEditPhoneTableViewCell: VCardEntryTypeAwareTableViewCell, UITextFieldDelegate {
     
     @IBOutlet var phoneView: UITextField!
     
-    var phone: VCardModule.VCard.Telephone! {
+    var phone: VCard.Telephone! {
         didSet {
             phoneView.text = phone.number;
-            typeView.text = phone.types.first?.rawValue.capitalized;
+            typeView.text = vcardEntryTypeName(for: phone.types.first);
         }
     }
     
@@ -53,22 +51,8 @@ class VCardEditPhoneTableViewCell: UITableViewCell, UIPickerViewDelegate, UIPick
         // Configure the view for the selected state
     }
     
-    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        let type = VCardModule.VCard.EntryType.allValues[row];
+    override func typeSelected(_ type: VCard.EntryType) {
         phone.types = [type];
-        typeView.text = type.rawValue.capitalized;
-    }
-    
-    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        let type = VCardModule.VCard.EntryType.allValues[row];
-        return type.rawValue.capitalized;
-    }
-    
-    func numberOfComponents(in pickerView: UIPickerView) -> Int {
-        return 1;
-    }
-    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return VCardModule.VCard.EntryType.allValues.count;
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {

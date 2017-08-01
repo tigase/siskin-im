@@ -60,6 +60,8 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
 
         xmppService.registerEventHandler(self, for: SocketConnector.ConnectedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE);
 
+        NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
+        
         let config = AccountManager.getAccount(forJid: account);
         enabledSwitch.isOn = config?.active ?? false;
         pushNotificationSwitch.isOn = config?.pushNotifications ?? false;
@@ -86,6 +88,7 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated);
         xmppService.unregisterEventHandler(self, for: SocketConnector.ConnectedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE);
+        NotificationCenter.default.removeObserver(self);
     }
 
     
@@ -152,6 +155,13 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
             }
         default:
             break;
+        }
+    }
+    
+    @objc func avatarChanged() {
+        let vcard = xmppService.dbVCardsCache.getVCard(for: accountJid);
+        DispatchQueue.main.async {
+            self.update(vcard: vcard);
         }
     }
     
@@ -312,18 +322,18 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
     }
     
     
-    func update(vcard: VCardModule.VCard?) {
+    func update(vcard: VCard?) {
         avatarView.image = xmppService.avatarManager.getAvatar(for: accountJid, account: accountJid);
         
         if let fn = vcard?.fn {
             fullNameTextView.text = fn;
-        } else if let family = vcard?.familyName, let given = vcard?.givenName {
-            fullNameTextView.text = "\(given) \(family)";
+        } else if let surname = vcard?.surname, let given = vcard?.givenName {
+            fullNameTextView.text = "\(given) \(surname)";
         } else {
             fullNameTextView.text = account;
         }
         
-        let company = vcard?.orgName;
+        let company = vcard?.organizations.first?.name;
         let role = vcard?.role;
         if role != nil && company != nil {
             companyTextView.text = "\(role!) at \(company!)";
@@ -339,7 +349,7 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
         }
         
         let addresses = vcard?.addresses.filter { (addr) -> Bool in
-            return !addr.isEmpty();
+            return !addr.isEmpty;
         };
         
         if let address = addresses?.first {

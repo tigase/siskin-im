@@ -89,23 +89,19 @@ open class AvatarManager: EventHandler {
                 return;
             }
             
-            let photoData = self.xmppService.dbVCardsCache.getPhoto(for: jid);
-            let hash = Digest.sha1.digest(toHex: photoData);
-            
-            if hash != photoHash {
-                if let vcardModule:VCardModule = self.xmppService.getClient(forJid: account)?.modulesManager?.getModule(VCardModule.ID) {
-                    vcardModule.retrieveVCard(from: JID(jid), onSuccess: { (vcard) in
+            self.xmppService.dbVCardsCache.fetchPhoto(for: jid) { (photoData) in
+                let hash = Digest.sha1.digest(toHex: photoData);
+                
+                if hash != photoHash {
+                    self.xmppService.refreshVCard(account: account, for: jid, onSuccess: { (vcard) in
                         
-                        DispatchQueue.global(qos: .background).async() {
-                            self.xmppService.dbVCardsCache.updateVCard(for: jid, on: account, vcard: vcard);
-                        }
-                        }, onError: { (errorCondition:ErrorCondition?) in
-                            self.cache.removeObject(forKey: jid.stringValue as NSString);
+                    }, onError: { (errorCondition) in
+                        self.cache.removeObject(forKey: jid.stringValue as NSString);
                     });
+                } else if hash != nil {
+                    self.store.storeAvatar(data: photoData!, hash: hash!);
+                    self.notifyAvatarChanged(hash: hash!, type: .vcardTemp, for: jid, on: account);
                 }
-            } else if hash != nil {
-                self.store.storeAvatar(data: photoData!, hash: hash!);
-                self.notifyAvatarChanged(hash: hash!, type: .vcardTemp, for: jid, on: account);
             }
         }
     }
@@ -137,10 +133,13 @@ open class AvatarManager: EventHandler {
             if let image = store.getAvatar(hash: hash) {
                 return image;
             }
-            if let data = self.xmppService.dbVCardsCache.getPhoto(for: jid) {
-                store.storeAvatar(data: data, hash: hash);
-                return UIImage(data: data);
+            self.xmppService.dbVCardsCache.fetchPhoto(for: jid) { (data) in
+                if data != nil {
+                    self.store.storeAvatar(data: data!, hash: hash);
+                    self.notifyAvatarChanged(hash: hash, type: .vcardTemp, for: jid, on: account);
+                }
             }
+            return store.getAvatar(hash: hash);
         }
         
         return nil;
@@ -163,12 +162,12 @@ open class AvatarManager: EventHandler {
     
     @objc func vcardUpdated(_ notification: NSNotification) {
         if let jid = notification.userInfo?["jid"] as? BareJID, let account = notification.userInfo?["account"] as? BareJID {
-            if let data = self.xmppService.dbVCardsCache.getPhoto(for: jid) {
+            self.xmppService.dbVCardsCache.fetchPhoto(for: jid) { (data) in
                 let hash = Digest.sha1.digest(toHex: data);
-                store.storeAvatar(data: data, hash: hash!);
-                notifyAvatarChanged(hash: hash, type: .vcardTemp, for: jid, on: account);
-            } else {
-                notifyAvatarChanged(hash: nil, type: .vcardTemp, for: jid, on: account);
+                if data != nil {
+                    self.store.storeAvatar(data: data!, hash: hash!);
+                }
+                self.notifyAvatarChanged(hash: hash, type: .vcardTemp, for: jid, on: account);
             }
         }
     }

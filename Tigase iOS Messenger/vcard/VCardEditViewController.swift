@@ -38,65 +38,13 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     }
     
     var accountJid: BareJID!;
-    var vcard: VCardModule.VCard! {
-        didSet {
-            phones = [];
-            vcard.telephones.forEach { (telephone) in
-                let types = telephone.types;
-                if types.isEmpty {
-                    telephone.types = [VCardModule.VCard.EntryType.HOME];
-                }
-                telephone.types.forEach({ (type) in
-                    let phone = VCardModule.VCard.Telephone()!;
-                    phone.types = [type];
-                    phone.number = telephone.number;
-                    phones.append(phone);
-                });
-            };
-            addresses = [];
-            vcard.addresses.forEach { (address) in
-                let types = address.types;
-                if types.isEmpty {
-                    address.types = [VCardModule.VCard.EntryType.HOME];
-                }
-                address.types.forEach({ (type) in
-                    let addr = VCardModule.VCard.Address()!;
-                    addr.types = [type];
-                    addr.country = address.country;
-                    addr.locality = address.locality;
-                    addr.postalCode = address.postalCode;
-                    addr.region = address.region;
-                    addr.street = address.street;
-                    addresses.append(addr);
-                });
-            }
-            emails = [];
-            vcard.emails.forEach { (email) in
-                let types = email.types;
-                if types.isEmpty {
-                    email.types = [VCardModule.VCard.EntryType.HOME];
-                }
-                email.types.forEach({ (type) in
-                    let e = VCardModule.VCard.Email()!;
-                    e.types = [type];
-                    e.address = email.address;
-                    emails.append(e);
-                });
-            }
-        }
-    }
-    
-    //var telephones = TelephonesDataSource();
-    
-    var phones: [VCardModule.VCard.Telephone]!;
-    var addresses: [VCardModule.VCard.Address]!;
-    var emails: [VCardModule.VCard.Email]!;
+    var vcard: VCard!;
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // Do any additional setup after loading the view.
-        vcard = xmppService.dbVCardsCache.getVCard(for: accountJid) ?? VCardModule.VCard();
+        vcard = xmppService.dbVCardsCache.getVCard(for: accountJid) ?? VCard();
         if vcard != nil {
             tableView.reloadData();
         }
@@ -138,27 +86,27 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
             
             return cell;
         case 1:
-            if indexPath.row < phones.count {
+            if indexPath.row < vcard.telephones.count {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "PhoneEditCell") as! VCardEditPhoneTableViewCell;
-                cell.phone = phones[indexPath.row];
+                cell.phone = vcard.telephones[indexPath.row];
                 return cell;
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "PhoneAddCell");
                 return cell!;
             }
         case 2:
-            if indexPath.row < emails.count {
+            if indexPath.row < vcard.emails.count {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "EmailEditCell") as! VCardEditEmailTableViewCell;
-                cell.email = emails[indexPath.row];
+                cell.email = vcard.emails[indexPath.row];
                 return cell;
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "EmailAddCell");
                 return cell!;
             }
         case 3:
-            if indexPath.row < addresses.count {
+            if indexPath.row < vcard.addresses.count {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "AddressEditCell") as! VCardEditAddressTableViewCell;
-                cell.address = addresses[indexPath.row];
+                cell.address = vcard.addresses[indexPath.row];
                 return cell;
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "AddressAddCell");
@@ -175,11 +123,11 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         case 0:
             return false;
         case 1:
-            return indexPath.row < phones.count;
+            return indexPath.row < vcard.telephones.count;
         case 2:
-            return indexPath.row < emails.count;
+            return indexPath.row < vcard.emails.count;
         case 3:
-            return indexPath.row < addresses.count;
+            return indexPath.row < vcard.addresses.count;
         default:
             return false;
         }
@@ -190,11 +138,11 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         case 0:
             return 1;
         case 1:
-            return phones.count + 1;
+            return vcard.telephones.count + 1;
         case 2:
-            return emails.count + 1;
+            return vcard.emails.count + 1;
         case 3:
-            return addresses.count + 1;
+            return vcard.addresses.count + 1;
         default:
             return 0;
         }
@@ -220,7 +168,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         case 0:
             return 234;
         case 3:
-            return addresses.count == indexPath.row ? 44 : 122;
+            return vcard.addresses.count == indexPath.row ? 44 : 122;
         default:
             return 44;
         }
@@ -232,19 +180,19 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         case 0:
             return;
         case 1:
-            if indexPath.row == phones.count {
-                phones.append(VCardModule.VCard.Telephone()!);
+            if indexPath.row == vcard.telephones.count {
+                vcard.telephones.append(VCard.Telephone(uri: nil));
                 tableView.reloadData();
             }
             return;
         case 2:
-            if indexPath.row == emails.count {
-                emails.append(VCardModule.VCard.Email()!);
+            if indexPath.row == vcard.emails.count {
+                vcard.emails.append(VCard.Email(address: nil));
                 tableView.reloadData();
             }
         case 3:
-            if indexPath.row == addresses.count {
-                addresses.append(VCardModule.VCard.Address()!);
+            if indexPath.row == vcard.addresses.count {
+                vcard.addresses.append(VCard.Address());
                 tableView.reloadData();
             }
             return;
@@ -256,15 +204,15 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == UITableViewCellEditingStyle.delete {
             if indexPath.section == 1 {
-                phones.remove(at: indexPath.row);
+                vcard.telephones.remove(at: indexPath.row);
                 tableView.reloadData();
             }
             if indexPath.section == 2 {
-                emails.remove(at: indexPath.row);
+                vcard.emails.remove(at: indexPath.row);
                 tableView.reloadData();
             }
             if indexPath.section == 3 {
-                addresses.remove(at: indexPath.row);
+                vcard.addresses.remove(at: indexPath.row);
                 tableView.reloadData();
             }
         }
@@ -276,47 +224,44 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     
     @IBAction func refreshVCard(_ sender: UIBarButtonItem) {
         DispatchQueue.global(qos: .default).async {
-            if let client = self.xmppService.getClient(forJid: self.accountJid) {
-                if let vcardModule: VCardModule = client.modulesManager.getModule(VCardModule.ID) {
-                    vcardModule.retrieveVCard(onSuccess: { (vcard) in
-                        DispatchQueue.global(qos: .default).async() {
-                            self.xmppService.dbVCardsCache.updateVCard(for: self.accountJid, on: self.accountJid, vcard: vcard);
-                            self.vcard = vcard;
-                            DispatchQueue.main.async() {
-                                self.tableView.reloadData();
-                            }
-                        }
-                        }, onError: { (errorCondition) in
-                    });
+            self.xmppService.refreshVCard(account: self.accountJid, for: self.accountJid, onSuccess: { (vcard) in
+                self.vcard = vcard;
+                DispatchQueue.main.async() {
+                    self.tableView.reloadData();
                 }
-            }
+            }, onError: { (errorCondition) in
+            })
         }
     }
     
     @IBAction func publishVCard(_ sender: UIBarButtonItem) {
-        vcard.telephones = phones;
-        vcard.emails = emails;
-        vcard.addresses = addresses;
         DispatchQueue.global(qos: .default).async {
-        if let client = self.xmppService.getClient(forJid: self.accountJid) {
-            if let vcardModule: VCardModule = client.modulesManager.getModule(VCardModule.ID) {
-                vcardModule.publishVCard(self.vcard, onSuccess: {
-                    DispatchQueue.main.async() {
-                        _ = self.navigationController?.popViewController(animated: true);
+            self.xmppService.publishVCard(account: self.accountJid, vcard: self.vcard, onSuccess: {() in
+                DispatchQueue.main.async() {
+                    _ = self.navigationController?.popViewController(animated: true);
+                }
+                
+                if let photo = self.vcard.photos.first {
+                    self.xmppService.dbVCardsCache.fetchPhoto(photo: photo) { (data) in
+                        guard data != nil, let client = self.xmppService.getClient(forJid: self.accountJid) else {
+                            return;
+                        }
+                        let avatarHash = Digest.sha1.digest(toHex: data);
+                        let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID)!;
+                        let x = Element(name: "x", xmlns: "vcard-temp:x:update");
+                        x.addChild(Element(name: "photo", cdata: avatarHash));
+                        presenceModule.setPresence(show: .online, status: nil, priority: nil, additionalElements: [x]);
                     }
-                    
-                    let avatarHash = Digest.sha1.digest(toHex: self.vcard.photoValBinary);
-                    let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID)!;
-                    let x = Element(name: "x", xmlns: "vcard-temp:x:update");
-                    let photo = Element(name: "photo");
-                    photo.value = avatarHash;
-                    x.addChild(photo);
-                    presenceModule.setPresence(show: .online, status: nil, priority: nil, additionalElements: [x]);
-                    }, onError: { (errorCondition) in
-                        print("VCard publication failed", errorCondition ?? "nil");
-                });
-            }
-        }
+                }
+            }, onError: {(errorCondition) in
+                let errorName = errorCondition != nil ? errorCondition!.rawValue : "Unknown";
+                DispatchQueue.main.async {
+                    let alertController = UIAlertController(title: "Failure", message: "VCard publication failed.\n\(errorName)", preferredStyle: .alert);
+                    alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                    self.present(alertController, animated: true, completion: nil);
+                }
+                print("VCard publication failed", errorCondition ?? "nil");
+            });
         }
     }
     
@@ -364,8 +309,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         // saving photo
         let data = UIImagePNGRepresentation(photo)
         if data != nil {
-            vcard.photoValBinary = data;
-            vcard.photoType = "image/png";
+            vcard.photos = [VCard.Photo(type: "image/png", binval: data!.base64EncodedString(options: NSData.Base64EncodingOptions(rawValue: 0)))];
         }
         tableView.reloadData();
         picker.dismiss(animated: true, completion: nil);

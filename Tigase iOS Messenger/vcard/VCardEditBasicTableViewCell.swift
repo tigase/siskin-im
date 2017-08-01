@@ -24,6 +24,11 @@ import TigaseSwift
 
 class VCardEditBasicTableViewCell: UITableViewCell, UITextFieldDelegate {
 
+    var xmppService: XmppService {
+        let delegate = UIApplication.shared.delegate as! AppDelegate;
+        return delegate.xmppService;
+    }
+    
     @IBOutlet var photoView: UIImageView!
     @IBOutlet var givenNameView: UITextField!
     @IBOutlet var familyNameView: UITextField!
@@ -34,15 +39,20 @@ class VCardEditBasicTableViewCell: UITableViewCell, UITextFieldDelegate {
     
     var accountJid: BareJID!;
     var avatarManager: AvatarManager!;
-    var vcard: VCardModule.VCard! {
+    var vcard: VCard! {
         didSet {
-            let photoData = vcard.photoValBinary;
-            photoView.image = ((photoData != nil) ? UIImage(data: photoData!) : nil) ?? avatarManager.defaultAvatar;
+            if let photo = vcard.photos.first {
+                xmppService.dbVCardsCache.fetchPhoto(photo: photo) { (photoData) in
+                    DispatchQueue.main.async {
+                        self.photoView.image = ((photoData != nil) ? UIImage(data: photoData!) : nil) ?? self.avatarManager.defaultAvatar;
+                    }
+                }
+            }
             givenNameView.text = vcard.givenName;
-            familyNameView.text = vcard.familyName;
+            familyNameView.text = vcard.surname;
             fullNameView.text = vcard.fn;
             birthdayView.text = vcard.bday;
-            orgView.text = vcard.orgName;
+            orgView.text = vcard.organizations.first?.name;
             orgRoleView.text = vcard.role;
         }
     }
@@ -82,11 +92,15 @@ class VCardEditBasicTableViewCell: UITableViewCell, UITextFieldDelegate {
         case givenNameView:
             vcard.givenName = text;
         case familyNameView:
-            vcard.familyName = text;
+            vcard.surname = text;
         case fullNameView:
             vcard.fn = text;
         case orgView:
-            vcard.orgName = text;
+            if text != nil {
+                vcard.organizations = [VCard.Organization(name: text!)];
+            } else {
+                vcard.organizations = [];
+            }
         case orgRoleView:
             vcard.role = text;
         default:

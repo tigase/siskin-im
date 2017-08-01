@@ -22,14 +22,13 @@
 import UIKit
 import TigaseSwift
 
-class VCardEditEmailTableViewCell: UITableViewCell, UIPickerViewDelegate, UIPickerViewDataSource, UITextFieldDelegate{
+class VCardEditEmailTableViewCell: VCardEntryTypeAwareTableViewCell, UITextFieldDelegate{
 
-    @IBOutlet var typeView: UITextField!
     @IBOutlet var emailView: UITextField!
     
-    var email: VCardModule.VCard.Email! {
+    var email: VCard.Email! {
         didSet {
-            typeView.text = email.types.first?.rawValue.capitalized;
+            typeView.text = self.vcardEntryTypeName(for: email.types.first);
             emailView.text = email.address;
         }
     }
@@ -51,22 +50,8 @@ class VCardEditEmailTableViewCell: UITableViewCell, UIPickerViewDelegate, UIPick
         // Configure the view for the selected state
     }
 
-    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        let type = VCardModule.VCard.EntryType.allValues[row];
+    override func typeSelected(_ type: VCard.EntryType) {
         email.types = [type];
-        typeView.text = type.rawValue.capitalized;
-    }
-    
-    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        let type = VCardModule.VCard.EntryType.allValues[row];
-        return type.rawValue.capitalized;
-    }
-    
-    func numberOfComponents(in pickerView: UIPickerView) -> Int {
-        return 1;
-    }
-    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return VCardModule.VCard.EntryType.allValues.count;
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {

@@ -196,7 +196,8 @@ open class XmppService: Logger, EventHandler {
         _ = client.modulesManager.register(SessionEstablishmentModule());
         _ = client.modulesManager.register(DiscoveryModule());
         _ = client.modulesManager.register(SoftwareVersionModule());
-        _ = client.modulesManager.register(VCardModule());
+        _ = client.modulesManager.register(VCardTempModule());
+        _ = client.modulesManager.register(VCard4Module());
         _ = client.modulesManager.register(ClientStateIndicationModule());
         _ = client.modulesManager.register(MobileModeModule());
         _ = client.modulesManager.register(PingModule());

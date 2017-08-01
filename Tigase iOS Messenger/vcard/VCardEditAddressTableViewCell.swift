@@ -22,11 +22,11 @@
 import UIKit
 import TigaseSwift
 
-class VCardEditAddressTableViewCell: UITableViewCell, UITextFieldDelegate, UIPickerViewDelegate, UIPickerViewDataSource {
+class VCardEditAddressTableViewCell: VCardEntryTypeAwareTableViewCell, UITextFieldDelegate {
 
-    var address: VCardModule.VCard.Address! {
+    var address: VCard.Address! {
         didSet {
-            typeView.text = address.types.first?.rawValue.capitalized;
+            typeView.text = vcardEntryTypeName(for: address.types.first);
             streetView.text = address.street;
             postalCodeView.text = address.postalCode;
             cityView.text = address.locality;
@@ -34,7 +34,6 @@ class VCardEditAddressTableViewCell: UITableViewCell, UITextFieldDelegate, UIPic
         }
     }
     
-    @IBOutlet var typeView: UITextField!
     @IBOutlet var streetView: UITextField!
     @IBOutlet var postalCodeView: UITextField!
     @IBOutlet var cityView: UITextField!
@@ -47,10 +46,6 @@ class VCardEditAddressTableViewCell: UITableViewCell, UITextFieldDelegate, UIPic
         postalCodeView.delegate = self;
         countryView.delegate = self;
         cityView.delegate = self;
-        let typePicker = UIPickerView();
-        typePicker.dataSource = self;
-        typePicker.delegate = self;
-        typeView.inputView = typePicker;
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
@@ -59,22 +54,8 @@ class VCardEditAddressTableViewCell: UITableViewCell, UITextFieldDelegate, UIPic
         // Configure the view for the selected state
     }
     
-    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        let type = VCardModule.VCard.EntryType.allValues[row];
+    override func typeSelected(_ type: VCard.EntryType) {
         address.types = [type];
-        typeView.text = type.rawValue.capitalized;
-    }
-    
-    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        let type = VCardModule.VCard.EntryType.allValues[row];
-        return type.rawValue.capitalized;
-    }
-    
-    func numberOfComponents(in pickerView: UIPickerView) -> Int {
-        return 1;
-    }
-    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return VCardModule.VCard.EntryType.allValues.count;
     }
 
     func textFieldDidEndEditing(_ textField: UITextField) {

@@ -31,17 +31,17 @@ class ContactBasicTableViewCell: UITableViewCell {
     var avatarManager: AvatarManager!;
     var account: BareJID!;
     var jid: BareJID!;
-    var vcard: VCardModule.VCard? {
+    var vcard: VCard? {
         didSet {
             var fn = vcard?.fn;
             if fn == nil {
-                if let given = vcard?.givenName, let family = vcard?.familyName {
-                    fn = "\(given) \(family)";
+                if let given = vcard?.givenName, let surname = vcard?.surname {
+                    fn = "\(given) \(surname)";
                 }
             }
             nameView.text = fn ?? jid.stringValue;
             
-            let org = vcard?.orgName;
+            let org = vcard?.organizations.first?.name;
             let role = vcard?.role;
             
             if org != nil && role != nil {
