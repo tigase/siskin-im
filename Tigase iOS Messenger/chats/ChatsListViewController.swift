@@ -191,6 +191,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
                                 AccountManager.updateAccount(accountInstance);
                             }
                         }));
+                        self.present(alert, animated: true, completion: nil);
                     }
                     return;
                 }

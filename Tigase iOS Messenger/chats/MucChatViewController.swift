@@ -64,6 +64,9 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
         xmppService.registerEventHandler(self, for: MucModule.YouJoinedEvent.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
         NotificationCenter.default.addObserver(self, selector: #selector(MucChatViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(MucChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(accountStateChanged), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil)
+        
+        self.updateTitleView();
         refreshRoomInfo(room!);
     }
     
@@ -141,7 +144,21 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
             }
         }
     }
-        
+    
+    func accountStateChanged(_ notification: Notification) {
+        let account = notification.userInfo!["account"]! as! String;
+        if self.account.stringValue == account {
+            updateTitleView();
+        }
+    }
+    
+    fileprivate func updateTitleView() {
+        let state = xmppService.getClient(forJid: self.account)?.state;
+        DispatchQueue.main.async {
+            self.titleView.connected = state != nil && state == .connected;
+        }
+    }
+    
     @IBAction func sendClicked(_ sender: UIButton) {
         let text = messageField.text;
         guard !(text?.isEmpty != false) else {
@@ -236,29 +253,19 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
             }
         }
         
-        var state: Room.State = Room.State.not_joined {
+        var connected: Bool = false {
             didSet {
-                let statusIcon = NSTextAttachment();
-                
-                var show: Presence.Show?;
-                var desc = "Offline";
-                switch state {
-                case .joined:
-                    show = Presence.Show.online;
-                    desc = "Online";
-                case .requested:
-                    show = Presence.Show.away;
-                    desc = "Joining...";
-                default:
-                    break;
+                guard connected != oldValue else {
+                    return;
                 }
                 
-                statusIcon.image = AvatarStatusView.getStatusImage(show);
-                statusIcon.bounds = CGRect(x: 0, y: -3, width: statusHeight, height: statusHeight);
-                
-                let statusText = NSMutableAttributedString(attributedString: NSAttributedString(attachment: statusIcon));
-                statusText.append(NSAttributedString(string: desc));
-                statusView.attributedText = statusText;
+                refresh();
+            }
+        }
+        
+        var state: Room.State = Room.State.not_joined {
+            didSet {
+                refresh();
             }
         }
         
@@ -293,6 +300,34 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
             statusView = nil;
             nameView = nil;
             super.init(coder: aDecoder);
+        }
+        
+        func refresh() {
+            if connected {
+                let statusIcon = NSTextAttachment();
+                
+                var show: Presence.Show?;
+                var desc = "Offline";
+                switch state {
+                case .joined:
+                    show = Presence.Show.online;
+                    desc = "Online";
+                case .requested:
+                    show = Presence.Show.away;
+                    desc = "Joining...";
+                default:
+                    break;
+                }
+                
+                statusIcon.image = AvatarStatusView.getStatusImage(show);
+                statusIcon.bounds = CGRect(x: 0, y: -3, width: statusHeight, height: statusHeight);
+                
+                let statusText = NSMutableAttributedString(attributedString: NSAttributedString(attachment: statusIcon));
+                statusText.append(NSAttributedString(string: desc));
+                statusView.attributedText = statusText;
+            } else {
+                statusView.text = "\u{26A0} Not connected!";
+            }
         }
     }
 

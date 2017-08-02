@@ -28,6 +28,7 @@ open class XmppService: Logger, EventHandler {
     open static let SERVER_CERTIFICATE_ERROR = Notification.Name("serverCertificateError");
     open static let AUTHENTICATION_FAILURE = Notification.Name("authenticationFailure");
     open static let PRESENCE_AUTHORIZATION_REQUEST = Notification.Name("presenceAuthorizationRequest");
+    open static let ACCOUNT_STATE_CHANGED = Notification.Name("accountStateChanged");
     
     open var fetchTimeShort: TimeInterval = 5;
     open var fetchTimeLong: TimeInterval = 20;
@@ -132,6 +133,10 @@ open class XmppService: Logger, EventHandler {
             registerEventHandlers(client!);
             
             client?.sessionObject.setUserProperty(SocketConnector.SSL_CERTIFICATE_VALIDATOR, value: self.sslCertificateValidator);
+            
+            DispatchQueue.global(qos: .default).async {
+                NotificationCenter.default.post(name: XmppService.ACCOUNT_STATE_CHANGED, object: self, userInfo: ["account":userJid.stringValue]);
+            }
         } else {
             if client?.state != SocketConnector.State.disconnected {
                 client?.disconnect();
@@ -141,6 +146,9 @@ open class XmppService: Logger, EventHandler {
             if password == nil || config == nil || config?.active != true {
                 clients.removeValue(forKey: userJid);
                 unregisterEventHandlers(client!);
+                DispatchQueue.global(qos: .default).async {
+                    NotificationCenter.default.post(name: XmppService.ACCOUNT_STATE_CHANGED, object: self, userInfo: ["account":userJid.stringValue]);
+                }
                 return;
             }
             
@@ -180,6 +188,12 @@ open class XmppService: Logger, EventHandler {
         } else {
             client?.modulesManager.initIfRequired();
         }
+    }
+    
+    open func getClients(filter: ((XMPPClient)->Bool)? = nil) -> [XMPPClient] {
+        return clients.values.filter(filter ?? { (client) -> Bool in
+            return true;
+            });
     }
     
     open func getClient(forJid account:BareJID) -> XMPPClient? {
@@ -275,7 +289,7 @@ open class XmppService: Logger, EventHandler {
             
             var info = certInfo;
             info["account"] = e.sessionObject.userBareJid!.stringValue as NSString;
-            
+            AccountSettings.LastError(e.sessionObject.userBareJid!.stringValue).set(string: "cert");
             DispatchQueue.main.async {
                 NotificationCenter.default.post(name: XmppService.SERVER_CERTIFICATE_ERROR, object: self, userInfo: info);
             }
@@ -284,6 +298,7 @@ open class XmppService: Logger, EventHandler {
             networkAvailable = reachability.isConnectedToNetwork();
             if let jid = e.sessionObject.userBareJid {
                 DispatchQueue.global(qos: .default).async {
+                    NotificationCenter.default.post(name: XmppService.ACCOUNT_STATE_CHANGED, object: self, userInfo: ["account":jid.stringValue]);
                     if let client = self.getClient(forJid: jid) {
                         let retryNo = client.sessionObject.getProperty(XmppService.CONNECTION_RETRY_NO_KEY, defValue: 0) + 1;
                         client.sessionObject.setProperty(XmppService.CONNECTION_RETRY_NO_KEY, value: retryNo);
@@ -334,6 +349,9 @@ open class XmppService: Logger, EventHandler {
 
             let client = getClient(forJid: e.sessionObject.userBareJid!);
             client?.sessionObject.setProperty(XmppService.CONNECTION_RETRY_NO_KEY, value: nil);
+            DispatchQueue.global(qos: .default).async {
+                NotificationCenter.default.post(name: XmppService.ACCOUNT_STATE_CHANGED, object: self, userInfo: ["account":e.sessionObject.userBareJid!.stringValue]);
+            }
             if applicationState == .inactive {
                 let csiModule: ClientStateIndicationModule? = client?.modulesManager.getModule(ClientStateIndicationModule.ID);
                 if csiModule != nil && csiModule!.available {
@@ -353,6 +371,7 @@ open class XmppService: Logger, EventHandler {
                 var info: [String: AnyObject] = [:];
                 info["account"] = e.sessionObject.userBareJid!.stringValue as NSString;
                 info["auth-error-type"] = e.error.rawValue as NSString;
+                AccountSettings.LastError(e.sessionObject.userBareJid!.stringValue).set(string: "auth");
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: XmppService.AUTHENTICATION_FAILURE, object: self, userInfo: info);
                 }
@@ -368,6 +387,10 @@ open class XmppService: Logger, EventHandler {
             }
             else if let mobileModeModule: MobileModeModule = client?.modulesManager.getModule(MobileModeModule.ID) {
                 _ = mobileModeModule.setState(applicationState == .inactive);
+            }
+            
+            DispatchQueue.global(qos: .default).async {
+                NotificationCenter.default.post(name: XmppService.ACCOUNT_STATE_CHANGED, object: self, userInfo: ["account":e.sessionObject.userBareJid!.stringValue]);
             }
 
             // here we should notify messenger that connection was resumed and we can end soon

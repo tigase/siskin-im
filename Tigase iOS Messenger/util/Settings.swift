@@ -107,6 +107,7 @@ public enum AccountSettings {
     case MessageSyncPeriod(String)
     case MessageSyncTime(String)
     case PushNotificationsForAway(String)
+    case LastError(String)
     
     public func getAccount() -> String {
         switch self {
@@ -117,6 +118,8 @@ public enum AccountSettings {
         case .MessageSyncTime(let account):
             return account;
         case .PushNotificationsForAway(let account):
+            return account;
+        case .LastError(let account):
             return account;
         }
     }
@@ -131,6 +134,8 @@ public enum AccountSettings {
             return "MessageSyncTime";
         case .PushNotificationsForAway( _):
             return "PushNotificationsForAway";
+        case .LastError(_):
+            return "LastError";
         }
     }
     
@@ -189,6 +194,14 @@ public enum AccountSettings {
                 }
             }
             Settings.store.set(newValue, forKey: key);
+        }
+    }
+    
+    public func set(string value: String?) {
+        if value != nil {
+            Settings.store.setValue(value, forKey: getKey());
+        } else {
+            Settings.store.removeObject(forKey: getKey());
         }
     }
     

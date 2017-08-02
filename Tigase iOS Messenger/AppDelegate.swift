@@ -157,6 +157,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     certInfo?["accepted"] = true as NSObject;
                     account.serverCertificate = certInfo;
                     account.active = true;
+                    AccountSettings.LastError(accountJid.stringValue).set(string: nil);
                     AccountManager.updateAccount(account);
                 }));
                 
@@ -550,5 +551,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateInitialViewController();
         (self.window?.rootViewController as? UISplitViewController)?.preferredDisplayMode = .allVisible;
     }
+    
 }
 

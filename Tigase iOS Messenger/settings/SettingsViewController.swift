@@ -102,6 +102,9 @@ class SettingsViewController: UITableViewController, EventHandler {
                         break;
                     }
                     cell.avatarStatusView.setStatus(status);
+                } else if AccountSettings.LastError(account!.name).getString() != nil {
+                    cell.avatarStatusView.statusImageView.isHidden = false;
+                    cell.avatarStatusView.statusImageView.image = UIImage(named: "presence_error")!;
                 } else {
                     cell.avatarStatusView.statusImageView.isHidden = true;
                 }
@@ -301,4 +304,5 @@ class SettingsViewController: UITableViewController, EventHandler {
         UIGraphicsEndImageContext();
         return image.withRenderingMode(.alwaysOriginal);
     }
+    
 }

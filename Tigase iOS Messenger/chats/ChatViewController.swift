@@ -83,9 +83,11 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         super.viewWillAppear(animated);
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
-        
+        NotificationCenter.default.addObserver(self, selector: #selector(accountStateChanged), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil)
         xmppService.registerEventHandler(self, for: PresenceModule.ContactPresenceChanged.TYPE);
         
+        self.updateTitleView();
+
         let presenceModule: PresenceModule? = xmppService.getClient(forJid: account)?.modulesManager.getModule(PresenceModule.ID);
         titleView.status = presenceModule?.presenceStore.getBestPresence(for: jid.bareJid);
     }
@@ -191,6 +193,20 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         }
         if let indexPaths = tableView.indexPathsForVisibleRows {
             tableView.reloadRows(at: indexPaths, with: .none);
+        }
+    }
+    
+    func accountStateChanged(_ notification: Notification) {
+        let account = notification.userInfo!["account"]! as! String;
+        if self.account.stringValue == account {
+            updateTitleView();
+        }
+    }
+    
+    fileprivate func updateTitleView() {
+        let state = xmppService.getClient(forJid: self.account)?.state;
+        DispatchQueue.main.async {
+            self.titleView.connected = state != nil && state == .connected;
         }
     }
     
@@ -310,34 +326,18 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
             }
         }
         
+        var connected: Bool = false {
+            didSet {
+                guard oldValue != connected else {
+                    return;
+                }
+                refresh();
+            }
+        }
+        
         var status: Presence? {
             didSet {
-                let statusIcon = NSTextAttachment();
-                statusIcon.image = AvatarStatusView.getStatusImage(status?.show);
-                statusIcon.bounds = CGRect(x: 0, y: -3, width: statusHeight, height: statusHeight);
-                var desc = status?.status;
-                if desc == nil {
-                    let show = status?.show;
-                    if show == nil {
-                        desc = "Offline";
-                    } else {
-                        switch(show!) {
-                        case .online:
-                            desc = "Online";
-                        case .chat:
-                            desc = "Free for chat";
-                        case .away:
-                            desc = "Be right back";
-                        case .xa:
-                            desc = "Away";
-                        case .dnd:
-                            desc = "Do not disturb";
-                        }
-                    }
-                }
-                let statusText = NSMutableAttributedString(attributedString: NSAttributedString(attachment: statusIcon));
-                statusText.append(NSAttributedString(string: desc!));
-                statusView.attributedText = statusText;
+                self.refresh();
             }
         }
         
@@ -372,6 +372,39 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
             statusView = nil;
             nameView = nil;
             super.init(coder: aDecoder);
+        }
+        
+        fileprivate func refresh() {
+            if connected {
+                let statusIcon = NSTextAttachment();
+                statusIcon.image = AvatarStatusView.getStatusImage(status?.show);
+                statusIcon.bounds = CGRect(x: 0, y: -3, width: statusHeight, height: statusHeight);
+                var desc = status?.status;
+                if desc == nil {
+                    let show = status?.show;
+                    if show == nil {
+                        desc = "Offline";
+                    } else {
+                        switch(show!) {
+                        case .online:
+                            desc = "Online";
+                        case .chat:
+                            desc = "Free for chat";
+                        case .away:
+                            desc = "Be right back";
+                        case .xa:
+                            desc = "Away";
+                        case .dnd:
+                            desc = "Do not disturb";
+                        }
+                    }
+                }
+                let statusText = NSMutableAttributedString(attributedString: NSAttributedString(attachment: statusIcon));
+                statusText.append(NSAttributedString(string: desc!));
+                statusView.attributedText = statusText;
+            } else {
+                statusView.text = "\u{26A0} Not connected!";
+            }
         }
     }
 }

@@ -442,10 +442,10 @@
             </objects>
             <point key="canvasLocation" x="568" y="-391"/>
         </scene>
-        <!--Custom Tab Bar Controller-->
+        <!--Main Tab Bar Controller-->
         <scene sceneID="Lw1-4q-gz0">
             <objects>
-                <tabBarController id="lx9-0R-yhg" customClass="CustomTabBarController" customModule="Tigase_iOS_Messenger" customModuleProvider="target" sceneMemberID="viewController">
+                <tabBarController id="lx9-0R-yhg" customClass="MainTabBarController" customModule="Tigase_iOS_Messenger" customModuleProvider="target" sceneMemberID="viewController">
                     <tabBar key="tabBar" contentMode="scaleToFill" id="MWg-yL-VNP">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="49"/>
                         <autoresizingMask key="autoresizingMask"/>

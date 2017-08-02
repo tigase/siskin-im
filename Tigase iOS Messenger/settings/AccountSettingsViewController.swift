@@ -184,6 +184,7 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
     @IBAction func enabledSwitchChangedValue(_ sender: AnyObject) {
         if let config = AccountManager.getAccount(forJid: account) {
             config.active = enabledSwitch.isOn;
+            AccountSettings.LastError(account).set(string: nil);
             AccountManager.updateAccount(config);
         }
     }
