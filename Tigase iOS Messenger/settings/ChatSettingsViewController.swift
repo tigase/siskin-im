@@ -24,7 +24,7 @@ import UIKit
 class ChatSettingsViewController: UITableViewController {
 
     let tree: [[SettingsEnum]] = [
-        [SettingsEnum.recentsMessageLinesNo],
+        [SettingsEnum.recentsMessageLinesNo, SettingsEnum.recentsSortType],
         [SettingsEnum.deleteChatHistoryOnClose, SettingsEnum.enableMessageCarbons],
     ];
     
@@ -78,16 +78,59 @@ class ChatSettingsViewController: UITableViewController {
                 Settings.RecentsMessageLinesNo.setValue(Int(stepperView.value));
             };
             return cell;
+        case .recentsSortType:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "RecentsSortTypeTableViewCell", for: indexPath );
+            (cell.contentView.subviews[0].subviews[1] as! UILabel).text = RecentsSortTypeItem.description(of: ChatsListViewController.SortOrder(rawValue: Settings.RecentsOrder.getString()!)!);
+            cell.accessoryType = .disclosureIndicator;
+            return cell;
         }
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath as IndexPath, animated: true);
+        tableView.deselectRow(at: indexPath, animated: true);
+        let setting = tree[indexPath.section][indexPath.row];
+        if setting == .recentsSortType {
+            let controller = TablePickerViewController(style: .grouped);
+            let values = [ChatsListViewController.SortOrder.byTime, ChatsListViewController.SortOrder.byAvailablityAndTime];
+            controller.selected = values.index(of: ChatsListViewController.SortOrder(rawValue: Settings.RecentsOrder.getString()!)!) ?? 0;
+            controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
+                return RecentsSortTypeItem(value: it);
+            });
+            //controller.selected = 1;
+            controller.onSelectionChange = { (_item) -> Void in
+                let item = _item as! RecentsSortTypeItem;
+                Settings.RecentsOrder.setValue(item.value.rawValue);
+                self.tableView.reloadData();
+            };
+            self.navigationController?.pushViewController(controller, animated: true);
+        }
     }
     
     internal enum SettingsEnum: Int {
         case deleteChatHistoryOnClose = 0
         case enableMessageCarbons = 1
         case recentsMessageLinesNo = 2
+        case recentsSortType = 3
+    }
+    
+    internal class RecentsSortTypeItem: TablePickerViewItemsProtocol {
+        
+        public static func description(of value: ChatsListViewController.SortOrder) -> String {
+            switch value {
+            case .byTime:
+                return "By time";
+            case .byAvailablityAndTime:
+                return "By availability and time";
+            }
+        }
+        
+        let description: String;
+        let value: ChatsListViewController.SortOrder;
+        
+        init(value: ChatsListViewController.SortOrder) {
+            self.value = value;
+            self.description = RecentsSortTypeItem.description(of: value);
+        }
+        
     }
 }

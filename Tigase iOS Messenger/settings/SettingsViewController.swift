@@ -83,6 +83,7 @@ class SettingsViewController: UITableViewController, EventHandler {
         if (indexPath.section == 0) {
             let cellIdentifier = "AccountTableViewCell";
             let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! AccountTableViewCell;
+            cell.accessoryType = .disclosureIndicator;
             let accounts = AccountManager.getAccounts();
             if accounts.count > indexPath.row {
                 cell.avatarStatusView.isHidden = false;

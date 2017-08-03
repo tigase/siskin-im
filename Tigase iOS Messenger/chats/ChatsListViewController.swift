@@ -432,7 +432,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
                     item.timestamp = timestamp!;
                 }
             }
-            if (timestamp != nil) {
+            if (timestamp != nil || SortOrder(rawValue: Settings.RecentsOrder.getString()!) == SortOrder.byAvailablityAndTime) {
                 update(list: list);
                 let toPosition = positionFor(account: account, jid: jid);
                 notify(from: fromPosition, to: toPosition);
@@ -456,11 +456,30 @@ class ChatsListViewController: UITableViewController, EventHandler {
         func positionFor(account: BareJID, jid: BareJID) -> Int? {
             return list.index { $0.jid == jid && $0.account == account };
         }
+
+        fileprivate func getPresence(account: BareJID, jid: BareJID) -> Presence? {
+            let presenceModule: PresenceModule? = self.controller?.xmppService.getClient(forJid: account)?.modulesManager.getModule(PresenceModule.ID);
+            return presenceModule?.presenceStore.getBestPresence(for: jid);
+        }
         
         func update(list: [ChatsViewItemKey]) {
-            self.list = list.sorted { (i1, i2) -> Bool in
-                i1.timestamp.compare(i2.timestamp) == .orderedDescending
-            };
+            if SortOrder(rawValue: Settings.RecentsOrder.getString()!) == SortOrder.byAvailablityAndTime {
+                self.list = list.sorted { (i1, i2) -> Bool in
+                    let p1 = getPresence(account: i1.account, jid: i1.jid)?.show;
+                    let p2 = getPresence(account: i2.account, jid: i2.jid)?.show;
+                    if (p1 != nil && p2 == nil) {
+                        return true;
+                    } else if (p1 == nil && p2 != nil) {
+                        return false;
+                    }
+                    
+                    return i1.timestamp.compare(i2.timestamp) == .orderedDescending
+                };
+            } else {
+                self.list = list.sorted { (i1, i2) -> Bool in
+                    i1.timestamp.compare(i2.timestamp) == .orderedDescending
+                };
+            }
         }
         
         func notify(from: Int?, to: Int?) {
@@ -482,6 +501,11 @@ class ChatsListViewController: UITableViewController, EventHandler {
                 controller?.tableView.insertRows(at: [to!], with: .fade);
             }
         }
+    }
+    
+    public enum SortOrder: String {
+        case byTime
+        case byAvailablityAndTime
     }
 }
 
