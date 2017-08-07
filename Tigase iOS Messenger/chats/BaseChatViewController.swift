@@ -67,6 +67,10 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
             self.navigationItem.title = cursor["name"];
         }
         
+        messageField.layer.borderColor = UIColor.lightGray.cgColor;
+        messageField.layer.borderWidth = 0.5;
+        messageField.layer.cornerRadius = 5.0;
+        messageField.layer.masksToBounds = true;
         messageField.delegate = self;
         messageField.isScrollEnabled = false;
         
@@ -77,12 +81,13 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
         applyPlaceHolderStyle(messageField);
         
         bottomView.layer.borderColor = UIColor.lightGray.cgColor;
-        bottomView.layer.borderWidth = 1.0;
+        bottomView.layer.borderWidth = 0.5;
         bottomViewBottomConstraint = view.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor, constant: 0);
         bottomViewBottomConstraint?.isActive = true;
     }
 
     override func didReceiveMemoryWarning() {
+        
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
@@ -206,7 +211,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
             }
         }
     }
-
+    
 }
 
 protocol BaseChatViewControllerScrollDelegate: class {

@@ -25,7 +25,7 @@ class ChatSettingsViewController: UITableViewController {
 
     let tree: [[SettingsEnum]] = [
         [SettingsEnum.recentsMessageLinesNo, SettingsEnum.recentsSortType],
-        [SettingsEnum.deleteChatHistoryOnClose, SettingsEnum.enableMessageCarbons],
+        [SettingsEnum.deleteChatHistoryOnClose, SettingsEnum.enableMessageCarbons, SettingsEnum.sharingViaHttpUpload],
     ];
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -83,6 +83,24 @@ class ChatSettingsViewController: UITableViewController {
             (cell.contentView.subviews[0].subviews[1] as! UILabel).text = RecentsSortTypeItem.description(of: ChatsListViewController.SortOrder(rawValue: Settings.RecentsOrder.getString()!)!);
             cell.accessoryType = .disclosureIndicator;
             return cell;
+        case .sharingViaHttpUpload:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "SharingViaHttpUploadTableViewCell", for: indexPath ) as! SwitchTableViewCell;
+            cell.switchView.isOn = Settings.SharingViaHttpUpload.getBool();
+            cell.valueChangedListener = {(switchView: UISwitch) in
+                if switchView.isOn {
+                    let alert = UIAlertController(title: nil, message: "When you share files using HTTP, they are uploaded to HTTP server and anyone who knows HTTP address is able to download this file.\nDo you wish to enable?",preferredStyle: .alert);
+                    alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
+                        Settings.SharingViaHttpUpload.setValue(true);
+                    }));
+                    alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: { (action) in
+                        switchView.isOn = false;
+                    }));
+                    self.present(alert, animated: true, completion: nil);
+                } else {
+                    Settings.SharingViaHttpUpload.setValue(false);
+                }
+            }
+            return cell;
         }
     }
     
@@ -111,6 +129,7 @@ class ChatSettingsViewController: UITableViewController {
         case enableMessageCarbons = 1
         case recentsMessageLinesNo = 2
         case recentsSortType = 3
+        case sharingViaHttpUpload = 4
     }
     
     internal class RecentsSortTypeItem: TablePickerViewItemsProtocol {

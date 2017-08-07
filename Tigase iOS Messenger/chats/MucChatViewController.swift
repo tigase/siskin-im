@@ -22,11 +22,11 @@
 import UIKit
 import TigaseSwift
 
-class MucChatViewController: BaseChatViewController, CachedViewControllerProtocol, UITableViewDataSource, EventHandler {
+class MucChatViewController: BaseChatViewController, CachedViewControllerProtocol, UITableViewDataSource, EventHandler, BaseChatViewController_ShareImageExtension {
 
     var titleView: MucTitleView!;
     var room: Room?;
-    
+
     let log: Logger = Logger();
     var scrollToIndexPath: IndexPath? = nil;
 
@@ -35,6 +35,10 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
         return dataSource as CachedViewDataSourceProtocol;
     }
 
+    @IBOutlet var shareButton: UIButton!;
+    @IBOutlet var progressBar: UIProgressView!;
+    var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
+
     override func viewDidLoad() {
         dataSource = MucChatDataSource(controller: self);
         scrollDelegate = self;
@@ -42,40 +46,41 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
         initialize();
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
-        
+
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
         let mucModule: MucModule? = xmppService.getClient(forJid: account)?.modulesManager?.getModule(MucModule.ID);
         room = mucModule?.roomsManager.getRoom(for: jid.bareJid);
 
         tableView.dataSource = self;
-        
+
         let navBarHeight = self.navigationController!.navigationBar.frame.size.height;
         let width = CGFloat(220);
-        
+
         titleView = MucTitleView(width: width, height: navBarHeight);
         titleView.name = navigationItem.title;
-        
+
         self.navigationItem.titleView = titleView;
+        initSharing();
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
         xmppService.registerEventHandler(self, for: MucModule.YouJoinedEvent.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
         NotificationCenter.default.addObserver(self, selector: #selector(MucChatViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(MucChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(accountStateChanged), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil)
-        
+
         self.updateTitleView();
         refreshRoomInfo(room!);
     }
-    
+
     override func viewDidDisappear(_ animated: Bool) {
         xmppService.unregisterEventHandler(self, for: MucModule.YouJoinedEvent.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
         NotificationCenter.default.removeObserver(self);
         super.viewDidDisappear(animated);
     }
-    
+
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -86,17 +91,17 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1;
     }
-    
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return dataSource.numberOfMessages;
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let item: MucChatViewItem = dataSource.getItem(for: indexPath);
-        
+
         let incoming = item.nickname != self.room?.nickname;
         let id = incoming ? "MucChatTableViewCellIncoming" : "MucChatTableViewCellOutgoing"
-        
+
         let cell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! MucChatTableViewCell;
         cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
         cell.nicknameLabel?.text = item.nickname;
@@ -110,7 +115,7 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
         return cell;
     }
 
-    
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showOccupants" {
             if let navigation = segue.destination as? UINavigationController {
@@ -121,16 +126,16 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
             }
         }
     }
-    
+
     func newMessage(_ notification: NSNotification) {
         guard ((notification.userInfo?["account"] as? BareJID) == account) && ((notification.userInfo?["sender"] as? BareJID) == jid.bareJid) else {
             return;
         }
-        
+
         self.newItemAdded();
         xmppService.dbChatHistoryStore.markAsRead(for: account, with: jid.bareJid);
     }
-    
+
     func avatarChanged(_ notification: NSNotification) {
         // TODO: adjust this to make it work properly with MUC
         guard ((notification.userInfo?["jid"] as? BareJID) == jid.bareJid) else {
@@ -142,21 +147,21 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
             }
         }
     }
-    
+
     func accountStateChanged(_ notification: Notification) {
         let account = notification.userInfo!["account"]! as! String;
         if self.account.stringValue == account {
             updateTitleView();
         }
     }
-    
+
     fileprivate func updateTitleView() {
         let state = xmppService.getClient(forJid: self.account)?.state;
         DispatchQueue.main.async {
             self.titleView.connected = state != nil && state == .connected;
         }
     }
-    
+
     @IBAction func sendClicked(_ sender: UIButton) {
         let text = messageField.text;
         guard !(text?.isEmpty != false) else {
@@ -169,13 +174,23 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
             self.present(alert!, animated: true, completion: nil);
             return;
         }
-       
-        DispatchQueue.global(qos: .default).async {
-            self.room!.sendMessage(text);
-        }
-        messageField.text = nil;
+
+        self.sendMessage(body: text!, additional: [], completed: {() in
+            DispatchQueue.main.async {
+                self.messageField.text = nil;
+            }
+        });
     }
-    
+
+    @IBAction func shareClicked(_ sender: UIButton) {
+        self.showPhotoSelector(sender);
+    }
+
+    func sendMessage(body: String, additional: [Element], completed: (()->Void)?) {
+        self.room!.sendMessage(body, additionalElements: additional);
+        completed?();
+    }
+
     func handle(event: Event) {
         switch event {
         case let e as MucModule.JoinRequestedEvent:
@@ -194,54 +209,54 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
             break;
         }
     }
-    
+
     func refreshRoomInfo(_ room: Room) {
         titleView.state = room.state;
     }
-    
+
     class MucChatDataSource: CachedViewDataSource<MucChatViewItem> {
-        
+
         fileprivate let getMessagesStmt: DBStatement!;
-        
+
         weak var controller: MucChatViewController?;
-        
+
         init(controller: MucChatViewController) {
             self.controller = controller;
             self.getMessagesStmt = controller.xmppService.dbChatHistoryStore.getMessagesStatementForAccountAndJid();
         }
-        
+
         override func getItemsCount() -> Int {
             return controller!.xmppService.dbChatHistoryStore.countMessages(for: controller!.account, with: controller!.jid.bareJid);
         }
-        
+
         override func loadData(offset: Int, limit: Int, forEveryItem: (MucChatViewItem)->Void) {
             controller!.xmppService.dbChatHistoryStore.forEachMessage(stmt: getMessagesStmt, account: controller!.account, jid: controller!.jid.bareJid, limit: limit, offset: offset, forEach: { (cursor)-> Void in
                 forEveryItem(MucChatViewItem(cursor: cursor));
             });
         }
     }
-    
+
     open class MucChatViewItem {
         let nickname: String?;
         let timestamp: Date!;
         let data: String?;
         let authorJid: BareJID?;
-        
+
         init(cursor: DBCursor) {
             nickname = cursor["author_nickname"];
             timestamp = cursor["timestamp"]!;
             data = cursor["data"];
             authorJid = cursor["author_jid"];
         }
-        
+
     }
-    
+
     class MucTitleView: UIView {
-        
+
         let nameView: UILabel!;
         let statusView: UILabel!;
         let statusHeight: CGFloat!;
-        
+
         var name: String? {
             get {
                 return nameView.text;
@@ -250,60 +265,60 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
                 nameView.text = newValue;
             }
         }
-        
+
         var connected: Bool = false {
             didSet {
                 guard connected != oldValue else {
                     return;
                 }
-                
+
                 refresh();
             }
         }
-        
+
         var state: Room.State = Room.State.not_joined {
             didSet {
                 refresh();
             }
         }
-        
+
         init(width: CGFloat, height: CGFloat) {
             let spacing = (height * 0.23) / 3;
             statusHeight = height * 0.32;
             nameView = UILabel(frame: CGRect(x: 0, y: spacing, width: width, height: height * 0.48));
             statusView = UILabel(frame: CGRect(x: 0, y: (height * 0.44) + (spacing * 2), width: width, height: statusHeight));
             super.init(frame: CGRect(x: 0, y: 0, width: width, height: height));
-            
-            
+
+
             var font = nameView.font;
             font = font?.withSize((font?.pointSize)!);
             nameView.font = font;
             nameView.textAlignment = .center;
             nameView.adjustsFontSizeToFitWidth = true;
-            
+
             font = statusView.font;
             font = font?.withSize((font?.pointSize)! - 5);
             statusView.font = font;
             statusView.textAlignment = .center;
             statusView.adjustsFontSizeToFitWidth = true;
-            
+
             self.isUserInteractionEnabled = false;
-            
+
             self.addSubview(nameView);
             self.addSubview(statusView);
         }
-        
+
         required init?(coder aDecoder: NSCoder) {
             statusHeight = nil;
             statusView = nil;
             nameView = nil;
             super.init(coder: aDecoder);
         }
-        
+
         func refresh() {
             if connected {
                 let statusIcon = NSTextAttachment();
-                
+
                 var show: Presence.Show?;
                 var desc = "Offline";
                 switch state {
@@ -316,10 +331,10 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
                 default:
                     break;
                 }
-                
+
                 statusIcon.image = AvatarStatusView.getStatusImage(show);
                 statusIcon.bounds = CGRect(x: 0, y: -3, width: statusHeight, height: statusHeight);
-                
+
                 let statusText = NSMutableAttributedString(attributedString: NSAttributedString(attachment: statusIcon));
                 statusText.append(NSAttributedString(string: desc));
                 statusView.attributedText = statusText;
@@ -330,6 +345,3 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
     }
 
 }
-
-
-

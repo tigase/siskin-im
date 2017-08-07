@@ -231,6 +231,7 @@ open class XmppService: Logger, EventHandler {
         _ = client.modulesManager.register(mucModule);
         _ = client.modulesManager.register(AdHocCommandsModule());
         _ = client.modulesManager.register(TigasePushNotificationsModule(pushServiceJid: XmppService.pushServiceJid));
+        _ = client.modulesManager.register(HttpFileUploadModule());
         let capsModule = client.modulesManager.register(CapabilitiesModule());
         capsModule.cache = dbCapsCache;
     }

@@ -35,6 +35,7 @@ public enum Settings: String {
     case NotificationsFromUnknown
     case RecentsMessageLinesNo
     case RecentsOrder
+    case SharingViaHttpUpload
 
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     

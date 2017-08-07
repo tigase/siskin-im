@@ -157,7 +157,7 @@
                         <viewControllerLayoutGuide type="bottom" id="sx6-6E-kOd"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="MXY-a0-pWq">
-                        <rect key="frame" x="0.0" y="64" width="375" height="603"/>
+                        <rect key="frame" x="0.0" y="64" width="600" height="603"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView contentMode="scaleToFill" ambiguous="YES" misplaced="YES" alwaysBounceVertical="YES" keyboardDismissMode="interactive" dataMode="prototypes" style="plain" separatorStyle="default" allowsSelection="NO" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="Mpx-EA-82o">
@@ -278,36 +278,52 @@
                                     <outletCollection property="gestureRecognizers" destination="GcF-zS-Z1n" appends="YES" id="CVK-jB-FyW"/>
                                 </connections>
                             </tableView>
-                            <view contentMode="bottom" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="HK7-Bq-Vwt">
+                            <view contentMode="bottom" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="HK7-Bq-Vwt">
                                 <rect key="frame" x="0.0" y="490" width="600" height="46"/>
                                 <subviews>
-                                    <button contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Wud-KB-gIx">
-                                        <rect key="frame" x="556" y="8" width="36" height="30"/>
-                                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hEk-n0-vGX">
+                                        <rect key="frame" x="8" y="6" width="30" height="32"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="40" id="pnG-VH-M5U"/>
+                                            <constraint firstAttribute="width" constant="30" id="Qfu-qs-0hl"/>
                                         </constraints>
-                                        <state key="normal" title="Send"/>
+                                        <state key="normal" image="attach"/>
+                                        <connections>
+                                            <action selector="shareClicked:" destination="WP2-Cp-7ZE" eventType="touchUpInside" id="hsT-CG-6uf"/>
+                                        </connections>
+                                    </button>
+                                    <button contentMode="scaleAspectFit" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Wud-KB-gIx">
+                                        <rect key="frame" x="556" y="7" width="36" height="32"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="30" id="pnG-VH-M5U"/>
+                                        </constraints>
+                                        <state key="normal" image="send"/>
                                         <connections>
                                             <action selector="sendClicked:" destination="WP2-Cp-7ZE" eventType="primaryActionTriggered" id="9Gi-fx-A1b"/>
                                         </connections>
                                     </button>
-                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" keyboardDismissMode="interactive" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="tM8-yl-Xfw">
-                                        <rect key="frame" x="8" y="8" width="540" height="30"/>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" keyboardDismissMode="interactive" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="tM8-yl-Xfw">
+                                        <rect key="frame" x="46" y="7" width="508" height="30"/>
                                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                     </textView>
+                                    <progressView hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lXk-P5-gwH">
+                                        <rect key="frame" x="0.0" y="8" width="600" height="2"/>
+                                    </progressView>
                                 </subviews>
-                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                 <constraints>
+                                    <constraint firstItem="tM8-yl-Xfw" firstAttribute="top" secondItem="lXk-P5-gwH" secondAttribute="bottom" constant="8" id="6Qx-jM-lez"/>
+                                    <constraint firstItem="tM8-yl-Xfw" firstAttribute="leading" secondItem="hEk-n0-vGX" secondAttribute="trailing" constant="8" id="BQ7-yi-ZSz"/>
+                                    <constraint firstItem="lXk-P5-gwH" firstAttribute="leading" secondItem="HK7-Bq-Vwt" secondAttribute="leading" id="Ciw-yv-ZIR"/>
+                                    <constraint firstAttribute="trailing" secondItem="lXk-P5-gwH" secondAttribute="trailing" id="MIs-f0-e2m"/>
                                     <constraint firstAttribute="bottom" secondItem="tM8-yl-Xfw" secondAttribute="bottom" constant="8" id="OBe-Jw-pOH"/>
-                                    <constraint firstItem="Wud-KB-gIx" firstAttribute="top" secondItem="HK7-Bq-Vwt" secondAttribute="top" constant="8" id="PPY-YQ-HSm"/>
                                     <constraint firstAttribute="trailing" secondItem="Wud-KB-gIx" secondAttribute="trailing" constant="8" id="Q7o-dZ-m7q"/>
+                                    <constraint firstItem="lXk-P5-gwH" firstAttribute="top" secondItem="HK7-Bq-Vwt" secondAttribute="top" id="hul-Hr-7rz"/>
+                                    <constraint firstAttribute="bottom" secondItem="hEk-n0-vGX" secondAttribute="bottom" constant="9" id="j9C-mi-FHW"/>
                                     <constraint firstAttribute="bottom" secondItem="Wud-KB-gIx" secondAttribute="bottom" constant="8" id="lq0-OA-BIJ"/>
                                     <constraint firstItem="Wud-KB-gIx" firstAttribute="leading" secondItem="tM8-yl-Xfw" secondAttribute="trailing" constant="8" id="p8d-xp-TzN"/>
-                                    <constraint firstItem="tM8-yl-Xfw" firstAttribute="top" secondItem="HK7-Bq-Vwt" secondAttribute="top" constant="8" id="sJt-Wz-5eZ"/>
-                                    <constraint firstItem="tM8-yl-Xfw" firstAttribute="leading" secondItem="HK7-Bq-Vwt" secondAttribute="leading" constant="8" id="xp0-Md-aoC"/>
+                                    <constraint firstItem="hEk-n0-vGX" firstAttribute="leading" secondItem="HK7-Bq-Vwt" secondAttribute="leading" constant="8" id="vtv-Hl-0DW"/>
                                 </constraints>
                             </view>
                         </subviews>
@@ -326,13 +342,17 @@
                         <barButtonItem key="backBarButtonItem" title="Back" id="Dx3-QU-3cN"/>
                     </navigationItem>
                     <nil key="simulatedBottomBarMetrics"/>
+                    <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+                    <size key="freeformSize" width="600" height="667"/>
                     <userDefinedRuntimeAttributes>
                         <userDefinedRuntimeAttribute type="boolean" keyPath="scrollToBottomOnShow" value="YES"/>
                     </userDefinedRuntimeAttributes>
                     <connections>
                         <outlet property="bottomView" destination="HK7-Bq-Vwt" id="eV9-xp-qpM"/>
                         <outlet property="messageField" destination="tM8-yl-Xfw" id="M4U-3x-ViV"/>
+                        <outlet property="progressBar" destination="lXk-P5-gwH" id="Y3e-lf-hkR"/>
                         <outlet property="sendButton" destination="Wud-KB-gIx" id="PO6-Ym-dpM"/>
+                        <outlet property="shareButton" destination="hEk-n0-vGX" id="jaX-FI-Kjl"/>
                         <outlet property="tableView" destination="Mpx-EA-82o" id="22E-L5-IzT"/>
                     </connections>
                 </viewController>
@@ -343,7 +363,7 @@
                     </connections>
                 </tapGestureRecognizer>
             </objects>
-            <point key="canvasLocation" x="4598" y="-737"/>
+            <point key="canvasLocation" x="4860.8000000000002" y="-737.18140929535241"/>
         </scene>
         <!--View Controller-->
         <scene sceneID="hqR-ti-YNP">
@@ -998,38 +1018,54 @@
                             <view contentMode="bottom" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4tv-Y3-98F">
                                 <rect key="frame" x="0.0" y="490" width="600" height="46"/>
                                 <subviews>
-                                    <button contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Lcw-kK-OnJ">
-                                        <rect key="frame" x="552" y="8" width="40" height="30"/>
-                                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Fxu-dp-G5w">
+                                        <rect key="frame" x="8" y="7" width="30" height="32"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="40" id="zFU-8s-Ved"/>
+                                            <constraint firstAttribute="width" constant="30" id="f0e-HW-Vb2"/>
                                         </constraints>
-                                        <state key="normal" title="Send"/>
+                                        <state key="normal" image="attach"/>
+                                        <connections>
+                                            <action selector="shareClicked:" destination="DCK-O4-JVw" eventType="touchUpInside" id="cje-0z-T6X"/>
+                                        </connections>
+                                    </button>
+                                    <button contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Lcw-kK-OnJ">
+                                        <rect key="frame" x="535" y="7" width="74" height="32"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="30" id="zFU-8s-Ved"/>
+                                        </constraints>
+                                        <state key="normal" image="send"/>
                                         <connections>
                                             <action selector="sendClicked:" destination="WP2-Cp-7ZE" eventType="primaryActionTriggered" id="UYy-HG-r2Q"/>
                                             <action selector="sendClicked:" destination="DCK-O4-JVw" eventType="touchUpInside" id="wSk-YW-1tx"/>
                                         </connections>
                                     </button>
-                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" keyboardDismissMode="interactive" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="PAE-fw-tjq">
-                                        <rect key="frame" x="8" y="8" width="536" height="30"/>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" keyboardDismissMode="interactive" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="PAE-fw-tjq">
+                                        <rect key="frame" x="46" y="8" width="291" height="30"/>
                                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                     </textView>
+                                    <progressView hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="o1Z-wC-Bpu">
+                                        <rect key="frame" x="0.0" y="22" width="383" height="2"/>
+                                    </progressView>
                                 </subviews>
-                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                 <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="o1Z-wC-Bpu" secondAttribute="trailing" id="0hL-Mc-UTZ"/>
                                     <constraint firstAttribute="bottom" secondItem="PAE-fw-tjq" secondAttribute="bottom" constant="8" id="5Dy-AU-GdU"/>
+                                    <constraint firstAttribute="bottom" secondItem="Fxu-dp-G5w" secondAttribute="bottom" constant="8" id="8D5-eQ-tt4"/>
+                                    <constraint firstItem="o1Z-wC-Bpu" firstAttribute="top" secondItem="4tv-Y3-98F" secondAttribute="top" id="96d-fc-kpb"/>
                                     <constraint firstAttribute="trailing" secondItem="Lcw-kK-OnJ" secondAttribute="trailing" constant="8" id="D9t-IQ-luo"/>
-                                    <constraint firstItem="PAE-fw-tjq" firstAttribute="top" secondItem="4tv-Y3-98F" secondAttribute="top" constant="8" id="UHI-CL-abH"/>
+                                    <constraint firstItem="PAE-fw-tjq" firstAttribute="top" secondItem="o1Z-wC-Bpu" secondAttribute="bottom" constant="8" id="GVj-Wj-nLL"/>
+                                    <constraint firstItem="o1Z-wC-Bpu" firstAttribute="leading" secondItem="4tv-Y3-98F" secondAttribute="leading" id="Tj0-Z4-5jO"/>
+                                    <constraint firstItem="PAE-fw-tjq" firstAttribute="leading" secondItem="Fxu-dp-G5w" secondAttribute="trailing" constant="8" id="WiW-7d-FFn"/>
                                     <constraint firstAttribute="bottom" secondItem="Lcw-kK-OnJ" secondAttribute="bottom" constant="8" id="YTw-ql-emj"/>
+                                    <constraint firstItem="Fxu-dp-G5w" firstAttribute="leading" secondItem="4tv-Y3-98F" secondAttribute="leading" constant="8" id="dfi-h2-KOd"/>
                                     <constraint firstItem="Lcw-kK-OnJ" firstAttribute="leading" secondItem="PAE-fw-tjq" secondAttribute="trailing" constant="8" id="imf-rm-RmT"/>
-                                    <constraint firstItem="PAE-fw-tjq" firstAttribute="leading" secondItem="4tv-Y3-98F" secondAttribute="leading" constant="8" id="lWS-Zh-NEO"/>
-                                    <constraint firstItem="Lcw-kK-OnJ" firstAttribute="top" secondItem="4tv-Y3-98F" secondAttribute="top" constant="8" id="wyj-FD-Bfa"/>
                                 </constraints>
                             </view>
                         </subviews>
-                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="7AL-43-T74" firstAttribute="leading" secondItem="xGa-3u-Ko9" secondAttribute="leadingMargin" constant="-20" id="9nN-EZ-DOQ"/>
                             <constraint firstAttribute="trailingMargin" secondItem="4tv-Y3-98F" secondAttribute="trailing" constant="-20" id="ABZ-V5-gJP"/>
@@ -1050,7 +1086,9 @@
                     <connections>
                         <outlet property="bottomView" destination="4tv-Y3-98F" id="VSZ-4K-SM1"/>
                         <outlet property="messageField" destination="PAE-fw-tjq" id="Q5i-Hr-iwD"/>
+                        <outlet property="progressBar" destination="o1Z-wC-Bpu" id="KbG-kT-pz5"/>
                         <outlet property="sendButton" destination="Lcw-kK-OnJ" id="HQl-JT-bpY"/>
+                        <outlet property="shareButton" destination="Fxu-dp-G5w" id="BUO-Hl-AwX"/>
                         <outlet property="tableView" destination="7AL-43-T74" id="8i9-VP-WMz"/>
                     </connections>
                 </viewController>
@@ -1555,6 +1593,45 @@
                                     </constraints>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="recentsSortTypeTableViewCell"/>
+                            </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="sharingViaHttpUploadTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="SharingViaHttpUploadTableViewCell" id="aTX-xv-cL3" userLabel="SharingViaHttpUploadTableViewCell" customClass="SwitchTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="231.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="aTX-xv-cL3" id="JpY-ll-Okq">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="aBP-RV-N7l">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="File sharing via HTTP" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YCD-i9-rFw">
+                                                    <rect key="frame" x="8" y="4" width="300" height="35.5"/>
+                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="b6C-vK-8OB">
+                                                    <rect key="frame" x="318" y="4" width="51" height="35.5"/>
+                                                    <connections>
+                                                        <action selector="valueChanged:" destination="aTX-xv-cL3" eventType="valueChanged" id="Bwk-so-Wpk"/>
+                                                    </connections>
+                                                </switch>
+                                            </subviews>
+                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
+                                        </stackView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="aBP-RV-N7l" firstAttribute="leading" secondItem="JpY-ll-Okq" secondAttribute="leading" id="1Ka-MR-cJQ"/>
+                                        <constraint firstAttribute="trailing" secondItem="aBP-RV-N7l" secondAttribute="trailing" id="S8L-0V-Nz8"/>
+                                        <constraint firstItem="aBP-RV-N7l" firstAttribute="top" secondItem="JpY-ll-Okq" secondAttribute="top" id="azA-Pa-i79"/>
+                                        <constraint firstAttribute="bottom" secondItem="aBP-RV-N7l" secondAttribute="bottom" id="s1o-8I-Vqt"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <accessibility key="accessibilityConfiguration" identifier="sharingViaHttpUploadTableViewCell"/>
+                                <connections>
+                                    <outlet property="switchView" destination="b6C-vK-8OB" id="Lc0-3V-9Kn"/>
+                                </connections>
                             </tableViewCell>
                         </prototypes>
                         <sections/>
@@ -2953,8 +3030,10 @@
         </scene>
     </scenes>
     <resources>
+        <image name="attach" width="32" height="32"/>
         <image name="defaultAvatar" width="192" height="192"/>
         <image name="first" width="30" height="30"/>
+        <image name="send" width="32" height="32"/>
     </resources>
     <inferredMetricsTieBreakers>
         <segue reference="5su-Sb-5lN"/>

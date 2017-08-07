@@ -29,7 +29,7 @@ class ChatTableViewCell: UITableViewCell {
     @IBOutlet var messageFrameView: UIView!
     @IBOutlet var timestampView: UILabel!
     
-    fileprivate var longPressGestureRecognizer: UILongPressGestureRecognizer!;
+    fileprivate var tapGestureRecognizer: UITapGestureRecognizer!;
     
     fileprivate static let todaysFormatter = ({()-> DateFormatter in
         var f = DateFormatter();
@@ -76,9 +76,8 @@ class ChatTableViewCell: UITableViewCell {
             avatarView!.layer.masksToBounds = true;
             avatarView!.layer.cornerRadius = avatarView!.frame.height / 2;
         }
-        longPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressDidFire));
-//        longPressGestureRecognizer.delegate = self;
-        messageTextView.addGestureRecognizer(longPressGestureRecognizer);
+        tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapGestureDidFire));
+        messageTextView.addGestureRecognizer(tapGestureRecognizer);
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
@@ -95,9 +94,12 @@ class ChatTableViewCell: UITableViewCell {
         if text != nil {
             let attrText = NSMutableAttributedString(string: text!);
             
-            if let detect = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue) {
+            if let detect = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue | NSTextCheckingResult.CheckingType.date.rawValue) {
                 let matches = detect.matches(in: text!, options: .reportCompletion, range: NSMakeRange(0, text!.characters.count));
                 for match in matches {
+                    if match.url != nil || match.addressComponents != nil || match.phoneNumber != nil || match.date != nil {
+                        attrText.setAttributes([NSUnderlineStyleAttributeName: NSUnderlineStyle.styleSingle.rawValue], range: match.range);
+                    }
                     if match.url != nil {
                         attrText.addAttribute(NSLinkAttributeName, value: match.url!, range: match.range);
                     }
@@ -112,6 +114,9 @@ class ChatTableViewCell: UITableViewCell {
                             attrText.addAttribute(NSLinkAttributeName, value: url, range: match.range);
                         }
                     }
+                    if match.date != nil {
+                        attrText.addAttribute(NSLinkAttributeName, value: NSURL(string: "calshow:\(match.date!.timeIntervalSinceReferenceDate)")!, range: match.range);
+                    }
                 }
             }
             self.messageTextView.attributedText = attrText;
@@ -120,27 +125,22 @@ class ChatTableViewCell: UITableViewCell {
         }
     }
     
-    func longPressDidFire(_ recognizer: UILongPressGestureRecognizer) {
-        switch recognizer.state {
-        case .began:
-            guard self.messageTextView.attributedText != nil else {
-                return;
-            }
-            
-            let point = recognizer.location(in: self.messageTextView);
-            let layoutManager = NSLayoutManager();
-            let textStorage = NSTextStorage(attributedString: self.messageTextView.attributedText!);
-            textStorage.addLayoutManager(layoutManager);
-            let textContainer = NSTextContainer(size: self.messageTextView.bounds.size);
-            textContainer.lineFragmentPadding = 0;
-            textContainer.lineBreakMode = self.messageTextView.lineBreakMode;
-            layoutManager.addTextContainer(textContainer);
-            let idx = layoutManager.characterIndex(for: point, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil);
-            if let url = self.messageTextView.attributedText?.attribute(NSLinkAttributeName, at: idx, effectiveRange: nil) as? NSURL {
-                UIApplication.shared.open(url as URL);
-            }
-        default:
-            break;
+    func tapGestureDidFire(_ recognizer: UITapGestureRecognizer) {
+        guard self.messageTextView.attributedText != nil else {
+            return;
+        }
+        
+        let point = recognizer.location(in: self.messageTextView);
+        let layoutManager = NSLayoutManager();
+        let textStorage = NSTextStorage(attributedString: self.messageTextView.attributedText!);
+        textStorage.addLayoutManager(layoutManager);
+        let textContainer = NSTextContainer(size: self.messageTextView.bounds.size);
+        textContainer.lineFragmentPadding = 0;
+        textContainer.lineBreakMode = self.messageTextView.lineBreakMode;
+        layoutManager.addTextContainer(textContainer);
+        let idx = layoutManager.characterIndex(for: point, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil);
+        if let url = self.messageTextView.attributedText?.attribute(NSLinkAttributeName, at: idx, effectiveRange: nil) as? NSURL {
+            UIApplication.shared.open(url as URL);
         }
     }
 }

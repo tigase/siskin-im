@@ -23,7 +23,7 @@
 import UIKit
 import TigaseSwift
 
-class ChatViewController : BaseChatViewController, UITableViewDataSource, EventHandler, CachedViewControllerProtocol {
+class ChatViewController : BaseChatViewController, UITableViewDataSource, EventHandler, CachedViewControllerProtocol, BaseChatViewController_ShareImageExtension {
     
     var titleView: ChatTitleView!;
     
@@ -37,6 +37,10 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
     
     var refreshControl: UIRefreshControl!;
     var syncInProgress = false;
+    
+    @IBOutlet var shareButton: UIButton!;
+    @IBOutlet var progressBar: UIProgressView!;
+    var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
     
     override func viewDidLoad() {
         dataSource = ChatDataSource(controller: self);
@@ -66,6 +70,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         self.refreshControl = UIRefreshControl();
         self.refreshControl?.addTarget(self, action: #selector(ChatViewController.refreshChatHistory), for: UIControlEvents.valueChanged);
         self.tableView.addSubview(refreshControl);
+        initSharing();
     }
     
     func showBuddyInfo(_ button: UIButton) {
@@ -135,6 +140,10 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         cell.setNeedsUpdateConstraints();
         cell.updateConstraintsIfNeeded();
         return cell;
+    }
+    
+    @IBAction func shareClicked(_ sender: UIButton) {
+        self.showPhotoSelector(sender);
     }
     
     class ChatViewItem {
@@ -258,16 +267,24 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
             return;
         }
         
+        sendMessage(body: messageField.text!, additional: [], completed: {() in
+            DispatchQueue.main.async {
+                self.messageField.text = nil;
+            }
+        });
+    }
+    
+    func sendMessage(body: String, additional: [Element], completed: (()->Void)?) {
         let client = xmppService.getClient(forJid: account);
         if client != nil && client!.state == .connected {
             DispatchQueue.global(qos: .default).async {
                 let messageModule: MessageModule? = client?.modulesManager.getModule(MessageModule.ID);
                 if let chat = messageModule?.chatManager.getChat(with: self.jid, thread: nil) {
-                    let msg = messageModule!.sendMessage(in: chat, body: text!);
+                    let msg = messageModule!.sendMessage(in: chat, body: body, additionalElements: additional);
                     self.xmppService.dbChatHistoryStore.appendMessage(for: client!.sessionObject, message: msg);
                 }
             }
-            messageField.text = nil;
+            completed?();
         } else {
             var alert: UIAlertController? = nil;
             if client == nil {
