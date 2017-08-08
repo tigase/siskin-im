@@ -92,7 +92,7 @@ class ChatTableViewCell: UITableViewCell {
     }
 
     func setMessageText(_ text: String?) {
-        if text != nil && (text!.contains("http:") || text!.contains("https://")) {
+        if text != nil {
             let attrText = NSMutableAttributedString(string: text!);
             
             if let detect = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue) {
@@ -102,11 +102,15 @@ class ChatTableViewCell: UITableViewCell {
                         attrText.addAttribute(NSLinkAttributeName, value: match.url!, range: match.range);
                     }
                     if match.phoneNumber != nil {
-                        attrText.addAttribute(NSLinkAttributeName, value: NSURL(string: "tel:\(match.phoneNumber!)")!, range: match.range);
+                        if let phoneUrl = NSURL(string: "tel:\(match.phoneNumber!.replacingOccurrences(of: " ", with: "-"))") {
+                            attrText.addAttribute(NSLinkAttributeName, value: phoneUrl, range: match.range);
+                        }
                     }
                     if match.addressComponents != nil {
-                        let query = match.addressComponents?.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
-                        attrText.addAttribute(NSLinkAttributeName, value: NSURL(string: "http://maps.apple.com/?q=\(query)")!, range: match.range);
+                        let query = match.addressComponents!.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
+                        if let url = NSURL(string: "http://maps.apple.com/?q=\(query!)") {
+                            attrText.addAttribute(NSLinkAttributeName, value: url, range: match.range);
+                        }
                     }
                 }
             }
