@@ -128,6 +128,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         xmppService.applicationState = .active;
         self.keepOnlineOnAwayTimer?.execute();
         self.keepOnlineOnAwayTimer = nil;
+        
+        self.updateApplicationIconBadgeNumber(completionHandler: nil);
     }
 
     func applicationWillTerminate(_ application: UIApplication) {

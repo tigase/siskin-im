@@ -42,6 +42,9 @@ class MainTabBarController: CustomTabBarController {
         }).count;
         DispatchQueue.main.async {
             self.tabBar.items![MainTabBarController.MORE_TAB].badgeValue = count == 0 ? nil : count.description;
+            if count == 0 {
+                (UIApplication.shared.delegate as? AppDelegate)?.updateApplicationIconBadgeNumber(completionHandler: nil);
+            }
         }
     }
 }
