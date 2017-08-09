@@ -43,6 +43,8 @@ public enum Settings: String {
         return UserDefaults.standard;
     }
     
+    fileprivate static var sharedDefaults = UserDefaults(suiteName: "group.TigaseMessenger.Share");
+    
     public static func initialize() {
         let defaults: [String: AnyObject] = [
             "DeleteChatHistoryOnChatClose" : false as AnyObject,
@@ -57,6 +59,13 @@ public enum Settings: String {
             "RecentsOrder" : "byTime" as AnyObject
         ];
         store.register(defaults: defaults);
+        store.dictionaryRepresentation().forEach { (k, v) in
+            if let key = Settings(rawValue: k) {
+                if isShared(key: key) {
+                    sharedDefaults!.set(v, forKey: key.rawValue);
+                }
+            }
+        }
     }
     
     public func setValue(_ value: String?) {
@@ -101,7 +110,14 @@ public enum Settings: String {
         if newValue != nil {
             data["newValue"] = newValue!;
         }
+        if isShared(key: key) {
+            sharedDefaults!.set(newValue, forKey: key.rawValue);
+        }
         NotificationCenter.default.post(name: Settings.SETTINGS_CHANGED, object: nil, userInfo: data);
+    }
+    
+    fileprivate static func isShared(key: Settings) -> Bool {
+        return key == Settings.RosterDisplayHiddenGroup || key == Settings.SharingViaHttpUpload;
     }
 }
 

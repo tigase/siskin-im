@@ -97,25 +97,24 @@ class ChatTableViewCell: UITableViewCell {
             if let detect = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue | NSTextCheckingResult.CheckingType.date.rawValue) {
                 let matches = detect.matches(in: text!, options: .reportCompletion, range: NSMakeRange(0, text!.characters.count));
                 for match in matches {
-                    if match.url != nil || match.addressComponents != nil || match.phoneNumber != nil || match.date != nil {
-                        attrText.setAttributes([NSUnderlineStyleAttributeName: NSUnderlineStyle.styleSingle.rawValue], range: match.range);
-                    }
+                    var url: URL? = nil;
                     if match.url != nil {
-                        attrText.addAttribute(NSLinkAttributeName, value: match.url!, range: match.range);
+                        url = match.url;
                     }
                     if match.phoneNumber != nil {
-                        if let phoneUrl = NSURL(string: "tel:\(match.phoneNumber!.replacingOccurrences(of: " ", with: "-"))") {
-                            attrText.addAttribute(NSLinkAttributeName, value: phoneUrl, range: match.range);
-                        }
+                        url = URL(string: "tel:\(match.phoneNumber!.replacingOccurrences(of: " ", with: "-"))");
                     }
                     if match.addressComponents != nil {
                         let query = match.addressComponents!.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
-                        if let url = NSURL(string: "http://maps.apple.com/?q=\(query!)") {
-                            attrText.addAttribute(NSLinkAttributeName, value: url, range: match.range);
+                        if query != nil {
+                            url = URL(string: "http://maps.apple.com/?q=\(query!)");
                         }
                     }
                     if match.date != nil {
-                        attrText.addAttribute(NSLinkAttributeName, value: NSURL(string: "calshow:\(match.date!.timeIntervalSinceReferenceDate)")!, range: match.range);
+                        url = URL(string: "calshow:\(match.date!.timeIntervalSinceReferenceDate)");
+                    }
+                    if url != nil {
+                        attrText.setAttributes([NSUnderlineStyleAttributeName: NSUnderlineStyle.styleSingle.rawValue, NSLinkAttributeName: url!], range: match.range);
                     }
                 }
             }
