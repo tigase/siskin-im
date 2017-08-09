@@ -127,9 +127,7 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
             return;
         }
         
-        DispatchQueue.main.sync {
-            self.newItemAdded();
-        }
+        self.newItemAdded();
         xmppService.dbChatHistoryStore.markAsRead(for: account, with: jid.bareJid);
     }
     
