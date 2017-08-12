@@ -63,6 +63,7 @@
 		FE9E13711F2606E9005C0EE5 /* ContactsSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E13701F2606E9005C0EE5 /* ContactsSettingsViewController.swift */; };
 		FE9E13731F260B33005C0EE5 /* StepperTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E13721F260B33005C0EE5 /* StepperTableViewCell.swift */; };
 		FEA308D01F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA308CF1F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift */; };
+		FEA370BE1F3F3F8B0050CBAC /* TigaseSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE80BDA71D928AD2001914B0 /* TigaseSwift.framework */; };
 		FEA8D65D1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8D65C1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift */; };
 		FEA8D6621F30F54B0077C12F /* XmppService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8D6611F30F54B0077C12F /* XmppService.swift */; };
 		FEA8D6641F30F9260077C12F /* XmppService_VCardExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8D6631F30F9260077C12F /* XmppService_VCardExtension.swift */; };
@@ -242,6 +243,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FEA370BE1F3F3F8B0050CBAC /* TigaseSwift.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -884,7 +886,7 @@
 					"$(SDK_DIR)/usr/include/libxml2",
 				);
 				INFOPLIST_FILE = "Tigase Messenger - Share/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.tigase.messenger.mobile.Tigase-Messenger---Share";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -909,7 +911,7 @@
 					"$(SDK_DIR)/usr/include/libxml2",
 				);
 				INFOPLIST_FILE = "Tigase Messenger - Share/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.tigase.messenger.mobile.Tigase-Messenger---Share";
 				PRODUCT_NAME = "$(TARGET_NAME)";
