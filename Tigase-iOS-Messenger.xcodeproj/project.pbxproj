@@ -15,6 +15,8 @@
 		FE258EAB1F3B8CEA0042CED9 /* Assets.xcassets in Sources */ = {isa = PBXBuildFile; fileRef = FE258EA91F3B8BC90042CED9 /* Assets.xcassets */; };
 		FE3024321CE2036A00466497 /* DBVCardsCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3024311CE2036A00466497 /* DBVCardsCache.swift */; };
 		FE3A45CF1CE49D3300C36264 /* RosterItemEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */; };
+		FE43EB551F3CC55900A4CAAD /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE43EB541F3CC55900A4CAAD /* ImageCache.swift */; };
+		FE43EB571F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE43EB561F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift */; };
 		FE4DDF561F39E0B500A4CE5A /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4DDF551F39E0B500A4CE5A /* ShareViewController.swift */; };
 		FE4DDF591F39E0B500A4CE5A /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE4DDF571F39E0B500A4CE5A /* MainInterface.storyboard */; };
 		FE4DDF5D1F39E0B500A4CE5A /* Tigase Messenger - Share.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = FE4DDF531F39E0B500A4CE5A /* Tigase Messenger - Share.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -147,6 +149,8 @@
 		FE258EA91F3B8BC90042CED9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FE3024311CE2036A00466497 /* DBVCardsCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBVCardsCache.swift; sourceTree = "<group>"; };
 		FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterItemEditViewController.swift; sourceTree = "<group>"; };
+		FE43EB541F3CC55900A4CAAD /* ImageCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
+		FE43EB561F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewController_PreviewExtension.swift; sourceTree = "<group>"; };
 		FE4DDF531F39E0B500A4CE5A /* Tigase Messenger - Share.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Tigase Messenger - Share.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE4DDF551F39E0B500A4CE5A /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		FE4DDF581F39E0B500A4CE5A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
@@ -306,6 +310,7 @@
 				FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */,
 				FE0A674C1D4F645F00124480 /* CachedViewController.swift */,
 				FE5628901F3621DB00452C73 /* ChatViewController_ShareExtension.swift */,
+				FE43EB561F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift */,
 			);
 			path = chats;
 			sourceTree = "<group>";
@@ -379,6 +384,7 @@
 				FEF80DB31CDCB5B4005645A7 /* Reachability.swift */,
 				FEDE93881D081C3D00CA60A9 /* Settings.swift */,
 				FEB62C4F1DA80956001500D5 /* AvatarStore.swift */,
+				FE43EB541F3CC55900A4CAAD /* ImageCache.swift */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -758,6 +764,7 @@
 				FE9E13731F260B33005C0EE5 /* StepperTableViewCell.swift in Sources */,
 				FE6545601E9E7B85006A14AC /* RegisterAccountController.swift in Sources */,
 				FEC514221CEA3D2F003AF765 /* DBRoomsManager.swift in Sources */,
+				FE43EB571F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift in Sources */,
 				FE507A181CDB7B3B001A015C /* ChatViewController.swift in Sources */,
 				FEFB63AD1F31E4EE00EFB3E7 /* MainTabBarController.swift in Sources */,
 				FE0A674D1D4F645F00124480 /* CachedViewController.swift in Sources */,
@@ -765,6 +772,7 @@
 				FE507A201CDB7B3B001A015C /* AddAccountController.swift in Sources */,
 				FEAC71771CECA09B00ABABEF /* MucChatTableViewCell.swift in Sources */,
 				FE507A151CDB7B3B001A015C /* ChatsListTableViewCell.swift in Sources */,
+				FE43EB551F3CC55900A4CAAD /* ImageCache.swift in Sources */,
 				FE507A1C1CDB7B3B001A015C /* DBRosterStore.swift in Sources */,
 				FE94E5251CCBA74F00FAE755 /* AppDelegate.swift in Sources */,
 				FEF80DB21CDBBBFE005645A7 /* AccountSettingsViewController.swift in Sources */,

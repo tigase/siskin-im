@@ -43,6 +43,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             let dbSchema = try String(contentsOfFile: resourcePath, encoding: String.Encoding.utf8);
             print("loaded schema:", dbSchema);
             try dbConnection.execute(dbSchema);
+            do {
+                try dbConnection.execute("select preview from chat_history");
+            } catch {
+                try dbConnection.execute("ALTER TABLE chat_history ADD COLUMN preview TEXT");
+            }
         } catch {
             print("DB initialization error:", error);
             fatalError("Initialization of database failed!");

@@ -32,7 +32,8 @@ open class DBChatHistoryStore: Logger, EventHandler {
     fileprivate static let CHAT_MSGS_COUNT = "SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid";
     fileprivate static let CHAT_MSGS_COUNT_UNREAD_CHATS = "select count(1) FROM (SELECT account, jid FROM chat_history WHERE state = \(State.incoming_unread.rawValue) GROUP BY account, jid) as x";
     fileprivate static let CHAT_MSGS_DELETE = "DELETE FROM chat_history WHERE account = :account AND jid = :jid";
-    fileprivate static let CHAT_MSGS_GET = "SELECT id, author_jid, author_nickname, timestamp, item_type, data, state FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp LIMIT :limit OFFSET :offset"
+    fileprivate static let CHAT_MSGS_GET = "SELECT id, author_jid, author_nickname, timestamp, item_type, data, state, preview FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp LIMIT :limit OFFSET :offset"
+    fileprivate static let CHAT_MSG_UPDATE_PREVIEW = "UPDATE chat_history SET preview = :preview WHERE id = :id";
     fileprivate static let CHAT_MSGS_MARK_AS_READ = "UPDATE chat_history SET state = \(State.incoming.rawValue) WHERE account = :account AND jid = :jid AND state = \(State.incoming_unread.rawValue)";
     fileprivate static let MSG_ALREADY_ADDED = "SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND timestamp BETWEEN :ts_from AND :ts_to AND item_type = :item_type AND data = :data AND (:stanza_id IS NULL OR (stanza_id IS NOT NULL AND stanza_id = :stanza_id)) AND (:author_jid is null OR author_jid = :author_jid) AND (:author_nickname is null OR author_nickname = :author_nickname)";
     
@@ -44,6 +45,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
     fileprivate lazy var msgsCountUnreadChatsStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_COUNT_UNREAD_CHATS);
     //private lazy var msgsGetStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_GET);
     fileprivate lazy var msgsMarkAsReadStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_MARK_AS_READ);
+    fileprivate lazy var msgUpdatePreview: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSG_UPDATE_PREVIEW);
     fileprivate lazy var msgAlreadyAddedStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.MSG_ALREADY_ADDED);
     fileprivate lazy var chatUpdateTimestamp: DBStatement! = try? self.dbConnection.prepareStatement("UPDATE chats SET timestamp = :timestamp WHERE account = :account AND jid = :jid AND timestamp < :timestamp");
     fileprivate lazy var listUnreadChatsStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT DISTINCT account, jid FROM chat_history WHERE state = \(State.incoming_unread.rawValue)");
@@ -55,10 +57,11 @@ open class DBChatHistoryStore: Logger, EventHandler {
         self.dbConnection = dbConnection;
         super.init();
         NotificationCenter.default.addObserver(self, selector: #selector(DBChatHistoryStore.accountRemoved), name: NSNotification.Name(rawValue: "accountRemoved"), object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(DBChatHistoryStore.imageRemovedFromCache), name: ImageCache.DISK_CACHE_IMAGE_REMOVED, object: nil);
     }
     
-    open func appendMessage(for sessionObject: SessionObject, message: Message, carbonAction: MessageCarbonsModule.Action? = nil, fromArchive: Bool = false) {
-        let body = message.body;
+    open func appendMessage(for sessionObject: SessionObject, message: Message, preview: String? = nil, carbonAction: MessageCarbonsModule.Action? = nil, fromArchive: Bool = false) {
+        let body = message.body ?? message.oob;
         // for now we support only messages with body
         guard body != nil else {
             return;
@@ -87,7 +90,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
     }
     
     fileprivate func appendMucMessage(event e: MucModule.MessageReceivedEvent) {
-        let body = e.message.body;
+        let body = e.message.body ?? e.message.oob;
         guard body != nil else {
             return;
         }
@@ -109,7 +112,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
     
     func appendMessage(event e: MessageArchiveManagementModule.ArchivedMessageReceivedEvent) {
         let message = e.message!;
-        guard let body = message.body else {
+        guard let body = message.body ?? message.oob else {
             return;
         }
 
@@ -233,6 +236,17 @@ open class DBChatHistoryStore: Logger, EventHandler {
         }
     }
     
+    open func updatePreview(msgId: Int, preview: String?, completion: ((Int)->Void)?) {
+        dbConnection.dispatch_async_db_queue {
+            let params: [String:Any?] = ["id": msgId, "preview": preview];
+            if try! self.msgUpdatePreview.update(params) > 0 {
+                DispatchQueue.global().async {
+                    completion?(msgId);
+                }
+            }
+        }
+    }
+    
     open func deleteMessages(for account: BareJID, with jid: BareJID) {
         let params:[String:Any?] = ["account":account, "jid":jid];
         dbConnection.dispatch_async_db_queue() {
@@ -244,6 +258,13 @@ open class DBChatHistoryStore: Logger, EventHandler {
         if let data = notification.userInfo {
             let accountStr = data["account"] as! String;
             _ = try! dbConnection.prepareStatement("DELETE FROM chat_history WHERE account = ?").execute(accountStr);
+        }
+    }
+    
+    @objc open func imageRemovedFromCache(_ notification: NSNotification) {
+        if let data = notification.userInfo {
+            let url = data["url"] as! URL;
+            _ = try! dbConnection.prepareStatement("UPDATE chat_history SET preview = null WHERE preview = ?").execute("preview:image:\(url.pathComponents.last!)");
         }
     }
     

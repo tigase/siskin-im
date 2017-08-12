@@ -23,7 +23,7 @@
 import UIKit
 import TigaseSwift
 
-class ChatViewController : BaseChatViewController, UITableViewDataSource, EventHandler, CachedViewControllerProtocol, BaseChatViewController_ShareImageExtension {
+class ChatViewController : BaseChatViewController, UITableViewDataSource, EventHandler, CachedViewControllerProtocol, BaseChatViewController_ShareImageExtension, BaseChatViewController_PreviewExtension {
     
     var titleView: ChatTitleView!;
     
@@ -135,10 +135,11 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         let cell: ChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
         cell.transform = cachedDataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
         cell.avatarView?.image = self.xmppService.avatarManager.getAvatar(for: self.jid.bareJid, account: self.account);
-        cell.setMessageText(item.data);
+        cell.setMessageText(data: item.data, id: item.id, preview: item.preview, downloader: self.downloadPreview);
         cell.setTimestamp(item.timestamp);
         cell.setNeedsUpdateConstraints();
         cell.updateConstraintsIfNeeded();
+        
         return cell;
     }
     
@@ -146,15 +147,29 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         self.showPhotoSelector(sender);
     }
     
-    class ChatViewItem {
+    func updateItem(msgId: Int, handler: @escaping (BaseChatViewController_PreviewExtension_PreviewAwareItem) -> Void) {
+        DispatchQueue.main.async {
+            if let indexPath = self.dataSource.getIndexPath(withId: msgId) {
+                let item = self.dataSource.getItem(for: indexPath);
+                handler(item);
+                self.tableView.reloadRows(at: [indexPath], with: .automatic);
+            }
+        }
+    }
+    
+    class ChatViewItem: CachedViewDataSourceItem, BaseChatViewController_PreviewExtension_PreviewAwareItem {
+        let id: Int;
         let state: Int;
         let data: String?;
         let timestamp: Date;
+        var preview: String?;
         
         init(cursor: DBCursor) {
+            id = cursor["id"]!;
             state = cursor["state"]!;
             data = cursor["data"];
             timestamp = cursor["timestamp"]!;
+            preview = cursor["preview"];
         }
         
     }
@@ -274,14 +289,14 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         });
     }
     
-    func sendMessage(body: String, additional: [Element], completed: (()->Void)?) {
+    func sendMessage(body: String, additional: [Element], preview: String? = nil, completed: (()->Void)?) {
         let client = xmppService.getClient(forJid: account);
         if client != nil && client!.state == .connected {
             DispatchQueue.global(qos: .default).async {
                 let messageModule: MessageModule? = client?.modulesManager.getModule(MessageModule.ID);
                 if let chat = messageModule?.chatManager.getChat(with: self.jid, thread: nil) {
                     let msg = messageModule!.sendMessage(in: chat, body: body, additionalElements: additional);
-                    self.xmppService.dbChatHistoryStore.appendMessage(for: client!.sessionObject, message: msg);
+                    self.xmppService.dbChatHistoryStore.appendMessage(for: client!.sessionObject, message: msg, preview: preview);
                 }
             }
             completed?();

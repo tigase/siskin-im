@@ -40,13 +40,13 @@ class ContactViewController: UITableViewController {
     }
     
     var addresses: [VCard.Address] {
-        return vcard!.addresses;
+        return vcard?.addresses ?? [];
     }
     var phones: [VCard.Telephone] {
-        return vcard!.telephones;
+        return vcard?.telephones ?? [];
     }
     var emails: [VCard.Email] {
-        return vcard!.emails;
+        return vcard?.emails ?? [];
     }
     
     override func viewDidLoad() {

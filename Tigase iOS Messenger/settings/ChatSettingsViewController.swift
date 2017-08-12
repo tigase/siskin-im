@@ -25,7 +25,8 @@ class ChatSettingsViewController: UITableViewController {
 
     let tree: [[SettingsEnum]] = [
         [SettingsEnum.recentsMessageLinesNo, SettingsEnum.recentsSortType],
-        [SettingsEnum.deleteChatHistoryOnClose, SettingsEnum.enableMessageCarbons, SettingsEnum.sharingViaHttpUpload],
+        [SettingsEnum.deleteChatHistoryOnClose, SettingsEnum.enableMessageCarbons],
+        [SettingsEnum.sharingViaHttpUpload, SettingsEnum.maxImagePreviewSize, SettingsEnum.clearImagePreviewCache],
     ];
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -42,6 +43,8 @@ class ChatSettingsViewController: UITableViewController {
             return "List of messages"
         case 1:
             return "Messages";
+        case 2:
+            return "Attachments";
         default:
             return nil;
         }
@@ -101,13 +104,21 @@ class ChatSettingsViewController: UITableViewController {
                 }
             }
             return cell;
+        case .maxImagePreviewSize:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "MaxImagePreviewSizeTableViewCell", for: indexPath);
+            (cell.contentView.subviews[0].subviews[1] as! UILabel).text = MaxImagePreviewSizeItem.description(of: Settings.MaxImagePreviewSize.getInt());
+            cell.accessoryType = .disclosureIndicator;
+            return cell;
+        case .clearImagePreviewCache:
+            return tableView.dequeueReusableCell(withIdentifier: "ClearImagePreviewTableViewCell", for: indexPath);
         }
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true);
         let setting = tree[indexPath.section][indexPath.row];
-        if setting == .recentsSortType {
+        switch setting {
+        case .recentsSortType:
             let controller = TablePickerViewController(style: .grouped);
             let values = [ChatsListViewController.SortOrder.byTime, ChatsListViewController.SortOrder.byAvailablityAndTime];
             controller.selected = values.index(of: ChatsListViewController.SortOrder(rawValue: Settings.RecentsOrder.getString()!)!) ?? 0;
@@ -121,6 +132,40 @@ class ChatSettingsViewController: UITableViewController {
                 self.tableView.reloadData();
             };
             self.navigationController?.pushViewController(controller, animated: true);
+        case .maxImagePreviewSize:
+            let controller = TablePickerViewController(style: .grouped);
+            let values: [Int] = [0, 1, 2, 4, 8, 10, Int.max];
+            controller.selected = values.index(of: Settings.MaxImagePreviewSize.getInt() ) ?? 0;
+            controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
+                return MaxImagePreviewSizeItem(value: it);
+            });
+            //controller.selected = 1;
+            controller.onSelectionChange = { (_item) -> Void in
+                let item = _item as! MaxImagePreviewSizeItem;
+                Settings.MaxImagePreviewSize.setValue(item.value);
+                self.tableView.reloadData();
+            };
+            self.navigationController?.pushViewController(controller, animated: true);
+        case .clearImagePreviewCache:
+            let alert = UIAlertController(title: "Image cache", message: "We are using \(ImageCache.shared.diskCacheSize/(1024*1014)) MB of storage.", preferredStyle: .actionSheet);
+            let cell = self.tableView(tableView, cellForRowAt: indexPath);
+            alert.addAction(UIAlertAction(title: "Flush", style: .destructive, handler: {(action) in
+                DispatchQueue.global(qos: .background).async {
+                    ImageCache.shared.emptyDiskCache();
+                }
+            }));
+            alert.addAction(UIAlertAction(title: "Older than 7 days", style: .destructive, handler: {(action) in
+                DispatchQueue.global(qos: .background).async {
+                    ImageCache.shared.emptyDiskCache(olderThan: Date().addingTimeInterval(7*24*60*60.0));
+                }
+            }));
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+            alert.popoverPresentationController?.sourceView = cell.contentView;
+            alert.popoverPresentationController?.sourceRect = cell.contentView.bounds;
+            
+            self.present(alert, animated: true, completion: nil);
+        default:
+            break;
         }
     }
     
@@ -130,6 +175,28 @@ class ChatSettingsViewController: UITableViewController {
         case recentsMessageLinesNo = 2
         case recentsSortType = 3
         case sharingViaHttpUpload = 4
+        case maxImagePreviewSize = 5;
+        case clearImagePreviewCache = 6;
+    }
+    
+    internal class MaxImagePreviewSizeItem: TablePickerViewItemsProtocol {
+        
+        public static func description(of value: Int) -> String {
+            if value == Int.max {
+                return "Unlimited";
+            } else {
+                return "\(value) MB";
+            }
+        }
+        
+        let description: String;
+        let value: Int;
+        
+        init(value: Int) {
+            self.value = value;
+            self.description = MaxImagePreviewSizeItem.description(of: value);
+        }
+        
     }
     
     internal class RecentsSortTypeItem: TablePickerViewItemsProtocol {

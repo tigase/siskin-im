@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS chat_history (
     item_type INTEGER,
     data TEXT,
     stanza_id TEXT,
-    state INTEGER
+    state INTEGER,
+    preview TEXT
 );
 
 CREATE INDEX IF NOT EXISTS chat_history_jid_idx on chats (

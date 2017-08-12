@@ -88,7 +88,13 @@ protocol CachedViewDataSourceProtocol {
     
 }
 
-class CachedViewDataSource<Item: AnyObject>: CachedViewDataSourceProtocol {
+protocol CachedViewDataSourceItem: class {
+    
+    var id: Int { get };
+    
+}
+
+class CachedViewDataSource<Item: CachedViewDataSourceItem>: CachedViewDataSourceProtocol {
     
     var cache = NSCache<NSNumber,Item>();
     
@@ -107,10 +113,21 @@ class CachedViewDataSource<Item: AnyObject>: CachedViewDataSourceProtocol {
         cache.removeAllObjects();
     }
     
+    // does not support non-inverted view!
+    func getIndexPath(withId itemId: Int) -> IndexPath? {
+        var i = (numberOfMessages);
+        var item: Item? = nil;
+        repeat {
+            i = i - 1;
+            item = cache.object(forKey: i as NSNumber);
+        } while ((item == nil || item!.id != itemId) && i >= 0);
+        
+        return i < 0 ? nil : IndexPath(row: (numberOfMessages - i) - 1, section: 0);
+    }
+    
     func getItem(for indexPath: IndexPath) -> Item {
         let requestedPosition = (numberOfMessages - indexPath.row) - 1;
         var item = cache.object(forKey: requestedPosition as NSNumber);
-        
         if (item == nil) {
             var pos = requestedPosition;
             let down = pos > 0 && cache.object(forKey: pos-1 as NSNumber) ==  nil;

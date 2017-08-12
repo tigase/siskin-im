@@ -22,14 +22,19 @@
 
 import UIKit
 
-class ChatTableViewCell: UITableViewCell {
+class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegate {
 
     @IBOutlet var avatarView: UIImageView?
     @IBOutlet var messageTextView: UILabel!
     @IBOutlet var messageFrameView: UIView!
     @IBOutlet var timestampView: UILabel!
     
-    fileprivate var tapGestureRecognizer: UITapGestureRecognizer!;
+    @IBOutlet var previewView: UIImageView?;
+    
+    fileprivate var previewUrl: URL?;
+    
+    fileprivate var messageLinkTapGestureRecognizer: UITapGestureRecognizer!;
+    fileprivate var previewViewTapGestureRecognizer: UITapGestureRecognizer?;
     
     fileprivate static let todaysFormatter = ({()-> DateFormatter in
         var f = DateFormatter();
@@ -76,8 +81,14 @@ class ChatTableViewCell: UITableViewCell {
             avatarView!.layer.masksToBounds = true;
             avatarView!.layer.cornerRadius = avatarView!.frame.height / 2;
         }
-        tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapGestureDidFire));
-        messageTextView.addGestureRecognizer(tapGestureRecognizer);
+        messageLinkTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(messageLinkTapGestureDidFire));
+        messageLinkTapGestureRecognizer.numberOfTapsRequired = 1;
+        messageTextView.addGestureRecognizer(messageLinkTapGestureRecognizer);
+        if previewView != nil {
+            previewViewTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(previewTapGestureDidFire));
+            previewViewTapGestureRecognizer?.numberOfTapsRequired = 2;
+            previewView?.addGestureRecognizer(previewViewTapGestureRecognizer!);
+        }
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
@@ -90,16 +101,31 @@ class ChatTableViewCell: UITableViewCell {
         timestampView.text = formatTimestamp(ts);
     }
 
-    func setMessageText(_ text: String?) {
+    func setMessageText(data text: String?, id: Int?, preview: String? = nil, downloader: ((URL,Int)->Void)? = nil) {
+        self.previewUrl = nil;
+        self.previewView?.image = nil;
         if text != nil {
             let attrText = NSMutableAttributedString(string: text!);
             
+            var first = true;
             if let detect = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue | NSTextCheckingResult.CheckingType.date.rawValue) {
                 let matches = detect.matches(in: text!, options: .reportCompletion, range: NSMakeRange(0, text!.characters.count));
                 for match in matches {
                     var url: URL? = nil;
                     if match.url != nil {
                         url = match.url;
+                        if first && id != nil {
+                            first = false;
+                            if (preview?.hasPrefix("preview:image:") ?? true) {
+                                let previewKey = preview == nil ? nil : String(preview!.characters.dropFirst(14));
+                                previewView?.image = ImageCache.shared.get(for: previewKey, ifMissing: {
+                                    downloader?(url!, id!);
+                                })
+                                if previewView?.image != nil && previewKey != nil {
+                                    previewUrl = ImageCache.shared.getURL(for: previewKey);
+                                }
+                            }
+                        }
                     }
                     if match.phoneNumber != nil {
                         url = URL(string: "tel:\(match.phoneNumber!.replacingOccurrences(of: " ", with: "-"))");
@@ -124,7 +150,7 @@ class ChatTableViewCell: UITableViewCell {
         }
     }
     
-    func tapGestureDidFire(_ recognizer: UITapGestureRecognizer) {
+    func messageLinkTapGestureDidFire(_ recognizer: UITapGestureRecognizer) {
         guard self.messageTextView.attributedText != nil else {
             return;
         }
@@ -141,5 +167,16 @@ class ChatTableViewCell: UITableViewCell {
         if let url = self.messageTextView.attributedText?.attribute(NSLinkAttributeName, at: idx, effectiveRange: nil) as? NSURL {
             UIApplication.shared.open(url as URL);
         }
+    }
+    
+    func previewTapGestureDidFire(_ recognizer: UITapGestureRecognizer) {
+        guard self.previewView != nil else {
+            return;
+        }
+        
+        let documentController = UIDocumentInteractionController(url: previewUrl!);
+        documentController.delegate = self;
+        //documentController.presentPreview(animated: true);
+        documentController.presentOptionsMenu(from: CGRect.zero, in: self.previewView!, animated: true);
     }
 }

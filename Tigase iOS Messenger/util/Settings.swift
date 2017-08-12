@@ -36,7 +36,8 @@ public enum Settings: String {
     case RecentsMessageLinesNo
     case RecentsOrder
     case SharingViaHttpUpload
-
+    case MaxImagePreviewSize
+    
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     
     fileprivate static var store: UserDefaults {

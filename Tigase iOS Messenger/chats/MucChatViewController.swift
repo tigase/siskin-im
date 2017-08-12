@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class MucChatViewController: BaseChatViewController, CachedViewControllerProtocol, UITableViewDataSource, EventHandler, BaseChatViewController_ShareImageExtension {
+class MucChatViewController: BaseChatViewController, CachedViewControllerProtocol, UITableViewDataSource, EventHandler, BaseChatViewController_ShareImageExtension, BaseChatViewController_PreviewExtension {
 
     var titleView: MucTitleView!;
     var room: Room?;
@@ -110,7 +110,7 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
         } else {
             cell.avatarView?.image = self.xmppService.avatarManager.defaultAvatar;
         }
-        cell.setMessageText(item.data);
+        cell.setMessageText(data: item.data, id: item.id, preview: item.preview, downloader: self.downloadPreview);
         cell.setTimestamp(item.timestamp);
         return cell;
     }
@@ -162,6 +162,18 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
         }
     }
 
+    func updateItem(msgId: Int, handler: @escaping (BaseChatViewController_PreviewExtension_PreviewAwareItem) -> Void) {
+        DispatchQueue.main.async {
+//            self.dataSource.reset();
+//            self.tableView.reloadData();
+            if let indexPath = self.dataSource.getIndexPath(withId: msgId) {
+                let item = self.dataSource.getItem(for: indexPath);
+                handler(item);
+                self.tableView.reloadRows(at: [indexPath], with: .automatic);
+            }
+        }
+    }
+
     @IBAction func sendClicked(_ sender: UIButton) {
         let text = messageField.text;
         guard !(text?.isEmpty != false) else {
@@ -186,7 +198,7 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
         self.showPhotoSelector(sender);
     }
 
-    func sendMessage(body: String, additional: [Element], completed: (()->Void)?) {
+    func sendMessage(body: String, additional: [Element], preview: String? = nil, completed: (()->Void)?) {
         self.room!.sendMessage(body, additionalElements: additional);
         completed?();
     }
@@ -236,17 +248,21 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
         }
     }
 
-    open class MucChatViewItem {
+    open class MucChatViewItem: CachedViewDataSourceItem, BaseChatViewController_PreviewExtension_PreviewAwareItem {
+        let id: Int;
         let nickname: String?;
         let timestamp: Date!;
         let data: String?;
         let authorJid: BareJID?;
+        var preview: String?;
 
         init(cursor: DBCursor) {
+            id = cursor["id"]!;
             nickname = cursor["author_nickname"];
             timestamp = cursor["timestamp"]!;
             data = cursor["data"];
             authorJid = cursor["author_jid"];
+            preview = cursor["preview"];
         }
 
     }
