@@ -311,9 +311,10 @@
                             <view contentMode="bottom" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="HK7-Bq-Vwt">
                                 <rect key="frame" x="0.0" y="490" width="600" height="46"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hEk-n0-vGX">
+                                    <button opaque="NO" contentMode="scaleAspectFit" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hEk-n0-vGX">
                                         <rect key="frame" x="8" y="6" width="30" height="32"/>
                                         <constraints>
+                                            <constraint firstAttribute="width" secondItem="hEk-n0-vGX" secondAttribute="height" multiplier="1:1" id="QPe-CG-BCg"/>
                                             <constraint firstAttribute="width" constant="30" id="Qfu-qs-0hl"/>
                                         </constraints>
                                         <state key="normal" image="attach"/>
@@ -321,9 +322,10 @@
                                             <action selector="shareClicked:" destination="WP2-Cp-7ZE" eventType="touchUpInside" id="hsT-CG-6uf"/>
                                         </connections>
                                     </button>
-                                    <button contentMode="scaleAspectFit" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Wud-KB-gIx">
-                                        <rect key="frame" x="556" y="7" width="36" height="32"/>
+                                    <button contentMode="scaleAspectFit" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Wud-KB-gIx">
+                                        <rect key="frame" x="562" y="7" width="30" height="32"/>
                                         <constraints>
+                                            <constraint firstAttribute="width" secondItem="Wud-KB-gIx" secondAttribute="height" multiplier="1:1" id="C39-7W-YjZ"/>
                                             <constraint firstAttribute="width" constant="30" id="pnG-VH-M5U"/>
                                         </constraints>
                                         <state key="normal" image="send"/>
@@ -350,8 +352,8 @@
                                     <constraint firstAttribute="bottom" secondItem="tM8-yl-Xfw" secondAttribute="bottom" constant="8" id="OBe-Jw-pOH"/>
                                     <constraint firstAttribute="trailing" secondItem="Wud-KB-gIx" secondAttribute="trailing" constant="8" id="Q7o-dZ-m7q"/>
                                     <constraint firstItem="lXk-P5-gwH" firstAttribute="top" secondItem="HK7-Bq-Vwt" secondAttribute="top" id="hul-Hr-7rz"/>
-                                    <constraint firstAttribute="bottom" secondItem="hEk-n0-vGX" secondAttribute="bottom" constant="9" id="j9C-mi-FHW"/>
-                                    <constraint firstAttribute="bottom" secondItem="Wud-KB-gIx" secondAttribute="bottom" constant="8" id="lq0-OA-BIJ"/>
+                                    <constraint firstAttribute="bottom" secondItem="hEk-n0-vGX" secondAttribute="bottom" constant="10" id="j9C-mi-FHW"/>
+                                    <constraint firstAttribute="bottom" secondItem="Wud-KB-gIx" secondAttribute="bottom" constant="10" id="lq0-OA-BIJ"/>
                                     <constraint firstItem="Wud-KB-gIx" firstAttribute="leading" secondItem="tM8-yl-Xfw" secondAttribute="trailing" constant="8" id="p8d-xp-TzN"/>
                                     <constraint firstItem="hEk-n0-vGX" firstAttribute="leading" secondItem="HK7-Bq-Vwt" secondAttribute="leading" constant="8" id="vtv-Hl-0DW"/>
                                 </constraints>
@@ -943,7 +945,7 @@
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <imageView clipsSubviews="YES" contentMode="scaleAspectFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" verticalCompressionResistancePriority="754" translatesAutoresizingMaskIntoConstraints="NO" id="c2E-KG-R7a">
-                                                            <rect key="frame" x="0.0" y="9" width="552" height="0.0"/>
+                                                            <rect key="frame" x="0.0" y="21" width="552" height="0.0"/>
                                                             <accessibility key="accessibilityConfiguration">
                                                                 <accessibilityTraits key="traits" image="YES" allowsDirectInteraction="YES"/>
                                                                 <bool key="isElement" value="YES"/>
@@ -1081,6 +1083,7 @@
                                     <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Fxu-dp-G5w">
                                         <rect key="frame" x="8" y="7" width="30" height="32"/>
                                         <constraints>
+                                            <constraint firstAttribute="width" secondItem="Fxu-dp-G5w" secondAttribute="height" multiplier="1:1" id="KLP-5v-bIY"/>
                                             <constraint firstAttribute="width" constant="30" id="f0e-HW-Vb2"/>
                                         </constraints>
                                         <state key="normal" image="attach"/>
@@ -1088,9 +1091,10 @@
                                             <action selector="shareClicked:" destination="DCK-O4-JVw" eventType="touchUpInside" id="cje-0z-T6X"/>
                                         </connections>
                                     </button>
-                                    <button contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Lcw-kK-OnJ">
-                                        <rect key="frame" x="535" y="7" width="74" height="32"/>
+                                    <button contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Lcw-kK-OnJ">
+                                        <rect key="frame" x="345" y="7" width="30" height="32"/>
                                         <constraints>
+                                            <constraint firstAttribute="width" secondItem="Lcw-kK-OnJ" secondAttribute="height" multiplier="1:1" id="R1a-XD-HFo"/>
                                             <constraint firstAttribute="width" constant="30" id="zFU-8s-Ved"/>
                                         </constraints>
                                         <state key="normal" image="send"/>
@@ -1113,13 +1117,13 @@
                                 <constraints>
                                     <constraint firstAttribute="trailing" secondItem="o1Z-wC-Bpu" secondAttribute="trailing" id="0hL-Mc-UTZ"/>
                                     <constraint firstAttribute="bottom" secondItem="PAE-fw-tjq" secondAttribute="bottom" constant="8" id="5Dy-AU-GdU"/>
-                                    <constraint firstAttribute="bottom" secondItem="Fxu-dp-G5w" secondAttribute="bottom" constant="8" id="8D5-eQ-tt4"/>
+                                    <constraint firstAttribute="bottom" secondItem="Fxu-dp-G5w" secondAttribute="bottom" constant="10" id="8D5-eQ-tt4"/>
                                     <constraint firstItem="o1Z-wC-Bpu" firstAttribute="top" secondItem="4tv-Y3-98F" secondAttribute="top" id="96d-fc-kpb"/>
                                     <constraint firstAttribute="trailing" secondItem="Lcw-kK-OnJ" secondAttribute="trailing" constant="8" id="D9t-IQ-luo"/>
                                     <constraint firstItem="PAE-fw-tjq" firstAttribute="top" secondItem="o1Z-wC-Bpu" secondAttribute="bottom" constant="8" id="GVj-Wj-nLL"/>
                                     <constraint firstItem="o1Z-wC-Bpu" firstAttribute="leading" secondItem="4tv-Y3-98F" secondAttribute="leading" id="Tj0-Z4-5jO"/>
                                     <constraint firstItem="PAE-fw-tjq" firstAttribute="leading" secondItem="Fxu-dp-G5w" secondAttribute="trailing" constant="8" id="WiW-7d-FFn"/>
-                                    <constraint firstAttribute="bottom" secondItem="Lcw-kK-OnJ" secondAttribute="bottom" constant="8" id="YTw-ql-emj"/>
+                                    <constraint firstAttribute="bottom" secondItem="Lcw-kK-OnJ" secondAttribute="bottom" constant="10" id="YTw-ql-emj"/>
                                     <constraint firstItem="Fxu-dp-G5w" firstAttribute="leading" secondItem="4tv-Y3-98F" secondAttribute="leading" constant="8" id="dfi-h2-KOd"/>
                                     <constraint firstItem="Lcw-kK-OnJ" firstAttribute="leading" secondItem="PAE-fw-tjq" secondAttribute="trailing" constant="8" id="imf-rm-RmT"/>
                                 </constraints>
@@ -3150,10 +3154,10 @@
         </scene>
     </scenes>
     <resources>
-        <image name="attach" width="32" height="32"/>
+        <image name="attach" width="36" height="36"/>
         <image name="defaultAvatar" width="192" height="192"/>
         <image name="first" width="30" height="30"/>
-        <image name="send" width="32" height="32"/>
+        <image name="send" width="36" height="36"/>
     </resources>
     <inferredMetricsTieBreakers>
         <segue reference="5su-Sb-5lN"/>
