@@ -43,7 +43,7 @@ extension BaseChatViewController_PreviewExtension {
         }
         
         getHeaders(url: url) { (mimeType, size, errCode) in
-            if mimeType?.hasPrefix("image/") ?? false && (size ?? Int64.max) < Int64(Settings.MaxImagePreviewSize.getInt() * 1024 * 1024) {
+            if mimeType?.hasPrefix("image/") ?? false && (size ?? Int64.max) < self.getImageDownloadSizeLimit() {
                 self.downloadImageFile(url: url, completion: { (key) in
                     let previewKey = key == nil ? nil : "preview:image:\(key!)";
                     self.xmppService.dbChatHistoryStore.updatePreview(msgId: msgId, preview: previewKey ?? "", completion: { (msgId) in
@@ -90,5 +90,14 @@ extension BaseChatViewController_PreviewExtension {
                 completion(nil);
             }
         }).resume();
+    }
+    
+    func getImageDownloadSizeLimit() -> Int64 {
+        let val = Settings.MaxImagePreviewSize.getInt();
+        if val > (Int.max / (1024*1024)) {
+            return Int64(val);
+        } else {
+            return Int64(val * 1024 * 1024);
+        }
     }
 }
