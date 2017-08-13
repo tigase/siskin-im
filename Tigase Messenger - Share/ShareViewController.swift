@@ -42,6 +42,7 @@ class ShareViewController: SLComposeServiceViewController {
         _ = client.modulesManager.register(ResourceBinderModule());
         _ = client.modulesManager.register(SessionEstablishmentModule());
         _ = client.modulesManager.register(DiscoveryModule());
+        client.modulesManager.register(PresenceModule()).initialPresence = false;
         let messageModule = client.modulesManager.register(MessageModule());
         let rosterModule =  client.modulesManager.register(RosterModule());
         _ = client.modulesManager.register(HttpFileUploadModule());
@@ -139,7 +140,7 @@ class ShareViewController: SLComposeServiceViewController {
     }
     
     func showAccountSelection() {
-        if xmppClient.state == .disconnected {
+        if xmppClient.state != .disconnected {
             xmppClient.disconnect(true);
         }
         let controller = storyboard?.instantiateViewController(withIdentifier: "accountSelectionViewController") as! AccountsTableViewController;
@@ -159,8 +160,10 @@ class ShareViewController: SLComposeServiceViewController {
         
         if let password = getAccountPassword() {
             xmppClient.connectionConfiguration.setUserPassword(password);
+            if let rosterStore: RosterStore = xmppClient.sessionObject.getProperty(RosterModule.ROSTER_STORE_KEY) {
+                rosterStore.cleared();
+            }
             xmppClient.login();
-            //xmppClient.sessionObject.setUserProperty(SocketConnector.SSL_CERTIFICATE_VALIDATOR, value: self.sslCertificateValidator);
         }
     }
     

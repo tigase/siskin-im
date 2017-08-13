@@ -91,7 +91,7 @@ class ChatSettingsViewController: UITableViewController {
             cell.switchView.isOn = Settings.SharingViaHttpUpload.getBool();
             cell.valueChangedListener = {(switchView: UISwitch) in
                 if switchView.isOn {
-                    let alert = UIAlertController(title: nil, message: "When you share files using HTTP, they are uploaded to HTTP server and anyone who knows HTTP address is able to download this file.\nDo you wish to enable?",preferredStyle: .alert);
+                    let alert = UIAlertController(title: nil, message: "When you share files using HTTP, they are uploaded to HTTP server with unique URL. Anyone who knows the unique URL to the file is able to download it.\nDo you wish to enable?",preferredStyle: .alert);
                     alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
                         Settings.SharingViaHttpUpload.setValue(true);
                     }));

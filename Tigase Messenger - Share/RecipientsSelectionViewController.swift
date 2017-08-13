@@ -32,6 +32,7 @@ class RecipientsSelectionViewController: UITableViewController {
     var xmppClient: XMPPClient! {
         didSet {
             let store = RosterModule.getRosterStore(xmppClient.sessionObject) as! DefaultRosterStore;
+            self.allItems.removeAll();
             store.getJids().forEach({(jid) in
                 if let item = store.get(for: jid) {
                     allItems[jid] = item;
@@ -44,6 +45,24 @@ class RecipientsSelectionViewController: UITableViewController {
     var delegate: ShareViewController?;
     
     var sharedDefaults = UserDefaults(suiteName: "group.TigaseMessenger.Share");
+    fileprivate let indicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: 80, height: 80));
+    
+    override func viewDidLoad() {
+        super.viewDidLoad();
+        indicator.activityIndicatorViewStyle = .gray;
+        indicator.backgroundColor = UIColor.white;
+        indicator.hidesWhenStopped = true;
+        self.view.addSubview(indicator);
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        if xmppClient.state == .connecting {
+            indicator.startAnimating();
+        }
+        super.viewWillAppear(animated);
+        let view = self.parent!.view!;
+        indicator.center = CGPoint(x: view.bounds.width / 2, y: view.bounds.height / 2);
+    }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1;
@@ -76,6 +95,14 @@ class RecipientsSelectionViewController: UITableViewController {
         tableView.reloadData();
     }
     
+    func hideIndicator() {
+        DispatchQueue.main.async {
+            if self.indicator.isAnimating {
+                self.indicator.stopAnimating();
+            }
+        }
+    }
+    
     func updateItem(item: RosterItem?) {
         if item != nil {
             allItems[item!.jid] = item!;
@@ -87,6 +114,9 @@ class RecipientsSelectionViewController: UITableViewController {
             return (r1.name ?? r1.jid.stringValue).compare(r2.name ?? r2.jid.stringValue) == .orderedAscending;
         }
         tableView.reloadData();
+        if item != nil {
+            hideIndicator();
+        }
     }
     
 }
