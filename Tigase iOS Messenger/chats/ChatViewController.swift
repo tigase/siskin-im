@@ -88,7 +88,8 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         super.viewWillAppear(animated);
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(accountStateChanged), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(accountStateChanged), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(messageUpdated), name: DBChatHistoryStore.MESSAGE_UPDATED, object: nil);
         xmppService.registerEventHandler(self, for: PresenceModule.ContactPresenceChanged.TYPE);
         
         self.updateTitleView();
@@ -130,13 +131,12 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let item = dataSource.getItem(for: indexPath);
-        let incoming = (item.state % 2) == 0;
+        let incoming = item.state.direction == .incoming;
         let id = incoming ? "ChatTableViewCellIncoming" : "ChatTableViewCellOutgoing"
         let cell: ChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
         cell.transform = cachedDataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
         cell.avatarView?.image = self.xmppService.avatarManager.getAvatar(for: self.jid.bareJid, account: self.account);
-        cell.setMessageText(data: item.data, id: item.id, preview: item.preview, downloader: self.downloadPreview);
-        cell.setTimestamp(item.timestamp);
+        cell.setValues(data: item.data, ts: item.timestamp, id: item.id, state: item.state, preview: item.preview, downloader: self.downloadPreview);
         cell.setNeedsUpdateConstraints();
         cell.updateConstraintsIfNeeded();
         
@@ -159,14 +159,14 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
     
     class ChatViewItem: CachedViewDataSourceItem, BaseChatViewController_PreviewExtension_PreviewAwareItem {
         let id: Int;
-        let state: Int;
+        var state: DBChatHistoryStore.State;
         let data: String?;
         let timestamp: Date;
         var preview: String?;
         
         init(cursor: DBCursor) {
             id = cursor["id"]!;
-            state = cursor["state"]!;
+            state = DBChatHistoryStore.State(rawValue: cursor["state"]!)!;
             data = cursor["data"];
             timestamp = cursor["timestamp"]!;
             preview = cursor["preview"];
@@ -224,6 +224,23 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         let account = notification.userInfo!["account"]! as! String;
         if self.account.stringValue == account {
             updateTitleView();
+        }
+    }
+    
+    func messageUpdated(_ notification: Notification) {
+        guard let data = notification.userInfo else {
+            return;
+        }
+        guard let id = data["message-id"] as? Int else {
+            return;
+        }
+        updateItem(msgId: id) { (item) in
+            if let state = data["state"] as? DBChatHistoryStore.State {
+                (item as? ChatViewItem)?.state = state;
+            }
+            if data.keys.contains("preview") {
+                (item as? ChatViewItem)?.preview = data["preview"] as? String;
+            }
         }
     }
     
@@ -295,7 +312,11 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
             DispatchQueue.global(qos: .default).async {
                 let messageModule: MessageModule? = client?.modulesManager.getModule(MessageModule.ID);
                 if let chat = messageModule?.chatManager.getChat(with: self.jid, thread: nil) {
-                    let msg = messageModule!.sendMessage(in: chat, body: body, additionalElements: additional);
+                    let msg = chat.createMessage(body, type: .chat, subject: nil, additionalElements: additional);
+                    if Settings.MessageDeliveryReceiptsEnabled.getBool() {
+                        msg.messageDelivery = MessageDeliveryReceiptEnum.request;
+                    }
+                    client?.context.writer?.write(msg);
                     self.xmppService.dbChatHistoryStore.appendMessage(for: client!.sessionObject, message: msg, preview: preview);
                 }
             }

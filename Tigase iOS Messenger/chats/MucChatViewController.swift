@@ -110,8 +110,7 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
         } else {
             cell.avatarView?.image = self.xmppService.avatarManager.defaultAvatar;
         }
-        cell.setMessageText(data: item.data, id: item.id, preview: item.preview, downloader: self.downloadPreview);
-        cell.setTimestamp(item.timestamp);
+        cell.setValues(data: item.data, ts: item.timestamp, id: item.id, preview: item.preview, downloader: self.downloadPreview);
         return cell;
     }
 

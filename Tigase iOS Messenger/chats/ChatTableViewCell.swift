@@ -97,11 +97,21 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         // Configure the view for the selected state
     }
     
-    func setTimestamp(_ ts: Date) {
-        timestampView.text = formatTimestamp(ts);
-    }
-
-    func setMessageText(data text: String?, id: Int?, preview: String? = nil, downloader: ((URL,Int)->Void)? = nil) {
+    func setValues(data text: String?, ts: Date?, id: Int?, state: DBChatHistoryStore.State? = nil, preview: String? = nil, downloader: ((URL,Int)->Void)? = nil) {
+        if ts != nil {
+            if state != nil && state!.direction == .outgoing {
+                switch state!.state {
+                case .delivered:
+                    timestampView.text = formatTimestamp(ts!) + " \u{2713}";
+                default:
+                    timestampView.text = formatTimestamp(ts!);
+                }
+            } else {
+                timestampView.text = formatTimestamp(ts!);
+            }
+        } else {
+            timestampView.text = nil;
+        }
         self.previewUrl = nil;
         self.previewView?.image = nil;
         if text != nil {

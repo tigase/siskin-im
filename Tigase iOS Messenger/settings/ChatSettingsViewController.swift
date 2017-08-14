@@ -25,7 +25,7 @@ class ChatSettingsViewController: UITableViewController {
 
     let tree: [[SettingsEnum]] = [
         [SettingsEnum.recentsMessageLinesNo, SettingsEnum.recentsSortType],
-        [SettingsEnum.deleteChatHistoryOnClose, SettingsEnum.enableMessageCarbons],
+        [SettingsEnum.deleteChatHistoryOnClose, SettingsEnum.enableMessageCarbons, SettingsEnum.messageDeliveryReceipts],
         [SettingsEnum.sharingViaHttpUpload, SettingsEnum.maxImagePreviewSize, SettingsEnum.clearImagePreviewCache],
     ];
     
@@ -111,6 +111,13 @@ class ChatSettingsViewController: UITableViewController {
             return cell;
         case .clearImagePreviewCache:
             return tableView.dequeueReusableCell(withIdentifier: "ClearImagePreviewTableViewCell", for: indexPath);
+        case .messageDeliveryReceipts:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "MessageDeliveryReceiptsTableViewCell", for: indexPath) as! SwitchTableViewCell;
+            cell.switchView.isOn = Settings.MessageDeliveryReceiptsEnabled.getBool();
+            cell.valueChangedListener = {(switchView: UISwitch) in
+                Settings.MessageDeliveryReceiptsEnabled.setValue(switchView.isOn);
+            };
+            return cell;
         }
     }
     
@@ -177,6 +184,7 @@ class ChatSettingsViewController: UITableViewController {
         case sharingViaHttpUpload = 4
         case maxImagePreviewSize = 5;
         case clearImagePreviewCache = 6;
+        case messageDeliveryReceipts = 7;
     }
     
     internal class MaxImagePreviewSizeItem: TablePickerViewItemsProtocol {

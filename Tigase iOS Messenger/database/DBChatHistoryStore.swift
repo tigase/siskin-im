@@ -27,7 +27,9 @@ open class DBChatHistoryStore: Logger, EventHandler {
     
     open static let MESSAGE_NEW = Notification.Name("messengerMessageNew");
     open static let CHAT_ITEMS_UPDATED = Notification.Name("messengerChatUpdated");
+    open static let MESSAGE_UPDATED = Notification.Name("messengerMessageUpdated");
     
+    fileprivate static let CHAT_GET_ID_WITH_ACCOUNT_PARTICIPANT_AND_STANZA_ID = "SELECT id FROM chat_history WHERE account = :account AND jid = :jid AND stanza_id = :stanzaId";
     fileprivate static let CHAT_MSG_APPEND = "INSERT INTO chat_history (account, jid, author_jid, author_nickname, timestamp, item_type, data, stanza_id, state) VALUES (:account, :jid, :author_jid, :author_nickname, :timestamp, :item_type, :data, :stanza_id, :state)";
     fileprivate static let CHAT_MSGS_COUNT = "SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid";
     fileprivate static let CHAT_MSGS_COUNT_UNREAD_CHATS = "select count(1) FROM (SELECT account, jid FROM chat_history WHERE state = \(State.incoming_unread.rawValue) GROUP BY account, jid) as x";
@@ -35,6 +37,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
     fileprivate static let CHAT_MSGS_GET = "SELECT id, author_jid, author_nickname, timestamp, item_type, data, state, preview FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp LIMIT :limit OFFSET :offset"
     fileprivate static let CHAT_MSG_UPDATE_PREVIEW = "UPDATE chat_history SET preview = :preview WHERE id = :id";
     fileprivate static let CHAT_MSGS_MARK_AS_READ = "UPDATE chat_history SET state = \(State.incoming.rawValue) WHERE account = :account AND jid = :jid AND state = \(State.incoming_unread.rawValue)";
+    fileprivate static let CHAT_MSG_CHANGE_STATE = "UPDATE chat_history SET state = :newState WHERE id = :id AND state = :oldState";
     fileprivate static let MSG_ALREADY_ADDED = "SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND timestamp BETWEEN :ts_from AND :ts_to AND item_type = :item_type AND data = :data AND (:stanza_id IS NULL OR (stanza_id IS NOT NULL AND stanza_id = :stanza_id)) AND (:author_jid is null OR author_jid = :author_jid) AND (:author_nickname is null OR author_nickname = :author_nickname)";
     
     fileprivate let dbConnection:DBConnection;
@@ -44,8 +47,10 @@ open class DBChatHistoryStore: Logger, EventHandler {
     fileprivate lazy var msgsDeleteStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_DELETE);
     fileprivate lazy var msgsCountUnreadChatsStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_COUNT_UNREAD_CHATS);
     //private lazy var msgsGetStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_GET);
+    fileprivate lazy var msgGetIdWithAccountPariticipantAndStanzaIdStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_GET_ID_WITH_ACCOUNT_PARTICIPANT_AND_STANZA_ID);
     fileprivate lazy var msgsMarkAsReadStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_MARK_AS_READ);
-    fileprivate lazy var msgUpdatePreview: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSG_UPDATE_PREVIEW);
+    fileprivate lazy var msgUpdatePreviewStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSG_UPDATE_PREVIEW);
+    fileprivate lazy var msgUpdateStateStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSG_CHANGE_STATE);
     fileprivate lazy var msgAlreadyAddedStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.MSG_ALREADY_ADDED);
     fileprivate lazy var chatUpdateTimestamp: DBStatement! = try? self.dbConnection.prepareStatement("UPDATE chats SET timestamp = :timestamp WHERE account = :account AND jid = :jid AND timestamp < :timestamp");
     fileprivate lazy var listUnreadChatsStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT DISTINCT account, jid FROM chat_history WHERE state = \(State.incoming_unread.rawValue)");
@@ -207,9 +212,17 @@ open class DBChatHistoryStore: Logger, EventHandler {
             appendMucMessage(event: e);
         case let e as MessageArchiveManagementModule.ArchivedMessageReceivedEvent:
             appendMessage(event: e);
+        case let e as MessageDeliveryReceiptsModule.ReceiptEvent:
+            updateMessageState(event: e);
         default:
             log("received unsupported event", event);
         }
+    }
+    
+    fileprivate func updateMessageState(event: MessageDeliveryReceiptsModule.ReceiptEvent) {
+        changeMessageState(account: event.message.to!.bareJid, jid: event.message.from!.bareJid, stanzaId: event.messageId, oldState: State.outgoing, newState: State.outgoing_delivered, completion: {(msgId) in
+            NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_UPDATED, object: self, userInfo: ["message-id": msgId, "state": State.outgoing_delivered]);
+        });
     }
     
     open func countUnreadChats() -> Int {
@@ -239,7 +252,22 @@ open class DBChatHistoryStore: Logger, EventHandler {
     open func updatePreview(msgId: Int, preview: String?, completion: ((Int)->Void)?) {
         dbConnection.dispatch_async_db_queue {
             let params: [String:Any?] = ["id": msgId, "preview": preview];
-            if try! self.msgUpdatePreview.update(params) > 0 {
+            if try! self.msgUpdatePreviewStmt.update(params) > 0 {
+                DispatchQueue.global().async {
+                    completion?(msgId);
+                }
+            }
+        }
+    }
+    
+    fileprivate func changeMessageState(account: BareJID, jid: BareJID, stanzaId: String, oldState: State, newState: State, completion: ((Int)->Void)?) {
+        dbConnection.dispatch_async_db_queue {
+            let idParams: [String: Any?] = ["account": account, "jid": jid, "stanzaId": stanzaId];
+            guard let msgId = try! self.msgGetIdWithAccountPariticipantAndStanzaIdStmt.scalar(idParams) else {
+                return;
+            }
+            let params: [String: Any?] = ["id": msgId, "oldState": oldState.rawValue, "newState": newState.rawValue];
+            if try! self.msgUpdateStateStmt.update(params) > 0 {
                 DispatchQueue.global().async {
                     completion?(msgId);
                 }
@@ -278,6 +306,42 @@ open class DBChatHistoryStore: Logger, EventHandler {
         case outgoing = 1
         case incoming_unread = 2
         case outgoing_unsent = 3
+        case outgoing_delivered = 4
+        case outgoing_read = 5
+        
+        var direction: MessageDirection {
+            switch self {
+            case .incoming, .incoming_unread:
+                return .incoming;
+            case .outgoing, .outgoing_unsent, .outgoing_delivered, .outgoing_read:
+                return .outgoing;
+            }
+        }
+        
+        var state: MessageState {
+            switch self {
+            case .incoming, .outgoing_read:
+                return .read;
+            case .incoming_unread, .outgoing_delivered:
+                return .delivered;
+            case .outgoing_unsent:
+                return .unsent;
+            case .outgoing:
+                return .sent;
+            }
+        }
+    }
+    
+    public enum MessageDirection {
+        case incoming
+        case outgoing
+    }
+    
+    public enum MessageState {
+        case unsent
+        case sent
+        case delivered
+        case read
     }
     
     public enum ItemType:Int {
