@@ -26,7 +26,7 @@ class ChatSettingsViewController: UITableViewController {
     let tree: [[SettingsEnum]] = [
         [SettingsEnum.recentsMessageLinesNo, SettingsEnum.recentsSortType],
         [SettingsEnum.deleteChatHistoryOnClose, SettingsEnum.enableMessageCarbons, SettingsEnum.messageDeliveryReceipts],
-        [SettingsEnum.sharingViaHttpUpload, SettingsEnum.maxImagePreviewSize, SettingsEnum.clearImagePreviewCache],
+        [SettingsEnum.sharingViaHttpUpload, SettingsEnum.simplifiedLinkToHTTPFile, SettingsEnum.maxImagePreviewSize, SettingsEnum.clearImagePreviewCache],
     ];
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -118,6 +118,13 @@ class ChatSettingsViewController: UITableViewController {
                 Settings.MessageDeliveryReceiptsEnabled.setValue(switchView.isOn);
             };
             return cell;
+        case .simplifiedLinkToHTTPFile:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "SimplifiedLinkToFileTableViewCell", for: indexPath) as! SwitchTableViewCell;
+            cell.switchView.isOn = Settings.SimplifiedLinkToFileIfPreviewIsAvailable.getBool();
+            cell.valueChangedListener = {(switchView: UISwitch) in
+                Settings.SimplifiedLinkToFileIfPreviewIsAvailable.setValue(switchView.isOn);
+            };
+            return cell;
         }
     }
     
@@ -185,6 +192,7 @@ class ChatSettingsViewController: UITableViewController {
         case maxImagePreviewSize = 5;
         case clearImagePreviewCache = 6;
         case messageDeliveryReceipts = 7;
+        case simplifiedLinkToHTTPFile = 8;
     }
     
     internal class MaxImagePreviewSizeItem: TablePickerViewItemsProtocol {

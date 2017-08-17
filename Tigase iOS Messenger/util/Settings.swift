@@ -38,6 +38,7 @@ public enum Settings: String {
     case SharingViaHttpUpload
     case MaxImagePreviewSize
     case MessageDeliveryReceiptsEnabled
+    case SimplifiedLinkToFileIfPreviewIsAvailable
     
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     

@@ -97,7 +97,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             self.applicationKeepOnlineOnAwayFinished(application, taskId: taskId);
         }
         
-        let timeout = min(defaultKeepOnlineOnAwayTime, application.backgroundTimeRemaining - 11);
+        let timeout = min(defaultKeepOnlineOnAwayTime, application.backgroundTimeRemaining - 15);
         print("keep online on away background task", taskId, "started at", NSDate(), "for", timeout, "s");
         
         self.keepOnlineOnAwayTimer = Timer(delayInSeconds: timeout, repeats: false, callback: {
@@ -111,7 +111,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         self.keepOnlineOnAwayTimer = nil;
         print("keep online timer finished at", taskId, NSDate());
         if (self.xmppService.backgroundTaskFinished()) {
-            _ = Timer(delayInSeconds: 7, repeats: false, callback: {
+            _ = Timer(delayInSeconds: 6, repeats: false, callback: {
                 print("finshed disconnection of push accounts", taskId);
                 application.endBackgroundTask(taskId);
             });

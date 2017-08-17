@@ -115,6 +115,8 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         self.previewUrl = nil;
         self.previewView?.image = nil;
         if text != nil {
+            var previewRange: NSRange? = nil;
+            var previewSourceUrl: URL? = nil;
             let attrText = NSMutableAttributedString(string: text!);
             
             var first = true;
@@ -133,6 +135,8 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
                                 })
                                 if previewView?.image != nil && previewKey != nil {
                                     previewUrl = ImageCache.shared.getURL(for: previewKey);
+                                    previewRange = match.range;
+                                    previewSourceUrl = url;
                                 }
                             }
                         }
@@ -154,6 +158,9 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
                     }
                 }
             }
+            if previewSourceUrl != nil && Settings.SimplifiedLinkToFileIfPreviewIsAvailable.getBool() {
+                attrText.mutableString.replaceCharacters(in: previewRange!, with: "Link to file");
+            }
             self.messageTextView.attributedText = attrText;
         } else {
             self.messageTextView.text = text;
@@ -167,14 +174,19 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         
         let point = recognizer.location(in: self.messageTextView);
         let layoutManager = NSLayoutManager();
-        let textStorage = NSTextStorage(attributedString: self.messageTextView.attributedText!);
-        textStorage.addLayoutManager(layoutManager);
+        let attrText = self.messageTextView.attributedText!.mutableCopy() as! NSMutableAttributedString;
+        attrText.addAttribute(NSFontAttributeName, value: self.messageTextView.font, range: NSRange(location: 0, length: attrText.length));
+        let textStorage = NSTextStorage(attributedString: attrText);
         let textContainer = NSTextContainer(size: self.messageTextView.bounds.size);
+        textContainer.maximumNumberOfLines = self.messageTextView.numberOfLines;
+        layoutManager.usesFontLeading = true;
         textContainer.lineFragmentPadding = 0;
         textContainer.lineBreakMode = self.messageTextView.lineBreakMode;
         layoutManager.addTextContainer(textContainer);
+        textStorage.addLayoutManager(layoutManager);
+        
         let idx = layoutManager.characterIndex(for: point, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil);
-        if let url = self.messageTextView.attributedText?.attribute(NSLinkAttributeName, at: idx, effectiveRange: nil) as? NSURL {
+        if let url = attrText.attribute(NSLinkAttributeName, at: idx, effectiveRange: nil) as? NSURL {
             UIApplication.shared.open(url as URL);
         }
     }

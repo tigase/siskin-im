@@ -1732,8 +1732,47 @@
                                     <outlet property="switchView" destination="h7w-Op-jan" id="NsT-XJ-1X2"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="maxImagePreviewSizeTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="MaxImagePreviewSizeTableViewCell" id="enK-aO-tlE" userLabel="MaxImagePreviewSizeTableViewCell">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="simplifiedLinkToFileTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="SimplifiedLinkToFileTableViewCell" id="mqV-dt-Tsq" userLabel="SimplifiedLinkToFileTableViewCell" customClass="SwitchTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="319.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="mqV-dt-Tsq" id="zdf-Hw-TR4">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="040-0z-3dj">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Simplified link to HTTP file" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="03e-6d-EOd">
+                                                    <rect key="frame" x="8" y="4" width="300" height="35.5"/>
+                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TKy-Ug-fOx">
+                                                    <rect key="frame" x="318" y="4" width="51" height="35.5"/>
+                                                    <connections>
+                                                        <action selector="valueChanged:" destination="mqV-dt-Tsq" eventType="valueChanged" id="rad-7p-WJR"/>
+                                                    </connections>
+                                                </switch>
+                                            </subviews>
+                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
+                                        </stackView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="040-0z-3dj" firstAttribute="leading" secondItem="zdf-Hw-TR4" secondAttribute="leading" id="PzU-Pa-fUA"/>
+                                        <constraint firstAttribute="bottom" secondItem="040-0z-3dj" secondAttribute="bottom" id="Thu-UL-o93"/>
+                                        <constraint firstAttribute="trailing" secondItem="040-0z-3dj" secondAttribute="trailing" id="XCf-7R-BVo"/>
+                                        <constraint firstItem="040-0z-3dj" firstAttribute="top" secondItem="zdf-Hw-TR4" secondAttribute="top" id="vbh-19-G0O"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <accessibility key="accessibilityConfiguration" identifier="simplifiedLinkToFileTableViewCell"/>
+                                <connections>
+                                    <outlet property="switchView" destination="TKy-Ug-fOx" id="p52-9s-kXm"/>
+                                </connections>
+                            </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="maxImagePreviewSizeTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="MaxImagePreviewSizeTableViewCell" id="enK-aO-tlE" userLabel="MaxImagePreviewSizeTableViewCell">
+                                <rect key="frame" x="0.0" y="363.5" width="375" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="enK-aO-tlE" id="TFD-eN-puq">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
@@ -1769,7 +1808,7 @@
                                 <accessibility key="accessibilityConfiguration" identifier="maxImagePreviewSizeTableViewCell"/>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="clearImagePreviewTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ClearImagePreviewTableViewCell" id="PeQ-ux-gi0" userLabel="ClearImagePreviewTableViewCell">
-                                <rect key="frame" x="0.0" y="363.5" width="375" height="44"/>
+                                <rect key="frame" x="0.0" y="407.5" width="375" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="PeQ-ux-gi0" id="wgm-Nm-DPq">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
