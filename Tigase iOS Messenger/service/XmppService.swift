@@ -172,6 +172,11 @@ open class XmppService: Logger, EventHandler {
             pushModule.deviceId = Settings.DeviceToken.getString();
             pushModule.enabled = config?.pushNotifications ?? false;
         }
+        if let smModule: StreamManagementModule = client?.modulesManager.getModule(StreamManagementModule.ID) {
+            // for push notifications this needs to be far lower value, ie. 60-90 seconds
+            smModule.maxResumptionTimeout = (config?.pushNotifications ?? false) ? 90 : 3600;
+        }
+
         
         clients[userJid] = client;
         
@@ -203,7 +208,6 @@ open class XmppService: Logger, EventHandler {
     
     fileprivate func registerModules(_ client:XMPPClient) {
         let smModule = client.modulesManager.register(StreamManagementModule());
-        smModule.maxResumptionTimeout = 3600;
         _ = client.modulesManager.register(AuthModule());
         _ = client.modulesManager.register(StreamFeaturesModule());
         _ = client.modulesManager.register(SaslModule());
