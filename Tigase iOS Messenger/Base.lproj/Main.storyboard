@@ -1507,31 +1507,26 @@
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="fk3-mO-T07">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Delete chat history on chat close" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KrZ-rd-flR">
-                                                    <rect key="frame" x="8" y="4" width="300" height="35.5"/>
-                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bFi-8G-Jyo">
-                                                    <rect key="frame" x="318" y="4" width="51" height="35.5"/>
-                                                    <connections>
-                                                        <action selector="valueChanged:" destination="jVm-pz-STn" eventType="valueChanged" id="k5B-Xk-xnW"/>
-                                                    </connections>
-                                                </switch>
-                                            </subviews>
-                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
-                                        </stackView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Clear chat on close" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KrZ-rd-flR">
+                                            <rect key="frame" x="8" y="11" width="302" height="20.5"/>
+                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bFi-8G-Jyo">
+                                            <rect key="frame" x="318" y="6.5" width="51" height="31"/>
+                                            <connections>
+                                                <action selector="valueChanged:" destination="jVm-pz-STn" eventType="valueChanged" id="k5B-Xk-xnW"/>
+                                            </connections>
+                                        </switch>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstAttribute="trailing" secondItem="fk3-mO-T07" secondAttribute="trailing" id="1a2-34-nMy"/>
-                                        <constraint firstItem="fk3-mO-T07" firstAttribute="leading" secondItem="2yS-99-hFP" secondAttribute="leading" id="G2m-4s-XLw"/>
-                                        <constraint firstAttribute="bottom" secondItem="fk3-mO-T07" secondAttribute="bottom" id="XGF-HB-Wux"/>
-                                        <constraint firstItem="fk3-mO-T07" firstAttribute="top" secondItem="2yS-99-hFP" secondAttribute="top" id="jjU-T8-CXC"/>
+                                        <constraint firstItem="bFi-8G-Jyo" firstAttribute="leading" relation="lessThanOrEqual" secondItem="KrZ-rd-flR" secondAttribute="trailing" constant="8" id="1KV-3x-avr"/>
+                                        <constraint firstItem="KrZ-rd-flR" firstAttribute="centerY" secondItem="2yS-99-hFP" secondAttribute="centerY" id="2ca-EG-ekC"/>
+                                        <constraint firstAttribute="leadingMargin" secondItem="KrZ-rd-flR" secondAttribute="leading" id="6Vo-Mk-4H7"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="bFi-8G-Jyo" secondAttribute="trailing" id="mtE-ih-vRa"/>
+                                        <constraint firstItem="bFi-8G-Jyo" firstAttribute="centerY" secondItem="2yS-99-hFP" secondAttribute="centerY" id="zyU-J5-TT7"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="deleteChatHistoryOnCloseCell"/>
@@ -1546,31 +1541,26 @@
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="i5Y-sq-bU5">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Message carbons" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tpr-Fc-eTn">
-                                                    <rect key="frame" x="8" y="4" width="300" height="35.5"/>
-                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UCd-0R-Z8l">
-                                                    <rect key="frame" x="318" y="4" width="51" height="35.5"/>
-                                                    <connections>
-                                                        <action selector="valueChanged:" destination="H84-3P-R6i" eventType="valueChanged" id="f2w-Ys-bWX"/>
-                                                    </connections>
-                                                </switch>
-                                            </subviews>
-                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
-                                        </stackView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Message carbons" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tpr-Fc-eTn">
+                                            <rect key="frame" x="8" y="11" width="135.5" height="20.5"/>
+                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UCd-0R-Z8l">
+                                            <rect key="frame" x="318" y="6.5" width="51" height="31"/>
+                                            <connections>
+                                                <action selector="valueChanged:" destination="H84-3P-R6i" eventType="valueChanged" id="f2w-Ys-bWX"/>
+                                            </connections>
+                                        </switch>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstAttribute="trailing" secondItem="i5Y-sq-bU5" secondAttribute="trailing" id="D2p-zO-qgG"/>
-                                        <constraint firstItem="i5Y-sq-bU5" firstAttribute="leading" secondItem="lCH-q6-9th" secondAttribute="leading" id="Gmz-ca-EO8"/>
-                                        <constraint firstItem="i5Y-sq-bU5" firstAttribute="top" secondItem="lCH-q6-9th" secondAttribute="top" id="PaK-sq-mE8"/>
-                                        <constraint firstAttribute="bottom" secondItem="i5Y-sq-bU5" secondAttribute="bottom" id="hUL-C7-kQu"/>
+                                        <constraint firstItem="UCd-0R-Z8l" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="tpr-Fc-eTn" secondAttribute="trailing" constant="8" id="53Q-iv-rFf"/>
+                                        <constraint firstItem="UCd-0R-Z8l" firstAttribute="centerY" secondItem="lCH-q6-9th" secondAttribute="centerY" id="Fm6-IJ-Gzm"/>
+                                        <constraint firstItem="tpr-Fc-eTn" firstAttribute="centerY" secondItem="lCH-q6-9th" secondAttribute="centerY" id="TTt-XG-Z3S"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="UCd-0R-Z8l" secondAttribute="trailing" id="fYj-7y-nca"/>
+                                        <constraint firstAttribute="leadingMargin" secondItem="tpr-Fc-eTn" secondAttribute="leading" id="kyW-ul-WPu"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="enableMessageCarbonsTableViewCell"/>
@@ -1585,31 +1575,26 @@
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="8SD-f2-Qbs">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="2 lines" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bHz-gc-d4i">
-                                                    <rect key="frame" x="8" y="4" width="255" height="35.5"/>
-                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <stepper opaque="NO" contentMode="center" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="2" minimumValue="1" maximumValue="5" translatesAutoresizingMaskIntoConstraints="NO" id="lIh-bW-tVJ">
-                                                    <rect key="frame" x="273" y="4" width="94" height="29"/>
-                                                    <connections>
-                                                        <action selector="valueChanged:" destination="ke6-6b-BcJ" eventType="valueChanged" id="ogO-AI-48b"/>
-                                                    </connections>
-                                                </stepper>
-                                            </subviews>
-                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
-                                        </stackView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="2 lines" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bHz-gc-d4i">
+                                            <rect key="frame" x="8" y="11" width="49.5" height="20.5"/>
+                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <stepper opaque="NO" contentMode="center" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="2" minimumValue="1" maximumValue="5" translatesAutoresizingMaskIntoConstraints="NO" id="lIh-bW-tVJ">
+                                            <rect key="frame" x="273" y="6.5" width="94" height="29"/>
+                                            <connections>
+                                                <action selector="valueChanged:" destination="ke6-6b-BcJ" eventType="valueChanged" id="ogO-AI-48b"/>
+                                            </connections>
+                                        </stepper>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstAttribute="trailing" secondItem="8SD-f2-Qbs" secondAttribute="trailing" id="3vi-64-9Vo"/>
-                                        <constraint firstItem="8SD-f2-Qbs" firstAttribute="leading" secondItem="MA6-87-6XI" secondAttribute="leading" id="73c-kg-cqs"/>
-                                        <constraint firstItem="8SD-f2-Qbs" firstAttribute="top" secondItem="MA6-87-6XI" secondAttribute="top" id="Dnd-mS-qvM"/>
-                                        <constraint firstAttribute="bottom" secondItem="8SD-f2-Qbs" secondAttribute="bottom" id="tdu-m6-V85"/>
+                                        <constraint firstItem="lIh-bW-tVJ" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="bHz-gc-d4i" secondAttribute="trailing" constant="8" id="0Sg-4l-lH7"/>
+                                        <constraint firstItem="lIh-bW-tVJ" firstAttribute="centerY" secondItem="MA6-87-6XI" secondAttribute="centerY" id="UkV-QV-V6q"/>
+                                        <constraint firstAttribute="leadingMargin" secondItem="bHz-gc-d4i" secondAttribute="leading" id="Wb3-ai-r4e"/>
+                                        <constraint firstItem="bHz-gc-d4i" firstAttribute="centerY" secondItem="MA6-87-6XI" secondAttribute="centerY" id="oLI-BD-YjJ"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="lIh-bW-tVJ" secondAttribute="trailing" id="p7I-jw-XP4"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="recentsMessageLinesNoTableViewCell"/>
@@ -1625,31 +1610,26 @@
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="eMG-YI-Xoa">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Sorting" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ouX-9P-0NA">
-                                                    <rect key="frame" x="8" y="4" width="183" height="35.5"/>
-                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="By presence and time" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IgO-3L-yqM">
-                                                    <rect key="frame" x="201" y="4" width="166" height="35.5"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                            </subviews>
-                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
-                                        </stackView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Sorting" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ouX-9P-0NA">
+                                            <rect key="frame" x="8" y="11" width="56" height="20.5"/>
+                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="By presence and time" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IgO-3L-yqM">
+                                            <rect key="frame" x="201" y="11" width="166" height="20.5"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstAttribute="bottom" secondItem="eMG-YI-Xoa" secondAttribute="bottom" id="Ike-WW-dQJ"/>
-                                        <constraint firstAttribute="trailing" secondItem="eMG-YI-Xoa" secondAttribute="trailing" id="Wg3-I9-Rde"/>
-                                        <constraint firstItem="eMG-YI-Xoa" firstAttribute="top" secondItem="1Yc-Pb-Vdc" secondAttribute="top" id="ZfI-2b-0rg"/>
-                                        <constraint firstItem="eMG-YI-Xoa" firstAttribute="leading" secondItem="1Yc-Pb-Vdc" secondAttribute="leading" id="alO-0G-6Ie"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="IgO-3L-yqM" secondAttribute="trailing" id="9h6-9a-fFi"/>
+                                        <constraint firstAttribute="leadingMargin" secondItem="ouX-9P-0NA" secondAttribute="leading" id="AWy-RY-SjW"/>
+                                        <constraint firstItem="IgO-3L-yqM" firstAttribute="centerY" secondItem="1Yc-Pb-Vdc" secondAttribute="centerY" id="M7e-ap-qBh"/>
+                                        <constraint firstItem="ouX-9P-0NA" firstAttribute="centerY" secondItem="1Yc-Pb-Vdc" secondAttribute="centerY" id="aZp-In-dG4"/>
+                                        <constraint firstItem="IgO-3L-yqM" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="ouX-9P-0NA" secondAttribute="trailing" constant="8" id="e0Z-B2-bAo"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="recentsSortTypeTableViewCell"/>
@@ -1661,31 +1641,26 @@
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="aBP-RV-N7l">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="File sharing via HTTP" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YCD-i9-rFw">
-                                                    <rect key="frame" x="8" y="4" width="300" height="35.5"/>
-                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="b6C-vK-8OB">
-                                                    <rect key="frame" x="318" y="4" width="51" height="35.5"/>
-                                                    <connections>
-                                                        <action selector="valueChanged:" destination="aTX-xv-cL3" eventType="valueChanged" id="Bwk-so-Wpk"/>
-                                                    </connections>
-                                                </switch>
-                                            </subviews>
-                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
-                                        </stackView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="File sharing via HTTP" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YCD-i9-rFw">
+                                            <rect key="frame" x="8" y="11" width="161.5" height="20.5"/>
+                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="b6C-vK-8OB">
+                                            <rect key="frame" x="318" y="6.5" width="51" height="31"/>
+                                            <connections>
+                                                <action selector="valueChanged:" destination="aTX-xv-cL3" eventType="valueChanged" id="Bwk-so-Wpk"/>
+                                            </connections>
+                                        </switch>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstItem="aBP-RV-N7l" firstAttribute="leading" secondItem="JpY-ll-Okq" secondAttribute="leading" id="1Ka-MR-cJQ"/>
-                                        <constraint firstAttribute="trailing" secondItem="aBP-RV-N7l" secondAttribute="trailing" id="S8L-0V-Nz8"/>
-                                        <constraint firstItem="aBP-RV-N7l" firstAttribute="top" secondItem="JpY-ll-Okq" secondAttribute="top" id="azA-Pa-i79"/>
-                                        <constraint firstAttribute="bottom" secondItem="aBP-RV-N7l" secondAttribute="bottom" id="s1o-8I-Vqt"/>
+                                        <constraint firstAttribute="leadingMargin" secondItem="YCD-i9-rFw" secondAttribute="leading" id="C6E-sh-WaL"/>
+                                        <constraint firstItem="YCD-i9-rFw" firstAttribute="centerY" secondItem="JpY-ll-Okq" secondAttribute="centerY" id="IEd-jV-pWn"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="b6C-vK-8OB" secondAttribute="trailing" id="PK7-9n-URY"/>
+                                        <constraint firstItem="b6C-vK-8OB" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="YCD-i9-rFw" secondAttribute="trailing" constant="8" id="dts-0Z-MOr"/>
+                                        <constraint firstItem="b6C-vK-8OB" firstAttribute="centerY" secondItem="JpY-ll-Okq" secondAttribute="centerY" id="j02-4y-Xoh"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="sharingViaHttpUploadTableViewCell"/>
@@ -1700,31 +1675,26 @@
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="4B4-Ob-U3I">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Request delivery receipts" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tkg-wz-9wj">
-                                                    <rect key="frame" x="8" y="4" width="300" height="35.5"/>
-                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="h7w-Op-jan">
-                                                    <rect key="frame" x="318" y="4" width="51" height="35.5"/>
-                                                    <connections>
-                                                        <action selector="valueChanged:" destination="7Gc-kG-RYM" eventType="valueChanged" id="lFY-v7-Hn7"/>
-                                                    </connections>
-                                                </switch>
-                                            </subviews>
-                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
-                                        </stackView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Request delivery receipts" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tkg-wz-9wj">
+                                            <rect key="frame" x="8" y="11" width="193" height="20.5"/>
+                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="h7w-Op-jan">
+                                            <rect key="frame" x="318" y="6.5" width="51" height="31"/>
+                                            <connections>
+                                                <action selector="valueChanged:" destination="7Gc-kG-RYM" eventType="valueChanged" id="lFY-v7-Hn7"/>
+                                            </connections>
+                                        </switch>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstItem="4B4-Ob-U3I" firstAttribute="top" secondItem="eON-m2-pmT" secondAttribute="top" id="0Zb-Jw-tMR"/>
-                                        <constraint firstItem="4B4-Ob-U3I" firstAttribute="leading" secondItem="eON-m2-pmT" secondAttribute="leading" id="Bfb-A9-V4R"/>
-                                        <constraint firstAttribute="trailing" secondItem="4B4-Ob-U3I" secondAttribute="trailing" id="VN1-1M-4rb"/>
-                                        <constraint firstAttribute="bottom" secondItem="4B4-Ob-U3I" secondAttribute="bottom" id="yf5-cD-EX7"/>
+                                        <constraint firstAttribute="leadingMargin" secondItem="tkg-wz-9wj" secondAttribute="leading" id="3S4-8d-aN3"/>
+                                        <constraint firstItem="h7w-Op-jan" firstAttribute="centerY" secondItem="eON-m2-pmT" secondAttribute="centerY" id="Jmp-8V-A6C"/>
+                                        <constraint firstItem="tkg-wz-9wj" firstAttribute="centerY" secondItem="eON-m2-pmT" secondAttribute="centerY" id="LKq-pv-Ojk"/>
+                                        <constraint firstItem="h7w-Op-jan" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="tkg-wz-9wj" secondAttribute="trailing" constant="8" id="Qvv-um-i2i"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="h7w-Op-jan" secondAttribute="trailing" id="eLu-tb-IjR"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="messageDeliveryReceiptsTableViewCell"/>
@@ -1739,31 +1709,26 @@
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="040-0z-3dj">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Simplified link to HTTP file" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="03e-6d-EOd">
-                                                    <rect key="frame" x="8" y="4" width="300" height="35.5"/>
-                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TKy-Ug-fOx">
-                                                    <rect key="frame" x="318" y="4" width="51" height="35.5"/>
-                                                    <connections>
-                                                        <action selector="valueChanged:" destination="mqV-dt-Tsq" eventType="valueChanged" id="rad-7p-WJR"/>
-                                                    </connections>
-                                                </switch>
-                                            </subviews>
-                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
-                                        </stackView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Simplified link to HTTP file" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="03e-6d-EOd">
+                                            <rect key="frame" x="8" y="11" width="200.5" height="20.5"/>
+                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TKy-Ug-fOx">
+                                            <rect key="frame" x="318" y="6.5" width="51" height="31"/>
+                                            <connections>
+                                                <action selector="valueChanged:" destination="mqV-dt-Tsq" eventType="valueChanged" id="rad-7p-WJR"/>
+                                            </connections>
+                                        </switch>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstItem="040-0z-3dj" firstAttribute="leading" secondItem="zdf-Hw-TR4" secondAttribute="leading" id="PzU-Pa-fUA"/>
-                                        <constraint firstAttribute="bottom" secondItem="040-0z-3dj" secondAttribute="bottom" id="Thu-UL-o93"/>
-                                        <constraint firstAttribute="trailing" secondItem="040-0z-3dj" secondAttribute="trailing" id="XCf-7R-BVo"/>
-                                        <constraint firstItem="040-0z-3dj" firstAttribute="top" secondItem="zdf-Hw-TR4" secondAttribute="top" id="vbh-19-G0O"/>
+                                        <constraint firstAttribute="leadingMargin" secondItem="03e-6d-EOd" secondAttribute="leading" id="SBa-Oa-Fk3"/>
+                                        <constraint firstItem="TKy-Ug-fOx" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="03e-6d-EOd" secondAttribute="trailing" constant="8" id="epA-1Z-djS"/>
+                                        <constraint firstItem="TKy-Ug-fOx" firstAttribute="centerY" secondItem="zdf-Hw-TR4" secondAttribute="centerY" id="j2K-uk-V7D"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="TKy-Ug-fOx" secondAttribute="trailing" id="jLO-2M-84N"/>
+                                        <constraint firstItem="03e-6d-EOd" firstAttribute="centerY" secondItem="zdf-Hw-TR4" secondAttribute="centerY" id="sDN-He-Bfs"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="simplifiedLinkToFileTableViewCell"/>
@@ -1778,31 +1743,26 @@
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="95M-If-fEb">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Max image preview size" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Yeg-XF-3sR">
-                                                    <rect key="frame" x="8" y="4" width="183" height="35.5"/>
-                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="By presence and time" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5IG-hv-YJI">
-                                                    <rect key="frame" x="201" y="4" width="166" height="35.5"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                            </subviews>
-                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
-                                        </stackView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Max image preview size" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Yeg-XF-3sR">
+                                            <rect key="frame" x="8" y="11" width="182" height="20.5"/>
+                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="By presence and time" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5IG-hv-YJI">
+                                            <rect key="frame" x="201" y="11" width="166" height="20.5"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstAttribute="bottom" secondItem="95M-If-fEb" secondAttribute="bottom" id="0Bn-SC-oCf"/>
-                                        <constraint firstItem="95M-If-fEb" firstAttribute="leading" secondItem="TFD-eN-puq" secondAttribute="leading" id="MdG-cH-sfB"/>
-                                        <constraint firstItem="95M-If-fEb" firstAttribute="top" secondItem="TFD-eN-puq" secondAttribute="top" id="dTc-Lb-gCQ"/>
-                                        <constraint firstAttribute="trailing" secondItem="95M-If-fEb" secondAttribute="trailing" id="e3h-Gz-oKB"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="5IG-hv-YJI" secondAttribute="trailing" id="4Ld-Dl-PUd"/>
+                                        <constraint firstItem="Yeg-XF-3sR" firstAttribute="leading" secondItem="TFD-eN-puq" secondAttribute="leadingMargin" id="6ZG-Vy-3cf"/>
+                                        <constraint firstItem="5IG-hv-YJI" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Yeg-XF-3sR" secondAttribute="trailing" constant="8" id="Hit-jd-IC5"/>
+                                        <constraint firstItem="5IG-hv-YJI" firstAttribute="centerY" secondItem="TFD-eN-puq" secondAttribute="centerY" id="Zeq-jt-AAL"/>
+                                        <constraint firstItem="Yeg-XF-3sR" firstAttribute="centerY" secondItem="TFD-eN-puq" secondAttribute="centerY" id="r4w-gI-iVI"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="maxImagePreviewSizeTableViewCell"/>
@@ -1859,31 +1819,26 @@
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="QvD-CY-HGE">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Subscribe to new contact presence" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fko-hG-Gsx">
-                                                    <rect key="frame" x="8" y="4" width="300" height="35.5"/>
-                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GfX-0A-TMX">
-                                                    <rect key="frame" x="318" y="4" width="51" height="35.5"/>
-                                                    <connections>
-                                                        <action selector="valueChanged:" destination="JH7-td-pLq" eventType="valueChanged" id="UAU-eD-vsL"/>
-                                                    </connections>
-                                                </switch>
-                                            </subviews>
-                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
-                                        </stackView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Auto-authorize contacts" textAlignment="natural" lineBreakMode="wordWrap" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fko-hG-Gsx">
+                                            <rect key="frame" x="8" y="11.5" width="186" height="20.5"/>
+                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <switch opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GfX-0A-TMX">
+                                            <rect key="frame" x="318" y="6.5" width="51" height="31"/>
+                                            <connections>
+                                                <action selector="valueChanged:" destination="JH7-td-pLq" eventType="valueChanged" id="UAU-eD-vsL"/>
+                                            </connections>
+                                        </switch>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstItem="QvD-CY-HGE" firstAttribute="top" secondItem="eKG-Xt-KQg" secondAttribute="top" id="L0K-be-rKm"/>
-                                        <constraint firstAttribute="trailing" secondItem="QvD-CY-HGE" secondAttribute="trailing" id="WkD-M4-Fvk"/>
-                                        <constraint firstItem="QvD-CY-HGE" firstAttribute="leading" secondItem="eKG-Xt-KQg" secondAttribute="leading" id="d45-0B-Mu4"/>
-                                        <constraint firstAttribute="bottom" secondItem="QvD-CY-HGE" secondAttribute="bottom" id="jF3-ar-UcH"/>
+                                        <constraint firstItem="GfX-0A-TMX" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Fko-hG-Gsx" secondAttribute="trailing" constant="8" id="5Tp-QH-5Cs"/>
+                                        <constraint firstItem="Fko-hG-Gsx" firstAttribute="leading" secondItem="eKG-Xt-KQg" secondAttribute="leadingMargin" id="EWG-DK-0TB"/>
+                                        <constraint firstItem="GfX-0A-TMX" firstAttribute="centerY" secondItem="eKG-Xt-KQg" secondAttribute="centerY" id="NSY-Io-95a"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="GfX-0A-TMX" secondAttribute="trailing" id="fBt-wT-A5S"/>
+                                        <constraint firstItem="Fko-hG-Gsx" firstAttribute="centerY" secondItem="eKG-Xt-KQg" secondAttribute="centerY" id="r57-7J-P8V"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="autoSubscribeOnAcceptedSubscriptionRequestTableViewCell"/>
@@ -1898,31 +1853,27 @@
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="5te-g8-ZJI">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Contacts in groups" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hHw-t3-1f7">
-                                                    <rect key="frame" x="8" y="4" width="300" height="35.5"/>
-                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Lsf-F2-LOJ">
-                                                    <rect key="frame" x="318" y="4" width="51" height="35.5"/>
-                                                    <connections>
-                                                        <action selector="valueChanged:" destination="ghk-pp-hYc" eventType="valueChanged" id="Kew-86-zWC"/>
-                                                    </connections>
-                                                </switch>
-                                            </subviews>
-                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
-                                        </stackView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Contacts in groups" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hHw-t3-1f7">
+                                            <rect key="frame" x="8" y="8" width="145" height="27.5"/>
+                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <switch opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Lsf-F2-LOJ">
+                                            <rect key="frame" x="318" y="6.5" width="51" height="31"/>
+                                            <connections>
+                                                <action selector="valueChanged:" destination="ghk-pp-hYc" eventType="valueChanged" id="Kew-86-zWC"/>
+                                            </connections>
+                                        </switch>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstItem="5te-g8-ZJI" firstAttribute="leading" secondItem="tPh-Pb-jDV" secondAttribute="leading" id="4c4-fB-zgz"/>
-                                        <constraint firstAttribute="bottom" secondItem="5te-g8-ZJI" secondAttribute="bottom" id="FDa-9o-7sQ"/>
-                                        <constraint firstItem="5te-g8-ZJI" firstAttribute="top" secondItem="tPh-Pb-jDV" secondAttribute="top" id="mJV-tK-HR6"/>
-                                        <constraint firstAttribute="trailing" secondItem="5te-g8-ZJI" secondAttribute="trailing" id="pkL-SO-myB"/>
+                                        <constraint firstItem="Lsf-F2-LOJ" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="hHw-t3-1f7" secondAttribute="trailing" constant="8" id="0QL-df-hpz"/>
+                                        <constraint firstItem="hHw-t3-1f7" firstAttribute="centerY" secondItem="tPh-Pb-jDV" secondAttribute="centerY" id="UsS-34-NW4"/>
+                                        <constraint firstAttribute="leadingMargin" secondItem="hHw-t3-1f7" secondAttribute="leading" id="Vfz-AL-qNK"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="Lsf-F2-LOJ" secondAttribute="trailing" id="Wyg-Hj-LZt"/>
+                                        <constraint firstItem="hHw-t3-1f7" firstAttribute="top" secondItem="tPh-Pb-jDV" secondAttribute="topMargin" id="cNN-zM-9ag"/>
+                                        <constraint firstItem="Lsf-F2-LOJ" firstAttribute="centerY" secondItem="tPh-Pb-jDV" secondAttribute="centerY" id="pPY-fn-mU7"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="enableMessageCarbonsTableViewCell"/>
@@ -1937,31 +1888,26 @@
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="J0c-xT-BBd">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&quot;Hidden&quot; group" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ahc-gJ-ZoB">
-                                                    <rect key="frame" x="8" y="4" width="300" height="35.5"/>
-                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="R1t-vB-rtL">
-                                                    <rect key="frame" x="318" y="4" width="51" height="35.5"/>
-                                                    <connections>
-                                                        <action selector="valueChanged:" destination="jMn-PZ-u1b" eventType="valueChanged" id="lHD-02-EsS"/>
-                                                    </connections>
-                                                </switch>
-                                            </subviews>
-                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
-                                        </stackView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&quot;Hidden&quot; group" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ahc-gJ-ZoB">
+                                            <rect key="frame" x="8" y="11" width="118.5" height="20.5"/>
+                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <switch opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="R1t-vB-rtL">
+                                            <rect key="frame" x="318" y="6.5" width="51" height="31"/>
+                                            <connections>
+                                                <action selector="valueChanged:" destination="jMn-PZ-u1b" eventType="valueChanged" id="lHD-02-EsS"/>
+                                            </connections>
+                                        </switch>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstItem="J0c-xT-BBd" firstAttribute="leading" secondItem="ful-Ua-c8T" secondAttribute="leading" id="BaY-aa-qkW"/>
-                                        <constraint firstItem="J0c-xT-BBd" firstAttribute="top" secondItem="ful-Ua-c8T" secondAttribute="top" id="Lzh-XK-wEh"/>
-                                        <constraint firstAttribute="trailing" secondItem="J0c-xT-BBd" secondAttribute="trailing" id="k3P-uo-FOX"/>
-                                        <constraint firstAttribute="bottom" secondItem="J0c-xT-BBd" secondAttribute="bottom" id="v1S-DN-Q3n"/>
+                                        <constraint firstItem="R1t-vB-rtL" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Ahc-gJ-ZoB" secondAttribute="trailing" constant="8" id="KPB-iY-YHW"/>
+                                        <constraint firstItem="R1t-vB-rtL" firstAttribute="centerY" secondItem="ful-Ua-c8T" secondAttribute="centerY" id="Y7O-nE-qKa"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="R1t-vB-rtL" secondAttribute="trailing" id="gou-GY-8Sq"/>
+                                        <constraint firstItem="Ahc-gJ-ZoB" firstAttribute="centerY" secondItem="ful-Ua-c8T" secondAttribute="centerY" id="gx0-uy-wec"/>
+                                        <constraint firstAttribute="leadingMargin" secondItem="Ahc-gJ-ZoB" secondAttribute="leading" id="zD0-Ed-Zid"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="enableMessageCarbonsTableViewCell"/>
@@ -1996,31 +1942,26 @@
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="aNX-Sy-bDl">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Notifications from unknown" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AU7-ZQ-sa0">
-                                                    <rect key="frame" x="8" y="4" width="300" height="35.5"/>
-                                                    <accessibility key="accessibilityConfiguration" identifier="accountName"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="YHl-un-ddg">
-                                                    <rect key="frame" x="318" y="4" width="51" height="35.5"/>
-                                                    <connections>
-                                                        <action selector="valueChanged:" destination="y33-bo-5bJ" eventType="valueChanged" id="jEN-XR-ea2"/>
-                                                    </connections>
-                                                </switch>
-                                            </subviews>
-                                            <edgeInsets key="layoutMargins" top="4" left="8" bottom="4" right="8"/>
-                                        </stackView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Notifications from unknown" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AU7-ZQ-sa0">
+                                            <rect key="frame" x="8" y="11" width="210" height="20.5"/>
+                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="YHl-un-ddg">
+                                            <rect key="frame" x="318" y="6.5" width="51" height="31"/>
+                                            <connections>
+                                                <action selector="valueChanged:" destination="y33-bo-5bJ" eventType="valueChanged" id="jEN-XR-ea2"/>
+                                            </connections>
+                                        </switch>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstAttribute="trailing" secondItem="aNX-Sy-bDl" secondAttribute="trailing" id="3za-wn-GHK"/>
-                                        <constraint firstItem="aNX-Sy-bDl" firstAttribute="leading" secondItem="23Y-Xf-2Cj" secondAttribute="leading" id="5od-aP-WU1"/>
-                                        <constraint firstAttribute="bottom" secondItem="aNX-Sy-bDl" secondAttribute="bottom" id="Vbc-DJ-MDS"/>
-                                        <constraint firstItem="aNX-Sy-bDl" firstAttribute="top" secondItem="23Y-Xf-2Cj" secondAttribute="top" id="w7Y-bg-p3K"/>
+                                        <constraint firstItem="YHl-un-ddg" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="AU7-ZQ-sa0" secondAttribute="trailing" constant="8" id="AdT-Be-3dT"/>
+                                        <constraint firstItem="YHl-un-ddg" firstAttribute="centerY" secondItem="23Y-Xf-2Cj" secondAttribute="centerY" id="Fbl-VB-u3s"/>
+                                        <constraint firstAttribute="leadingMargin" secondItem="AU7-ZQ-sa0" secondAttribute="leading" id="KY3-YH-car"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="YHl-un-ddg" secondAttribute="trailing" id="Pe9-fa-sQb"/>
+                                        <constraint firstItem="AU7-ZQ-sa0" firstAttribute="centerY" secondItem="23Y-Xf-2Cj" secondAttribute="centerY" id="iM7-x0-Xgd"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="notificationsFromUnknownTableViewCell"/>
@@ -2251,26 +2192,25 @@
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PSJ-k4-pyD">
-                                                    <rect key="frame" x="543" y="6" width="51" height="31"/>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PSJ-k4-pyD">
+                                                    <rect key="frame" x="318" y="6" width="51" height="31"/>
                                                     <connections>
                                                         <action selector="enabledSwitchChangedValue:" destination="Qym-XP-eKn" eventType="valueChanged" id="yZF-JO-2to"/>
                                                     </connections>
                                                 </switch>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Enabled" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bph-5i-ndY">
-                                                    <rect key="frame" x="8" y="6" width="397" height="31"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Enabled" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bph-5i-ndY">
+                                                    <rect key="frame" x="8" y="11.5" width="62" height="20.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstAttribute="bottomMargin" secondItem="Bph-5i-ndY" secondAttribute="bottom" constant="-1.5" id="19o-Ug-zTO"/>
-                                                <constraint firstItem="Bph-5i-ndY" firstAttribute="top" secondItem="NFA-3o-fCR" secondAttribute="topMargin" constant="-2" id="741-vx-BIX"/>
+                                                <constraint firstItem="PSJ-k4-pyD" firstAttribute="centerY" secondItem="NFA-3o-fCR" secondAttribute="centerY" id="IlQ-Rb-rqY"/>
                                                 <constraint firstAttribute="leadingMargin" secondItem="Bph-5i-ndY" secondAttribute="leading" id="PdX-k5-S9L"/>
+                                                <constraint firstItem="PSJ-k4-pyD" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Bph-5i-ndY" secondAttribute="trailing" constant="8" id="ao2-Xt-gR0"/>
                                                 <constraint firstAttribute="trailingMargin" secondItem="PSJ-k4-pyD" secondAttribute="trailing" id="gd8-Bb-juE"/>
-                                                <constraint firstItem="PSJ-k4-pyD" firstAttribute="top" secondItem="NFA-3o-fCR" secondAttribute="topMargin" constant="-2" id="t5Z-Fv-iKf"/>
-                                                <constraint firstAttribute="bottomMargin" secondItem="PSJ-k4-pyD" secondAttribute="bottom" constant="-1.5" id="xsA-ft-Ntj"/>
+                                                <constraint firstItem="Bph-5i-ndY" firstAttribute="centerY" secondItem="NFA-3o-fCR" secondAttribute="centerY" id="rPq-5f-tst"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                         <constraints>
@@ -2284,17 +2224,17 @@
                                             <rect key="frame" x="0.0" y="0.0" width="342" height="43.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Change account settings" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Lno-CZ-se2">
-                                                    <rect key="frame" x="8" y="8" width="402" height="27.5"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Change account settings" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Lno-CZ-se2">
+                                                    <rect key="frame" x="8" y="11.5" width="326" height="20.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstAttribute="topMargin" secondItem="Lno-CZ-se2" secondAttribute="top" id="6LD-XT-fc8"/>
                                                 <constraint firstAttribute="leadingMargin" secondItem="Lno-CZ-se2" secondAttribute="leading" id="EX1-Tp-Afz"/>
-                                                <constraint firstAttribute="bottomMargin" secondItem="Lno-CZ-se2" secondAttribute="bottom" id="GDx-Ri-mqu"/>
+                                                <constraint firstAttribute="trailingMargin" secondItem="Lno-CZ-se2" secondAttribute="trailing" id="Rqp-NE-ol4"/>
+                                                <constraint firstItem="Lno-CZ-se2" firstAttribute="centerY" secondItem="Z02-2E-IPA" secondAttribute="centerY" id="pEf-lD-rgF"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                         <connections>
@@ -2312,25 +2252,24 @@
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Enabled" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lpu-AZ-s7h">
-                                                    <rect key="frame" x="8" y="6" width="402" height="27.5"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Enabled" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lpu-AZ-s7h">
+                                                    <rect key="frame" x="8" y="11.5" width="62" height="20.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dsP-cn-yaS">
-                                                    <rect key="frame" x="542" y="6" width="51" height="31"/>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dsP-cn-yaS">
+                                                    <rect key="frame" x="318" y="6" width="51" height="31"/>
                                                     <connections>
                                                         <action selector="pushNotificationSwitchChangedValue:" destination="Qym-XP-eKn" eventType="valueChanged" id="1vI-nB-fER"/>
                                                     </connections>
                                                 </switch>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstAttribute="bottomMargin" secondItem="dsP-cn-yaS" secondAttribute="bottom" constant="-1.5" id="0FV-oH-lEQ"/>
                                                 <constraint firstItem="lpu-AZ-s7h" firstAttribute="leading" secondItem="jK5-zB-l3y" secondAttribute="leadingMargin" id="36s-ze-s97"/>
-                                                <constraint firstAttribute="bottomMargin" secondItem="lpu-AZ-s7h" secondAttribute="bottom" constant="-1" id="HHJ-8D-lgT"/>
-                                                <constraint firstItem="dsP-cn-yaS" firstAttribute="top" secondItem="jK5-zB-l3y" secondAttribute="topMargin" constant="-2" id="Qf0-SN-zlE"/>
-                                                <constraint firstItem="lpu-AZ-s7h" firstAttribute="top" secondItem="jK5-zB-l3y" secondAttribute="topMargin" constant="-2" id="iID-QD-ByL"/>
+                                                <constraint firstItem="dsP-cn-yaS" firstAttribute="centerY" secondItem="jK5-zB-l3y" secondAttribute="centerY" id="ZHl-Al-EMD"/>
+                                                <constraint firstItem="lpu-AZ-s7h" firstAttribute="centerY" secondItem="jK5-zB-l3y" secondAttribute="centerY" id="aO7-2g-NDh"/>
+                                                <constraint firstItem="dsP-cn-yaS" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="lpu-AZ-s7h" secondAttribute="trailing" constant="8" id="mPQ-Dw-Jwt"/>
                                                 <constraint firstAttribute="trailingMargin" secondItem="dsP-cn-yaS" secondAttribute="trailing" id="v0L-kQ-29s"/>
                                             </constraints>
                                         </tableViewCellContentView>
@@ -2345,14 +2284,14 @@
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="When in Away/XA/DND state" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vJw-wD-aWZ">
-                                                    <rect key="frame" x="8" y="6" width="402" height="27.5"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="When in Away/XA/DND state" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vJw-wD-aWZ">
+                                                    <rect key="frame" x="8" y="11.5" width="218" height="20.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="NNM-9o-HMC">
-                                                    <rect key="frame" x="542" y="6" width="51" height="31"/>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="NNM-9o-HMC">
+                                                    <rect key="frame" x="318" y="6" width="51" height="31"/>
                                                     <connections>
                                                         <action selector="pushNotificationsForAwaySwitchChangedValue:" destination="Qym-XP-eKn" eventType="valueChanged" id="VCz-ov-hT0"/>
                                                     </connections>
@@ -2360,11 +2299,10 @@
                                             </subviews>
                                             <constraints>
                                                 <constraint firstAttribute="trailingMargin" secondItem="NNM-9o-HMC" secondAttribute="trailing" id="3T9-e2-N5A"/>
-                                                <constraint firstAttribute="bottomMargin" secondItem="NNM-9o-HMC" secondAttribute="bottom" constant="-1.5" id="7UU-y0-Nz3"/>
-                                                <constraint firstItem="vJw-wD-aWZ" firstAttribute="top" secondItem="Lwv-EV-kJ3" secondAttribute="topMargin" constant="-2" id="7hq-Ck-HXb"/>
-                                                <constraint firstItem="NNM-9o-HMC" firstAttribute="top" secondItem="Lwv-EV-kJ3" secondAttribute="topMargin" constant="-2" id="F0V-z7-626"/>
-                                                <constraint firstAttribute="bottomMargin" secondItem="vJw-wD-aWZ" secondAttribute="bottom" constant="-1" id="Go4-mr-kT6"/>
+                                                <constraint firstItem="vJw-wD-aWZ" firstAttribute="centerY" secondItem="Lwv-EV-kJ3" secondAttribute="centerY" id="FPD-7L-YKJ"/>
+                                                <constraint firstItem="NNM-9o-HMC" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="vJw-wD-aWZ" secondAttribute="trailing" constant="8" id="Fl6-0D-iY6"/>
                                                 <constraint firstItem="vJw-wD-aWZ" firstAttribute="leading" secondItem="Lwv-EV-kJ3" secondAttribute="leadingMargin" id="bx9-ui-QhP"/>
+                                                <constraint firstItem="NNM-9o-HMC" firstAttribute="centerY" secondItem="Lwv-EV-kJ3" secondAttribute="centerY" id="urd-1g-3bh"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                         <constraints>
@@ -2382,26 +2320,25 @@
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mrI-c6-25s">
-                                                    <rect key="frame" x="543" y="6" width="51" height="31"/>
-                                                    <connections>
-                                                        <action selector="archivingSwitchChangedValue:" destination="Qym-XP-eKn" eventType="valueChanged" id="I6b-Hg-kwT"/>
-                                                    </connections>
-                                                </switch>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Enabled" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i3O-YM-iTh">
-                                                    <rect key="frame" x="8" y="6" width="397" height="31"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Enabled" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i3O-YM-iTh">
+                                                    <rect key="frame" x="8" y="11.5" width="62" height="20.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mrI-c6-25s">
+                                                    <rect key="frame" x="318" y="6" width="51" height="31"/>
+                                                    <connections>
+                                                        <action selector="archivingSwitchChangedValue:" destination="Qym-XP-eKn" eventType="valueChanged" id="I6b-Hg-kwT"/>
+                                                    </connections>
+                                                </switch>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstItem="i3O-YM-iTh" firstAttribute="top" secondItem="Knn-1R-xJh" secondAttribute="topMargin" constant="-2" id="ErY-gz-qZQ"/>
+                                                <constraint firstItem="mrI-c6-25s" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="i3O-YM-iTh" secondAttribute="trailing" constant="8" id="0qR-Vk-Yb8"/>
+                                                <constraint firstItem="i3O-YM-iTh" firstAttribute="centerY" secondItem="Knn-1R-xJh" secondAttribute="centerY" id="90R-J4-GHl"/>
                                                 <constraint firstAttribute="trailingMargin" secondItem="mrI-c6-25s" secondAttribute="trailing" id="H0E-2F-atO"/>
                                                 <constraint firstAttribute="leadingMargin" secondItem="i3O-YM-iTh" secondAttribute="leading" id="Ms4-h7-8g6"/>
-                                                <constraint firstAttribute="bottomMargin" secondItem="mrI-c6-25s" secondAttribute="bottom" constant="-1.5" id="b0V-UK-G3m"/>
-                                                <constraint firstItem="mrI-c6-25s" firstAttribute="top" secondItem="Knn-1R-xJh" secondAttribute="topMargin" constant="-2" id="bdp-uL-Ac9"/>
-                                                <constraint firstAttribute="bottomMargin" secondItem="i3O-YM-iTh" secondAttribute="bottom" constant="-1.5" id="l0L-Gm-ezd"/>
+                                                <constraint firstItem="mrI-c6-25s" firstAttribute="centerY" secondItem="Knn-1R-xJh" secondAttribute="centerY" id="Oiw-Af-DMS"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                         <constraints>
@@ -2415,25 +2352,24 @@
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="RuR-xp-zcW">
-                                                    <rect key="frame" x="543" y="6" width="51" height="31"/>
-                                                    <connections>
-                                                        <action selector="messageSyncAutomaticSwitchChangedValue:" destination="Qym-XP-eKn" eventType="valueChanged" id="6Rs-bc-VLX"/>
-                                                    </connections>
-                                                </switch>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Automatic synchronization" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YQc-AF-6z0">
-                                                    <rect key="frame" x="8" y="6" width="397" height="31"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Automatic synchronization" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YQc-AF-6z0">
+                                                    <rect key="frame" x="8" y="11.5" width="203" height="20.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="RuR-xp-zcW">
+                                                    <rect key="frame" x="318" y="6" width="51" height="31"/>
+                                                    <connections>
+                                                        <action selector="messageSyncAutomaticSwitchChangedValue:" destination="Qym-XP-eKn" eventType="valueChanged" id="6Rs-bc-VLX"/>
+                                                    </connections>
+                                                </switch>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstItem="RuR-xp-zcW" firstAttribute="top" secondItem="g6W-S5-FHW" secondAttribute="topMargin" constant="-2" id="4bI-oG-Onw"/>
+                                                <constraint firstItem="RuR-xp-zcW" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="YQc-AF-6z0" secondAttribute="trailing" constant="8" id="0aC-UB-JWb"/>
+                                                <constraint firstItem="RuR-xp-zcW" firstAttribute="centerY" secondItem="g6W-S5-FHW" secondAttribute="centerY" id="B3G-fK-tID"/>
                                                 <constraint firstAttribute="trailingMargin" secondItem="RuR-xp-zcW" secondAttribute="trailing" id="K49-3N-kee"/>
-                                                <constraint firstAttribute="bottomMargin" secondItem="RuR-xp-zcW" secondAttribute="bottom" constant="-1.5" id="QQK-pX-WG8"/>
-                                                <constraint firstAttribute="bottomMargin" secondItem="YQc-AF-6z0" secondAttribute="bottom" constant="-1.5" id="RAR-QZ-fsG"/>
-                                                <constraint firstItem="YQc-AF-6z0" firstAttribute="top" secondItem="g6W-S5-FHW" secondAttribute="topMargin" constant="-2" id="ghl-s3-TxI"/>
+                                                <constraint firstItem="YQc-AF-6z0" firstAttribute="centerY" secondItem="g6W-S5-FHW" secondAttribute="centerY" id="oFy-bI-gUG"/>
                                                 <constraint firstAttribute="leadingMargin" secondItem="YQc-AF-6z0" secondAttribute="leading" id="rbN-9V-ubq"/>
                                             </constraints>
                                         </tableViewCellContentView>
@@ -2448,14 +2384,14 @@
                                             <rect key="frame" x="0.0" y="0.0" width="342" height="43.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Synchronization" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hlR-Ng-Ctx">
-                                                    <rect key="frame" x="8" y="8" width="402" height="27.5"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Synchronization" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hlR-Ng-Ctx">
+                                                    <rect key="frame" x="8" y="11.5" width="123" height="20.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" misplaced="YES" text="Last 24 hours" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Gmu-4F-Wug">
-                                                    <rect key="frame" x="325" y="7" width="42" height="21"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Last 24 hours" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Gmu-4F-Wug">
+                                                    <rect key="frame" x="229" y="11.5" width="105" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                                     <nil key="highlightedColor"/>
@@ -2463,12 +2399,10 @@
                                             </subviews>
                                             <constraints>
                                                 <constraint firstAttribute="leadingMargin" secondItem="hlR-Ng-Ctx" secondAttribute="leading" id="0tx-ya-Whq"/>
-                                                <constraint firstItem="Gmu-4F-Wug" firstAttribute="top" secondItem="364-RL-h4d" secondAttribute="topMargin" id="76X-aZ-Equ"/>
-                                                <constraint firstAttribute="topMargin" secondItem="hlR-Ng-Ctx" secondAttribute="top" id="FeQ-lG-ge7"/>
+                                                <constraint firstItem="hlR-Ng-Ctx" firstAttribute="centerY" secondItem="364-RL-h4d" secondAttribute="centerY" id="4ld-0a-3xh"/>
                                                 <constraint firstAttribute="trailingMargin" secondItem="Gmu-4F-Wug" secondAttribute="trailing" id="Kph-Wf-jxd"/>
-                                                <constraint firstAttribute="bottomMargin" secondItem="hlR-Ng-Ctx" secondAttribute="bottom" id="O5I-7z-u17"/>
-                                                <constraint firstAttribute="bottomMargin" secondItem="Gmu-4F-Wug" secondAttribute="bottom" id="itt-PA-w0G"/>
-                                                <constraint firstItem="Gmu-4F-Wug" firstAttribute="leading" secondItem="hlR-Ng-Ctx" secondAttribute="trailing" constant="10" id="xxF-Ue-e2R"/>
+                                                <constraint firstItem="Gmu-4F-Wug" firstAttribute="centerY" secondItem="364-RL-h4d" secondAttribute="centerY" id="ux5-FR-RmQ"/>
+                                                <constraint firstItem="Gmu-4F-Wug" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="hlR-Ng-Ctx" secondAttribute="trailing" constant="8" id="xxF-Ue-e2R"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>

@@ -83,7 +83,7 @@ class ChatSettingsViewController: UITableViewController {
             return cell;
         case .recentsSortType:
             let cell = tableView.dequeueReusableCell(withIdentifier: "RecentsSortTypeTableViewCell", for: indexPath );
-            (cell.contentView.subviews[0].subviews[1] as! UILabel).text = RecentsSortTypeItem.description(of: ChatsListViewController.SortOrder(rawValue: Settings.RecentsOrder.getString()!)!);
+            (cell.contentView.subviews[1] as! UILabel).text = RecentsSortTypeItem.description(of: ChatsListViewController.SortOrder(rawValue: Settings.RecentsOrder.getString()!)!);
             cell.accessoryType = .disclosureIndicator;
             return cell;
         case .sharingViaHttpUpload:
@@ -106,7 +106,7 @@ class ChatSettingsViewController: UITableViewController {
             return cell;
         case .maxImagePreviewSize:
             let cell = tableView.dequeueReusableCell(withIdentifier: "MaxImagePreviewSizeTableViewCell", for: indexPath);
-            (cell.contentView.subviews[0].subviews[1] as! UILabel).text = MaxImagePreviewSizeItem.description(of: Settings.MaxImagePreviewSize.getInt());
+            (cell.contentView.subviews[1] as! UILabel).text = MaxImagePreviewSizeItem.description(of: Settings.MaxImagePreviewSize.getInt());
             cell.accessoryType = .disclosureIndicator;
             return cell;
         case .clearImagePreviewCache:
