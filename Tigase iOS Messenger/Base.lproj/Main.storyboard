@@ -90,7 +90,7 @@
                                                         <constraint firstAttribute="bottom" secondItem="ffY-1R-iLb" secondAttribute="bottom" id="qek-CR-hLh"/>
                                                     </constraints>
                                                 </view>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="200" text="Last message" textAlignment="justified" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumFontSize="13" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="tZq-oi-26k">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="200" text="Last message" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumFontSize="13" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="tZq-oi-26k">
                                                     <rect key="frame" x="0.0" y="21.5" width="302" height="37.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                     <color key="textColor" red="0.33333333333333331" green="0.33333333333333331" blue="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -175,7 +175,7 @@
                                                 <view contentMode="scaleToFill" horizontalHuggingPriority="252" verticalHuggingPriority="252" horizontalCompressionResistancePriority="752" verticalCompressionResistancePriority="752" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hny-rs-7Zh">
                                                     <rect key="frame" x="30" y="22" width="568" height="126"/>
                                                     <subviews>
-                                                        <label opaque="NO" contentMode="right" horizontalHuggingPriority="253" verticalHuggingPriority="253" horizontalCompressionResistancePriority="755" verticalCompressionResistancePriority="755" text="Label" textAlignment="justified" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="f43-Vp-tGL">
+                                                        <label opaque="NO" contentMode="right" horizontalHuggingPriority="253" verticalHuggingPriority="253" horizontalCompressionResistancePriority="755" verticalCompressionResistancePriority="755" text="Label" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="f43-Vp-tGL">
                                                             <rect key="frame" x="4" y="4" width="35.5" height="17"/>
                                                             <accessibility key="accessibilityConfiguration">
                                                                 <accessibilityTraits key="traits" staticText="YES" allowsDirectInteraction="YES"/>
@@ -253,7 +253,7 @@
                                                 <view contentMode="scaleToFill" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yI2-cn-AK5">
                                                     <rect key="frame" x="53" y="2" width="532" height="42"/>
                                                     <subviews>
-                                                        <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" misplaced="YES" text="Incoming message" textAlignment="justified" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vZk-ws-d3W">
+                                                        <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" misplaced="YES" text="Incoming message" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vZk-ws-d3W">
                                                             <rect key="frame" x="8" y="8" width="516" height="14"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                             <nil key="highlightedColor"/>
@@ -936,7 +936,7 @@
                                                 <view contentMode="scaleToFill" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="NzW-ZI-Vhh">
                                                     <rect key="frame" x="180" y="-43" width="240" height="128"/>
                                                     <subviews>
-                                                        <label opaque="NO" contentMode="right" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" misplaced="YES" text="Label" textAlignment="justified" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Qvu-3S-Ycd">
+                                                        <label opaque="NO" contentMode="right" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" misplaced="YES" text="Label" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Qvu-3S-Ycd">
                                                             <rect key="frame" x="-165" y="50.5" width="570" height="14"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                             <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -1004,7 +1004,7 @@
                                                 <view contentMode="scaleToFill" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1bX-fL-r7M">
                                                     <rect key="frame" x="53" y="34" width="532" height="42"/>
                                                     <subviews>
-                                                        <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" misplaced="YES" text="Incoming message" textAlignment="justified" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dfP-0T-wzH">
+                                                        <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" misplaced="YES" text="Incoming message" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dfP-0T-wzH">
                                                             <rect key="frame" x="8" y="8" width="516" height="14"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                             <nil key="highlightedColor"/>
