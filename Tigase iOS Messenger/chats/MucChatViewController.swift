@@ -100,6 +100,17 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
         let item: MucChatViewItem = dataSource.getItem(for: indexPath);
 
         let incoming = item.nickname != self.room?.nickname;
+        var state = item.state!;
+        if !incoming {
+            switch state {
+            case .incoming_error:
+                state = .outgoing_error;
+            case .incoming_error_unread:
+                state = .outgoing_error_unread;
+            default:
+                state = .outgoing_delivered;
+            }
+        }
         let id = incoming ? "MucChatTableViewCellIncoming" : "MucChatTableViewCellOutgoing"
 
         let cell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! MucChatTableViewCell;
@@ -110,7 +121,7 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
         } else {
             cell.avatarView?.image = self.xmppService.avatarManager.defaultAvatar;
         }
-        cell.setValues(data: item.data, ts: item.timestamp, id: item.id, preview: item.preview, downloader: self.downloadPreview);
+        cell.setValues(data: item.data, ts: item.timestamp, id: item.id, state: state, preview: item.preview, downloader: self.downloadPreview);
         return cell;
     }
 
@@ -254,6 +265,7 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
         let data: String?;
         let authorJid: BareJID?;
         var preview: String?;
+        let state: DBChatHistoryStore.State!;
 
         init(cursor: DBCursor) {
             id = cursor["id"]!;
@@ -262,6 +274,7 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
             data = cursor["data"];
             authorJid = cursor["author_jid"];
             preview = cursor["preview"];
+            state = DBChatHistoryStore.State(rawValue: cursor["state"]!)!;
         }
 
     }

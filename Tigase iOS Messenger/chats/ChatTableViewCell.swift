@@ -36,6 +36,8 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
     fileprivate var messageLinkTapGestureRecognizer: UITapGestureRecognizer!;
     fileprivate var previewViewTapGestureRecognizer: UITapGestureRecognizer?;
     
+    fileprivate var originalTextColor: UIColor!;
+    
     fileprivate static let todaysFormatter = ({()-> DateFormatter in
         var f = DateFormatter();
         f.dateStyle = .none;
@@ -73,6 +75,7 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         super.awakeFromNib()
         // Initialization code
         if messageFrameView != nil {
+            originalTextColor = messageTextView.textColor;
             //messageFrameView.backgroundColor = UIColor.li();
             messageFrameView.layer.masksToBounds = true;
             messageFrameView.layer.cornerRadius = 6;
@@ -97,12 +100,16 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         // Configure the view for the selected state
     }
     
-    func setValues(data text: String?, ts: Date?, id: Int?, state: DBChatHistoryStore.State? = nil, preview: String? = nil, downloader: ((URL,Int)->Void)? = nil) {
+    func setValues(data text: String?, ts: Date?, id: Int?, state: DBChatHistoryStore.State, preview: String? = nil, downloader: ((URL,Int)->Void)? = nil) {
         if ts != nil {
-            if state != nil && state!.direction == .outgoing {
-                switch state!.state {
+            if state != nil && state.direction == .outgoing {
+                timestampView.textColor = UIColor.lightGray;
+                switch state.state {
                 case .delivered:
                     timestampView.text = formatTimestamp(ts!) + " \u{2713}";
+                case .error:
+                    timestampView.textColor = UIColor.red;
+                    timestampView.text = formatTimestamp(ts!) + " Not delivered\u{203c}";
                 default:
                     timestampView.text = formatTimestamp(ts!);
                 }
@@ -164,6 +171,19 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
             self.messageTextView.attributedText = attrText;
         } else {
             self.messageTextView.text = text;
+        }
+        self.messageTextView.textColor = self.originalTextColor;
+        switch state.state {
+        case .error:
+            if state.direction == .incoming {
+                self.messageTextView.textColor = UIColor.red;
+            } else {
+                self.accessoryType = .detailButton;
+                self.tintColor = UIColor.red;
+            }
+        default:
+            self.accessoryType = .none;
+            self.tintColor = self.messageTextView.tintColor;
         }
     }
     

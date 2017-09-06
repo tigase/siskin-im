@@ -48,6 +48,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             } catch {
                 try dbConnection.execute("ALTER TABLE chat_history ADD COLUMN preview TEXT");
             }
+            do {
+                try dbConnection.execute("select error from chat_history");
+            } catch {
+                try dbConnection.execute("ALTER TABLE chat_history ADD COLUMN error TEXT;");
+            }
         } catch {
             print("DB initialization error:", error);
             fatalError("Initialization of database failed!");

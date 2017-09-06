@@ -23,7 +23,7 @@
 import UIKit
 import TigaseSwift
 
-class ChatViewController : BaseChatViewController, UITableViewDataSource, EventHandler, CachedViewControllerProtocol, BaseChatViewController_ShareImageExtension, BaseChatViewController_PreviewExtension {
+class ChatViewController : BaseChatViewController, UITableViewDataSource, UITableViewDelegate, EventHandler, CachedViewControllerProtocol, BaseChatViewController_ShareImageExtension, BaseChatViewController_PreviewExtension {
     
     var titleView: ChatTitleView!;
     
@@ -41,13 +41,14 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
     @IBOutlet var shareButton: UIButton!;
     @IBOutlet var progressBar: UIProgressView!;
     var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
-    
+        
     override func viewDidLoad() {
         dataSource = ChatDataSource(controller: self);
         scrollDelegate = self;
         super.viewDidLoad()
         self.initialize();
         tableView.dataSource = self;
+        tableView.delegate = self;
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
         
@@ -132,7 +133,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let item = dataSource.getItem(for: indexPath);
         let incoming = item.state.direction == .incoming;
-        let id = incoming ? "ChatTableViewCellIncoming" : "ChatTableViewCellOutgoing"
+        let id = incoming ? "ChatTableViewCellIncoming" : "ChatTableViewCellOutgoing";
         let cell: ChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
         cell.transform = cachedDataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
         cell.avatarView?.image = self.xmppService.avatarManager.getAvatar(for: self.jid.bareJid, account: self.account);
@@ -141,6 +142,27 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         cell.updateConstraintsIfNeeded();
         
         return cell;
+    }
+    
+    func tableView(_ tableView: UITableView, accessoryButtonTappedForRowWith indexPath: IndexPath) {
+        print("accessory button cliecked at", indexPath)
+        let item = dataSource.getItem(for: indexPath);
+        print("cliked message with id", item.id);
+        guard item.data != nil else {
+            return;
+        }
+        
+        self.xmppService.dbChatHistoryStore.getMessageError(msgId: item.id) { error in
+            DispatchQueue.main.async {
+                let alert = UIAlertController(title: "Details", message: error ?? "Unknown error occurred", preferredStyle: .alert);
+                alert.addAction(UIAlertAction(title: "Resend", style: .default, handler: {(action) in
+                    print("resending message with body", item.data);
+                    self.sendMessage(body: item.data!, additional: [], completed: nil);
+                }));
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+                self.present(alert, animated: true, completion: nil);
+            }
+        }
     }
     
     @IBAction func shareClicked(_ sender: UIButton) {
@@ -237,6 +259,11 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
         updateItem(msgId: id) { (item) in
             if let state = data["state"] as? DBChatHistoryStore.State {
                 (item as? ChatViewItem)?.state = state;
+                if state == DBChatHistoryStore.State.outgoing_error_unread {
+                    DispatchQueue.global(qos: .background).async {
+                        self.xmppService.dbChatHistoryStore.markAsRead(for: self.account, with: self.jid.bareJid);
+                    }
+                }
             }
             if data.keys.contains("preview") {
                 (item as? ChatViewItem)?.preview = data["preview"] as? String;
@@ -313,6 +340,9 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, EventH
                 let messageModule: MessageModule? = client?.modulesManager.getModule(MessageModule.ID);
                 if let chat = messageModule?.chatManager.getChat(with: self.jid, thread: nil) {
                     let msg = chat.createMessage(body, type: .chat, subject: nil, additionalElements: additional);
+                    if msg.id == nil {
+                        msg.id = UUID().uuidString;
+                    }
                     if Settings.MessageDeliveryReceiptsEnabled.getBool() {
                         msg.messageDelivery = MessageDeliveryReceiptEnum.request;
                     }
