@@ -42,10 +42,9 @@ extension CachedViewControllerProtocol {
         tableView.transform = cachedDataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
     }
     
-    func newItemAdded() {
+    func newItemAdded(timestamp: Date = Date()) {
         DispatchQueue.main.async {
-            self.cachedDataSource.newItemAdded();
-            if let indexPath = self.cachedDataSource.newestItemIndex() {
+            if let indexPath = self.cachedDataSource.newItemAdded(timestamp: timestamp) {
                 self.tableView.insertRows(at: [indexPath], with: .automatic);
                 self.scroll(to: indexPath);
             }
@@ -79,10 +78,10 @@ extension CachedViewControllerProtocol {
 protocol CachedViewDataSourceProtocol {
  
     var inverted: Bool { get set }
-    
+
     func newestItemIndex() -> IndexPath?;
     
-    func newItemAdded();
+    func newItemAdded(timestamp: Date) -> IndexPath?;
     
     func reset();
     
@@ -91,6 +90,8 @@ protocol CachedViewDataSourceProtocol {
 protocol CachedViewDataSourceItem: class {
     
     var id: Int { get };
+    
+    var timestamp: Date { get };
     
 }
 
@@ -158,8 +159,22 @@ class CachedViewDataSource<Item: CachedViewDataSourceItem>: CachedViewDataSource
         return IndexPath(row: inverted ? 0 : (numberOfMessages - 1), section: 0);
     }
     
-    func newItemAdded() {
+    func newItemAdded(timestamp: Date) -> IndexPath? {
         self.numberOfMessages += 1;
+        
+        var i = (numberOfMessages);
+        var item: Item? = nil;
+        repeat {
+            i = i - 1;
+            item = cache.object(forKey: i as NSNumber);
+        } while ((item == nil || item!.timestamp.compare(timestamp) == .orderedDescending) && i >= 0);
+        i = i + 1;
+        var j = i;
+        while (j < numberOfMessages) {
+            cache.removeObject(forKey: i as NSNumber);
+            j = j + 1;
+        }
+        return IndexPath(row: (numberOfMessages - i) - 1, section: 0);
     }
     
     func getItemsCount() -> Int {

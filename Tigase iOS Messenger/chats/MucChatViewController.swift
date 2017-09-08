@@ -142,7 +142,7 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
             return;
         }
 
-        self.newItemAdded();
+        self.newItemAdded(timestamp: notification.userInfo!["timestamp"] as! Date);
         xmppService.dbChatHistoryStore.markAsRead(for: account, with: jid.bareJid);
     }
 
@@ -261,7 +261,7 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
     open class MucChatViewItem: CachedViewDataSourceItem, BaseChatViewController_PreviewExtension_PreviewAwareItem {
         let id: Int;
         let nickname: String?;
-        let timestamp: Date!;
+        let timestamp: Date;
         let data: String?;
         let authorJid: BareJID?;
         var preview: String?;

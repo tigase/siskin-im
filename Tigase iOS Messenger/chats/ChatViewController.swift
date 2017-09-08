@@ -216,6 +216,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, UITabl
             return;
         }
         
+        let ts: Date = notification.userInfo!["timestamp"] as! Date;
         guard notification.userInfo?["fromArchive"] as? Bool ?? false == false else {
             if !self.syncInProgress {
                 cachedDataSource.reset();
@@ -224,7 +225,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, UITabl
             return;
         }
         
-        self.newItemAdded();
+        self.newItemAdded(timestamp: ts);
 
         if let state = notification.userInfo?["state"] as? DBChatHistoryStore.State {
             if state == .incoming_unread {
@@ -392,6 +393,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, UITabl
                 forEveryItem(ChatViewItem(cursor: cursor));
             });
         }
+        
     }
     
     class ChatTitleView: UIView {
