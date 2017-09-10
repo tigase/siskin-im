@@ -91,7 +91,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, UITabl
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(accountStateChanged), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(messageUpdated), name: DBChatHistoryStore.MESSAGE_UPDATED, object: nil);
-        xmppService.registerEventHandler(self, for: PresenceModule.ContactPresenceChanged.TYPE);
+        xmppService.registerEventHandler(self, for: PresenceModule.ContactPresenceChanged.TYPE, RosterModule.ItemUpdatedEvent.TYPE);
         
         self.updateTitleView();
 
@@ -103,7 +103,7 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, UITabl
         NotificationCenter.default.removeObserver(self);
         super.viewDidDisappear(animated);
         
-        xmppService.unregisterEventHandler(self, for: PresenceModule.ContactPresenceChanged.TYPE);
+        xmppService.unregisterEventHandler(self, for: PresenceModule.ContactPresenceChanged.TYPE, RosterModule.ItemUpdatedEvent.TYPE);
     }
     
     override func didReceiveMemoryWarning() {
@@ -205,6 +205,16 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, UITabl
             
             DispatchQueue.main.async() {
                 self.titleView.status = cpc.presence;
+            }
+        case let e as RosterModule.ItemUpdatedEvent:
+            guard e.sessionObject.userBareJid != nil && e.rosterItem != nil else {
+                return;
+            }
+            guard e.sessionObject.userBareJid! == self.account && e.rosterItem!.jid.bareJid == self.jid.bareJid else {
+                return;
+            }
+            DispatchQueue.main.async {
+                self.titleView.name = e.rosterItem!.name ?? e.rosterItem!.jid.stringValue;
             }
         default:
             break;

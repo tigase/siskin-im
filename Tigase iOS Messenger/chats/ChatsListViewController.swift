@@ -52,7 +52,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
     
     override func viewWillAppear(_ animated: Bool) {
         dataSource.reloadData();
-        self.xmppService.registerEventHandler(self, for: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
+        self.xmppService.registerEventHandler(self, for: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE, RosterModule.ItemUpdatedEvent.TYPE);
         //(self.tabBarController as? CustomTabBarController)?.showTabBar();
         NotificationCenter.default.addObserver(self, selector: #selector(ChatsListViewController.newMessage), name: AvatarManager.AVATAR_CHANGED, object: nil);
         super.viewWillAppear(animated);
@@ -60,7 +60,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated);
-        xmppService.unregisterEventHandler(self, for: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
+        xmppService.unregisterEventHandler(self, for: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE, RosterModule.ItemUpdatedEvent.TYPE);
         NotificationCenter.default.removeObserver(self, name: AvatarManager.AVATAR_CHANGED, object: nil);
     }
 
@@ -262,6 +262,13 @@ class ChatsListViewController: UITableViewController, EventHandler {
                 } else {
                     self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid);
                 }
+            }
+        case let e as RosterModule.ItemUpdatedEvent:
+            guard let account = e.sessionObject.userBareJid, let jid = e.rosterItem?.jid else {
+                return;
+            }
+            DispatchQueue.main.async() {
+                self.dataSource.updateChat(for: account, with: jid.bareJid);
             }
         default:
             break;
