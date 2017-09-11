@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate {
+class RosterItemEditViewController: UITableViewController, UIPickerViewDataSource, UIPickerViewDelegate {
 
     var xmppService:XmppService {
         let appDelegate = UIApplication.shared.delegate as! AppDelegate;
@@ -46,8 +46,8 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
         accountPicker.dataSource = self;
         accountPicker.delegate = self;
         self.accountTextField.inputView = accountPicker;
-        self.accountTextField.addTarget(self, action: #selector(RosterItemEditViewController.textFieldDidChange), for: UIControlEvents.editingChanged);
-        self.jidTextField.addTarget(self, action: #selector(RosterItemEditViewController.textFieldDidChange), for: UIControlEvents.editingChanged);
+//        self.accountTextField.addTarget(self, action: #selector(RosterItemEditViewController.textFieldDidChange), for: UIControlEvents.editingChanged);
+//        self.jidTextField.addTarget(self, action: #selector(RosterItemEditViewController.textFieldDidChange), for: UIControlEvents.editingChanged);
         self.jidTextField.text = jid?.stringValue;
         self.accountTextField.text = account?.stringValue;
         self.sendPresenceUpdatesSwitch.isOn = true;
@@ -64,6 +64,8 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
                     self.receivePresenceUpdatesSwitch.isOn = rosterItem.subscription.isTo;
                 }
             }
+        } else {
+            self.nameTextField.text = nil;
         }
     }
 
@@ -72,17 +74,17 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
         // Dispose of any resources that can be recreated.
     }
     
-    func textFieldDidChange(_ textField: UITextField) {
-        if textField.text?.isEmpty != false {
-            textField.layer.borderColor = UIColor.red.cgColor;
-            textField.layer.borderWidth = 1;
-            textField.layer.cornerRadius = 4;
-        } else {
-            textField.layer.borderColor = UIColor(white: 1, alpha: 1).cgColor;
-            textField.layer.borderWidth = 0;
-            textField.layer.cornerRadius = 0;
-        }
-    }
+//    func textFieldDidChange(_ textField: UITextField) {
+//        if textField.text?.isEmpty != false {
+//            textField.superview?.backgroundColor = UIColor.red;
+////            textField.layer.borderColor = UIColor.red.cgColor;
+////            textField.layer.borderWidth = 1;
+//        } else {
+////            textField.layer.borderColor = UIColor(white: 1, alpha: 1).cgColor;
+////            textField.layer.borderWidth = 0;
+//            textField.superview?.backgroundColor = UIColor.white;
+//        }
+//    }
 
     @IBAction func saveBtnClicked(_ sender: UIBarButtonItem) {
         saveChanges()
@@ -100,13 +102,28 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
         }
     }
     
+    func blinkError(_ field: UITextField) {
+        let backgroundColor = field.superview?.backgroundColor;
+        UIView.animate(withDuration: 0.5, animations: {
+            //cell.backgroundColor = UIColor(red: 1.0, green: 0.5, blue: 0.5, alpha: 1);
+            field.superview?.backgroundColor = UIColor(hue: 0, saturation: 0.7, brightness: 0.8, alpha: 1)
+        }, completion: {(b) in
+            UIView.animate(withDuration: 0.5) {
+                field.superview?.backgroundColor = backgroundColor;
+            }
+        });
+    }
+    
     func saveChanges() {
-        guard jidTextField.text?.isEmpty != true else {
-            textFieldDidChange(jidTextField);
-            return;
+        var fieldsWithErrors: [UITextField] = [];
+        if JID((jidTextField.text?.isEmpty ?? true) ? nil : jidTextField.text) == nil {
+            fieldsWithErrors.append(jidTextField);
         }
-        guard accountTextField.text?.isEmpty != true else {
-            textFieldDidChange(accountTextField);
+        if BareJID((accountTextField.text?.isEmpty ?? true) ? nil : accountTextField.text) == nil {
+            fieldsWithErrors.append(accountTextField);
+        }
+        guard fieldsWithErrors.isEmpty else {
+            fieldsWithErrors.forEach(self.blinkError(_:));
             return;
         }
         jid = JID(jidTextField.text!);
@@ -150,6 +167,10 @@ class RosterItemEditViewController: UIViewController, UIPickerViewDataSource, UI
         } else {
             rosterModule.rosterStore.add(jid: jid!, name: nameTextField.text, onSuccess: onSuccess, onError: onError);
         }
+    }
+    
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+        return nil;
     }
     
     fileprivate func updateSubscriptions(client: XMPPClient) {
