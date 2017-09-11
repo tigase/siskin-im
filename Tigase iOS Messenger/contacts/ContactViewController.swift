@@ -86,15 +86,15 @@ class ContactViewController: UITableViewController {
 
     override func numberOfSections(in: UITableView) -> Int {
         var i = 1;
-        if phones.count > 0 {
+//        if phones.count > 0 {
             i += 1;
-        }
-        if emails.count > 0 {
+//        }
+//        if emails.count > 0 {
             i += 1;
-        }
-        if addresses.count > 0 {
+//        }
+//        if addresses.count > 0 {
             i += 1;
-        }
+//        }
         return i;
     }
     
@@ -118,10 +118,19 @@ class ContactViewController: UITableViewController {
         case 0:
             return nil;
         case 1:
+            if phones.isEmpty {
+                return nil;
+            }
             return "Phones";
         case 2:
+            if emails.isEmpty {
+                return nil;
+            }
             return "Emails";
         case 3:
+            if addresses.isEmpty {
+                return nil;
+            }
             return "Addresses";
         default:
             return nil;
@@ -131,7 +140,7 @@ class ContactViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch indexPath.section {
         case 0:
-            return 76;
+            return 92;
         case 3:
             return 80;
         default:

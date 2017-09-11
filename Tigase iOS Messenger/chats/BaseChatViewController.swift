@@ -32,7 +32,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
     
     var bottomViewBottomConstraint: NSLayoutConstraint?;
     
-    let PLACEHOLDER_TEXT = "Enter message...";
+    var PLACEHOLDER_TEXT = "Enter message...";
     
     @IBInspectable var scrollToBottomOnShow: Bool = false;
     @IBInspectable var animateScrollToBottom: Bool = true;
@@ -56,6 +56,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
     lazy var loadChatInfo:DBStatement! = try? self.dbConnection.prepareStatement("SELECT name FROM roster_items WHERE account = :account AND jid = :jid");
     
     override func viewDidLoad() {
+        PLACEHOLDER_TEXT = "from \(account.stringValue)...";
         super.viewDidLoad()
         isFirstTime = scrollToBottomOnShow;
 

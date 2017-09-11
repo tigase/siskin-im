@@ -68,12 +68,12 @@ open class DBVCardsCache {
     
     open func fetchPhoto(photo: VCard.Photo, callback: @escaping (Data?)->Void) {
         if photo.binval != nil {
-            callback(Data(base64Encoded: photo.binval!, options: NSData.Base64DecodingOptions(rawValue: 0)));
+            callback(Data(base64Encoded: photo.binval!, options: NSData.Base64DecodingOptions.ignoreUnknownCharacters));
         } else if photo.uri != nil {
             if photo.uri!.hasPrefix("data:image") && photo.uri!.contains(";base64,") {
                 if let idx = photo.uri!.characters.index(of: ",") {
                     let data = photo.uri!.substring(from: photo.uri!.index(after: idx));
-                    callback(Data(base64Encoded: data, options: NSData.Base64DecodingOptions(rawValue: 0)));
+                    callback(Data(base64Encoded: data, options: NSData.Base64DecodingOptions.ignoreUnknownCharacters));
                     return;
                 }
             }

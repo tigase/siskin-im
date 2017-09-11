@@ -148,7 +148,7 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
         let items = filterItems();
         var groupedItems: [String:[RosterProviderGroupedItem]] = [:];
         items.forEach { item in
-            groups = groups.union(item.groups)
+            groups = groups.union(item.groups);
             item.groups.forEach { group in
                 var groupItems = groupedItems[group] ?? [];
                 groupItems.append(item);

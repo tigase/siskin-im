@@ -2991,53 +2991,73 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="BasicInfoCell" rowHeight="76" id="C58-uk-LaV" customClass="ContactBasicTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="28" width="375" height="76"/>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="BasicInfoCell" rowHeight="94" id="C58-uk-LaV" customClass="ContactBasicTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="28" width="375" height="94"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="C58-uk-LaV" id="ZeZ-oS-SaN">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="76"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="94"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="34W-5a-mO1">
-                                            <rect key="frame" x="8" y="2.5" width="60" height="60"/>
+                                            <rect key="frame" x="8" y="8" width="60" height="60"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" constant="60" id="1cR-NX-9Qr"/>
                                                 <constraint firstAttribute="height" constant="60" id="nSG-p5-eAy"/>
                                             </constraints>
                                         </imageView>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="John Doe" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="koS-ci-GqT">
-                                            <rect key="frame" x="76" y="16" width="516" height="21"/>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="John Doe" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="koS-ci-GqT">
+                                            <rect key="frame" x="76" y="8" width="291" height="21"/>
                                             <fontDescription key="fontDescription" type="system" weight="medium" pointSize="18"/>
                                             <nil key="highlightedColor"/>
                                         </label>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Company, Inc." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0rT-oB-jot">
-                                            <rect key="frame" x="76" y="45" width="516" height="18"/>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Company, Inc." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0rT-oB-jot">
+                                            <rect key="frame" x="76" y="33" width="291" height="16"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                             <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="user@example.com" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rOe-Pg-XBh">
+                                            <rect key="frame" x="76" y="53" width="291" height="16"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="using test@example.com" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6Zq-Ql-WA0">
+                                            <rect key="frame" x="76" y="73" width="291" height="13.5"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                                            <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
                                     </subviews>
                                     <constraints>
+                                        <constraint firstItem="0rT-oB-jot" firstAttribute="trailing" secondItem="koS-ci-GqT" secondAttribute="trailing" id="Cl5-m2-zsq"/>
                                         <constraint firstItem="0rT-oB-jot" firstAttribute="top" secondItem="koS-ci-GqT" secondAttribute="bottom" constant="4" id="FfP-k7-aef"/>
+                                        <constraint firstItem="6Zq-Ql-WA0" firstAttribute="leading" secondItem="koS-ci-GqT" secondAttribute="leading" id="G8B-NS-KHw"/>
                                         <constraint firstAttribute="topMargin" secondItem="34W-5a-mO1" secondAttribute="top" id="GTw-vF-m74"/>
-                                        <constraint firstAttribute="bottomMargin" secondItem="0rT-oB-jot" secondAttribute="bottom" constant="4.5" id="H5v-JI-7w4"/>
-                                        <constraint firstAttribute="trailingMargin" secondItem="0rT-oB-jot" secondAttribute="trailing" id="HdB-dL-34P"/>
+                                        <constraint firstItem="6Zq-Ql-WA0" firstAttribute="trailing" secondItem="koS-ci-GqT" secondAttribute="trailing" id="Hik-VO-HK2"/>
+                                        <constraint firstItem="rOe-Pg-XBh" firstAttribute="top" secondItem="0rT-oB-jot" secondAttribute="bottom" constant="4" id="T2g-EE-40a"/>
+                                        <constraint firstItem="0rT-oB-jot" firstAttribute="leading" secondItem="koS-ci-GqT" secondAttribute="leading" id="Y1w-RP-fKd"/>
+                                        <constraint firstItem="6Zq-Ql-WA0" firstAttribute="top" secondItem="rOe-Pg-XBh" secondAttribute="bottom" constant="4" id="bWP-Hs-e1N"/>
                                         <constraint firstAttribute="leadingMargin" secondItem="34W-5a-mO1" secondAttribute="leading" id="bkH-1i-Ldi"/>
                                         <constraint firstAttribute="trailingMargin" secondItem="koS-ci-GqT" secondAttribute="trailing" id="blS-a4-T7b"/>
                                         <constraint firstItem="koS-ci-GqT" firstAttribute="leading" secondItem="34W-5a-mO1" secondAttribute="trailing" constant="8" id="g7P-Aa-QQk"/>
-                                        <constraint firstAttribute="bottomMargin" secondItem="34W-5a-mO1" secondAttribute="bottom" constant="-0.5" id="m9o-2m-ija"/>
-                                        <constraint firstItem="koS-ci-GqT" firstAttribute="top" secondItem="ZeZ-oS-SaN" secondAttribute="topMargin" constant="8" id="r3l-p6-LmA"/>
-                                        <constraint firstItem="0rT-oB-jot" firstAttribute="leading" secondItem="34W-5a-mO1" secondAttribute="trailing" constant="8" id="wWC-5w-k5y"/>
+                                        <constraint firstAttribute="bottomMargin" relation="greaterThanOrEqual" secondItem="34W-5a-mO1" secondAttribute="bottom" constant="-0.5" id="m9o-2m-ija"/>
+                                        <constraint firstItem="koS-ci-GqT" firstAttribute="top" secondItem="ZeZ-oS-SaN" secondAttribute="topMargin" id="r3l-p6-LmA"/>
+                                        <constraint firstItem="rOe-Pg-XBh" firstAttribute="trailing" secondItem="koS-ci-GqT" secondAttribute="trailing" id="ry6-wE-7J2"/>
+                                        <constraint firstAttribute="bottomMargin" secondItem="6Zq-Ql-WA0" secondAttribute="bottom" id="ucc-5O-Lti"/>
+                                        <constraint firstItem="rOe-Pg-XBh" firstAttribute="leading" secondItem="koS-ci-GqT" secondAttribute="leading" id="ywW-IB-Kgm"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <connections>
+                                    <outlet property="accountView" destination="6Zq-Ql-WA0" id="us8-wy-xMV"/>
                                     <outlet property="avatarView" destination="34W-5a-mO1" id="sQr-MV-SJZ"/>
                                     <outlet property="companyView" destination="0rT-oB-jot" id="9HK-ky-bby"/>
+                                    <outlet property="jidView" destination="rOe-Pg-XBh" id="oIk-zP-Mhf"/>
                                     <outlet property="nameView" destination="koS-ci-GqT" id="501-ZQ-wsO"/>
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="ContactFormCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ContactFormCell" rowHeight="51" id="pQL-wq-Sb9" customClass="ContactFormTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="104" width="375" height="51"/>
+                                <rect key="frame" x="0.0" y="122" width="375" height="51"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="pQL-wq-Sb9" id="9Se-nj-MAA">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="51"/>
@@ -3072,7 +3092,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="AddressCell" rowHeight="80" id="73R-lk-SWh" customClass="ContactFormTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="155" width="375" height="80"/>
+                                <rect key="frame" x="0.0" y="173" width="375" height="80"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="73R-lk-SWh" id="AoC-2k-RUL">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="80"/>

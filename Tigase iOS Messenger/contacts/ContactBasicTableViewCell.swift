@@ -27,6 +27,8 @@ class ContactBasicTableViewCell: UITableViewCell {
     @IBOutlet var avatarView: UIImageView!
     @IBOutlet var nameView: UILabel!
     @IBOutlet var companyView: UILabel!
+    @IBOutlet var jidView: UILabel!;
+    @IBOutlet var accountView: UILabel!;
     
     var avatarManager: AvatarManager!;
     var account: BareJID!;
@@ -51,6 +53,8 @@ class ContactBasicTableViewCell: UITableViewCell {
             }
             
             avatarView.image = avatarManager.getAvatar(for: jid, account: account);
+            jidView.text = jid.stringValue;
+            accountView.text = "using \(account.stringValue)";
         }
     }
     

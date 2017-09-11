@@ -58,7 +58,7 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
         //tableView.estimatedRowHeight = 48;
         // Do any additional setup after loading the view, typically from a nib.
         let lpgr = UILongPressGestureRecognizer(target: self, action: #selector(RosterViewController.handleLongPress));
-        lpgr.minimumPressDuration = 2.0;
+        lpgr.minimumPressDuration = 1.0;
         lpgr.delegate = self;
         tableView.addGestureRecognizer(lpgr);
         navigationItem.leftBarButtonItem = self.editButtonItem
@@ -157,14 +157,20 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
             let item = roster.item(at: indexPath);
             let account: BareJID = item.account;
             let jid: JID = item.jid;
-            if let rosterModule:RosterModule = self.xmppService.getClient(forJid: account)?.modulesManager.getModule(RosterModule.ID) {
-                rosterModule.rosterStore.remove(jid: jid, onSuccess: nil, onError: { (errorCondition) in
-                    let alert = UIAlertController.init(title: "Failure", message: "Server returned error: " + (errorCondition?.rawValue ?? "Operation timed out"), preferredStyle: .alert);
-                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
-                    self.present(alert, animated: true, completion: nil);
-                })
-            }
+            self.deleteItem(for: account, jid: jid);
         }
+    }
+    
+    override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        return [UITableViewRowAction(style: .destructive, title: "Delete", handler: {(action, path) in
+            print("deleting record at", path);
+            let item = self.roster.item(at: indexPath);
+            self.deleteItem(for: item.account, jid: item.jid);
+        }),UITableViewRowAction(style: .normal, title: "Edit", handler: {(action, path) in
+            print("editing record at ", path);
+            let item = self.roster.item(at: indexPath);
+            self.openEditItem(for: item.account, jid: item.jid);
+        })];
     }
     
     func updateSearchResults(for searchController: UISearchController) {
@@ -195,7 +201,22 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
             print("long press detected at", indexPath);
 
             let item = roster.item(at: indexPath);
-            self.openEditItem(for: item.account, jid: item.jid);
+            
+            let alert = UIAlertController(title: item.displayName, message: "using \(item.account.stringValue)", preferredStyle: .actionSheet);
+            alert.addAction(UIAlertAction(title: "Chat", style: .default, handler: { (action) in
+                self.tableView(self.tableView, didSelectRowAt: indexPath);
+            }));
+            alert.addAction(UIAlertAction(title: "Edit", style: .default, handler: {(action) in
+                self.openEditItem(for: item.account, jid: item.jid);
+            }));
+            alert.addAction(UIAlertAction(title: "Info", style: .default, handler: {(alert) in
+                self.showItemInfo(for: item.account, jid: item.jid);
+            }));
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+            let cell = self.tableView(tableView, cellForRowAt: indexPath);
+            alert.popoverPresentationController?.sourceView = cell.contentView;
+            alert.popoverPresentationController?.sourceRect = cell.contentView.bounds;
+            self.present(alert, animated: true, completion: nil);
         }
     }
     
@@ -204,12 +225,35 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
         self.openEditItem(for: nil, jid: nil);
     }
     
+    func deleteItem(for account: BareJID, jid: JID) {
+        if let rosterModule:RosterModule = self.xmppService.getClient(forJid: account)?.modulesManager.getModule(RosterModule.ID) {
+            rosterModule.rosterStore.remove(jid: jid, onSuccess: nil, onError: { (errorCondition) in
+                let alert = UIAlertController.init(title: "Failure", message: "Server returned error: " + (errorCondition?.rawValue ?? "Operation timed out"), preferredStyle: .alert);
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                self.present(alert, animated: true, completion: nil);
+            })
+        }
+    }
+    
     func openEditItem(for account: BareJID?, jid: JID?) {
         let navigationController = self.storyboard?.instantiateViewController(withIdentifier: "RosterItemEditNavigationController") as! UINavigationController;
         let itemEditController = navigationController.visibleViewController as? RosterItemEditViewController;
+        itemEditController?.hidesBottomBarWhenPushed = true;
         itemEditController?.account = account;
         itemEditController?.jid = jid;
         self.showDetailViewController(navigationController, sender: self);
+    }
+    
+    func showItemInfo(for account: BareJID, jid: JID) {
+        print("open buddy info!");
+        let navigation = storyboard?.instantiateViewController(withIdentifier: "ContactViewNavigationController") as! UINavigationController;
+        let contactView = navigation.visibleViewController as! ContactViewController;
+        contactView.hidesBottomBarWhenPushed = true;
+        contactView.account = account;
+        contactView.jid = jid.bareJid;
+        navigation.title = self.navigationItem.title;
+        self.showDetailViewController(navigation, sender: self);
+        
     }
     
     func avatarChanged(_ notification: NSNotification) {
