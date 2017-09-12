@@ -56,7 +56,7 @@ public enum Settings: String {
             "RosterItemsOrder" : RosterSortingOrder.alphabetical.rawValue as AnyObject,
             "RosterAvailableOnly" : false as AnyObject,
             "RosterDisplayHiddenGroup" : false as AnyObject,
-            "AutoSubscribeOnAcceptedSubscriptionRequest" : true as AnyObject,
+            "AutoSubscribeOnAcceptedSubscriptionRequest" : false as AnyObject,
             "NotificationsFromUnknown" : true as AnyObject,
             "RecentsMessageLinesNo" : 2 as AnyObject,
             "RecentsOrder" : "byTime" as AnyObject
