@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class MucJoinViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate {
+class MucJoinViewController: UITableViewController, UIPickerViewDataSource, UIPickerViewDelegate {
 
     var xmppService:XmppService! {
         let appDelegate = UIApplication.shared.delegate as! AppDelegate;
@@ -48,11 +48,6 @@ class MucJoinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         if !accounts.isEmpty {
             self.accountTextField.text = accounts[0];
         }
-        self.accountTextField.addTarget(self, action: #selector(MucJoinViewController.textFieldDidChange), for: UIControlEvents.editingChanged);
-        self.serverTextField.addTarget(self, action: #selector(MucJoinViewController.textFieldDidChange), for: UIControlEvents.editingChanged);
-        self.roomTextField.addTarget(self, action: #selector(MucJoinViewController.textFieldDidChange), for: UIControlEvents.editingChanged);
-        self.nicknameTextField.addTarget(self, action: #selector(MucJoinViewController.textFieldDidChange), for: UIControlEvents.editingChanged);
-
     }
 
     override func didReceiveMemoryWarning() {
@@ -71,7 +66,7 @@ class MucJoinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
     }
     */
     @IBAction func joinBtnClicked(_ sender: UIBarButtonItem) {
-        guard accountTextField.text?.isEmpty == false && serverTextField.text?.isEmpty == false && roomTextField.text?.isEmpty == false &&  nicknameTextField.text?.isEmpty == false else {
+        guard [accountTextField,serverTextField,roomTextField,nicknameTextField].filter(self.checkFieldValue(_:)).isEmpty else {
             return;
         }
         let accountJid = BareJID(accountTextField.text!);
@@ -105,6 +100,24 @@ class MucJoinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         }
     }
     
+    func checkFieldValue(_ field: UITextField) -> Bool {
+        guard field.text?.isEmpty ?? true else {
+            return false;
+        }
+        
+        let backgroundColor = field.superview?.backgroundColor;
+        UIView.animate(withDuration: 0.5, animations: {
+            //cell.backgroundColor = UIColor(red: 1.0, green: 0.5, blue: 0.5, alpha: 1);
+            field.superview?.backgroundColor = UIColor(hue: 0, saturation: 0.7, brightness: 0.8, alpha: 1)
+        }, completion: {(b) in
+            UIView.animate(withDuration: 0.5) {
+                field.superview?.backgroundColor = backgroundColor;
+            }
+        });
+        
+        return true;
+    }
+    
     @IBAction func cancelBtnClicked(_ sender: UIBarButtonItem) {
         dismissView();
     }
@@ -117,17 +130,6 @@ class MucJoinViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         }
     }
 
-    func textFieldDidChange(_ textField: UITextField) {
-        if textField.text?.isEmpty != false {
-            textField.layer.borderColor = UIColor.red.cgColor;
-            textField.layer.borderWidth = 1;
-            textField.layer.cornerRadius = 4;
-        } else {
-            textField.layer.borderColor = UIColor(white: 1, alpha: 1).cgColor;
-            textField.layer.borderWidth = 0;
-            textField.layer.cornerRadius = 0;
-        }
-    }
     
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1;
