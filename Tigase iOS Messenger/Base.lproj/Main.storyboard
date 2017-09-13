@@ -340,15 +340,24 @@
                                     <progressView hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lXk-P5-gwH">
                                         <rect key="frame" x="0.0" y="8" width="600" height="2"/>
                                     </progressView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="using user@example.com..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Usd-qW-q8K">
+                                        <rect key="frame" x="52.5" y="12" width="496" height="21"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                        <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                 </subviews>
                                 <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                 <constraints>
                                     <constraint firstItem="tM8-yl-Xfw" firstAttribute="top" secondItem="lXk-P5-gwH" secondAttribute="bottom" constant="8" id="6Qx-jM-lez"/>
+                                    <constraint firstItem="tM8-yl-Xfw" firstAttribute="width" secondItem="Usd-qW-q8K" secondAttribute="width" constant="12" id="7wR-aN-iji"/>
                                     <constraint firstItem="tM8-yl-Xfw" firstAttribute="leading" secondItem="hEk-n0-vGX" secondAttribute="trailing" constant="8" id="BQ7-yi-ZSz"/>
                                     <constraint firstItem="lXk-P5-gwH" firstAttribute="leading" secondItem="HK7-Bq-Vwt" secondAttribute="leading" id="Ciw-yv-ZIR"/>
                                     <constraint firstAttribute="trailing" secondItem="lXk-P5-gwH" secondAttribute="trailing" id="MIs-f0-e2m"/>
                                     <constraint firstAttribute="bottom" secondItem="tM8-yl-Xfw" secondAttribute="bottom" constant="8" id="OBe-Jw-pOH"/>
                                     <constraint firstAttribute="trailing" secondItem="Wud-KB-gIx" secondAttribute="trailing" constant="8" id="Q7o-dZ-m7q"/>
+                                    <constraint firstItem="Usd-qW-q8K" firstAttribute="centerY" secondItem="tM8-yl-Xfw" secondAttribute="centerY" id="Sm2-66-rp4"/>
+                                    <constraint firstItem="Usd-qW-q8K" firstAttribute="centerX" secondItem="tM8-yl-Xfw" secondAttribute="centerX" id="agE-5h-7xk"/>
                                     <constraint firstItem="lXk-P5-gwH" firstAttribute="top" secondItem="HK7-Bq-Vwt" secondAttribute="top" id="hul-Hr-7rz"/>
                                     <constraint firstAttribute="bottom" secondItem="hEk-n0-vGX" secondAttribute="bottom" constant="10" id="j9C-mi-FHW"/>
                                     <constraint firstAttribute="bottom" secondItem="Wud-KB-gIx" secondAttribute="bottom" constant="10" id="lq0-OA-BIJ"/>
@@ -380,6 +389,7 @@
                     <connections>
                         <outlet property="bottomView" destination="HK7-Bq-Vwt" id="eV9-xp-qpM"/>
                         <outlet property="messageField" destination="tM8-yl-Xfw" id="M4U-3x-ViV"/>
+                        <outlet property="placeholderView" destination="Usd-qW-q8K" id="9cr-sd-EvI"/>
                         <outlet property="progressBar" destination="lXk-P5-gwH" id="Y3e-lf-hkR"/>
                         <outlet property="sendButton" destination="Wud-KB-gIx" id="PO6-Ym-dpM"/>
                         <outlet property="shareButton" destination="hEk-n0-vGX" id="jaX-FI-Kjl"/>
@@ -840,6 +850,12 @@
                                         <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                     </textView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="using user@example.com..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="k5s-pa-whs">
+                                        <rect key="frame" x="52" y="12" width="279" height="21"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                        <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                     <progressView hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="o1Z-wC-Bpu">
                                         <rect key="frame" x="0.0" y="22" width="383" height="2"/>
                                     </progressView>
@@ -854,8 +870,11 @@
                                     <constraint firstItem="PAE-fw-tjq" firstAttribute="top" secondItem="o1Z-wC-Bpu" secondAttribute="bottom" constant="8" id="GVj-Wj-nLL"/>
                                     <constraint firstItem="o1Z-wC-Bpu" firstAttribute="leading" secondItem="4tv-Y3-98F" secondAttribute="leading" id="Tj0-Z4-5jO"/>
                                     <constraint firstItem="PAE-fw-tjq" firstAttribute="leading" secondItem="Fxu-dp-G5w" secondAttribute="trailing" constant="8" id="WiW-7d-FFn"/>
+                                    <constraint firstItem="PAE-fw-tjq" firstAttribute="width" secondItem="k5s-pa-whs" secondAttribute="width" constant="12" id="Wqw-bn-yIP"/>
                                     <constraint firstAttribute="bottom" secondItem="Lcw-kK-OnJ" secondAttribute="bottom" constant="10" id="YTw-ql-emj"/>
                                     <constraint firstItem="Fxu-dp-G5w" firstAttribute="leading" secondItem="4tv-Y3-98F" secondAttribute="leading" constant="8" id="dfi-h2-KOd"/>
+                                    <constraint firstItem="k5s-pa-whs" firstAttribute="centerX" secondItem="PAE-fw-tjq" secondAttribute="centerX" id="duK-qg-wjP"/>
+                                    <constraint firstItem="k5s-pa-whs" firstAttribute="centerY" secondItem="PAE-fw-tjq" secondAttribute="centerY" id="eB1-IF-WIN"/>
                                     <constraint firstItem="Lcw-kK-OnJ" firstAttribute="leading" secondItem="PAE-fw-tjq" secondAttribute="trailing" constant="8" id="imf-rm-RmT"/>
                                 </constraints>
                             </view>
@@ -881,6 +900,7 @@
                     <connections>
                         <outlet property="bottomView" destination="4tv-Y3-98F" id="VSZ-4K-SM1"/>
                         <outlet property="messageField" destination="PAE-fw-tjq" id="Q5i-Hr-iwD"/>
+                        <outlet property="placeholderView" destination="k5s-pa-whs" id="SvL-g7-gtp"/>
                         <outlet property="progressBar" destination="o1Z-wC-Bpu" id="KbG-kT-pz5"/>
                         <outlet property="sendButton" destination="Lcw-kK-OnJ" id="HQl-JT-bpY"/>
                         <outlet property="shareButton" destination="Fxu-dp-G5w" id="BUO-Hl-AwX"/>

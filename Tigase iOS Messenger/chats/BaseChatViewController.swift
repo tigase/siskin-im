@@ -26,13 +26,12 @@ import TigaseSwift
 class BaseChatViewController: UIViewController, UITextViewDelegate {
 
     @IBOutlet var tableView: UITableView!
-    @IBOutlet var messageField: UITextView!
+    @IBOutlet fileprivate var messageField: UITextView!
     @IBOutlet var sendButton: UIButton!
     @IBOutlet var bottomView: UIView!
+    @IBOutlet var placeholderView: UILabel!;
     
     var bottomViewBottomConstraint: NSLayoutConstraint?;
-    
-    var PLACEHOLDER_TEXT = "Enter message...";
     
     @IBInspectable var scrollToBottomOnShow: Bool = false;
     @IBInspectable var animateScrollToBottom: Bool = true;
@@ -53,11 +52,21 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
     weak var scrollDelegate: BaseChatViewControllerScrollDelegate?;
     var isFirstTime = true;
     
+    var messageText: String? {
+        get {
+            return messageField.text;
+        }
+        set {
+            messageField.text = newValue;
+            placeholderView?.isHidden = messageField.hasText;
+        }
+    }
+    
     lazy var loadChatInfo:DBStatement! = try? self.dbConnection.prepareStatement("SELECT name FROM roster_items WHERE account = :account AND jid = :jid");
     
     override func viewDidLoad() {
-        PLACEHOLDER_TEXT = "from \(account.stringValue)...";
         super.viewDidLoad()
+        placeholderView?.text = "from \(account.stringValue)...";
         isFirstTime = scrollToBottomOnShow;
 
         navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem;
@@ -79,7 +88,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
         tableView.estimatedRowHeight = 160.0;
         tableView.separatorStyle = .none;
         
-        applyPlaceHolderStyle(messageField);
+        placeholderView?.isHidden = false;
         
         bottomView.layer.borderColor = UIColor.lightGray.cgColor;
         bottomView.layer.borderWidth = 0.5;
@@ -152,40 +161,10 @@ class BaseChatViewController: UIViewController, UITextViewDelegate {
         }
     }
 
-    func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
-        if textView == messageField && textView.text == PLACEHOLDER_TEXT {
-            DispatchQueue.main.async() {
-                textView.selectedRange = NSMakeRange(0, 0);
-            }
-        }
-        return true;
+    func textViewDidChange(_ textView: UITextView) {
+        placeholderView?.isHidden = textView.hasText;
     }
     
-    func applyPlaceHolderStyle(_ textView: UITextView) {
-        textView.textColor = UIColor.lightGray;
-        textView.text = PLACEHOLDER_TEXT;
-        DispatchQueue.main.async() {
-            textView.selectedRange = NSMakeRange(0, 0);
-        }
-    }
-    
-    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
-        let newLength = textView.text.utf16.count + text.utf16.count - range.length;
-        if newLength > 0 {
-            if textView == messageField && textView.text == PLACEHOLDER_TEXT {
-                if text.utf16.count == 0 {
-                    return false;
-                }
-                textView.textColor = UIColor.darkText;
-                textView.alpha = 1.0;
-                textView.text = "";
-            }
-            return true;
-        } else {
-            applyPlaceHolderStyle(textView);
-            return false;
-        }
-    }
     
     @IBAction func tableViewClicked(_ sender: AnyObject) {
         messageField.resignFirstResponder();

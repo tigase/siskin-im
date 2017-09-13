@@ -185,7 +185,7 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
     }
 
     @IBAction func sendClicked(_ sender: UIButton) {
-        let text = messageField.text;
+        let text = messageText;
         guard !(text?.isEmpty != false) else {
             return;
         }
@@ -199,7 +199,7 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
 
         self.sendMessage(body: text!, additional: [], completed: {() in
             DispatchQueue.main.async {
-                self.messageField.text = nil;
+                self.messageText = nil;
             }
         });
     }
