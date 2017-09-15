@@ -23,7 +23,7 @@
 import UIKit
 import TigaseSwift
 
-class ChatViewController : BaseChatViewController, UITableViewDataSource, UITableViewDelegate, EventHandler, CachedViewControllerProtocol, BaseChatViewController_ShareImageExtension, BaseChatViewController_PreviewExtension {
+class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, BaseChatViewControllerWithContextMenuAndToolbarDelegate, UITableViewDataSource, EventHandler, CachedViewControllerProtocol, BaseChatViewController_ShareImageExtension, BaseChatViewController_PreviewExtension {
     
     var titleView: ChatTitleView!;
     
@@ -41,9 +41,10 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, UITabl
     @IBOutlet var shareButton: UIButton!;
     @IBOutlet var progressBar: UIProgressView!;
     var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
-        
+    
     override func viewDidLoad() {
         dataSource = ChatDataSource(controller: self);
+        contextMenuDelegate = self;
         scrollDelegate = self;
         super.viewDidLoad()
         self.initialize();
@@ -72,6 +73,12 @@ class ChatViewController : BaseChatViewController, UITableViewDataSource, UITabl
         self.refreshControl?.addTarget(self, action: #selector(ChatViewController.refreshChatHistory), for: UIControlEvents.valueChanged);
         self.tableView.addSubview(refreshControl);
         initSharing();
+    }
+    
+    func getTextOfSelectedRows(paths: [IndexPath], handler: (([String]) -> Void)?) {
+        let texts = paths.map({ index -> String in dataSource.getItem(for: index).data ?? "" });
+        print("got texts", texts);
+        handler?(texts);
     }
     
     func showBuddyInfo(_ button: UIButton) {

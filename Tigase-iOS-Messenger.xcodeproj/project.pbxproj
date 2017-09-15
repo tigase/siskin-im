@@ -70,6 +70,7 @@
 		FEAC71771CECA09B00ABABEF /* MucChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC71761CECA09B00ABABEF /* MucChatTableViewCell.swift */; };
 		FEAC71791CECE50400ABABEF /* MucChatOccupantsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */; };
 		FEAC717B1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */; };
+		FEB5EC9D1F6AE448007FE0E7 /* BaseChatViewControllerWithContextMenuAndToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithContextMenuAndToolbar.swift */; };
 		FEB62C501DA80956001500D5 /* AvatarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB62C4F1DA80956001500D5 /* AvatarStore.swift */; };
 		FEC514221CEA3D2F003AF765 /* DBRoomsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514211CEA3D2E003AF765 /* DBRoomsManager.swift */; };
 		FEC514241CEB2FF7003AF765 /* MucJoinViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514231CEB2FF7003AF765 /* MucJoinViewController.swift */; };
@@ -215,6 +216,7 @@
 		FEAC71761CECA09B00ABABEF /* MucChatTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatTableViewCell.swift; sourceTree = "<group>"; };
 		FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatOccupantsTableViewController.swift; sourceTree = "<group>"; };
 		FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatOccupantsTableViewCell.swift; sourceTree = "<group>"; };
+		FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithContextMenuAndToolbar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewControllerWithContextMenuAndToolbar.swift; sourceTree = "<group>"; };
 		FEB62C4F1DA80956001500D5 /* AvatarStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarStore.swift; sourceTree = "<group>"; };
 		FEC514211CEA3D2E003AF765 /* DBRoomsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBRoomsManager.swift; sourceTree = "<group>"; };
 		FEC514231CEB2FF7003AF765 /* MucJoinViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucJoinViewController.swift; sourceTree = "<group>"; };
@@ -313,6 +315,7 @@
 				FE0A674C1D4F645F00124480 /* CachedViewController.swift */,
 				FE5628901F3621DB00452C73 /* ChatViewController_ShareExtension.swift */,
 				FE43EB561F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift */,
+				FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithContextMenuAndToolbar.swift */,
 			);
 			path = chats;
 			sourceTree = "<group>";
@@ -757,6 +760,7 @@
 				FE507A1F1CDB7B3B001A015C /* AccountTableViewCell.swift in Sources */,
 				FE7F645B1D281B1C00B9DF56 /* DBCapabilitiesCache.swift in Sources */,
 				FEDE93891D081C3D00CA60A9 /* Settings.swift in Sources */,
+				FEB5EC9D1F6AE448007FE0E7 /* BaseChatViewControllerWithContextMenuAndToolbar.swift in Sources */,
 				FE9E136F1F26049A005C0EE5 /* NotificationSettingsViewController.swift in Sources */,
 				FEA8D6641F30F9260077C12F /* XmppService_VCardExtension.swift in Sources */,
 				FE1DCCA21EA52CE200850563 /* DataFormController.swift in Sources */,

@@ -86,17 +86,33 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         }
         messageLinkTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(messageLinkTapGestureDidFire));
         messageLinkTapGestureRecognizer.numberOfTapsRequired = 1;
+        messageLinkTapGestureRecognizer.cancelsTouchesInView = false;
         messageTextView.addGestureRecognizer(messageLinkTapGestureRecognizer);
         if previewView != nil {
             previewViewTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(previewTapGestureDidFire));
+            messageLinkTapGestureRecognizer.cancelsTouchesInView = false;
             previewViewTapGestureRecognizer?.numberOfTapsRequired = 2;
             previewView?.addGestureRecognizer(previewViewTapGestureRecognizer!);
         }
     }
 
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
 
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        if selected {
+            let colors = contentView.subviews.map({ it -> UIColor in it.backgroundColor ?? UIColor.clear });
+            super.setSelected(selected, animated: animated)
+            selectedBackgroundView = UIView();
+            contentView.subviews.enumerated().forEach { (offset, view) in
+                if view .responds(to: #selector(setHighlighted(_:animated:))) {
+                    view.setValue(false, forKey: "highlighted");
+                }
+                print("offset", offset, "view", view);
+                view.backgroundColor = colors[offset];
+            }
+        } else {
+            super.setSelected(selected, animated: animated);
+            selectedBackgroundView = nil;
+        }
         // Configure the view for the selected state
     }
     
@@ -185,6 +201,14 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
             self.accessoryType = .none;
             self.tintColor = self.messageTextView.tintColor;
         }
+    }
+    
+    func actionMore(_ sender: UIMenuController) {
+        NotificationCenter.default.post(name: NSNotification.Name("tableViewCellShowEditToolbar"), object: self);
+    }
+    
+    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        return super.canPerformAction(action, withSender: sender) || action == #selector(actionMore(_:));
     }
     
     func messageLinkTapGestureDidFire(_ recognizer: UITapGestureRecognizer) {

@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class MucChatViewController: BaseChatViewController, CachedViewControllerProtocol, UITableViewDataSource, EventHandler, BaseChatViewController_ShareImageExtension, BaseChatViewController_PreviewExtension {
+class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, BaseChatViewControllerWithContextMenuAndToolbarDelegate, CachedViewControllerProtocol, UITableViewDataSource, EventHandler, BaseChatViewController_ShareImageExtension, BaseChatViewController_PreviewExtension {
 
     var titleView: MucTitleView!;
     var room: Room?;
@@ -41,6 +41,7 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
 
     override func viewDidLoad() {
         dataSource = MucChatDataSource(controller: self);
+        contextMenuDelegate = self;
         scrollDelegate = self;
         super.viewDidLoad()
         initialize();
@@ -135,6 +136,12 @@ class MucChatViewController: BaseChatViewController, CachedViewControllerProtoco
                 }
             }
         }
+    }
+    
+    func getTextOfSelectedRows(paths: [IndexPath], handler: (([String]) -> Void)?) {
+        let texts = paths.map({ index -> String in dataSource.getItem(for: index).data ?? "" });
+        print("got texts", texts);
+        handler?(texts);
     }
 
     func newMessage(_ notification: NSNotification) {

@@ -160,7 +160,7 @@
                         <rect key="frame" x="0.0" y="64" width="600" height="603"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView contentMode="scaleToFill" ambiguous="YES" misplaced="YES" alwaysBounceVertical="YES" keyboardDismissMode="interactive" dataMode="prototypes" style="plain" separatorStyle="default" allowsSelection="NO" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="Mpx-EA-82o">
+                            <tableView contentMode="scaleToFill" ambiguous="YES" misplaced="YES" alwaysBounceVertical="YES" keyboardDismissMode="interactive" dataMode="prototypes" style="plain" separatorStyle="default" allowsSelection="NO" allowsSelectionDuringEditing="YES" allowsMultipleSelectionDuringEditing="YES" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="Mpx-EA-82o">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="491"/>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <gestureRecognizers/>
@@ -306,6 +306,13 @@
                                     <outletCollection property="gestureRecognizers" destination="GcF-zS-Z1n" appends="YES" id="CVK-jB-FyW"/>
                                 </connections>
                             </tableView>
+                            <toolbar hidden="YES" opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="J4D-LI-5Um">
+                                <rect key="frame" x="0.0" y="279" width="600" height="44"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" id="3zt-Oy-N2i"/>
+                                </constraints>
+                                <items/>
+                            </toolbar>
                             <view contentMode="bottom" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="HK7-Bq-Vwt">
                                 <rect key="frame" x="0.0" y="490" width="600" height="46"/>
                                 <subviews>
@@ -349,16 +356,17 @@
                                 </subviews>
                                 <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                 <constraints>
-                                    <constraint firstItem="tM8-yl-Xfw" firstAttribute="top" secondItem="lXk-P5-gwH" secondAttribute="bottom" constant="8" id="6Qx-jM-lez"/>
+                                    <constraint firstItem="tM8-yl-Xfw" firstAttribute="top" secondItem="lXk-P5-gwH" secondAttribute="bottom" priority="999" constant="8" id="6Qx-jM-lez"/>
                                     <constraint firstItem="tM8-yl-Xfw" firstAttribute="width" secondItem="Usd-qW-q8K" secondAttribute="width" constant="12" id="7wR-aN-iji"/>
                                     <constraint firstItem="tM8-yl-Xfw" firstAttribute="leading" secondItem="hEk-n0-vGX" secondAttribute="trailing" constant="8" id="BQ7-yi-ZSz"/>
                                     <constraint firstItem="lXk-P5-gwH" firstAttribute="leading" secondItem="HK7-Bq-Vwt" secondAttribute="leading" id="Ciw-yv-ZIR"/>
                                     <constraint firstAttribute="trailing" secondItem="lXk-P5-gwH" secondAttribute="trailing" id="MIs-f0-e2m"/>
-                                    <constraint firstAttribute="bottom" secondItem="tM8-yl-Xfw" secondAttribute="bottom" constant="8" id="OBe-Jw-pOH"/>
+                                    <constraint firstAttribute="bottom" secondItem="tM8-yl-Xfw" secondAttribute="bottom" priority="999" constant="8" id="OBe-Jw-pOH"/>
                                     <constraint firstAttribute="trailing" secondItem="Wud-KB-gIx" secondAttribute="trailing" constant="8" id="Q7o-dZ-m7q"/>
                                     <constraint firstItem="Usd-qW-q8K" firstAttribute="centerY" secondItem="tM8-yl-Xfw" secondAttribute="centerY" id="Sm2-66-rp4"/>
+                                    <constraint firstItem="lXk-P5-gwH" firstAttribute="top" secondItem="HK7-Bq-Vwt" secondAttribute="top" id="StI-ry-xsy"/>
+                                    <constraint firstAttribute="height" id="X3C-2R-ann"/>
                                     <constraint firstItem="Usd-qW-q8K" firstAttribute="centerX" secondItem="tM8-yl-Xfw" secondAttribute="centerX" id="agE-5h-7xk"/>
-                                    <constraint firstItem="lXk-P5-gwH" firstAttribute="top" secondItem="HK7-Bq-Vwt" secondAttribute="top" id="hul-Hr-7rz"/>
                                     <constraint firstAttribute="bottom" secondItem="hEk-n0-vGX" secondAttribute="bottom" constant="10" id="j9C-mi-FHW"/>
                                     <constraint firstAttribute="bottom" secondItem="Wud-KB-gIx" secondAttribute="bottom" constant="10" id="lq0-OA-BIJ"/>
                                     <constraint firstItem="Wud-KB-gIx" firstAttribute="leading" secondItem="tM8-yl-Xfw" secondAttribute="trailing" constant="8" id="p8d-xp-TzN"/>
@@ -371,8 +379,11 @@
                             <constraint firstItem="Mpx-EA-82o" firstAttribute="top" secondItem="1de-4L-gxt" secondAttribute="bottom" id="1f1-i2-ZxE"/>
                             <constraint firstItem="Mpx-EA-82o" firstAttribute="leading" secondItem="MXY-a0-pWq" secondAttribute="leadingMargin" constant="-10" id="3Js-hq-pvE"/>
                             <constraint firstItem="HK7-Bq-Vwt" firstAttribute="leading" secondItem="MXY-a0-pWq" secondAttribute="leadingMargin" constant="-20" id="BDn-sF-cBJ"/>
+                            <constraint firstItem="J4D-LI-5Um" firstAttribute="leading" secondItem="MXY-a0-pWq" secondAttribute="leadingMargin" constant="-20" id="C6N-CS-Mmp"/>
+                            <constraint firstItem="HK7-Bq-Vwt" firstAttribute="top" secondItem="J4D-LI-5Um" secondAttribute="bottom" id="Nmm-Ch-fn6"/>
                             <constraint firstAttribute="trailingMargin" secondItem="HK7-Bq-Vwt" secondAttribute="trailing" constant="-20" id="X8l-bI-BPe"/>
-                            <constraint firstItem="HK7-Bq-Vwt" firstAttribute="top" secondItem="Mpx-EA-82o" secondAttribute="bottom" id="acs-2S-5MJ"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="J4D-LI-5Um" secondAttribute="trailing" constant="-20" id="frD-ks-12j"/>
+                            <constraint firstItem="J4D-LI-5Um" firstAttribute="top" secondItem="Mpx-EA-82o" secondAttribute="bottom" id="iXu-Fk-ezn"/>
                             <constraint firstAttribute="trailingMargin" secondItem="Mpx-EA-82o" secondAttribute="trailing" constant="-10" id="kQu-OO-hLX"/>
                         </constraints>
                     </view>
@@ -388,6 +399,9 @@
                     </userDefinedRuntimeAttributes>
                     <connections>
                         <outlet property="bottomView" destination="HK7-Bq-Vwt" id="eV9-xp-qpM"/>
+                        <outlet property="bottomViewHeightConstraint" destination="X3C-2R-ann" id="CDU-Ni-VUI"/>
+                        <outlet property="customToolbar" destination="J4D-LI-5Um" id="s6m-n8-BiY"/>
+                        <outlet property="customToolbarHeightConstraint" destination="3zt-Oy-N2i" id="C6r-DW-dRm"/>
                         <outlet property="messageField" destination="tM8-yl-Xfw" id="M4U-3x-ViV"/>
                         <outlet property="placeholderView" destination="Usd-qW-q8K" id="9cr-sd-EvI"/>
                         <outlet property="progressBar" destination="lXk-P5-gwH" id="Y3e-lf-hkR"/>
@@ -397,7 +411,7 @@
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="qn2-Sh-FRP" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <tapGestureRecognizer id="GcF-zS-Z1n">
+                <tapGestureRecognizer cancelsTouchesInView="NO" id="GcF-zS-Z1n">
                     <connections>
                         <action selector="tableViewClicked:" destination="WP2-Cp-7ZE" id="24q-jd-zHE"/>
                     </connections>
@@ -666,7 +680,7 @@
                         <rect key="frame" x="0.0" y="64" width="375" height="603"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView contentMode="scaleToFill" ambiguous="YES" misplaced="YES" alwaysBounceVertical="YES" keyboardDismissMode="interactive" dataMode="prototypes" style="plain" separatorStyle="default" allowsSelection="NO" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="7AL-43-T74">
+                            <tableView contentMode="scaleToFill" ambiguous="YES" misplaced="YES" alwaysBounceVertical="YES" keyboardDismissMode="interactive" dataMode="prototypes" style="plain" separatorStyle="default" allowsSelection="NO" allowsSelectionDuringEditing="YES" allowsMultipleSelectionDuringEditing="YES" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="7AL-43-T74">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="491"/>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <gestureRecognizers/>
@@ -818,8 +832,17 @@
                                     <outletCollection property="gestureRecognizers" destination="na4-zK-cEh" appends="YES" id="mgo-Ue-Hb2"/>
                                 </connections>
                             </tableView>
-                            <view contentMode="bottom" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4tv-Y3-98F">
-                                <rect key="frame" x="0.0" y="490" width="600" height="46"/>
+                            <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="itZ-yz-LTt">
+                                <rect key="frame" x="0.0" y="279" width="375" height="44"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" id="tbX-v3-BrW"/>
+                                </constraints>
+                                <items>
+                                    <barButtonItem title="Item" id="OAd-kd-xsC"/>
+                                </items>
+                            </toolbar>
+                            <view contentMode="bottom" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4tv-Y3-98F">
+                                <rect key="frame" x="-4" y="490" width="383" height="46"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Fxu-dp-G5w">
                                         <rect key="frame" x="8" y="7" width="30" height="32"/>
@@ -863,14 +886,15 @@
                                 <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="trailing" secondItem="o1Z-wC-Bpu" secondAttribute="trailing" id="0hL-Mc-UTZ"/>
-                                    <constraint firstAttribute="bottom" secondItem="PAE-fw-tjq" secondAttribute="bottom" constant="8" id="5Dy-AU-GdU"/>
+                                    <constraint firstAttribute="bottom" secondItem="PAE-fw-tjq" secondAttribute="bottom" priority="999" constant="8" id="5Dy-AU-GdU"/>
                                     <constraint firstAttribute="bottom" secondItem="Fxu-dp-G5w" secondAttribute="bottom" constant="10" id="8D5-eQ-tt4"/>
                                     <constraint firstItem="o1Z-wC-Bpu" firstAttribute="top" secondItem="4tv-Y3-98F" secondAttribute="top" id="96d-fc-kpb"/>
                                     <constraint firstAttribute="trailing" secondItem="Lcw-kK-OnJ" secondAttribute="trailing" constant="8" id="D9t-IQ-luo"/>
-                                    <constraint firstItem="PAE-fw-tjq" firstAttribute="top" secondItem="o1Z-wC-Bpu" secondAttribute="bottom" constant="8" id="GVj-Wj-nLL"/>
+                                    <constraint firstItem="PAE-fw-tjq" firstAttribute="top" secondItem="o1Z-wC-Bpu" secondAttribute="bottom" priority="999" constant="8" id="GVj-Wj-nLL"/>
                                     <constraint firstItem="o1Z-wC-Bpu" firstAttribute="leading" secondItem="4tv-Y3-98F" secondAttribute="leading" id="Tj0-Z4-5jO"/>
                                     <constraint firstItem="PAE-fw-tjq" firstAttribute="leading" secondItem="Fxu-dp-G5w" secondAttribute="trailing" constant="8" id="WiW-7d-FFn"/>
                                     <constraint firstItem="PAE-fw-tjq" firstAttribute="width" secondItem="k5s-pa-whs" secondAttribute="width" constant="12" id="Wqw-bn-yIP"/>
+                                    <constraint firstAttribute="height" id="Wul-ad-W7i"/>
                                     <constraint firstAttribute="bottom" secondItem="Lcw-kK-OnJ" secondAttribute="bottom" constant="10" id="YTw-ql-emj"/>
                                     <constraint firstItem="Fxu-dp-G5w" firstAttribute="leading" secondItem="4tv-Y3-98F" secondAttribute="leading" constant="8" id="dfi-h2-KOd"/>
                                     <constraint firstItem="k5s-pa-whs" firstAttribute="centerX" secondItem="PAE-fw-tjq" secondAttribute="centerX" id="duK-qg-wjP"/>
@@ -884,9 +908,12 @@
                             <constraint firstItem="7AL-43-T74" firstAttribute="leading" secondItem="xGa-3u-Ko9" secondAttribute="leadingMargin" constant="-10" id="9nN-EZ-DOQ"/>
                             <constraint firstAttribute="trailingMargin" secondItem="4tv-Y3-98F" secondAttribute="trailing" constant="-20" id="ABZ-V5-gJP"/>
                             <constraint firstItem="4tv-Y3-98F" firstAttribute="leading" secondItem="xGa-3u-Ko9" secondAttribute="leadingMargin" constant="-20" id="B3i-j3-3AQ"/>
+                            <constraint firstItem="4tv-Y3-98F" firstAttribute="top" secondItem="itZ-yz-LTt" secondAttribute="bottom" id="I94-GN-WiI"/>
                             <constraint firstAttribute="trailingMargin" secondItem="7AL-43-T74" secondAttribute="trailing" constant="-10" id="QZo-ZU-Dzz"/>
-                            <constraint firstItem="4tv-Y3-98F" firstAttribute="top" secondItem="7AL-43-T74" secondAttribute="bottom" constant="-1" id="Wv5-jc-bPw"/>
+                            <constraint firstItem="itZ-yz-LTt" firstAttribute="leading" secondItem="xGa-3u-Ko9" secondAttribute="leadingMargin" constant="-16" id="Sft-wj-wXT"/>
+                            <constraint firstItem="itZ-yz-LTt" firstAttribute="top" secondItem="7AL-43-T74" secondAttribute="bottom" id="SgR-3N-7GV"/>
                             <constraint firstItem="7AL-43-T74" firstAttribute="top" secondItem="Ekx-Sc-1Se" secondAttribute="bottom" id="YRP-lt-Cze"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="itZ-yz-LTt" secondAttribute="trailing" constant="-16" id="dM2-nt-7ZV"/>
                         </constraints>
                     </view>
                     <extendedEdge key="edgesForExtendedLayout"/>
@@ -899,6 +926,9 @@
                     </navigationItem>
                     <connections>
                         <outlet property="bottomView" destination="4tv-Y3-98F" id="VSZ-4K-SM1"/>
+                        <outlet property="bottomViewHeightConstraint" destination="Wul-ad-W7i" id="A6I-zo-Qug"/>
+                        <outlet property="customToolbar" destination="itZ-yz-LTt" id="Fq5-An-jrV"/>
+                        <outlet property="customToolbarHeightConstraint" destination="tbX-v3-BrW" id="fT2-EL-Ame"/>
                         <outlet property="messageField" destination="PAE-fw-tjq" id="Q5i-Hr-iwD"/>
                         <outlet property="placeholderView" destination="k5s-pa-whs" id="SvL-g7-gtp"/>
                         <outlet property="progressBar" destination="o1Z-wC-Bpu" id="KbG-kT-pz5"/>
@@ -908,7 +938,7 @@
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="DwL-Yq-WLc" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <tapGestureRecognizer id="na4-zK-cEh">
+                <tapGestureRecognizer cancelsTouchesInView="NO" id="na4-zK-cEh">
                     <connections>
                         <action selector="tableViewClicked:" destination="DCK-O4-JVw" id="KJT-b8-6fH"/>
                     </connections>

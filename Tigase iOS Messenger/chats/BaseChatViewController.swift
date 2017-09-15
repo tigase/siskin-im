@@ -23,7 +23,7 @@ import UIKit
 import UserNotifications
 import TigaseSwift
 
-class BaseChatViewController: UIViewController, UITextViewDelegate {
+class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewDelegate {
 
     @IBOutlet var tableView: UITableView!
     @IBOutlet fileprivate var messageField: UITextView!
