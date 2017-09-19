@@ -78,6 +78,7 @@
 		FEC514281CEB82E9003AF765 /* MucChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514271CEB82E9003AF765 /* MucChatViewController.swift */; };
 		FEDCBF671D9C3EE700AE9129 /* RosterProviderFlat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDCBF661D9C3EE700AE9129 /* RosterProviderFlat.swift */; };
 		FEDCBF691D9C53BA00AE9129 /* RosterProviderGrouped.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDCBF681D9C53BA00AE9129 /* RosterProviderGrouped.swift */; };
+		FEDE3B501F7162AA00075F6E /* CustomChatManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE3B4F1F7162AA00075F6E /* CustomChatManager.swift */; };
 		FEDE93871D07564F00CA60A9 /* SwitchTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE93861D07564F00CA60A9 /* SwitchTableViewCell.swift */; };
 		FEDE93891D081C3D00CA60A9 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE93881D081C3D00CA60A9 /* Settings.swift */; };
 		FEDE938C1D08AFE800CA60A9 /* VCardEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE938B1D08AFE800CA60A9 /* VCardEditViewController.swift */; };
@@ -224,6 +225,7 @@
 		FEC514271CEB82E9003AF765 /* MucChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatViewController.swift; sourceTree = "<group>"; };
 		FEDCBF661D9C3EE700AE9129 /* RosterProviderFlat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterProviderFlat.swift; sourceTree = "<group>"; };
 		FEDCBF681D9C53BA00AE9129 /* RosterProviderGrouped.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterProviderGrouped.swift; sourceTree = "<group>"; };
+		FEDE3B4F1F7162AA00075F6E /* CustomChatManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomChatManager.swift; sourceTree = "<group>"; };
 		FEDE93861D07564F00CA60A9 /* SwitchTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwitchTableViewCell.swift; sourceTree = "<group>"; };
 		FEDE93881D081C3D00CA60A9 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		FEDE938B1D08AFE800CA60A9 /* VCardEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VCardEditViewController.swift; sourceTree = "<group>"; };
@@ -476,6 +478,7 @@
 			children = (
 				FEA8D6611F30F54B0077C12F /* XmppService.swift */,
 				FEA8D6631F30F9260077C12F /* XmppService_VCardExtension.swift */,
+				FEDE3B4F1F7162AA00075F6E /* CustomChatManager.swift */,
 			);
 			path = service;
 			sourceTree = "<group>";
@@ -790,6 +793,7 @@
 				FE80BDAB1D953FC4001914B0 /* SetupViewController.swift in Sources */,
 				FEE097621F1FCE1800B1CEAB /* TablePicketViewController.swift in Sources */,
 				FEDE93941D0AC01200CA60A9 /* VCardEditEmailTableViewCell.swift in Sources */,
+				FEDE3B501F7162AA00075F6E /* CustomChatManager.swift in Sources */,
 				FEDE939B1D0C38B000CA60A9 /* ContactFormTableViewCell.swift in Sources */,
 				FEDE93991D0C207100CA60A9 /* ContactBasicTableViewCell.swift in Sources */,
 				FE507A251CDB7B3B001A015C /* AccountManager.swift in Sources */,

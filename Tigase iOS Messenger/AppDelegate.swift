@@ -53,6 +53,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             } catch {
                 try dbConnection.execute("ALTER TABLE chat_history ADD COLUMN error TEXT;");
             }
+            
+            // deal with duplicated chats for the same bare jid
+            print("looking for duplicated chats...");
+            let duplicates: [(String, String, Int)] = try dbConnection.prepareStatement("select min(c.id) as id, c.account, c.jid from (select count(id) as count, account, jid from chats group by account, jid) x inner join chats c on c.account = x.account and c.jid = x.jid where count > 1 group by c.account, c.jid").query() { (cursor) -> (String, String, Int) in
+                let account: String = cursor["account"]!;
+                let jid: String = cursor["jid"]!;
+                let id: Int = cursor["id"] ?? 0;
+                print("account", account, "jid", jid, "id", id);
+                return (account, jid, id);
+            }
+            print("found duplicates", duplicates);
+            try duplicates.forEach({ (account, jid, idToLeave) in
+                let removed = try dbConnection.prepareStatement("delete from chats where account = ? and jid = ? and id <> :id").scalar(account, jid, idToLeave);
+                print("for account", account, "and jid", jid, "removed", removed, "duplicated chats");
+            });
+            print("duplicated chats cleanup finished!");
         } catch {
             print("DB initialization error:", error);
             fatalError("Initialization of database failed!");
