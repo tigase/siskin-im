@@ -298,7 +298,55 @@ open class DBStatement {
             } while cursor.next();
         }
     }
+
+    open func query<T>(_ params:[String:Any?], forEachRowUntil: (DBCursor)->T?) throws -> T? {
+        var result: T? = nil;
+        if let cursor = try execute(params)?.cursor {
+            repeat {
+                result = forEachRowUntil(cursor);
+            } while result == nil && cursor.next();
+        }
+        return result;
+    }
     
+    open func query<T>(_ params:Any?..., forEachRowUntil: (DBCursor)->T?) throws -> T? {
+        var result: T? = nil;
+        if let cursor = try execute(params)?.cursor {
+            repeat {
+                result = forEachRowUntil(cursor);
+            } while result == nil && cursor.next();
+        }
+        return result;
+    }
+    
+    open func query<T>(_ params:[String:Any?], forEach: (DBCursor)->T?) throws -> [T] {
+        var result = [T]();
+        var tmp: T? = nil;
+        if let cursor = try execute(params)?.cursor {
+            repeat {
+                tmp = forEach(cursor);
+                if tmp != nil {
+                    result.append(tmp!);
+                }
+            } while cursor.next();
+        }
+        return result;
+    }
+    
+    open func query<T>(_ params:Any?..., forEach: (DBCursor)->T?) throws -> [T] {
+        var result = [T]();
+        var tmp: T? = nil;
+        if let cursor = try execute(params)?.cursor {
+            repeat {
+                tmp = forEach(cursor);
+                if tmp != nil {
+                    result.append(tmp!);
+                }
+            } while cursor.next();
+        }
+        return result;
+    }
+
     open func insert(_ params:Any?...) throws -> Int? {
         return try connection.dispatch_sync_db_queue() {
             if params.count > 0 {

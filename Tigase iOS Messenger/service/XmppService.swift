@@ -348,7 +348,7 @@ open class XmppService: Logger, EventHandler {
                     if let messageSyncTime = AccountSettings.MessageSyncTime(account.description).getDate() {
                         syncMessages(account: account, start: messageSyncTime);
                     } else {
-                        var start = Date().addingTimeInterval(-1 * messageSyncPeriod * 60 * 60);
+                        let start = Date().addingTimeInterval(-1 * messageSyncPeriod * 60 * 60);
                         self.syncMessages(account: account, start: start);
                     }
                 }

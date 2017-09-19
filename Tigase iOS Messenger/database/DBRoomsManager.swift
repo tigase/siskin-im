@@ -28,6 +28,7 @@ open class DBRoomsManager: DefaultRoomsManager {
     
     public init(store: DBChatStore) {
         self.store = store;
+        super.init(dispatcher: store.dispatcher);
     }
     
     open override func createRoomInstance(roomJid: BareJID, nickname: String, password: String?) -> Room {
@@ -46,8 +47,10 @@ open class DBRoomsManager: DefaultRoomsManager {
     }
     
     open override func remove(room: Room) {
-        if store.close(chat: room) {
-            super.remove(room: room);
+        dispatcher.sync(flags: .barrier) {
+            if self.store.close(chat: room) {
+                super.remove(room: room);
+            }
         }
     }
 }

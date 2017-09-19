@@ -140,9 +140,7 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
             return;
         }
         
-        if !self.xmppService.dbChatStore.isFor(xmppClient!.sessionObject, jid: item.jid.bareJid) {
-            _ = messageModule!.createChat(with: item.jid);
-        }
+        _ = messageModule!.chatManager!.getChatOrCreate(with: item.jid, thread: nil);
         
         let destination = self.storyboard!.instantiateViewController(withIdentifier: "ChatViewNavigationController") as! UINavigationController;
         let chatController = destination.childViewControllers[0] as! ChatViewController;
