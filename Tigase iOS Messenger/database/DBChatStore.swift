@@ -50,7 +50,8 @@ open class DBChatStoreWrapper: ChatStore {
     open func getChat<T: AnyObject>(with jid: BareJID, filter: @escaping (T) -> Bool) -> T? {
         return self.dispatcher.sync {
             if cache != nil {
-                if let chats = self.cache!.object(forKey: jid.stringValue as NSString) as? [T] {
+                let key = createKey(jid: jid);
+                if let chats = self.cache!.object(forKey: key as NSString) as? [T] {
                     for chat in chats {
                         if filter(chat) {
                             return chat;
@@ -64,7 +65,7 @@ open class DBChatStoreWrapper: ChatStore {
                     return nil;
                 }
                 
-                self.cache?.setObject(chats as NSArray, forKey: jid.stringValue as NSString);
+                self.cache?.setObject(chats as NSArray, forKey: key as NSString);
                 
                 for chat in chats {
                     if filter(chat) {
@@ -90,9 +91,10 @@ open class DBChatStoreWrapper: ChatStore {
         return self.dispatcher.sync(flags: .barrier) {
             let dbChat: T? = store.open(for: sessionObject, chat: chat);
             if dbChat != nil && cache != nil {
-                var chats = (self.cache!.object(forKey: chat.jid.bareJid.stringValue as NSString) as? [T]) ?? [];
+                let key = self.createKey(jid: chat.jid.bareJid);
+                var chats = (self.cache!.object(forKey: key as NSString) as? [T]) ?? [];
                 chats.append(dbChat!);
-                self.cache?.setObject(chats as NSArray, forKey: chat.jid.bareJid.stringValue as NSString);
+                self.cache?.setObject(chats as NSArray, forKey: key as NSString);
             }
             return dbChat;
         }
@@ -102,10 +104,14 @@ open class DBChatStoreWrapper: ChatStore {
         return self.dispatcher.sync(flags: .barrier) {
             let closed = store.close(chat: chat);
             if closed && cache != nil {
-                self.cache?.removeObject(forKey: chat.jid.bareJid.stringValue as NSString);
+                self.cache?.removeObject(forKey: self.createKey(jid: chat.jid.bareJid) as NSString);
             }
             return closed;
         }
+    }
+    
+    fileprivate func createKey(jid: BareJID) -> String {
+        return jid.stringValue.lowercased();
     }
 }
 

@@ -97,3 +97,5 @@ CREATE TABLE IF NOT EXISTS avatars_cache (
 CREATE INDEX IF NOT EXISTS avatars_cache_jid_idx on avatars_cache (
     jid
 );
+
+PRAGMA user_version = 1;

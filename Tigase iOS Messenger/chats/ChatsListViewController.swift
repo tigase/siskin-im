@@ -148,12 +148,12 @@ class ChatsListViewController: UITableViewController, EventHandler {
                 }
                 
                 if discardNotifications {
-                    let accountStr = item.account.stringValue;
-                    let jidStr = item.jid.stringValue;
+                    let accountStr = item.account.stringValue.lowercased();
+                    let jidStr = item.jid.stringValue.lowercased();
                     UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
                         var toRemove = [String]();
                         for notification in notifications {
-                            if (notification.request.content.userInfo["account"] as? String) == accountStr && (notification.request.content.userInfo["sender"] as? String) == jidStr {
+                            if (notification.request.content.userInfo["account"] as? String)?.lowercased() == accountStr && (notification.request.content.userInfo["sender"] as? String)?.lowercased() == jidStr {
                                 toRemove.append(notification.request.identifier);
                             }
                         }

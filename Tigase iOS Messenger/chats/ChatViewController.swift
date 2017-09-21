@@ -261,8 +261,8 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     }
     
     func accountStateChanged(_ notification: Notification) {
-        let account = notification.userInfo!["account"]! as! String;
-        if self.account.stringValue == account {
+        let account = BareJID(notification.userInfo!["account"]! as! String);
+        if self.account == account {
             updateTitleView();
         }
     }

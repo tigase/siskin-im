@@ -46,7 +46,8 @@ open class AvatarManager: EventHandler {
     }
     
     open func getAvatar(for jid:BareJID, account:BareJID) -> UIImage {
-        let val = cache.object(forKey: jid.stringValue as NSString);
+        let key = createKey(jid: jid);
+        let val = cache.object(forKey: key as NSString);
         if val?.beginContentAccess() ?? false {
             defer {
                 val?.endContentAccess();
@@ -58,7 +59,7 @@ open class AvatarManager: EventHandler {
         
         // adding default avatar to cache to make sure we will not load data
         // from database when retrieving avatars for jids without avatar
-        self.cache.setObject(AvatarHolder(image: image), forKey: jid.stringValue as NSString);
+        self.cache.setObject(AvatarHolder(image: image), forKey: key as NSString);
         return image;
     }
     
@@ -96,7 +97,8 @@ open class AvatarManager: EventHandler {
                     self.xmppService.refreshVCard(account: account, for: jid, onSuccess: { (vcard) in
                         
                     }, onError: { (errorCondition) in
-                        self.cache.removeObject(forKey: jid.stringValue as NSString);
+                        let key = self.createKey(jid: jid);
+                        self.cache.removeObject(forKey: key as NSString);
                     });
                 } else if hash != nil {
                     self.store.storeAvatar(data: photoData!, hash: hash!);
@@ -174,13 +176,18 @@ open class AvatarManager: EventHandler {
     
     func notifyAvatarChanged(hash: String?, type: AvatarType, for jid: BareJID, on account: BareJID) {
         self.store.updateAvatar(hash: hash, type: type, for: jid, on: account) {
-            self.cache.removeObject(forKey: jid.stringValue as NSString);
+            let key = self.createKey(jid: jid);
+            self.cache.removeObject(forKey: key as NSString);
             NotificationCenter.default.post(name: AvatarManager.AVATAR_CHANGED, object: nil, userInfo: ["jid": jid]);
         }
     }
     
     func clearCache() {
         cache.removeAllObjects();
+    }
+    
+    fileprivate func createKey(jid: BareJID) -> String {
+        return jid.stringValue.lowercased();
     }
     
     fileprivate class AvatarHolder: NSDiscardableContent {

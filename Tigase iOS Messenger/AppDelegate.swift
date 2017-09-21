@@ -38,37 +38,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         AccountSettings.initialize();
         do {
             dbConnection = try DBConnection(dbFilename: "mobile_messenger1.db");
-            let resourcePath = Bundle.main.resourcePath! + "/db-schema-1.0.0.sql";
-            print("loading SQL from file", resourcePath);
-            let dbSchema = try String(contentsOfFile: resourcePath, encoding: String.Encoding.utf8);
-            print("loaded schema:", dbSchema);
-            try dbConnection.execute(dbSchema);
-            do {
-                try dbConnection.execute("select preview from chat_history");
-            } catch {
-                try dbConnection.execute("ALTER TABLE chat_history ADD COLUMN preview TEXT");
-            }
-            do {
-                try dbConnection.execute("select error from chat_history");
-            } catch {
-                try dbConnection.execute("ALTER TABLE chat_history ADD COLUMN error TEXT;");
-            }
-            
-            // deal with duplicated chats for the same bare jid
-            print("looking for duplicated chats...");
-            let duplicates: [(String, String, Int)] = try dbConnection.prepareStatement("select min(c.id) as id, c.account, c.jid from (select count(id) as count, account, jid from chats group by account, jid) x inner join chats c on c.account = x.account and c.jid = x.jid where count > 1 group by c.account, c.jid").query() { (cursor) -> (String, String, Int) in
-                let account: String = cursor["account"]!;
-                let jid: String = cursor["jid"]!;
-                let id: Int = cursor["id"] ?? 0;
-                print("account", account, "jid", jid, "id", id);
-                return (account, jid, id);
-            }
-            print("found duplicates", duplicates);
-            try duplicates.forEach({ (account, jid, idToLeave) in
-                let removed = try dbConnection.prepareStatement("delete from chats where account = ? and jid = ? and id <> :id").scalar(account, jid, idToLeave);
-                print("for account", account, "and jid", jid, "removed", removed, "duplicated chats");
-            });
-            print("duplicated chats cleanup finished!");
+            try DBSchemaManager(dbConnection: dbConnection).upgradeSchema();
         } catch {
             print("DB initialization error:", error);
             fatalError("Initialization of database failed!");
@@ -315,6 +285,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func isChatVisible(account: String?, with jid: String?) -> Bool {
+        guard account != nil && jid != nil else {
+            return false;
+        }
         var topController = UIApplication.shared.keyWindow?.rootViewController;
         while (topController?.presentedViewController != nil) {
             topController = topController?.presentedViewController;
@@ -347,7 +320,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
         
         print("comparing", baseChatController!.account.stringValue, account, baseChatController!.jid.stringValue, jid);
-        return (baseChatController!.account.stringValue == account) && (baseChatController!.jid.bareJid.stringValue == jid);
+        return (baseChatController!.account == BareJID(account!)) && (baseChatController!.jid.bareJid == BareJID(jid!));
     }
     
     func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {

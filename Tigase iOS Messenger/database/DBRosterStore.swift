@@ -44,16 +44,16 @@ open class DBRosterStoreWrapper: RosterStore {
     
     override open func addItem(_ item:RosterItem) {
         if let dbItem = store.addItem(for: sessionObject, item: item) {
-            cache?.setObject(dbItem, forKey: dbItem.jid.stringValue as NSString);
+            cache?.setObject(dbItem, forKey: createKey(jid: dbItem.jid) as NSString);
         }
     }
     
     override open func get(for jid:JID) -> RosterItem? {
-        if let item = cache?.object(forKey: jid.stringValue as NSString) {
+        if let item = cache?.object(forKey: createKey(jid: jid) as NSString) {
             return item;
         }
         if let item = store.get(for: sessionObject, jid: jid) {
-            cache?.setObject(item, forKey: jid.stringValue as NSString);
+            cache?.setObject(item, forKey: createKey(jid: jid) as NSString);
             return item;
         }
         return nil;
@@ -65,10 +65,16 @@ open class DBRosterStoreWrapper: RosterStore {
     }
     
     override open func removeItem(for jid:JID) {
-        cache?.removeObject(forKey: jid.stringValue as NSString);
+        cache?.removeObject(forKey: createKey(jid: jid) as NSString);
         store.removeItem(for: sessionObject, jid: jid);
     }
-    
+  
+    fileprivate func createKey(jid: JID) -> String {
+        guard jid.resource != nil else {
+            return jid.bareJid.stringValue.lowercased();
+        }
+        return "\(jid.bareJid.stringValue.lowercased())/\(jid.resource!)";
+    }
 }
 
 open class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
