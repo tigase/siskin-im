@@ -43,10 +43,10 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
     
     override func viewDidLoad() {
+        super.viewDidLoad()
         dataSource = ChatDataSource(controller: self);
         contextMenuDelegate = self;
         scrollDelegate = self;
-        super.viewDidLoad()
         self.initialize();
         tableView.dataSource = self;
         tableView.delegate = self;

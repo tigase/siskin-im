@@ -24,10 +24,7 @@ import TigaseSwift
 
 class ContactViewController: UITableViewController {
 
-    var xmppService: XmppService {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
-        return appDelegate.xmppService;
-    }
+    var xmppService: XmppService!;
     
     var account: BareJID!;
     var jid: BareJID!;
@@ -50,6 +47,7 @@ class ContactViewController: UITableViewController {
     }
     
     override func viewDidLoad() {
+        xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
         super.viewDidLoad()
 
         // Uncomment the following line to preserve selection between presentations

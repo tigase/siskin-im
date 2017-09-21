@@ -29,10 +29,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     var window: UIWindow?
     var xmppService:XmppService!;
     var dbConnection:DBConnection!;
-    var defaultKeepOnlineOnAwayTime = TimeInterval(3 * 60);
-    var keepOnlineOnAwayTimer: TigaseSwift.Timer?;
+    fileprivate var defaultKeepOnlineOnAwayTime = TimeInterval(3 * 60);
+    fileprivate var keepOnlineOnAwayTimer: TigaseSwift.Timer?;
     
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+    func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         Log.initialize();
         Settings.initialize();
         AccountSettings.initialize();

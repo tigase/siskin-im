@@ -27,10 +27,7 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
 
     fileprivate static let UPDATE_NOTIFICATION_NAME = Notification.Name("ROSTER_UPDATE");
         
-    var xmppService:XmppService {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
-        return appDelegate.xmppService;
-    }
+    var xmppService:XmppService!;
     
     var searchController: UISearchController!;
     
@@ -46,6 +43,7 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
     }
         
     override func viewDidLoad() {
+        xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
         super.viewDidLoad()
         searchController = UISearchController(searchResultsController: nil);
         searchController.dimsBackgroundDuringPresentation = false;
@@ -82,11 +80,12 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
         let rosterType = RosterType(rawValue: Settings.RosterType.getString() ?? "") ?? RosterType.flat;
         let availableOnly = Settings.RosterAvailableOnly.getBool();
         let displayHiddenGroup = Settings.RosterDisplayHiddenGroup.getBool();
+        let dbConnection = (UIApplication.shared.delegate as! AppDelegate).dbConnection!;
         switch rosterType {
         case .flat:
-            roster = RosterProviderFlat(order: sortOrder, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup,  updateNotificationName: RosterViewController.UPDATE_NOTIFICATION_NAME);
+            roster = RosterProviderFlat(xmppService: xmppService, dbConnection: dbConnection, order: sortOrder, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup,  updateNotificationName: RosterViewController.UPDATE_NOTIFICATION_NAME);
         case .grouped:
-            roster = RosterProviderGrouped(order: sortOrder, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup, updateNotificationName: RosterViewController.UPDATE_NOTIFICATION_NAME);
+            roster = RosterProviderGrouped(xmppService: xmppService, dbConnection: dbConnection, order: sortOrder, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup, updateNotificationName: RosterViewController.UPDATE_NOTIFICATION_NAME);
         }
         switch roster.order {
             case .alphabetical:

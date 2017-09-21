@@ -31,12 +31,10 @@ open class AvatarManager: EventHandler {
     var store: AvatarStore;
     fileprivate var cache = NSCache<NSString, AvatarHolder>();
     
-    var xmppService: XmppService {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
-        return appDelegate.xmppService;
-    }
+    weak var xmppService: XmppService!;
     
     public init(xmppService: XmppService, store: AvatarStore) {
+        self.xmppService = xmppService;
         defaultAvatar = UIImage(named: "defaultAvatar")!;
         cache.countLimit = 20;
         cache.totalCostLimit = 20 * 1024 * 1024;

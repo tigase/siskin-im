@@ -24,10 +24,7 @@ import TigaseSwift
 
 class AccountSettingsViewController: UITableViewController, EventHandler {
     
-    var xmppService: XmppService {
-        let delegate = UIApplication.shared.delegate as! AppDelegate;
-        return delegate.xmppService;
-    }
+    var xmppService: XmppService!;
     
     var account: String! {
         didSet {
@@ -51,7 +48,7 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
     
     
     override func viewDidLoad() {
-        super.viewDidLoad();
+        xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
     }
     
     override func viewWillAppear(_ animated: Bool) {

@@ -26,10 +26,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     
     let picker = UIImagePickerController();
 
-    var xmppService: XmppService {
-        let delegate = UIApplication.shared.delegate as! AppDelegate;
-        return delegate.xmppService;
-    }
+    var xmppService: XmppService!;
     
     var account: String! {
         didSet {
@@ -41,6 +38,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     var vcard: VCard!;
     
     override func viewDidLoad() {
+        xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
         super.viewDidLoad()
         
         // Do any additional setup after loading the view.

@@ -24,10 +24,7 @@ import TigaseSwift
 
 class MucJoinViewController: UITableViewController, UIPickerViewDataSource, UIPickerViewDelegate {
 
-    var xmppService:XmppService! {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
-        return appDelegate.xmppService;
-    }
+    var xmppService:XmppService!;
     
     @IBOutlet var accountTextField: UITextField!
     @IBOutlet var serverTextField: UITextField!
@@ -36,6 +33,7 @@ class MucJoinViewController: UITableViewController, UIPickerViewDataSource, UIPi
     @IBOutlet var passwordTextField: UITextField!
     
     override func viewDidLoad() {
+        xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.

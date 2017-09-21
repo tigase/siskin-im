@@ -24,10 +24,7 @@ import TigaseSwift
 
 class RosterItemEditViewController: UITableViewController, UIPickerViewDataSource, UIPickerViewDelegate {
 
-    var xmppService:XmppService {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
-        return appDelegate.xmppService;
-    }
+    var xmppService:XmppService!
     
     @IBOutlet var accountTextField: UITextField!
     @IBOutlet var jidTextField: UITextField!
@@ -39,6 +36,7 @@ class RosterItemEditViewController: UITableViewController, UIPickerViewDataSourc
     var jid:JID?;
     
     override func viewDidLoad() {
+        xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
         super.viewDidLoad()
 
         // Do any additional setup after loading the view

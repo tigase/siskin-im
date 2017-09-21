@@ -310,7 +310,7 @@ open class DBChatStore {
     }
     
     fileprivate func getContext(_ sessionObject: SessionObject) -> Context? {
-        return (UIApplication.shared.delegate as? AppDelegate)?.xmppService.getClient(forJid: sessionObject.userBareJid!)?.context;
+        return sessionObject.context;
     }
 }
 

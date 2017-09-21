@@ -24,10 +24,7 @@ import TigaseSwift
 
 class VCardEditBasicTableViewCell: UITableViewCell, UITextFieldDelegate {
 
-    var xmppService: XmppService {
-        let delegate = UIApplication.shared.delegate as! AppDelegate;
-        return delegate.xmppService;
-    }
+    var xmppService: XmppService!;
     
     @IBOutlet var photoView: UIImageView!
     @IBOutlet var givenNameView: UITextField!
@@ -58,6 +55,7 @@ class VCardEditBasicTableViewCell: UITableViewCell, UITextFieldDelegate {
     }
     
     override func awakeFromNib() {
+        xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
         super.awakeFromNib()
         // Initialization code
         let datePicker = UIDatePicker();

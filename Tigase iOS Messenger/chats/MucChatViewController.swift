@@ -40,10 +40,10 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
     var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
 
     override func viewDidLoad() {
+        super.viewDidLoad()
         dataSource = MucChatDataSource(controller: self);
         contextMenuDelegate = self;
         scrollDelegate = self;
-        super.viewDidLoad()
         initialize();
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false

@@ -32,7 +32,7 @@ public class DBSchemaManager {
     }
     
     open func upgradeSchema() throws {
-        var version = 1;// try! getSchemaVersion();
+        var version = try! getSchemaVersion();
         while (version < DBSchemaManager.CURRENT_VERSION) {
             switch version {
             case 0:

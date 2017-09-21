@@ -26,9 +26,9 @@ public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>,
     
     fileprivate var items: [RosterProviderFlatItem];
     
-    override init(order: RosterSortingOrder, availableOnly: Bool, displayHiddenGroup: Bool, updateNotificationName: Notification.Name) {
+    override init(xmppService: XmppService, dbConnection: DBConnection, order: RosterSortingOrder, availableOnly: Bool, displayHiddenGroup: Bool, updateNotificationName: Notification.Name) {
         self.items = [];
-        super.init(order: order, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup, updateNotificationName: updateNotificationName);
+        super.init(xmppService: xmppService, dbConnection: dbConnection, order: order, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup, updateNotificationName: updateNotificationName);
     }
     
     func numberOfSections() -> Int {

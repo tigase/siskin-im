@@ -53,15 +53,9 @@ public enum RosterType: String {
 
 public class RosterProviderAbstract<Item: RosterProviderItem> {
     
-    var dbConnection:DBConnection {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
-        return appDelegate.dbConnection;
-    }
+    let dbConnection:DBConnection;
     
-    var xmppService: XmppService {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
-        return appDelegate.xmppService;
-    }
+    let xmppService: XmppService;
     
     var availableOnly: Bool = false {
         didSet {
@@ -93,7 +87,9 @@ public class RosterProviderAbstract<Item: RosterProviderItem> {
     
     internal var queryString: String? = nil;
     
-    init(order: RosterSortingOrder, availableOnly: Bool, displayHiddenGroup: Bool, updateNotificationName: Notification.Name) {
+    init(xmppService: XmppService, dbConnection: DBConnection, order: RosterSortingOrder, availableOnly: Bool, displayHiddenGroup: Bool, updateNotificationName: Notification.Name) {
+        self.xmppService = xmppService;
+        self.dbConnection = dbConnection;
         self.order = order;
         self.updateNotificationName = updateNotificationName;
         self.availableOnly = availableOnly;

@@ -36,15 +36,8 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
     @IBInspectable var scrollToBottomOnShow: Bool = false;
     @IBInspectable var animateScrollToBottom: Bool = true;
     
-    var dbConnection:DBConnection {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
-        return appDelegate.dbConnection;
-    }
-    
-    var xmppService:XmppService! {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
-        return appDelegate.xmppService;
-    }
+    var dbConnection:DBConnection!;
+    var xmppService:XmppService!;
     
     var account:BareJID!;
     var jid:JID!;
@@ -65,6 +58,8 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
     lazy var loadChatInfo:DBStatement! = try? self.dbConnection.prepareStatement("SELECT name FROM roster_items WHERE account = :account AND jid = :jid");
     
     override func viewDidLoad() {
+        xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
+        dbConnection = (UIApplication.shared.delegate as! AppDelegate).dbConnection;
         super.viewDidLoad()
         placeholderView?.text = "from \(account.stringValue)...";
         isFirstTime = scrollToBottomOnShow;

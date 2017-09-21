@@ -25,20 +25,16 @@ import UserNotifications
 import TigaseSwift
 
 class ChatsListViewController: UITableViewController, EventHandler {
-    var dbConnection:DBConnection {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
-        return appDelegate.dbConnection;
-    }
-    var xmppService:XmppService {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
-        return appDelegate.xmppService;
-    }
+    var dbConnection:DBConnection!;
+    var xmppService:XmppService!;
     
     @IBOutlet var addMucButton: UIBarButtonItem!
     
     var dataSource: ChatsDataSource!;
     
     override func viewDidLoad() {
+        xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
+        dbConnection = (UIApplication.shared.delegate as! AppDelegate).dbConnection;
         dataSource = ChatsDataSource(controller: self);
         super.viewDidLoad();
         

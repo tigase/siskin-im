@@ -33,9 +33,11 @@ class SettingsViewController: UITableViewController, EventHandler {
         "dnd" : "Do not disturb"
     ];
     
-    var xmppService:XmppService {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate;
-        return appDelegate.xmppService;
+    var xmppService:XmppService!;
+    
+    override func viewDidLoad() {
+        xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
+        super.viewDidLoad();
     }
     
     override func viewWillAppear(_ animated: Bool) {
