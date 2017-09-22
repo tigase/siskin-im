@@ -124,6 +124,12 @@
       "idiom" : "ipad",
       "filename" : "logo_ipadpro.png",
       "scale" : "2x"
+    },
+    {
+      "size" : "1024x1024",
+      "idiom" : "ios-marketing",
+      "filename" : "tigase_logo_1024x1024_white.png",
+      "scale" : "1x"
     }
   ],
   "info" : {
