@@ -24,10 +24,12 @@ import TigaseSwift
 
 open class DBRosterStoreWrapper: RosterStore {
     
-    let cache: NSCache<NSString, RosterItem>?;
+    fileprivate let cache: NSCache<NSString, RosterItem>?;
     
-    let sessionObject: SessionObject;
-    let store:DBRosterStore;
+    fileprivate let sessionObject: SessionObject;
+    fileprivate let store:DBRosterStore;
+    
+    let dispatcher: QueueDispatcher;
     
     override open var count: Int {
         return store.count(for: sessionObject);
@@ -36,6 +38,7 @@ open class DBRosterStoreWrapper: RosterStore {
     init(sessionObject: SessionObject, store: DBRosterStore, useCache: Bool = true) {
         self.sessionObject = sessionObject;
         self.store = store;
+        self.dispatcher = store.dispatcher;
         self.cache = useCache ? NSCache() : nil;
         self.cache?.countLimit = 100;
         self.cache?.totalCostLimit = 1 * 1024 * 1024;
@@ -43,30 +46,38 @@ open class DBRosterStoreWrapper: RosterStore {
     }
     
     override open func addItem(_ item:RosterItem) {
-        if let dbItem = store.addItem(for: sessionObject, item: item) {
-            cache?.setObject(dbItem, forKey: createKey(jid: dbItem.jid) as NSString);
+        dispatcher.sync(flags: .barrier) {
+            if let dbItem = store.addItem(for: sessionObject, item: item) {
+                cache?.setObject(dbItem, forKey: createKey(jid: dbItem.jid) as NSString);
+            }
         }
     }
     
     override open func get(for jid:JID) -> RosterItem? {
-        if let item = cache?.object(forKey: createKey(jid: jid) as NSString) {
-            return item;
+        return dispatcher.sync {
+            if let item = cache?.object(forKey: createKey(jid: jid) as NSString) {
+                return item;
+            }
+            if let item = store.get(for: sessionObject, jid: jid) {
+                cache?.setObject(item, forKey: createKey(jid: jid) as NSString);
+                return item;
+            }
+            return nil;
         }
-        if let item = store.get(for: sessionObject, jid: jid) {
-            cache?.setObject(item, forKey: createKey(jid: jid) as NSString);
-            return item;
-        }
-        return nil;
     }
     
     override open func removeAll() {
-        cache?.removeAllObjects();
-        store.removeAll(for: sessionObject);
+        dispatcher.sync(flags: .barrier) {
+            cache?.removeAllObjects();
+            store.removeAll(for: sessionObject);
+        }
     }
     
     override open func removeItem(for jid:JID) {
-        cache?.removeObject(forKey: createKey(jid: jid) as NSString);
-        store.removeItem(for: sessionObject, jid: jid);
+        dispatcher.sync(flags: .barrier) {
+            cache?.removeObject(forKey: createKey(jid: jid) as NSString);
+            store.removeItem(for: sessionObject, jid: jid);
+        }
     }
   
     fileprivate func createKey(jid: JID) -> String {
@@ -77,7 +88,7 @@ open class DBRosterStoreWrapper: RosterStore {
     }
 }
 
-open class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
+open class DBRosterStore: RosterCacheProvider {
     
     fileprivate let dbConnection: DBConnection;
     
@@ -96,33 +107,23 @@ open class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
     fileprivate lazy var insertItemGroupStmt: DBStatement! = try? self.dbConnection.prepareStatement("INSERT INTO roster_items_groups (item_id, group_id) VALUES (:item_id, :group_id)");
     fileprivate lazy var updateItemStmt: DBStatement! = try? self.dbConnection.prepareStatement("UPDATE roster_items SET name = :name, subscription = :subscription, timestamp = :timestamp, ask = :ask WHERE account = :account AND jid = :jid");
     
-    open var queue: DispatchQueue = DispatchQueue(label: "db_roster_store_queue");
-    open var queueTag: DispatchSpecificKey<DispatchQueue?>;
+    open var dispatcher = QueueDispatcher(label: "db_roster_store_queue", attributes: .concurrent);
     
     public init(dbConnection:DBConnection) {
         self.dbConnection = dbConnection;
-        self.queueTag = DispatchSpecificKey<DispatchQueue?>();
-        queue.setSpecific(key: queueTag, value: queue);
 
         NotificationCenter.default.addObserver(self, selector: #selector(DBRosterStore.accountRemoved), name: NSNotification.Name(rawValue: "accountRemoved"), object: nil);
     }
     
-    deinit {
-        queue.setSpecific(key: queueTag, value: nil);
-    }
-    
     open func count(for sessionObject: SessionObject) -> Int {
-        do {
+        return dispatcher.sync {
             let params:[String:Any?] = ["account" : sessionObject.userBareJid!.stringValue];
-            return try countItemsStmt.scalar(params) ?? 0;
-        } catch _ {
-            
+            return try! countItemsStmt.scalar(params) ?? 0;
         }
-        return 0;
     }
     
     open func addItem(for sessionObject: SessionObject, item:RosterItem) -> RosterItem? {
-        do {
+        return try! dispatcher.sync(flags: .barrier) {
             let params:[String:Any?] = [ "account": sessionObject.userBareJid, "jid": item.jid, "name": item.name, "subscription": String(item.subscription.rawValue), "timestamp": NSDate(), "ask": item.ask ];
             let dbItem = item as? DBRosterItem ?? DBRosterItem(rosterItem: item);
             if dbItem.id == nil {
@@ -145,56 +146,34 @@ open class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
                 _ = try insertItemGroupStmt.insert(igparams);
             }
             return dbItem;
-        } catch _ {
-            return nil;
         }
     }
     
     open func get(for sessionObject: SessionObject, jid:JID) -> RosterItem? {
-        var item:DBRosterItem? = nil;
         let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : jid ];
-        var id: Int?;
-        var name: String?;
-        var subscription = RosterItem.Subscription.none;
-        var ask = false;
-            
-        dispatch_sync_local_queue() {
-            try! self.getItemStmt.query(params) { cursor -> Void in
-                id = cursor["id"]!;
-                name = cursor["name"];
-                subscription = RosterItem.Subscription(rawValue: cursor["subscription"]!)!;
-                ask = cursor["ask"]!;
+        
+        return dispatcher.sync {
+            if let (id, name, subscription, ask): (Int, String?, RosterItem.Subscription, Bool) = try! self.getItemStmt.findFirst(params, map: { cursor in
+                    (cursor["id"]!, cursor["name"], RosterItem.Subscription(rawValue: cursor["subscription"]!)!, cursor["ask"]!)
+            }) {
+                let groupParams: [String: Any?] = ["item_id": id];
+                let groups: [String] = try! self.getItemGroupsStmt.query(groupParams) { cursor in cursor["name"] }
+                return DBRosterItem(jid: jid, id: id, name: name, subscription: subscription, groups: groups, ask: ask);
             }
-            if (id != nil) {
-                var groups = [String]();
-                try! self.getItemGroupsStmt.query(["item_id": id]) { cursor -> Void in
-                    groups.append(cursor["name"]!);
-                }
-                item = DBRosterItem(jid: jid, id: id, name: name, subscription: subscription, groups: groups, ask: ask);
-            }
+            return nil;
         }
-        return item;
     }
     
     open func removeAll(for sessionObject: SessionObject) {
-        let params:[String:Any?] = ["account": sessionObject.userBareJid];
-        
-        dbConnection.dispatch_async_db_queue() {
-            do {
-                _ = try self.deleteItemsGroupsStmt.execute(params);
-                _ = try self.deleteItemsStmt.execute(params);
-            } catch _ {
-            
-            }
-        }
+        deleteAllItems(for: sessionObject.userBareJid!);
     }
     
     open func removeItem(for sessionObject: SessionObject, jid:JID) {
         let params:[String:Any?] = ["account": sessionObject.userBareJid, "jid": jid];
-        dbConnection.dispatch_async_db_queue() {
+        dispatcher.sync(flags: .barrier) {
             do {
-                _ = try self.deleteItemGroupsStmt.execute(params);
-                _ = try self.deleteItemStmt.execute(params);
+                _ = try self.deleteItemGroupsStmt.update(params);
+                _ = try self.deleteItemStmt.update(params);
             } catch _ {
             
             }
@@ -219,19 +198,21 @@ open class DBRosterStore: RosterCacheProvider, LocalQueueDispatcher {
     @objc open func accountRemoved(_ notification: NSNotification) {
         if let data = notification.userInfo {
             let accountStr = data["account"] as! String;
-            let params:[String:Any?] = ["account": accountStr];
-            
-            dbConnection.dispatch_async_db_queue() {
-                do {
-                    _ = try self.deleteItemsGroupsStmt.execute(params);
-                    _ = try self.deleteItemsStmt.execute(params);
-                } catch _ {
-                
-                }
-            }
+            deleteAllItems(for: BareJID(accountStr));
         }
     }
 
+    fileprivate func deleteAllItems(for account: BareJID) {
+        dispatcher.sync(flags: .barrier) {
+            do {
+                let params: [String:Any?] = ["account": account];
+                _ = try self.deleteItemsGroupsStmt.update(params);
+                _ = try self.deleteItemsStmt.update(params);
+            } catch _ {
+                
+            }
+        }
+    }
 }
 
 extension RosterItemProtocol {

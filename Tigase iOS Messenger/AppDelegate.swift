@@ -503,16 +503,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             var unreadChats = Set(notifications.filter({(notification) in notification.request.content.categoryIdentifier == "MESSAGE" }).map({ (notification) in
                 return notification.request.content.threadIdentifier;
             }));
-            self.dbConnection.dispatch_async_db_queue {
-                self.xmppService.dbChatHistoryStore.forEachUnreadChat(forEach: { (account, jid) in
-                    unreadChats.insert("account=" + account.stringValue + "|sender=" + jid.stringValue);
-                });
-                let badge = unreadChats.count;
-                DispatchQueue.main.async {
-                    print("setting badge to", badge);
-                    UIApplication.shared.applicationIconBadgeNumber = badge;
-                    completionHandler?();
-                }
+            
+            self.xmppService.dbChatHistoryStore.forEachUnreadChat(forEach: { (account, jid) in
+                unreadChats.insert("account=" + account.stringValue + "|sender=" + jid.stringValue);
+            });
+            let badge = unreadChats.count;
+            DispatchQueue.main.async {
+                print("setting badge to", badge);
+                UIApplication.shared.applicationIconBadgeNumber = badge;
+                completionHandler?();
             }
         }
     }

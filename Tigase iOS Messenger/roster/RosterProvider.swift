@@ -167,14 +167,8 @@ public class RosterProviderAbstract<Item: RosterProviderItem> {
     }
     
     func loadItems() -> [Item] {
-        var items = [Item]();
-        try! self.dbConnection.prepareStatement("SELECT id, account, jid, name FROM roster_items").query(forEachRow: { (it) -> Void in
-            let item = self.processDBloadQueryResult(it: it);
-            if item != nil {
-                items.append(item!);
-            }
-        });
-        return items;
+        return try! self.dbConnection.prepareStatement("SELECT id, account, jid, name FROM roster_items")
+            .query() { (it) in self.processDBloadQueryResult(it: it) };
     }
     
     func processDBloadQueryResult(it: DBCursor) -> Item? {

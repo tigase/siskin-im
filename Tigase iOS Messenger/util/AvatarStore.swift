@@ -27,42 +27,47 @@ open class AvatarStore {
     let avatarCacheUrl: URL;
     let dbConnection: DBConnection;
     
+    let dispatcher: QueueDispatcher;
+    
     fileprivate lazy var findAvatarHashForJidStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT type, hash FROM avatars_cache WHERE jid = :jid AND account = :account");
     fileprivate lazy var deleteAvatarHashForJidStmt: DBStatement! = try? self.dbConnection.prepareStatement("DELETE FROM avatars_cache WHERE jid = :jid AND account = :account AND (:type IS NULL OR type = :type)");
     fileprivate lazy var insertAvatarHashForJidStmt: DBStatement! = try? self.dbConnection.prepareStatement("INSERT INTO avatars_cache (jid, account, hash, type) VALUES (:jid,:account,:hash,:type)");
     
     public init(dbConnection: DBConnection) {
+        self.dispatcher = QueueDispatcher(queue: DispatchQueue(label: "AvatarStore", attributes: .concurrent), queueTag: DispatchSpecificKey<DispatchQueue?>());
         self.dbConnection = dbConnection;
         
         avatarCacheUrl = try! FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("avatars", isDirectory: true);
     }
     
     open func removeAvatar(hash: String) {
-        try? FileManager.default.removeItem(at: avatarCacheUrl.appendingPathComponent(hash));
+        dispatcher.sync(flags: .barrier) {
+            try? FileManager.default.removeItem(at: avatarCacheUrl.appendingPathComponent(hash));
+        }
     }
     
     open func storeAvatar(data: Data, hash: String) {
-        if !FileManager.default.fileExists(atPath: avatarCacheUrl.path) {
-            try? FileManager.default.createDirectory(at: avatarCacheUrl, withIntermediateDirectories: true, attributes: nil);
+        dispatcher.sync(flags: .barrier) {
+            if !FileManager.default.fileExists(atPath: avatarCacheUrl.path) {
+                try? FileManager.default.createDirectory(at: avatarCacheUrl, withIntermediateDirectories: true, attributes: nil);
+            }
+            
+            _ = FileManager.default.createFile(atPath: avatarCacheUrl.appendingPathComponent(hash).path, contents: data, attributes: nil);
         }
-        
-        _ = FileManager.default.createFile(atPath: avatarCacheUrl.appendingPathComponent(hash).path, contents: data, attributes: nil);
     }
     
     open func getAvatarHashes(for jid: BareJID, on account: BareJID) -> [AvatarType:String] {
         let params = ["account": account, "jid": jid] as [String : Any?];
         var hashes: [AvatarType:String] = [:];
-        dbConnection.dispatch_sync_db_queue {
-            try! self.findAvatarHashForJidStmt.query(params, forEachRow: { (cursor) -> Void in
-                guard let typeRawValue: String = cursor["type"], let hash: String = cursor["hash"] else {
-                    return;
-                }
-                guard let avatarType = AvatarType(rawValue: typeRawValue) else {
-                    return;
-                }
-                hashes[avatarType] = hash;
-            });
-        }
+        try! self.findAvatarHashForJidStmt.query(params, forEach: { (cursor) -> Void in
+            guard let typeRawValue: String = cursor["type"], let hash: String = cursor["hash"] else {
+                return;
+            }
+            guard let avatarType = AvatarType(rawValue: typeRawValue) else {
+                return;
+            }
+            hashes[avatarType] = hash;
+        });
         return hashes;
     }
     
@@ -75,10 +80,9 @@ open class AvatarStore {
     }
     
     open func updateAvatar(hash: String?, type: AvatarType, for jid: BareJID, on account: BareJID, onFinish: @escaping ()->Void) {
-        dbConnection.dispatch_async_db_queue {
+        dispatcher.async(flags: .barrier) {
             let oldHash = self.getAvatarHashes(for: jid, on: account)[type];
             guard oldHash != hash else {
-//                return false;
                 return;
             }
         
@@ -92,7 +96,6 @@ open class AvatarStore {
             _ = try! self.deleteAvatarHashForJidStmt.update(params);
     
             guard hash != nil else {
-//                return true;
                 return;
             }
         
@@ -103,7 +106,6 @@ open class AvatarStore {
                 onFinish();
             }
         }
-//        return true;
     }
 }
 

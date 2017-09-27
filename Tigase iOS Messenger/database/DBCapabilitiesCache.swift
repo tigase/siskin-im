@@ -40,59 +40,57 @@ open class DBCapabilitiesCache: CapabilitiesCache {
     
     fileprivate var features = [String: [String]]();
     fileprivate var identities: [String: DiscoveryModule.Identity] = [:];
+
+    open let dispatcher: QueueDispatcher;
     
     public init(dbConnection: DBConnection) {
         self.dbConnection = dbConnection;
+        self.dispatcher = QueueDispatcher(label: "DBCapabilitiesCache", attributes: .concurrent);
     }
     
     open func getFeatures(for node: String) -> [String]? {
-        return dbConnection.dispatch_sync_with_result_local_queue() {
-            var result = [String]();
-            try! self.getFeatureStmt.query(node, forEachRow: {(cursor)->Void in
-                result.append(cursor["feature"]!);
-            });
-            return result;
+        return dispatcher.sync {
+            return try! self.getFeatureStmt.query(node) {cursor in cursor["feature"]! };
         }
     }
     
     open func getIdentity(for node: String) -> DiscoveryModule.Identity? {
-        return dbConnection.dispatch_sync_with_result_local_queue() {
-            guard let cursor: DBCursor = try! self.getIdentityStmt.execute(node)?.cursor else {
+        return dispatcher.sync {
+            guard let (category, type, name): (String?, String?, String?) = try! self.getIdentityStmt.findFirst(node, map: { cursor in
+                return (cursor["category"], cursor["type"], cursor["name"]);
+            }) else {
                 return nil;
             }
-            let category: String? = cursor["category"];
-            let type: String? = cursor["type"];
-            let name: String? = cursor["name"];
+        
             return DiscoveryModule.Identity(category: category!, type: type!, name: name);
         }
     }
     
     open func getNodes(withFeature feature: String) -> [String] {
-        return dbConnection.dispatch_sync_with_result_local_queue() {
-            var result = [String]();
-            try! self.getNodesWithFeatureStmt.query(feature, forEachRow: {(cursor)->Void in
-                result.append(cursor["node"]!);
-            });
-            return result;
+        return dispatcher.sync {
+            return try! self.getNodesWithFeatureStmt.query(feature) { cursor in cursor["node"]! };
         }
     }
     
     open func isCached(node: String) -> Bool {
-        let count: Int? = try! nodeIsCached.scalar(node);
-        return (count ?? 0) != 0;
+        return dispatcher.sync {
+            return try! (self.nodeIsCached.scalar(node) ?? 0) != 0;
+        }
     }
     
     open func store(node: String, identity: DiscoveryModule.Identity?, features: [String]) {
-        guard !isCached(node: node) else {
-            return;
-        }
+        dispatcher.sync(flags: .barrier) {
+            guard !self.isCached(node: node) else {
+                return;
+            }
 
-        for feature in features {
-            _ = try! insertFeatureStmt.insert(node, feature);
-        }
+            for feature in features {
+                _ = try! self.insertFeatureStmt.insert(node, feature);
+            }
         
-        if identity != nil {
-            _ = try! insertIdentityStmt.insert(node, identity!.name, identity!.category, identity!.type);
+            if identity != nil {
+                _ = try! self.insertIdentityStmt.insert(node, identity!.name, identity!.category, identity!.type);
+            }
         }
     }
     

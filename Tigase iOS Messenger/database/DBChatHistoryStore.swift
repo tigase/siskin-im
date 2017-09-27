@@ -120,19 +120,17 @@ open class DBChatHistoryStore: Logger, EventHandler {
     }
     
     fileprivate func markMessageAsError(message: Message) -> Bool {
-        return dbConnection.dispatch_sync_with_result_local_queue() {
-            guard let msgId = self.getMessageIdInt(account: message.to!.bareJid, jid: message.from!.bareJid, stanzaId: message.id) else {
-                return false;
-            }
-            
-            let params: [String: Any?] = ["id": msgId, "state": State.outgoing_error_unread.rawValue, "error": message.errorText ?? message.errorCondition?.rawValue ?? "Unknown error"];
-            if try! self.markMessageAsErrorStmt.update(params) > 0 {
-                DispatchQueue.global().async {
-                    NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_UPDATED, object: self, userInfo: ["message-id": msgId, "state": State.outgoing_error_unread]);
-                }
-            }
-            return true;
+        guard let msgId = self.getMessageIdInt(account: message.to!.bareJid, jid: message.from!.bareJid, stanzaId: message.id) else {
+            return false;
         }
+            
+        let params: [String: Any?] = ["id": msgId, "state": State.outgoing_error_unread.rawValue, "error": message.errorText ?? message.errorCondition?.rawValue ?? "Unknown error"];
+        if try! self.markMessageAsErrorStmt.update(params) > 0 {
+            DispatchQueue.global().async {
+                NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_UPDATED, object: self, userInfo: ["message-id": msgId, "state": State.outgoing_error_unread]);
+            }
+        }
+        return true;
     }
     
     fileprivate func prepareBody(message: Message) -> String? {
@@ -208,14 +206,12 @@ open class DBChatHistoryStore: Logger, EventHandler {
         }
         
         let params:[String:Any?] = ["account" : account, "jid" : jid, "author_jid" : authorJid, "author_nickname": authorNickname, "timestamp": timestamp, "item_type": itemType.rawValue, "data": data, "state": state.rawValue, "stanza_id": id]
-        dbConnection.dispatch_async_db_queue() {
-            let msgId = try! self.msgAppendStmt.insert(params);
-            let cu_params:[String:Any?] = ["account" : account, "jid" : jid, "timestamp" : timestamp ];
-            _ = try! self.chatUpdateTimestamp.execute(cu_params);
+        let msgId = try! self.msgAppendStmt.insert(params);
+        let cu_params:[String:Any?] = ["account" : account, "jid" : jid, "timestamp" : timestamp ];
+        _ = try! self.chatUpdateTimestamp.update(cu_params);
             
-            DispatchQueue.main.async {
-                callback(msgId!);
-            }
+        DispatchQueue.main.async {
+            callback(msgId!);
         }
     }
     
@@ -236,7 +232,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
     
     open func forEachMessage(stmt: DBStatement, account:BareJID, jid:BareJID, limit:Int, offset: Int, forEach: (_ cursor:DBCursor)->Void) {
         let params:[String:Any?] = ["account":account, "jid":jid, "limit": limit, "offset": offset];
-        try! stmt.query(params, forEachRow: forEach);
+        try! stmt.query(params, forEach: forEach);
     }
     
     open func getMessagesStatementForAccountAndJid() -> DBStatement {
@@ -244,34 +240,25 @@ open class DBChatHistoryStore: Logger, EventHandler {
     }
     
     open func getMessagePosition(for account: BareJID, with jid: BareJID, msgId: Int, inverted: Bool) -> Int {
-        var pos = -2;
-        self.dbConnection.dispatch_sync_local_queue {
-            let params:[String:Any?] = ["account":account, "jid":jid, "msgId":msgId];
-            if inverted {
-                pos = try! getMessagePositionStmtInverted.scalar(params)!;
-            } else {
-                pos = try! getMessagePositionStmt.scalar(params)!;
-            }
+        let params:[String:Any?] = ["account":account, "jid":jid, "msgId":msgId];
+        if inverted {
+            return try! getMessagePositionStmtInverted.scalar(params)!;
+        } else {
+            return try! getMessagePositionStmt.scalar(params)!;
         }
-        return pos;
     }
     
     open func getMessageError(msgId: Int, handler: @escaping (String?)->Void) {
-        self.dbConnection.dispatch_async_db_queue {
-            let error: String? = try! self.getMessageErrorDetails.query(msgId)?["error"];
-            handler(error);
-        }
+        let error: String? = try! self.getMessageErrorDetails.findFirst(msgId) { cursor in cursor["error"] };
+        handler(error);
     }
     
     open func checkLastMessageTimeFor(account: BareJID, callback: @escaping (Date?, String?)->Void) {
-        self.dbConnection.dispatch_async_db_queue {
-            let params: [String:Any?] = ["account": account.description];
-            let cursor = try! self.lastMessageTimestampForAccount.query(params);
-            let date: Date? = cursor?["timestamp"];
-            let msgId: String? = nil;
-            DispatchQueue.global().async {
-                callback(date, msgId);
-            }
+        let params: [String:Any?] = ["account": account.description];
+        let date: Date? = try! self.lastMessageTimestampForAccount.findFirst(params) { cursor in cursor["timestamp"] };
+        let msgId: String? = nil;
+        DispatchQueue.global().async {
+            callback(date, msgId);
         }
     }
     
@@ -303,7 +290,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
     }
     
     open func forEachUnreadChat(forEach: (_ account: BareJID, _ jid: BareJID)->Void) {
-        try! listUnreadChatsStmt.query(forEachRow: { (cursor) -> Void in
+        try! listUnreadChatsStmt.query(forEach: { (cursor) -> Void in
             let account: BareJID = cursor["account"]!;
             let jid: BareJID = cursor["jid"]!;
             forEach(account, jid);
@@ -311,38 +298,32 @@ open class DBChatHistoryStore: Logger, EventHandler {
     }
     
     open func markAsRead(for account: BareJID, with jid: BareJID) {
-        dbConnection.dispatch_async_db_queue() {
-            let params:[String:Any?] = ["account":account, "jid":jid];
-            let updatedRecords = try! self.msgsMarkAsReadStmt.update(params);
-            if updatedRecords > 0 {
-                DispatchQueue.global(qos: .default).async() {
-                    self.chatItemsChanged(for: account, with: jid);
-                }
+        let params:[String:Any?] = ["account":account, "jid":jid];
+        let updatedRecords = try! self.msgsMarkAsReadStmt.update(params);
+        if updatedRecords > 0 {
+            DispatchQueue.global(qos: .default).async() {
+                self.chatItemsChanged(for: account, with: jid);
             }
         }
     }
     
     open func updatePreview(msgId: Int, preview: String?, completion: ((Int)->Void)?) {
-        dbConnection.dispatch_async_db_queue {
-            let params: [String:Any?] = ["id": msgId, "preview": preview];
-            if try! self.msgUpdatePreviewStmt.update(params) > 0 {
-                DispatchQueue.global().async {
-                    completion?(msgId);
-                }
+        let params: [String:Any?] = ["id": msgId, "preview": preview];
+        if try! self.msgUpdatePreviewStmt.update(params) > 0 {
+            DispatchQueue.global().async {
+                completion?(msgId);
             }
         }
     }
     
     fileprivate func changeMessageState(account: BareJID, jid: BareJID, stanzaId: String, oldState: State, newState: State, completion: ((Int)->Void)?) {
-        dbConnection.dispatch_async_db_queue {
-            guard let msgId = self.getMessageIdInt(account: account, jid: jid, stanzaId: stanzaId) else {
-                return;
-            }
-            let params: [String: Any?] = ["id": msgId, "oldState": oldState.rawValue, "newState": newState.rawValue];
-            if try! self.msgUpdateStateStmt.update(params) > 0 {
-                DispatchQueue.global().async {
-                    completion?(msgId);
-                }
+        guard let msgId = self.getMessageIdInt(account: account, jid: jid, stanzaId: stanzaId) else {
+            return;
+        }
+        let params: [String: Any?] = ["id": msgId, "oldState": oldState.rawValue, "newState": newState.rawValue];
+        if try! self.msgUpdateStateStmt.update(params) > 0 {
+            DispatchQueue.global().async {
+                completion?(msgId);
             }
         }
     }
@@ -361,22 +342,20 @@ open class DBChatHistoryStore: Logger, EventHandler {
     
     open func deleteMessages(for account: BareJID, with jid: BareJID) {
         let params:[String:Any?] = ["account":account, "jid":jid];
-        dbConnection.dispatch_async_db_queue() {
-            _ = try! self.msgsDeleteStmt.execute(params);
-        }
+        _ = try! self.msgsDeleteStmt.update(params);
     }
     
     @objc open func accountRemoved(_ notification: NSNotification) {
         if let data = notification.userInfo {
             let accountStr = data["account"] as! String;
-            _ = try! dbConnection.prepareStatement("DELETE FROM chat_history WHERE account = ?").execute(accountStr);
+            _ = try! dbConnection.prepareStatement("DELETE FROM chat_history WHERE account = ?").update(accountStr);
         }
     }
     
     @objc open func imageRemovedFromCache(_ notification: NSNotification) {
         if let data = notification.userInfo {
             let url = data["url"] as! URL;
-            _ = try! dbConnection.prepareStatement("UPDATE chat_history SET preview = null WHERE preview = ?").execute("preview:image:\(url.pathComponents.last!)");
+            _ = try! dbConnection.prepareStatement("UPDATE chat_history SET preview = null WHERE preview = ?").update("preview:image:\(url.pathComponents.last!)");
         }
     }
     

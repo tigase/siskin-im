@@ -38,19 +38,17 @@ open class DBVCardsCache {
     
     open func updateVCard(for jid: BareJID, on account: BareJID, vcard: VCard?) {
         let params:[String:Any?] = ["jid" : jid, "data": vcard?.toVCard4(), "timestamp": NSDate()];
-        dbConnection.dispatch_async_db_queue() {
+        updateVCardStmt.dispatcher.async {
             if try! self.updateVCardStmt.update(params) == 0 {
                 _ = try! self.insertVCardStmt.insert(params);
             }
+            NotificationCenter.default.post(name: DBVCardsCache.VCARD_UPDATED, object: self, userInfo: ["jid": jid, "account": account]);
         }
-        NotificationCenter.default.post(name: DBVCardsCache.VCARD_UPDATED, object: self, userInfo: ["jid": jid, "account": account]);
     }
     
     open func getVCard(for jid: BareJID) -> VCard? {
         
-        if let data:String = dbConnection.dispatch_sync_with_result_local_queue({
-            return try! self.getVCardStmt.query(jid)?["data"];
-        }) {
+        if let data:String = try! self.getVCardStmt.findFirst(jid, map: { cursor in cursor["data"] }) {
             if let vcardEl = Element.from(string: data) {
                 return VCard(vcard4: vcardEl) ?? VCard(vcardTemp: vcardEl);
             }

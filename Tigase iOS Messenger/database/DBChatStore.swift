@@ -158,7 +158,7 @@ open class DBChatStore {
         let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : jid ];
         let context = getContext(sessionObject)!;
         return dispatcher.sync {
-            return try! self.getStmt.query(params) { (cursor) -> T? in
+            return try! self.getStmt.queryFirstMatching(params) { (cursor) -> T? in
                 let type:Int = cursor["type"]!;
                 switch type {
                 case 1:
@@ -258,9 +258,8 @@ open class DBChatStore {
     open func isFor(_ sessionObject:SessionObject, jid:BareJID) -> Bool {
         return dispatcher.sync {
             let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : jid ];
-            let cursor = try! self.isForStmt.query(params)!;
+            let count = try! self.isForStmt.scalar(params, columnName: "count") ?? 0;
             
-            let count:Int = cursor["count"] ?? 0;
             return count > 0;
         }
     }
@@ -305,7 +304,7 @@ open class DBChatStore {
     @objc open func accountRemoved(_ notification: NSNotification) {
         if let data = notification.userInfo {
             let accountStr = data["account"] as! String;
-            _ = try! dbConnection.prepareStatement("DELETE FROM chats WHERE account = ?").execute(accountStr);
+            _ = try! dbConnection.prepareStatement("DELETE FROM chats WHERE account = ?").update(accountStr);
         }
     }
     

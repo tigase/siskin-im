@@ -66,11 +66,8 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
 
         navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem;
         navigationItem.leftItemsSupplementBackButton = true;
-        navigationItem.title = jid.stringValue;
         let params:[String:Any?] = ["account" : account, "jid" : jid.bareJid];
-        try! loadChatInfo.query(params) { (cursor) -> Void in
-            self.navigationItem.title = cursor["name"];
-        }
+        navigationItem.title = try! loadChatInfo.findFirst(params) { cursor in cursor["name"] } ?? jid.stringValue;
         
         messageField.layer.borderColor = UIColor.lightGray.cgColor;
         messageField.layer.borderWidth = 0.5;

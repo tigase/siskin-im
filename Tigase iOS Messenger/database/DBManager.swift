@@ -25,7 +25,7 @@ import TigaseSwift
 
 let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
-open class DBConnection: LocalQueueDispatcher {
+open class DBConnection {
     
     fileprivate var handle_:OpaquePointer? = nil;
     open var handle:OpaquePointer {
@@ -34,8 +34,7 @@ open class DBConnection: LocalQueueDispatcher {
         }
     }
 
-    open let queue: DispatchQueue;
-    open let queueTag: DispatchSpecificKey<DispatchQueue?>;
+    open let dispatcher: QueueDispatcher;
     
     open var lastInsertRowId: Int? {
         let rowid = sqlite3_last_insert_rowid(handle);
@@ -47,11 +46,9 @@ open class DBConnection: LocalQueueDispatcher {
     }
     
     init(dbFilename:String) throws {
-        queue = DispatchQueue(label: "db_queue");
-        self.queueTag = DispatchSpecificKey<DispatchQueue?>();
-        queue.setSpecific(key: queueTag, value: queue);
+        dispatcher = QueueDispatcher(queue: DispatchQueue(label: "db_queue"), queueTag: DispatchSpecificKey<DispatchQueue?>());
         
-        try dispatch_sync_db_queue() {
+        try dispatcher.sync {
             let paths = NSSearchPathForDirectoriesInDomains(FileManager.SearchPathDirectory.documentDirectory, FileManager.SearchPathDomainMask.userDomainMask, true);
             let documentDirectory = paths[0];
             let path = documentDirectory.appending("/" + dbFilename);
@@ -64,46 +61,16 @@ open class DBConnection: LocalQueueDispatcher {
     
     deinit {
         sqlite3_close(handle);
-        queue.setSpecific(key: queueTag, value: nil);
-    }
-    
-    open func dispatch_async_db_queue(_ block: @escaping () -> Void) {
-        queue.async {
-            block();
-        }
-    }
-    
-    open func dispatch_sync_db_queue<T>(block: @escaping () throws -> T) rethrows -> T {
-        if (DispatchQueue.getSpecific(key: queueTag) != nil) {
-            return try block();
-        } else {
-            var result: T?;
-            var err: Error?;
-            
-            queue.sync {
-                do {
-                    result = try block();
-                } catch {
-                    err = error;
-                }
-            }
-            
-            if err != nil {
-                try { () -> Void in throw err! }();
-            }
-            
-            return result!;
-        }
     }
     
     open func execute(_ query: String) throws {
-        try dispatch_sync_db_queue() {
+        try dispatcher.sync {
             _ = try self.check(sqlite3_exec(self.handle, query, nil, nil, nil));
         }
     }
     
     open func prepareStatement(_ query: String) throws -> DBStatement {
-        return try dispatch_sync_db_queue() {
+        return try dispatcher.sync {
             return try DBStatement(connection: self, query: query);
         }
     }
@@ -150,6 +117,8 @@ open class DBStatement {
     
     open lazy var cursor:DBCursor = DBCursor(statement: self);
     
+    open lazy var dispatcher: QueueDispatcher = QueueDispatcher(queue: DispatchQueue(label: "DBStatementDispatcher"), queueTag: DispatchSpecificKey<DispatchQueue?>());
+    
     open var lastInsertRowId: Int? {
         return connection.lastInsertRowId;
     }
@@ -167,19 +136,19 @@ open class DBStatement {
         sqlite3_finalize(handle);
     }
 
-    open func step(_ expect: Int32 = SQLITE_ROW) throws -> Bool  {
-        return try connection.dispatch_sync_db_queue() {
+    fileprivate func step(_ expect: Int32 = SQLITE_ROW) throws -> Bool  {
+        return try connection.dispatcher.sync() {
             let result = try self.connection.check(sqlite3_step(self.handle));
             return result == expect;
         }
     }
     
-    open func bind(_ params:Any?...) throws -> DBStatement {
+    fileprivate func bind(_ params:Any?...) throws -> DBStatement {
         _ = try bind(params);
         return self;
     }
     
-    open func bind(_ params:[String:Any?]) throws -> DBStatement {
+    fileprivate func bind(_ params:[String:Any?]) throws -> DBStatement {
         reset()
         for (k,v) in params {
             let pos = sqlite3_bind_parameter_index(handle, ":"+k);
@@ -191,7 +160,7 @@ open class DBStatement {
         return self;
     }
     
-    open func bind(_ params:[Any?]) throws -> DBStatement {
+    fileprivate func bind(_ params:[Any?]) throws -> DBStatement {
         reset()
         for pos in 1...params.count {
             _ = try bind(params[pos-1], atIndex: pos);
@@ -199,7 +168,7 @@ open class DBStatement {
         return self;
     }
     
-    open func bind(_ value:Any?, atIndex:Int) throws -> DBStatement {
+    fileprivate func bind(_ value:Any?, atIndex:Int) throws -> DBStatement {
         try bind(value, pos: Int32(atIndex));
         return self;
     }
@@ -238,12 +207,12 @@ open class DBStatement {
         _ = try check(r);
     }
     
-    open func execute(_ params:[String:Any?]) throws -> DBStatement? {
+    fileprivate func execute(_ params:[String:Any?]) throws -> DBStatement? {
         _ = try bind(params);
         return try execute();
     }
     
-    open func execute(_ params:Any?...) throws -> DBStatement? {
+    fileprivate func execute(_ params:Any?...) throws -> DBStatement? {
         return try execute(params);
     }
 
@@ -255,100 +224,113 @@ open class DBStatement {
         return try step() ? self : nil;
     }
     
-    open func query(_ params:[String:Any?]) throws -> DBCursor? {
-        return try execute(params)?.cursor;
+//    open func query(_ params:[String:Any?]) throws -> DBCursor? {
+//        return try execute(params)?.cursor;
+//    }
+//
+//    open func query(_ params:Any?...) throws -> DBCursor? {
+//        return try execute(params)?.cursor;
+//    }
+
+    open func findFirst<T>(_ params: [String:Any?], map: (DBCursor)-> T?) throws -> T? {
+        return try dispatcher.sync {
+            guard let cursor = try execute(params)?.cursor else {
+                return nil;
+            }
+            
+            return map(cursor);
+        }
     }
 
-    open func query(_ params:Any?...) throws -> DBCursor? {
-        return try execute(params)?.cursor;
+    open func findFirst<T>(_ params: Any?..., map: (DBCursor)-> T?) throws -> T? {
+        return try dispatcher.sync {
+            guard let cursor = try execute(params)?.cursor else {
+                return nil;
+            }
+            
+            return map(cursor);
+        }
     }
 
-    open func query(_ params:[String:Any?], forEachRow: (DBCursor)->Bool) throws {
-        if let cursor = try execute(params)?.cursor {
-            repeat {
-                if !forEachRow(cursor) {
-                    break;
-                }
-            } while cursor.next();
+    open func query(_ params:[String:Any?], forEach: (DBCursor)->Void) throws {
+        try dispatcher.sync {
+            if let cursor = try execute(params)?.cursor {
+                repeat {
+                    forEach(cursor);
+                } while cursor.next();
+            }
         }
     }
     
-    open func query(_ params:Any?..., forEachRow: (DBCursor)->Bool) throws {
-        if let cursor = try execute(params)?.cursor {
-            repeat {
-                if !forEachRow(cursor) {
-                    break;
-                }
-            } while cursor.next();
+    open func query(_ params:Any?..., forEach: (DBCursor)->Void) throws {
+        try dispatcher.sync {
+            if let cursor = try execute(params)?.cursor {
+                repeat {
+                    forEach(cursor);
+                } while cursor.next();
+            }
         }
     }
 
-    open func query(_ params:[String:Any?], forEachRow: (DBCursor)->Void) throws {
-        if let cursor = try execute(params)?.cursor {
-            repeat {
-                forEachRow(cursor);
-            } while cursor.next();
+    open func queryFirstMatching<T>(_ params:[String:Any?], forEachRowUntil: (DBCursor)->T?) throws -> T? {
+        return try dispatcher.sync {
+            if let cursor = try execute(params)?.cursor {
+                var result: T?;
+                repeat {
+                    result = forEachRowUntil(cursor);
+                } while result == nil && cursor.next();
+                return result;
+            }
+            return nil;
         }
     }
     
-    open func query(_ params:Any?..., forEachRow: (DBCursor)->Void) throws {
-        if let cursor = try execute(params)?.cursor {
-            repeat {
-                forEachRow(cursor);
-            } while cursor.next();
-        }
-    }
-
-    open func query<T>(_ params:[String:Any?], forEachRowUntil: (DBCursor)->T?) throws -> T? {
+    open func queryFirstMatching<T>(_ params:Any?..., forEachRowUntil: (DBCursor)->T?) throws -> T? {
         var result: T? = nil;
-        if let cursor = try execute(params)?.cursor {
-            repeat {
-                result = forEachRowUntil(cursor);
-            } while result == nil && cursor.next();
+        try dispatcher.sync {
+            if let cursor = try execute(params)?.cursor {
+                repeat {
+                    result = forEachRowUntil(cursor);
+                } while result == nil && cursor.next();
+            }
         }
         return result;
     }
     
-    open func query<T>(_ params:Any?..., forEachRowUntil: (DBCursor)->T?) throws -> T? {
-        var result: T? = nil;
-        if let cursor = try execute(params)?.cursor {
-            repeat {
-                result = forEachRowUntil(cursor);
-            } while result == nil && cursor.next();
-        }
-        return result;
-    }
-    
-    open func query<T>(_ params:[String:Any?], forEach: (DBCursor)->T?) throws -> [T] {
+    open func query<T>(_ params:[String:Any?], map: (DBCursor)->T?) throws -> [T] {
         var result = [T]();
-        var tmp: T? = nil;
-        if let cursor = try execute(params)?.cursor {
-            repeat {
-                tmp = forEach(cursor);
-                if tmp != nil {
-                    result.append(tmp!);
-                }
-            } while cursor.next();
+        try dispatcher.sync {
+            var tmp: T? = nil;
+            if let cursor = try execute(params)?.cursor {
+                repeat {
+                    tmp = map(cursor);
+                    if tmp != nil {
+                        result.append(tmp!);
+                    }
+                } while cursor.next();
+            }
         }
         return result;
     }
     
-    open func query<T>(_ params:Any?..., forEach: (DBCursor)->T?) throws -> [T] {
+    open func query<T>(_ params:Any?..., map: (DBCursor)->T?) throws -> [T] {
         var result = [T]();
-        var tmp: T? = nil;
-        if let cursor = try execute(params)?.cursor {
-            repeat {
-                tmp = forEach(cursor);
-                if tmp != nil {
-                    result.append(tmp!);
-                }
-            } while cursor.next();
+        try dispatcher.sync {
+            var tmp: T? = nil;
+            if let cursor = try execute(params)?.cursor {
+                repeat {
+                    tmp = map(cursor);
+                    if tmp != nil {
+                        result.append(tmp!);
+                    }
+                } while cursor.next();
+            }
         }
         return result;
     }
 
     open func insert(_ params:Any?...) throws -> Int? {
-        return try connection.dispatch_sync_db_queue() {
+        return try connection.dispatcher.sync {
             if params.count > 0 {
                 _ = try self.bind(params);
             }
@@ -361,7 +343,7 @@ open class DBStatement {
     }
 
     open func insert(_ params:[String:Any?]) throws -> Int? {
-        return try connection.dispatch_sync_db_queue() {
+        return try connection.dispatcher.sync {
             _ = try self.bind(params);
             self.reset(false);
             if try self.step(SQLITE_DONE) {
@@ -372,34 +354,48 @@ open class DBStatement {
     }
     
     open func update(_ params:Any?...) throws -> Int {
-        return try connection.dispatch_sync_db_queue() {
+        return try connection.dispatcher.sync {
             _ = try self.execute(params);
             return self.changesCount;
         }
     }
 
     open func update(_ params:[String:Any?]) throws -> Int {
-        return try connection.dispatch_sync_db_queue() {
+        return try connection.dispatcher.sync {
             _ = try self.execute(params);
             return self.changesCount;
         }
     }
     
     open func scalar(_ params:Any?...) throws -> Int? {
-        return try connection.dispatch_sync_db_queue() {
+        return try dispatcher.sync {
             let cursor = try self.execute(params)?.cursor;
             return cursor?[0];
         }
     }
 
     open func scalar(_ params:[String:Any?]) throws -> Int? {
-        return try connection.dispatch_sync_db_queue() {
+        return try dispatcher.sync {
             let cursor = try self.execute(params)?.cursor;
             return cursor?[0];
         }
     }
+
+    open func scalar(_ params:Any?..., columnName: String) throws -> Int? {
+        return try dispatcher.sync {
+            let cursor = try self.execute(params)?.cursor;
+            return cursor?[columnName];
+        }
+    }
     
-    open func reset(_ bindings:Bool=true) {
+    open func scalar(_ params:[String:Any?], columnName: String) throws -> Int? {
+        return try dispatcher.sync {
+            let cursor = try self.execute(params)?.cursor;
+            return cursor?[columnName];
+        }
+    }
+
+    fileprivate func reset(_ bindings:Bool=true) {
         sqlite3_reset(handle);
         if bindings {
             sqlite3_clear_bindings(handle);
@@ -561,7 +557,7 @@ open class DBCursor {
     }
     
     open func next() -> Bool {
-        return connection.dispatch_sync_db_queue() {
+        return connection.dispatcher.sync {
             return sqlite3_step(self.handle) == SQLITE_ROW;
         }
     }

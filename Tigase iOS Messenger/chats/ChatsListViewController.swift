@@ -398,11 +398,11 @@ class ChatsListViewController: UITableViewController, EventHandler {
         func item(at position: IndexPath) -> ChatsViewItem {
             let key = list[position.row];
             let params: [String: Any?] = [ "account" : key.account, "jid" : key.jid];
-            let item = ChatsViewItem(key: key);
-            try! getChatDetails.query(params) { (cursor)->Void in
-                item.load(from: cursor);
-            }
-            return item;
+            return try! getChatDetails.findFirst(params) { (cursor) in
+                let tmp = ChatsViewItem(key: key);
+                tmp.load(from: cursor);
+                return tmp;
+                }!;
         }
         
         func itemKey(at position: IndexPath) -> ChatsViewItemKey {
@@ -410,11 +410,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
         }
         
         func reloadData() {
-            var list: [ChatsViewItemKey] = [];
-            try! getChatsList.query() { (cursor)->Void in
-                let item = ChatsViewItemKey(cursor: cursor);
-                list.append(item);
-            }
+            let list: [ChatsViewItemKey] = try! getChatsList.query() { (cursor) in ChatsViewItemKey(cursor: cursor) }
             update(list: list);
             controller?.tableView.reloadData();
         }
