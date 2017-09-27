@@ -162,7 +162,6 @@ class ChatSettingsViewController: UITableViewController {
             self.navigationController?.pushViewController(controller, animated: true);
         case .clearImagePreviewCache:
             let alert = UIAlertController(title: "Image cache", message: "We are using \(ImageCache.shared.diskCacheSize/(1024*1014)) MB of storage.", preferredStyle: .actionSheet);
-            let cell = self.tableView(tableView, cellForRowAt: indexPath);
             alert.addAction(UIAlertAction(title: "Flush", style: .destructive, handler: {(action) in
                 DispatchQueue.global(qos: .background).async {
                     ImageCache.shared.emptyDiskCache();
@@ -174,8 +173,8 @@ class ChatSettingsViewController: UITableViewController {
                 }
             }));
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
-            alert.popoverPresentationController?.sourceView = cell.contentView;
-            alert.popoverPresentationController?.sourceRect = cell.contentView.bounds;
+            alert.popoverPresentationController?.sourceView = self.tableView;
+            alert.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: indexPath);
             
             self.present(alert, animated: true, completion: nil);
         default:

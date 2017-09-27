@@ -99,6 +99,7 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
     }
     
     override func viewWillDisappear(_ animated: Bool) {
+        roster = nil;
         super.viewWillDisappear(animated);
         NotificationCenter.default.removeObserver(self);
     }
@@ -190,7 +191,13 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
     
     func handleLongPress(_ gestureRecognizer:UILongPressGestureRecognizer) {
         guard gestureRecognizer.state == .began else {
-            return
+            if gestureRecognizer.state == .ended {
+                let point = gestureRecognizer.location(in: self.tableView);
+                if let indexPath = self.tableView.indexPathForRow(at: point) {
+                    self.tableView.deselectRow(at: indexPath, animated: true);
+                }
+            }
+            return;
         }
 
         let point = gestureRecognizer.location(in: self.tableView);
@@ -210,9 +217,8 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
                 self.showItemInfo(for: item.account, jid: item.jid);
             }));
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
-            let cell = self.tableView(tableView, cellForRowAt: indexPath);
-            alert.popoverPresentationController?.sourceView = cell.contentView;
-            alert.popoverPresentationController?.sourceRect = cell.contentView.bounds;
+            alert.popoverPresentationController?.sourceView = self.tableView;
+            alert.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: indexPath);
             self.present(alert, animated: true, completion: nil);
         }
     }
@@ -242,7 +248,6 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
     }
     
     func showItemInfo(for account: BareJID, jid: JID) {
-        print("open buddy info!");
         let navigation = storyboard?.instantiateViewController(withIdentifier: "ContactViewNavigationController") as! UINavigationController;
         let contactView = navigation.visibleViewController as! ContactViewController;
         contactView.hidesBottomBarWhenPushed = true;

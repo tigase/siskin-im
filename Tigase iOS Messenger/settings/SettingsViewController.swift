@@ -174,9 +174,8 @@ class SettingsViewController: UITableViewController, EventHandler {
                     self.showAddAccount(register: false);
                 }));
                 alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
-                let cell = self.tableView(tableView, cellForRowAt: indexPath);
-                alert.popoverPresentationController?.sourceView = cell.contentView;
-                alert.popoverPresentationController?.sourceRect = cell.contentView.bounds;
+                alert.popoverPresentationController?.sourceView = self.tableView;
+                alert.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: indexPath);
 
                 self.present(alert, animated: true, completion: nil);
             } else {
@@ -206,9 +205,8 @@ class SettingsViewController: UITableViewController, EventHandler {
                 let action = UIAlertAction(title: "Cancel", style: .cancel, handler: nil);
                 alert.addAction(action);
                 
-                let cell = self.tableView(tableView, cellForRowAt: indexPath);
-                alert.popoverPresentationController?.sourceView = cell.contentView;
-                alert.popoverPresentationController?.sourceRect = cell.contentView.bounds;
+                alert.popoverPresentationController?.sourceView = self.tableView;
+                alert.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: indexPath);
                 
                 self.present(alert, animated: true, completion: nil);
             }
@@ -257,9 +255,8 @@ class SettingsViewController: UITableViewController, EventHandler {
                         self.tableView.reloadData();
                     }));
                     alert.addAction(UIAlertAction(title: "Keep account", style: .default, handler: nil));
-                    let cell = self.tableView(tableView, cellForRowAt: indexPath);
-                    alert.popoverPresentationController?.sourceView = cell.contentView;
-                    alert.popoverPresentationController?.sourceRect = cell.contentView.bounds;
+                    alert.popoverPresentationController?.sourceView = self.tableView;
+                    alert.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: indexPath);
 
                     self.present(alert, animated: true, completion: nil);
                 }

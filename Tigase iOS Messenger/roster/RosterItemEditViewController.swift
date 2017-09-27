@@ -177,17 +177,19 @@ class RosterItemEditViewController: UITableViewController, UIPickerViewDataSourc
             guard let rosterItem = rosterModule.rosterStore.get(for: self.jid!) else {
                 return;
             }
-            if self.receivePresenceUpdatesSwitch.isOn && !rosterItem.subscription.isTo {
-                presenceModule.subscribe(to: self.jid!);
-            }
-            if !self.receivePresenceUpdatesSwitch.isOn && rosterItem.subscription.isTo {
-                presenceModule.unsubscribe(from: self.jid!);
-            }
-            if self.sendPresenceUpdatesSwitch.isOn && !rosterItem.subscription.isFrom {
-                presenceModule.subscribed(by: self.jid!);
-            }
-            if !self.sendPresenceUpdatesSwitch.isOn && rosterItem.subscription.isFrom {
-                presenceModule.unsubscribed(by: self.jid!);
+            DispatchQueue.main.async {
+                if self.receivePresenceUpdatesSwitch.isOn && !rosterItem.subscription.isTo {
+                    presenceModule.subscribe(to: self.jid!);
+                }
+                if !self.receivePresenceUpdatesSwitch.isOn && rosterItem.subscription.isTo {
+                    presenceModule.unsubscribe(from: self.jid!);
+                }
+                if self.sendPresenceUpdatesSwitch.isOn && !rosterItem.subscription.isFrom {
+                    presenceModule.subscribed(by: self.jid!);
+                }
+                if !self.sendPresenceUpdatesSwitch.isOn && rosterItem.subscription.isFrom {
+                    presenceModule.unsubscribed(by: self.jid!);
+                }
             }
         }
     }
