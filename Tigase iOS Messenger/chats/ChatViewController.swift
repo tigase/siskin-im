@@ -339,6 +339,10 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     }
     
     @IBAction func sendClicked(_ sender: UIButton) {
+        sendMessage();
+    }
+    
+    override func sendMessage() {
         let text = messageText;
         guard !(text?.isEmpty != false) else {
             return;

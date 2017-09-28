@@ -331,7 +331,7 @@
                                         <rect key="frame" x="562" y="7" width="30" height="32"/>
                                         <constraints>
                                             <constraint firstAttribute="width" secondItem="Wud-KB-gIx" secondAttribute="height" multiplier="1:1" id="C39-7W-YjZ"/>
-                                            <constraint firstAttribute="width" constant="30" id="pnG-VH-M5U"/>
+                                            <constraint firstAttribute="width" constant="30" id="P0n-aU-jtr"/>
                                         </constraints>
                                         <state key="normal" image="send"/>
                                         <connections>
@@ -368,6 +368,7 @@
                                     <constraint firstAttribute="height" id="X3C-2R-ann"/>
                                     <constraint firstItem="Usd-qW-q8K" firstAttribute="centerX" secondItem="tM8-yl-Xfw" secondAttribute="centerX" id="agE-5h-7xk"/>
                                     <constraint firstAttribute="bottom" secondItem="hEk-n0-vGX" secondAttribute="bottom" constant="10" id="j9C-mi-FHW"/>
+                                    <constraint firstAttribute="trailing" secondItem="tM8-yl-Xfw" secondAttribute="trailing" constant="14" id="kV0-ot-lq9"/>
                                     <constraint firstAttribute="bottom" secondItem="Wud-KB-gIx" secondAttribute="bottom" constant="10" id="lq0-OA-BIJ"/>
                                     <constraint firstItem="Wud-KB-gIx" firstAttribute="leading" secondItem="tM8-yl-Xfw" secondAttribute="trailing" constant="8" id="p8d-xp-TzN"/>
                                     <constraint firstItem="hEk-n0-vGX" firstAttribute="leading" secondItem="HK7-Bq-Vwt" secondAttribute="leading" constant="8" id="vtv-Hl-0DW"/>
@@ -403,9 +404,11 @@
                         <outlet property="customToolbar" destination="J4D-LI-5Um" id="s6m-n8-BiY"/>
                         <outlet property="customToolbarHeightConstraint" destination="3zt-Oy-N2i" id="C6r-DW-dRm"/>
                         <outlet property="messageField" destination="tM8-yl-Xfw" id="M4U-3x-ViV"/>
+                        <outlet property="messageFieldTrailingConstraint" destination="kV0-ot-lq9" id="nTl-CW-ejR"/>
                         <outlet property="placeholderView" destination="Usd-qW-q8K" id="9cr-sd-EvI"/>
                         <outlet property="progressBar" destination="lXk-P5-gwH" id="Y3e-lf-hkR"/>
                         <outlet property="sendButton" destination="Wud-KB-gIx" id="PO6-Ym-dpM"/>
+                        <outlet property="sendButtonWidthConstraint" destination="P0n-aU-jtr" id="WGr-fK-Jae"/>
                         <outlet property="shareButton" destination="hEk-n0-vGX" id="jaX-FI-Kjl"/>
                         <outlet property="tableView" destination="Mpx-EA-82o" id="22E-L5-IzT"/>
                     </connections>
@@ -888,6 +891,7 @@
                                     <constraint firstAttribute="bottom" secondItem="PAE-fw-tjq" secondAttribute="bottom" priority="999" constant="8" id="5Dy-AU-GdU"/>
                                     <constraint firstAttribute="bottom" secondItem="Fxu-dp-G5w" secondAttribute="bottom" constant="10" id="8D5-eQ-tt4"/>
                                     <constraint firstItem="o1Z-wC-Bpu" firstAttribute="top" secondItem="4tv-Y3-98F" secondAttribute="top" id="96d-fc-kpb"/>
+                                    <constraint firstAttribute="trailing" secondItem="PAE-fw-tjq" secondAttribute="trailing" constant="12" id="BHh-SO-fvN"/>
                                     <constraint firstAttribute="trailing" secondItem="Lcw-kK-OnJ" secondAttribute="trailing" constant="8" id="D9t-IQ-luo"/>
                                     <constraint firstItem="PAE-fw-tjq" firstAttribute="top" secondItem="o1Z-wC-Bpu" secondAttribute="bottom" priority="999" constant="8" id="GVj-Wj-nLL"/>
                                     <constraint firstItem="o1Z-wC-Bpu" firstAttribute="leading" secondItem="4tv-Y3-98F" secondAttribute="leading" id="Tj0-Z4-5jO"/>
@@ -929,9 +933,11 @@
                         <outlet property="customToolbar" destination="itZ-yz-LTt" id="Fq5-An-jrV"/>
                         <outlet property="customToolbarHeightConstraint" destination="tbX-v3-BrW" id="fT2-EL-Ame"/>
                         <outlet property="messageField" destination="PAE-fw-tjq" id="Q5i-Hr-iwD"/>
+                        <outlet property="messageFieldTrailingConstraint" destination="BHh-SO-fvN" id="xII-97-0vd"/>
                         <outlet property="placeholderView" destination="k5s-pa-whs" id="SvL-g7-gtp"/>
                         <outlet property="progressBar" destination="o1Z-wC-Bpu" id="KbG-kT-pz5"/>
                         <outlet property="sendButton" destination="Lcw-kK-OnJ" id="HQl-JT-bpY"/>
+                        <outlet property="sendButtonWidthConstraint" destination="zFU-8s-Ved" id="2Iz-cu-CHK"/>
                         <outlet property="shareButton" destination="Fxu-dp-G5w" id="BUO-Hl-AwX"/>
                         <outlet property="tableView" destination="7AL-43-T74" id="8i9-VP-WMz"/>
                     </connections>
@@ -1520,8 +1526,42 @@
                                     <outlet property="switchView" destination="TKy-Ug-fOx" id="p52-9s-kXm"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="maxImagePreviewSizeTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="MaxImagePreviewSizeTableViewCell" id="enK-aO-tlE" userLabel="MaxImagePreviewSizeTableViewCell">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="sendMessageOnReturnTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="SendMessageOnReturnTableViewCell" id="6o9-JD-jxS" userLabel="SendMessageOnReturnTableViewCell" customClass="SwitchTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="363.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="6o9-JD-jxS" id="kxW-yc-QY0">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Send message on return" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jQy-0F-3bj">
+                                            <rect key="frame" x="8" y="11" width="187" height="21"/>
+                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lj7-vo-80r">
+                                            <rect key="frame" x="318" y="6.5" width="51" height="31"/>
+                                            <connections>
+                                                <action selector="valueChanged:" destination="6o9-JD-jxS" eventType="valueChanged" id="Kku-5L-MEe"/>
+                                            </connections>
+                                        </switch>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="leadingMargin" secondItem="jQy-0F-3bj" secondAttribute="leading" id="HLK-cX-4we"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="lj7-vo-80r" secondAttribute="trailing" id="c6q-id-olt"/>
+                                        <constraint firstItem="jQy-0F-3bj" firstAttribute="centerY" secondItem="kxW-yc-QY0" secondAttribute="centerY" id="pln-jh-LqW"/>
+                                        <constraint firstItem="lj7-vo-80r" firstAttribute="centerY" secondItem="kxW-yc-QY0" secondAttribute="centerY" id="vzo-IS-QCu"/>
+                                        <constraint firstItem="lj7-vo-80r" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="jQy-0F-3bj" secondAttribute="trailing" constant="8" id="xsM-ax-RQJ"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <accessibility key="accessibilityConfiguration" identifier="sendMessageOnReturnTableViewCell"/>
+                                <connections>
+                                    <outlet property="switchView" destination="lj7-vo-80r" id="udh-ql-88C"/>
+                                </connections>
+                            </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="maxImagePreviewSizeTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="MaxImagePreviewSizeTableViewCell" id="enK-aO-tlE" userLabel="MaxImagePreviewSizeTableViewCell">
+                                <rect key="frame" x="0.0" y="407.5" width="375" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="enK-aO-tlE" id="TFD-eN-puq">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
@@ -1552,7 +1592,7 @@
                                 <accessibility key="accessibilityConfiguration" identifier="maxImagePreviewSizeTableViewCell"/>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="clearImagePreviewTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ClearImagePreviewTableViewCell" id="PeQ-ux-gi0" userLabel="ClearImagePreviewTableViewCell">
-                                <rect key="frame" x="0.0" y="407.5" width="375" height="44"/>
+                                <rect key="frame" x="0.0" y="451.5" width="375" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="PeQ-ux-gi0" id="wgm-Nm-DPq">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>

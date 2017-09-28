@@ -36,6 +36,9 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
     @IBInspectable var scrollToBottomOnShow: Bool = false;
     @IBInspectable var animateScrollToBottom: Bool = true;
     
+    @IBOutlet var messageFieldTrailingConstraint: NSLayoutConstraint!
+    @IBOutlet var sendButtonWidthConstraint: NSLayoutConstraint!
+    
     var dbConnection:DBConnection!;
     var xmppService:XmppService!;
     
@@ -75,6 +78,13 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         messageField.layer.masksToBounds = true;
         messageField.delegate = self;
         messageField.isScrollEnabled = false;
+        if Settings.SendMessageOnReturn.getBool() {
+            messageField.returnKeyType = .send;
+            sendButtonWidthConstraint.isActive = false;
+        } else {
+            messageField.returnKeyType = .default;
+            messageFieldTrailingConstraint.isActive = false;
+        }
         
         tableView.rowHeight = UITableViewAutomaticDimension;
         tableView.estimatedRowHeight = 160.0;
@@ -162,6 +172,17 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         messageField.resignFirstResponder();
     }
     
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        if text == "\n" {
+            print("enter detected");
+            if messageField.returnKeyType == .send {
+                sendMessage();
+                return false;
+            }
+        }
+        return true;
+    }
+    
     func textViewDidEndEditing(_ textView: UITextView) {
         textView.resignFirstResponder();
     }
@@ -184,6 +205,8 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         }
     }
     
+    func sendMessage() {
+    }
 }
 
 protocol BaseChatViewControllerScrollDelegate: class {

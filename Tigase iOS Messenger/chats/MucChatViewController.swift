@@ -192,25 +192,29 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
     }
 
     @IBAction func sendClicked(_ sender: UIButton) {
+        self.sendMessage();
+    }
+
+    override func sendMessage() {
         let text = messageText;
         guard !(text?.isEmpty != false) else {
             return;
         }
-
+        
         guard room?.state == .joined else {
             let alert: UIAlertController?  = UIAlertController.init(title: "Warning", message: "You are not connected to room.\nPlease wait reconnection to room", preferredStyle: .alert);
             alert?.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
             self.present(alert!, animated: true, completion: nil);
             return;
         }
-
+        
         self.sendMessage(body: text!, additional: [], completed: {() in
             DispatchQueue.main.async {
                 self.messageText = nil;
             }
         });
     }
-
+    
     @IBAction func shareClicked(_ sender: UIButton) {
         self.showPhotoSelector(sender);
     }

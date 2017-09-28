@@ -39,6 +39,7 @@ public enum Settings: String {
     case MaxImagePreviewSize
     case MessageDeliveryReceiptsEnabled
     case SimplifiedLinkToFileIfPreviewIsAvailable
+    case SendMessageOnReturn
     
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     
@@ -59,7 +60,8 @@ public enum Settings: String {
             "AutoSubscribeOnAcceptedSubscriptionRequest" : false as AnyObject,
             "NotificationsFromUnknown" : true as AnyObject,
             "RecentsMessageLinesNo" : 2 as AnyObject,
-            "RecentsOrder" : "byTime" as AnyObject
+            "RecentsOrder" : "byTime" as AnyObject,
+            "SendMessageOnReturn" : true as AnyObject
         ];
         store.register(defaults: defaults);
         store.dictionaryRepresentation().forEach { (k, v) in
