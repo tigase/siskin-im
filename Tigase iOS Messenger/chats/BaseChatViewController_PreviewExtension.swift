@@ -74,16 +74,19 @@ extension BaseChatViewController_PreviewExtension {
 
     fileprivate func downloadImageFile(url: URL, completion: @escaping (String?)->Void) {
         URLSession.shared.downloadTask(with: url, completionHandler: { (tmpUrl, resp, error) in
-            guard tmpUrl != nil || error != nil else {
+            print("downloaded content of", url, "to", tmpUrl, "response:", resp, "error:", error);
+            guard let response = resp as? HTTPURLResponse else {
                 completion(nil);
                 return;
             }
-            print("downloaded content of", url, "to", tmpUrl, resp, error);
-    
-            let response = resp as? HTTPURLResponse;
+            guard tmpUrl != nil && error == nil else {
+                completion(nil);
+                return;
+            }
+            
             if let image = UIImage(contentsOfFile: tmpUrl!.path) {
                 print("loaded image", url, "size", image.size);
-                ImageCache.shared.set(url: tmpUrl!, mimeType: response?.mimeType) { (key) in
+                ImageCache.shared.set(url: tmpUrl!, mimeType: response.mimeType) { (key) in
                     completion(key);
                 }
             } else {
