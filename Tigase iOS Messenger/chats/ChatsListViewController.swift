@@ -293,8 +293,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
     }
     
     func updateBadge() {
-        DispatchQueue.global(qos: .default).async {
-            let unreadChats = self.xmppService.dbChatHistoryStore.countUnreadChats();
+        self.xmppService.dbChatHistoryStore.countUnreadChats() { unreadChats in
             DispatchQueue.main.async() {
                 self.navigationController?.tabBarItem.badgeValue = unreadChats == 0 ? nil : String(unreadChats);
             }

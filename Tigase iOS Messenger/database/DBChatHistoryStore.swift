@@ -201,28 +201,29 @@ open class DBChatHistoryStore: Logger, EventHandler {
     }
     
     fileprivate func appendEntry(for account: BareJID, jid: BareJID, state: State, authorJid: BareJID?, authorNickname: String? = nil, itemType: ItemType = ItemType.message, data: String, timestamp: Date, id: String?, callback: @escaping (Int)->Void) {
-        guard !isEntryAlreadyAdded(for: account, jid: jid, authorJid: nil, itemType: itemType, data: data, timestamp: timestamp, id: id) else {
-            return;
-        }
-        
-        let params:[String:Any?] = ["account" : account, "jid" : jid, "author_jid" : authorJid, "author_nickname": authorNickname, "timestamp": timestamp, "item_type": itemType.rawValue, "data": data, "state": state.rawValue, "stanza_id": id]
-        let msgId = try! self.msgAppendStmt.insert(params);
-        let cu_params:[String:Any?] = ["account" : account, "jid" : jid, "timestamp" : timestamp ];
-        _ = try! self.chatUpdateTimestamp.update(cu_params);
+        ifNotEntryAlreadyAdded(for: account, jid: jid, authorJid: nil, itemType: itemType, data: data, timestamp: timestamp, id: id) {
+            let params:[String:Any?] = ["account" : account, "jid" : jid, "author_jid" : authorJid, "author_nickname": authorNickname, "timestamp": timestamp, "item_type": itemType.rawValue, "data": data, "state": state.rawValue, "stanza_id": id]
+            let msgId = try! self.msgAppendStmt.insert(params);
+            let cu_params:[String:Any?] = ["account" : account, "jid" : jid, "timestamp" : timestamp ];
+            _ = try! self.chatUpdateTimestamp.update(cu_params);
             
-        DispatchQueue.main.async {
-            callback(msgId!);
+            DispatchQueue.main.async {
+                callback(msgId!);
+            }
         }
     }
     
-    fileprivate func isEntryAlreadyAdded(for account: BareJID, jid: BareJID, authorJid: BareJID?, authorNickname: String? = nil, itemType: ItemType, data: String, timestamp: Date, id: String?) -> Bool {
-        
+    fileprivate func ifNotEntryAlreadyAdded(for account: BareJID, jid: BareJID, authorJid: BareJID?, authorNickname: String? = nil, itemType: ItemType, data: String, timestamp: Date, id: String?, callback: @escaping ()->Void) {
         let range = id == nil ? 5.0 : 60.0;
         let ts_from = timestamp.addingTimeInterval(-60 * range);
         let ts_to = timestamp.addingTimeInterval(60 * range);
         
         let params:[String:Any?] = ["account": account, "jid": jid, "ts_from": ts_from, "ts_to": ts_to, "item_type": itemType.rawValue, "data": data, "stanza_id": id, "author_jid": authorJid, "author_nickname": authorNickname];
-        return try! msgAlreadyAddedStmt.scalar(params) != 0;
+        msgAlreadyAddedStmt.dispatcher.async {
+            if try! self.msgAlreadyAddedStmt.scalar(params) == 0 {
+                callback();
+            }
+        }
     }
     
     open func countMessages(for account:BareJID, with jid:BareJID) -> Int {
@@ -285,8 +286,11 @@ open class DBChatHistoryStore: Logger, EventHandler {
         });
     }
     
-    open func countUnreadChats() -> Int {
-        return try! msgsCountUnreadChatsStmt.scalar() ?? 0;
+    open func countUnreadChats(onResult: @escaping (Int)->Void) {
+        msgsCountUnreadChatsStmt.dispatcher.async {
+            let value = try! self.msgsCountUnreadChatsStmt.scalar() ?? 0;
+            onResult(value);
+        }
     }
     
     open func forEachUnreadChat(forEach: (_ account: BareJID, _ jid: BareJID)->Void) {

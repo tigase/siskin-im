@@ -99,9 +99,9 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        roster = nil;
         super.viewWillDisappear(animated);
         NotificationCenter.default.removeObserver(self);
+        roster = nil;
     }
 
     override func numberOfSections(in: UITableView) -> Int {
