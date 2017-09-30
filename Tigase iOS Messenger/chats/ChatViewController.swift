@@ -28,7 +28,6 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     var titleView: ChatTitleView!;
     
     let log: Logger = Logger();
-    var scrollToIndexPath: IndexPath? = nil;
     
     var dataSource: ChatDataSource!;
     var cachedDataSource: CachedViewDataSourceProtocol {

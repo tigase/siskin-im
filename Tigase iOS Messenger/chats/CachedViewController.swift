@@ -33,7 +33,7 @@ protocol CachedViewControllerProtocol: BaseChatViewControllerScrollDelegate {
     var scrollToBottomOnShow: Bool { get set }
     var tableView: UITableView! { get set }
     var cachedDataSource: CachedViewDataSourceProtocol { get }
-    var scrollToIndexPath: IndexPath? { get set }
+    //var scrollToIndexPath: IndexPath? { get set }
 }
 
 extension CachedViewControllerProtocol {
@@ -52,17 +52,7 @@ extension CachedViewControllerProtocol {
     }
     
     func scroll(to indexPath: IndexPath, animated: Bool = true) {
-        self.scrollToIndexPath = indexPath;
-        
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime(uptimeNanoseconds: DispatchTime.now().uptimeNanoseconds + 30 * UInt64(NSEC_PER_MSEC))) {
-            guard self.scrollToIndexPath != nil else {
-                return;
-            }
-            let index = self.scrollToIndexPath!;
-            self.scrollToIndexPath = nil;
-            
-            self.tableView.scrollToRow(at: index as IndexPath, at: .bottom, animated: true);
-        }
+        self.tableView.scrollToRow(at: indexPath , at: .bottom, animated: true);
     }
     
     func tableViewScrollToNewestMessage(animated: Bool) {
@@ -160,8 +150,6 @@ class CachedViewDataSource<Item: CachedViewDataSourceItem>: CachedViewDataSource
     }
     
     func newItemAdded(timestamp: Date) -> IndexPath? {
-        self.numberOfMessages += 1;
-        
         var i = (numberOfMessages);
         var item: Item? = nil;
         repeat {
@@ -171,9 +159,10 @@ class CachedViewDataSource<Item: CachedViewDataSourceItem>: CachedViewDataSource
         i = i + 1;
         var j = i;
         while (j < numberOfMessages) {
-            cache.removeObject(forKey: i as NSNumber);
+            cache.removeObject(forKey: j as NSNumber);
             j = j + 1;
         }
+        self.numberOfMessages += 1;
         return IndexPath(row: (numberOfMessages - i) - 1, section: 0);
     }
     

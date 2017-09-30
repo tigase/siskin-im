@@ -28,7 +28,6 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
     var room: Room?;
 
     let log: Logger = Logger();
-    var scrollToIndexPath: IndexPath? = nil;
 
     var dataSource: MucChatDataSource!;
     var cachedDataSource: CachedViewDataSourceProtocol {
