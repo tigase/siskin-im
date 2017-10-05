@@ -74,8 +74,47 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         initSharing();
     }
     
-    func getTextOfSelectedRows(paths: [IndexPath], handler: (([String]) -> Void)?) {
-        let texts = paths.map({ index -> String in dataSource.getItem(for: index).data ?? "" });
+    func getTextOfSelectedRows(paths: [IndexPath], withTimestamps: Bool, handler: (([String]) -> Void)?) {
+        let items: [ChatViewItem] = paths.map({ index in dataSource.getItem(for: index) })
+            .filter { (it) -> Bool in it != nil }
+            .map({(it) in it! })
+            .sorted { (it1, it2) -> Bool in
+                it1.timestamp.compare(it2.timestamp) == .orderedAscending;
+            };
+        
+        guard items.count > 1 else {
+            let texts = items.map({ (it) -> String in
+                return it.data ?? "";
+            });
+            handler?(texts);
+            return;
+        }
+        
+        let withoutPrefix = Set(items.map({it in it.state.direction})).count == 1;
+        
+        let formatter = DateFormatter();
+        formatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "dd.MM.yyyy jj:mm", options: 0, locale: NSLocale.current);
+        
+        var direction: DBChatHistoryStore.MessageDirection? = nil;
+        let texts = items.map { (it) -> String in
+            if withoutPrefix {
+                if withTimestamps {
+                    return "[\(formatter.string(from: it.timestamp))] \(it.data ?? "")";
+                } else {
+                    return it.data ?? "";
+                }
+            } else {
+                let prefix = (direction == nil || it.state.direction != direction!) ?
+                    "\(it.state.direction == .incoming ? self.navigationItem.title! : "Me"):\n" : "";
+                direction = it.state.direction;
+                if withTimestamps {
+                    return "\(prefix)  [\(formatter.string(from: it.timestamp))] \(it.data ?? "")"
+                } else {
+                    return "\(prefix)  \(it.data ?? "")"
+                }
+            }
+        }
+        
         print("got texts", texts);
         handler?(texts);
     }

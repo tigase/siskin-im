@@ -137,8 +137,48 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
         }
     }
     
-    func getTextOfSelectedRows(paths: [IndexPath], handler: (([String]) -> Void)?) {
-        let texts = paths.map({ index -> String in dataSource.getItem(for: index).data ?? "" });
+    func getTextOfSelectedRows(paths: [IndexPath], withTimestamps: Bool, handler: (([String]) -> Void)?) {
+        let items: [MucChatViewItem] = paths.map({ index in dataSource.getItem(for: index) })
+            .filter { (it) -> Bool in it != nil }
+            .map({(it) in it! })
+            .sorted { (it1, it2) -> Bool in
+                it1.timestamp.compare(it2.timestamp) == .orderedAscending;
+        };
+        
+        guard items.count > 1 else {
+            let texts = items.map({ (it) -> String in
+                return it.data ?? "";
+            });
+            handler?(texts);
+            return;
+        }
+        
+        let withoutPrefix = Set(items.map({it in it.nickname ?? it.authorJid?.stringValue ?? ""})).count == 1;
+        
+        let formatter = DateFormatter();
+        formatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "dd.MM.yyyy jj:mm", options: 0, locale: NSLocale.current);
+        
+        var prevSender: String = "";
+        let texts = items.map { (it) -> String in
+            if withoutPrefix {
+                if withTimestamps {
+                    return "[\(formatter.string(from: it.timestamp))] \(it.data ?? "")"
+                } else {
+                    return it.data ?? "";
+                }
+            } else {
+                let sender = it.nickname ?? it.authorJid?.stringValue ?? "";
+                let prefix = (prevSender != sender) ?
+                    "\(it.state.direction == .incoming ? sender : "Me"):\n" : "";
+                prevSender = sender;
+                if withTimestamps {
+                    return "\(prefix)  [\(formatter.string(from: it.timestamp))] \(it.data ?? "")"
+                } else {
+                    return "\(prefix)  \(it.data ?? "")"
+                }
+            }
+        }
+        
         print("got texts", texts);
         handler?(texts);
     }

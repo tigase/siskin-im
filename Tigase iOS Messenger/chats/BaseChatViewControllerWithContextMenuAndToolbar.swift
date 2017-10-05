@@ -23,7 +23,7 @@ import UIKit
 
 protocol BaseChatViewControllerWithContextMenuAndToolbarDelegate: class {
     
-    func getTextOfSelectedRows(paths: [IndexPath], handler: (([String])->Void)?);
+    func getTextOfSelectedRows(paths: [IndexPath], withTimestamps: Bool, handler: (([String])->Void)?);
     
 }
 
@@ -35,6 +35,16 @@ class BaseChatViewControllerWithContextMenuAndToolbar: BaseChatViewController {
     @IBOutlet var customToolbar: UIToolbar?;
     @IBOutlet var customToolbarHeightConstraint: NSLayoutConstraint?;
     @IBOutlet var bottomViewHeightConstraint: NSLayoutConstraint?;
+
+    fileprivate weak var timestampsSwitch: UIBarButtonItem? = nil;
+    fileprivate var withTimestamps: Bool {
+        get {
+            return Settings.CopyMessagesWithTimestamps.getBool();
+        }
+        set {
+            Settings.CopyMessagesWithTimestamps.setValue(newValue);
+        }
+    };
     
     override func viewWillAppear(_ animated: Bool) {
         bottomViewHeightConstraint?.isActive = false;
@@ -64,10 +74,14 @@ class BaseChatViewControllerWithContextMenuAndToolbar: BaseChatViewController {
             }
             
             self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(BaseChatViewControllerWithContextMenuAndToolbar.editCancelClicked));
+            let timestampsSwitch = UIBarButtonItem(title: "Timestamps: \(self.withTimestamps ? "ON" : "OFF")", style: .plain, target: self, action: #selector(BaseChatViewControllerWithContextMenuAndToolbar.switchWithTimestamps));
+            self.timestampsSwitch = timestampsSwitch;
+
             let items = [
+                timestampsSwitch,
                 UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
-                UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(BaseChatViewControllerWithContextMenuAndToolbar.shareSelectedMessages)),
-                UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+                UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(BaseChatViewControllerWithContextMenuAndToolbar.shareSelectedMessages))
+//                UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
             ];
             self.customToolbar?.items = items;
             self.customToolbar?.isHidden = false;
@@ -103,15 +117,20 @@ class BaseChatViewControllerWithContextMenuAndToolbar: BaseChatViewController {
         hideEditToolbar();
     }
     
+    func switchWithTimestamps() {
+        withTimestamps = !withTimestamps;
+        timestampsSwitch?.title = "Timestamps: \(withTimestamps ? "ON" : "OFF")";
+    }
+    
     fileprivate func copyMessageInt(paths: [IndexPath]) {
-        contextMenuDelegate?.getTextOfSelectedRows(paths: paths) { (texts) in
+        contextMenuDelegate?.getTextOfSelectedRows(paths: paths, withTimestamps: false) { (texts) in
             UIPasteboard.general.strings = texts;
             UIPasteboard.general.string = texts.joined(separator: "\n");
         };
     }
     
     fileprivate func shareMessageInt(paths: [IndexPath]) {
-        contextMenuDelegate?.getTextOfSelectedRows(paths: paths) { (texts) in
+        contextMenuDelegate?.getTextOfSelectedRows(paths: paths, withTimestamps: withTimestamps) { (texts) in
             let text = texts.joined(separator: "\n");
             let activityController = UIActivityViewController(activityItems: [text], applicationActivities: nil);
             self.navigationController?.present(activityController, animated: true, completion: nil);

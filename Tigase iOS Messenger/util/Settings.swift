@@ -40,6 +40,7 @@ public enum Settings: String {
     case MessageDeliveryReceiptsEnabled
     case SimplifiedLinkToFileIfPreviewIsAvailable
     case SendMessageOnReturn
+    case CopyMessagesWithTimestamps
     
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     
