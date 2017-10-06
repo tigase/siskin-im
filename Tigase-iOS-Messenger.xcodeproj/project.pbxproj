@@ -19,6 +19,7 @@
 		FE3A45CF1CE49D3300C36264 /* RosterItemEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */; };
 		FE43EB551F3CC55900A4CAAD /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE43EB541F3CC55900A4CAAD /* ImageCache.swift */; };
 		FE43EB571F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE43EB561F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift */; };
+		FE4496C51F87934E009F649C /* db-schema-3.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE4496C31F87911C009F649C /* db-schema-3.sql */; };
 		FE4DDF561F39E0B500A4CE5A /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4DDF551F39E0B500A4CE5A /* ShareViewController.swift */; };
 		FE4DDF591F39E0B500A4CE5A /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE4DDF571F39E0B500A4CE5A /* MainInterface.storyboard */; };
 		FE4DDF5D1F39E0B500A4CE5A /* Tigase Messenger - Share.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = FE4DDF531F39E0B500A4CE5A /* Tigase Messenger - Share.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -158,6 +159,7 @@
 		FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterItemEditViewController.swift; sourceTree = "<group>"; };
 		FE43EB541F3CC55900A4CAAD /* ImageCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
 		FE43EB561F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewController_PreviewExtension.swift; sourceTree = "<group>"; };
+		FE4496C31F87911C009F649C /* db-schema-3.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-3.sql"; sourceTree = "<group>"; };
 		FE4DDF531F39E0B500A4CE5A /* Tigase Messenger - Share.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Tigase Messenger - Share.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE4DDF551F39E0B500A4CE5A /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		FE4DDF581F39E0B500A4CE5A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
@@ -444,6 +446,7 @@
 				FE94E52D1CCBA74F00FAE755 /* Assets.xcassets */,
 				FE168ACC1CCD197A003F8B26 /* db-schema-1.sql */,
 				FE2A0E8D1F74012D006ADF08 /* db-schema-2.sql */,
+				FE4496C31F87911C009F649C /* db-schema-3.sql */,
 				FE94E5321CCBA74F00FAE755 /* Info.plist */,
 				FE94E52F1CCBA74F00FAE755 /* LaunchScreen.storyboard */,
 				FE94E52A1CCBA74F00FAE755 /* Main.storyboard */,
@@ -679,6 +682,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FE4496C51F87934E009F649C /* db-schema-3.sql in Resources */,
 				FE94E5311CCBA74F00FAE755 /* LaunchScreen.storyboard in Resources */,
 				FE2A0E8E1F74012D006ADF08 /* db-schema-2.sql in Resources */,
 				FE94E52E1CCBA74F00FAE755 /* Assets.xcassets in Resources */,

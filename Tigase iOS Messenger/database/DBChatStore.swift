@@ -135,12 +135,18 @@ open class DBChatStore {
     fileprivate lazy var closeChatStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHAT_CLOSE);
     fileprivate lazy var countStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHATS_COUNT);
     
+    fileprivate let updateMessageDraftStmt: DBStatement;
+    fileprivate let getMessageDraftStmt: DBStatement;
+    
     open let dispatcher: QueueDispatcher;
     
     public init(dbConnection:DBConnection, dispatcher: QueueDispatcher? = nil) {
         self.dbConnection = dbConnection;
         self.dispatcher = dispatcher ?? QueueDispatcher(queue: DispatchQueue(label: "db_chat_store_queue", attributes: DispatchQueue.Attributes.concurrent), queueTag: DispatchSpecificKey<DispatchQueue?>());
 
+        self.getMessageDraftStmt = try! dbConnection.prepareStatement("SELECT message_draft FROM chats WHERE account = ? AND jid = ?");
+        self.updateMessageDraftStmt = try! dbConnection.prepareStatement("UPDATE chats SET message_draft = ? WHERE account = ? AND jid = ?");
+        
         NotificationCenter.default.addObserver(self, selector: #selector(DBChatStore.accountRemoved), name: NSNotification.Name(rawValue: "accountRemoved"), object: nil);
     }
     
@@ -305,6 +311,21 @@ open class DBChatStore {
         if let data = notification.userInfo {
             let accountStr = data["account"] as! String;
             _ = try! dbConnection.prepareStatement("DELETE FROM chats WHERE account = ?").update(accountStr);
+        }
+    }
+    
+    open func updateMessageDraft(account: BareJID, jid: BareJID, draft: String?) {
+        updateMessageDraftStmt.dispatcher.async {
+            _ = try? self.updateMessageDraftStmt.update(draft, account, jid);
+        }
+    }
+    
+    open func getMessageDraft(account: BareJID, jid: BareJID, onResult: @escaping (String?)->Void) {
+        getMessageDraftStmt.dispatcher.async {
+            let text: String? = try! self.getMessageDraftStmt.queryFirstMatching(account, jid) { (cursor) -> String? in
+                return cursor["message_draft"];
+            }
+            onResult(text);
         }
     }
     

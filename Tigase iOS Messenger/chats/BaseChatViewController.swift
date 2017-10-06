@@ -108,6 +108,12 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         super.viewWillAppear(animated);
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillShow), name: NSNotification.Name.UIKeyboardWillShow, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillHide), name: NSNotification.Name.UIKeyboardWillHide, object: nil);
+        
+        self.xmppService.dbChatStore.getMessageDraft(account: account, jid: jid.bareJid) { (text) in
+            DispatchQueue.main.async {
+                self.messageText = text;
+            }
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -129,6 +135,11 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
             UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
             self.xmppService.dbChatHistoryStore.markAsRead(for: self.account, with: self.jid.bareJid);
         }
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated);
+        self.xmppService.dbChatStore.updateMessageDraft(account: account, jid: jid.bareJid, draft: messageText);
     }
     
     override func viewDidDisappear(_ animated: Bool) {

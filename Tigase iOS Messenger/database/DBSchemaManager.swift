@@ -23,7 +23,7 @@ import Foundation
 
 public class DBSchemaManager {
     
-    static let CURRENT_VERSION = 2;
+    static let CURRENT_VERSION = 3;
     
     fileprivate let dbConnection: DBConnection;
     
@@ -52,6 +52,7 @@ public class DBSchemaManager {
                 try loadSchemaFile(fileName: "/db-schema-2.sql");
                 try cleanUpDuplicatedChats();
             default:
+                try loadSchemaFile(fileName: "/db-schema-\(version + 1).sql");
                 break;
             }
             version = try! getSchemaVersion();
