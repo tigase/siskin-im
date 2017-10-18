@@ -40,7 +40,8 @@ CREATE TABLE IF NOT EXISTS chat_history (
     data TEXT,
     stanza_id TEXT,
     state INTEGER,
-    preview TEXT
+    preview TEXT,
+    error TEXT
 );
 
 INSERT INTO chat_history (

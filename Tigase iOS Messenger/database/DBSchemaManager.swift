@@ -42,11 +42,6 @@ public class DBSchemaManager {
                 } catch {
                     try dbConnection.execute("ALTER TABLE chat_history ADD COLUMN preview TEXT");
                 }
-                do {
-                    try dbConnection.execute("select error from chat_history");
-                } catch {
-                    try dbConnection.execute("ALTER TABLE chat_history ADD COLUMN error TEXT;");
-                }
                 try cleanUpDuplicatedChats();
             case 1:
                 try loadSchemaFile(fileName: "/db-schema-2.sql");
@@ -56,6 +51,14 @@ public class DBSchemaManager {
                 break;
             }
             version = try! getSchemaVersion();
+        }
+
+        // need to make sure that "error" column exists as there was an issue with db-schema-2.sql
+        // which did not create this column
+        do {
+            try dbConnection.execute("select error from chat_history");
+        } catch {
+            try dbConnection.execute("ALTER TABLE chat_history ADD COLUMN error TEXT;");
         }
     }
     

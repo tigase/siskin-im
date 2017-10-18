@@ -304,7 +304,7 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
                 self.tableView.deleteRows(at: toDelete, with: .automatic);
             }
             if x < to!.count {
-                let toAdd: [IndexPath] = Array(from![x..<from!.count]);
+                let toAdd: [IndexPath] = Array(to![x..<to!.count]);
                 self.tableView.insertRows(at: toAdd, with: .automatic);
             }
             for i in 0..<x {
