@@ -11,11 +11,11 @@ The menu interface for Tigase Messenger for iOS is broken up into three main pan
 == Recent
 The recent menu displays recent conversations with other users, and also serves as a way to navigate between multi-user chatrooms (MUCs).  Each conversation will be displayed here along with an icon indicating user or room status.
 
-image::images\recent.png[]
+image::images\recent2.PNG[]
 
-Tapping one of these conversations will bring up the chat, MUC or one on one.  This panel also serves as an archive of sorts, and previous conversations with users will be accessable in this panel.
+Tapping one of these conversations will bring up the chat, whether it is MUC or one on one.  This panel also serves as an archive of sorts, and previous conversations with users will be accessable in this panel.
 
-NOTE: Conversations will only be saved if they took place on this device, it uses local storage only and cannot retrieve messages from the server using message archiving or offline messages.
+NOTE: Conversations will only be saved if they took place on this device, or if message archive is active.
 
 You may clear conversations from the archive by dragging the name or MUC conversation to the left and selecting delete. If you are removing a MUC chat, you will leave the chatroom.
 
@@ -36,9 +36,9 @@ image::images\joinchat.PNG[]
 
 Once you are finished, tap Join and you will join, or the room will be opened for you.
 
-image::images\recent2.PNG[]
+image::images\newchatjoin.png[]
 
-The recent panel will now display the chatroom, tap it to enter the MUC interface.
+The recent panel will now display the chatroom, tap it to enter the MUC interface, or if you're on iPad you will see the above image.
 
 When in a chatroom, you may view the occupants by tapping Occupants, and will be given a list and statuses of the room participants.
 
@@ -57,11 +57,18 @@ Contacts with grey icons are offline or unavailable. +
 
 Note that contacts will remain grey if you decide not to allow presence notifications in the settings.
 
-You may remove contacts by dragging a contact to the left and tapping Delete.  This will remove the contact from your roster, and remove any presence sharing permissions from the contact.  You may also remove multiple contacts by tapping Edit, and then tapping the remove symbols for contacts you wish to remove.
+You may remove or edit contacts by dragging a contact to the left and tapping Delete.
+Deleting the contact will remove them from your roster, and remove any presence sharing permissions from the contact.  You may also remove multiple contacts by tapping Edit, and then tapping the remove symbols for contacts you wish to remove.
 
 image::images\deluser.PNG[]
 
 You may also filter contacts by status by selecting All to display all users, or Available to hide users that are offline or unavailable.
+
+=== Editing a contact
+When editing a contact, you may chose to change the account that has friended the user, XMPP name, edit a roster name (which will be shared on your roster).
+Here, you may also decide to selectively approve or deny subscription requests to and from the user.
+
+image::\images\edituser.png[]
 
 === Adding a contact
 To add a contact, tap the plus button in the upper left and the add contact screen will show.
@@ -96,14 +103,14 @@ image::images\Delacct.PNG[]
 
 WARNING: Deleting your account from the server is a permanent and non-reversible action.
 
-You may also add an account from this screen.
+You may also add multiple XMPP accounts from this screen.  The add account screen looks identical to the one seen in the xref:existing[existing account] section.
 
 === Status
-Below accounts is a status setting for all connected and online accounts.  Editing this text section will change the `<show>` tags in your status, you will not be able to change your status tags as they are managed automatically.
+Below accounts is a status setting for all connected and online accounts.
 
 image::images\status.PNG[]
 
-To save data usage, your account status will be managed automatically using the following rules:
+To save data usage, your account status will be managed automatically using the following rules by default
 |===
 
 |Status | Behavior
@@ -116,21 +123,73 @@ To save data usage, your account status will be managed automatically using the 
 
 |===
 
+However, you may override this logic by tapping Automatic and selecting a status manually.
+
+image::images\setstatus.png[]
+
+==== Show tag
+Underneath is a blank space where you can set your show tag
+
+Editing this text section will change the `<show>` tags in your status.  Once you press OK, your new show tag will display.
+
+image::images\statusset.png[]
+
+
 [settings]
 === Settings
-Below are some settings for the operation and behavior of the application.
+Below are settings for the operation and behavior of the application.
 
-- Delete Chat history on chat close: +
+==== Chats
+*List of Messages*
+
+- Lines of preview: +
+  Sets the lines of preview text to keep within the chat window without using internal or message archive. +
+
+- Sorting: +
+  Allows sorting of recent messages by Time, or by status and time (with unavailable resources at the bottom). +
+
+*Messages*
+
+- Send messages on return: +
+  If you are offline or away from connection, messages may be resent when you are back online or back in connection if this option is checked. +
+
+- Clear chat on close: +
   If this is enabled, when you close chats from the recent screen, all local history on the device will be deleted.  This does not affect operation of offline or server-stored message archives. +
 
 - Message carbons: +
   Enables or disables message carbons to deliver to all resources.  This is on by default, however some servers may not support this. +
 
-- Display contacts in groups: +
-  Whether to use display contacts in groups defined by roster.  If this is disabled, contacts will be listed in alphabetical order. +
+- Request delivery receipts: +
+  Whether or not to request delivery receipts of messages sent. +
 
-- Display "Hidden" group: +
-  If you are using groups, you may choose to display contacts that are hidden, such as offline or blocked contacts. +
+*Attachments*
 
-- Subscribe to new contact presence: +
-  If this option is on, new contacts adding you will have recieve a request from the application subscribing to thier presence as well.  You may disable this if you are not interested in receiving presence information from other contacts, this can reduce data use. +
+- File sharing via HTTP: +
+  This setting turns on the use of HTTP file sharing using the application.  The server you are connected too must support this component to endble this option.
+
+- Simplified link to HTTP file: +
+  This creates a simplified link to the file after uploading rather than directly sending the file.  This may be useful for intermittant communications. +
+
+- Max image preview size: +
+  Sets the maximum size of image previews to download before fully downloading files.  Setting this at 0 pevents previews from retriving files. +
+
+- Clear cache: +
+  This clears the devices cache of all downloaded and saved files retrieved from HTTP upload component. +
+
+==== Contacts
+*Display*
+
+- Contacts in groups: +
+  Allows contacts to be displayed in groups as defined by the roster.  Disabling this will show contacts in a flat organization. +
+
+- "Hidden" group: +
+  Whether or not to display contacts that are added to the "hidden" group. +
+
+*General*
+
+- Auto-authorize contacts: +
+  Selecting this will automatically request subscription to users added to contacts. +
+
+==== Notifications
+
+This section has one option: Whether to accept notifications from unknown.  If left disabled, notifications from unknown sources (including server administrators) will not be sent to the native notification section of the device.  Instead, you will have to see them under the Recent menu.

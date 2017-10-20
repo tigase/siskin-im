@@ -1,13 +1,48 @@
 [[iOS_Advanced]]
 = Advanced Options
-Tigase Team <team@tigase.net>
+:author: Tigase Team <team@tigase.net>
+
 :toc:
 :numbered:
 :website: http://tigase.net
-:Date: 2017-05-26
 
 This section contains information about advanced settings and options that are available to the application, but may not be typically considered for users.
 
+
+== Account Settings
+For each connected account, there are serever-specific settings that are available.  This may be brought up by selecting More... and then choosing the account you wish to edit.
+
+image::images\accountsetting.png[]
+
+*General*
+
+- Enabled: +
+  Whether or not to enable this account.  If it is disabled, it will be considered unavailable and offline. +
+
+- Change account settings: +
+  This screen allows changing of the account password.
+
+*Push Notifications*
+
+- Enabled: +
+  Enables Push notification support.  Enabling this will register the device as exmplained in xref:pushsupport[the below section]. +
+
+- When in Away/XA/DND state: +
+  When enabled, push notifications will be delivered when in Away, Extended away, or Do not disturb statuses which may exist while the device is inactive. +
+
+*Message Archiving*
+
+- Enabled: +
+  Enabling this will allow the device to use the server's message archive component.  This will allow storage and reteival of messages. +
+
+- Automatic synchronization: +
+  If this is enabled, it will synchronize with the server upon connection, sharing and retriving message history. +
+
+- Synchronization: +
+  Choose the level of synchornization that the device will retrieve and send to the server. +
+
+
+[[pushsupport]]
 == Push Component Support
 Tigase Messenger for iOS supports link:https://xmpp.org/extensions/xep-0357.html[XEP-0357 Push Notifications] which will receive notifications even when accounts are logged off.
 Devices must be registered for push notifications and must register them VIA the Tigase XMPP Push Component.

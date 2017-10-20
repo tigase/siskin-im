@@ -65,6 +65,11 @@ If you already have an XMPP account on a server, select this option to login usi
 
 NOTE: Your device name will serve as the resource for your account.  iPad or iPhone will automatically be used as the resource.
 
-You may recieve certificate errors from servers that may not have certificate chains installed, invalid, or expired certificates.  Servers with these errors will ask the user to accept or deny these security exceptions:
+=== Certificate Errors
+
+You may recieve certificate errors from servers that may not have certificate chains installed, invalid, or expired certificates.
+You will recieve an unable to connect to server error, however servers with these errors will ask the user to accept or deny these security exceptions but they will show up at system notifications.
 
 image::images\certerr.PNG[]
+
+After doing so you may reattempt the connection to the server.
