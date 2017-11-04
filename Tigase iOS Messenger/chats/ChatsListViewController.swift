@@ -58,6 +58,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
         super.viewDidDisappear(animated);
         xmppService.unregisterEventHandler(self, for: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE, RosterModule.ItemUpdatedEvent.TYPE);
         NotificationCenter.default.removeObserver(self, name: AvatarManager.AVATAR_CHANGED, object: nil);
+        dataSource.cache.removeAllObjects();
     }
 
     deinit {
@@ -224,7 +225,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
         case let e as MessageModule.ChatCreatedEvent:
             // we are adding rows always on top
             DispatchQueue.main.async() {
-                self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.chat.jid.bareJid, type: 0, timestamp: Date());
+                self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.chat.jid.bareJid, type: 0, timestamp: Date(), onUpdate: nil);
             }
             // if above is not working we can reload
             //tableView.reloadData();
@@ -241,22 +242,22 @@ class ChatsListViewController: UITableViewController, EventHandler {
                 return;
             }
             DispatchQueue.main.async() {
-                self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: from.bareJid);
+                self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: from.bareJid, onUpdate: nil);
             }
         case let e as MucModule.JoinRequestedEvent:
             DispatchQueue.main.async() {
-                self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid, type: 1, timestamp: Date());
+                self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid, type: 1, timestamp: Date(), onUpdate: nil);
             }
         case let e as MucModule.YouJoinedEvent:
             DispatchQueue.main.async() {
-                self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid);
+                self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid, onUpdate: nil);
             }
         case let e as MucModule.RoomClosedEvent:
             DispatchQueue.main.async() {
                 if e.room.state == .destroyed {
                     self.dataSource.removeChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid);
                 } else {
-                    self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid);
+                    self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid, onUpdate: nil);
                 }
             }
         case let e as RosterModule.ItemUpdatedEvent:
@@ -264,7 +265,9 @@ class ChatsListViewController: UITableViewController, EventHandler {
                 return;
             }
             DispatchQueue.main.async() {
-                self.dataSource.updateChat(for: account, with: jid.bareJid);
+                self.dataSource.updateChat(for: account, with: jid.bareJid, onUpdate: { item in
+                    item.name = e.rosterItem?.name;
+                });
             }
         default:
             break;
@@ -272,23 +275,48 @@ class ChatsListViewController: UITableViewController, EventHandler {
     }
     
     func newMessage(_ notification:NSNotification) {
+        let state = notification.userInfo!["state"] as! DBChatHistoryStore.State;
         if navigationController?.visibleViewController == self {
 //            tableView.reloadData();
             let account = notification.userInfo!["account"] as? BareJID;
             let jid = notification.userInfo!["sender"] as? BareJID;
+            let ts = notification.userInfo!["timestamp"] as? Date;
             if account != nil && jid != nil {
                 DispatchQueue.main.async {
-                    self.dataSource.updateChat(for: account!, with: jid!, type: nil, timestamp: notification.userInfo!["timestamp"] as? Date);
+                    self.dataSource.updateChat(for: account!, with: jid!, type: nil, timestamp: ts, onUpdate: { item in
+                        print("updating item", jid, ts, item.key.timestamp, item.lastMessage);
+                        if (ts != nil && item.key.timestamp.compare(ts!) == ComparisonResult.orderedSame) || item.lastMessage == nil {
+                            item.lastMessage = notification.userInfo!["body"] as? String;
+                            switch state {
+                                case .incoming_unread, .incoming_error_unread:
+                                    item.unread += 1;
+                                default:
+                                    break;
+                            }
+                        }
+                    });
                 }
             }
         }
-        let incoming:Bool = notification.userInfo?["incoming"] as? Bool ?? false;
-        if incoming {
-            updateBadge();
+        switch state {
+            case .incoming_unread, .incoming_error_unread:
+                updateBadge();
+            default:
+                break;
         }
     }
     
     func chatItemsUpdated(_ notification: NSNotification) {
+        let action: String = notification.userInfo!["action"] as! String;
+        let account: BareJID = notification.userInfo!["account"] as! BareJID;
+        let jid: BareJID = notification.userInfo!["jid"] as! BareJID;
+        if action == "markedRead" {
+            DispatchQueue.main.async {
+                self.dataSource.updateChat(for: account, with: jid, onUpdate: { item in
+                    item.unread = 0;
+                });
+            }
+        }
         updateBadge();
     }
     
@@ -335,7 +363,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
         
     }
 
-    class ChatsViewItemKey {
+    class ChatsViewItemKey: NSObject {
         let account: BareJID;
         let jid: BareJID;
         var timestamp: Date;
@@ -353,6 +381,18 @@ class ChatsListViewController: UITableViewController, EventHandler {
             self.jid = jid;
             self.timestamp = timestamp;
             self.type = type;
+        }
+        
+        override func isEqual(_ object: Any?) -> Bool {
+            guard let other = object as? ChatsViewItemKey else {
+                return false;
+            }
+            
+            return self.account == other.account && self.jid == other.jid;
+        }
+        
+        override var hash: Int {
+            return self.account.hashValue ^ self.jid.hashValue;
         }
     }
     
@@ -381,6 +421,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
         weak var controller: ChatsListViewController?;
 
         fileprivate var list: [ChatsViewItemKey] = [];
+        fileprivate var cache = NSCache<ChatsViewItemKey,ChatsViewItem>();
         
         var count: Int {
             return list.count;
@@ -396,12 +437,18 @@ class ChatsListViewController: UITableViewController, EventHandler {
         
         func item(at position: IndexPath) -> ChatsViewItem {
             let key = list[position.row];
+            if let item = cache.object(forKey: key) {
+                return item;
+            }
+            
             let params: [String: Any?] = [ "account" : key.account, "jid" : key.jid];
-            return try! getChatDetails.findFirst(params) { (cursor) in
+            let item: ChatsViewItem = try! getChatDetails.findFirst(params) { (cursor) in
                 let tmp = ChatsViewItem(key: key);
                 tmp.load(from: cursor);
                 return tmp;
-                }!;
+            }!;
+            cache.setObject(item, forKey: key);
+            return item;
         }
         
         func itemKey(at position: IndexPath) -> ChatsViewItemKey {
@@ -411,10 +458,11 @@ class ChatsListViewController: UITableViewController, EventHandler {
         func reloadData() {
             let list: [ChatsViewItemKey] = try! getChatsList.query() { (cursor) in ChatsViewItemKey(cursor: cursor) }
             update(list: list);
+            cache.removeAllObjects();
             controller?.tableView.reloadData();
         }
         
-        func updateChat(for account: BareJID, with jid: BareJID, type: Int? = nil, timestamp: Date? = nil) {
+        func updateChat(for account: BareJID, with jid: BareJID, type: Int? = nil, timestamp: Date? = nil, onUpdate: ((ChatsViewItem)->Void)?) {
             let fromPosition = positionFor(account: account, jid: jid);
             var list = self.list;
             if fromPosition == nil {
@@ -426,8 +474,12 @@ class ChatsListViewController: UITableViewController, EventHandler {
                 }
             } else {
                 let item = self.list[fromPosition!];
-                if timestamp != nil && item.timestamp.compare(timestamp!) == ComparisonResult.orderedAscending {
+                let viewItem = cache.object(forKey: item);
+                if timestamp != nil && ((item.timestamp.compare(timestamp!) == ComparisonResult.orderedAscending) || (viewItem != nil && viewItem!.lastMessage == nil)) {
                     item.timestamp = timestamp!;
+                }
+                if viewItem != nil {
+                    onUpdate?(viewItem!);
                 }
             }
             if (timestamp != nil || SortOrder(rawValue: Settings.RecentsOrder.getString()!) == SortOrder.byAvailablityAndTime) {
@@ -446,8 +498,9 @@ class ChatsListViewController: UITableViewController, EventHandler {
             }
             
             var list = self.list;
-            list.remove(at: fromPosition!);
+            let key = list.remove(at: fromPosition!);
             update(list: list);
+            cache.removeObject(forKey: key);
             notify(from: fromPosition, to: nil);
         }
         

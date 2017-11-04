@@ -267,7 +267,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     }
     
     func newMessage(_ notification: NSNotification) {
-        guard ((notification.userInfo?["account"] as? BareJID) == account) && ((notification.userInfo?["sender"] as? BareJID) == jid.bareJid) else {
+        guard ((notification.userInfo!["account"] as? BareJID) == account) && ((notification.userInfo!["sender"] as? BareJID) == jid.bareJid) else {
             return;
         }
         
@@ -283,7 +283,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         self.newItemAdded(timestamp: ts);
 
         if let state = notification.userInfo?["state"] as? DBChatHistoryStore.State {
-            if state == .incoming_unread {
+            if state == .incoming_unread || state == .incoming_error_unread {
                 self.xmppService.dbChatHistoryStore.markAsRead(for: account, with: jid.bareJid);
             }
         }

@@ -122,7 +122,7 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
         pushNotificationsForAwaySwitch.isEnabled = pushNotificationSwitch.isEnabled && (pushModule?.isAvailablePushForAway ?? false);
         
         messageSyncAutomaticSwitch.isOn = AccountSettings.MessageSyncAutomatic(accountJid.description).getBool();
-        archivingEnabledSwitch.isEnabled = AccountSettings.PushNotificationsForAway(account).getBool();
+        archivingEnabledSwitch.isEnabled = false;
 
         if let mamModule: MessageArchiveManagementModule = client?.modulesManager.getModule(MessageArchiveManagementModule.ID) {
             mamModule.retrieveSettings(onSuccess: { (

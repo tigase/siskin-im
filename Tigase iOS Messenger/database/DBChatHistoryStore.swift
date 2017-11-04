@@ -306,7 +306,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
         let updatedRecords = try! self.msgsMarkAsReadStmt.update(params);
         if updatedRecords > 0 {
             DispatchQueue.global(qos: .default).async() {
-                self.chatItemsChanged(for: account, with: jid);
+                self.chatItemsChanged(for: account, with: jid, action: "markedRead");
             }
         }
     }
@@ -363,8 +363,8 @@ open class DBChatHistoryStore: Logger, EventHandler {
         }
     }
     
-    fileprivate func chatItemsChanged(for account: BareJID, with jid: BareJID) {
-        let userInfo:[AnyHashable: Any] = ["account":account, "jid":jid];
+    fileprivate func chatItemsChanged(for account: BareJID, with jid: BareJID, action: String) {
+        let userInfo:[AnyHashable: Any] = ["account":account, "jid":jid, "action":action];
         NotificationCenter.default.post(name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil, userInfo: userInfo);
     }
     

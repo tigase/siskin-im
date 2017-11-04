@@ -436,15 +436,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func newMessage(_ notification: NSNotification) {
-        let sender = notification.userInfo?["sender"] as? BareJID;
-        let account = notification.userInfo?["account"] as? BareJID;
-        let incoming:Bool = (notification.userInfo?["incoming"] as? Bool) ?? false;
-        let fromArchive: Bool = (notification.userInfo?["fromArchive"] as? Bool) ?? false;
-        guard sender != nil && account != nil && incoming && !fromArchive else {
+        let sender = notification.userInfo!["sender"] as! BareJID;
+        let account = notification.userInfo!["account"] as! BareJID;
+        let state = notification.userInfo!["state"] as! DBChatHistoryStore.State;
+        guard state == .incoming_unread || state == .incoming_error_unread else {
             return;
         }
         
-        notifyNewMessage(account: JID(account!), sender: JID(sender!), body: notification.userInfo!["body"] as! String, type: notification.userInfo?["type"] as? String, data: notification.userInfo!, isPush: false, completionHandler: nil);
+        notifyNewMessage(account: JID(account), sender: JID(sender), body: notification.userInfo!["body"] as! String, type: notification.userInfo!["type"] as? String, data: notification.userInfo!, isPush: false, completionHandler: nil);
     }
     
     func dismissPushNotifications(for account: JID, completionHandler: (()-> Void)?) {

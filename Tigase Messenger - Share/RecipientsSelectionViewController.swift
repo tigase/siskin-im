@@ -108,9 +108,10 @@ class RecipientsSelectionViewController: UITableViewController {
             allItems[item!.jid] = item!;
         }
         let showHidden = sharedDefaults!.bool(forKey: "RosterDisplayHiddenGroup");
-        items = allItems.values.filter({ (ri) -> Bool in
+        let tmp: [RosterItem] = allItems.values.filter({ (ri) -> Bool in
             return showHidden || !ri.groups.contains("Hidden");
-        }).sorted { (r1, r2) -> Bool in
+        });
+        items = tmp.sorted { (r1, r2) -> Bool in
             return (r1.name ?? r1.jid.stringValue).compare(r2.name ?? r2.jid.stringValue) == .orderedAscending;
         }
         tableView.reloadData();
