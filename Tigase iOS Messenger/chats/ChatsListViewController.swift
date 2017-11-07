@@ -50,7 +50,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
         dataSource.reloadData();
         self.xmppService.registerEventHandler(self, for: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE, RosterModule.ItemUpdatedEvent.TYPE);
         //(self.tabBarController as? CustomTabBarController)?.showTabBar();
-        NotificationCenter.default.addObserver(self, selector: #selector(ChatsListViewController.newMessage), name: AvatarManager.AVATAR_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(ChatsListViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
         super.viewWillAppear(animated);
     }
 
@@ -271,6 +271,14 @@ class ChatsListViewController: UITableViewController, EventHandler {
             }
         default:
             break;
+        }
+    }
+    
+    func avatarChanged(_ notification: NSNotification) {
+        if let jid: BareJID = notification.userInfo!["jid"] as? BareJID {
+            DispatchQueue.main.async {
+                self.tableView.reloadData();
+            }
         }
     }
     
@@ -507,7 +515,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
         func positionFor(account: BareJID, jid: BareJID) -> Int? {
             return list.index { $0.jid == jid && $0.account == account };
         }
-
+        
         fileprivate func getPresence(account: BareJID, jid: BareJID) -> Presence? {
             let presenceModule: PresenceModule? = self.controller?.xmppService.getClient(forJid: account)?.modulesManager.getModule(PresenceModule.ID);
             return presenceModule?.presenceStore.getBestPresence(for: jid);
