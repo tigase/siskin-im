@@ -1,14 +1,15 @@
+[[Welcome]]
 = Welcome
-Tigase Team <team@tigase.net>
+:author: Tigase Team <team@tigase.net>
+
 :toc:
 :numbered:
 :website: http://tigase.net
-:Date: 2017-04-10
 
 Welcome to the documentation for Tigase Messenger for iOS.
 
 == Minimum Requirements
-Tigase Messenger for iOS requires an apple device running iOS v9 or later.  Compatable devices are listed below:
+Tigase Messenger for iOS requires an apple device running iOS v9 or later.  Compatible devices are listed below:
 
 *iPhone* +
 - iPhone 4S +
@@ -43,33 +44,44 @@ Tigase Messenger for iOS requires an apple device running iOS v9 or later.  Comp
 Tigase Messenger for iOS can be installed the same way any apple approved app can be found: through the appstore.  Search for Tigase in the store search function and then tap install and follow the prompts to install Tigase Messenger.
 
 == Account Setup
-Upon running Tigase Meseenger for iOS for the first time, you will be greeted with the following screen:
+Upon running Tigase Messenger for iOS for the first time, you will be greeted with the following screen:
 
-image::images\Home.PNG[]
+image::images\home.png[]
 
 Your options are to xref:reg[register] for a new account, or to use an xref:existing[existing] account.
 
 [register]
 === Registering for a New Account
 The application supports creating a new account registration using in-band registration.  This means that on servers supporting it, you can sign up for a new account straight from the client!  A list of servers that support this is located link:https://list.jabber.at/[here].
+We have provided quick-links to Tigase maintained servers where you can register an account.  However, you may use another domain if you wish.
+If you wish to use a custom domain, enter the domain address in the top bar, the application will then check with the server to ensure registration is supported.
 
-image::images\register.PNG[]
+You will be presented with an error message if it is not supported.
 
-Choose your username and add the appropiate domain, and enter the password for the account.
+image::images\regfailure.png[]
+
+If registration is supported, you will see the following prompts:
+
+image::images\registernew.png[]
+
+Fill out the fields for username, password, and E-mail.  You do not need to add the domain to your username, it will be added for you so your JID will look like `yourusername@domain.com`
+
+An E-mail is required in case a server administrator needs to get in contact with you, or you lose your password and might need recovery.
 
 Once you tap Register, the application will connect and register your account with the server.
 
 [existing]
 === Use an Existing Account
-If you already have an XMPP account on a server, select this option to login usint Tigase Messenger for iOS.  Enter your username and password as normal and tap Save to add the account.
+If you already have an XMPP account on a server, select this option to login using Tigase Messenger for iOS.  Enter your username and password as normal and tap Save to add the account.
 
 NOTE: Your device name will serve as the resource for your account.  iPad or iPhone will automatically be used as the resource.
 
 === Certificate Errors
 
-You may recieve certificate errors from servers that may not have certificate chains installed, invalid, or expired certificates.
-You will recieve an unable to connect to server error, however servers with these errors will ask the user to accept or deny these security exceptions but they will show up at system notifications.
-
-image::images\certerr.PNG[]
+You may receive certificate errors from servers that may not have certificate chains installed, invalid, or expired certificates.
+You will receive an unable to connect to server error, however servers with these errors will ask the user to accept or deny these security exceptions but they will show up at system notifications.
 
 After doing so you may reattempt the connection to the server.
+
+== Final Steps
+Once your account is verified, the application will log you in as online and display the recent screen.

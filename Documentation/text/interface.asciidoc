@@ -1,9 +1,10 @@
+[[Interface]]
 = Tigase Messenger for iOS Interface
-Tigase Team <team@tigase.net>
+:author: Tigase Team <team@tigase.net>
+
 :toc:
 :numbered:
 :website: http://tigase.net
-:Date: 2017-04-10
 
 The menu interface for Tigase Messenger for iOS is broken up into three main panels; xref:recent[Recent], xref:contacts[Contacts] and xref:more[More].  This can be brought up from any screen by swiping right from the left side of the screen, or tapping the back option on the top left.
 
@@ -11,18 +12,20 @@ The menu interface for Tigase Messenger for iOS is broken up into three main pan
 == Recent
 The recent menu displays recent conversations with other users, and also serves as a way to navigate between multi-user chatrooms (MUCs).  Each conversation will be displayed here along with an icon indicating user or room status.
 
-image::images\recent2.PNG[]
+image::images\recent.png[]
 
-Tapping one of these conversations will bring up the chat, whether it is MUC or one on one.  This panel also serves as an archive of sorts, and previous conversations with users will be accessable in this panel.
+Tapping one of these conversations will bring up the chat, whether it is MUC or one on one.  This panel also serves as an archive of sorts, and previous conversations with users will be accessible in this panel.
 
 NOTE: Conversations will only be saved if they took place on this device, or if message archive is active.
 
 You may clear conversations from the archive by dragging the name or MUC conversation to the left and selecting delete. If you are removing a MUC chat, you will leave the chatroom.
 
+image:images\delchat.png[]
+
 === New/Join MUC
 Tapping the plus button on the top right will bring up the new/join muc panel.  This interface will allow you to either join an existing or create a new MUC on your chosen server.
 
-image::images\joinchat.PNG[]
+image::images\join.png[]
 
 - Account: This is the account that will handle data for the MUC chatroom. This is available for users who have multiple accounts logged in.
 
@@ -36,79 +39,101 @@ image::images\joinchat.PNG[]
 
 Once you are finished, tap Join and you will join, or the room will be opened for you.
 
-image::images\newchatjoin.png[]
-
-The recent panel will now display the chatroom, tap it to enter the MUC interface, or if you're on iPad you will see the above image.
+The recent panel will now display the chatroom, you may tap it to enter the MUC interface.
 
 When in a chatroom, you may view the occupants by tapping Occupants, and will be given a list and statuses of the room participants.
 
-image::images\occupants.PNG[]
+image::images\occu.png[]
 
 [contacts]
 == Contacts
-The contacts panel serves as your Roster, displaying all the contacts you have on your roster, and displaying statuses along with thier names.  Tigase Messenger for iOS supports vCard-Temp Avatars and will retrieve them if they are uploaded by a user.
+The contacts panel serves as your Roster, displaying all the contacts you have on your roster, and displaying statuses along with their names.  Tigase Messenger for iOS supports vCard-Temp Avatars and will retrieve them if they are uploaded by a user.
 
-image::images\roster.PNG[]
+image::images\roster.png[]
 
 Contacts with green icons are available or free to chat status. +
 Contacts with yellow icons are away or extended away. +
 Contacts with red icons are in do not disturb status. +
-Contacts with grey icons are offline or unavailable. +
+Contacts with gray icons are offline or unavailable. +
 
-Note that contacts will remain grey if you decide not to allow presence notifications in the settings.
+Note that contacts will remain gray if you decide not to allow presence notifications in the settings.
 
-You may remove or edit contacts by dragging a contact to the left and tapping Delete.
-Deleting the contact will remove them from your roster, and remove any presence sharing permissions from the contact.  You may also remove multiple contacts by tapping Edit, and then tapping the remove symbols for contacts you wish to remove.
+You may remove or edit contacts by dragging a contact to the left and tapping Delete.  You also have the ability to edit a contact, explained in the next section.
+Deleting the contact will remove them from your roster, and remove any presence sharing permissions from the contact.
 
 image::images\deluser.PNG[]
 
 You may also filter contacts by status by selecting All to display all users, or Available to hide users that are offline or unavailable.
 
 === Editing a contact
-When editing a contact, you may chose to change the account that has friended the user, XMPP name, edit a roster name (which will be shared on your roster).
+When editing a contact, you may chose to change the account that has friended the user, XMPP name, edit a roster name (which will be shown on your roster).
 Here, you may also decide to selectively approve or deny subscription requests to and from the user.
+If you do not send presence updates, they will not know whether you are online, busy, or away.
+If you elect not to receive presence updates, you will not receive information if they are online, busy or away.
 
 image::\images\edituser.png[]
 
 === Adding a contact
 To add a contact, tap the plus button in the upper left and the add contact screen will show.
 
-image::images\adduserfull.PNG[]
+image::images\adduser.png[]
 
-First, select the account roster you wish the new contact to be added too. Then type in the JID of the user, do not use resources, just bare JID.  You may enter a friendly nickname for the contact to be added to your roster, this is optional.
+First, select the account friends list you wish the new contact to be added too. Then type in the JID of the user, do not use resources, just bare JID.  You may enter a friendly nickname for the contact to be added to your friend list, this is optional.
 When adding users, you have two options to select:
 
 - Send presence updates - This will allow sending of presence status and changes to this user on your roster.  You may disable this to reduce network usage, however you will not be able to obtain status information.
-- Receive presence updates - Turning this on will enable the applications to send presence changes to this person on the roster. You may disable this to reduce network usage, however they will not receieve notifications if you turn off the phone
+- Receive presence updates - Turning this on will enable the applications to send presence changes to this person on the roster. You may disable this to reduce network usage, however they will not receive notifications if you turn off the phone
 
 NOTE: These options are on by default and enable Tigase Messenger for iOS to behave like a traditional client.
 
-If you do decide to receieve presence updates when adding a new contact, you will be presented with this screen when they add you back:
+If you do decide to receive presence updates when adding a new contact, you will be presented with this screen when they add you back:
 
-image::images\presreq.PNG[]
+image::images\presreq.png[]
 
-By tapping yes, you will recieve notifications of presence changes from your contact.  This subscription will be maintained by the server, and will stay active with your roster.
+By tapping yes, you will receive notifications of presence changes from your contact.  This subscription will be maintained by the server, and will stay active with your friends list.
+
+NOTE: You will only receive this option if 'automatically accept presence requests' is set to yes in account settings.
+
+TIP: If somebody not on your friends list adds you, you will receive this same message.
 
 [more]
 == More
 The more panel is your program and account settings panel, from here you can change program settings and general account information.
 
-image::images\settings.PNG[]
+image::images\settings.png[]
 
 === Accounts
 This will list your current accounts, if an avatar has been defined for the account, it will show on the left side but by default the Tigase logo will be used.
-If you wish to remove an account, swipe left and select Delete.  You will be asked for a confirmation whether you want to remove it from the application, and if the server supports it, you may delete it from the server removing roster, presence subscriptions, and potentially saved history.
 
-image::images\Delacct.PNG[]
+=== vCard data
+You can set and change vCard data for your account.  Tap the account you wish to edit and you will be presented with a number of fields that may be filled out.
+There is a blank space in the upper left corner where you may upload a photo as your avatar.
+
+=== Badge descriptions
+We have included a badging system on accounts to help indicate if connections issues are present with any account setup.
+|===
+|Icon     | Meaning
+|No icon  | If account is disabled and will not try to connect
+|Red icon with a cross |Account is disabled and will not try to connect due to server reporting an error (persistent error, i.e. authentication error).
+|Grey |Account attempts to connect but is unable to connect to server (usually it means client is unable to establish TCP connection with the server) In this state, account tries to reconnect every few seconds if the client is in the foreground.
+|Orange with dots |TCP connection is established but XMPP stream is not ready yet (not authorized yet, awaiting resource binding, etc).
+|Green |XMPP client is connected and XMPP stream is established and ready to send/receive stanzas.
+|===
+
+=== Delete an account
+If you wish to remove an account, swipe left and select Delete.
+You will be asked for a confirmation whether you want to remove it from the application, and if the server supports it, you may delete it from the server removing roster, presence subscriptions, and potentially saved history.
+
+image::images\delacct.png[]
 
 WARNING: Deleting your account from the server is a permanent and non-reversible action.
 
 You may also add multiple XMPP accounts from this screen.  The add account screen looks identical to the one seen in the xref:existing[existing account] section.
 
+To change settings for an individual account, tap that account name.  Those options are covered under xref:acctSettings[Account Settings] section.
+
 === Status
 Below accounts is a status setting for all connected and online accounts.
-
-image::images\status.PNG[]
 
 To save data usage, your account status will be managed automatically using the following rules by default
 |===
@@ -132,12 +157,11 @@ Underneath is a blank space where you can set your show tag
 
 Editing this text section will change the `<show>` tags in your status.  Once you press OK, your new show tag will display.
 
-image::images\statusset.png[]
-
-
 [settings]
 === Settings
 Below are settings for the operation and behavior of the application.
+
+image:\images\chatsettings.png[]
 
 ==== Chats
 *List of Messages*
@@ -165,13 +189,13 @@ Below are settings for the operation and behavior of the application.
 *Attachments*
 
 - File sharing via HTTP: +
-  This setting turns on the use of HTTP file sharing using the application.  The server you are connected too must support this component to endble this option.
+  This setting turns on the use of HTTP file sharing using the application.  The server you are connected too must support this component to enable this option.
 
 - Simplified link to HTTP file: +
-  This creates a simplified link to the file after uploading rather than directly sending the file.  This may be useful for intermittant communications. +
+  This creates a simplified link to the file after uploading rather than directly sending the file.  This may be useful for intermittent communications. +
 
 - Max image preview size: +
-  Sets the maximum size of image previews to download before fully downloading files.  Setting this at 0 pevents previews from retriving files. +
+  Sets the maximum size of image previews to download before fully downloading files.  Setting this at 0 prevents previews from retrieving files. +
 
 - Clear cache: +
   This clears the devices cache of all downloaded and saved files retrieved from HTTP upload component. +
