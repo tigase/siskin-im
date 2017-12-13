@@ -84,8 +84,6 @@ open class XmppService: Logger, EventHandler {
     fileprivate var backgroundFetchCompletionHandler: ((UIBackgroundFetchResult)->Void)?;
     fileprivate var backgroundFetchTimer: TigaseSwift.Timer?;
     
-    fileprivate var sslCertificateValidator: ((SessionObject,SecTrust) -> Bool)?;
-    
     init(dbConnection:DBConnection) {
         self.dbConnection = dbConnection;
         self.dbCapsCache = DBCapabilitiesCache(dbConnection: dbConnection);
@@ -99,10 +97,6 @@ open class XmppService: Logger, EventHandler {
         self.applicationState = UIApplication.shared.applicationState == .active ? .active : .inactive;
 
         super.init();
-
-        self.sslCertificateValidator = {(sessionObject: SessionObject, trust: SecTrust) -> Bool in
-            return self.validateSslCertificate(sessionObject, trust: trust);
-        };
 
         self.avatarManager = AvatarManager(xmppService: self, store: avatarStore);
         NotificationCenter.default.addObserver(self, selector: #selector(XmppService.accountConfigurationChanged), name: AccountManager.ACCOUNT_CONFIGURATION_CHANGED, object: nil);
@@ -133,7 +127,7 @@ open class XmppService: Logger, EventHandler {
             registerModules(client!);
             registerEventHandlers(client!);
             
-            client?.sessionObject.setUserProperty(SocketConnector.SSL_CERTIFICATE_VALIDATOR, value: self.sslCertificateValidator);
+            SslCertificateValidator.registerSslCertificateValidator(client!.sessionObject);
             
             DispatchQueue.global(qos: .default).async {
                 NotificationCenter.default.post(name: XmppService.ACCOUNT_STATE_CHANGED, object: self, userInfo: ["account":userJid.stringValue]);
@@ -157,6 +151,8 @@ open class XmppService: Logger, EventHandler {
         
         client?.connectionConfiguration.setUserJID(userJid);
         client?.connectionConfiguration.setUserPassword(password);
+        
+        SslCertificateValidator.setAcceptedSslCertificate(client!.sessionObject, fingerprint: ((config?.serverCertificate?["accepted"] as? Bool) ?? false) ? (config?.serverCertificate?["cert-hash-sha1"] as? String) : nil);
         
         // Setting resource to use - using device name
         client?.sessionObject.setUserProperty(SessionObject.RESOURCE, value: UIDevice.current.name);
@@ -263,29 +259,15 @@ open class XmppService: Logger, EventHandler {
         case let e as SocketConnector.CertificateErrorEvent:
             // at first let's disable account so it will not try to reconnect
             // until user will take action
-            let certCount = SecTrustGetCertificateCount(e.trust);
-            print("cert count", certCount);
             
-            var certInfo: [String: AnyObject] = [:];
+            let certData = SslCertificateInfo(trust: e.trust!);
+
+            var certInfo: [String: Any] = [:];
+            certInfo["cert-name"] = certData.details.name;
+            certInfo["cert-hash-sha1"] = certData.details.fingerprintSha1;
+            certInfo["issuer-name"] = certData.issuer?.name;
+            certInfo["issuer-hash-sha1"] = certData.issuer?.fingerprintSha1;
             
-            for i in 0..<certCount {
-                let cert = SecTrustGetCertificateAtIndex(e.trust, i);
-                let fingerprint = Digest.sha1.digest(toHex: SecCertificateCopyData(cert!) as Data);
-                // on first cert got 03469208e5d8e580f65799497d73b2d3098e8c8a
-                // while openssl reports: SHA1 Fingerprint=03:46:92:08:E5:D8:E5:80:F6:57:99:49:7D:73:B2:D3:09:8E:8C:8A
-                let summary = SecCertificateCopySubjectSummary(cert!)
-                print("cert", cert!, "SUMMARY:", summary, "fingerprint:", fingerprint);
-                switch i {
-                case 0:
-                    certInfo["cert-name"] = summary;
-                    certInfo["cert-hash-sha1"] = fingerprint as NSString?;
-                case 1:
-                    certInfo["issuer-name"] = summary;
-                    certInfo["issuer-hash-sha1"] = fingerprint as NSString?;
-                default:
-                    break;
-                }
-            }
             print("cert info =", certInfo);
             
             if let account = AccountManager.getAccount(forJid: e.sessionObject.userBareJid!.stringValue) {
@@ -690,31 +672,6 @@ open class XmppService: Logger, EventHandler {
                 }
             }
         }
-    }
-    
-    var accepedCertificates = [String]();
-    
-    fileprivate func validateSslCertificate(_ sessionObject: SessionObject, trust: SecTrust) -> Bool {
-        let policy = SecPolicyCreateSSL(false, sessionObject.userBareJid?.domain as CFString?);
-        var secTrustResultType = SecTrustResultType.invalid;
-        SecTrustSetPolicies(trust, policy);
-        SecTrustEvaluate(trust, &secTrustResultType);
-
-        var valid = (secTrustResultType == SecTrustResultType.proceed || secTrustResultType == SecTrustResultType.unspecified);
-        if !valid {
-            let certCount = SecTrustGetCertificateCount(trust);
-            
-            if certCount > 0 {
-                let cert = SecTrustGetCertificateAtIndex(trust, 0);
-                let fingerprint = Digest.sha1.digest(toHex: SecCertificateCopyData(cert!) as Data);
-                let account = AccountManager.getAccount(forJid: sessionObject.userBareJid!.stringValue);
-                valid = fingerprint == (account?.serverCertificate?["cert-hash-sha1"] as? String) && ((account?.serverCertificate?["accepted"] as? Bool) ?? false);
-            }
-            else {
-                valid = false;
-            }
-        }
-        return valid;
     }
     
     fileprivate class EventHandlerHolder {

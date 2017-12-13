@@ -155,8 +155,9 @@ class RegisterAccountController: DataFormController, UITextFieldDelegate {
         super.tableView(tableView, didSelectRowAt: indexPath);
     }
     
-    func saveAccount() {
+    func saveAccount(acceptedCertificate: SslCertificateInfo?) {
         let account = AccountManager.getAccount(forJid: self.account!.stringValue) ?? AccountManager.Account(name: self.account!.stringValue);
+        account.acceptCertificate(acceptedCertificate);
         AccountManager.updateAccount(account);
         account.password = self.password!;
         
@@ -174,13 +175,14 @@ class RegisterAccountController: DataFormController, UITextFieldDelegate {
         };
         let onSuccess = {()->Void in
             print("account registered!");
+            let certData: SslCertificateInfo? = self.task?.getAcceptedCertificate();
             DispatchQueue.main.async {
-                self.saveAccount();
+                self.saveAccount(acceptedCertificate: certData);
                 self.dismissView();
             }
         };
         let client: XMPPClient? = nil;
-        self.task = InBandRegistrationModule.AccountRegistrationTask(client: client, domainName: domain, onForm: onForm, onSuccess: onSuccess, onError: self.onRegistrationError);
+        self.task = InBandRegistrationModule.AccountRegistrationTask(client: client, domainName: domain, onForm: onForm, onSuccess: onSuccess, onError: self.onRegistrationError, sslCertificateValidator: SslCertificateValidator.validateSslCertificate, onCertificateValidationError: self.onCertificateError);
     }
     
     func onRegistrationError(errorCondition: ErrorCondition?, message: String?) {
@@ -220,6 +222,18 @@ class RegisterAccountController: DataFormController, UITextFieldDelegate {
         let alert = UIAlertController(title: "Registration failure", message: msg, preferredStyle: .alert);
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: handler));
         
+        DispatchQueue.main.async {
+            self.present(alert, animated: true, completion: nil);
+        }
+    }
+    
+    func onCertificateError(certData: SslCertificateInfo, accepted: @escaping ()->Void) {
+        let alert = CertificateErrorAlert.create(domain: domain!, certData: certData, onAccept: accepted, onDeny: {
+            self.nextButton.isEnabled = true;
+            self.hideIndicator();
+            self.dismissView();
+        });
+
         DispatchQueue.main.async {
             self.present(alert, animated: true, completion: nil);
         }

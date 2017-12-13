@@ -250,9 +250,9 @@ open class AccountManager {
             }
         }
         
-        open var serverCertificate: [String: AnyObject]? {
+        open var serverCertificate: [String: Any]? {
             get {
-                return data["serverCert"] as? [String: AnyObject];
+                return data["serverCert"] as? [String: Any];
             }
             set {
                 if newValue != nil {
@@ -273,5 +273,12 @@ open class AccountManager {
             self.data = data;
         }
         
+        open func acceptCertificate(_ certData: SslCertificateInfo?) {
+            guard certData != nil else {
+                self.serverCertificate = nil;
+                return;
+            }
+            self.serverCertificate = [ "accepted" : true, "cert-hash-sha1" : certData!.details.fingerprintSha1 ];
+        }
     }
 }

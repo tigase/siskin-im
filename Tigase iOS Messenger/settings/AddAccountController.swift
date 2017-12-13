@@ -95,13 +95,14 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         self.saveButton.isEnabled = false;
         showIndicator();
         
-        self.accountValidatorTask = AccountValidatorTask();
+        self.accountValidatorTask = AccountValidatorTask(controller: self);
         self.accountValidatorTask?.check(account: BareJID(self.jidTextField.text)!, password: self.passwordTextField.text!, callback: self.handleResult);
     }
     
-    func saveAccount() {
+    func saveAccount(acceptedCertificate: SslCertificateInfo?) {
         print("sign in button clicked");
         let account = AccountManager.getAccount(forJid: jidTextField.text!) ?? AccountManager.Account(name: jidTextField.text!);
+        account.acceptCertificate(acceptedCertificate);
         AccountManager.updateAccount(account);
         account.password = passwordTextField.text!;
 
@@ -143,7 +144,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
             passwordTextField.becomeFirstResponder();
         } else {
             DispatchQueue.main.async {
-                self.saveAccount();
+                self.validateAccount();
             }
         }
         textField.resignFirstResponder();
@@ -152,6 +153,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     
     func handleResult(condition errorCondition: ErrorCondition?) {
         self.hideIndicator();
+        let acceptedCertificate = accountValidatorTask?.acceptedCertificate;
         self.accountValidatorTask = nil;
         if errorCondition != nil {
             self.saveButton.isEnabled = true;
@@ -166,7 +168,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
             alert.addAction(UIAlertAction(title: "Close", style: .cancel, handler: nil));
             self.present(alert, animated: true, completion: nil);
         } else {
-            self.saveAccount();
+            self.saveAccount(acceptedCertificate: acceptedCertificate);
         }
     }
     
@@ -193,20 +195,25 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         var client: XMPPClient? {
             willSet {
                 if newValue != nil {
-                    newValue?.eventBus.register(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE);
+                    newValue?.eventBus.register(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE);
                 }
             }
             didSet {
                 if oldValue != nil {
                     oldValue?.disconnect(true);
-                    oldValue?.eventBus.unregister(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE);
+                    oldValue?.eventBus.unregister(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE);
                 }
             }
         }
         
         var callback: ((ErrorCondition?)->Void)? = nil;
+        weak var controller: UIViewController?;
+        var dispatchQueue = DispatchQueue(label: "accountValidatorSync");
         
-        init() {
+        var acceptedCertificate: SslCertificateInfo? = nil;
+        
+        init(controller: UIViewController) {
+            self.controller = controller;
             initClient();
         }
         
@@ -215,6 +222,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
             _ = client?.modulesManager.register(StreamFeaturesModule());
             _ = client?.modulesManager.register(SaslModule());
             _ = client?.modulesManager.register(AuthModule());
+            SslCertificateValidator.registerSslCertificateValidator(client!.sessionObject);
         }
         
         public func check(account: BareJID, password: String, callback: @escaping (ErrorCondition?)->Void) {
@@ -225,16 +233,39 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         }
         
         public func handle(event: Event) {
-            let callback = self.callback;
-            finish();
-            DispatchQueue.main.async {
+            dispatchQueue.sync {
+                let callback = self.callback;
+                var param: ErrorCondition? = nil;
                 switch event {
                 case is SaslModule.SaslAuthSuccessEvent:
-                    callback?(nil);
+                    param = nil;
                 case is SaslModule.SaslAuthFailedEvent:
-                    callback?(ErrorCondition.not_authorized);
+                    param = ErrorCondition.not_authorized;
+                case let e as SocketConnector.CertificateErrorEvent:
+                    self.callback = nil;
+                    let certData = SslCertificateInfo(trust: e.trust);
+                    let alert = CertificateErrorAlert.create(domain: self.client!.sessionObject.userBareJid!.domain, certData: certData, onAccept: {
+                        self.acceptedCertificate = certData;
+                        SslCertificateValidator.setAcceptedSslCertificate(self.client!.sessionObject, fingerprint: certData.details.fingerprintSha1!);
+                        self.callback = callback;
+                        self.client?.login();
+                    }, onDeny: {
+                        self.finish();
+                        callback?(ErrorCondition.service_unavailable);
+                    })
+                    DispatchQueue.main.async {
+                        self.controller?.present(alert, animated: true, completion: nil);
+                    }
+                    return;
                 default:
-                    callback?(ErrorCondition.service_unavailable);
+                    param = ErrorCondition.service_unavailable;
+                }
+                
+                if (callback != nil) {
+                    self.finish();
+                    DispatchQueue.main.async {
+                        callback?(param);
+                    }
                 }
             }
         }
@@ -242,6 +273,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         public func finish() {
             self.callback = nil;
             self.client = nil;
+            self.controller = nil;
         }
     }
 }

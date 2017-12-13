@@ -139,14 +139,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         if content.categoryIdentifier == "ERROR" {
             if userInfo["cert-name"] != nil {
                 let accountJid = BareJID(userInfo["account"] as! String);
-                let certName = userInfo["cert-name"] as! String;
-                let certHash = userInfo["cert-hash-sha1"] as! String;
-                let issuerName = userInfo["issuer-name"] as? String;
-                let issuerHash = userInfo["issuer-hash-sha1"] as? String;
-                let issuer = issuerName != nil ? "\nissued by\n\(issuerName!)\n with fingerprint\n\(issuerHash!)" : "";
-                let alert = UIAlertController(title: "Certificate issue", message: "Server for domain \(accountJid.domain) provided invalid certificate for \(certName)\n with fingerprint\n\(certHash)\(issuer).\nDo you trust this certificate?", preferredStyle: .alert);
-                alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
-                alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: {(action) in
+                let alert = CertificateErrorAlert.create(domain: accountJid.domain, certName: userInfo["cert-name"] as! String, certHash: userInfo["cert-hash-sha1"] as! String, issuerName: userInfo["issuer-name"] as? String, issuerHash: userInfo["issuer-hash-sha1"] as? String, onAccept: {
                     print("accepted certificate!");
                     guard let account = AccountManager.getAccount(forJid: accountJid.stringValue) else {
                         return;
@@ -157,7 +150,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     account.active = true;
                     AccountSettings.LastError(accountJid.stringValue).set(string: nil);
                     AccountManager.updateAccount(account);
-                }));
+                }, onDeny: nil);
                 
                 var topController = UIApplication.shared.keyWindow?.rootViewController;
                 while (topController?.presentedViewController != nil) {

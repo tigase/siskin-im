@@ -17,6 +17,7 @@
 		FE2A0E901F74051E006ADF08 /* DBSchemaManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2A0E8F1F74051E006ADF08 /* DBSchemaManager.swift */; };
 		FE3024321CE2036A00466497 /* DBVCardsCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3024311CE2036A00466497 /* DBVCardsCache.swift */; };
 		FE3A45CF1CE49D3300C36264 /* RosterItemEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */; };
+		FE3DCCEE1FE18334008B6C8B /* CertificateErrorAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3DCCED1FE18334008B6C8B /* CertificateErrorAlert.swift */; };
 		FE43EB551F3CC55900A4CAAD /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE43EB541F3CC55900A4CAAD /* ImageCache.swift */; };
 		FE43EB571F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE43EB561F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift */; };
 		FE4496C51F87934E009F649C /* db-schema-3.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE4496C31F87911C009F649C /* db-schema-3.sql */; };
@@ -157,6 +158,7 @@
 		FE2A0E8F1F74051E006ADF08 /* DBSchemaManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBSchemaManager.swift; sourceTree = "<group>"; };
 		FE3024311CE2036A00466497 /* DBVCardsCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBVCardsCache.swift; sourceTree = "<group>"; };
 		FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterItemEditViewController.swift; sourceTree = "<group>"; };
+		FE3DCCED1FE18334008B6C8B /* CertificateErrorAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificateErrorAlert.swift; sourceTree = "<group>"; };
 		FE43EB541F3CC55900A4CAAD /* ImageCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
 		FE43EB561F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewController_PreviewExtension.swift; sourceTree = "<group>"; };
 		FE4496C31F87911C009F649C /* db-schema-3.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-3.sql"; sourceTree = "<group>"; };
@@ -386,6 +388,7 @@
 				FE9E13721F260B33005C0EE5 /* StepperTableViewCell.swift */,
 				FEA308CF1F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift */,
 				FEFB63AC1F31E4EE00EFB3E7 /* MainTabBarController.swift */,
+				FE3DCCED1FE18334008B6C8B /* CertificateErrorAlert.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -811,6 +814,7 @@
 				FE507A251CDB7B3B001A015C /* AccountManager.swift in Sources */,
 				FEDE93901D09BB8300CA60A9 /* VCardEditPhoneTableViewCell.swift in Sources */,
 				FE507A221CDB7B3B001A015C /* AvatarStatusView.swift in Sources */,
+				FE3DCCEE1FE18334008B6C8B /* CertificateErrorAlert.swift in Sources */,
 				FEDCBF671D9C3EE700AE9129 /* RosterProviderFlat.swift in Sources */,
 				FE9E136D1F25F5F7005C0EE5 /* ChatSettingsViewController.swift in Sources */,
 				FE9E13711F2606E9005C0EE5 /* ContactsSettingsViewController.swift in Sources */,
