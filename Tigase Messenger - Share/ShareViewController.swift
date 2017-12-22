@@ -220,7 +220,7 @@ class ShareViewController: SLComposeServiceViewController {
                 }).first?.key;
                 
                 guard compJid != nil else {
-                    self.showAlert(title: "Upload failed", message: "Feature not supported by XMPP server");
+                    self.showAlert(title: "Upload failed", message: "Selected object is too big!");
                     return;
                 }
                 

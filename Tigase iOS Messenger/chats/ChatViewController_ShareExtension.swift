@@ -67,7 +67,7 @@ extension BaseChatViewController_ShareImageExtension {
         let picker = UIImagePickerController();
         self.imagePickerDelegate = BaseChatViewController_ShareImagePickerDelegate(self);
         picker.delegate = self.imagePickerDelegate;
-        picker.allowsEditing = true;
+        picker.allowsEditing = false;//true;
         picker.sourceType = source;
         present(picker, animated: true, completion: nil);
     }
@@ -84,10 +84,11 @@ class BaseChatViewController_ShareImagePickerDelegate: NSObject, UIImagePickerCo
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo info: [String : AnyObject]?) {
         let photo = (info?[UIImagePickerControllerEditedImage] as? UIImage) ?? image;
+        print("photo", photo.size, "image", image.size, "originalImage", info?[UIImagePickerControllerOriginalImage]);
         let imageName = "image.jpg";
         
         // saving photo
-        let data = UIImageJPEGRepresentation(photo, 1.0);
+        let data = UIImageJPEGRepresentation(photo, 0.9);
         picker.dismiss(animated: true, completion: nil);
         
         if data != nil, let client = self.controller.xmppService.getClient(forJid: self.controller.account) {
@@ -106,7 +107,11 @@ class BaseChatViewController_ShareImagePickerDelegate: NSObject, UIImagePickerCo
                 });
 
                 guard compJid != nil else {
-                    self.showAlert(title: "Upload failed", message: "Feature not supported by XMPP server");
+                    guard results.count > 0 else {
+                        self.showAlert(title: "Upload failed", message: "Feature not supported by XMPP server");
+                        return;
+                    }
+                    self.showAlert(title: "Upload failed", message: "Selected image is too big!");
                     return;
                 }
                 

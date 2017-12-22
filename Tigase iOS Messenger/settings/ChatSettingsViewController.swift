@@ -155,7 +155,7 @@ class ChatSettingsViewController: UITableViewController {
             self.navigationController?.pushViewController(controller, animated: true);
         case .maxImagePreviewSize:
             let controller = TablePickerViewController(style: .grouped);
-            let values: [Int] = [0, 1, 2, 4, 8, 10, Int.max];
+            let values: [Int] = [0, 1, 2, 4, 8, 10, 15, 30, 50, Int.max];
             controller.selected = values.index(of: Settings.MaxImagePreviewSize.getInt() ) ?? 0;
             controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
                 return MaxImagePreviewSizeItem(value: it);
