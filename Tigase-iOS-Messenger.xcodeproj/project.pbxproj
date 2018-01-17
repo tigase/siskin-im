@@ -95,7 +95,6 @@
 		FEDE939B1D0C38B000CA60A9 /* ContactFormTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE939A1D0C38B000CA60A9 /* ContactFormTableViewCell.swift */; };
 		FEE097621F1FCE1800B1CEAB /* TablePicketViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE097611F1FCE1800B1CEAB /* TablePicketViewController.swift */; };
 		FEF80DB21CDBBBFE005645A7 /* AccountSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF80DB11CDBBBFE005645A7 /* AccountSettingsViewController.swift */; };
-		FEF80DB41CDCB5B4005645A7 /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF80DB31CDCB5B4005645A7 /* Reachability.swift */; };
 		FEFB63AD1F31E4EE00EFB3E7 /* MainTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEFB63AC1F31E4EE00EFB3E7 /* MainTabBarController.swift */; };
 /* End PBXBuildFile section */
 
@@ -246,7 +245,6 @@
 		FEDE939A1D0C38B000CA60A9 /* ContactFormTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactFormTableViewCell.swift; sourceTree = "<group>"; };
 		FEE097611F1FCE1800B1CEAB /* TablePicketViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TablePicketViewController.swift; sourceTree = "<group>"; };
 		FEF80DB11CDBBBFE005645A7 /* AccountSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountSettingsViewController.swift; sourceTree = "<group>"; };
-		FEF80DB31CDCB5B4005645A7 /* Reachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
 		FEFB63AC1F31E4EE00EFB3E7 /* MainTabBarController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainTabBarController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -398,7 +396,6 @@
 			children = (
 				FE507A131CDB7B3B001A015C /* AccountManager.swift */,
 				FE507A141CDB7B3B001A015C /* AvatarManager.swift */,
-				FEF80DB31CDCB5B4005645A7 /* Reachability.swift */,
 				FEDE93881D081C3D00CA60A9 /* Settings.swift */,
 				FEB62C4F1DA80956001500D5 /* AvatarStore.swift */,
 				FE43EB541F3CC55900A4CAAD /* ImageCache.swift */,
@@ -822,7 +819,6 @@
 				FEC514261CEB74F8003AF765 /* BaseChatViewController.swift in Sources */,
 				FE507A1D1CDB7B3B001A015C /* RosterItemTableViewCell.swift in Sources */,
 				FEC514281CEB82E9003AF765 /* MucChatViewController.swift in Sources */,
-				FEF80DB41CDCB5B4005645A7 /* Reachability.swift in Sources */,
 				FE3024321CE2036A00466497 /* DBVCardsCache.swift in Sources */,
 				FE507A1B1CDB7B3B001A015C /* DBManager.swift in Sources */,
 				FE507A241CDB7B3B001A015C /* GlobalSplitViewController.swift in Sources */,

@@ -368,6 +368,12 @@ class DataFormController: UITableViewController {
             return fieldView as? UISwitch;
         }
         
+        override var fieldView: UIView? {
+            didSet {
+                uiSwitch.addTarget(self, action: #selector(switchValueChanged(switch:)), for: .valueChanged);
+            }
+        }
+        
         var value: Bool {
             get {
                 return uiSwitch.isOn;
@@ -391,6 +397,10 @@ class DataFormController: UITableViewController {
         override func initialize(field: UIView?) {
             self.fieldView = field;
             accessoryView = field;
+        }
+        
+        @objc func switchValueChanged(switch uiswitch: UISwitch) {
+            (field as? BooleanField)?.value = uiswitch.isOn;
         }
         
     }
