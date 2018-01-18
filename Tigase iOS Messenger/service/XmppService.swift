@@ -203,7 +203,7 @@ open class XmppService: Logger, EventHandler {
     }
     
     fileprivate func registerModules(_ client:XMPPClient) {
-        let smModule = client.modulesManager.register(StreamManagementModule());
+        _ = client.modulesManager.register(StreamManagementModule());
         _ = client.modulesManager.register(AuthModule());
         _ = client.modulesManager.register(StreamFeaturesModule());
         _ = client.modulesManager.register(SaslModule());
@@ -236,6 +236,7 @@ open class XmppService: Logger, EventHandler {
         _ = client.modulesManager.register(MessageDeliveryReceiptsModule());
         let capsModule = client.modulesManager.register(CapabilitiesModule());
         capsModule.cache = dbCapsCache;
+        ScramMechanism.setSaltedPasswordCache(AccountManager.saltedPasswordCache, sessionObject: client.sessionObject);
     }
     
     fileprivate func registerEventHandlers(_ client:XMPPClient) {

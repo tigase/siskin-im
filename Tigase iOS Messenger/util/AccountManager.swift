@@ -30,6 +30,8 @@ open class AccountManager {
     open static let ACCOUNT_CONFIGURATION_CHANGED = Notification.Name("accountConfigurationChanged");
     open static let ACCOUNT_REMOVED = Notification.Name("accountRemoved");
     
+    open static let saltedPasswordCache = AccountManagerScramSaltedPasswordCache();
+    
     static func getAccounts() -> [String] {
         var accounts = [String]();
         let query = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitAll, String(kSecReturnAttributes) : kCFBooleanTrue, String(kSecAttrService) : "xmpp" ] as [String : Any];
@@ -71,6 +73,13 @@ open class AccountManager {
             }
         }
         return nil;
+    }
+    
+    static func getAccount(for sessionObject: SessionObject) -> Account? {
+        guard let accountName = sessionObject.userBareJid?.stringValue else {
+            return nil;
+        }
+        return AccountManager.getAccount(forJid: accountName);
     }
     
     
@@ -263,6 +272,19 @@ open class AccountManager {
             }
         }
         
+        open var saltedPassword: SaltEntry? {
+            get {
+                return SaltEntry(dict: data["saltedPassword"] as? [String: Any]);
+            }
+            set {
+                if newValue != nil {
+                    data["saltedPassword"] = newValue!.dictionary() as AnyObject?;
+                } else {
+                    data.removeValue(forKey: "saltedPassword");
+                }
+            }
+        }
+        
         public init(name:String) {
             self.name = name;
             self.data = [String:AnyObject]();
@@ -279,6 +301,27 @@ open class AccountManager {
                 return;
             }
             self.serverCertificate = [ "accepted" : true, "cert-hash-sha1" : certData!.details.fingerprintSha1 ];
+        }
+    }
+    
+    open class SaltEntry {
+        open let id: String;
+        open let value: [UInt8];
+        
+        convenience init?(dict: [String: Any]?) {
+            guard let id = dict?["id"] as? String, let value = dict?["value"] as? [UInt8] else {
+                return nil;
+            }
+            self.init(id: id, value: value);
+        }
+        
+        public init(id: String, value: [UInt8]) {
+            self.id = id;
+            self.value = value;
+        }
+        
+        open func dictionary() -> [String: Any] {
+            return ["id": id, "value": value];
         }
     }
 }
