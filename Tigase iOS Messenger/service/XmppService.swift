@@ -67,6 +67,7 @@ open class XmppService: Logger, EventHandler {
     
     fileprivate var eventHandlers: [EventHandlerHolder] = [];
     
+    fileprivate let dnsSrvResolver: DNSSrvResolver;
     fileprivate var networkAvailable:Bool {
         didSet {
             if networkAvailable {
@@ -85,6 +86,7 @@ open class XmppService: Logger, EventHandler {
     fileprivate var backgroundFetchTimer: TigaseSwift.Timer?;
     
     init(dbConnection:DBConnection) {
+        self.dnsSrvResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: DNSSrvDiskCache(cacheDirectoryName: "dns-cache"));
         self.dbConnection = dbConnection;
         self.dbCapsCache = DBCapabilitiesCache(dbConnection: dbConnection);
         self.dbChatStore = DBChatStore(dbConnection: dbConnection);
@@ -203,6 +205,7 @@ open class XmppService: Logger, EventHandler {
     }
     
     fileprivate func registerModules(_ client:XMPPClient) {
+        client.sessionObject.dnsSrvResolver = self.dnsSrvResolver;
         _ = client.modulesManager.register(StreamManagementModule());
         _ = client.modulesManager.register(AuthModule());
         _ = client.modulesManager.register(StreamFeaturesModule());

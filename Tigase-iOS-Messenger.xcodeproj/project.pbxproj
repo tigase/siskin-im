@@ -16,6 +16,7 @@
 		FE2A0E8E1F74012D006ADF08 /* db-schema-2.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE2A0E8D1F74012D006ADF08 /* db-schema-2.sql */; };
 		FE2A0E901F74051E006ADF08 /* DBSchemaManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2A0E8F1F74051E006ADF08 /* DBSchemaManager.swift */; };
 		FE3024321CE2036A00466497 /* DBVCardsCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3024311CE2036A00466497 /* DBVCardsCache.swift */; };
+		FE31DDE4201261A200C2AB1D /* DNSSrvDiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */; };
 		FE3A45CF1CE49D3300C36264 /* RosterItemEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */; };
 		FE3DCCEE1FE18334008B6C8B /* CertificateErrorAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3DCCED1FE18334008B6C8B /* CertificateErrorAlert.swift */; };
 		FE43EB551F3CC55900A4CAAD /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE43EB541F3CC55900A4CAAD /* ImageCache.swift */; };
@@ -157,6 +158,7 @@
 		FE2A0E8D1F74012D006ADF08 /* db-schema-2.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-2.sql"; sourceTree = "<group>"; };
 		FE2A0E8F1F74051E006ADF08 /* DBSchemaManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBSchemaManager.swift; sourceTree = "<group>"; };
 		FE3024311CE2036A00466497 /* DBVCardsCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBVCardsCache.swift; sourceTree = "<group>"; };
+		FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSSrvDiskCache.swift; sourceTree = "<group>"; };
 		FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterItemEditViewController.swift; sourceTree = "<group>"; };
 		FE3DCCED1FE18334008B6C8B /* CertificateErrorAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificateErrorAlert.swift; sourceTree = "<group>"; };
 		FE43EB541F3CC55900A4CAAD /* ImageCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
@@ -491,6 +493,7 @@
 				FEA8D6611F30F54B0077C12F /* XmppService.swift */,
 				FEA8D6631F30F9260077C12F /* XmppService_VCardExtension.swift */,
 				FEDE3B4F1F7162AA00075F6E /* CustomChatManager.swift */,
+				FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */,
 			);
 			path = service;
 			sourceTree = "<group>";
@@ -786,6 +789,7 @@
 				FE6545641E9E8B67006A14AC /* ServerSelectorTableViewCell.swift in Sources */,
 				FEDE93871D07564F00CA60A9 /* SwitchTableViewCell.swift in Sources */,
 				FE507A171CDB7B3B001A015C /* ChatTableViewCell.swift in Sources */,
+				FE31DDE4201261A200C2AB1D /* DNSSrvDiskCache.swift in Sources */,
 				FE9E13731F260B33005C0EE5 /* StepperTableViewCell.swift in Sources */,
 				FE6545601E9E7B85006A14AC /* RegisterAccountController.swift in Sources */,
 				FEC514221CEA3D2F003AF765 /* DBRoomsManager.swift in Sources */,
