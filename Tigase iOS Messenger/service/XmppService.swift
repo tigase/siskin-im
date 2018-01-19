@@ -471,7 +471,10 @@ open class XmppService: Logger, EventHandler {
     }
     
     @objc open func connectivityChanged(_ notification: NSNotification) {
-        self.networkAvailable = notification.userInfo!["connected"] as! Bool;
+        guard let reachability = notification.object as? Reachability else {
+            return;
+        }
+        self.networkAvailable = reachability.isConnectedToNetwork();
     }
     
     @objc open func settingsChanged(_ notification: NSNotification) {
