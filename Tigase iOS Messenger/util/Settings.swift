@@ -41,6 +41,7 @@ public enum Settings: String {
     case SimplifiedLinkToFileIfPreviewIsAvailable
     case SendMessageOnReturn
     case CopyMessagesWithTimestamps
+    case XmppPipelining
     
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     

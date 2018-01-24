@@ -1269,6 +1269,33 @@
                                     <segue destination="CeL-yr-IHB" kind="showDetail" customClass="NavigationControllerWrappingSegue" customModule="Tigase_iOS_Messenger" customModuleProvider="target" id="QW8-OP-mJ4"/>
                                 </connections>
                             </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="experimentalSettingsViewCall" selectionStyle="default" indentationWidth="10" reuseIdentifier="ExperimentalSettingsViewCell" id="GE5-um-CVw" userLabel="ExperimentalSettingsViewCall">
+                                <rect key="frame" x="0.0" y="319.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="GE5-um-CVw" id="MGt-f6-8au">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Experimental" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oFW-f9-KJm">
+                                            <rect key="frame" x="16" y="11" width="343" height="22"/>
+                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="bottomMargin" secondItem="oFW-f9-KJm" secondAttribute="bottom" id="TR8-3B-n8R"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="oFW-f9-KJm" secondAttribute="trailing" id="qMs-Lr-nrv"/>
+                                        <constraint firstItem="oFW-f9-KJm" firstAttribute="top" secondItem="MGt-f6-8au" secondAttribute="topMargin" id="sbJ-G2-q3b"/>
+                                        <constraint firstItem="oFW-f9-KJm" firstAttribute="leading" secondItem="MGt-f6-8au" secondAttribute="leadingMargin" id="udL-89-v45"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <accessibility key="accessibilityConfiguration" identifier="experimentalSettingsViewCall"/>
+                                <connections>
+                                    <segue destination="rJ9-a7-OrY" kind="showDetail" id="QGn-5g-c2B"/>
+                                </connections>
+                            </tableViewCell>
                         </prototypes>
                         <connections>
                             <outlet property="dataSource" destination="KC2-Lb-9cB" id="4FZ-Gk-WDd"/>
@@ -3337,6 +3364,60 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="wxO-ej-8ew" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2688.8000000000002" y="2345.577211394303"/>
+        </scene>
+        <!--Experimental Settings Scene-->
+        <scene sceneID="SoC-Tg-1Eq">
+            <objects>
+                <tableViewController title="Notification settings" id="rJ9-a7-OrY" userLabel="Experimental Settings Scene" customClass="ExperimentalSettingsViewController" customModule="Tigase_iOS_Messenger" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="44" sectionHeaderHeight="18" sectionFooterHeight="18" id="QU8-Z5-MIq">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="xmppPipeliningTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="XmppPipeliningTableViewCell" id="yCj-Va-Ig5" userLabel="XmppPipeliningTableViewCell" customClass="SwitchTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="55.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="yCj-Va-Ig5" id="DBJ-08-zq6">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="XMPP Quickstart / Pipelining" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4ti-Ch-g3R">
+                                            <rect key="frame" x="16" y="11" width="218.5" height="20.5"/>
+                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jUt-6w-9DG">
+                                            <rect key="frame" x="310" y="6.5" width="51" height="31"/>
+                                            <connections>
+                                                <action selector="valueChanged:" destination="yCj-Va-Ig5" eventType="valueChanged" id="eKB-se-nEf"/>
+                                            </connections>
+                                        </switch>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="leadingMargin" secondItem="4ti-Ch-g3R" secondAttribute="leading" id="8hN-P9-cVx"/>
+                                        <constraint firstItem="jUt-6w-9DG" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="4ti-Ch-g3R" secondAttribute="trailing" constant="8" id="Ias-vp-mir"/>
+                                        <constraint firstItem="jUt-6w-9DG" firstAttribute="centerY" secondItem="DBJ-08-zq6" secondAttribute="centerY" id="lZn-Nf-un0"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="jUt-6w-9DG" secondAttribute="trailing" id="qiZ-jm-huX"/>
+                                        <constraint firstItem="4ti-Ch-g3R" firstAttribute="centerY" secondItem="DBJ-08-zq6" secondAttribute="centerY" id="sO5-Nx-COg"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <accessibility key="accessibilityConfiguration" identifier="notificationsFromUnknownTableViewCell"/>
+                                <connections>
+                                    <outlet property="switchView" destination="jUt-6w-9DG" id="Kgm-1e-lDa"/>
+                                </connections>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="rJ9-a7-OrY" id="MhT-95-v4K"/>
+                            <outlet property="delegate" destination="rJ9-a7-OrY" id="mu7-AA-p7B"/>
+                        </connections>
+                    </tableView>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="8sj-k5-Ex9" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1865" y="1723"/>
         </scene>
     </scenes>
     <resources>

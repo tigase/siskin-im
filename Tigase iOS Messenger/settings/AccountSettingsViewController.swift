@@ -123,8 +123,8 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
         
         messageSyncAutomaticSwitch.isOn = AccountSettings.MessageSyncAutomatic(accountJid.description).getBool();
         archivingEnabledSwitch.isEnabled = false;
-
-        if let mamModule: MessageArchiveManagementModule = client?.modulesManager.getModule(MessageArchiveManagementModule.ID) {
+        
+        if (client?.state ?? SocketConnector.State.disconnected == SocketConnector.State.connected), let mamModule: MessageArchiveManagementModule = client?.modulesManager.getModule(MessageArchiveManagementModule.ID) {
             mamModule.retrieveSettings(onSuccess: { (
                 defValue, always, never) in
                 DispatchQueue.main.async {

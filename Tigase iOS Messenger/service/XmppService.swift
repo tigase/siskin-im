@@ -81,12 +81,14 @@ open class XmppService: Logger, EventHandler {
             }
         }
     }
+    fileprivate let streamFeaturesCache: StreamFeaturesCache;
     
     fileprivate var backgroundFetchCompletionHandler: ((UIBackgroundFetchResult)->Void)?;
     fileprivate var backgroundFetchTimer: TigaseSwift.Timer?;
     
     init(dbConnection:DBConnection) {
         self.dnsSrvResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: DNSSrvDiskCache(cacheDirectoryName: "dns-cache"));
+        self.streamFeaturesCache = StreamFeaturesCache();
         self.dbConnection = dbConnection;
         self.dbCapsCache = DBCapabilitiesCache(dbConnection: dbConnection);
         self.dbChatStore = DBChatStore(dbConnection: dbConnection);
@@ -174,6 +176,9 @@ open class XmppService: Logger, EventHandler {
             // for push notifications this needs to be far lower value, ie. 60-90 seconds
             smModule.maxResumptionTimeout = (config?.pushNotifications ?? false) ? 90 : 3600;
         }
+        if let streamFeaturesModule: StreamFeaturesModuleWithPipelining = client?.modulesManager.getModule(StreamFeaturesModuleWithPipelining.ID) {
+            streamFeaturesModule.enabled = Settings.XmppPipelining.getBool();
+        }
 
         
         clients[userJid] = client;
@@ -208,7 +213,9 @@ open class XmppService: Logger, EventHandler {
         client.sessionObject.dnsSrvResolver = self.dnsSrvResolver;
         _ = client.modulesManager.register(StreamManagementModule());
         _ = client.modulesManager.register(AuthModule());
-        _ = client.modulesManager.register(StreamFeaturesModule());
+        _ = client.modulesManager.register(StreamFeaturesModuleWithPipelining(cache: streamFeaturesCache, enabled: false));
+        // if you do not want Pipelining you may use StreamFeaturesModule instead StreamFeaturesModuleWithPipelining
+        //_ = client.modulesManager.register(StreamFeaturesModule());
         _ = client.modulesManager.register(SaslModule());
         _ = client.modulesManager.register(ResourceBinderModule());
         _ = client.modulesManager.register(SessionEstablishmentModule());

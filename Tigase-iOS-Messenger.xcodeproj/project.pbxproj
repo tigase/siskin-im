@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FE00157D2017617B00490340 /* StreamFeaturesCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE00157C2017617B00490340 /* StreamFeaturesCache.swift */; };
+		FE00157F2019090300490340 /* ExperimentalSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE00157E2019090300490340 /* ExperimentalSettingsViewController.swift */; };
 		FE01ADA91E224CF400FA7E65 /* TigasePushNotificationsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE01ADA81E224CF400FA7E65 /* TigasePushNotificationsModule.swift */; };
 		FE0A674D1D4F645F00124480 /* CachedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0A674C1D4F645F00124480 /* CachedViewController.swift */; };
 		FE168ACD1CCD197A003F8B26 /* db-schema-1.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE168ACC1CCD197A003F8B26 /* db-schema-1.sql */; };
@@ -150,6 +152,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		FE00157C2017617B00490340 /* StreamFeaturesCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamFeaturesCache.swift; sourceTree = "<group>"; };
+		FE00157E2019090300490340 /* ExperimentalSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperimentalSettingsViewController.swift; sourceTree = "<group>"; };
 		FE01ADA81E224CF400FA7E65 /* TigasePushNotificationsModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TigasePushNotificationsModule.swift; sourceTree = "<group>"; };
 		FE0A674C1D4F645F00124480 /* CachedViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CachedViewController.swift; sourceTree = "<group>"; };
 		FE168ACC1CCD197A003F8B26 /* db-schema-1.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-1.sql"; sourceTree = "<group>"; };
@@ -374,6 +378,7 @@
 				FE9E136C1F25F5F7005C0EE5 /* ChatSettingsViewController.swift */,
 				FE9E136E1F26049A005C0EE5 /* NotificationSettingsViewController.swift */,
 				FE9E13701F2606E9005C0EE5 /* ContactsSettingsViewController.swift */,
+				FE00157E2019090300490340 /* ExperimentalSettingsViewController.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -494,6 +499,7 @@
 				FEA8D6631F30F9260077C12F /* XmppService_VCardExtension.swift */,
 				FEDE3B4F1F7162AA00075F6E /* CustomChatManager.swift */,
 				FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */,
+				FE00157C2017617B00490340 /* StreamFeaturesCache.swift */,
 			);
 			path = service;
 			sourceTree = "<group>";
@@ -787,6 +793,7 @@
 				FE1DCCA21EA52CE200850563 /* DataFormController.swift in Sources */,
 				FE2A0E901F74051E006ADF08 /* DBSchemaManager.swift in Sources */,
 				FE6545641E9E8B67006A14AC /* ServerSelectorTableViewCell.swift in Sources */,
+				FE00157F2019090300490340 /* ExperimentalSettingsViewController.swift in Sources */,
 				FEDE93871D07564F00CA60A9 /* SwitchTableViewCell.swift in Sources */,
 				FE507A171CDB7B3B001A015C /* ChatTableViewCell.swift in Sources */,
 				FE31DDE4201261A200C2AB1D /* DNSSrvDiskCache.swift in Sources */,
@@ -823,6 +830,7 @@
 				FEDCBF671D9C3EE700AE9129 /* RosterProviderFlat.swift in Sources */,
 				FE9E136D1F25F5F7005C0EE5 /* ChatSettingsViewController.swift in Sources */,
 				FE9E13711F2606E9005C0EE5 /* ContactsSettingsViewController.swift in Sources */,
+				FE00157D2017617B00490340 /* StreamFeaturesCache.swift in Sources */,
 				FEDE938E1D09BB6200CA60A9 /* VCardEditBasicTableViewCell.swift in Sources */,
 				FEC514261CEB74F8003AF765 /* BaseChatViewController.swift in Sources */,
 				FE507A1D1CDB7B3B001A015C /* RosterItemTableViewCell.swift in Sources */,
