@@ -30,7 +30,7 @@ class StreamFeaturesCache: StreamFeaturesModuleWithPipeliningCacheProtocol {
     
     public init(cacheDirectoryName: String = "stream-features-cache") {
         fileManager = FileManager.default;
-        let url = try! fileManager.url(for: .cachesDirectory, in: .localDomainMask, appropriateFor: nil, create: true);
+        let url = try! fileManager.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true);
         path = url.appendingPathComponent(cacheDirectoryName, isDirectory: true).path;
         createDirectory();
     }
