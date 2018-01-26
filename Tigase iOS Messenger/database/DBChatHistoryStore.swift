@@ -120,6 +120,10 @@ open class DBChatHistoryStore: Logger, EventHandler {
     }
     
     fileprivate func markMessageAsError(message: Message) -> Bool {
+        guard message.to != nil && message.from != nil else {
+            print("got message without a to or from!");
+            return false;
+        }
         guard let msgId = self.getMessageIdInt(account: message.to!.bareJid, jid: message.from!.bareJid, stanzaId: message.id) else {
             return false;
         }

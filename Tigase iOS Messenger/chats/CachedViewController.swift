@@ -43,8 +43,9 @@ extension CachedViewControllerProtocol {
     }
     
     func newItemAdded(timestamp: Date = Date()) {
+        let stamp = mach_absolute_time();
         DispatchQueue.main.async {
-            if let indexPath = self.cachedDataSource.newItemAdded(timestamp: timestamp) {
+            if stamp > self.cachedDataSource.resetTime, let indexPath = self.cachedDataSource.newItemAdded(timestamp: timestamp) {
                 self.tableView.insertRows(at: [indexPath], with: .automatic);
                 self.scroll(to: indexPath);
             }
@@ -69,6 +70,8 @@ protocol CachedViewDataSourceProtocol {
  
     var inverted: Bool { get set }
 
+    var resetTime: UInt64 { get }
+    
     func newestItemIndex() -> IndexPath?;
     
     func newItemAdded(timestamp: Date) -> IndexPath?;
@@ -92,14 +95,16 @@ class CachedViewDataSource<Item: CachedViewDataSourceItem>: CachedViewDataSource
     var inverted: Bool = true;
     var numberOfMessages: Int = 0;
     var numberOfMessagesToFetch: Int = 25;
+    var resetTime = mach_absolute_time();
     
     init() {
         cache.countLimit = 100;
         cache.totalCostLimit = 10 * 1024 * 1024;
-        numberOfMessages = getItemsCount();
+        self.reset();
     }
 
     func reset() {
+        resetTime = mach_absolute_time();
         numberOfMessages = getItemsCount();
         cache.removeAllObjects();
     }

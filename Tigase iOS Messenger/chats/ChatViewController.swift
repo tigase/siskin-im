@@ -24,7 +24,7 @@ import UIKit
 import TigaseSwift
 
 class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, BaseChatViewControllerWithContextMenuAndToolbarDelegate, UITableViewDataSource, EventHandler, CachedViewControllerProtocol, BaseChatViewController_ShareImageExtension, BaseChatViewController_PreviewExtension {
-    
+
     var titleView: ChatTitleView!;
     
     let log: Logger = Logger();

@@ -47,11 +47,14 @@ open class DBVCardsCache {
     }
     
     open func getVCard(for jid: BareJID) -> VCard? {
-        
-        if let data:String = try! self.getVCardStmt.findFirst(jid, map: { cursor in cursor["data"] }) {
-            if let vcardEl = Element.from(string: data) {
-                return VCard(vcard4: vcardEl) ?? VCard(vcardTemp: vcardEl);
+        do {
+            if let data:String = try self.getVCardStmt.findFirst(jid, map: { cursor in cursor["data"] }) {
+                if let vcardEl = Element.from(string: data) {
+                    return VCard(vcard4: vcardEl) ?? VCard(vcardTemp: vcardEl);
+                }
             }
+        } catch {
+            // we cannot do anything, so let's ignore for now...
         }
         return nil;
     }

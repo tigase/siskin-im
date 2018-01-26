@@ -45,7 +45,7 @@ open class DBCapabilitiesCache: CapabilitiesCache {
     
     public init(dbConnection: DBConnection) {
         self.dbConnection = dbConnection;
-        self.dispatcher = QueueDispatcher(label: "DBCapabilitiesCache", attributes: .concurrent);
+        self.dispatcher = QueueDispatcher(label: "DBCapabilitiesCache");
     }
     
     open func getFeatures(for node: String) -> [String]? {
@@ -72,25 +72,35 @@ open class DBCapabilitiesCache: CapabilitiesCache {
         }
     }
     
-    open func isCached(node: String) -> Bool {
-        return dispatcher.sync {
-            return try! (self.nodeIsCached.scalar(node) ?? 0) != 0;
+    open func isCached(node: String, handler: @escaping (Bool)->Void) {
+        dispatcher.async {
+            handler(self.isCached(node: node));
         }
     }
     
     open func store(node: String, identity: DiscoveryModule.Identity?, features: [String]) {
-        dispatcher.sync(flags: .barrier) {
+        dispatcher.async {
             guard !self.isCached(node: node) else {
                 return;
             }
-
+                
             for feature in features {
                 _ = try! self.insertFeatureStmt.insert(node, feature);
             }
-        
+                
             if identity != nil {
                 _ = try! self.insertIdentityStmt.insert(node, identity!.name, identity!.category, identity!.type);
             }
+        }
+    }
+    
+    fileprivate func isCached(node: String) -> Bool {
+        do {
+            let val = try self.nodeIsCached.scalar(node) ?? 0;
+            return val != 0;
+        } catch {
+            // it is better to assume that we have features...
+            return true;
         }
     }
     
