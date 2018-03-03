@@ -134,6 +134,17 @@ class ChatsListViewController: UITableViewController, EventHandler {
                     if let room = mucModule?.roomsManager.getRoom(for: item.jid) {
                         mucModule?.leave(room: room);
                         discardNotifications = true;
+                    } else {
+                        if let chatId = xmppService.dbChatStore.getId(for: item.account, with: item.jid) {
+                            DispatchQueue.global().async {
+                                if self.xmppService.dbChatStore.close(withId: chatId) {
+                                    DispatchQueue.main.async() {
+                                        self.dataSource.removeChat(for: item.account, with: item.jid);
+                                    }
+                                }
+                            }
+                            discardNotifications = true;
+                        }
                     }
                 default:
                     let thread: String? = nil;
@@ -141,6 +152,17 @@ class ChatsListViewController: UITableViewController, EventHandler {
                     if let chat = messageModule?.chatManager.getChat(with: JID(item.jid), thread: thread) {
                         _ = messageModule?.chatManager.close(chat: chat);
                         discardNotifications = true;
+                    } else {
+                        if let chatId = xmppService.dbChatStore.getId(for: item.account, with: item.jid) {
+                            DispatchQueue.global().async {
+                                if self.xmppService.dbChatStore.close(withId: chatId) {
+                                    DispatchQueue.main.async() {
+                                        self.dataSource.removeChat(for: item.account, with: item.jid);
+                                    }
+                                }
+                            }
+                            discardNotifications = true;
+                        }
                     }
                 }
                 

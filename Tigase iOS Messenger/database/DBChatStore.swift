@@ -261,6 +261,15 @@ open class DBChatStore {
         }
     }
     
+    open func getId(for account: BareJID, with jid: BareJID) -> Int? {
+        let params:[String:Any?] = [ "account" : account, "jid" : jid ];
+        return dispatcher.sync {
+            return try! self.getStmt.queryFirstMatching(params) { (cursor) -> Int? in
+                    return cursor["id"]!;
+            }
+        }
+    }
+    
     open func isFor(_ sessionObject:SessionObject, jid:BareJID) -> Bool {
         return dispatcher.sync {
             let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : jid ];
@@ -304,6 +313,13 @@ open class DBChatStore {
                 return try! closeChatStmt.update(params) > 0;
             }
             return false;
+        }
+    }
+    
+    open func close(withId id: Int) -> Bool {
+        let params:[String:Any?] = [ "id" : id ];
+        return dispatcher.sync(flags: .barrier) {
+            return try! closeChatStmt.update(params) > 0;
         }
     }
     
