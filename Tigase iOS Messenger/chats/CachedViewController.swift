@@ -42,12 +42,14 @@ extension CachedViewControllerProtocol {
         tableView.transform = cachedDataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
     }
     
-    func newItemAdded(timestamp: Date = Date()) {
+    func newItemAdded(id: Int, timestamp: Date = Date()) {
         let stamp = mach_absolute_time();
         DispatchQueue.main.async {
-            if stamp > self.cachedDataSource.resetTime, let indexPath = self.cachedDataSource.newItemAdded(timestamp: timestamp) {
+            if stamp > self.cachedDataSource.resetTime, let indexPath = self.cachedDataSource.newItemAdded(id: id, timestamp: timestamp) {
                 self.tableView.insertRows(at: [indexPath], with: .automatic);
-                self.scroll(to: indexPath);
+                if indexPath.row == 0 {
+                    self.scroll(to: indexPath);
+                }
             }
         }
     }
@@ -74,7 +76,7 @@ protocol CachedViewDataSourceProtocol {
     
     func newestItemIndex() -> IndexPath?;
     
-    func newItemAdded(timestamp: Date) -> IndexPath?;
+    func newItemAdded(id: Int, timestamp: Date) -> IndexPath?;
     
     func reset();
     
@@ -88,8 +90,25 @@ protocol CachedViewDataSourceItem: class {
     
 }
 
-class CachedViewDataSource<Item: CachedViewDataSourceItem>: CachedViewDataSourceProtocol {
+class CachedViewDataSourceItemKey: CachedViewDataSourceItem, CustomStringConvertible {
     
+    let id: Int;
+    let timestamp: Date;
+    
+    var description: String {
+        return "id: \(id), timestamp: \(timestamp)";
+    }
+    
+    init(id: Int, timestamp: Date) {
+        self.id = id;
+        self.timestamp = timestamp;
+    }
+    
+}
+
+class CachedViewDataSource<Item: CachedViewDataSourceItem>: NSObject, CachedViewDataSourceProtocol, NSCacheDelegate {
+    
+    var list: [CachedViewDataSourceItemKey] = [];
     var cache = NSCache<NSNumber,Item>();
     
     var inverted: Bool = true;
@@ -97,53 +116,77 @@ class CachedViewDataSource<Item: CachedViewDataSourceItem>: CachedViewDataSource
     var numberOfMessagesToFetch: Int = 25;
     var resetTime = mach_absolute_time();
     
-    init() {
+    override init() {
         cache.countLimit = 100;
         cache.totalCostLimit = 10 * 1024 * 1024;
+        super.init();
+        cache.delegate = self;
         self.reset();
     }
 
+    func cache(_ cache: NSCache<AnyObject, AnyObject>, willEvictObject obj: Any) {
+        guard let it = obj as? CachedViewDataSourceItem else {
+            return;
+        }
+        print("evicting item from cache, id:", it.id, ", ts:", it.timestamp);
+    }
+    
     func reset() {
         resetTime = mach_absolute_time();
         numberOfMessages = getItemsCount();
+        list.removeAll();
         cache.removeAllObjects();
     }
     
+    fileprivate var prevRowIndex = -1;
+    
     // does not support non-inverted view!
     func getIndexPath(withId itemId: Int) -> IndexPath? {
-        var i = (numberOfMessages);
-        var item: Item? = nil;
-        repeat {
-            i = i - 1;
-            item = cache.object(forKey: i as NSNumber);
-        } while ((item == nil || item!.id != itemId) && i >= 0);
-        
-        return i < 0 ? nil : IndexPath(row: (numberOfMessages - i) - 1, section: 0);
+        guard let pos = list.index(where: { (it) -> Bool in
+            it.id == itemId
+        }) else {
+            return nil;
+        }
+        return IndexPath(row: pos, section: 0);
     }
     
     func getItem(for indexPath: IndexPath) -> Item {
-        let requestedPosition = (numberOfMessages - indexPath.row) - 1;
-        var item = cache.object(forKey: requestedPosition as NSNumber);
-        if (item == nil) {
-            var pos = requestedPosition;
-            let down = pos > 0 && cache.object(forKey: pos-1 as NSNumber) ==  nil;
-            if (down) {
-                pos = (pos - numberOfMessagesToFetch) + 1;
-                if (pos < 0) {
-                    pos = 0;
-                }
+        let down = prevRowIndex >= indexPath.row;
+        prevRowIndex = indexPath.row;
+
+        if list.count > indexPath.row {
+            let id = list[indexPath.row].id;
+            var item = cache.object(forKey: id as NSNumber);
+            guard item == nil else {
+                return item!;
             }
             
-            loadData(offset: pos, limit: numberOfMessagesToFetch, forEveryItem: { (it: Item)->Void in
-                self.cache.setObject(it, forKey: pos as NSNumber);
-                if requestedPosition == pos {
+            loadData(afterMessageWithId: id, offset: down ? (1 - numberOfMessagesToFetch) : 0, limit: numberOfMessagesToFetch) { (idx, it) in
+                self.cache.setObject(it, forKey: it.id as NSNumber);
+                if it.id == id {
                     item = it;
                 }
-                pos += 1;
-            });            
+            }
+            return item!;
+        } else {
+            let lastMsgId = list.last?.id;
+            let expPos = indexPath.row - list.count;
+            let rowsToFetch = max(numberOfMessagesToFetch, expPos + 1);
+            
+            var item: Item? = nil;
+            
+            loadData(afterMessageWithId: lastMsgId, offset: list.count == 0 ? 0 : 1, limit: rowsToFetch) { (idx, it) in
+                self.cache.setObject(it, forKey: it.id as NSNumber);
+                if idx == expPos {
+                    item = it;
+                }
+//                if idx >= list.count {
+                    list.append(CachedViewDataSourceItemKey(id: it.id, timestamp: it.timestamp));
+//                }
+            }
+
+            return item!;
         }
-        
-        return item!;
     }
     
     func newestItemIndex() -> IndexPath? {
@@ -154,30 +197,44 @@ class CachedViewDataSource<Item: CachedViewDataSourceItem>: CachedViewDataSource
         return IndexPath(row: inverted ? 0 : (numberOfMessages - 1), section: 0);
     }
     
-    func newItemAdded(timestamp: Date) -> IndexPath? {
-        var i = (numberOfMessages);
-        var item: Item? = nil;
-        repeat {
-            i = i - 1;
-            item = cache.object(forKey: i as NSNumber);
-        } while ((item == nil || item!.timestamp.compare(timestamp) == .orderedDescending) && i >= 0);
-        i = i + 1;
-        var j = i;
-        while (j < numberOfMessages) {
-            cache.removeObject(forKey: j as NSNumber);
-            j = j + 1;
+    func newItemAdded(id: Int, timestamp: Date) -> IndexPath? {
+        //let x = list.index { (it) -> Bool in it.timestamp.compare(timestamp) == .orderedAscending }
+        //let pos = list.count == 0 ? 0 : (x ?? list.count);
+        var idx: Int? = nil;
+        if self.list.index(where: { (it1) -> Bool in
+            it1.id == id
+        }) == nil {
+            idx = self.list.index(where: { (it1) -> Bool in it1.timestamp.compare(timestamp) == .orderedAscending });
+            self.numberOfMessages += 1;
+            if idx != nil {
+                let key = CachedViewDataSourceItemKey(id: id, timestamp: timestamp);
+                self.list.insert(key, at: idx!)
+                print("inserting item at:", idx!, ", key: ", key);
+                return IndexPath(row: idx!, section: 0);
+//            if numberOfMessages <= idx {
+//                // help me!!!
+//                print("something went wrong!!!");
+//            }
+            }
+            return IndexPath(row: numberOfMessages - 1, section: 0);
+        } else {
+            self.numberOfMessages += 1;
+            return IndexPath(row: numberOfMessages - 1, section: 0);
         }
-        self.numberOfMessages += 1;
-        return IndexPath(row: (numberOfMessages - i) - 1, section: 0);
+        
     }
     
     func getItemsCount() -> Int {
         return -1;
     }
     
-    func loadData(offset: Int, limit: Int, forEveryItem: (Item)->Void) {
+    func loadData(afterMessageWithId: Int?, offset: Int, limit: Int, forEveryItem: (Int, Item)->Void) {
         
     }
 
+    enum Direction {
+        case next
+        case prev
+    }
 }
 

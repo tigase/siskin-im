@@ -246,51 +246,37 @@ class ChatsListViewController: UITableViewController, EventHandler {
         switch event {
         case let e as MessageModule.ChatCreatedEvent:
             // we are adding rows always on top
-            DispatchQueue.main.async() {
-                self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.chat.jid.bareJid, type: 0, timestamp: Date(), onUpdate: nil);
-            }
+            self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.chat.jid.bareJid, type: 0, timestamp: Date(), onUpdate: nil);
             // if above is not working we can reload
-            //tableView.reloadData();
         case let e as MessageModule.ChatClosedEvent:
             // we do not know position of chat which was closed
             //tableView.reloadData();
-            DispatchQueue.main.async() {
-                self.dataSource.removeChat(for: e.sessionObject.userBareJid!, with: e.chat.jid.bareJid);
-            }
+            self.dataSource.removeChat(for: e.sessionObject.userBareJid!, with: e.chat.jid.bareJid);
         case let e as PresenceModule.ContactPresenceChanged:
             //tableView.reloadData();
             guard e.sessionObject.userBareJid != nil, let from = e.presence.from else {
                 // guard for possible malformed presence
                 return;
             }
-            DispatchQueue.main.async() {
-                self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: from.bareJid, onUpdate: nil);
-            }
+            self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: from.bareJid, onUpdate: nil);
         case let e as MucModule.JoinRequestedEvent:
-            DispatchQueue.main.async() {
-                self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid, type: 1, timestamp: Date(), onUpdate: nil);
-            }
+            self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid, type: 1, timestamp: Date(), onUpdate: nil);
         case let e as MucModule.YouJoinedEvent:
-            DispatchQueue.main.async() {
-                self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid, onUpdate: nil);
-            }
+            self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid, onUpdate: nil);
         case let e as MucModule.RoomClosedEvent:
-            DispatchQueue.main.async() {
-                if e.room.state == .destroyed {
-                    self.dataSource.removeChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid);
-                } else {
-                    self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid, onUpdate: nil);
-                }
+            if e.room.state == .destroyed {
+                self.dataSource.removeChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid);
+            } else {
+                self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid, onUpdate: nil);
             }
         case let e as RosterModule.ItemUpdatedEvent:
             guard let account = e.sessionObject.userBareJid, let jid = e.rosterItem?.jid else {
                 return;
             }
-            DispatchQueue.main.async() {
-                self.dataSource.updateChat(for: account, with: jid.bareJid, onUpdate: { item in
-                    item.name = e.rosterItem?.name;
-                });
-            }
+            self.dataSource.updateChat(for: account, with: jid.bareJid, onUpdate: { item in
+                item.name = e.rosterItem?.name;
+                return true;
+            });
         default:
             break;
         }
@@ -312,9 +298,8 @@ class ChatsListViewController: UITableViewController, EventHandler {
             let jid = notification.userInfo!["sender"] as? BareJID;
             let ts = notification.userInfo!["timestamp"] as? Date;
             if account != nil && jid != nil {
-                DispatchQueue.main.async {
+                //DispatchQueue.main.async {
                     self.dataSource.updateChat(for: account!, with: jid!, type: nil, timestamp: ts, onUpdate: { item in
-                        print("updating item", jid, ts, item.key.timestamp, item.lastMessage);
                         if (ts != nil && item.key.timestamp.compare(ts!) == ComparisonResult.orderedSame) || item.lastMessage == nil {
                             item.lastMessage = notification.userInfo!["body"] as? String;
                             switch state {
@@ -323,9 +308,11 @@ class ChatsListViewController: UITableViewController, EventHandler {
                                 default:
                                     break;
                             }
+                            return true;
                         }
+                        return false;
                     });
-                }
+                //}
             }
         }
         switch state {
@@ -343,7 +330,11 @@ class ChatsListViewController: UITableViewController, EventHandler {
         if action == "markedRead" {
             DispatchQueue.main.async {
                 self.dataSource.updateChat(for: account, with: jid, onUpdate: { item in
-                    item.unread = 0;
+                    if item.unread != 0 {
+                        item.unread = 0;
+                        return true;
+                    }
+                    return false;
                 });
             }
         }
@@ -452,6 +443,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
 
         fileprivate var list: [ChatsViewItemKey] = [];
         fileprivate var cache = NSCache<ChatsViewItemKey,ChatsViewItem>();
+        fileprivate var queue = DispatchQueue(label: "chats_data_source", qos: .background);
         
         var count: Int {
             return list.count;
@@ -486,55 +478,74 @@ class ChatsListViewController: UITableViewController, EventHandler {
         }
         
         func reloadData() {
-            let list: [ChatsViewItemKey] = try! getChatsList.query() { (cursor) in ChatsViewItemKey(cursor: cursor) }
-            update(list: list);
-            cache.removeAllObjects();
-            controller?.tableView.reloadData();
-        }
-        
-        func updateChat(for account: BareJID, with jid: BareJID, type: Int? = nil, timestamp: Date? = nil, onUpdate: ((ChatsViewItem)->Void)?) {
-            let fromPosition = positionFor(account: account, jid: jid);
-            var list = self.list;
-            if fromPosition == nil {
-                if type != nil && timestamp != nil {
-                    let item = ChatsViewItemKey(account: account, jid: jid, type: type!, timestamp: timestamp!);
-                    list.append(item);
-                } else {
-                    return;
-                }
-            } else {
-                let item = self.list[fromPosition!];
-                let viewItem = cache.object(forKey: item);
-                if timestamp != nil && ((item.timestamp.compare(timestamp!) == ComparisonResult.orderedAscending) || (viewItem != nil && viewItem!.lastMessage == nil)) {
-                    item.timestamp = timestamp!;
-                }
-                if viewItem != nil {
-                    onUpdate?(viewItem!);
+            delayedReloadIndexPath = nil;
+            queue.async {
+                var list: [ChatsViewItemKey] = try! self.getChatsList.query() { (cursor) in ChatsViewItemKey(cursor: cursor) }
+                DispatchQueue.main.async {
+                    self.list = self.sort(list: &list);
+                    self.cache.removeAllObjects();
+                    self.controller?.tableView.reloadData();
                 }
             }
-            if (timestamp != nil || SortOrder(rawValue: Settings.RecentsOrder.getString()!) == SortOrder.byAvailablityAndTime) {
-                update(list: list);
-                let toPosition = positionFor(account: account, jid: jid);
-                notify(from: fromPosition, to: toPosition);
-            } else {
-                notify(from: fromPosition, to: fromPosition);
+        }
+        
+        func updateChat(for account: BareJID, with jid: BareJID, type: Int? = nil, timestamp: Date? = nil, onUpdate: ((ChatsViewItem)->Bool)?) {
+            queue.async {
+                var list = DispatchQueue.main.sync { return self.list; };
+                let fromPosition = ChatsDataSource.position(in: &list, account: account, jid: jid);
+                var needRefresh = true;
+                if fromPosition == nil {
+                    if type != nil && timestamp != nil {
+                        let item = ChatsViewItemKey(account: account, jid: jid, type: type!, timestamp: timestamp!);
+                        list.append(item);
+                    } else {
+                        return;
+                    }
+                } else {
+                    let item = list[fromPosition!];
+                    let viewItem = self.cache.object(forKey: item);
+                    if timestamp != nil && ((item.timestamp.compare(timestamp!) == ComparisonResult.orderedAscending) || (viewItem != nil && viewItem!.lastMessage == nil)) {
+                        item.timestamp = timestamp!;
+                    }
+                    if viewItem != nil {
+                        needRefresh = onUpdate?(viewItem!) ?? true;
+                    } else {
+                        needRefresh = false;
+                    }
+                }
+                if (timestamp != nil || SortOrder(rawValue: Settings.RecentsOrder.getString()!) == SortOrder.byAvailablityAndTime) {
+                    list = self.sort(list: &list);
+                    let toPosition = ChatsDataSource.position(in: &list, account: account, jid: jid);
+                    DispatchQueue.main.async {
+                        self.list = list;
+                        self.notify(from: fromPosition, to: toPosition, needRefresh: needRefresh);
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        self.notify(from: fromPosition, to: fromPosition);
+                    }
+                }
             }
         }
 
         func removeChat(for account: BareJID, with jid: BareJID) {
-            let fromPosition = positionFor(account: account, jid: jid);
-            guard fromPosition != nil else {
-                return;
-            }
+            queue.async {
+                var list = DispatchQueue.main.sync { return self.list; }
+                let fromPosition = ChatsDataSource.position(in: &list, account: account, jid: jid);
+                guard fromPosition != nil else {
+                    return;
+                }
             
-            var list = self.list;
-            let key = list.remove(at: fromPosition!);
-            update(list: list);
-            cache.removeObject(forKey: key);
-            notify(from: fromPosition, to: nil);
+                let key = list.remove(at: fromPosition!);
+                DispatchQueue.main.async {
+                    self.list = list;
+                    self.cache.removeObject(forKey: key);
+                    self.notify(from: fromPosition, to: nil);
+                }
+            }
         }
         
-        func positionFor(account: BareJID, jid: BareJID) -> Int? {
+        fileprivate static func position(in list: inout [ChatsViewItemKey], account: BareJID, jid: BareJID) -> Int? {
             return list.index { $0.jid == jid && $0.account == account };
         }
         
@@ -543,9 +554,9 @@ class ChatsListViewController: UITableViewController, EventHandler {
             return presenceModule?.presenceStore.getBestPresence(for: jid);
         }
         
-        func update(list: [ChatsViewItemKey]) {
+        fileprivate func sort(list: inout [ChatsViewItemKey]) -> [ChatsViewItemKey] {
             if SortOrder(rawValue: Settings.RecentsOrder.getString()!) == SortOrder.byAvailablityAndTime {
-                self.list = list.sorted { (i1, i2) -> Bool in
+                return list.sorted { (i1, i2) -> Bool in
                     let p1 = getPresence(account: i1.account, jid: i1.jid)?.show;
                     let p2 = getPresence(account: i2.account, jid: i2.jid)?.show;
                     if (p1 != nil && p2 == nil) {
@@ -557,30 +568,59 @@ class ChatsListViewController: UITableViewController, EventHandler {
                     return i1.timestamp.compare(i2.timestamp) == .orderedDescending
                 };
             } else {
-                self.list = list.sorted { (i1, i2) -> Bool in
+                return list.sorted { (i1, i2) -> Bool in
                     i1.timestamp.compare(i2.timestamp) == .orderedDescending
                 };
             }
         }
         
-        func notify(from: Int?, to: Int?) {
+        func notify(from: Int?, to: Int?, needRefresh: Bool = true) {
             guard from != nil || to != nil else {
                 return;
             }
-            notify(from: from != nil ? IndexPath(row: from!, section: 0) : nil, to: to != nil ? IndexPath(row: to!, section: 0) : nil);
+            notify(from: from != nil ? IndexPath(row: from!, section: 0) : nil, to: to != nil ? IndexPath(row: to!, section: 0) : nil, needRefresh: needRefresh);
         }
         
-        func notify(from: IndexPath?, to: IndexPath?) {
+        func notify(from: IndexPath?, to: IndexPath?, needRefresh: Bool = true) {
             if from != nil && to != nil {
                 if from != to {
+                    executeDelayedReloadRow();
                     controller?.tableView.moveRow(at: from!, to: to!);
                 }
-                controller?.tableView.reloadRows(at: [to!], with: .fade);
+                if needRefresh {
+                    delayedReloadRows(at: to!);
+                }
+//                controller?.tableView.reloadRows(at: [to!], with: .fade);
             } else if to == nil {
+                executeDelayedReloadRow();
                 controller?.tableView.deleteRows(at: [from!], with: .fade);
             } else {
+                executeDelayedReloadRow();
                 controller?.tableView.insertRows(at: [to!], with: .fade);
             }
+        }
+        
+        fileprivate var delayedReloadIndexPath: IndexPath? = nil;
+        
+        func delayedReloadRows(at indexPath: IndexPath) {
+            if delayedReloadIndexPath != nil && delayedReloadIndexPath! == indexPath {
+                return;
+            }
+            executeDelayedReloadRow();
+            delayedReloadIndexPath = indexPath;
+            
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
+                self.executeDelayedReloadRow();
+            }
+        }
+        
+        func executeDelayedReloadRow() {
+            guard delayedReloadIndexPath != nil else {
+                return;
+            }
+            
+            controller?.tableView.reloadRows(at: [delayedReloadIndexPath!], with: .fade);
+            delayedReloadIndexPath = nil;
         }
     }
     

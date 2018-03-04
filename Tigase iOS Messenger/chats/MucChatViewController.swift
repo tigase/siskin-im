@@ -188,7 +188,8 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
             return;
         }
 
-        self.newItemAdded(timestamp: notification.userInfo!["timestamp"] as! Date);
+        let msgId = notification.userInfo!["msgId"] as! Int;
+        self.newItemAdded(id: msgId, timestamp: notification.userInfo!["timestamp"] as! Date);
         xmppService.dbChatHistoryStore.markAsRead(for: account, with: jid.bareJid);
     }
 
@@ -301,10 +302,22 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
             return controller!.xmppService.dbChatHistoryStore.countMessages(for: controller!.account, with: controller!.jid.bareJid);
         }
 
-        override func loadData(offset: Int, limit: Int, forEveryItem: (MucChatViewItem)->Void) {
-            controller!.xmppService.dbChatHistoryStore.forEachMessage(stmt: getMessagesStmt, account: controller!.account, jid: controller!.jid.bareJid, limit: limit, offset: offset, forEach: { (cursor)-> Void in
-                forEveryItem(MucChatViewItem(cursor: cursor));
-            });
+        override func loadData(afterMessageWithId msgId: Int?, offset: Int, limit: Int, forEveryItem: (Int, MucChatViewItem)->Void) {
+            controller!.xmppService.dbChatHistoryStore.msgAlreadyAddedStmt.dispatcher.sync {
+                let position = msgId != nil
+                    ? controller!.xmppService.dbChatHistoryStore.getMessagePosition(for: controller!.account, with: controller!.jid.bareJid, msgId: msgId!, inverted: true)
+                    : 0;
+                var off = position + offset;
+                if off < 0 {
+                    off = 0;
+                }
+                var idx = 0;
+                controller!.xmppService.dbChatHistoryStore.forEachMessage(stmt: getMessagesStmt, account: controller!.account, jid: controller!.jid.bareJid, limit: limit,
+                                                                          offset: off, forEach: { (cursor)-> Void in
+                                                                            forEveryItem(idx, MucChatViewItem(cursor: cursor));
+                                                                            idx = idx + 1;
+                });
+            }
         }
     }
 

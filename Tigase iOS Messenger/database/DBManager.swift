@@ -117,7 +117,7 @@ open class DBStatement {
     
     open lazy var cursor:DBCursor = DBCursor(statement: self);
     
-    open lazy var dispatcher: QueueDispatcher = QueueDispatcher(queue: DispatchQueue(label: "DBStatementDispatcher"), queueTag: DispatchSpecificKey<DispatchQueue?>());
+    open let dispatcher: QueueDispatcher;
     
     open var lastInsertRowId: Int? {
         return connection.lastInsertRowId;
@@ -127,8 +127,9 @@ open class DBStatement {
         return connection.changesCount;
     }
     
-    init(connection:DBConnection, query:String) throws {
+    init(connection:DBConnection, query:String, dispatcher: QueueDispatcher = QueueDispatcher(queue: DispatchQueue(label: "DBStatementDispatcher"), queueTag: DispatchSpecificKey<DispatchQueue?>())) throws {
         self.connection = connection;
+        self.dispatcher = dispatcher;
         _ = try connection.check(sqlite3_prepare_v2(connection.handle, query, -1, &handle, nil));
     }
 

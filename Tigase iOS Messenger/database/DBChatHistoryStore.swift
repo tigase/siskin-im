@@ -34,13 +34,13 @@ open class DBChatHistoryStore: Logger, EventHandler {
     fileprivate static let CHAT_MSGS_COUNT = "SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid";
     fileprivate static let CHAT_MSGS_COUNT_UNREAD_CHATS = "select count(1) FROM (SELECT account, jid FROM chat_history WHERE state in (\(State.incoming_unread.rawValue), \(State.incoming_error_unread.rawValue), \(State.outgoing_error_unread.rawValue)) GROUP BY account, jid) as x";
     fileprivate static let CHAT_MSGS_DELETE = "DELETE FROM chat_history WHERE account = :account AND jid = :jid";
-    fileprivate static let CHAT_MSGS_GET = "SELECT id, author_jid, author_nickname, timestamp, item_type, data, state, preview FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp LIMIT :limit OFFSET :offset"
+    fileprivate static let CHAT_MSGS_GET = "SELECT id, author_jid, author_nickname, timestamp, item_type, data, state, preview FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp DESC LIMIT :limit OFFSET :offset"
     fileprivate static let CHAT_MSG_UPDATE_PREVIEW = "UPDATE chat_history SET preview = :preview WHERE id = :id";
     fileprivate static let CHAT_MSGS_MARK_AS_READ = "UPDATE chat_history SET state = case state when \(State.incoming_error_unread.rawValue) then \(State.incoming_error.rawValue) when \(State.outgoing_error_unread.rawValue) then \(State.outgoing_error.rawValue) else \(State.incoming.rawValue) end WHERE account = :account AND jid = :jid AND state in (\(State.incoming_unread.rawValue), \(State.incoming_error_unread.rawValue), \(State.outgoing_error_unread.rawValue))";
     fileprivate static let CHAT_MSG_CHANGE_STATE = "UPDATE chat_history SET state = :newState WHERE id = :id AND (:oldState IS NULL OR state = :oldState)";
     fileprivate static let MSG_ALREADY_ADDED = "SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND timestamp BETWEEN :ts_from AND :ts_to AND item_type = :item_type AND data = :data AND (:stanza_id IS NULL OR (stanza_id IS NOT NULL AND stanza_id = :stanza_id)) AND (:author_jid is null OR author_jid = :author_jid) AND (:author_nickname is null OR author_nickname = :author_nickname)";
     
-    fileprivate let dbConnection:DBConnection;
+    open let dbConnection:DBConnection;
     
     fileprivate lazy var msgAppendStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSG_APPEND);
     fileprivate lazy var msgsCountStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_COUNT);
@@ -51,12 +51,12 @@ open class DBChatHistoryStore: Logger, EventHandler {
     fileprivate lazy var msgsMarkAsReadStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_MARK_AS_READ);
     fileprivate lazy var msgUpdatePreviewStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSG_UPDATE_PREVIEW);
     fileprivate lazy var msgUpdateStateStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSG_CHANGE_STATE);
-    fileprivate lazy var msgAlreadyAddedStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.MSG_ALREADY_ADDED);
+    open lazy var msgAlreadyAddedStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.MSG_ALREADY_ADDED);
     fileprivate lazy var chatUpdateTimestamp: DBStatement! = try? self.dbConnection.prepareStatement("UPDATE chats SET timestamp = :timestamp WHERE account = :account AND jid = :jid AND timestamp < :timestamp");
     fileprivate lazy var listUnreadChatsStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT DISTINCT account, jid FROM chat_history WHERE state in (\(State.incoming_unread.rawValue), \(State.incoming_error_unread.rawValue), \(State.outgoing_error_unread.rawValue))");
     fileprivate lazy var lastMessageTimestampForAccount: DBStatement! = try? self.dbConnection.prepareStatement("SELECT max(timestamp) AS timestamp FROM chat_history WHERE account = :account GROUP BY account");
-    fileprivate lazy var getMessagePositionStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id < :msgId AND timestamp < (SELECT timestamp FROM chat_history WHERE id = :msgId)");
-    fileprivate lazy var getMessagePositionStmtInverted: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id < :msgId AND timestamp > (SELECT timestamp FROM chat_history WHERE id = :msgId)");
+    fileprivate lazy var getMessagePositionStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id <> :msgId AND timestamp < (SELECT timestamp FROM chat_history WHERE id = :msgId)");
+    fileprivate lazy var getMessagePositionStmtInverted: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id <> :msgId AND timestamp > (SELECT timestamp FROM chat_history WHERE id = :msgId)");
     fileprivate lazy var markMessageAsErrorStmt: DBStatement! = try? self.dbConnection.prepareStatement("UPDATE chat_history SET state = :state, error = :error WHERE id = :id");
     fileprivate lazy var getMessageErrorDetails: DBStatement! = try? self.dbConnection.prepareStatement("SELECT error FROM chat_history WHERE id = ?");
     
@@ -99,6 +99,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
                 userInfo["carbonAction"] = carbonAction!.rawValue;
             }
             userInfo["fromArchive"] = fromArchive;
+            userInfo["msgId"] = msgId;
             NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: nil, userInfo: userInfo);
             AccountSettings.MessageSyncTime(account.description).set(date: timestamp, condition: ComparisonResult.orderedAscending);
         }
@@ -169,6 +170,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
                 userInfo["senderName"] = e.nickname!;
             }
             userInfo["roomNickname"] = e.room.nickname;
+            userInfo["msgId"] = msgId;
             NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: nil, userInfo: userInfo);
             AccountSettings.MessageSyncTime(account.description).set(date: e.timestamp, condition: ComparisonResult.orderedAscending);
         }
@@ -210,6 +212,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
             let msgId = try! self.msgAppendStmt.insert(params);
             let cu_params:[String:Any?] = ["account" : account, "jid" : jid, "timestamp" : timestamp ];
             _ = try! self.chatUpdateTimestamp.update(cu_params);
+            
             
             DispatchQueue.main.async {
                 callback(msgId!);

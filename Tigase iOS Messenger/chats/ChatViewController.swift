@@ -35,7 +35,6 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     }
     
     var refreshControl: UIRefreshControl!;
-    var syncInProgress = false;
     
     @IBOutlet var shareButton: UIButton!;
     @IBOutlet var progressBar: UIProgressView!;
@@ -272,15 +271,18 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         }
         
         let ts: Date = notification.userInfo!["timestamp"] as! Date;
-        guard notification.userInfo?["fromArchive"] as? Bool ?? false == false else {
-            if !self.syncInProgress {
-                cachedDataSource.reset();
-                tableView.reloadData();
-            }
-            return;
-        }
+        let msgId: Int = notification.userInfo!["msgId"] as! Int;
+//        guard notification.userInfo?["fromArchive"] as? Bool ?? false == false else {
+//            if !self.syncInProgress {
+//                cachedDataSource.reset();
+//                tableView.reloadData();
+//            }
+//            return;
+//        }
         
-        self.newItemAdded(timestamp: ts);
+        //DispatchQueue.main.async {
+        self.newItemAdded(id: msgId, timestamp: ts);
+        //}
 
         if let state = notification.userInfo?["state"] as? DBChatHistoryStore.State {
             if state == .incoming_unread || state == .incoming_error_unread {
@@ -342,13 +344,11 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         }
 
         let date = Date().addingTimeInterval(syncPeriod * -60.0 * 60);
-        syncInProgress = true;
         syncHistory(start: date);
     }
     
     func syncHistory(start: Date, rsm rsmQuery: RSM.Query? = nil) {
         guard let mamModule: MessageArchiveManagementModule = self.xmppService.getClient(forJid: self.account)?.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
-            syncInProgress = false;
             self.refreshControl.endRefreshing();
             return;
         }
@@ -359,18 +359,12 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
                 self.syncHistory(start: start, rsm: rsmResponse?.previous(100));
             } else {
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
-                    self.cachedDataSource.reset();
-                    self.syncInProgress = false;
-                    self.tableView.reloadData();
                     self.refreshControl.endRefreshing();
                 }
             }
         }, onError: {(error,stanza) in
             self.log("failed to retrieve items from archive", error, stanza);
             DispatchQueue.main.async {
-                self.cachedDataSource.reset();
-                self.syncInProgress = false;
-                self.tableView.reloadData();
                 self.refreshControl.endRefreshing();
             }
         });
@@ -435,7 +429,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     class ChatDataSource: CachedViewDataSource<ChatViewItem> {
         
         fileprivate let getMessagesStmt: DBStatement!;
-        
+
         weak var controller: ChatViewController?;
         
         init(controller: ChatViewController) {
@@ -447,10 +441,22 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
             return controller!.xmppService.dbChatHistoryStore.countMessages(for: controller!.account, with: controller!.jid.bareJid);
         }
         
-        override func loadData(offset: Int, limit: Int, forEveryItem: (ChatViewItem)->Void) {
-            controller!.xmppService.dbChatHistoryStore.forEachMessage(stmt: getMessagesStmt, account: controller!.account, jid: controller!.jid.bareJid, limit: limit, offset: offset, forEach: { (cursor)-> Void in
-                forEveryItem(ChatViewItem(cursor: cursor));
-            });
+        override func loadData(afterMessageWithId msgId: Int?, offset: Int, limit: Int, forEveryItem: (Int, ChatViewItem)->Void) {
+            controller!.xmppService.dbChatHistoryStore.msgAlreadyAddedStmt.dispatcher.sync {
+                let position = msgId != nil
+                    ? controller!.xmppService.dbChatHistoryStore.getMessagePosition(for: controller!.account, with: controller!.jid.bareJid, msgId: msgId!, inverted: true)
+                    : 0;
+                var off = position + offset;
+                if off < 0 {
+                    off = 0;
+                }
+                var idx = 0
+                controller!.xmppService.dbChatHistoryStore.forEachMessage(stmt: getMessagesStmt, account: controller!.account, jid: controller!.jid.bareJid, limit: limit,
+                                                                          offset: off, forEach: { (cursor)-> Void in
+                    forEveryItem(idx, ChatViewItem(cursor: cursor));
+                    idx = idx + 1;
+                });
+            }
         }
         
     }
