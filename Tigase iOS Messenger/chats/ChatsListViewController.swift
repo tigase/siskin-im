@@ -390,6 +390,10 @@ class ChatsListViewController: UITableViewController, EventHandler {
         var timestamp: Date;
         var type: Int;
         
+        override var description: String {
+            return "account: \(account), jid: \(jid), ts: \(timestamp)"
+        }
+        
         init(cursor: DBCursor) {
             self.account = cursor["account"]!;
             self.jid = cursor["jid"]!;
@@ -452,7 +456,6 @@ class ChatsListViewController: UITableViewController, EventHandler {
         init(controller: ChatsListViewController) {
             self.controller = controller;
 //            self.getChats = try? controller.dbConnection.prepareStatement("SELECT id, jid, account, timestamp, thread_id, type, (SELECT data FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND item_type = 0 ORDER BY timestamp DESC LIMIT 1) AS last_message, (SELECT count(ch.id) FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND state = 2) as unread, (SELECT name FROM roster_items ri WHERE ri.account = c.account AND ri.jid = c.jid) as name FROM chats as c ORDER BY timestamp DESC");
-
             self.getChatsList = try? controller.dbConnection.prepareStatement("SELECT jid, account, type, timestamp FROM chats as c ORDER BY timestamp DESC");
             self.getChatDetails = try? controller.dbConnection.prepareStatement("SELECT type, (SELECT data FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND item_type = 0 ORDER BY timestamp DESC LIMIT 1) AS last_message, (SELECT count(ch.id) FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND state in (\(DBChatHistoryStore.State.incoming_unread.rawValue), \(DBChatHistoryStore.State.incoming_error_unread.rawValue), \(DBChatHistoryStore.State.outgoing_error_unread.rawValue))) as unread, (SELECT name FROM roster_items ri WHERE ri.account = c.account AND ri.jid = c.jid) as name FROM chats as c WHERE c.account = :account AND c.jid = :jid");
         }
@@ -584,23 +587,52 @@ class ChatsListViewController: UITableViewController, EventHandler {
         func notify(from: IndexPath?, to: IndexPath?, needRefresh: Bool = true) {
             if from != nil && to != nil {
                 if from != to {
-                    executeDelayedReloadRow();
+                    if delayedReloadIndexPath != nil {
+                        if from!.row < delayedReloadIndexPath!.row {
+                            calculateDelayedReloadRow(offset: -1);
+                        } else if from!.row == delayedReloadIndexPath!.row {
+                            if needRefresh {
+                                delayedReloadIndexPath = nil;
+                            } else {
+                                delayedReloadIndexPath = to!;
+                            }
+                        } else {
+                            calculateDelayedReloadRow(offset: 1);
+                        }
+                    }
                     controller?.tableView.moveRow(at: from!, to: to!);
+                    executeDelayedReloadRow();
                 }
                 if needRefresh {
                     delayedReloadRows(at: to!);
                 }
 //                controller?.tableView.reloadRows(at: [to!], with: .fade);
             } else if to == nil {
-                executeDelayedReloadRow();
+                if delayedReloadIndexPath != nil {
+                    if from!.row < delayedReloadIndexPath!.row {
+                        calculateDelayedReloadRow(offset: -1);
+                    } else if from!.row == delayedReloadIndexPath!.row {
+                        delayedReloadIndexPath = nil;
+                    }
+                }
                 controller?.tableView.deleteRows(at: [from!], with: .fade);
-            } else {
                 executeDelayedReloadRow();
+            } else {
+                if delayedReloadIndexPath != nil {
+                    if to!.row <= delayedReloadIndexPath!.row {
+                        calculateDelayedReloadRow(offset: 1);
+                    }
+                }
                 controller?.tableView.insertRows(at: [to!], with: .fade);
+                executeDelayedReloadRow();
             }
         }
         
         fileprivate var delayedReloadIndexPath: IndexPath? = nil;
+        
+        func calculateDelayedReloadRow(offset: Int) {
+            delayedReloadIndexPath = IndexPath(row: delayedReloadIndexPath!.row + offset, section: 0);
+        }
         
         func delayedReloadRows(at indexPath: IndexPath) {
             if delayedReloadIndexPath != nil && delayedReloadIndexPath! == indexPath {

@@ -106,7 +106,8 @@ class CachedViewDataSourceItemKey: CachedViewDataSourceItem, CustomStringConvert
     
 }
 
-class CachedViewDataSource<Item: CachedViewDataSourceItem>: NSObject, CachedViewDataSourceProtocol, NSCacheDelegate {
+class CachedViewDataSource<Item: CachedViewDataSourceItem>: NSObject, CachedViewDataSourceProtocol {
+    //, NSCacheDelegate {
     
     var list: [CachedViewDataSourceItemKey] = [];
     var cache = NSCache<NSNumber,Item>();
@@ -120,16 +121,16 @@ class CachedViewDataSource<Item: CachedViewDataSourceItem>: NSObject, CachedView
         cache.countLimit = 100;
         cache.totalCostLimit = 10 * 1024 * 1024;
         super.init();
-        cache.delegate = self;
+//        cache.delegate = self;
         self.reset();
     }
 
-    func cache(_ cache: NSCache<AnyObject, AnyObject>, willEvictObject obj: Any) {
-        guard let it = obj as? CachedViewDataSourceItem else {
-            return;
-        }
-        print("evicting item from cache, id:", it.id, ", ts:", it.timestamp);
-    }
+//    func cache(_ cache: NSCache<AnyObject, AnyObject>, willEvictObject obj: Any) {
+//        guard let it = obj as? CachedViewDataSourceItem else {
+//            return;
+//        }
+//        print("evicting item from cache, id:", it.id, ", ts:", it.timestamp);
+//    }
     
     func reset() {
         resetTime = mach_absolute_time();
