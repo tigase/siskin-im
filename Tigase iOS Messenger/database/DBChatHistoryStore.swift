@@ -288,7 +288,10 @@ open class DBChatHistoryStore: Logger, EventHandler {
     }
     
     fileprivate func updateMessageState(event: MessageDeliveryReceiptsModule.ReceiptEvent) {
-        changeMessageState(account: event.message.to!.bareJid, jid: event.message.from!.bareJid, stanzaId: event.messageId, oldState: State.outgoing, newState: State.outgoing_delivered, completion: {(msgId) in
+        guard let account = event.message.to?.bareJid ?? event.sessionObject.userBareJid, let jid = event.message.from?.bareJid else {
+            return;
+        }
+        changeMessageState(account: account, jid: jid, stanzaId: event.messageId, oldState: State.outgoing, newState: State.outgoing_delivered, completion: {(msgId) in
             NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_UPDATED, object: self, userInfo: ["message-id": msgId, "state": State.outgoing_delivered]);
         });
     }
