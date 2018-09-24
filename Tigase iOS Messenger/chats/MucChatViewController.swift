@@ -183,7 +183,7 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
         handler?(texts);
     }
 
-    func newMessage(_ notification: NSNotification) {
+    @objc func newMessage(_ notification: NSNotification) {
         guard ((notification.userInfo!["account"] as? BareJID) == account) && ((notification.userInfo!["sender"] as? BareJID) == jid.bareJid) else {
             return;
         }
@@ -193,7 +193,7 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
         xmppService.dbChatHistoryStore.markAsRead(for: account, with: jid.bareJid);
     }
 
-    func avatarChanged(_ notification: NSNotification) {
+    @objc func avatarChanged(_ notification: NSNotification) {
         // TODO: adjust this to make it work properly with MUC
         guard ((notification.userInfo?["jid"] as? BareJID) == jid.bareJid) else {
             return;
@@ -205,7 +205,7 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
         }
     }
 
-    func accountStateChanged(_ notification: Notification) {
+    @objc func accountStateChanged(_ notification: Notification) {
         let account = BareJID(notification.userInfo!["account"]! as! String);
         if self.account == account {
             updateTitleView();

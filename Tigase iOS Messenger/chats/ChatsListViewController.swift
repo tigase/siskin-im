@@ -38,7 +38,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
         dataSource = ChatsDataSource(controller: self);
         super.viewDidLoad();
         
-        tableView.rowHeight = UITableViewAutomaticDimension;
+        tableView.rowHeight = UITableView.automaticDimension;
         tableView.estimatedRowHeight = 66.0;
         tableView.dataSource = self;
         NotificationCenter.default.addObserver(self, selector: #selector(ChatsListViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
@@ -121,8 +121,8 @@ class ChatsListViewController: UITableViewController, EventHandler {
         return false;
     }
     
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == UITableViewCellEditingStyle.delete {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == UITableViewCell.EditingStyle.delete {
             if indexPath.section == 0 {
                 let item = dataSource.itemKey(at: indexPath);
                 let xmppClient = self.xmppService.getClient(forJid: item.account);
@@ -191,49 +191,45 @@ class ChatsListViewController: UITableViewController, EventHandler {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath as IndexPath, animated: true);
-        do {
-            let item = dataSource.itemKey(at: indexPath);
-            var identifier: String!;
-            switch item.type {
-            case 1:
-                identifier = "RoomViewNavigationController";
-                let client = self.xmppService.getClient(forJid: item.account);
-                let mucModule: MucModule? = client?.modulesManager?.getModule(MucModule.ID);
-                let room = mucModule?.roomsManager.getRoom(for: item.jid);
-                guard room != nil else {
-                    if client == nil {
-                        let alert = UIAlertController.init(title: "Warning", message: "Account is disabled.\nDo you want to enable account?", preferredStyle: .alert);
-                        alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
-                        alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(alertAction) in
-                            if let accountInstance = AccountManager.getAccount(forJid: item.account.stringValue) {
-                                accountInstance.active = true;
-                                AccountManager.updateAccount(accountInstance);
-                            }
-                        }));
-                        self.present(alert, animated: true, completion: nil);
-                    }
-                    return;
+        let item = dataSource.itemKey(at: indexPath);
+        var identifier: String!;
+        switch item.type {
+        case 1:
+            identifier = "RoomViewNavigationController";
+            let client = self.xmppService.getClient(forJid: item.account);
+            let mucModule: MucModule? = client?.modulesManager?.getModule(MucModule.ID);
+            let room = mucModule?.roomsManager.getRoom(for: item.jid);
+            guard room != nil else {
+                if client == nil {
+                    let alert = UIAlertController.init(title: "Warning", message: "Account is disabled.\nDo you want to enable account?", preferredStyle: .alert);
+                    alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
+                    alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(alertAction) in
+                        if let accountInstance = AccountManager.getAccount(forJid: item.account.stringValue) {
+                            accountInstance.active = true;
+                            AccountManager.updateAccount(accountInstance);
+                        }
+                    }));
+                    self.present(alert, animated: true, completion: nil);
                 }
-            default:
-                identifier = "ChatViewNavigationController";
+                return;
             }
-            
-            let controller = self.storyboard?.instantiateViewController(withIdentifier: identifier);
-            let navigationController = controller as? UINavigationController;
-            let destination = navigationController?.visibleViewController ?? controller;
-            
-            if let baseChatViewController = destination as? BaseChatViewController {
-                baseChatViewController.account = item.account;
-                baseChatViewController.jid = JID(item.jid);
-            }
-            destination?.hidesBottomBarWhenPushed = true;
-                
-            if controller != nil {
-                self.showDetailViewController(controller!, sender: self);
-            }
-        } catch _ {
+        default:
+            identifier = "ChatViewNavigationController";
         }
         
+        let controller = self.storyboard?.instantiateViewController(withIdentifier: identifier);
+        let navigationController = controller as? UINavigationController;
+        let destination = navigationController?.visibleViewController ?? controller;
+            
+        if let baseChatViewController = destination as? BaseChatViewController {
+            baseChatViewController.account = item.account;
+            baseChatViewController.jid = JID(item.jid);
+        }
+        destination?.hidesBottomBarWhenPushed = true;
+                
+        if controller != nil {
+            self.showDetailViewController(controller!, sender: self);
+        }
     }
 
     @IBAction func addMucButtonClicked(_ sender: UIBarButtonItem) {
@@ -282,15 +278,15 @@ class ChatsListViewController: UITableViewController, EventHandler {
         }
     }
     
-    func avatarChanged(_ notification: NSNotification) {
-        if let jid: BareJID = notification.userInfo!["jid"] as? BareJID {
+    @objc func avatarChanged(_ notification: NSNotification) {
+        if let _ = notification.userInfo!["jid"] as? BareJID {
             DispatchQueue.main.async {
                 self.tableView.reloadData();
             }
         }
     }
     
-    func newMessage(_ notification:NSNotification) {
+    @objc func newMessage(_ notification:NSNotification) {
         let state = notification.userInfo!["state"] as! DBChatHistoryStore.State;
         if navigationController?.visibleViewController == self {
 //            tableView.reloadData();
@@ -323,7 +319,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
         }
     }
     
-    func chatItemsUpdated(_ notification: NSNotification) {
+    @objc func chatItemsUpdated(_ notification: NSNotification) {
         let action: String = notification.userInfo!["action"] as! String;
         let account: BareJID = notification.userInfo!["account"] as! BareJID;
         let jid: BareJID = notification.userInfo!["jid"] as! BareJID;

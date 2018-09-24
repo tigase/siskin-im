@@ -36,7 +36,7 @@ open class DBChatStoreWrapper: ChatStore {
         return store.getAll(for: sessionObject);
     }
     
-    open let dispatcher: QueueDispatcher;
+    public let dispatcher: QueueDispatcher;
         
     public init(sessionObject:SessionObject, store:DBChatStore, useCache: Bool = true) {
         self.sessionObject = sessionObject;
@@ -138,7 +138,7 @@ open class DBChatStore {
     fileprivate let updateMessageDraftStmt: DBStatement;
     fileprivate let getMessageDraftStmt: DBStatement;
     
-    open let dispatcher: QueueDispatcher;
+    public let dispatcher: QueueDispatcher;
     
     public init(dbConnection:DBConnection, dispatcher: QueueDispatcher? = nil) {
         self.dbConnection = dbConnection;

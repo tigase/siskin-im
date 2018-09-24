@@ -24,7 +24,7 @@ import MobileCoreServices
 
 class ImageCache {
 
-    open static let DISK_CACHE_IMAGE_REMOVED = Notification.Name("DISK_CACHE.IMAGE_REMOVED");
+    public static let DISK_CACHE_IMAGE_REMOVED = Notification.Name("DISK_CACHE.IMAGE_REMOVED");
     
     static let shared = ImageCache();
     
@@ -103,7 +103,7 @@ class ImageCache {
         let key = "\(UUID().description).jpg";
         cache.setObject(ImageHolder(image: value), forKey: key as NSString);
         DispatchQueue.global(qos: .background).async {
-            if let data = UIImageJPEGRepresentation(value, 1.0) {
+            if let data = value.jpegData(compressionQuality: 1.0) {
                 let newUrl = self.diskCacheUrl.appendingPathComponent(key);
                 _ = FileManager.default.createFile(atPath: newUrl.path, contents: data, attributes: nil);
                 completion?(key);

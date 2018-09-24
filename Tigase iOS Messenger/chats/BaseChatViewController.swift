@@ -86,7 +86,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
             messageFieldTrailingConstraint.isActive = false;
         }
         
-        tableView.rowHeight = UITableViewAutomaticDimension;
+        tableView.rowHeight = UITableView.automaticDimension;
         tableView.estimatedRowHeight = 160.0;
         tableView.separatorStyle = .none;
         
@@ -106,8 +106,8 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillShow), name: NSNotification.Name.UIKeyboardWillShow, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillHide), name: NSNotification.Name.UIKeyboardWillHide, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil);
         
         self.xmppService.dbChatStore.getMessageDraft(account: account, jid: jid.bareJid) { (text) in
             DispatchQueue.main.async {
@@ -147,24 +147,24 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         super.viewDidDisappear(animated);
     }
     
-    func keyboardWillShow(_ notification: NSNotification) {
+    @objc func keyboardWillShow(_ notification: NSNotification) {
         keyboardAnimateHideShow(notification, hide: false);
     }
     
-    func keyboardWillHide(_ notification: NSNotification) {
+    @objc func keyboardWillHide(_ notification: NSNotification) {
         keyboardAnimateHideShow(notification, hide: true);
     }
     
     func keyboardAnimateHideShow(_ notification: NSNotification, hide: Bool) {
         if let userInfo = notification.userInfo {
-            if let keyboardSize = (userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
+            if let keyboardSize = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
                 let oldHeight = bottomViewBottomConstraint?.constant ?? CGFloat(0);
                 let newHeight = hide ? 0 : keyboardSize.height;
                 if (oldHeight - newHeight) != 0 {
-                    let duration = userInfo[UIKeyboardAnimationDurationUserInfoKey] as! TimeInterval;
-                    let curve = userInfo[UIKeyboardAnimationCurveUserInfoKey] as! UInt;
+                    let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as! TimeInterval;
+                    let curve = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as! UInt;
                     bottomViewBottomConstraint?.constant = newHeight;
-                    UIView.animate(withDuration: duration, delay: 0.0, options: [UIViewAnimationOptions(rawValue: curve), UIViewAnimationOptions.layoutSubviews, UIViewAnimationOptions.beginFromCurrentState], animations: {
+                    UIView.animate(withDuration: duration, delay: 0.0, options: [UIView.AnimationOptions(rawValue: curve), UIView.AnimationOptions.layoutSubviews, UIView.AnimationOptions.beginFromCurrentState], animations: {
                         self.view.layoutIfNeeded();
                         self.scrollToNewestMessage(animated: true);
                         

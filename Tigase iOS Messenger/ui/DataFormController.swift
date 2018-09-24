@@ -326,7 +326,7 @@ class DataFormController: UITableViewController {
             return field;
         }
         
-        func textDidChanged(textField: UITextField) {
+        @objc func textDidChanged(textField: UITextField) {
             (field as? JidSingleField)?.value = JID(textField.text);
         }
     }
@@ -513,8 +513,8 @@ class DataFormController: UITableViewController {
         var field: Field?;
         var fieldView: UIView?;
         
-        override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
-            super.init(style: UITableViewCellStyle.value1, reuseIdentifier: reuseIdentifier);
+        override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+            super.init(style: UITableViewCell.CellStyle.value1, reuseIdentifier: reuseIdentifier);
             initialize(field: createFieldView());
         }
         

@@ -25,7 +25,7 @@ import TigaseSwift
 
 open class AvatarManager: EventHandler {
     
-    open static let AVATAR_CHANGED = Notification.Name("messengerAvatarChanged");
+    public static let AVATAR_CHANGED = Notification.Name("messengerAvatarChanged");
     
     var defaultAvatar:UIImage;
     var store: AvatarStore;

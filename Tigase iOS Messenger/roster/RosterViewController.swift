@@ -143,14 +143,14 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
         _ = messageModule!.chatManager!.getChatOrCreate(with: item.jid, thread: nil);
         
         let destination = self.storyboard!.instantiateViewController(withIdentifier: "ChatViewNavigationController") as! UINavigationController;
-        let chatController = destination.childViewControllers[0] as! ChatViewController;
+        let chatController = destination.children[0] as! ChatViewController;
         chatController.hidesBottomBarWhenPushed = true;
         chatController.account = item.account;
         chatController.jid = item.jid;
         self.showDetailViewController(destination, sender: self);
     }
     
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             let item = roster.item(at: indexPath);
             let account: BareJID = item.account;
@@ -172,7 +172,7 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
     }
     
     func updateSearchResults(for searchController: UISearchController) {
-        print("searching items containing:", searchController.searchBar.text);
+        print("searching items containing:", searchController.searchBar.text ?? "");
         roster?.queryItems(contains: searchController.searchBar.text);
         tableView.reloadData();
     }
@@ -183,13 +183,13 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
         tableView.reloadData();
     }
     
-    func availabilityFilterChanged(_ control: UISegmentedControl) {
+    @objc func availabilityFilterChanged(_ control: UISegmentedControl) {
         roster.availableOnly = control.selectedSegmentIndex == 1;
         Settings.RosterAvailableOnly.setValue(roster.availableOnly);
         tableView.reloadData();
     }
     
-    func handleLongPress(_ gestureRecognizer:UILongPressGestureRecognizer) {
+    @objc func handleLongPress(_ gestureRecognizer:UILongPressGestureRecognizer) {
         guard gestureRecognizer.state == .began else {
             if gestureRecognizer.state == .ended {
                 let point = gestureRecognizer.location(in: self.tableView);
@@ -267,13 +267,13 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
         }
     }
     
-    func reloadData() {
+    @objc func reloadData() {
         DispatchQueue.main.async() {
             self.tableView.reloadData();
         }
     }
 
-    func rowUpdated(_ notification: NSNotification) {
+    @objc func rowUpdated(_ notification: NSNotification) {
         guard let info = notification.userInfo else {
             return;
         }

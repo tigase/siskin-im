@@ -25,15 +25,15 @@ import TigaseSwift
 
 open class XmppService: Logger, EventHandler {
     
-    open static let SERVER_CERTIFICATE_ERROR = Notification.Name("serverCertificateError");
-    open static let AUTHENTICATION_FAILURE = Notification.Name("authenticationFailure");
-    open static let PRESENCE_AUTHORIZATION_REQUEST = Notification.Name("presenceAuthorizationRequest");
-    open static let ACCOUNT_STATE_CHANGED = Notification.Name("accountStateChanged");
+    public static let SERVER_CERTIFICATE_ERROR = Notification.Name("serverCertificateError");
+    public static let AUTHENTICATION_FAILURE = Notification.Name("authenticationFailure");
+    public static let PRESENCE_AUTHORIZATION_REQUEST = Notification.Name("presenceAuthorizationRequest");
+    public static let ACCOUNT_STATE_CHANGED = Notification.Name("accountStateChanged");
     
     open var fetchTimeShort: TimeInterval = 5;
     open var fetchTimeLong: TimeInterval = 20;
     
-    open static let pushServiceJid = JID("push.tigase.im");
+    public static let pushServiceJid = JID("push.tigase.im");
     
     fileprivate static let CONNECTION_RETRY_NO_KEY = "CONNECTION_RETRY_NO_KEY";
     
@@ -43,11 +43,11 @@ open class XmppService: Logger, EventHandler {
     
     fileprivate let dbConnection: DBConnection;
     open var avatarManager: AvatarManager!;
-    open let dbCapsCache: DBCapabilitiesCache;
-    open let dbChatStore: DBChatStore;
-    open let dbChatHistoryStore: DBChatHistoryStore;
+    public let dbCapsCache: DBCapabilitiesCache;
+    public let dbChatStore: DBChatStore;
+    public let dbChatHistoryStore: DBChatHistoryStore;
     fileprivate let dbRosterStore: DBRosterStore;
-    open let dbVCardsCache: DBVCardsCache;
+    public let dbVCardsCache: DBVCardsCache;
     fileprivate let avatarStore: AvatarStore;
     open var applicationState: ApplicationState {
         didSet {

@@ -236,8 +236,8 @@ class SettingsViewController: UITableViewController, EventHandler {
         return false;
     }
     
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == UITableViewCellEditingStyle.delete {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == UITableViewCell.EditingStyle.delete {
             if indexPath.section == 0 {
                 let accounts = AccountManager.getAccounts();
                 if accounts.count > indexPath.row {

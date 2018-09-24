@@ -41,7 +41,7 @@ open class DBCapabilitiesCache: CapabilitiesCache {
     fileprivate var features = [String: [String]]();
     fileprivate var identities: [String: DiscoveryModule.Identity] = [:];
 
-    open let dispatcher: QueueDispatcher;
+    public let dispatcher: QueueDispatcher;
     
     public init(dbConnection: DBConnection) {
         self.dbConnection = dbConnection;

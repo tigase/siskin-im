@@ -68,7 +68,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         self.navigationItem.titleView = buddyBtn;
 
         self.refreshControl = UIRefreshControl();
-        self.refreshControl?.addTarget(self, action: #selector(ChatViewController.refreshChatHistory), for: UIControlEvents.valueChanged);
+        self.refreshControl?.addTarget(self, action: #selector(ChatViewController.refreshChatHistory), for: UIControl.Event.valueChanged);
         self.tableView.addSubview(refreshControl);
         initSharing();
     }
@@ -118,7 +118,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         handler?(texts);
     }
     
-    func showBuddyInfo(_ button: UIButton) {
+    @objc func showBuddyInfo(_ button: UIButton) {
         print("open buddy info!");
         let navigation = storyboard?.instantiateViewController(withIdentifier: "ContactViewNavigationController") as! UINavigationController;
         let contactView = navigation.visibleViewController as! ContactViewController;
@@ -200,7 +200,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
             DispatchQueue.main.async {
                 let alert = UIAlertController(title: "Details", message: error ?? "Unknown error occurred", preferredStyle: .alert);
                 alert.addAction(UIAlertAction(title: "Resend", style: .default, handler: {(action) in
-                    print("resending message with body", item.data);
+                    print("resending message with body", item.data ?? "<nil>");
                     self.sendMessage(body: item.data!, additional: [], completed: nil);
                 }));
                 alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
@@ -265,7 +265,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         }
     }
     
-    func newMessage(_ notification: NSNotification) {
+    @objc func newMessage(_ notification: NSNotification) {
         guard ((notification.userInfo!["account"] as? BareJID) == account) && ((notification.userInfo!["sender"] as? BareJID) == jid.bareJid) else {
             return;
         }
@@ -291,7 +291,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         }
     }
     
-    func avatarChanged(_ notification: NSNotification) {
+    @objc func avatarChanged(_ notification: NSNotification) {
         guard ((notification.userInfo?["jid"] as? BareJID) == jid.bareJid) else {
             return;
         }
@@ -300,14 +300,14 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         }
     }
     
-    func accountStateChanged(_ notification: Notification) {
+    @objc func accountStateChanged(_ notification: Notification) {
         let account = BareJID(notification.userInfo!["account"]! as! String);
         if self.account == account {
             updateTitleView();
         }
     }
     
-    func messageUpdated(_ notification: Notification) {
+    @objc func messageUpdated(_ notification: Notification) {
         guard let data = notification.userInfo else {
             return;
         }

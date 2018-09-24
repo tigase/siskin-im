@@ -73,8 +73,6 @@ class VCardEntryTypeAwareTableViewCell: UITableViewCell, UIPickerViewDelegate, U
             return "Home";
         case .work:
             return "Work";
-        default:
-            return nil;
         }
     }
 }

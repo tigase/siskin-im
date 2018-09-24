@@ -82,7 +82,7 @@ class ShareViewController: SLComposeServiceViewController {
     override func presentationAnimationDidFinish() {
         if !sharedDefaults!.bool(forKey: "SharingViaHttpUpload") {
             var error = true;
-            if let provider = (self.extensionContext!.inputItems.first as? NSExtensionItem)?.attachments?.first as? NSItemProvider {
+            if let provider = (self.extensionContext!.inputItems.first as? NSExtensionItem)?.attachments?.first {
                 error = !provider.hasItemConformingToTypeIdentifier(kUTTypeURL as String);
             }
             if error {
@@ -92,7 +92,7 @@ class ShareViewController: SLComposeServiceViewController {
     }
     
     override func didSelectPost() {
-        if let provider = (self.extensionContext!.inputItems.first as? NSExtensionItem)?.attachments?.first as? NSItemProvider {
+        if let provider = (self.extensionContext!.inputItems.first as? NSExtensionItem)?.attachments?.first {
             if provider.hasItemConformingToTypeIdentifier(kUTTypeURL as String) {
                 provider.loadItem(forTypeIdentifier: kUTTypeURL as String, options: nil, completionHandler: { (value, error) in
                     self.shareText(url: value as! URL);
@@ -207,7 +207,7 @@ class ShareViewController: SLComposeServiceViewController {
     
     func upload(localUrl: URL, type: String?, handler: (URL?)->Void) {
         let size = try! FileManager.default.attributesOfItem(atPath: localUrl.path)[FileAttributeKey.size] as! UInt64;
-        print("trying to upload", localUrl, "size", size, "type", type);
+        print("trying to upload", localUrl, "size", size, "type", type as Any);
         if let httpModule: HttpFileUploadModule = self.xmppClient.modulesManager.getModule(HttpFileUploadModule.ID) {
             httpModule.findHttpUploadComponent(onSuccess: { (results) in
                 guard !results.isEmpty else {
@@ -237,7 +237,7 @@ class ShareViewController: SLComposeServiceViewController {
                     
                     URLSession.shared.uploadTask(with: request, fromFile: localUrl) { (data, response, error) in
                         guard error == nil && ((response as? HTTPURLResponse)?.statusCode ?? 500) == 201 else {
-                            print(data, error, response);
+                            print(data as Any, error as Any, response as Any);
                             self.showAlert(title: "Upload failed", message: "Upload to HTTP server failed.");
                             return;
                         }

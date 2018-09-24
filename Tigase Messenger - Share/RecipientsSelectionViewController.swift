@@ -49,7 +49,7 @@ class RecipientsSelectionViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad();
-        indicator.activityIndicatorViewStyle = .gray;
+        indicator.style = .gray;
         indicator.backgroundColor = UIColor.white;
         indicator.hidesWhenStopped = true;
         self.view.addSubview(indicator);

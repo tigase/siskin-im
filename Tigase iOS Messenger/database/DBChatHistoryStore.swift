@@ -25,9 +25,9 @@ import TigaseSwift
 
 open class DBChatHistoryStore: Logger, EventHandler {
     
-    open static let MESSAGE_NEW = Notification.Name("messengerMessageNew");
-    open static let CHAT_ITEMS_UPDATED = Notification.Name("messengerChatUpdated");
-    open static let MESSAGE_UPDATED = Notification.Name("messengerMessageUpdated");
+    public static let MESSAGE_NEW = Notification.Name("messengerMessageNew");
+    public static let CHAT_ITEMS_UPDATED = Notification.Name("messengerChatUpdated");
+    public static let MESSAGE_UPDATED = Notification.Name("messengerMessageUpdated");
     
     fileprivate static let CHAT_GET_ID_WITH_ACCOUNT_PARTICIPANT_AND_STANZA_ID = "SELECT id FROM chat_history WHERE account = :account AND jid = :jid AND stanza_id = :stanzaId";
     fileprivate static let CHAT_MSG_APPEND = "INSERT INTO chat_history (account, jid, author_jid, author_nickname, timestamp, item_type, data, stanza_id, state) VALUES (:account, :jid, :author_jid, :author_nickname, :timestamp, :item_type, :data, :stanza_id, :state)";
@@ -40,7 +40,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
     fileprivate static let CHAT_MSG_CHANGE_STATE = "UPDATE chat_history SET state = :newState WHERE id = :id AND (:oldState IS NULL OR state = :oldState)";
     fileprivate static let MSG_ALREADY_ADDED = "SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND timestamp BETWEEN :ts_from AND :ts_to AND item_type = :item_type AND data = :data AND (:stanza_id IS NULL OR (stanza_id IS NOT NULL AND stanza_id = :stanza_id)) AND (:author_jid is null OR author_jid = :author_jid) AND (:author_nickname is null OR author_nickname = :author_nickname)";
     
-    open let dbConnection:DBConnection;
+    public let dbConnection:DBConnection;
     
     fileprivate lazy var msgAppendStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSG_APPEND);
     fileprivate lazy var msgsCountStmt: DBStatement! = try? self.dbConnection.prepareStatement(DBChatHistoryStore.CHAT_MSGS_COUNT);

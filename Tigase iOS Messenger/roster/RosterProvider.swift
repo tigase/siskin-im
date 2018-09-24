@@ -155,7 +155,7 @@ public class RosterProviderAbstract<Item: RosterProviderItem> {
             return;
         }
         
-        NotificationCenter.default.post(name: updateNotificationName, object: self, userInfo: ["from": from, "to": to]);
+        NotificationCenter.default.post(name: updateNotificationName, object: self, userInfo: ["from": from as Any, "to": to as Any]);
     }
     
     func queryItems(contains: String?) {

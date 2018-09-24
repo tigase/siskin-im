@@ -118,7 +118,7 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
     
     func setValues(data text: String?, ts: Date?, id: Int?, state: DBChatHistoryStore.State, preview: String? = nil, downloader: ((URL,Int)->Void)? = nil) {
         if ts != nil {
-            if state != nil && state.direction == .outgoing {
+            if state.direction == .outgoing {
                 timestampView.textColor = UIColor.lightGray;
                 switch state.state {
                 case .delivered:
@@ -144,7 +144,7 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
             
             var first = true;
             if let detect = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue | NSTextCheckingResult.CheckingType.date.rawValue) {
-                let matches = detect.matches(in: text!, options: .reportCompletion, range: NSMakeRange(0, text!.characters.count));
+                let matches = detect.matches(in: text!, options: .reportCompletion, range: NSMakeRange(0, text!.count));
                 for match in matches {
                     var url: URL? = nil;
                     if match.url != nil {
@@ -152,7 +152,7 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
                         if first && id != nil {
                             first = false;
                             if (preview?.hasPrefix("preview:image:") ?? true) {
-                                let previewKey = preview == nil ? nil : String(preview!.characters.dropFirst(14));
+                                let previewKey = preview == nil ? nil : String(preview!.dropFirst(14));
                                 previewView?.image = ImageCache.shared.get(for: previewKey, ifMissing: {
                                     downloader?(url!, id!);
                                 })
@@ -177,7 +177,7 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
                         url = URL(string: "calshow:\(match.date!.timeIntervalSinceReferenceDate)");
                     }
                     if url != nil {
-                        attrText.setAttributes([NSUnderlineStyleAttributeName: NSUnderlineStyle.styleSingle.rawValue, NSLinkAttributeName: url!], range: match.range);
+                        attrText.setAttributes(convertToOptionalNSAttributedStringKeyDictionary([convertFromNSAttributedStringKey(NSAttributedString.Key.underlineStyle): NSUnderlineStyle.single.rawValue, convertFromNSAttributedStringKey(NSAttributedString.Key.link): url!]), range: match.range);
                     }
                 }
             }
@@ -203,7 +203,7 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         }
     }
     
-    func actionMore(_ sender: UIMenuController) {
+    @objc func actionMore(_ sender: UIMenuController) {
         NotificationCenter.default.post(name: NSNotification.Name("tableViewCellShowEditToolbar"), object: self);
     }
     
@@ -211,7 +211,7 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         return super.canPerformAction(action, withSender: sender) || action == #selector(actionMore(_:));
     }
     
-    func messageLinkTapGestureDidFire(_ recognizer: UITapGestureRecognizer) {
+    @objc func messageLinkTapGestureDidFire(_ recognizer: UITapGestureRecognizer) {
         guard self.messageTextView.attributedText != nil else {
             return;
         }
@@ -219,7 +219,7 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         let point = recognizer.location(in: self.messageTextView);
         let layoutManager = NSLayoutManager();
         let attrText = self.messageTextView.attributedText!.mutableCopy() as! NSMutableAttributedString;
-        attrText.addAttribute(NSFontAttributeName, value: self.messageTextView.font, range: NSRange(location: 0, length: attrText.length));
+        attrText.addAttribute(NSAttributedString.Key.font, value: self.messageTextView.font, range: NSRange(location: 0, length: attrText.length));
         let textStorage = NSTextStorage(attributedString: attrText);
         let textContainer = NSTextContainer(size: self.messageTextView.bounds.size);
         textContainer.maximumNumberOfLines = self.messageTextView.numberOfLines;
@@ -230,12 +230,12 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         textStorage.addLayoutManager(layoutManager);
         
         let idx = layoutManager.characterIndex(for: point, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil);
-        if let url = attrText.attribute(NSLinkAttributeName, at: idx, effectiveRange: nil) as? NSURL {
+        if let url = attrText.attribute(NSAttributedString.Key.link, at: idx, effectiveRange: nil) as? NSURL {
             UIApplication.shared.open(url as URL);
         }
     }
     
-    func previewTapGestureDidFire(_ recognizer: UITapGestureRecognizer) {
+    @objc func previewTapGestureDidFire(_ recognizer: UITapGestureRecognizer) {
         guard self.previewView != nil else {
             return;
         }
@@ -245,4 +245,21 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         //documentController.presentPreview(animated: true);
         documentController.presentOptionsMenu(from: CGRect.zero, in: self.previewView!, animated: true);
     }
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromOptionalNSTextCheckingKeyDictionary(_ input: [NSTextCheckingKey: Any]?) -> [String: Any]? {
+	guard let input = input else { return nil }
+	return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertToOptionalNSAttributedStringKeyDictionary(_ input: [String: Any]?) -> [NSAttributedString.Key: Any]? {
+	guard let input = input else { return nil }
+	return Dictionary(uniqueKeysWithValues: input.map { key, value in (NSAttributedString.Key(rawValue: key), value)})
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromNSAttributedStringKey(_ input: NSAttributedString.Key) -> String {
+	return input.rawValue
 }

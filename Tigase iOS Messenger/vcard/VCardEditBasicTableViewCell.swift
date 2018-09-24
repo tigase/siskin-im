@@ -76,7 +76,7 @@ class VCardEditBasicTableViewCell: UITableViewCell, UITextFieldDelegate {
         // Configure the view for the selected state
     }
     
-    func bdayValueChanged(_ sender: UIDatePicker) {
+    @objc func bdayValueChanged(_ sender: UIDatePicker) {
         let formatter = DateFormatter();
         formatter.timeStyle = .none;
         formatter.dateFormat = "yyyy-MM-dd";

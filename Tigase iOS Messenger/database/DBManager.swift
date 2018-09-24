@@ -34,7 +34,7 @@ open class DBConnection {
         }
     }
 
-    open let dispatcher: QueueDispatcher;
+    public let dispatcher: QueueDispatcher;
     
     open var lastInsertRowId: Int? {
         let rowid = sqlite3_last_insert_rowid(handle);
@@ -117,7 +117,7 @@ open class DBStatement {
     
     open lazy var cursor:DBCursor = DBCursor(statement: self);
     
-    open let dispatcher: QueueDispatcher;
+    public let dispatcher: QueueDispatcher;
     
     open var lastInsertRowId: Int? {
         return connection.lastInsertRowId;

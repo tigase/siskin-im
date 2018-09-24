@@ -32,7 +32,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     fileprivate var defaultKeepOnlineOnAwayTime = TimeInterval(3 * 60);
     fileprivate var keepOnlineOnAwayTimer: TigaseSwift.Timer?;
     
-    func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+    func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         Log.initialize();
         Settings.initialize();
         AccountSettings.initialize();
@@ -58,7 +58,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.pushNotificationRegistrationFailed), name: Notification.Name("pushNotificationsRegistrationFailed"), object: nil);
         updateApplicationIconBadgeNumber(completionHandler: nil);
         
-        application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum);
+        application.setMinimumBackgroundFetchInterval(UIApplication.backgroundFetchIntervalMinimum);
         
         (self.window?.rootViewController as? UISplitViewController)?.preferredDisplayMode = .allVisible;
         if AccountManager.getAccounts().isEmpty {
@@ -82,7 +82,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         self.keepOnlineOnAwayTimer?.execute();
         self.keepOnlineOnAwayTimer = nil;
         
-        var taskId = UIBackgroundTaskInvalid;
+        var taskId = UIBackgroundTaskIdentifier.invalid;
         taskId = application.beginBackgroundTask {
             print("keep online on away background task expired", taskId);
             self.applicationKeepOnlineOnAwayFinished(application, taskId: taskId);
@@ -277,27 +277,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
     }
     
-    func isChatVisible(account: String?, with jid: String?) -> Bool {
-        guard account != nil && jid != nil else {
+    func isChatVisible(account acc: String?, with j: String?) -> Bool {
+        guard let account = acc, let jid = j else {
             return false;
         }
         var topController = UIApplication.shared.keyWindow?.rootViewController;
         while (topController?.presentedViewController != nil) {
             topController = topController?.presentedViewController;
         }
-        print("top controller", topController);
         guard let splitViewController = topController as? UISplitViewController else {
             return false;
         }
         
-        print("visible controllers", splitViewController.viewControllers);
         guard let selectedTabController = splitViewController.viewControllers.map({(controller) in controller as? UITabBarController }).filter({ (controller) -> Bool in
             controller != nil
         }).map({(controller) in controller! }).first?.selectedViewController else {
             return false;
         }
         
-        print("selected tab controller", selectedTabController);
         var baseChatController: BaseChatViewController? = nil;
         if let navigationController = selectedTabController as? UINavigationController {
             if let presented = navigationController.viewControllers.last {
@@ -313,7 +310,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
         
         print("comparing", baseChatController!.account.stringValue, account, baseChatController!.jid.stringValue, jid);
-        return (baseChatController!.account == BareJID(account!)) && (baseChatController!.jid.bareJid == BareJID(jid!));
+        return (baseChatController!.account == BareJID(account)) && (baseChatController!.jid.bareJid == BareJID(jid));
     }
     
     func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
@@ -366,7 +363,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             }
             else if unreadMessages == 0 {
                 let state = self.xmppService.getClient(forJid: account.bareJid)?.state;
-                print("unread messages retrieved, client state =", state);
+                print("unread messages retrieved, client state =", state as Any);
                 if state != .connected {
                     dismissPushNotifications(for: account) {
                         completionHandler(.newData);
@@ -409,26 +406,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
         let threadId = "account=" + account.stringValue + "|sender=" + sender.bareJid.stringValue;
         
-        let id = threadId + ":body=" + (body.characters.count > 400 ? body.substring(to: body.index(body.startIndex, offsetBy: 400)) : body);
+        let id = threadId + ":body=" + body.prefix(400);
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
             if notifications.filter({(notification) in  notification.request.identifier == id}).isEmpty {
                 let content = UNMutableNotificationContent();
                 //content.title = "Received new message from \(senderName!)";
                 content.body = alertBody!;
-                content.sound = UNNotificationSound.default();
+                content.sound = UNNotificationSound.default;
                 content.userInfo = ["account": account.stringValue, "sender": sender.bareJid.stringValue, "push": isPush];
                 content.categoryIdentifier = "MESSAGE";
                 content.threadIdentifier = threadId;
                 
                 UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil), withCompletionHandler: {(error) in
-                    print("message notification error", error);
+                    print("message notification error", error as Any);
                     self.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
                 });
             }
         }
     }
     
-    func newMessage(_ notification: NSNotification) {
+    @objc func newMessage(_ notification: NSNotification) {
         let sender = notification.userInfo!["sender"] as! BareJID;
         let account = notification.userInfo!["account"] as! BareJID;
         let state = notification.userInfo!["state"] as! DBChatHistoryStore.State;
@@ -447,11 +444,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
     }
     
-    func chatItemsUpdated(_ notification: NSNotification) {
+    @objc func chatItemsUpdated(_ notification: NSNotification) {
         updateApplicationIconBadgeNumber(completionHandler: nil);
     }
     
-    func presenceAuthorizationRequest(_ notification: NSNotification) {
+    @objc func presenceAuthorizationRequest(_ notification: NSNotification) {
         let sender = notification.userInfo?["sender"] as? BareJID;
         let account = notification.userInfo?["account"] as? BareJID;
         var senderName:String? = nil;
@@ -470,7 +467,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
     
-    func pushNotificationRegistrationFailed(_ notification: NSNotification) {
+    @objc func pushNotificationRegistrationFailed(_ notification: NSNotification) {
         let account = notification.userInfo?["account"] as? BareJID;
         let errorCondition = (notification.userInfo?["errorCondition"] as? ErrorCondition) ?? ErrorCondition.internal_server_error;
         let content = UNMutableNotificationContent();
@@ -508,7 +505,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
     }
     
-    func serverCertificateError(_ notification: NSNotification) {
+    @objc func serverCertificateError(_ notification: NSNotification) {
         guard let certInfo = notification.userInfo else {
             return;
         }
@@ -523,7 +520,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
     
-    func authenticationFailure(_ notification: NSNotification) {
+    @objc func authenticationFailure(_ notification: NSNotification) {
         guard let info = notification.userInfo else {
             return;
         }

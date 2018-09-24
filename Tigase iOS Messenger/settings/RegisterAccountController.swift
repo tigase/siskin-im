@@ -239,7 +239,7 @@ class RegisterAccountController: DataFormController, UITextFieldDelegate {
         }
     }
     
-    func domainFieldChanged(domainField: UITextField) {
+    @objc func domainFieldChanged(domainField: UITextField) {
         self.domainFieldValue = domainField.text;
     }
     
@@ -266,12 +266,12 @@ class RegisterAccountController: DataFormController, UITextFieldDelegate {
         if activityIndicator != nil {
             hideIndicator();
         }
-        activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .gray);
+        activityIndicator = UIActivityIndicatorView(style: .gray);
         activityIndicator?.center = CGPoint(x: view.frame.width/2, y: view.frame.height/2);
         activityIndicator!.isHidden = false;
         activityIndicator!.startAnimating();
         view.addSubview(activityIndicator!);
-        view.bringSubview(toFront: activityIndicator!);
+        view.bringSubviewToFront(activityIndicator!);
     }
     
     func hideIndicator() {

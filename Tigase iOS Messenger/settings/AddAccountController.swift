@@ -176,12 +176,12 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         if activityInditcator != nil {
             hideIndicator();
         }
-        activityInditcator = UIActivityIndicatorView(activityIndicatorStyle: .gray);
+        activityInditcator = UIActivityIndicatorView(style: .gray);
         activityInditcator?.center = CGPoint(x: view.frame.width/2, y: view.frame.height/2);
         activityInditcator!.isHidden = false;
         activityInditcator!.startAnimating();
         view.addSubview(activityInditcator!);
-        view.bringSubview(toFront: activityInditcator!);
+        view.bringSubviewToFront(activityInditcator!);
     }
     
     func hideIndicator() {

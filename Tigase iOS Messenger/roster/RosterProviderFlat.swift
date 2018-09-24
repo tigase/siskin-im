@@ -163,7 +163,7 @@ public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>,
     override func loadItems() -> [RosterProviderFlatItem] {
         let items = super.loadItems();
         
-        var hidden: [JID] = try! self.dbConnection.prepareStatement("SELECT ri.jid FROM roster_items ri INNER JOIN roster_items_groups rig ON ri.id = rig.item_id INNER JOIN roster_groups rg ON rg.id = rig.group_id where rg.name = 'Hidden'")
+        let hidden: [JID] = try! self.dbConnection.prepareStatement("SELECT ri.jid FROM roster_items ri INNER JOIN roster_items_groups rig ON ri.id = rig.item_id INNER JOIN roster_groups rg ON rg.id = rig.group_id where rg.name = 'Hidden'")
             .query() { it in it["jid"] };
         
         items.forEach { (item) in

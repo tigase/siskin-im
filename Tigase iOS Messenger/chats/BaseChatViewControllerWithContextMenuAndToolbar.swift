@@ -103,7 +103,7 @@ class BaseChatViewControllerWithContextMenuAndToolbar: BaseChatViewController {
         }
     }
     
-    func editCancelClicked() {
+    @objc func editCancelClicked() {
         hideEditToolbar();
     }
     
@@ -112,12 +112,12 @@ class BaseChatViewControllerWithContextMenuAndToolbar: BaseChatViewController {
         hideEditToolbar();
     }
 
-    func shareSelectedMessages() {
+    @objc func shareSelectedMessages() {
         shareMessageInt(paths: tableView.indexPathsForSelectedRows ?? []);
         hideEditToolbar();
     }
     
-    func switchWithTimestamps() {
+    @objc func switchWithTimestamps() {
         withTimestamps = !withTimestamps;
         timestampsSwitch?.title = "Timestamps: \(withTimestamps ? "ON" : "OFF")";
     }

@@ -23,9 +23,9 @@ import UIKit
 
 class MainTabBarController: CustomTabBarController {
     
-    open static let RECENTS_TAB = 0;
-    open static let ROSTER_TAB = 1;
-    open static let MORE_TAB = 2;
+    public static let RECENTS_TAB = 0;
+    public static let ROSTER_TAB = 1;
+    public static let MORE_TAB = 2;
     
     override func viewDidLoad() {
         super.viewDidLoad();
@@ -33,7 +33,7 @@ class MainTabBarController: CustomTabBarController {
         NotificationCenter.default.addObserver(self, selector: #selector(updateMoreBadge), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil);
     }
     
-    func updateMoreBadge(notification: Notification) {
+    @objc func updateMoreBadge(notification: Notification) {
         let xmppService = (notification.object as! XmppService);
         let count = xmppService.getClients(filter: {(client)->Bool in
             return client.state != .connected;

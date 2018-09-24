@@ -87,7 +87,7 @@ public class DBSchemaManager {
         }
         print("found duplicates", duplicates);
         try duplicates.forEach({ (account, jid, idToLeave) in
-            let removed = try dbConnection.prepareStatement("delete from chats where account = ? and jid = ? and id <> :id").scalar(account, jid, idToLeave);
+            let removed = try dbConnection.prepareStatement("delete from chats where account = ? and jid = ? and id <> :id").scalar(account, jid, idToLeave)!;
             print("for account", account, "and jid", jid, "removed", removed, "duplicated chats");
         });
         print("duplicated chats cleanup finished!");

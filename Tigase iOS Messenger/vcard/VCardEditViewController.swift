@@ -199,8 +199,8 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         }
     }
     
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == UITableViewCellEditingStyle.delete {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == UITableViewCell.EditingStyle.delete {
             if indexPath.section == 1 {
                 vcard.telephones.remove(at: indexPath.row);
                 tableView.reloadData();
@@ -263,7 +263,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         }
     }
     
-    func photoClicked() {
+    @objc func photoClicked() {
         if UIImagePickerController.isSourceTypeAvailable(.camera) {
             let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
             alert.addAction(UIAlertAction(title: "Take photo", style: .default, handler: { (action) in
@@ -282,7 +282,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         }
     }
     
-    func selectPhoto(_ source: UIImagePickerControllerSourceType) {
+    func selectPhoto(_ source: UIImagePickerController.SourceType) {
         picker.delegate = self;
         picker.allowsEditing = true;
         picker.sourceType = source;
@@ -290,7 +290,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
-        var photo = (editingInfo?[UIImagePickerControllerEditedImage] as? UIImage) ?? image;
+        var photo = (editingInfo?[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.editedImage)] as? UIImage) ?? image;
         
         // scalling photo to max of 180px
         var size: CGSize! = nil;
@@ -305,7 +305,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         UIGraphicsEndImageContext();
         
         // saving photo
-        let data = UIImagePNGRepresentation(photo)
+        let data = photo.pngData()
         if data != nil {
             vcard.photos = [VCard.Photo(type: "image/png", binval: data!.base64EncodedString(options: NSData.Base64EncodingOptions(rawValue: 0)))];
         }
@@ -342,4 +342,9 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil);
     }
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
+	return input.rawValue
 }

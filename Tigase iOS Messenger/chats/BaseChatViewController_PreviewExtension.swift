@@ -52,7 +52,6 @@ extension BaseChatViewController_PreviewExtension {
                                 item.preview = previewKey;
                             })
                         }
-                        print("preview downloaded and updated to", key, "for msgId", msgId);
                     })
                 })
             } else {
@@ -66,7 +65,7 @@ extension BaseChatViewController_PreviewExtension {
         request.httpMethod = "HEAD";
         URLSession.shared.dataTask(with: request) { (data, resp, error) in
             let response = resp as? HTTPURLResponse;
-            print("got mime type =", response?.mimeType, "with size", response?.expectedContentLength, "at", url);
+            print("got mime type =", response?.mimeType as Any, "with size", response?.expectedContentLength as Any, "at", url);
 
             completion(response?.mimeType, response?.expectedContentLength, response?.statusCode ?? 500);
             }.resume();
@@ -74,7 +73,7 @@ extension BaseChatViewController_PreviewExtension {
 
     fileprivate func downloadImageFile(url: URL, completion: @escaping (String?)->Void) {
         URLSession.shared.downloadTask(with: url, completionHandler: { (tmpUrl, resp, error) in
-            print("downloaded content of", url, "to", tmpUrl, "response:", resp, "error:", error);
+            print("downloaded content of", url, "to", tmpUrl as Any, "response:", resp as Any, "error:", error as Any);
             guard let response = resp as? HTTPURLResponse else {
                 completion(nil);
                 return;

@@ -27,10 +27,10 @@ import TigaseSwift
 
 open class AccountManager {
     
-    open static let ACCOUNT_CONFIGURATION_CHANGED = Notification.Name("accountConfigurationChanged");
-    open static let ACCOUNT_REMOVED = Notification.Name("accountRemoved");
+    public static let ACCOUNT_CONFIGURATION_CHANGED = Notification.Name("accountConfigurationChanged");
+    public static let ACCOUNT_REMOVED = Notification.Name("accountRemoved");
     
-    open static let saltedPasswordCache = AccountManagerScramSaltedPasswordCache();
+    public static let saltedPasswordCache = AccountManagerScramSaltedPasswordCache();
     
     static func getAccounts() -> [String] {
         var accounts = [String]();
@@ -165,7 +165,7 @@ open class AccountManager {
         
         fileprivate var data:[String:AnyObject];
         
-        open let name:String;
+        public let name:String;
         
         open var active:Bool {
             get {
@@ -300,13 +300,13 @@ open class AccountManager {
                 self.serverCertificate = nil;
                 return;
             }
-            self.serverCertificate = [ "accepted" : true, "cert-hash-sha1" : certData!.details.fingerprintSha1 ];
+            self.serverCertificate = [ "accepted" : true, "cert-hash-sha1" : certData!.details.fingerprintSha1 as Any ];
         }
     }
     
     open class SaltEntry {
-        open let id: String;
-        open let value: [UInt8];
+        public let id: String;
+        public let value: [UInt8];
         
         convenience init?(dict: [String: Any]?) {
             guard let id = dict?["id"] as? String, let value = dict?["value"] as? [UInt8] else {

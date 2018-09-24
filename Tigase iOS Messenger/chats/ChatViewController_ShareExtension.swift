@@ -63,7 +63,7 @@ extension BaseChatViewController_ShareImageExtension {
         }
     }
     
-    func selectPhoto(_ source: UIImagePickerControllerSourceType) {
+    func selectPhoto(_ source: UIImagePickerController.SourceType) {
         let picker = UIImagePickerController();
         self.imagePickerDelegate = BaseChatViewController_ShareImagePickerDelegate(self);
         picker.delegate = self.imagePickerDelegate;
@@ -83,12 +83,12 @@ class BaseChatViewController_ShareImagePickerDelegate: NSObject, UIImagePickerCo
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo info: [String : AnyObject]?) {
-        let photo = (info?[UIImagePickerControllerEditedImage] as? UIImage) ?? image;
-        print("photo", photo.size, "image", image.size, "originalImage", info?[UIImagePickerControllerOriginalImage]);
+        let photo = (info?[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.editedImage)] as? UIImage) ?? image;
+        print("photo", photo.size, "image", image.size, "originalImage", info?[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.originalImage)] as Any);
         let imageName = "image.jpg";
         
         // saving photo
-        let data = UIImageJPEGRepresentation(photo, 0.9);
+        let data = photo.jpegData(compressionQuality: 0.9);
         picker.dismiss(animated: true, completion: nil);
         
         if data != nil, let client = self.controller.xmppService.getClient(forJid: self.controller.account) {
@@ -174,4 +174,9 @@ class BaseChatViewController_ShareImagePickerDelegate: NSObject, UIImagePickerCo
             self.controller.progressBar.progress = 0;
         }
     }
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
+	return input.rawValue
 }
