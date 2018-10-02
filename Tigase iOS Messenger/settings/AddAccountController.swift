@@ -246,7 +246,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
                     let certData = SslCertificateInfo(trust: e.trust);
                     let alert = CertificateErrorAlert.create(domain: self.client!.sessionObject.userBareJid!.domain, certData: certData, onAccept: {
                         self.acceptedCertificate = certData;
-                        SslCertificateValidator.setAcceptedSslCertificate(self.client!.sessionObject, fingerprint: certData.details.fingerprintSha1!);
+                        SslCertificateValidator.setAcceptedSslCertificate(self.client!.sessionObject, fingerprint: certData.details.fingerprintSha1);
                         self.callback = callback;
                         self.client?.login();
                     }, onDeny: {

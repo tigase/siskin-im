@@ -25,7 +25,7 @@ import TigaseSwift
 class CertificateErrorAlert {
     
     public static func create(domain: String, certData: SslCertificateInfo, onAccept: (()->Void)?, onDeny: (()->Void)?) -> UIAlertController {
-        return create(domain: domain, certName: certData.details.name!, certHash: certData.details.fingerprintSha1!, issuerName: certData.issuer?.name, issuerHash: certData.issuer?.fingerprintSha1, onAccept: onAccept, onDeny: onDeny);
+        return create(domain: domain, certName: certData.details.name, certHash: certData.details.fingerprintSha1, issuerName: certData.issuer?.name, issuerHash: certData.issuer?.fingerprintSha1, onAccept: onAccept, onDeny: onDeny);
     }
     
     public static func create(domain: String, certName: String, certHash: String, issuerName: String?, issuerHash: String?, onAccept: (()->Void)?, onDeny: (()->Void)?) -> UIAlertController {
