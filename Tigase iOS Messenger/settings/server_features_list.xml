@@ -1,0 +1,3299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<server_feaures>
+    <feature id="">
+        <xep>XEP-0001</xep>
+        <name>XMPP Extension Protocols</name>
+        <type>Procedural</type>
+        <status>Active</status>
+        <date>2016-11-16</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0002</xep>
+        <name>Special Interest Groups (SIGs)</name>
+        <type>Procedural</type>
+        <status>Active</status>
+        <date>2002-01-11</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:pass">
+        <xep>XEP-0003</xep>
+        <name>Proxy Accept Socket Service (PASS)</name>
+        <type>Historical</type>
+        <status>Obsolete</status>
+        <date>2009-06-03</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0004</xep>
+        <name>Data Forms</name>
+        <type>Standards Track</type>
+        <status>Final</status>
+        <date>2007-08-13</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0005</xep>
+        <name>Jabber Interest Groups</name>
+        <type>Informational</type>
+        <status>Obsolete</status>
+        <date>2002-05-08</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0006</xep>
+        <name>Profiles</name>
+        <type>SIG Formation</type>
+        <status>Obsolete</status>
+        <date>2002-05-08</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0007</xep>
+        <name>Conferencing SIG</name>
+        <type>SIG Proposal</type>
+        <status>Obsolete</status>
+        <date>2002-05-08</date>
+        <description/>
+    </feature>
+    <feature id="jabber:x:avatar">
+        <xep>XEP-0008</xep>
+        <name>IQ-Based Avatars</name>
+        <type>Historical</type>
+        <status>Deferred</status>
+        <date>2005-06-16</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:rpc">
+        <xep>XEP-0009</xep>
+        <name>Jabber-RPC</name>
+        <type>Standards Track</type>
+        <status>Final</status>
+        <date>2011-11-10</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0010</xep>
+        <name>Whiteboarding SIG</name>
+        <type>SIG Formation</type>
+        <status>Obsolete</status>
+        <date>2002-05-08</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:browse">
+        <xep>XEP-0011</xep>
+        <name>Jabber Browsing</name>
+        <type>Historical</type>
+        <status>Obsolete</status>
+        <date>2009-06-03</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:last">
+        <xep>XEP-0012</xep>
+        <name>Last Activity</name>
+        <type>Standards Track</type>
+        <status>Final</status>
+        <date>2008-11-26</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/offline">
+        <xep>XEP-0013</xep>
+        <name>Flexible Offline Message Retrieval</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2005-07-14</date>
+        <description/>
+    </feature>
+    <feature id="jabber:x:tone">
+        <xep>XEP-0014</xep>
+        <name>Message Tone</name>
+        <type>Standards Track</type>
+        <status>Rejected</status>
+        <date>2002-01-16</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:accountxfer">
+        <xep>XEP-0015</xep>
+        <name>Account Transfer</name>
+        <type>Standards Track</type>
+        <status>Rejected</status>
+        <date>2002-04-18</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:privacy">
+        <xep>XEP-0016</xep>
+        <name>Privacy Lists</name>
+        <type>Standards Track</type>
+        <status>Deprecated</status>
+        <date>2017-05-20</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0017</xep>
+        <name>Naive Packet Framing Protocol</name>
+        <type>Informational</type>
+        <status>Rejected</status>
+        <date>2002-02-19</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0018</xep>
+        <name>Invisible Presence</name>
+        <type>Informational</type>
+        <status>Rejected</status>
+        <date>2003-09-26</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0019</xep>
+        <name>Streamlining the SIGs</name>
+        <type>Procedural</type>
+        <status>Active</status>
+        <date>2002-03-20</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/feature-neg">
+        <xep>XEP-0020</xep>
+        <name>Feature Negotiation</name>
+        <type>Standards Track</type>
+        <status>Deprecated</status>
+        <date>2018-03-07</date>
+        <description/>
+    </feature>
+    <feature id="http://xml.cataclysm.cx/jabber/ens/">
+        <xep>XEP-0021</xep>
+        <name>Jabber Event Notification Service (ENS)</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2003-04-22</date>
+        <description/>
+    </feature>
+    <feature id="jabber:x:event">
+        <xep>XEP-0022</xep>
+        <name>Message Events</name>
+        <type>Historical</type>
+        <status>Obsolete</status>
+        <date>2009-05-27</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0023</xep>
+        <name>Message Expiration</name>
+        <type>Historical</type>
+        <status>Obsolete</status>
+        <date>2009-06-03</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:pubsub">
+        <xep>XEP-0024</xep>
+        <name>Publish/Subscribe</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2003-04-22</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0025</xep>
+        <name>Jabber HTTP Polling</name>
+        <type>Historical</type>
+        <status>Obsolete</status>
+        <date>2009-06-03</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0026</xep>
+        <name>Internationalization (I18N)</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2003-11-05</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0027</xep>
+        <name>Current Jabber OpenPGP Usage</name>
+        <type>Historical</type>
+        <status>Obsolete</status>
+        <date>2014-03-14</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0028</xep>
+        <name>No Such XEP</name>
+        <type>Informational</type>
+        <status>Retracted</status>
+        <date>2001-08-20</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0029</xep>
+        <name>Definition of Jabber Identifiers (JIDs)</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2003-10-03</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/disco*">
+        <xep>XEP-0030</xep>
+        <name>Service Discovery</name>
+        <type>Standards Track</type>
+        <status>Final</status>
+        <date>2017-10-03</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0031</xep>
+        <name>A Framework For Securing Jabber Conversations</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2002-07-09</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0032</xep>
+        <name>Jabber URI Scheme</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2003-09-02</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/address">
+        <xep>XEP-0033</xep>
+        <name>Extended Stanza Addressing</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2017-01-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0034</xep>
+        <name>SASL Integration</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2003-11-05</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0035</xep>
+        <name>SSL/TLS Integration</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2003-11-05</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:pubsub">
+        <xep>XEP-0036</xep>
+        <name>Pub-Sub Subscriptions</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2003-04-22</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0037</xep>
+        <name>DSPS - Data Stream Proxy Service</name>
+        <type>Standards Track</type>
+        <status>Rejected</status>
+        <date>2016-10-04</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0038</xep>
+        <name>Icon Styles</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2003-06-02</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/stats">
+        <xep>XEP-0039</xep>
+        <name>Statistics Gathering</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2002-11-05</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0040</xep>
+        <name>Jabber Robust Publish-Subscribe</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2004-07-26</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/rel">
+        <xep>XEP-0041</xep>
+        <name>Reliable Entity Link</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2003-09-30</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/jobs">
+        <xep>XEP-0042</xep>
+        <name>Jabber OOB Broadcast Service (JOBS)</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2003-04-11</date>
+        <description/>
+    </feature>
+    <feature id="http://openaether.org/projects/jabber_database.html">
+        <xep>XEP-0043</xep>
+        <name>Jabber Database Access</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2003-10-20</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0044</xep>
+        <name>Full Namespace Support for XML Streams</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2002-08-26</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/muc">
+        <xep>XEP-0045</xep>
+        <name>Multi-User Chat</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2018-07-31</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/dtcp">
+        <xep>XEP-0046</xep>
+        <name>DTCP</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2003-04-11</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/ibb">
+        <xep>XEP-0047</xep>
+        <name>In-Band Bytestreams</name>
+        <type>Standards Track</type>
+        <status>Final</status>
+        <date>2012-06-22</date>
+        <description/>
+    </feature>
+    <feature id="storage:bookmarks">
+        <xep>XEP-0048</xep>
+        <name>Bookmarks</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2007-11-07</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:private">
+        <xep>XEP-0049</xep>
+        <name>Private XML Storage</name>
+        <type>Historical</type>
+        <status>Active</status>
+        <date>2004-03-01</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/commands">
+        <xep>XEP-0050</xep>
+        <name>Ad-Hoc Commands</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2016-12-03</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:cxfr">
+        <xep>XEP-0051</xep>
+        <name>Connection Transfer</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2009-07-07</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/feature-neg">
+        <xep>XEP-0052</xep>
+        <name>File Transfer</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2003-09-30</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0053</xep>
+        <name>XMPP Registrar Function</name>
+        <type>Procedural</type>
+        <status>Active</status>
+        <date>2016-12-01</date>
+        <description/>
+    </feature>
+    <feature id="vcard-temp">
+        <xep>XEP-0054</xep>
+        <name>vcard-temp</name>
+        <type>Historical</type>
+        <status>Active</status>
+        <date>2008-07-16</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:search">
+        <xep>XEP-0055</xep>
+        <name>Jabber Search</name>
+        <type>Historical</type>
+        <status>Active</status>
+        <date>2009-09-15</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/ebxml">
+        <xep>XEP-0056</xep>
+        <name>Business Data Interchange</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2002-11-18</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0057</xep>
+        <name>Extended Roster</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2003-04-28</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0058</xep>
+        <name>Multi-User Text Editing</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2002-11-12</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/rsm">
+        <xep>XEP-0059</xep>
+        <name>Result Set Management</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2006-09-20</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/pubsub">
+        <xep>XEP-0060</xep>
+        <name>Publish-Subscribe</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2018-05-14</date>
+        <description/>
+    </feature>
+    <feature id="http://www.jabber.org/protocol/sharednote">
+        <xep>XEP-0061</xep>
+        <name>Shared Notes</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2003-09-30</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/filter">
+        <xep>XEP-0062</xep>
+        <name>Packet Filtering</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2003-09-30</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/filter/basic">
+        <xep>XEP-0063</xep>
+        <name>Basic Filtering Operations</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2003-09-30</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/filter/xpath">
+        <xep>XEP-0064</xep>
+        <name>XPath Filtering</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2003-09-30</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/bytestreams">
+        <xep>XEP-0065</xep>
+        <name>SOCKS5 Bytestreams</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2015-09-17</date>
+        <description/>
+    </feature>
+    <feature id="jabber:x:oob">
+        <xep>XEP-0065</xep>
+        <name>Out of Band Data</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2006-08-15</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:oob">
+        <xep>XEP-0066</xep>
+        <name>Out of Band Data</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2006-08-16</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0067</xep>
+        <name>Stock Data Transmission</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2003-07-19</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0068</xep>
+        <name>Field Standardization for Data Forms</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2012-05-28</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0069</xep>
+        <name>Compliance SIG</name>
+        <type>SIG Formation</type>
+        <status>Deferred</status>
+        <date>2003-01-29</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/http-auth">
+        <xep>XEP-0070</xep>
+        <name>Verifying HTTP Requests via XMPP</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2016-12-09</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/xhtml-im">
+        <xep>XEP-0071</xep>
+        <name>XHTML-IM</name>
+        <type>Standards Track</type>
+        <status>Deprecated</status>
+        <date>2018-03-08</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/soap">
+        <xep>XEP-0072</xep>
+        <name>SOAP Over XMPP</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2005-12-14</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0073</xep>
+        <name>Basic IM Protocol Suite</name>
+        <type>Standards Track</type>
+        <status>Obsolete</status>
+        <date>2007-10-30</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/sac">
+        <xep>XEP-0074</xep>
+        <name>Simple Access Control</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2003-10-20</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:joap">
+        <xep>XEP-0075</xep>
+        <name>Jabber Object Access Protocol (JOAP)</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2003-05-22</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/evil">
+        <xep>XEP-0076</xep>
+        <name>Malicious Stanzas</name>
+        <type>Humorous</type>
+        <status>Active</status>
+        <date>2003-04-01</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:register">
+        <xep>XEP-0077</xep>
+        <name>In-Band Registration</name>
+        <type>Standards Track</type>
+        <status>Final</status>
+        <date>2012-01-25</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:auth">
+        <xep>XEP-0078</xep>
+        <name>Non-SASL Authentication</name>
+        <type>Standards Track</type>
+        <status>Obsolete</status>
+        <date>2008-10-29</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/amp">
+        <xep>XEP-0079</xep>
+        <name>Advanced Message Processing</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2005-11-30</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/geoloc">
+        <xep>XEP-0080</xep>
+        <name>User Location</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2015-12-01</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0081</xep>
+        <name>Jabber MIME Type</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2005-07-19</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0082</xep>
+        <name>XMPP Date and Time Profiles</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2013-09-26</date>
+        <description/>
+    </feature>
+    <feature id="roster:delimiter">
+        <xep>XEP-0083</xep>
+        <name>Nested Roster Groups</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2004-10-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0084</xep>
+        <name>User Avatar</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2016-07-09</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/chatstates">
+        <xep>XEP-0085</xep>
+        <name>Chat State Notifications</name>
+        <type>Standards Track</type>
+        <status>Final</status>
+        <date>2009-09-23</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0086</xep>
+        <name>Error Condition Mappings</name>
+        <type>Informational</type>
+        <status>Deprecated</status>
+        <date>2004-02-17</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/si">
+        <xep>XEP-0087</xep>
+        <name>Stream Initiation</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2003-05-22</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/webtab">
+        <xep>XEP-0088</xep>
+        <name>Client Webtabs</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2004-03-14</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/alert">
+        <xep>XEP-0089</xep>
+        <name>Generic Alerts</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2003-05-16</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:time">
+        <xep>XEP-0090</xep>
+        <name>Legacy Entity Time</name>
+        <type>Historical</type>
+        <status>Obsolete</status>
+        <date>2009-05-27</date>
+        <description/>
+    </feature>
+    <feature id="jabber:x:delay">
+        <xep>XEP-0091</xep>
+        <name>Legacy Delayed Delivery</name>
+        <type>Historical</type>
+        <status>Obsolete</status>
+        <date>2009-05-27</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:version">
+        <xep>XEP-0092</xep>
+        <name>Software Version</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2007-02-15</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0093</xep>
+        <name>Roster Item Exchange</name>
+        <type>Historical</type>
+        <status>Deprecated</status>
+        <date>2005-08-26</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:agents">
+        <xep>XEP-0094</xep>
+        <name>Agent Information</name>
+        <type>Historical</type>
+        <status>Obsolete</status>
+        <date>2003-10-08</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/si">
+        <xep>XEP-0095</xep>
+        <name>Stream Initiation</name>
+        <type>Standards Track</type>
+        <status>Deprecated</status>
+        <date>2017-11-29</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/si/profile/file-transfer">
+        <xep>XEP-0096</xep>
+        <name>SI File Transfer</name>
+        <type>Standards Track</type>
+        <status>Deprecated</status>
+        <date>2017-11-29</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/gw/ical">
+        <xep>XEP-0097</xep>
+        <name>iCal Envelope</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2003-06-10</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/private-xml">
+        <xep>XEP-0098</xep>
+        <name>Enhanced Private XML Storage</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2003-06-25</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0099</xep>
+        <name>IQ Query Action Protocol</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2003-06-25</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0100</xep>
+        <name>Gateway Interaction</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2005-10-05</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0101</xep>
+        <name>HTTP Authentication using Jabber Tickets</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2004-01-18</date>
+        <description/>
+    </feature>
+    <feature id="xmpp:sec">
+        <xep>XEP-0102</xep>
+        <name>Security Extensions</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2003-06-25</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0103</xep>
+        <name>URL Address Information</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2004-01-20</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0104</xep>
+        <name>HTTP Scheme for URL Data</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2004-01-20</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0105</xep>
+        <name>Tree Transfer Stream Initiation Profile</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2003-09-22</date>
+        <description/>
+    </feature>
+    <feature id="jid\20escaping">
+        <xep>XEP-0106</xep>
+        <name>JID Escaping</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2016-07-08</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/mood">
+        <xep>XEP-0107</xep>
+        <name>User Mood</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2018-03-13</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/activity">
+        <xep>XEP-0108</xep>
+        <name>User Activity</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2008-10-29</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0109</xep>
+        <name>Out-of-Office Messages</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2010-05-24</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/map">
+        <xep>XEP-0110</xep>
+        <name>Generic Maps</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2003-07-28</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/tins">
+        <xep>XEP-0111</xep>
+        <name>A Transport for Initiating and Negotiating Sessions (TINS)</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2005-12-21</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/physloc">
+        <xep>XEP-0112</xep>
+        <name>User Physical Location</name>
+        <type>Standards Track</type>
+        <status>Obsolete</status>
+        <date>2004-10-12</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/swb">
+        <xep>XEP-0113</xep>
+        <name>Simple Whiteboarding</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2003-09-07</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0114</xep>
+        <name>Jabber Component Protocol</name>
+        <type>Historical</type>
+        <status>Active</status>
+        <date>2012-01-25</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/caps">
+        <xep>XEP-0115</xep>
+        <name>Entity Capabilities</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2016-10-06</date>
+        <description/>
+    </feature>
+    <feature id="http://www.xmpp.org/extensions/xep-0116.html#ns">
+        <xep>XEP-0116</xep>
+        <name>Encrypted Session Negotiation</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2007-05-30</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0117</xep>
+        <name>Intermediate IM Protocol Suite</name>
+        <type>Standards Track</type>
+        <status>Obsolete</status>
+        <date>2007-10-30</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/tune">
+        <xep>XEP-0118</xep>
+        <name>User Tune</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2008-01-30</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0119</xep>
+        <name>Extended Presence Protocol Suite</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2006-08-08</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/infobits">
+        <xep>XEP-0120</xep>
+        <name>Infobits</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2004-01-22</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0121</xep>
+        <name>Dublin Core Infobits Mapping</name>
+        <type>Informational</type>
+        <status>Retracted</status>
+        <date>2003-12-15</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/xdata-validate">
+        <xep>XEP-0122</xep>
+        <name>Data Forms Validation</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2018-03-21</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0123</xep>
+        <name>Entity Metadata</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2003-12-16</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0124</xep>
+        <name>Bidirectional-streams Over Synchronous HTTP (BOSH)</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2016-11-16</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0125</xep>
+        <name>vCard Infobits Mapping</name>
+        <type>Informational</type>
+        <status>Retracted</status>
+        <date>2003-12-15</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0126</xep>
+        <name>Invisibility</name>
+        <type>Informational</type>
+        <status>Deprecated</status>
+        <date>2005-08-19</date>
+        <description/>
+    </feature>
+    <feature id="http://www.incident.com/cap/1.0">
+        <xep>XEP-0127</xep>
+        <name>Common Alerting Protocol (CAP) Over XMPP</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2004-12-09</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0128</xep>
+        <name>Service Discovery Extensions</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2004-10-20</date>
+        <description/>
+    </feature>
+    <feature id="http://www.xmpp.org/extensions/xep-0129.html#ns">
+        <xep>XEP-0129</xep>
+        <name>WebDAV File Transfers</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2007-04-19</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/waitinglist">
+        <xep>XEP-0130</xep>
+        <name>Waiting Lists</name>
+        <type>Historical</type>
+        <status>Deprecated</status>
+        <date>2012-04-18</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/shim">
+        <xep>XEP-0131</xep>
+        <name>Stanza Headers and Internet Metadata</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2006-07-12</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/poke">
+        <xep>XEP-0132</xep>
+        <name>Presence Obtained via Kinesthetic Excitation (POKE)</name>
+        <type>Humorous</type>
+        <status>Active</status>
+        <date>2004-04-01</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0133</xep>
+        <name>Service Administration</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2017-07-15</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0134</xep>
+        <name>XMPP Design Guidelines</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2004-12-09</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/files">
+        <xep>XEP-0135</xep>
+        <name>File Sharing</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2004-06-04</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:archive*">
+        <xep>XEP-0136</xep>
+        <name>Message Archiving</name>
+        <type>Standards Track</type>
+        <status>Deprecated</status>
+        <date>2017-11-15</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/sipub">
+        <xep>XEP-0137</xep>
+        <name>Publishing Stream Initiation Requests</name>
+        <type>Standards Track</type>
+        <status>Deprecated</status>
+        <date>2018-02-28</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/features/compress">
+        <xep>XEP-0138</xep>
+        <name>Stream Compression</name>
+        <type>Standards Track</type>
+        <status>Final</status>
+        <date>2009-05-27</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0139</xep>
+        <name>Security SIG</name>
+        <type>SIG Formation</type>
+        <status>Retracted</status>
+        <date>2004-09-15</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0140</xep>
+        <name>Shared Groups</name>
+        <type>Informational</type>
+        <status>Retracted</status>
+        <date>2004-10-27</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0141</xep>
+        <name>Data Forms Layout</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2005-05-12</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/workgroup">
+        <xep>XEP-0142</xep>
+        <name>Workgroup Queues</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2005-05-09</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0143</xep>
+        <name>Guidelines for Authors of XMPP Extension Protocols</name>
+        <type>Procedural</type>
+        <status>Active</status>
+        <date>2016-12-02</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/rosterx">
+        <xep>XEP-0144</xep>
+        <name>Roster Item Exchange</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2017-11-28</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0145</xep>
+        <name>Annotations</name>
+        <type>Historical</type>
+        <status>Active</status>
+        <date>2006-03-23</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/rc*">
+        <xep>XEP-0146</xep>
+        <name>Remote Controlling Clients</name>
+        <type>Informational</type>
+        <status>Obsolete</status>
+        <date>2017-11-07</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0147</xep>
+        <name>XMPP URI Scheme Query Components</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2006-09-13</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:iq">
+        <xep>XEP-0148</xep>
+        <name>Instant Messaging Intelligence Quotient (IM IQ)</name>
+        <type>Humorous</type>
+        <status>Active</status>
+        <date>2005-04-01</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0149</xep>
+        <name>Time Periods</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2006-01-24</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0150</xep>
+        <name>Use of Entity Tags in XMPP Extensions</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2005-08-09</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0151</xep>
+        <name>Virtual Presence</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2005-07-05</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:reach:0">
+        <xep>XEP-0152</xep>
+        <name>Reachability Addresses</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2014-02-25</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0153</xep>
+        <name>vCard-Based Avatars</name>
+        <type>Historical</type>
+        <status>Active</status>
+        <date>2018-02-26</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:tmp:profile">
+        <xep>XEP-0154</xep>
+        <name>User Profile</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2008-04-18</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/feature-neg">
+        <xep>XEP-0155</xep>
+        <name>Stanza Session Negotiation</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2016-01-20</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0156</xep>
+        <name>Discovering Alternative XMPP Connection Methods</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2018-07-21</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0157</xep>
+        <name>Contact Addresses for XMPP Services</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2018-07-21</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0158</xep>
+        <name>CAPTCHA Forms</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2008-09-03</date>
+        <description/>
+    </feature>
+    <feature id="http://www.xmpp.org/extensions/xep-0159.html*">
+        <xep>XEP-0159</xep>
+        <name>Spim-Blocking Control</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2006-07-11</date>
+        <description/>
+    </feature>
+    <feature id="msgoffline">
+        <xep>XEP-0160</xep>
+        <name>Best Practices for Handling Offline Messages</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2016-10-07</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:tmp:abuse">
+        <xep>XEP-0161</xep>
+        <name>Abuse Reporting</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2007-05-06</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0162</xep>
+        <name>Best Practices for Roster and Subscription Management</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2005-12-06</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0163</xep>
+        <name>Personal Eventing Protocol</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2018-03-18</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0164</xep>
+        <name>vCard Filtering</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2005-11-16</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0165</xep>
+        <name>Best Practices to Discourage JID Mimicking</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2007-12-13</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:jingle:1">
+        <xep>XEP-0166</xep>
+        <name>Jingle</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2016-05-17</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0167</xep>
+        <name>Jingle RTP Sessions</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2016-07-08</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:rap:0">
+        <xep>XEP-0168</xep>
+        <name>Resource Application Priority</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2008-09-26</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0169</xep>
+        <name>Twas The Night Before Christmas (Jabber Version)</name>
+        <type>Humorous</type>
+        <status>Active</status>
+        <date>2009-12-24</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0170</xep>
+        <name>Recommended Order of Stream Feature Negotiation</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2007-01-04</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:langtrans">
+        <xep>XEP-0171</xep>
+        <name>Language Translation</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2015-10-15</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/nick">
+        <xep>XEP-0172</xep>
+        <name>User Nickname</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2012-03-21</date>
+        <description/>
+    </feature>
+    <feature id="storage:pubsubs">
+        <xep>XEP-0173</xep>
+        <name>Pubsub Subscription Storage</name>
+        <type>Historical</type>
+        <status>Deferred</status>
+        <date>2006-02-09</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0174</xep>
+        <name>Serverless Messaging</name>
+        <type>Standards Track</type>
+        <status>Final</status>
+        <date>2018-02-08</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0175</xep>
+        <name>Best Practices for Use of SASL ANONYMOUS</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2009-09-30</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:jingle:transports:ice-udp*">
+        <xep>XEP-0176</xep>
+        <name>Jingle ICE-UDP Transport Method</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2009-06-10</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:jingle:transports:raw-udp*">
+        <xep>XEP-0177</xep>
+        <name>Jingle Raw UDP Transport Method</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2009-12-23</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0178</xep>
+        <name>Best Practices for Use of SASL EXTERNAL with Certificates</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2011-05-25</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0179</xep>
+        <name>Jingle IAX Transport Method</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2006-03-23</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:tmp:jingle:apps:video-rtp">
+        <xep>XEP-0180</xep>
+        <name>Jingle Video via RTP</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2008-06-04</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0181</xep>
+        <name>Jingle DTMF</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2009-10-02</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0182</xep>
+        <name>Application-Specific Error Conditions</name>
+        <type>Procedural</type>
+        <status>Active</status>
+        <date>2008-03-05</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0183</xep>
+        <name>Jingle Telepathy Transport</name>
+        <type>Humorous</type>
+        <status>Active</status>
+        <date>2006-04-01</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:receipts">
+        <xep>XEP-0184</xep>
+        <name>Message Delivery Receipts</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2011-03-01</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0185</xep>
+        <name>Dialback Key Generation and Validation</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2007-02-15</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:invisible:1">
+        <xep>XEP-0186</xep>
+        <name>Invisible Command</name>
+        <type>Standards Track</type>
+        <status>Proposed</status>
+        <date>2017-11-29</date>
+        <description/>
+    </feature>
+    <feature id="http://www.xmpp.org/extensions/xep-0187.html#ns">
+        <xep>XEP-0187</xep>
+        <name>Offline Encrypted Sessions</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2007-05-30</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0188</xep>
+        <name>Cryptographic Design of Encrypted Sessions</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2007-05-30</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:pubkey:2">
+        <xep>XEP-0189</xep>
+        <name>Public Key Publishing</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2010-07-15</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0190</xep>
+        <name>Best Practice for Closing Idle Streams</name>
+        <type>Informational</type>
+        <status>Obsolete</status>
+        <date>2012-03-06</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:blocking">
+        <xep>XEP-0191</xep>
+        <name>Blocking Command</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2015-03-12</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0192</xep>
+        <name>Proposed Stream Feature Improvements</name>
+        <type>Standards Track</type>
+        <status>Obsolete</status>
+        <date>2012-02-08</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0193</xep>
+        <name>Proposed Resource Binding Improvements</name>
+        <type>Standards Track</type>
+        <status>Obsolete</status>
+        <date>2012-02-08</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:chatting:0">
+        <xep>XEP-0194</xep>
+        <name>User Chatting</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2008-09-25</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:browsing:0">
+        <xep>XEP-0195</xep>
+        <name>User Browsing</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2008-09-25</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:gaming:0">
+        <xep>XEP-0196</xep>
+        <name>User Gaming</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2008-09-25</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:viewing:0">
+        <xep>XEP-0197</xep>
+        <name>User Viewing</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2008-09-25</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:sm:3">
+        <xep>XEP-0198</xep>
+        <name>Stream Management</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2018-07-19</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:ping">
+        <xep>XEP-0199</xep>
+        <name>XMPP Ping</name>
+        <type>Standards Track</type>
+        <status>Final</status>
+        <date>2009-06-03</date>
+        <description/>
+    </feature>
+    <feature id="http://www.xmpp.org/extensions/xep-0200.html*">
+        <xep>XEP-0200</xep>
+        <name>Stanza Encryption</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2007-05-30</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0201</xep>
+        <name>Best Practices for Message Threads</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2010-11-29</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:time">
+        <xep>XEP-0202</xep>
+        <name>Entity Time</name>
+        <type>Standards Track</type>
+        <status>Final</status>
+        <date>2009-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:delay">
+        <xep>XEP-0203</xep>
+        <name>Delayed Delivery</name>
+        <type>Standards Track</type>
+        <status>Final</status>
+        <date>2009-09-15</date>
+        <description/>
+    </feature>
+    <feature id="http://www.xmpp.org/extensions/xep-0204.html*">
+        <xep>XEP-0204</xep>
+        <name>Collaborative Data Objects</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2007-01-17</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0205</xep>
+        <name>Best Practices to Discourage Denial of Service Attacks</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2009-01-07</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0206</xep>
+        <name>XMPP Over BOSH</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2014-04-09</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0207</xep>
+        <name>XMPP Eventing via Pubsub</name>
+        <type>Humorous</type>
+        <status>Active</status>
+        <date>2007-04-01</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0208</xep>
+        <name>Bootstrapping Implementation of Jingle</name>
+        <type>Informational</type>
+        <status>Retracted</status>
+        <date>2009-01-06</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0209</xep>
+        <name>Metacontacts</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2007-04-10</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0210</xep>
+        <name>Requirements for Encrypted Sessions</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2007-05-30</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0211</xep>
+        <name>XMPP Basic Client 2008</name>
+        <type>Standards Track</type>
+        <status>Obsolete</status>
+        <date>2007-07-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0212</xep>
+        <name>XMPP Basic Server 2008</name>
+        <type>Standards Track</type>
+        <status>Obsolete</status>
+        <date>2007-07-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0213</xep>
+        <name>XMPP Intermediate IM Client 2008</name>
+        <type>Standards Track</type>
+        <status>Obsolete</status>
+        <date>2007-07-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0214</xep>
+        <name>File Repository and Sharing</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2009-01-05</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:extdisco:2">
+        <xep>XEP-0215</xep>
+        <name>External Service Discovery</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2015-10-20</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0216</xep>
+        <name>XMPP Intermediate IM Server 2008</name>
+        <type>Standards Track</type>
+        <status>Obsolete</status>
+        <date>2007-07-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0217</xep>
+        <name>Simplified Encrypted Session Negotiation</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2007-05-30</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0218</xep>
+        <name>Bootstrapping Implementation of Encrypted Sessions</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2007-05-30</date>
+        <description/>
+    </feature>
+    <feature id="http://www.xmpp.org/extensions/xep-0219.html#ns">
+        <xep>XEP-0219</xep>
+        <name>Hop Check</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2008-06-12</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0220</xep>
+        <name>Server Dialback</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2015-03-12</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:media-element">
+        <xep>XEP-0221</xep>
+        <name>Data Forms Media Element</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2008-09-03</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0222</xep>
+        <name>Persistent Storage of Public Data via PubSub</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2008-09-08</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0223</xep>
+        <name>Persistent Storage of Private Data via PubSub</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2018-03-28</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:attention:0">
+        <xep>XEP-0224</xep>
+        <name>Attention</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2008-11-13</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:component:0">
+        <xep>XEP-0225</xep>
+        <name>Component Connections</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2008-10-06</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0226</xep>
+        <name>Message Stanza Profiles</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2008-11-05</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0227</xep>
+        <name>Portable Import/Export Format for XMPP-IM Servers</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2010-03-12</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0228</xep>
+        <name>Requirements for Shared Editing</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2007-08-22</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0229</xep>
+        <name>Stream Compression with LZW</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2007-09-26</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0230</xep>
+        <name>Service Discovery Notifications</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2016-10-04</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:bob">
+        <xep>XEP-0231</xep>
+        <name>Bits of Binary</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2008-09-03</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0232</xep>
+        <name>Software Information</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2009-02-26</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0233</xep>
+        <name>XMPP Server Registration for use with Kerberos V5</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2017-03-16</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:jingle:apps:file-transfer:5">
+        <xep>XEP-0234</xep>
+        <name>Jingle File Transfer</name>
+        <type>Standards Track</type>
+        <status>Proposed</status>
+        <date>2017-08-24</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:oauth:0">
+        <xep>XEP-0235</xep>
+        <name>OAuth Over XMPP</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2009-03-24</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:tmp:abuse">
+        <xep>XEP-0236</xep>
+        <name>Abuse Reporting</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2008-05-09</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:features:rosterver">
+        <xep>XEP-0237</xep>
+        <name>Roster Versioning</name>
+        <type>Standards Track</type>
+        <status>Obsolete</status>
+        <date>2012-02-08</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0238</xep>
+        <name>XMPP Protocol Flows for Inter-Domain Federation</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2008-03-31</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0239</xep>
+        <name>Binary XMPP</name>
+        <type>Humorous</type>
+        <status>Active</status>
+        <date>2008-04-01</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0240</xep>
+        <name>Auto-Discovery of JabberIDs</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2008-04-30</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:tmp:archive:encrypt">
+        <xep>XEP-0241</xep>
+        <name>Encryption of Archived Messages</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2008-04-30</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0242</xep>
+        <name>XMPP Client Compliance 2009</name>
+        <type>Standards Track</type>
+        <status>Obsolete</status>
+        <date>2008-09-08</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0243</xep>
+        <name>XMPP Server Compliance 2009</name>
+        <type>Standards Track</type>
+        <status>Obsolete</status>
+        <date>2008-09-08</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:tmp:io-data">
+        <xep>XEP-0244</xep>
+        <name>IO Data</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2008-06-18</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0245</xep>
+        <name>The /me Command</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2009-01-21</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0246</xep>
+        <name>End-to-End XML Streams</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2016-01-20</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0247</xep>
+        <name>Jingle XML Streams</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2009-02-20</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/pubsub#collections">
+        <xep>XEP-0248</xep>
+        <name>PubSub Collection Nodes</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2010-09-28</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0249</xep>
+        <name>Direct MUC Invitations</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2011-09-22</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0250</xep>
+        <name>C2C Authentication Using TLS</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2008-09-08</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0251</xep>
+        <name>Jingle Session Transfer</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2009-10-05</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0252</xep>
+        <name>BOSH Script Syntax</name>
+        <type>Historical</type>
+        <status>Deferred</status>
+        <date>2008-10-31</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/pubsub#chaining">
+        <xep>XEP-0253</xep>
+        <name>PubSub Chaining</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2009-11-18</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:pubsub:queueing:0">
+        <xep>XEP-0254</xep>
+        <name>PubSub Queueing</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2008-11-13</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:locationquery:0">
+        <xep>XEP-0255</xep>
+        <name>Location Query</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2009-04-09</date>
+        <description/>
+    </feature>
+    <feature id="jabber:iq:last">
+        <xep>XEP-0256</xep>
+        <name>Last Activity in Presence</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2009-09-15</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:saslcert:1">
+        <xep>XEP-0257</xep>
+        <name>Client Certificate Management for SASL EXTERNAL</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2012-07-18</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:sec-label:0">
+        <xep>XEP-0258</xep>
+        <name>Security Labels in XMPP</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2013-04-08</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:tmp:mine:0">
+        <xep>XEP-0259</xep>
+        <name>Message Mine-ing</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2009-01-21</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:jingle:transports:s5b:1">
+        <xep>XEP-0260</xep>
+        <name>Jingle SOCKS5 Bytestreams Transport Method</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2018-05-04</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:jingle:transports:ibb:*">
+        <xep>XEP-0261</xep>
+        <name>Jingle In-Band Bytestreams Transport Method</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2011-09-23</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:jingle:apps:rtp:zrtp:*">
+        <xep>XEP-0262</xep>
+        <name>Use of ZRTP in Jingle RTP Sessions</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2011-06-15</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0263</xep>
+        <name>ECO-XMPP</name>
+        <type>Humorous</type>
+        <status>Active</status>
+        <date>2009-04-01</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:thumbs:1">
+        <xep>XEP-0264</xep>
+        <name>Jingle Content Thumbnails</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2015-08-26</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:jingle:apps:out-of-band:0">
+        <xep>XEP-0265</xep>
+        <name>Out-of-Band Stream Data</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2009-04-02</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0266</xep>
+        <name>Codecs for Jingle Audio</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2013-03-01</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:server-presence">
+        <xep>XEP-0267</xep>
+        <name>Server Buddies</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2012-05-29</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:incident:2">
+        <xep>XEP-0268</xep>
+        <name>Incident Handling</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2012-05-29</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0269</xep>
+        <name>Jingle Early Media</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2009-05-19</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0270</xep>
+        <name>XMPP Compliance Suites 2010</name>
+        <type>Standards Track</type>
+        <status>Obsolete</status>
+        <date>2017-01-28</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0271</xep>
+        <name>XMPP Nodes</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2009-06-26</date>
+        <description/>
+    </feature>
+    <feature id="http://telepathy.freedesktop.org/muji">
+        <xep>XEP-0272</xep>
+        <name>Multiparty Jingle (Muji)</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2009-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:sift:*">
+        <xep>XEP-0273</xep>
+        <name>Stanza Interception and Filtering Technology (SIFT)</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2011-06-27</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0274</xep>
+        <name>Design Considerations for Digital Signatures in XMPP</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2011-01-28</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:reputation:0">
+        <xep>XEP-0275</xep>
+        <name>Entity Reputation</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2012-06-06</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:decloak:0">
+        <xep>XEP-0276</xep>
+        <name>Presence Decloaking</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2012-07-13</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0277</xep>
+        <name>Microblogging over XMPP</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-11-28</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/jinglenodes*">
+        <xep>XEP-0278</xep>
+        <name>Jingle Relay Nodes</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2017-09-14</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:sic:1">
+        <xep>XEP-0279</xep>
+        <name>Server IP Check</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2013-04-17</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:carbons:2">
+        <xep>XEP-0280</xep>
+        <name>Message Carbons</name>
+        <type>Standards Track</type>
+        <status>Proposed</status>
+        <date>2017-02-16</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0281</xep>
+        <name>DMUC1: Distributed Multi-User Chat</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2010-07-20</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0282</xep>
+        <name>DMUC2: Distributed MUC</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2010-06-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:moved:0">
+        <xep>XEP-0283</xep>
+        <name>Moved</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-08-06</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:sxe:0">
+        <xep>XEP-0284</xep>
+        <name>Shared XML Editing</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2010-07-02</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:signed:0">
+        <xep>XEP-0285</xep>
+        <name>Encapsulating Digital Signatures in XMPP</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2011-01-12</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0286</xep>
+        <name>Mobile Considerations on LTE Networks</name>
+        <type>Informational</type>
+        <status>Active</status>
+        <date>2018-01-25</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:spim-report:0">
+        <xep>XEP-0287</xep>
+        <name>Spim Markers and Reports</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2010-10-03</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:spim-marker:0">
+        <xep>XEP-0287</xep>
+        <name>Spim Markers and Reports</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2010-10-04</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:bidi">
+        <xep>XEP-0288</xep>
+        <name>Bidirectional Server-to-Server Connections</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2016-10-17</date>
+        <description/>
+    </feature>
+    <feature id="http://isode.com/protocol/fmuc">
+        <xep>XEP-0289</xep>
+        <name>Federated MUC for Constrained Environments</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2012-05-29</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:dsig:0">
+        <xep>XEP-0290</xep>
+        <name>Encapsulated Digital Signatures in XMPP</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2011-01-28</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:tmp:delegate">
+        <xep>XEP-0291</xep>
+        <name>Service Delegation</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2011-01-26</date>
+        <description/>
+    </feature>
+    <feature id="urn:ietf:params:xml:ns:vcard-4.0">
+        <xep>XEP-0292</xep>
+        <name>vCard4 Over XMPP</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2013-09-12</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:jingle:apps:rtp:rtcp-fb:0">
+        <xep>XEP-0293</xep>
+        <name>Jingle RTP Feedback Negotiation</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2015-08-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:jingle:apps:rtp:rtp-hdrext:0">
+        <xep>XEP-0294</xep>
+        <name>Jingle RTP Header Extensions Negotiation</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2015-08-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0295</xep>
+        <name>JSON Encodings for XMPP</name>
+        <type>Humorous</type>
+        <status>Active</status>
+        <date>2011-04-01</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0296</xep>
+        <name>Best Practices for Resource Locking</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2011-08-18</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:forward:0">
+        <xep>XEP-0297</xep>
+        <name>Stanza Forwarding</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2013-10-02</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:coin:1">
+        <xep>XEP-0298</xep>
+        <name>Delivering Conference Information to Jingle Participants (Coin)</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2015-07-02</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0299</xep>
+        <name>Codecs for Jingle Video</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2011-06-12</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:hashes:2">
+        <xep>XEP-0300</xep>
+        <name>Use of Cryptographic Hash Functions in XMPP</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-02-14</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:rtt:0">
+        <xep>XEP-0301</xep>
+        <name>In-Band Real Time Text</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2013-10-08</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0302</xep>
+        <name>XMPP Compliance Suites 2012</name>
+        <type>Standards Track</type>
+        <status>Obsolete</status>
+        <date>2011-07-21</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:tmp:comments:0">
+        <xep>XEP-0303</xep>
+        <name>Commenting</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2011-07-28</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:keepalive:0">
+        <xep>XEP-0304</xep>
+        <name>Whitespace Keepalive Negotiation</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2011-08-18</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0305</xep>
+        <name>XMPP Quickstart</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2013-03-01</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:muc:conditions:1">
+        <xep>XEP-0306</xep>
+        <name>Extensible Status Conditions for Multi-User Chat</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2016-06-07</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/muc#unique">
+        <xep>XEP-0307</xep>
+        <name>Unique Room Names for Multi-User Chat</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2011-11-10</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:message-correct:0">
+        <xep>XEP-0308</xep>
+        <name>Last Message Correction</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2013-04-08</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:public-server">
+        <xep>XEP-0309</xep>
+        <name>Service Directories</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2012-05-29</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:psa">
+        <xep>XEP-0310</xep>
+        <name>Presence State Annotations</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2012-01-10</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:presence-session:0">
+        <xep>XEP-0311</xep>
+        <name>MUC Fast Reconnect</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2012-01-25</date>
+        <description/>
+    </feature>
+    <feature id="http://jabber.org/protocol/pubsub#since">
+        <xep>XEP-0312</xep>
+        <name>PubSub Since</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2012-05-29</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:mam:2">
+        <xep>XEP-0313</xep>
+        <name>Message Archive Management</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-07-16</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0314</xep>
+        <name>Security Labels in PubSub</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2012-07-27</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0315</xep>
+        <name>Data Forms XML Element</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2012-10-15</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0316</xep>
+        <name>MUC Eventing Protocol</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2013-01-03</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0317</xep>
+        <name>Hats</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2013-01-03</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0318</xep>
+        <name>Best Practices for Client Initiated Presence Probes</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2013-08-06</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:idle:1">
+        <xep>XEP-0319</xep>
+        <name>Last User Interaction in Presence</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2017-07-17</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:jingle:apps:dtls:0">
+        <xep>XEP-0320</xep>
+        <name>Use of DTLS-SRTP in Jingle Sessions</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2015-10-15</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:tmp:roster-management:0">
+        <xep>XEP-0321</xep>
+        <name>Remote Roster Management</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2013-04-16</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0322</xep>
+        <name>Efficient XML Interchange (EXI) Format</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2018-01-25</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:iot:sensordata">
+        <xep>XEP-0323</xep>
+        <name>Internet of Things - Sensor Data</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2017-05-20</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:iot:provisioning">
+        <xep>XEP-0324</xep>
+        <name>Internet of Things - Provisioning</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2017-05-20</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:iot:control">
+        <xep>XEP-0325</xep>
+        <name>Internet of Things - Control</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2017-05-20</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:iot:concentrators">
+        <xep>XEP-0326</xep>
+        <name>Internet of Things - Concentrators</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2017-05-20</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:rayo:1">
+        <xep>XEP-0327</xep>
+        <name>Rayo</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:jidprep:0">
+        <xep>XEP-0328</xep>
+        <name>JID Prep</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2013-05-28</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:fis:0">
+        <xep>XEP-0329</xep>
+        <name>File Information Sharing</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0330</xep>
+        <name>Pubsub Subscription</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2013-06-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0331</xep>
+        <name>Data Forms - Color Field Types</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2015-11-09</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:http">
+        <xep>XEP-0332</xep>
+        <name>HTTP over XMPP transport</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:chat-markers:0">
+        <xep>XEP-0333</xep>
+        <name>Chat Markers</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:hints">
+        <xep>XEP-0334</xep>
+        <name>Message Processing Hints</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2018-01-25</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:json:0">
+        <xep>XEP-0335</xep>
+        <name>JSON Containers</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2013-10-25</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:xdata:dynamic">
+        <xep>XEP-0336</xep>
+        <name>Data Forms - Dynamic Forms</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2015-11-09</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:eventlog">
+        <xep>XEP-0337</xep>
+        <name>Event Logging over XMPP</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:ietf:rfc:5888">
+        <xep>XEP-0338</xep>
+        <name>Jingle Grouping Framework</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:ietf:rfc:5576">
+        <xep>XEP-0339</xep>
+        <name>Source-Specific Media Attributes in Jingle</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="http://jitsi.org/protocol/colibri">
+        <xep>XEP-0340</xep>
+        <name>COnferences with LIghtweight BRIdging (COLIBRI)</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:rayo:cpa:0">
+        <xep>XEP-0341</xep>
+        <name>Rayo CPA</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:rayo:fax:1">
+        <xep>XEP-0342</xep>
+        <name>Rayo Fax</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0343</xep>
+        <name>Signaling WebRTC datachannels in Jingle</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0344</xep>
+        <name>Impact of TLS and DNSSEC on Dialback</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0345</xep>
+        <name>Form of Membership Applications</name>
+        <type>Procedural</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0346</xep>
+        <name>Form Discovery and Publishing</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:iot:discovery">
+        <xep>XEP-0347</xep>
+        <name>Internet of Things - Discovery</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:xdata:signature:oauth1">
+        <xep>XEP-0348</xep>
+        <name>Signing Forms</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0349</xep>
+        <name>Rayo Clustering</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0350</xep>
+        <name>Data Forms Geolocation Element</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0351</xep>
+        <name>Recipient Server Side Notifications Filtering</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:csi:0">
+        <xep>XEP-0352</xep>
+        <name>Client State Indication</name>
+        <type>Standards Track</type>
+        <status>Proposed</status>
+        <date>2017-02-18</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0353</xep>
+        <name>Jingle Message Initiation</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:cmr:0">
+        <xep>XEP-0354</xep>
+        <name>Customizable Message Routing</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:delegation:1">
+        <xep>XEP-0355</xep>
+        <name>Namespace Delegation</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:privilege:1">
+        <xep>XEP-0356</xep>
+        <name>Privileged Entity</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:push:0">
+        <xep>XEP-0357</xep>
+        <name>Push Notifications</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2017-08-24</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0358</xep>
+        <name>Publishing Available Jingle Sessions</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:sid:0">
+        <xep>XEP-0359</xep>
+        <name>Unique and Stable Stanza IDs</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2017-08-23</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0360</xep>
+        <name>Nonzas (are not Stanzas)</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0361</xep>
+        <name>Zero Handshake Server to Server Protocol</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:raft">
+        <xep>XEP-0362</xep>
+        <name>Raft over XMPP</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:http:upload:0">
+        <xep>XEP-0363</xep>
+        <name>HTTP File Upload</name>
+        <type>Standards Track</type>
+        <status>Proposed</status>
+        <date>2018-05-30</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0364</xep>
+        <name>Current Off-the-Record Messaging Usage</name>
+        <type>Informational</type>
+        <status>Deferred</status>
+        <date>2017-01-28</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0365</xep>
+        <name>Server to Server communication over STANAG 5066 ARQ</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2018-07-21</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:entityver:0">
+        <xep>XEP-0366</xep>
+        <name>Entity Versioning</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2016-12-21</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:message-attaching:0">
+        <xep>XEP-0367</xep>
+        <name>Message Attaching</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0368</xep>
+        <name>SRV records for XMPP over TLS</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2017-03-09</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:mix:core:*">
+        <xep>XEP-0369</xep>
+        <name>Mediated Information eXchange (MIX)</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-06-06</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0370</xep>
+        <name>Jingle HTTP Transport Method</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0371</xep>
+        <name>Jingle ICE Transport Method</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:reference:0">
+        <xep>XEP-0372</xep>
+        <name>References</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0373</xep>
+        <name>OpenPGP for XMPP</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-07-30</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:openpgp:im:0">
+        <xep>XEP-0374</xep>
+        <name>OpenPGP for XMPP Instant Messaging</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2018-01-25</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0375</xep>
+        <name>XMPP Compliance Suites 2016</name>
+        <type>Standards Track</type>
+        <status>Retracted</status>
+        <date>2016-07-20</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0376</xep>
+        <name>Pubsub Account Management</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:reporting:*">
+        <xep>XEP-0377</xep>
+        <name>Spam Reporting</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:otr:0">
+        <xep>XEP-0378</xep>
+        <name>OTR Discovery</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-09-11</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0379</xep>
+        <name>Pre-Authenticated Roster Subscription</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2017-03-06</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:eme:0">
+        <xep>XEP-0380</xep>
+        <name>Explicit Message Encryption</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2018-01-25</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0381</xep>
+        <name>Internet of Things Special Interest Group (IoT SIG)</name>
+        <type>Procedural</type>
+        <status>Proposed</status>
+        <date>2016-11-23</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:spoiler:0">
+        <xep>XEP-0382</xep>
+        <name>Spoiler messages</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2018-01-25</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:burner:0">
+        <xep>XEP-0383</xep>
+        <name>Burner JIDs</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2017-01-28</date>
+        <description/>
+    </feature>
+    <feature id="eu.siacs.conversations.axolotl">
+        <xep>XEP-0384</xep>
+        <name>OMEMO Encryption</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-05-21</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:sims:1">
+        <xep>XEP-0385</xep>
+        <name>Stateless Inline Media Sharing (SIMS)</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-01-25</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:bind2:0">
+        <xep>XEP-0386</xep>
+        <name>Bind 2.0</name>
+        <type>Standards Track</type>
+        <status>Deferred</status>
+        <date>2018-02-08</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0387</xep>
+        <name>XMPP Compliance Suites 2018</name>
+        <type>Standards Track</type>
+        <status>Draft</status>
+        <date>2018-01-25</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0388</xep>
+        <name>Extensible SASL Profile</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2017-08-24</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0389</xep>
+        <name>Extensible In-Band Registration</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2017-03-16</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:caps">
+        <xep>XEP-0390</xep>
+        <name>Entity Capabilities 2.0</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2017-06-14</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:jingle:jet:0">
+        <xep>XEP-0391</xep>
+        <name>Jingle Encrypted Transports</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-07-31</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0392</xep>
+        <name>Consistent Color Generation</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-07-28</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0393</xep>
+        <name>Message Styling</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-05-01</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:markup:0">
+        <xep>XEP-0394</xep>
+        <name>Message Markup</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2017-11-22</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0395</xep>
+        <name>Atomically Compare-And-Publish PubSub Items</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2017-11-29</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:jingle:jet-omemo:0">
+        <xep>XEP-0396</xep>
+        <name>Jingle Encrypted Transports - OMEMO</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2017-11-29</date>
+        <description/>
+    </feature>
+    <feature id="https://xmpp.org/extensions/isr/0">
+        <xep>XEP-0397</xep>
+        <name>Instant Stream Resumption</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-01-22</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:pep-vcard-conversion:0">
+        <xep>XEP-0398</xep>
+        <name>User Avatar to vCard-Based Avatars Conversion</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-08-27</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:client-key:0">
+        <xep>XEP-0399</xep>
+        <name>Client Key Support</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-01-25</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:mfa:0">
+        <xep>XEP-0400</xep>
+        <name>Multi-Factor Authentication with TOTP</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-01-25</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0401</xep>
+        <name>Easy User Onboarding</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-02-11</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:bookmarks:0">
+        <xep>XEP-0402</xep>
+        <name>Bookmarks 2 (This Time it's Serious)</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-07-22</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:mix:nodes:presence">
+        <xep>XEP-0403</xep>
+        <name>Mediated Information eXchange (MIX): Presence Support.</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-06-06</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0404</xep>
+        <name>Mediated Information eXchange (MIX): JID Hidden Channels.</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-06-06</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:mix:pam:0">
+        <xep>XEP-0405</xep>
+        <name>Mediated Information eXchange (MIX): Participant Server Requirements</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-06-06</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0406</xep>
+        <name>Mediated Information eXchange (MIX): MIX Administration</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-06-06</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:mix:misc:*">
+        <xep>XEP-0407</xep>
+        <name>Mediated Information eXchange (MIX): Miscellaneous Capabilities</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-05-14</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0408</xep>
+        <name>Mediated Information eXchange (MIX): Co-existence with MUC</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-05-21</date>
+        <description/>
+    </feature>
+    <feature id="urn:xmpp:im-ng:0">
+        <xep>XEP-0409</xep>
+        <name>IM Routing-NG</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-06-05</date>
+        <description/>
+    </feature>
+    <feature id="">
+        <xep>XEP-0410</xep>
+        <name>MUC Self-Ping (Schrödinger's Chat)</name>
+        <type>Standards Track</type>
+        <status>Experimental</status>
+        <date>2018-08-31</date>
+        <description/>
+    </feature>
+</server_feaures>

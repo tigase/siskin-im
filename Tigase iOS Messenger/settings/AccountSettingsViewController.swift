@@ -93,6 +93,9 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
         if indexPath.row == 0 && indexPath.section == 1 {
             return nil;
         }
+        if indexPath.section == 1 && indexPath.row == 1 && xmppService.getClient(forJid: accountJid)?.state != .connected {
+            return nil;
+        }
         return indexPath;
     }
     
@@ -173,6 +176,9 @@ class AccountSettingsViewController: UITableViewController, EventHandler {
         case "EditAccountVCardSegue":
             let destination = segue.destination as! VCardEditViewController;
             destination.account = account;
+        case "ShowServerFeatures":
+            let destination = segue.destination as! ServerFeaturesViewController;
+            destination.account = BareJID(account);
         default:
             break;
         }
