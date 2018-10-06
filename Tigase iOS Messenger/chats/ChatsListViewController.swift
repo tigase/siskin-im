@@ -85,8 +85,11 @@ class ChatsListViewController: UITableViewController, EventHandler {
         
         let item = dataSource.item(at: indexPath);
         cell.nameLabel.text = item.name ?? item.key.jid.stringValue;
+         cell.nameLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.nameLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.nameLabel.font.pointSize);
         cell.lastMessageLabel.text = item.lastMessage == nil ? nil : ((item.unread > 0 ? "" : "\u{2713}") + item.lastMessage!);
         cell.lastMessageLabel.numberOfLines = Settings.RecentsMessageLinesNo.getInt();
+//        cell.lastMessageLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.lastMessageLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize);
+
         
         let formattedTS = self.formatTimestamp(item.key.timestamp);
         cell.timestampLabel.text = formattedTS;
