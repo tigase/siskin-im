@@ -12,6 +12,7 @@
 		FE01ADA91E224CF400FA7E65 /* TigasePushNotificationsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE01ADA81E224CF400FA7E65 /* TigasePushNotificationsModule.swift */; };
 		FE0A674D1D4F645F00124480 /* CachedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0A674C1D4F645F00124480 /* CachedViewController.swift */; };
 		FE168ACD1CCD197A003F8B26 /* db-schema-1.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE168ACC1CCD197A003F8B26 /* db-schema-1.sql */; };
+		FE1AC8F7216B8AB700D4CDAB /* NewFeaturesDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */; };
 		FE1DCCA21EA52CE200850563 /* DataFormController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1DCCA11EA52CE200850563 /* DataFormController.swift */; };
 		FE258EAA1F3B8BC90042CED9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FE258EA91F3B8BC90042CED9 /* Assets.xcassets */; };
 		FE2809812167CE18002F5BD0 /* server_features_list.xml in Resources */ = {isa = PBXBuildFile; fileRef = FE2809802167CE18002F5BD0 /* server_features_list.xml */; };
@@ -142,6 +143,7 @@
 		FE01ADA81E224CF400FA7E65 /* TigasePushNotificationsModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TigasePushNotificationsModule.swift; sourceTree = "<group>"; };
 		FE0A674C1D4F645F00124480 /* CachedViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CachedViewController.swift; sourceTree = "<group>"; };
 		FE168ACC1CCD197A003F8B26 /* db-schema-1.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-1.sql"; sourceTree = "<group>"; };
+		FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewFeaturesDetector.swift; sourceTree = "<group>"; };
 		FE1DCCA11EA52CE200850563 /* DataFormController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataFormController.swift; sourceTree = "<group>"; };
 		FE258EA91F3B8BC90042CED9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FE2809802167CE18002F5BD0 /* server_features_list.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = server_features_list.xml; sourceTree = "<group>"; };
@@ -447,6 +449,7 @@
 				FEDE3B4F1F7162AA00075F6E /* CustomChatManager.swift */,
 				FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */,
 				FE00157C2017617B00490340 /* StreamFeaturesCache.swift */,
+				FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */,
 			);
 			path = service;
 			sourceTree = "<group>";
@@ -657,6 +660,7 @@
 				FEDE93921D09E74100CA60A9 /* VCardEditAddressTableViewCell.swift in Sources */,
 				FEAC71791CECE50400ABABEF /* MucChatOccupantsTableViewController.swift in Sources */,
 				FEDE93971D0C202600CA60A9 /* ContactViewController.swift in Sources */,
+				FE1AC8F7216B8AB700D4CDAB /* NewFeaturesDetector.swift in Sources */,
 				FEAC717B1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift in Sources */,
 				FE7F9303200FD5AC004C6195 /* AccountManagerScramSaltedPasswordCache.swift in Sources */,
 				FE9625A01D9AE7CB00D07118 /* RosterProvider.swift in Sources */,

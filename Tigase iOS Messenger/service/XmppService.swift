@@ -99,9 +99,13 @@ open class XmppService: Logger, EventHandler {
         self.reachability = Reachability();
         self.networkAvailable = false;
         self.applicationState = UIApplication.shared.applicationState == .active ? .active : .inactive;
-
+        
         super.init();
 
+        let newFeaturesDetector = NewFeaturesDetector();
+        newFeaturesDetector.xmppService = self;
+        self.registerEventHandler(newFeaturesDetector, for: DiscoveryModule.ServerFeaturesReceivedEvent.TYPE);
+        
         self.avatarManager = AvatarManager(xmppService: self, store: avatarStore);
         NotificationCenter.default.addObserver(self, selector: #selector(XmppService.accountConfigurationChanged), name: AccountManager.ACCOUNT_CONFIGURATION_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(XmppService.connectivityChanged), name: Reachability.CONNECTIVITY_CHANGED, object: nil);
@@ -335,17 +339,7 @@ open class XmppService: Logger, EventHandler {
             }
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
             let account = e.sessionObject.userBareJid!;
-            if AccountSettings.MessageSyncAutomatic(account.description).getBool() {
-                let messageSyncPeriod = AccountSettings.MessageSyncPeriod(account.description).getDouble();
-                if messageSyncPeriod > 0 {
-                    if let messageSyncTime = AccountSettings.MessageSyncTime(account.description).getDate() {
-                        syncMessages(account: account, start: messageSyncTime);
-                    } else {
-                        let start = Date().addingTimeInterval(-1 * messageSyncPeriod * 60 * 60);
-                        self.syncMessages(account: account, start: start);
-                    }
-                }
-            }
+            syncMessages(for: account);
 
             let client = getClient(forJid: e.sessionObject.userBareJid!);
             client?.sessionObject.setProperty(XmppService.CONNECTION_RETRY_NO_KEY, value: nil);
@@ -590,6 +584,20 @@ open class XmppService: Logger, EventHandler {
         backgroundFetchTimer = TigaseSwift.Timer(delayInSeconds: countLong > 0 ? fetchTimeLong : fetchTimeShort, repeats: false, callback: {
             self.backgroundFetchTimedOut();
         });
+    }
+    
+    func syncMessages(for account: BareJID) {
+        if AccountSettings.MessageSyncAutomatic(account.description).getBool() {
+            let messageSyncPeriod = AccountSettings.MessageSyncPeriod(account.description).getDouble();
+            if messageSyncPeriod > 0 {
+                if let messageSyncTime = AccountSettings.MessageSyncTime(account.description).getDate() {
+                    syncMessages(account: account, start: messageSyncTime);
+                } else {
+                    let start = Date().addingTimeInterval(-1 * messageSyncPeriod * 60 * 60);
+                    self.syncMessages(account: account, start: start);
+                }
+            }
+        }
     }
     
     fileprivate func syncMessages(account: BareJID, start: Date?, rsmQuery: RSM.Query? = nil) {

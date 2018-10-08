@@ -134,6 +134,7 @@ public enum AccountSettings {
     case MessageSyncTime(String)
     case PushNotificationsForAway(String)
     case LastError(String)
+    case KnownServerFeatures(String)
     
     public func getAccount() -> String {
         switch self {
@@ -146,6 +147,8 @@ public enum AccountSettings {
         case .PushNotificationsForAway(let account):
             return account;
         case .LastError(let account):
+            return account;
+        case .KnownServerFeatures(let account):
             return account;
         }
     }
@@ -162,6 +165,8 @@ public enum AccountSettings {
             return "PushNotificationsForAway";
         case .LastError(_):
             return "LastError";
+        case .KnownServerFeatures( _):
+            return "KnownServerFeatures";
         }
     }
     
@@ -188,6 +193,11 @@ public enum AccountSettings {
         } else {
             return Date(timeIntervalSince1970: value);
         }
+    }
+    
+    public func getStrings() -> [String]? {
+        let obj = Settings.store.object(forKey: getKey());
+        return obj as? [String];
     }
     
     public func set(bool value: Bool) {
@@ -226,6 +236,14 @@ public enum AccountSettings {
     public func set(string value: String?) {
         if value != nil {
             Settings.store.setValue(value, forKey: getKey());
+        } else {
+            Settings.store.removeObject(forKey: getKey());
+        }
+    }
+    
+    public func set(strings value: [String]?) {
+        if value != nil {
+            Settings.store.set(value, forKey: getKey());
         } else {
             Settings.store.removeObject(forKey: getKey());
         }
