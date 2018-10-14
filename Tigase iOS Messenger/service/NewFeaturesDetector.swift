@@ -27,6 +27,31 @@ class NewFeaturesDetector: EventHandler {
     let suggestions: [NewFeaturesDetectorSuggestion] = [MAMSuggestion(), PushSuggestion()];
     weak var xmppService: XmppService?;
     
+    fileprivate var allControllers: [NewFeatureSuggestionView] = [];
+    fileprivate var inProgress: Bool = false;
+    
+    func showNext() {
+        DispatchQueue.main.async {
+            guard !self.allControllers.isEmpty else {
+                self.inProgress = false;
+                return;
+            }
+            let controller = self.allControllers.remove(at: 0)
+            UIApplication.shared.keyWindow?.rootViewController?.present(controller, animated: true, completion: nil);
+        }
+    }
+    
+    func completionHandler(controllers: [NewFeatureSuggestionView]) {
+        DispatchQueue.main.async {
+            self.allControllers.append(contentsOf: controllers);
+            guard !self.inProgress else {
+                return;
+            }
+            self.inProgress = true;
+            self.showNext();
+        }
+    }
+    
     func handle(event: Event) {
         switch event {
         case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
@@ -37,13 +62,13 @@ class NewFeaturesDetector: EventHandler {
                 return;
             }
 
-            let knownFeatures = AccountSettings.KnownServerFeatures(account.stringValue).getStrings() ?? [];
+            let knownFeatures: [String] = AccountSettings.KnownServerFeatures(account.stringValue).getStrings() ?? [];
             let newFeatures = e.features.filter { (feature) -> Bool in
                 return !knownFeatures.contains(feature);
             };
             
             suggestions.forEach { suggestion in
-                suggestion.handle(xmppService: xmppService, account: account, newServerFeatures: newFeatures);
+                suggestion.handle(xmppService: xmppService, account: account, newServerFeatures: newFeatures, onNext: self.showNext, completionHandler: self.completionHandler);
             }
             
             let newKnownFeatures = e.features.filter { feature -> Bool in
@@ -68,60 +93,103 @@ class NewFeaturesDetector: EventHandler {
             return self.feature == feature;
         }
 
-        func handle(xmppService: XmppService, account: BareJID, newServerFeatures features: [String]) {
+        func handle(xmppService: XmppService, account: BareJID, newServerFeatures features: [String], onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
             guard features.contains(feature) else {
+                completionHandler([]);
                 return;
             }
             
-            askToEnableMAM(xmppService: xmppService, account: account);
+            askToEnableMAM(xmppService: xmppService, account: account, onNext: onNext, completionHandler: completionHandler);
         }
      
-        fileprivate func askToEnableMAM(xmppService: XmppService, account: BareJID) {
+        fileprivate func askToEnableMAM(xmppService: XmppService, account: BareJID, onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
             guard let mamModule: MessageArchiveManagementModule = xmppService.getClient(forJid: account)?.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
+                completionHandler([]);
                 return;
             }
             
             mamModule.retrieveSettings(onSuccess: { (defValue, always, never) in
                 if defValue == .never {
                     DispatchQueue.main.async {
-                        let alert = UIAlertController(title: "Message Archiving", message: "Your server for account \(account) supports message archiving. Would you like to enable this feature?", preferredStyle: UIAlertController.Style.alert);
+                        let controller = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(withIdentifier: "NewFeatureSuggestionView") as! NewFeatureSuggestionView;
                         
-                        alert.addAction(UIAlertAction(title: "Enable", style: .default, handler: { (action) in
+                        _ = controller.view;
+                        
+                        controller.titleField.text = "Message Archiving";
+                        controller.iconField.image = UIImage(named: "messageArchiving")
+                        controller.descriptionField.text = """
+                        Your server for account \(account) supports message archiving.
+                        
+                        When it is enabled your XMPP server will archive all messages which you exchange. This will allow any XMPP client which you use and which supports message archiving to query this archive and show you message history even if messages were sent using different XMPP client.
+                        """;
+                        controller.onSkip = {
+                            controller.dismiss(animated: true, completion: onNext);
+                        }
+                        controller.onEnable = { (handler) in
                             mamModule.updateSettings(defaultValue: .always, always: always, never: never, onSuccess: { (defValue, always, never) in
-                                self.askToEnableMessageSync(xmppService: xmppService, account: account);
+                                DispatchQueue.main.async {
+                                    handler();
+                                    self.askToEnableMessageSync(xmppService: xmppService, account: account, onNext: onNext, completionHandler: { subcontrollers in
+                                        guard let toShow = subcontrollers.first else {
+                                            controller.dismiss(animated: true, completion: onNext);
+                                            return;
+                                        }
+                                        controller.dismiss(animated: true, completion: {
+                                            UIApplication.shared.keyWindow?.rootViewController?.present(toShow, animated: true, completion: nil);
+                                        })
+                                    });
+                                }
                             }, onError: { (error, stanza) in
-                                self.showError(title: "Message Archiving Error", message: "Server \(account.domain) returned an error on the request to enable archiving. You can try to enable this feature later on from the account settings.");
+                                DispatchQueue.main.async {
+                                    handler();
+                                    self.showError(title: "Message Archiving Error", message: "Server \(account.domain) returned an error on the request to enable archiving. You can try to enable this feature later on from the account settings.");
+                                }
                             });
-                        }))
-                        alert.addAction(UIAlertAction(title: "Not now", style: .cancel, handler: nil));
+                        };
                         
-                        UIApplication.shared.keyWindow?.rootViewController?.present(alert, animated: true, completion: nil);
+                        completionHandler([controller]);
                     }
                 } else {
-                    self.askToEnableMessageSync(xmppService: xmppService, account: account);
+                    self.askToEnableMessageSync(xmppService: xmppService, account: account, onNext: onNext, completionHandler: completionHandler);
                 }
             }, onError: { (error, stanza) in
                 print("received an error:", error as Any, "- ignoring");
+                completionHandler([])
             });
+
         }
         
-        fileprivate func askToEnableMessageSync(xmppService: XmppService, account: BareJID) {
+        fileprivate func askToEnableMessageSync(xmppService: XmppService, account: BareJID, onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
             guard !AccountSettings.MessageSyncAutomatic(account.stringValue).getBool() else {
+                completionHandler([]);
                 return;
             }
             
             DispatchQueue.main.async {
-                let alert = UIAlertController(title: "Message Synchronization", message: "Would you like to have synchronized copy of your messages exchanged using \(account.domain) from the last week kept on this device?", preferredStyle: UIAlertController.Style.alert);
+                let controller = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(withIdentifier: "NewFeatureSuggestionView") as! NewFeatureSuggestionView;
                 
-                alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
+                _ = controller.view;
+
+                controller.titleField.text = "Message Synchronization";
+                controller.iconField.image = UIImage(named: "messageArchiving")
+                controller.descriptionField.text = """
+Would you like to enable automatic message synchronization?
+                
+Have it enabled will keep synchronized copy of your messages exchanged using \(account.domain) from the last week on this device and allow you to easily view your converstation history.
+""";
+                controller.onSkip = {
+                    controller.dismiss(animated: true, completion: onNext);
+                }
+                controller.onEnable = { (handler) in
                     AccountSettings.MessageSyncPeriod(account.stringValue).set(double: 24 * 7);
                     AccountSettings.MessageSyncAutomatic(account.stringValue).set(bool: true);
                     
                     xmppService.syncMessages(for: account);
-                }))
-                alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
-                
-                UIApplication.shared.keyWindow?.rootViewController?.present(alert, animated: true, completion: nil);
+                    
+                    controller.dismiss(animated: true, completion: onNext);
+                }
+
+                completionHandler([controller]);
             }
         }
     }
@@ -134,33 +202,50 @@ class NewFeaturesDetector: EventHandler {
             return self.feature == feature;
         }
         
-        func handle(xmppService: XmppService, account: BareJID, newServerFeatures features: [String]) {
+        func handle(xmppService: XmppService, account: BareJID, newServerFeatures features: [String], onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
             guard features.contains(feature) else {
+                completionHandler([]);
                 return;
             }
             
             guard let pushModule: TigasePushNotificationsModule = xmppService.getClient(forJid: account)?.modulesManager.getModule(TigasePushNotificationsModule.ID), pushModule.deviceId != nil else {
+                completionHandler([]);
                 return;
             }
             
             guard !(AccountManager.getAccount(forJid: account.stringValue)?.pushNotifications ?? true) else {
+                completionHandler([]);
                 return;
             }
             
             DispatchQueue.main.async {
-                let alert = UIAlertController(title: "Push Notifications", message: "Your server for account \(account) supports push notifications. With this feature enabled Tigase iOS Messenger can be automatically notified about new messages when it is in background or stopped.\nIf enabled, notifications about new messages will be forwarded to our push component and delivered to the device. These notifications will contain message senders jid and part of a message.\nDo you want to enable push notifications?", preferredStyle: UIAlertController.Style.alert);
+                let controller = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(withIdentifier: "NewFeatureSuggestionView") as! NewFeatureSuggestionView;
                 
-                alert.addAction(UIAlertAction(title: "Enable", style: .default, handler: { (action) in
-                    self.enablePush(xmppService: xmppService, account: account);
-                }))
-                alert.addAction(UIAlertAction(title: "Not now", style: .cancel, handler: nil));
+                _ = controller.view;
+
+                controller.titleField.text = "Push Notifications";
+                controller.iconField.image = UIImage(named: "pushNotifications")
+                controller.descriptionField.text = """
+Your server for account \(account) supports push notifications.
                 
-                UIApplication.shared.keyWindow?.rootViewController?.present(alert, animated: true, completion: nil);
+With this feature enabled Tigase iOS Messenger can be automatically notified about new messages when it is in background or stopped. Notifications about new messages will be forwarded to our push component and delivered to the device. These notifications will contain message senders jid and part of a message.
+""";
+                controller.onSkip = {
+                    controller.dismiss(animated: true, completion: onNext);
+                }
+                controller.onEnable = { (handler) in
+                    self.enablePush(xmppService: xmppService, account: account, operationFinished: handler, completionHandler: {
+                        controller.dismiss(animated: true, completion: onNext);
+                    });
+                };
+                
+                completionHandler([controller]);
             }
         }
         
-        func enablePush(xmppService: XmppService, account accountJid: BareJID) {
+        func enablePush(xmppService: XmppService, account accountJid: BareJID, operationFinished: @escaping ()->Void, completionHandler: @escaping ()->Void) {
             guard let pushModule: TigasePushNotificationsModule = xmppService.getClient(forJid: accountJid)?.modulesManager.getModule(TigasePushNotificationsModule.ID) else {
+                completionHandler();
                 return;
             }
             
@@ -170,14 +255,21 @@ class NewFeaturesDetector: EventHandler {
                 pushModule.deviceId = Settings.DeviceToken.getString();
                 pushModule.enabled = true;
                 pushModule.registerDevice(onSuccess: {
-                    if let config = AccountManager.getAccount(forJid: accountJid.stringValue) {
-                        config.pushServiceNode = pushModule.pushServiceNode
-                        config.pushServiceJid = jid;
-                        config.pushNotifications = true;
-                        AccountManager.updateAccount(config, notifyChange: false);
+                    DispatchQueue.main.async {
+                        operationFinished();
+                        if let config = AccountManager.getAccount(forJid: accountJid.stringValue) {
+                            config.pushServiceNode = pushModule.pushServiceNode
+                            config.pushServiceJid = jid;
+                            config.pushNotifications = true;
+                            AccountManager.updateAccount(config, notifyChange: false);
+                        }
+                        completionHandler();
                     }
                 }, onError: { (errorCondition) in
-                    self.showError(title: "Push Notifications Error", message: "Server \(accountJid.domain) returned an error on the request to enable push notifications. You can try to enable this feature later on from the account settings.");
+                    DispatchQueue.main.async {
+                        operationFinished();
+                        self.showError(title: "Push Notifications Error", message: "Server \(accountJid.domain) returned an error on the request to enable push notifications. You can try to enable this feature later on from the account settings.");
+                    }
                 })
             });
 
@@ -188,7 +280,7 @@ class NewFeaturesDetector: EventHandler {
 
 protocol NewFeaturesDetectorSuggestion: class {
     
-    func handle(xmppService: XmppService, account: BareJID, newServerFeatures features: [String]);
+    func handle(xmppService: XmppService, account: BareJID, newServerFeatures features: [String], onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void);
     
     func isCapable(_ feature: String) -> Bool;
     
@@ -206,4 +298,30 @@ extension NewFeaturesDetectorSuggestion {
         }
     }
     
+}
+
+class NewFeatureSuggestionView: UIViewController {
+    
+    @IBOutlet var titleField: UILabel!;
+    @IBOutlet var iconField: UIImageView!;
+    @IBOutlet var descriptionField: UILabel!;
+    @IBOutlet var enableButton: UIButton!;
+    @IBOutlet var cancelButton: UIButton!;
+    @IBOutlet var progressIndicator: UIActivityIndicatorView!;
+    
+    var onEnable: ((@escaping ()->Void)->Void)?;
+    var onSkip: (()->Void)?;
+ 
+    @IBAction func enableClicked(_ sender: UIButton) {
+        self.progressIndicator.startAnimating();
+        onEnable!(self.onCompleted);
+    }
+    
+    @IBAction func skipClicked(_ sender: UIButton) {
+        onSkip!();
+    }
+    
+    func onCompleted() {
+        self.progressIndicator.stopAnimating();
+    }
 }
