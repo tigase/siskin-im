@@ -242,8 +242,9 @@ class SettingsViewController: UITableViewController, EventHandler {
                 let accounts = AccountManager.getAccounts();
                 if accounts.count > indexPath.row {
                     let account = accounts[indexPath.row];
-                    let alert = UIAlertController(title: "Account removal", message: "Should account be removed from server as well?", preferredStyle: .actionSheet);
-                    if let client = self.xmppService.getClient(forJid: BareJID(account)) {
+                    let client = self.xmppService.getClient(forJid: BareJID(account));
+                    let alert = UIAlertController(title: "Account removal", message: client != nil ? "Should account be removed from server as well?" : "Remove account from application?", preferredStyle: .actionSheet);
+                    if client != nil {
                         alert.addAction(UIAlertAction(title: "Remove from server", style: .destructive, handler: { (action) in
                             let regModule = client.modulesManager.register(InBandRegistrationModule());
                             regModule.unregister({ (stanza) in
@@ -258,7 +259,7 @@ class SettingsViewController: UITableViewController, EventHandler {
                         AccountManager.deleteAccount(forJid: account);
                         self.tableView.reloadData();
                     }));
-                    alert.addAction(UIAlertAction(title: "Keep account", style: .default, handler: nil));
+                    alert.addAction(UIAlertAction(title: "Cancel", style: .default, handler: nil));
                     alert.popoverPresentationController?.sourceView = self.tableView;
                     alert.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: indexPath);
 
