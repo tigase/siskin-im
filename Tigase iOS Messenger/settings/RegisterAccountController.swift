@@ -42,6 +42,11 @@ class RegisterAccountController: DataFormController, UITextFieldDelegate {
     var account: BareJID? = nil;
     var password: String? = nil;
     
+    override func viewDidLoad() {
+        super.viewDidLoad();
+        passwordSuggestNew = false;
+    }
+    
     override func viewWillDisappear(_ animated: Bool) {
         onAccountAdded = nil;
         super.viewWillDisappear(animated);
@@ -126,7 +131,14 @@ class RegisterAccountController: DataFormController, UITextFieldDelegate {
             }
         }
         
-        return super.tableView(tableView, cellForRowAt: indexPath);
+        let cell = super.tableView(tableView, cellForRowAt: indexPath);
+        if #available(iOS 11.0, *) {
+            let fieldName = form!.visibleFieldNames[indexPath.row];
+            if fieldName == "username", let c = cell as? TextSingleFieldCell {
+                c.uiTextField?.textContentType = .username;
+            }
+        }
+        return cell;
     }
     
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {

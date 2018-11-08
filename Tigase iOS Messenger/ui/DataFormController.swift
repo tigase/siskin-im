@@ -26,6 +26,8 @@ import TigaseSwift
 class DataFormController: UITableViewController {
     
     var form: JabberDataElement?;
+    
+    var passwordSuggestNew: Bool?;
 
     var errors = [IndexPath]();
     
@@ -75,6 +77,9 @@ class DataFormController: UITableViewController {
         (cell as? FieldCell)?.field = field;
         if field.type == "list-single" || field.type == "list-multi" || field.type == "text-multi" || field.type == "jid-multi" {
             cell.accessoryType = .disclosureIndicator;
+        }
+        if let passwordSuggestNew = self.passwordSuggestNew, let c = cell as? TextPrivateFieldCell {
+            c.passwordSuggestNew = passwordSuggestNew;
         }
         return cell;
     }
@@ -201,6 +206,21 @@ class DataFormController: UITableViewController {
     }
     
     class TextPrivateFieldCell: AbstractTextSingleFieldCell {
+        
+        var passwordSuggestNew: Bool? {
+            didSet {
+                guard let v = passwordSuggestNew else {
+                    return;
+                }
+                if #available(iOS 12.0, *) {
+                    uiTextField?.textContentType = v ? .newPassword : .password;
+                } else if #available(iOS 11.0, *) {
+                    if !v {
+                        uiTextField?.textContentType = .password;
+                    }
+                };
+            }
+        }
         
         override var field: Field? {
             didSet {

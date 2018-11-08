@@ -246,7 +246,7 @@ class SettingsViewController: UITableViewController, EventHandler {
                     let alert = UIAlertController(title: "Account removal", message: client != nil ? "Should account be removed from server as well?" : "Remove account from application?", preferredStyle: .actionSheet);
                     if client != nil {
                         alert.addAction(UIAlertAction(title: "Remove from server", style: .destructive, handler: { (action) in
-                            let regModule = client.modulesManager.register(InBandRegistrationModule());
+                            let regModule = client!.modulesManager.register(InBandRegistrationModule());
                             regModule.unregister({ (stanza) in
                                 DispatchQueue.main.async() {
                                     AccountManager.deleteAccount(forJid: account);

@@ -56,6 +56,12 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         saveButton.title = "Save";
         jidTextField.delegate = self;
         passwordTextField.delegate = self;
+
+        jidTextField.keyboardType = .emailAddress;
+        if #available(iOS 11.0, *) {
+            jidTextField.textContentType = .username;
+            passwordTextField.textContentType = .password;
+        };
     }
     
     override func viewWillAppear(_ animated: Bool) {
