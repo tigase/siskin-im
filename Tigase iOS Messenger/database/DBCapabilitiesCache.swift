@@ -36,7 +36,7 @@ open class DBCapabilitiesCache: CapabilitiesCache {
     fileprivate lazy var insertFeatureStmt: DBStatement! = try? self.dbConnection.prepareStatement("INSERT INTO caps_features (node, feature) VALUES (:node, :feature)");
     fileprivate lazy var insertIdentityStmt: DBStatement! = try? self.dbConnection.prepareStatement("INSERT INTO caps_identities (node, name, category, type) VALUES (:node, :name, :category, :type)");
     fileprivate lazy var nodeIsCached: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(feature) FROM caps_features WHERE node = :node");
-    
+    fileprivate lazy var isSupportedStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(feature) FROM caps_features WHERE node = :node AND feature = :feature");
     
     fileprivate var features = [String: [String]]();
     fileprivate var identities: [String: DiscoveryModule.Identity] = [:];
@@ -75,6 +75,12 @@ open class DBCapabilitiesCache: CapabilitiesCache {
     open func isCached(node: String, handler: @escaping (Bool)->Void) {
         dispatcher.async {
             handler(self.isCached(node: node));
+        }
+    }
+    
+    public func isSupported(for node: String, feature: String) -> Bool {
+        return dispatcher.sync {
+            return (try! self.isSupportedStmt.scalar(node, feature) ?? 0) > 0;
         }
     }
     
