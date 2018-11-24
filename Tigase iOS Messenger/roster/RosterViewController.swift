@@ -120,12 +120,12 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
         let cellIdentifier = "RosterItemTableViewCell";
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! RosterItemTableViewCell;
         
-        let item = roster.item(at: indexPath);
-        
-        cell.nameLabel.text = item.displayName;
-        cell.statusLabel.text = item.presence?.status ?? item.jid.stringValue;
-        cell.avatarStatusView.setStatus(item.presence?.show);
-        cell.avatarStatusView.setAvatar(xmppService.avatarManager.getAvatar(for: item.jid.bareJid, account: item.account));
+        if let item = roster?.item(at: indexPath) {
+            cell.nameLabel.text = item.displayName;
+            cell.statusLabel.text = item.presence?.status ?? item.jid.stringValue;
+            cell.avatarStatusView.setStatus(item.presence?.show);
+            cell.avatarStatusView.setAvatar(xmppService.avatarManager.getAvatar(for: item.jid.bareJid, account: item.account));
+        }
         
         return cell;
     }
