@@ -119,7 +119,7 @@ class BaseChatViewController_ShareImagePickerDelegate: NSObject, UIImagePickerCo
                     DispatchQueue.main.async {
                         self.controller.progressBar.isHidden = false;
                     }
-                    var request = URLRequest(url: URL(string: slot.putUri)!);
+                    var request = URLRequest(url: slot.putUri);
                     slot.putHeaders.forEach({ (k,v) in
                         request.addValue(v, forHTTPHeaderField: k);
                     });
@@ -133,10 +133,10 @@ class BaseChatViewController_ShareImagePickerDelegate: NSObject, UIImagePickerCo
                             return;
                         }
                         let x = Element(name: "x", xmlns: "jabber:x:oob");
-                        x.addChild(Element(name: "url", cdata: slot.getUri));
+                        x.addChild(Element(name: "url", cdata: slot.getUri.absoluteString));
                         
                         ImageCache.shared.set(image: image) { (key) in
-                            self.controller.sendMessage(body: slot.getUri, additional: [x], preview: key == nil ? nil : "preview:image:\(key!)", completed: nil);
+                            self.controller.sendMessage(body: slot.getUri.absoluteString, additional: [x], preview: key == nil ? nil : "preview:image:\(key!)", completed: nil);
                         }
                         }.resume();
                 }, onError: { (error, message) in
