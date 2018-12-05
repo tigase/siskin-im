@@ -82,7 +82,7 @@ class BaseChatViewController_ShareImagePickerDelegate: NSObject, UIImagePickerCo
         self.controller = controller;
     }
     
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo info: [String : AnyObject]?) {
+    @objc func imagePickerController(_ picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo info: [String : AnyObject]?) {
         let photo = (info?[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.editedImage)] as? UIImage) ?? image;
         print("photo", photo.size, "image", image.size, "originalImage", info?[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.originalImage)] as Any);
         let imageName = "image.jpg";

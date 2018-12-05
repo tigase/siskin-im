@@ -226,7 +226,7 @@ class ShareViewController: SLComposeServiceViewController {
                 
                 httpModule.requestUploadSlot(componentJid: compJid!, filename: localUrl.pathComponents.last!, size: Int(size), contentType: type ?? "application/octet-stream", onSuccess: {(slot) in
                     print("allocated slot", slot.getUri, slot.putUri);
-                    var request = URLRequest(url: URL(string: slot.putUri)!);
+                    var request = URLRequest(url: slot.putUri);
                     slot.putHeaders.forEach({ (k,v) in
                         request.addValue(v, forHTTPHeaderField: k);
                     });
@@ -241,7 +241,7 @@ class ShareViewController: SLComposeServiceViewController {
                             self.showAlert(title: "Upload failed", message: "Upload to HTTP server failed.");
                             return;
                         }
-                        self.shareText(url: URL(string: slot.getUri)!);
+                        self.shareText(url: slot.getUri);
                     }.resume();
                 }, onError: {(errorCondition, message) in
                     self.showAlert(title: "Upload failed", message: message ?? "Please try again later.");
