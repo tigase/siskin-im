@@ -28,10 +28,11 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
     @IBOutlet var tableView: UITableView!
     @IBOutlet fileprivate var messageField: UITextView!
     @IBOutlet var sendButton: UIButton!
+    @IBOutlet var bottomPanel: UIView!;
     @IBOutlet var bottomView: UIView!
     @IBOutlet var placeholderView: UILabel!;
     
-    var bottomViewBottomConstraint: NSLayoutConstraint?;
+    var bottomPanelBottomConstraint: NSLayoutConstraint?;
     
     @IBInspectable var scrollToBottomOnShow: Bool = false;
     @IBInspectable var animateScrollToBottom: Bool = true;
@@ -94,8 +95,10 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         
         bottomView.layer.borderColor = UIColor.lightGray.cgColor;
         bottomView.layer.borderWidth = 0.5;
-        bottomViewBottomConstraint = view.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor, constant: 0);
-        bottomViewBottomConstraint?.isActive = true;
+        bottomView.preservesSuperviewLayoutMargins = true;
+        bottomPanelBottomConstraint = view.layoutMarginsGuide.bottomAnchor.constraint(equalTo: bottomPanel.bottomAnchor, constant: 0);
+//        bottomViewBottomConstraint = view.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor, constant: 0);
+        bottomPanelBottomConstraint?.isActive = true;
     }
 
     override func didReceiveMemoryWarning() {
@@ -160,12 +163,12 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
     func keyboardAnimateHideShow(_ notification: NSNotification, hide: Bool) {
         if let userInfo = notification.userInfo {
             if let keyboardSize = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
-                let oldHeight = bottomViewBottomConstraint?.constant ?? CGFloat(0);
-                let newHeight = hide ? 0 : keyboardSize.height;
+                let oldHeight = bottomPanelBottomConstraint?.constant ?? CGFloat(0);
+                let newHeight = hide ? 0 : (keyboardSize.height - self.view.layoutMargins.bottom);
                 if (oldHeight - newHeight) != 0 {
                     let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as! TimeInterval;
                     let curve = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as! UInt;
-                    bottomViewBottomConstraint?.constant = newHeight;
+                    bottomPanelBottomConstraint?.constant = newHeight;
                     UIView.animate(withDuration: duration, delay: 0.0, options: [UIView.AnimationOptions(rawValue: curve), UIView.AnimationOptions.layoutSubviews, UIView.AnimationOptions.beginFromCurrentState], animations: {
                         self.view.layoutIfNeeded();
                         self.scrollToNewestMessage(animated: true);

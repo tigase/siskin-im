@@ -87,7 +87,7 @@ class BaseChatViewControllerWithContextMenuAndToolbar: BaseChatViewController {
             self.customToolbar?.isHidden = false;
             self.customToolbarHeightConstraint?.isActive = false;
             self.bottomViewHeightConstraint?.isActive = true;
-            self.bottomView.isHidden = true;
+            self.bottomPanel.isHidden = true;
         }
     }
     
@@ -96,7 +96,7 @@ class BaseChatViewControllerWithContextMenuAndToolbar: BaseChatViewController {
             self.customToolbar?.isHidden = true;
             self.bottomViewHeightConstraint?.isActive = false;
             self.customToolbarHeightConstraint?.isActive = true;
-            self.bottomView.isHidden = false;
+            self.bottomPanel.isHidden = false;
             self.customToolbar?.items = nil;
             self.navigationItem.rightBarButtonItem = nil;
             self.tableView?.isEditing = false;
