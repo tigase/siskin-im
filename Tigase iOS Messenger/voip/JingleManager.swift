@@ -33,7 +33,7 @@ class JingleManager: JingleSessionManager, EventHandler {
                                         decoderFactory: RTCDefaultVideoDecoderFactory());
     }();
     
-    let events: [Event] = [JingleModule.JingleEvent.TYPE];
+    let events: [Event] = [JingleModule.JingleEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE];
     
     weak var xmppService: XmppService?;
     fileprivate var connections: [Session] = [];
@@ -108,6 +108,15 @@ class JingleManager: JingleSessionManager, EventHandler {
                     break;
                 }
                 break;
+            case let e as PresenceModule.ContactPresenceChanged:
+                if e.availabilityChanged && (e.presence.type ?? .available) == .unavailable, let account = e.sessionObject.userBareJid, let from = e.presence.from {
+                    let toClose = self.connections.filter({ (session) in
+                        return session.jid == from && session.account == account;
+                    });
+                    toClose.forEach({ (session) in
+                        self.close(session: session);
+                    })
+                }
             default:
                 break;
             }
@@ -128,14 +137,16 @@ class JingleManager: JingleSessionManager, EventHandler {
         var features: [String] = [];
         
         if jid.resource == nil {
-            presenceModule.presenceStore.getPresences(for: jid.bareJid)?.values.forEach({ (p) in
+            presenceModule.presenceStore.getPresences(for: jid.bareJid)?.values.filter({ (p) -> Bool in
+                return (p.type ?? .available) == .available;
+            }).forEach({ (p) in
                 guard let node = p.capsNode, let f = xmppService?.dbCapsCache.getFeatures(for: node) else {
                     return;
                 }
                 features.append(contentsOf: f);
             })
         } else {
-            guard let node = presenceModule.presenceStore.getPresence(for: jid)?.capsNode, let f = xmppService?.dbCapsCache.getFeatures(for: node) else {
+            guard let p = presenceModule.presenceStore.getPresence(for: jid), (p.type ?? .available) == .available, let node = p.capsNode, let f = xmppService?.dbCapsCache.getFeatures(for: node) else {
                 return [];
             }
             features.append(contentsOf: f);
@@ -172,9 +183,9 @@ class JingleManager: JingleSessionManager, EventHandler {
         let session = open(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid, role: .responder);
         
         // TODO: FIX ME SOON
-//        if !VideoCallController.accept(session: session, sdpOffer: SDP(sid: e.sid!, contents: e.contents, bundle: e.bundle)) {
+        if !VideoCallController.accept(session: session, sdpOffer: SDP(sid: e.sid!, contents: e.contents, bundle: e.bundle)) {
             _ = session.terminate();
-//        }
+        }
     }
     
     fileprivate func sessionAccepted(event e: JingleModule.JingleEvent) {

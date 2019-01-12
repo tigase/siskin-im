@@ -22,9 +22,55 @@
 import UIKit
 import WebRTC
 import TigaseSwift
+import UserNotifications
 
 public class VideoCallController: UIViewController {
 
+    static func canAccept(session: JingleManager.Session, sdpOffer: SDP) -> Bool {
+        guard !sdpOffer.contents.filter({ (content) -> Bool in
+            return (content.description?.media == "audio") || (content.description?.media == "video");
+        }).isEmpty else {
+            return false;
+        }
+        return true;
+    }
+    
+    static func accept(session: JingleManager.Session, sdpOffer: SDP) -> Bool {
+        guard canAccept(session: session, sdpOffer: sdpOffer) else {
+            return false;
+        }
+
+        let rosterModule: RosterModule? = session.client?.modulesManager.getModule(RosterModule.ID);
+        let name = rosterModule?.rosterStore.get(for: session.jid.withoutResource)?.name ?? session.jid.bareJid.stringValue;
+        let content = UNMutableNotificationContent();
+        content.body = "Incoming call from \(name)";
+        content.categoryIdentifier = "CALL";
+        if #available(iOS 12.0, *) {
+            content.sound = UNNotificationSound.defaultCritical
+        } else {
+            content.sound = UNNotificationSound.default;
+        };
+        content.userInfo = ["account": session.account.stringValue, "sender": session.jid.stringValue, "sid": session.sid, "sdpOffer": sdpOffer.toString(), "senderName": name];
+        content.threadIdentifier = "account=" + session.account.stringValue + "|sender=" + session.jid.bareJid.stringValue;
+        let request = UNNotificationRequest(identifier: session.sid, content: content, trigger: nil)
+        
+        UNUserNotificationCenter.current().add(request) { (error) in
+            if error != nil {
+                print("failed to add incoming call notification", error!);
+                _ = session.terminate()
+            }
+        }
+        
+        return true;
+    }
+
+    static func accept(session: JingleManager.Session, sdpOffer: String, withAudio: Bool, withVideo: Bool, sender: UIViewController) {
+        let controller = UIStoryboard(name: "VoIP", bundle: nil).instantiateViewController(withIdentifier: "VideoCallController") as! VideoCallController;
+        sender.present(controller, animated: true, completion: {
+            controller.accept(session: session, sdpOffer: sdpOffer, withAudio: withAudio, withVideo: withVideo);
+        })
+    }
+    
     static func call(jid: BareJID, from account: BareJID, withAudio: Bool, withVideo: Bool, sender: UIViewController) {
         DispatchQueue.main.async {
             var start = Date();
@@ -114,6 +160,9 @@ public class VideoCallController: UIViewController {
     var state: JingleManager.Session.State = .created {
         didSet {
             if state == .connected {
+                DispatchQueue.main.async {
+                    self.avatar.isHidden = (self.remoteVideoTrack?.isEnabled ?? false) && ((self.remoteVideoTrack?.source.state ?? .ended) != .ended);
+                }
             }
             print("jingle state changed:", state)
             DispatchQueue.main.async {
@@ -298,6 +347,67 @@ public class VideoCallController: UIViewController {
         }
     }
     
+    func accept(session: JingleManager.Session, sdpOffer sdpOfferString: String, withAudio: Bool, withVideo: Bool) {
+        session.initiated();
+        session.delegate = self;
+        let client = session.client;
+        let rosterModule: RosterModule? = client?.modulesManager.getModule(RosterModule.ID);
+        
+        self.contactName = rosterModule?.rosterStore.get(for: session.jid.withoutResource)?.name ?? session.jid.bareJid.stringValue;
+        
+        var requiredMediaTypes: [AVMediaType] = [];
+        if (withAudio) {
+            requiredMediaTypes.append(.audio);
+        }
+        if (withVideo) {
+            requiredMediaTypes.append(.video);
+        }
+        
+        self.session = session;
+        self.initializeLocalTracks(requiredMediaTypes: requiredMediaTypes) {
+            session.peerConnection = self.initiatePeerConnection(for: session);
+            let sessDesc = RTCSessionDescription(type: .offer, sdp: sdpOfferString);
+            self.initializeMedia(for: session, audio: withAudio, video: withVideo) {
+                session.peerConnection?.delegate = session;
+                print("setting remote description:", sdpOfferString);
+                self.setRemoteSessionDescription(sessDesc) {
+                    DispatchQueue.main.async {
+                        if (session.peerConnection?.configuration.sdpSemantics ?? RTCSdpSemantics.planB) == RTCSdpSemantics.unifiedPlan {
+                            session.peerConnection?.transceivers.forEach({ transceiver in
+                                if !withAudio && transceiver.mediaType == .audio {
+                                    transceiver.stop();
+                                }
+                                if !withVideo && transceiver.mediaType == .video {
+                                    transceiver.stop();
+                                }
+                            });
+                        }
+                        
+                        session.peerConnection?.answer(for: self.defaultCallConstraints, completionHandler: { (sdpAnswer, error) in
+                            guard error == nil else {
+                                _ = session.decline();
+                                
+                                self.showAlert(title: "Call failed!", message: "Negotiation of the call failed", completionHandler: {
+                                    self.dismiss();
+                                })
+                                
+                                return;
+                            }
+                            print("generated local description:", sdpAnswer!.sdp, sdpAnswer!.type);
+                            self.setLocalSessionDescription(sdpAnswer!, for: session, onSuccess: {
+                                print("set local description:", session.peerConnection?.localDescription?.sdp);
+                                
+                                let sdp = SDP(from: sdpAnswer!.sdp, creator: session.role);
+                                _  = session.accept(contents: sdp!.contents, bundle: sdp!.bundle);
+                            })
+                        })
+                    }
+
+                }
+            }
+        }
+    }
+    
     func call(jid: BareJID, from account: BareJID, withAudio: Bool, withVideo: Bool) {
         let client = xmppService.getClient(forJid: account);
         let presenceModule: PresenceModule? = client?.modulesManager.getModule(PresenceModule.ID);
@@ -477,10 +587,12 @@ public class VideoCallController: UIViewController {
     }
     
     func didAdd(remoteVideoTrack: RTCVideoTrack) {
-        if self.remoteVideoTrack != nil && self.remoteVideoTrack! == remoteVideoTrack {
-            return;
+        DispatchQueue.main.async {
+            if self.remoteVideoTrack != nil && self.remoteVideoTrack! == remoteVideoTrack {
+                return;
+            }
+            self.remoteVideoTrack = remoteVideoTrack;
         }
-        self.remoteVideoTrack = remoteVideoTrack;
     }
     
     func didAdd(localVideoTrack: RTCVideoTrack) {

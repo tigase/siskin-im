@@ -249,6 +249,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
             
             DispatchQueue.main.async() {
                 self.titleView.status = cpc.presence;
+                self.updateTitleView();
             }
         case let e as RosterModule.ItemUpdatedEvent:
             guard e.sessionObject.userBareJid != nil && e.rosterItem != nil else {

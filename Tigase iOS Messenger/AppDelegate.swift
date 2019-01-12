@@ -287,6 +287,45 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 print("No top controller!");
             }
         }
+        if content.categoryIdentifier == "CALL" {
+            let senderName = userInfo["senderName"] as! String;
+            let senderJid = JID(userInfo["sender"] as! String);
+            let accountJid = BareJID(userInfo["account"] as! String);
+            let sdp = userInfo["sdpOffer"] as! String;
+            let sid = userInfo["sid"] as! String;
+            
+            var topController = UIApplication.shared.keyWindow?.rootViewController;
+            while (topController?.presentedViewController != nil) {
+                topController = topController?.presentedViewController;
+            }
+            
+            if let session = JingleManager.instance.session(for: accountJid, with: senderJid, sid: sid) {
+                // can still can be received!
+                let alert = UIAlertController(title: "Incoming call", message: "Incoming call from \(senderName)", preferredStyle: .alert);
+                switch AVCaptureDevice.authorizationStatus(for: .video) {
+                case .denied, .restricted:
+                    break;
+                default:
+                    alert.addAction(UIAlertAction(title: "Video call", style: .default, handler: { action in
+                        // accept video
+                        VideoCallController.accept(session: session, sdpOffer: sdp, withAudio: true, withVideo: true, sender: topController!);
+                    }))
+                }
+                alert.addAction(UIAlertAction(title: "Audio call", style: .default, handler: { action in
+                    VideoCallController.accept(session: session, sdpOffer: sdp, withAudio: true, withVideo: false, sender: topController!);
+                }));
+                alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: { action in
+                    _ = session.decline();
+                }));
+                topController?.present(alert, animated: true, completion: nil);
+            } else {
+                // call missed...
+                let alert = UIAlertController(title: "Missed call", message: "Missed incoming call from \(senderName)", preferredStyle: .alert);
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                
+                topController?.present(alert, animated: true, completion: nil);
+            }
+        }
         
         completionHandler();
     }
