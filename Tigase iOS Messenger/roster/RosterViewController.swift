@@ -210,6 +210,17 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
             alert.addAction(UIAlertAction(title: "Chat", style: .default, handler: { (action) in
                 self.tableView(self.tableView, didSelectRowAt: indexPath);
             }));
+            let jingleSupport = JingleManager.instance.support(for: item.jid, on: item.account);
+            if jingleSupport.contains(.audio) && jingleSupport.contains(.video) {
+                alert.addAction(UIAlertAction(title: "Video call", style: .default, handler: { (action) in
+                    VideoCallController.call(jid: item.jid.bareJid, from: item.account, withAudio: true, withVideo: true, sender: self);
+                }));
+            }
+            if jingleSupport.contains(.audio) {
+                alert.addAction(UIAlertAction(title: "Audio call", style: .default, handler: { (action) in
+                    VideoCallController.call(jid: item.jid.bareJid, from: item.account, withAudio: true, withVideo: false, sender: self);
+                }));
+            }
             alert.addAction(UIAlertAction(title: "Edit", style: .default, handler: {(action) in
                 self.openEditItem(for: item.account, jid: item.jid);
             }));

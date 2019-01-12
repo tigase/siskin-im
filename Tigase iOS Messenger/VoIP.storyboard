@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Video Call Controller-->
+        <scene sceneID="F1u-Sh-GDH">
+            <objects>
+                <viewController storyboardIdentifier="VideoCallController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="sh6-q3-LhK" customClass="VideoCallController" customModule="Tigase_iOS_Messenger" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Y9t-qn-5HE" customClass="RTCMTLVideoView">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Calling John Doe..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i9e-aU-c5F">
+                                <rect key="frame" x="16" y="20" width="343" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageSizeForAccessibilityContentSizeCategory="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JSs-fW-wDJ" customClass="RoundButton" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                <rect key="frame" x="157.5" y="587" width="60" height="60"/>
+                                <color key="backgroundColor" name="systemRedColor" catalog="System" colorSpace="catalog"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="JSs-fW-wDJ" secondAttribute="height" multiplier="1:1" id="izj-ML-5HF"/>
+                                    <constraint firstAttribute="width" constant="60" id="mjk-G9-zXh"/>
+                                </constraints>
+                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <inset key="contentEdgeInsets" minX="10" minY="10" maxX="10" maxY="10"/>
+                                <state key="normal" image="endCall"/>
+                                <connections>
+                                    <action selector="disconnectClicked:" destination="sh6-q3-LhK" eventType="touchUpInside" id="CwP-y4-9QG"/>
+                                </connections>
+                            </button>
+                            <view contentMode="scaleAspectFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TkT-yH-yAj" customClass="CameraPreviewView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="471.5" width="110" height="195.5"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DHt-FL-iNf" customClass="RoundButton" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                        <rect key="frame" x="32.5" y="150.5" width="45" height="45"/>
+                                        <color key="tintColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        <state key="normal" image="switchCamera"/>
+                                        <connections>
+                                            <action selector="switchCamera:" destination="sh6-q3-LhK" eventType="touchUpInside" id="hpo-N8-gYh"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="DHt-FL-iNf" firstAttribute="centerX" secondItem="TkT-yH-yAj" secondAttribute="centerX" id="cwx-s8-yMe"/>
+                                    <constraint firstAttribute="width" constant="110" id="ssD-dy-SIb"/>
+                                </constraints>
+                            </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nxo-vV-t7I" customClass="RoundButton" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                <rect key="frame" x="270" y="587" width="60" height="60"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="nxo-vV-t7I" secondAttribute="height" multiplier="1:1" id="bSj-t1-0y3"/>
+                                    <constraint firstAttribute="width" constant="60" id="tHt-sd-aLa"/>
+                                </constraints>
+                                <color key="tintColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                <inset key="contentEdgeInsets" minX="10" minY="10" maxX="10" maxY="10"/>
+                                <state key="normal" image="mute"/>
+                                <connections>
+                                    <action selector="mute:" destination="sh6-q3-LhK" eventType="touchUpInside" id="UDP-Lg-cgw"/>
+                                </connections>
+                            </button>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="defaultAvatar" translatesAutoresizingMaskIntoConstraints="NO" id="clf-Xd-Ao5">
+                                <rect key="frame" x="-46" y="7" width="467" height="467"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="clf-Xd-Ao5" secondAttribute="height" multiplier="1:1" id="hzm-ak-F2Y"/>
+                                </constraints>
+                            </imageView>
+                        </subviews>
+                        <color key="backgroundColor" cocoaTouchSystemColor="scrollViewTexturedBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="i9e-aU-c5F" firstAttribute="top" secondItem="yOG-l9-hEB" secondAttribute="top" id="4DE-FQ-v2x"/>
+                            <constraint firstItem="JSs-fW-wDJ" firstAttribute="centerX" secondItem="yOG-l9-hEB" secondAttribute="centerX" id="5yM-zB-pky"/>
+                            <constraint firstItem="TkT-yH-yAj" firstAttribute="leading" secondItem="yOG-l9-hEB" secondAttribute="leading" id="Atr-ec-e4K"/>
+                            <constraint firstItem="yOG-l9-hEB" firstAttribute="bottom" secondItem="JSs-fW-wDJ" secondAttribute="bottom" constant="20" id="Fas-ff-3hZ"/>
+                            <constraint firstItem="i9e-aU-c5F" firstAttribute="leading" secondItem="yOG-l9-hEB" secondAttribute="leading" constant="16" id="FdQ-FM-LSt"/>
+                            <constraint firstItem="nxo-vV-t7I" firstAttribute="centerY" secondItem="JSs-fW-wDJ" secondAttribute="centerY" id="PuF-3c-1M3"/>
+                            <constraint firstItem="DHt-FL-iNf" firstAttribute="bottom" secondItem="yOG-l9-hEB" secondAttribute="bottom" id="bWM-4D-93B"/>
+                            <constraint firstItem="clf-Xd-Ao5" firstAttribute="width" secondItem="Y9t-qn-5HE" secondAttribute="width" multiplier="0.7" id="c1l-ue-4CS"/>
+                            <constraint firstItem="yOG-l9-hEB" firstAttribute="bottom" secondItem="TkT-yH-yAj" secondAttribute="bottom" id="frd-Qz-RWO"/>
+                            <constraint firstItem="nxo-vV-t7I" firstAttribute="centerX" secondItem="yOG-l9-hEB" secondAttribute="centerX" multiplier="1.6" id="j0V-v6-9BJ"/>
+                            <constraint firstItem="clf-Xd-Ao5" firstAttribute="centerY" secondItem="yOG-l9-hEB" secondAttribute="centerY" multiplier="0.7" id="jc3-IN-RWn"/>
+                            <constraint firstItem="clf-Xd-Ao5" firstAttribute="height" secondItem="Y9t-qn-5HE" secondAttribute="height" multiplier="0.7" id="ppu-Pl-Ox1"/>
+                            <constraint firstItem="clf-Xd-Ao5" firstAttribute="centerX" secondItem="yOG-l9-hEB" secondAttribute="centerX" id="sTk-7A-aRF"/>
+                            <constraint firstItem="yOG-l9-hEB" firstAttribute="trailing" secondItem="i9e-aU-c5F" secondAttribute="trailing" constant="16" id="uxx-0c-sCR"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="yOG-l9-hEB"/>
+                    </view>
+                    <connections>
+                        <outlet property="avatar" destination="clf-Xd-Ao5" id="ucm-23-yTz"/>
+                        <outlet property="avatarHeightConstraint" destination="ppu-Pl-Ox1" id="epT-Dj-03D"/>
+                        <outlet property="avatarWidthConstraint" destination="c1l-ue-4CS" id="qDR-jr-ABZ"/>
+                        <outlet property="localVideoView" destination="TkT-yH-yAj" id="Ug2-5f-GnG"/>
+                        <outlet property="remoteVideoView" destination="Y9t-qn-5HE" id="WGG-c0-XYz"/>
+                        <outlet property="titleLabel" destination="i9e-aU-c5F" id="6aw-dN-eRw"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="yO6-3f-vJ7" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="280.80000000000001" y="-297.30134932533736"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="defaultAvatar" width="192" height="192"/>
+        <image name="endCall" width="45" height="45"/>
+        <image name="mute" width="45" height="45"/>
+        <image name="switchCamera" width="45" height="45"/>
+    </resources>
+</document>

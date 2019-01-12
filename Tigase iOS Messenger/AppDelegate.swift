@@ -22,6 +22,8 @@
 import UIKit
 import UserNotifications
 import TigaseSwift
+//import CallKit
+import WebRTC
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
@@ -29,10 +31,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     var window: UIWindow?
     var xmppService:XmppService!;
     var dbConnection:DBConnection!;
+//    var callProvider: CXProvider?;
     fileprivate var defaultKeepOnlineOnAwayTime = TimeInterval(3 * 60);
     fileprivate var keepOnlineOnAwayTimer: TigaseSwift.Timer?;
     
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        RTCInitFieldTrialDictionary([:]);
+        RTCInitializeSSL();
+        RTCSetupInternalTracer();
         Log.initialize();
         Settings.initialize();
         AccountSettings.initialize();
@@ -61,10 +67,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         application.setMinimumBackgroundFetchInterval(UIApplication.backgroundFetchIntervalMinimum);
         
         (self.window?.rootViewController as? UISplitViewController)?.preferredDisplayMode = .allVisible;
-        if AccountManager.getAccounts().isEmpty {
-            self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SetupViewController");
-        }
+//        if AccountManager.getAccounts().isEmpty {
+//            self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SetupViewController");
+//        }
         
+//        let callConfig = CXProviderConfiguration(localizedName: "Tigase Messenger");
+//        self.callProvider = CXProvider(configuration: callConfig);
+//        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 5.0) {
+//            let uuid = UUID();
+//            let handle = CXHandle(type: CXHandle.HandleType.generic, value: "andrzej.wojcik@tigase.org");
+//
+//            let startCallAction = CXStartCallAction(call: uuid, handle: handle);
+//            startCallAction.handle = handle;
+//
+//            let transaction = CXTransaction(action: startCallAction);
+//            let callController = CXCallController();
+//            callController.request(transaction, completion: { (error) in
+//                CXErrorCodeRequestTransactionError.invalidAction
+//                print("call request:", error?.localizedDescription);
+//            })
+//            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 30.0, execute: {
+//                print("finished!", callController);
+//            })
+//        }
+//
         return true
     }
 
@@ -130,6 +156,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+        RTCShutdownInternalTracer();
+        RTCCleanupSSL();
         print(NSDate(), "application terminated!")
     }
 

@@ -75,7 +75,7 @@ class SettingsViewController: UITableViewController, EventHandler {
         case 1:
             return 2;
         case 2:
-            return 4;
+            return 5;
         default:
             return 0;
         }
@@ -150,8 +150,12 @@ class SettingsViewController: UITableViewController, EventHandler {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationSettingsViewCell", for: indexPath);
                 cell.accessoryType = .disclosureIndicator;
                 return cell;
-            } else {
+            } else if indexPath.row == 3 {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "ExperimentalSettingsViewCell", for: indexPath);
+                cell.accessoryType = .disclosureIndicator;
+                return cell;
+            } else {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "AboutSettingsViewCell", for: indexPath);
                 cell.accessoryType = .disclosureIndicator;
                 return cell;
             }

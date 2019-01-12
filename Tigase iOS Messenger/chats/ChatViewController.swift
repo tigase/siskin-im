@@ -334,6 +334,43 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         DispatchQueue.main.async {
             self.titleView.connected = state != nil && state == .connected;
         }
+        
+        let jingleSupported = JingleManager.instance.support(for: self.jid.withoutResource, on: self.account);
+        var count = jingleSupported.contains(.audio) ? 1 : 0;
+        if jingleSupported.contains(.video) {
+            count = count + 1;
+        }
+        DispatchQueue.main.async {
+            guard (self.navigationItem.rightBarButtonItems?.count ?? 0 != count) else {
+                return;
+            }
+            var buttons: [UIBarButtonItem] = [];
+            if jingleSupported.contains(.video) {
+                //buttons.append(UIBarButtonItem(image: UIImage(named: "videoCall"), style: .plain, target: self, action: #selector(self.videoCall)));
+                buttons.append(self.smallBarButtinItem(image: UIImage(named: "videoCall")!, action: #selector(self.videoCall)));
+            }
+            if jingleSupported.contains(.audio) {
+                //buttons.append(UIBarButtonItem(image: UIImage(named: "audioCall"), style: .plain, target: self, action: #selector(self.audioCall)));
+                buttons.append(self.smallBarButtinItem(image: UIImage(named: "audioCall")!, action: #selector(self.audioCall)));
+            }
+            self.navigationItem.rightBarButtonItems = buttons;
+        }
+    }
+    
+    fileprivate func smallBarButtinItem(image: UIImage, action: Selector) -> UIBarButtonItem {
+        let btn = UIButton(type: .custom);
+        btn.setImage(image, for: .normal);
+        btn.addTarget(self, action: action, for: .touchUpInside);
+        btn.frame = CGRect(x: 0, y: 0, width: 30, height: 30);
+        return UIBarButtonItem(customView: btn);
+    }
+    
+    @objc func audioCall() {
+        VideoCallController.call(jid: self.jid.bareJid, from: self.account, withAudio: true, withVideo: false, sender: self);
+    }
+    
+    @objc func videoCall() {
+        VideoCallController.call(jid: self.jid.bareJid, from: self.account, withAudio: true, withVideo: true, sender: self);
     }
     
     @objc func refreshChatHistory() {
