@@ -82,9 +82,11 @@ class BaseChatViewController_ShareImagePickerDelegate: NSObject, UIImagePickerCo
         self.controller = controller;
     }
     
-    @objc func imagePickerController(_ picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo info: [String : AnyObject]?) {
-        let photo = (info?[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.editedImage)] as? UIImage) ?? image;
-        print("photo", photo.size, "image", image.size, "originalImage", info?[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.originalImage)] as Any);
+    @objc func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        guard let photo = (info[UIImagePickerController.InfoKey.editedImage] as? UIImage) ?? (info[UIImagePickerController.InfoKey.originalImage] as? UIImage) else {
+            return;
+        }
+        print("photo", photo.size, "originalImage", info[UIImagePickerController.InfoKey.originalImage] as Any);
         let imageName = "image.jpg";
         
         // saving photo
@@ -135,7 +137,7 @@ class BaseChatViewController_ShareImagePickerDelegate: NSObject, UIImagePickerCo
                         let x = Element(name: "x", xmlns: "jabber:x:oob");
                         x.addChild(Element(name: "url", cdata: slot.getUri.absoluteString));
                         
-                        ImageCache.shared.set(image: image) { (key) in
+                        ImageCache.shared.set(image: photo) { (key) in
                             self.controller.sendMessage(body: slot.getUri.absoluteString, additional: [x], preview: key == nil ? nil : "preview:image:\(key!)", completed: nil);
                         }
                         }.resume();

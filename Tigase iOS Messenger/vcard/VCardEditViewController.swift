@@ -288,9 +288,12 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         picker.sourceType = source;
         present(picker, animated: true, completion: nil);
     }
-    
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
-        var photo = (editingInfo?[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.editedImage)] as? UIImage) ?? image;
+
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        guard var photo = (info[UIImagePickerController.InfoKey.editedImage] as? UIImage) else {
+            print("no image available!");
+            return;
+        }
         
         // scalling photo to max of 180px
         var size: CGSize! = nil;
