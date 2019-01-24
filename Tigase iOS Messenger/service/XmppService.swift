@@ -106,10 +106,12 @@ open class XmppService: Logger, EventHandler {
         newFeaturesDetector.xmppService = self;
         self.registerEventHandler(newFeaturesDetector, for: DiscoveryModule.ServerFeaturesReceivedEvent.TYPE);
         
+        #if targetEnvironment(simulator)
+        #else
         let jingleManager = JingleManager.instance;
         jingleManager.xmppService = self;
         self.registerEventHandler(jingleManager, forEvents: jingleManager.events);
-        
+        #endif
         self.avatarManager = AvatarManager(xmppService: self, store: avatarStore);
         NotificationCenter.default.addObserver(self, selector: #selector(XmppService.accountConfigurationChanged), name: AccountManager.ACCOUNT_CONFIGURATION_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(XmppService.connectivityChanged), name: Reachability.CONNECTIVITY_CHANGED, object: nil);
@@ -252,9 +254,12 @@ open class XmppService: Logger, EventHandler {
         _ = client.modulesManager.register(TigasePushNotificationsModule(pushServiceJid: XmppService.pushServiceJid));
         _ = client.modulesManager.register(HttpFileUploadModule());
         _ = client.modulesManager.register(MessageDeliveryReceiptsModule());
+        #if targetEnvironment(simulator)
+        #else
         let jingleModule = client.modulesManager.register(JingleModule(sessionManager: JingleManager.instance));
         jingleModule.register(transport: Jingle.Transport.ICEUDPTransport.self, features: [Jingle.Transport.ICEUDPTransport.XMLNS, "urn:xmpp:jingle:apps:dtls:0"]);
         jingleModule.register(description: Jingle.RTP.Description.self, features: ["urn:xmpp:jingle:apps:rtp:1", "urn:xmpp:jingle:apps:rtp:audio", "urn:xmpp:jingle:apps:rtp:video"]);
+        #endif
         let capsModule = client.modulesManager.register(CapabilitiesModule());
         capsModule.cache = dbCapsCache;
         ScramMechanism.setSaltedPasswordCache(AccountManager.saltedPasswordCache, sessionObject: client.sessionObject);

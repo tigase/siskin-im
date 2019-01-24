@@ -33,6 +33,9 @@ class ChatsListTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
+        let tmp = UIView();
+        tmp.backgroundColor = Appearance.current.tableViewCellHighlightColor();
+        selectedBackgroundView = tmp;
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {

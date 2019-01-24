@@ -26,6 +26,8 @@ import UserNotifications
 
 public class VideoCallController: UIViewController {
 
+    #if targetEnvironment(simulator)
+    #else
     static func canAccept(session: JingleManager.Session, sdpOffer: SDP) -> Bool {
         guard !sdpOffer.contents.filter({ (content) -> Bool in
             return (content.description?.media == "audio") || (content.description?.media == "video");
@@ -707,4 +709,5 @@ public class VideoCallController: UIViewController {
         }
         
     }
+    #endif
 }

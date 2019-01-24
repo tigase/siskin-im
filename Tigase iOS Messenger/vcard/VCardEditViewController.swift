@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class VCardEditViewController: UITableViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class VCardEditViewController: CustomTableViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     let picker = UIImagePickerController();
 

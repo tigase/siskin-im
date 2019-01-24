@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class MucChatOccupantsTableViewController: UITableViewController, EventHandler {
+class MucChatOccupantsTableViewController: CustomTableViewController, EventHandler {
     
     var xmppService:XmppService!;
     

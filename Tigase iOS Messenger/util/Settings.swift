@@ -42,6 +42,7 @@ public enum Settings: String {
     case SendMessageOnReturn
     case CopyMessagesWithTimestamps
     case XmppPipelining
+    case AppearanceTheme
     
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     
@@ -63,7 +64,8 @@ public enum Settings: String {
             "NotificationsFromUnknown" : true as AnyObject,
             "RecentsMessageLinesNo" : 2 as AnyObject,
             "RecentsOrder" : "byTime" as AnyObject,
-            "SendMessageOnReturn" : true as AnyObject
+            "SendMessageOnReturn" : true as AnyObject,
+            "AppearanceTheme": "classic" as AnyObject
         ];
         store.register(defaults: defaults);
         store.dictionaryRepresentation().forEach { (k, v) in

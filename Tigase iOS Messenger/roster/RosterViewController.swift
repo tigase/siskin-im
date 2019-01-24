@@ -23,7 +23,7 @@
 import UIKit
 import TigaseSwift
 
-class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, UISearchResultsUpdating, UISearchBarDelegate {
+class RosterViewController: CustomTableViewController, UIGestureRecognizerDelegate, UISearchResultsUpdating, UISearchBarDelegate {
 
     fileprivate static let UPDATE_NOTIFICATION_NAME = Notification.Name("ROSTER_UPDATE");
         
@@ -50,20 +50,44 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
         searchController.searchResultsUpdater = self;
         searchController.searchBar.delegate = self;
         searchController.searchBar.scopeButtonTitles = ["By name", "By status"];
-        tableView.tableHeaderView = self.searchController.searchBar;
+        searchController.searchBar.searchBarStyle = .prominent;
+
+//        searchController.searchBar.setScopeBarButtonTitleTextAttributes([NSAttributedString.Key.foregroundColor : Appearance.current.selectedTextColor()], for: .selected);
+        
+//        searchController.searchBar.subviews.forEach { (subview1) in
+//            subview1.subviews.forEach({ (subview2) in
+//                if let textField = subview2 as? UITextField {
+//                    if let backgroundView = textField.subviews.first {
+//                        backgroundView.backgroundColor = Appearance.current.textBackgroundColor();
+//                        backgroundView.layer.cornerRadius = 10;
+//                        backgroundView.clipsToBounds = true;
+//                    }
+//                }
+//            })
+//        }
+//
+//        searchController.searchBar.tintColor = Appearance.current.tintColor();
+        Appearance.current.update(seachBar: self.searchController.searchBar);
+        navigationItem.searchController = self.searchController;
         self.definesPresentationContext = true;
         tableView.rowHeight = 48;//UITableViewAutomaticDimension;
+        self.navigationItem.hidesSearchBarWhenScrolling = true;
         //tableView.estimatedRowHeight = 48;
         // Do any additional setup after loading the view, typically from a nib.
         let lpgr = UILongPressGestureRecognizer(target: self, action: #selector(RosterViewController.handleLongPress));
         lpgr.minimumPressDuration = 1.0;
         lpgr.delegate = self;
         tableView.addGestureRecognizer(lpgr);
+        //self.editButtonItem.tintColor = Appearance.current.labelColor();
         navigationItem.leftBarButtonItem = self.editButtonItem
+        //navigationItem.rightBarButtonItem?.tintColor = Appearance.current.labelColor();
         let availabilityFilterSelector = UISegmentedControl(items: ["All", "Available"]);
+//        availabilityFilterSelector.tintColor = Appearance.current.tintColor();
+//        availabilityFilterSelector.setTitleTextAttributes([NSAttributedString.Key.foregroundColor : Appearance.current.selectedTextColor()], for: .selected);
         navigationItem.titleView = availabilityFilterSelector;
         availabilityFilterSelector.selectedSegmentIndex = Settings.RosterAvailableOnly.getBool() ? 1 : 0;
         availabilityFilterSelector.addTarget(self, action: #selector(RosterViewController.availabilityFilterChanged), for: .valueChanged);
+        
     }
     
     override func didReceiveMemoryWarning() {
@@ -96,6 +120,7 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
         reloadData();
         NotificationCenter.default.addObserver(self, selector: #selector(RosterViewController.reloadData), name: AvatarManager.AVATAR_CHANGED, object: nil);
         super.viewWillAppear(animated);
+        Appearance.current.update(seachBar: searchController.searchBar);
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -122,12 +147,20 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
         
         if let item = roster?.item(at: indexPath) {
             cell.nameLabel.text = item.displayName;
+            cell.nameLabel.textColor = Appearance.current.textColor();
+            cell.statusLabel.textColor = Appearance.current.secondaryTextColor();
             cell.statusLabel.text = item.presence?.status ?? item.jid.stringValue;
             cell.avatarStatusView.setStatus(item.presence?.show);
+            cell.avatarStatusView.backgroundColor = Appearance.current.textBackgroundColor();
             cell.avatarStatusView.setAvatar(xmppService.avatarManager.getAvatar(for: item.jid.bareJid, account: item.account));
         }
         
         return cell;
+    }
+    
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        // nothing to do in this case
+        cell.backgroundColor = Appearance.current.tableViewCellBackgroundColor();
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -210,6 +243,8 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
             alert.addAction(UIAlertAction(title: "Chat", style: .default, handler: { (action) in
                 self.tableView(self.tableView, didSelectRowAt: indexPath);
             }));
+            #if targetEnvironment(simulator)
+            #else
             let jingleSupport = JingleManager.instance.support(for: item.jid, on: item.account);
             if jingleSupport.contains(.audio) && jingleSupport.contains(.video) {
                 alert.addAction(UIAlertAction(title: "Video call", style: .default, handler: { (action) in
@@ -221,6 +256,7 @@ class RosterViewController: UITableViewController, UIGestureRecognizerDelegate, 
                     VideoCallController.call(jid: item.jid.bareJid, from: item.account, withAudio: true, withVideo: false, sender: self);
                 }));
             }
+            #endif
             alert.addAction(UIAlertAction(title: "Edit", style: .default, handler: {(action) in
                 self.openEditItem(for: item.account, jid: item.jid);
             }));

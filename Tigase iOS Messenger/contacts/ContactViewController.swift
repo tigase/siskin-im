@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class ContactViewController: UITableViewController {
+class ContactViewController: CustomTableViewController {
 
     var xmppService: XmppService!;
     
@@ -217,6 +217,17 @@ class ContactViewController: UITableViewController {
             let cell = tableView.dequeueReusableCell(withIdentifier: "ContactFormCell", for: indexPath as IndexPath) as! ContactFormTableViewCell;
             return cell;
         }
+    }
+    
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        cell.tintColor = Appearance.current.tintColor();
+        cell.backgroundColor = Appearance.current.tableViewCellBackgroundColor();
+        cell.subviews.first?.subviews.forEach({ (view) in
+            (view as? UILabel)?.textColor = Appearance.current.tintColor();
+            if let textField = view as? UITextField, textField.inputView != nil {
+                textField.textColor = Appearance.current.tintColor();
+            }
+        })
     }
 
     override func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {

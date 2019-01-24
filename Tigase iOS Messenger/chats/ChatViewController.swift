@@ -169,6 +169,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
             label.textAlignment = .center;
             label.transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0);
             label.sizeToFit();
+            label.textColor = Appearance.current.textColor();
             self.tableView.backgroundView = label;
         }
         return dataSource.numberOfMessages;
@@ -335,7 +336,8 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         DispatchQueue.main.async {
             self.titleView.connected = state != nil && state == .connected;
         }
-        
+        #if targetEnvironment(simulator)
+        #else
         let jingleSupported = JingleManager.instance.support(for: self.jid.withoutResource, on: self.account);
         var count = jingleSupported.contains(.audio) ? 1 : 0;
         if jingleSupported.contains(.video) {
@@ -356,6 +358,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
             }
             self.navigationItem.rightBarButtonItems = buttons;
         }
+        #endif
     }
     
     fileprivate func smallBarButtinItem(image: UIImage, action: Selector) -> UIBarButtonItem {
@@ -366,6 +369,8 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         return UIBarButtonItem(customView: btn);
     }
     
+    #if targetEnvironment(simulator)
+    #else
     @objc func audioCall() {
         VideoCallController.call(jid: self.jid.bareJid, from: self.account, withAudio: true, withVideo: false, sender: self);
     }
@@ -373,6 +378,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     @objc func videoCall() {
         VideoCallController.call(jid: self.jid.bareJid, from: self.account, withAudio: true, withVideo: true, sender: self);
     }
+    #endif
     
     @objc func refreshChatHistory() {
         let syncPeriod = AccountSettings.MessageSyncPeriod(account.stringValue).getDouble();
@@ -553,6 +559,8 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
             
             self.addSubview(nameView);
             self.addSubview(statusView);
+//            self.nameView.textColor = UIColor.white;
+//            self.statusView.textColor = UIColor.white;
         }
         
         required init?(coder aDecoder: NSCoder) {
@@ -593,6 +601,8 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
             } else {
                 statusView.text = "\u{26A0} Not connected!";
             }
+            self.nameView.textColor = Appearance.current.navigationBarTextColor();
+            self.statusView.textColor = Appearance.current.navigationBarTextColor();
         }
     }
 }

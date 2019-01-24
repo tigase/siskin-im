@@ -23,7 +23,7 @@
 import UIKit
 import TigaseSwift
 
-class SettingsViewController: UITableViewController, EventHandler {
+class SettingsViewController: CustomTableViewController, EventHandler {
    
     var statusNames = [
         "chat" : "Chat",
@@ -64,8 +64,12 @@ class SettingsViewController: UITableViewController, EventHandler {
         case 2:
             return "Settings";
         default:
-            return nil;
+            return "";
         }
+    }
+    
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+        return nil;
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -75,7 +79,7 @@ class SettingsViewController: UITableViewController, EventHandler {
         case 1:
             return 2;
         case 2:
-            return 5;
+            return 6;
         default:
             return 0;
         }
@@ -139,18 +143,22 @@ class SettingsViewController: UITableViewController, EventHandler {
             }
         } else {
             if indexPath.row == 0 {
-                let cell = tableView.dequeueReusableCell(withIdentifier: "ChatSettingsViewCell", for: indexPath);
+                let cell = tableView.dequeueReusableCell(withIdentifier: "AppearanceViewCell", for: indexPath);
                 cell.accessoryType = .disclosureIndicator;
                 return cell;
             } else if indexPath.row == 1 {
-                let cell = tableView.dequeueReusableCell(withIdentifier: "ContactsSettingsViewCell", for: indexPath);
+                let cell = tableView.dequeueReusableCell(withIdentifier: "ChatSettingsViewCell", for: indexPath);
                 cell.accessoryType = .disclosureIndicator;
                 return cell;
             } else if indexPath.row == 2 {
-                let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationSettingsViewCell", for: indexPath);
+                let cell = tableView.dequeueReusableCell(withIdentifier: "ContactsSettingsViewCell", for: indexPath);
                 cell.accessoryType = .disclosureIndicator;
                 return cell;
             } else if indexPath.row == 3 {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationSettingsViewCell", for: indexPath);
+                cell.accessoryType = .disclosureIndicator;
+                return cell;
+            } else if indexPath.row == 4 {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "ExperimentalSettingsViewCell", for: indexPath);
                 cell.accessoryType = .disclosureIndicator;
                 return cell;
@@ -163,6 +171,7 @@ class SettingsViewController: UITableViewController, EventHandler {
     }
     
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        super.tableView(tableView, willDisplay: cell, forRowAt: indexPath);
         if let accountCell = cell as? AccountTableViewCell {
             accountCell.avatarStatusView.updateCornerRadius();
         }
@@ -229,6 +238,44 @@ class SettingsViewController: UITableViewController, EventHandler {
                 }));
                 self.present(alert, animated: true, completion: nil);
             }
+        } else if indexPath.section == 2 {
+            if indexPath.row == 0 {
+                let controller = TablePickerViewController(style: .grouped);
+                controller.title = "Select theme";
+                controller.selected = Appearance.values.map({ (it) -> String in
+                    return it.id
+                }).firstIndex(of: Appearance.current.id) ?? 0;
+                controller.items = Appearance.values.map({ (it)->ThemeSelector in
+                    return ThemeSelector(value: it);
+                });
+                //controller.selected = 1;
+                controller.onSelectionChange = { [weak controller] (_item) -> Void in
+                    let item = _item as! ThemeSelector;
+                    Appearance.current = item.value;
+                    let tmp = UIViewController();
+                    tmp.view.backgroundColor = Appearance.current.tableViewBackgroundColor();
+                    controller?.navigationController?.pushViewController(tmp, animated: true);
+                    DispatchQueue.main.async {
+                        controller?.navigationController?.popViewController(animated: true);
+                    }
+                    Settings.AppearanceTheme.setValue(item.value.id);
+//                    controller?.navigationController?.popViewController(animated: true);
+                };
+                let navController = UINavigationController(rootViewController: controller);
+                navController.navigationBar.isTranslucent = false;
+                self.showDetailViewController(navController, sender: self);
+//                self.navigationController?.pushViewController(controller, animated: true);
+            }
+        }
+    }
+    
+    internal class ThemeSelector: TablePickerViewItemsProtocol {
+        let description: String;
+        let value: Appearance;
+        
+        init(value: Appearance) {
+            self.value = value;
+            self.description = value.name;
         }
     }
 

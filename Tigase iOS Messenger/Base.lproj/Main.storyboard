@@ -13,16 +13,16 @@
         <scene sceneID="hNz-n2-bh7">
             <objects>
                 <viewController storyboardIdentifier="ChatsListViewController" id="9pv-A4-QxB" customClass="ChatsListViewController" customModule="Tigase_iOS_Messenger" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="90" sectionHeaderHeight="28" sectionFooterHeight="28" id="3ug-3t-4BD">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="90" sectionHeaderHeight="28" sectionFooterHeight="28" id="3ug-3t-4BD">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="808"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="ChatsListTableViewCell" rowHeight="66" id="8Ih-sp-WWY" customClass="ChatsListTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChatsListTableViewCell" rowHeight="66" id="8Ih-sp-WWY" customClass="ChatsListTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="28" width="414" height="66"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="center" tableViewCell="8Ih-sp-WWY" id="5CF-U0-xbS">
-                                    <rect key="frame" x="0.0" y="0.0" width="414" height="65.5"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="66"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <view contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="8Oe-vj-1Ms" customClass="AvatarStatusView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
@@ -39,7 +39,6 @@
                                                     </constraints>
                                                 </imageView>
                                             </subviews>
-                                            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <constraints>
                                                 <constraint firstAttribute="bottom" secondItem="7Rs-PD-XnN" secondAttribute="bottom" id="3Xo-rK-LNv"/>
                                                 <constraint firstItem="hHu-Of-AEi" firstAttribute="width" secondItem="8Oe-vj-1Ms" secondAttribute="width" id="Be9-ua-ka8"/>
@@ -59,7 +58,7 @@
                                             </connections>
                                         </view>
                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pPB-Oo-elb">
-                                            <rect key="frame" x="70" y="3" width="341" height="59.5"/>
+                                            <rect key="frame" x="70" y="3" width="341" height="60"/>
                                             <subviews>
                                                 <view contentMode="scaleToFill" verticalHuggingPriority="200" translatesAutoresizingMaskIntoConstraints="NO" id="sXx-fp-y4V">
                                                     <rect key="frame" x="0.0" y="0.0" width="341" height="20.5"/>
@@ -77,7 +76,6 @@
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                     </subviews>
-                                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                     <constraints>
                                                         <constraint firstItem="ffY-1R-iLb" firstAttribute="top" secondItem="sXx-fp-y4V" secondAttribute="top" id="2xf-hD-H9d"/>
                                                         <constraint firstAttribute="trailing" secondItem="g9h-s1-hrg" secondAttribute="trailing" id="hjk-nK-4HP"/>
@@ -88,13 +86,12 @@
                                                     </constraints>
                                                 </view>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="200" text="Last message" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumFontSize="13" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="tZq-oi-26k">
-                                                    <rect key="frame" x="0.0" y="21.5" width="341" height="38"/>
+                                                    <rect key="frame" x="0.0" y="21.5" width="341" height="38.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                     <color key="textColor" white="0.20046982020547946" alpha="1" colorSpace="calibratedWhite"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                             </subviews>
-                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                             <constraints>
                                                 <constraint firstItem="sXx-fp-y4V" firstAttribute="top" secondItem="pPB-Oo-elb" secondAttribute="top" id="ATH-1J-Uaa"/>
                                                 <constraint firstItem="sXx-fp-y4V" firstAttribute="leading" secondItem="pPB-Oo-elb" secondAttribute="leading" id="Hd0-40-HIW"/>
@@ -159,7 +156,7 @@
                         <subviews>
                             <tableView contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" keyboardDismissMode="interactive" dataMode="prototypes" style="plain" separatorStyle="default" allowsSelection="NO" allowsSelectionDuringEditing="YES" allowsMultipleSelectionDuringEditing="YES" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="Mpx-EA-82o">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="491"/>
-                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <gestureRecognizers/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" restorationIdentifier="ChatTableViewCellOutgoing" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChatTableViewCellOutgoing" id="R0Z-Gr-PEt" customClass="ChatTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
@@ -303,7 +300,7 @@
                                     <outletCollection property="gestureRecognizers" destination="GcF-zS-Z1n" appends="YES" id="CVK-jB-FyW"/>
                                 </connections>
                             </tableView>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="do4-VQ-7VF">
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="do4-VQ-7VF" customClass="ChatBottomView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="537" width="600" height="42"/>
                                 <subviews>
                                     <toolbar hidden="YES" opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="J4D-LI-5Um">
@@ -374,7 +371,6 @@
                                         </constraints>
                                     </view>
                                 </subviews>
-                                <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="trailing" secondItem="HK7-Bq-Vwt" secondAttribute="trailing" id="79V-zt-StU"/>
                                     <constraint firstAttribute="trailing" secondItem="J4D-LI-5Um" secondAttribute="trailing" id="ATT-Y3-rzU"/>
@@ -386,14 +382,13 @@
                                 </constraints>
                             </view>
                         </subviews>
-                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="Mpx-EA-82o" firstAttribute="top" secondItem="1de-4L-gxt" secondAttribute="bottom" id="1f1-i2-ZxE"/>
-                            <constraint firstItem="Mpx-EA-82o" firstAttribute="leading" secondItem="MXY-a0-pWq" secondAttribute="leadingMargin" constant="-10" id="3Js-hq-pvE"/>
+                            <constraint firstItem="Mpx-EA-82o" firstAttribute="leading" secondItem="MXY-a0-pWq" secondAttribute="leading" id="3Js-hq-pvE"/>
                             <constraint firstItem="do4-VQ-7VF" firstAttribute="top" secondItem="Mpx-EA-82o" secondAttribute="bottom" id="K7D-5O-CLh"/>
                             <constraint firstAttribute="bottom" secondItem="do4-VQ-7VF" secondAttribute="bottom" id="Zs1-b5-0VC"/>
                             <constraint firstItem="do4-VQ-7VF" firstAttribute="leading" secondItem="MXY-a0-pWq" secondAttribute="leading" id="hjN-ua-anI"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="Mpx-EA-82o" secondAttribute="trailing" constant="-10" id="kQu-OO-hLX"/>
+                            <constraint firstAttribute="trailing" secondItem="Mpx-EA-82o" secondAttribute="trailing" id="kQu-OO-hLX"/>
                             <constraint firstAttribute="trailing" secondItem="do4-VQ-7VF" secondAttribute="trailing" id="wue-T9-xve"/>
                         </constraints>
                     </view>
@@ -432,10 +427,10 @@
             </objects>
             <point key="canvasLocation" x="4860.8000000000002" y="-737.18140929535241"/>
         </scene>
-        <!--View Controller-->
+        <!--Empty View Controller-->
         <scene sceneID="hqR-ti-YNP">
             <objects>
-                <viewController storyboardIdentifier="emptyDetailViewController" id="sks-Bw-Z68" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="emptyDetailViewController" id="sks-Bw-Z68" customClass="EmptyViewController" customModule="Tigase_iOS_Messenger" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="MzK-x5-6cY"/>
                         <viewControllerLayoutGuide type="bottom" id="ksi-ls-bkm"/>
@@ -533,10 +528,9 @@
         <scene sceneID="Lw1-4q-gz0">
             <objects>
                 <tabBarController id="lx9-0R-yhg" customClass="MainTabBarController" customModule="Tigase_iOS_Messenger" customModuleProvider="target" sceneMemberID="viewController">
-                    <tabBar key="tabBar" contentMode="scaleToFill" id="MWg-yL-VNP">
+                    <tabBar key="tabBar" contentMode="scaleToFill" translucent="NO" id="MWg-yL-VNP">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="49"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                     </tabBar>
                     <connections>
                         <segue destination="JxF-gw-olp" kind="relationship" relationship="viewControllers" id="ifN-oQ-Gcj"/>
@@ -552,23 +546,23 @@
         <scene sceneID="x6U-yq-dO2">
             <objects>
                 <tableViewController title="Roster" id="mps-t3-QBq" customClass="RosterViewController" customModule="Tigase_iOS_Messenger" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" id="dbg-Pp-Ujo">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" id="dbg-Pp-Ujo">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="725"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="RosterItemTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="RosterItemTableViewCell" rowHeight="48" id="ONc-pU-DYD" customClass="RosterItemTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="28" width="414" height="48"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="ONc-pU-DYD" id="UqK-Bi-A4U">
-                                    <rect key="frame" x="0.0" y="0.0" width="414" height="47.5"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="48"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="cbu-SQ-mtx">
-                                            <rect key="frame" x="2" y="2" width="410" height="43.5"/>
+                                            <rect key="frame" x="2" y="2" width="410" height="44"/>
                                             <subviews>
                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PEi-Gx-E77" customClass="AvatarStatusView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
-                                                    <rect key="frame" x="0.0" y="0.0" width="44" height="43.5"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="44" height="44"/>
                                                     <subviews>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Jqt-KR-cfI">
                                                             <rect key="frame" x="0.0" y="0.0" width="44" height="44"/>
@@ -589,16 +583,16 @@
                                                     </connections>
                                                 </view>
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="fPJ-VF-UlI">
-                                                    <rect key="frame" x="54" y="0.0" width="356" height="43.5"/>
+                                                    <rect key="frame" x="54" y="0.0" width="356" height="44"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vEG-as-CLS">
-                                                            <rect key="frame" x="0.0" y="0.0" width="356" height="25.5"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="356" height="26"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tRD-rd-7dm">
-                                                            <rect key="frame" x="0.0" y="25.5" width="356" height="18"/>
+                                                            <rect key="frame" x="0.0" y="26" width="356" height="18"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                                             <color key="textColor" red="0.33333333333333331" green="0.33333333333333331" blue="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                             <nil key="highlightedColor"/>
@@ -643,12 +637,12 @@
         <scene sceneID="brt-az-Ze8">
             <objects>
                 <navigationController storyboardIdentifier="ChatsListViewNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="JxF-gw-olp" sceneMemberID="viewController">
-                    <extendedEdge key="edgesForExtendedLayout"/>
                     <tabBarItem key="tabBarItem" systemItem="recents" id="acW-dT-cKf"/>
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="7zK-CH-Y1Y">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" id="7zK-CH-Y1Y">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
+                        <color key="tintColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <toolbar key="toolbar" opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="2jh-uX-arh">
@@ -667,7 +661,7 @@
             <objects>
                 <navigationController storyboardIdentifier="ChatViewNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="XmR-SP-8PN" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="ZXL-ae-Ls9">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" id="ZXL-ae-Ls9">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -694,7 +688,7 @@
                         <subviews>
                             <tableView contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" keyboardDismissMode="interactive" dataMode="prototypes" style="plain" separatorStyle="default" allowsSelection="NO" allowsSelectionDuringEditing="YES" allowsMultipleSelectionDuringEditing="YES" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="7AL-43-T74">
                                 <rect key="frame" x="0.0" y="0.0" width="414" height="758"/>
-                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <gestureRecognizers/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="ChatTableViewCellOutgoing" selectionStyle="default" indentationWidth="10" reuseIdentifier="MucChatTableViewCellOutgoing" rowHeight="42" id="fT0-Pf-1CB" customClass="MucChatTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
@@ -844,7 +838,7 @@
                                     <outletCollection property="gestureRecognizers" destination="na4-zK-cEh" appends="YES" id="mgo-Ue-Hb2"/>
                                 </connections>
                             </tableView>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ytD-k7-fJp">
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ytD-k7-fJp" customClass="ChatBottomView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="759" width="414" height="49"/>
                                 <subviews>
                                     <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="itZ-yz-LTt">
@@ -918,7 +912,6 @@
                                         </constraints>
                                     </view>
                                 </subviews>
-                                <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                 <constraints>
                                     <constraint firstItem="itZ-yz-LTt" firstAttribute="leading" secondItem="ytD-k7-fJp" secondAttribute="leading" id="3t2-er-fDd"/>
                                     <constraint firstAttribute="trailing" secondItem="itZ-yz-LTt" secondAttribute="trailing" id="AoQ-I3-H3f"/>
@@ -930,11 +923,10 @@
                                 </constraints>
                             </view>
                         </subviews>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="ytD-k7-fJp" secondAttribute="trailing" id="0Ja-fp-70d"/>
-                            <constraint firstItem="7AL-43-T74" firstAttribute="leading" secondItem="xGa-3u-Ko9" secondAttribute="leadingMargin" constant="-10" id="9nN-EZ-DOQ"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="7AL-43-T74" secondAttribute="trailing" constant="-10" id="QZo-ZU-Dzz"/>
+                            <constraint firstItem="7AL-43-T74" firstAttribute="leading" secondItem="xGa-3u-Ko9" secondAttribute="leading" id="9nN-EZ-DOQ"/>
+                            <constraint firstAttribute="trailing" secondItem="7AL-43-T74" secondAttribute="trailing" id="QZo-ZU-Dzz"/>
                             <constraint firstItem="7AL-43-T74" firstAttribute="top" secondItem="Ekx-Sc-1Se" secondAttribute="bottom" id="YRP-lt-Cze"/>
                             <constraint firstItem="ytD-k7-fJp" firstAttribute="leading" secondItem="xGa-3u-Ko9" secondAttribute="leading" id="ZBD-5d-SlL"/>
                             <constraint firstAttribute="bottom" secondItem="ytD-k7-fJp" secondAttribute="bottom" id="j2f-Hl-xcH"/>
@@ -1005,7 +997,6 @@
                                                     </constraints>
                                                 </imageView>
                                             </subviews>
-                                            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <constraints>
                                                 <constraint firstAttribute="trailing" secondItem="viJ-7Z-SbH" secondAttribute="trailing" id="BHo-Tp-tCQ"/>
                                                 <constraint firstAttribute="bottom" secondItem="viJ-7Z-SbH" secondAttribute="bottom" id="F2x-1i-0bO"/>
@@ -1068,7 +1059,7 @@
                 <navigationController storyboardIdentifier="SettingsNavigationController" title="Settings" automaticallyAdjustsScrollViewInsets="NO" id="QmM-dZ-y90" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" systemItem="more" id="3k8-Tx-9T7"/>
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="fdx-BY-Abw">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" id="fdx-BY-Abw">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -1094,9 +1085,9 @@
             <objects>
                 <tableViewController id="KC2-Lb-9cB" customClass="SettingsViewController" customModule="Tigase_iOS_Messenger" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="44" sectionHeaderHeight="18" sectionFooterHeight="18" id="ocJ-zc-aHB">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="725"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" red="0.93725490199999995" green="0.93725490199999995" blue="0.95686274510000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="accountCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="AccountTableViewCell" rowHeight="44" id="D4R-HJ-mHK" customClass="AccountTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="55.5" width="414" height="44"/>
@@ -1123,7 +1114,6 @@
                                                             </constraints>
                                                         </imageView>
                                                     </subviews>
-                                                    <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <constraints>
                                                         <constraint firstAttribute="trailing" secondItem="JTa-Zf-CiU" secondAttribute="trailing" id="5cG-kJ-Sn3"/>
                                                         <constraint firstAttribute="width" secondItem="TMv-wH-5gK" secondAttribute="height" multiplier="1:1" id="6JE-Uw-Yxf"/>
@@ -1143,7 +1133,7 @@
                                                     <rect key="frame" x="49.5" y="0.0" width="348.5" height="39.5"/>
                                                     <accessibility key="accessibilityConfiguration" identifier="accountName"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                             </subviews>
@@ -1162,7 +1152,7 @@
                                     <outlet property="nameLabel" destination="ZdW-n9-xVM" id="BUO-B9-GS7"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="StatusTableViewCell" id="IuE-Fn-rdj" userLabel="StatusTableViewCell">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="StatusTableViewCell" id="IuE-Fn-rdj" userLabel="StatusTableViewCell" customClass="CustomTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="99.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="IuE-Fn-rdj" id="2h2-Px-XKz">
@@ -1172,7 +1162,7 @@
                                         <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="t8P-CU-Zaw">
                                             <rect key="frame" x="8" y="6" width="586" height="31"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
@@ -1185,7 +1175,7 @@
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="StatusTableViewCell"/>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="chatSettingsViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChatSettingsViewCell" id="RL6-sG-ZoO" userLabel="ChatSettingsViewCell">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="chatSettingsViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChatSettingsViewCell" id="RL6-sG-ZoO" userLabel="ChatSettingsViewCell" customClass="CustomTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="143.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="RL6-sG-ZoO" id="oF2-VT-uvI">
@@ -1196,7 +1186,7 @@
                                             <rect key="frame" x="20" y="11" width="374" height="22"/>
                                             <accessibility key="accessibilityConfiguration" identifier="accountName"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
@@ -1212,8 +1202,32 @@
                                     <segue destination="BXr-hT-f7o" kind="showDetail" customClass="NavigationControllerWrappingSegue" customModule="Tigase_iOS_Messenger" customModuleProvider="target" id="fJW-PL-VVR"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="statusTypeSettingsViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="StatusTypeSettingsViewCell" id="oad-Vk-tOm" userLabel="StatusTypeSettingsViewCell">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="appearanceSettingsViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="AppearanceViewCell" id="gZy-7j-Epl" userLabel="AppearanceViewCell" customClass="CustomTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="187.5" width="414" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="gZy-7j-Epl" id="J2q-0P-kbA">
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Appearance" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SN0-V1-Zzn">
+                                            <rect key="frame" x="20" y="11" width="374" height="22"/>
+                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="trailingMargin" secondItem="SN0-V1-Zzn" secondAttribute="trailing" id="0jT-vV-qQ5"/>
+                                        <constraint firstItem="SN0-V1-Zzn" firstAttribute="top" secondItem="J2q-0P-kbA" secondAttribute="topMargin" id="Jtv-bm-cf1"/>
+                                        <constraint firstItem="SN0-V1-Zzn" firstAttribute="leading" secondItem="J2q-0P-kbA" secondAttribute="leadingMargin" id="eOI-o8-weP"/>
+                                        <constraint firstAttribute="bottomMargin" secondItem="SN0-V1-Zzn" secondAttribute="bottom" id="sXx-KS-Lhq"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <accessibility key="accessibilityConfiguration" identifier="appearanceViewCell"/>
+                            </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="statusTypeSettingsViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="StatusTypeSettingsViewCell" id="oad-Vk-tOm" userLabel="StatusTypeSettingsViewCell" customClass="CustomTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="231.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="oad-Vk-tOm" id="zkZ-pd-TKs">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
@@ -1246,8 +1260,8 @@
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="statusTypeSettingsViewCell"/>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="notificationSettingsViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="NotificationSettingsViewCell" id="l26-yU-mGg" userLabel="NotificationSettingsViewCell">
-                                <rect key="frame" x="0.0" y="231.5" width="414" height="44"/>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="notificationSettingsViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="NotificationSettingsViewCell" id="l26-yU-mGg" userLabel="NotificationSettingsViewCell" customClass="CustomTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="275.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="l26-yU-mGg" id="Ocp-c7-zYe">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
@@ -1273,8 +1287,8 @@
                                     <segue destination="tEp-wj-ECQ" kind="showDetail" customClass="NavigationControllerWrappingSegue" customModule="Tigase_iOS_Messenger" customModuleProvider="target" id="gO4-3p-bMZ"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="contactsSettingsViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ContactsSettingsViewCell" id="kGD-mS-9P3" userLabel="ContactsSettingsViewCell">
-                                <rect key="frame" x="0.0" y="275.5" width="414" height="44"/>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="contactsSettingsViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ContactsSettingsViewCell" id="kGD-mS-9P3" userLabel="ContactsSettingsViewCell" customClass="CustomTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="319.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="kGD-mS-9P3" id="tvc-z7-Jmm">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
@@ -1300,8 +1314,8 @@
                                     <segue destination="CeL-yr-IHB" kind="showDetail" customClass="NavigationControllerWrappingSegue" customModule="Tigase_iOS_Messenger" customModuleProvider="target" id="QW8-OP-mJ4"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="experimentalSettingsViewCall" selectionStyle="default" indentationWidth="10" reuseIdentifier="ExperimentalSettingsViewCell" id="GE5-um-CVw" userLabel="ExperimentalSettingsViewCall">
-                                <rect key="frame" x="0.0" y="319.5" width="414" height="44"/>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="experimentalSettingsViewCall" selectionStyle="default" indentationWidth="10" reuseIdentifier="ExperimentalSettingsViewCell" id="GE5-um-CVw" userLabel="ExperimentalSettingsViewCall" customClass="CustomTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="363.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="GE5-um-CVw" id="MGt-f6-8au">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
@@ -1327,8 +1341,8 @@
                                     <segue destination="rJ9-a7-OrY" kind="showDetail" id="QGn-5g-c2B"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="aboutSettingsViewCall" selectionStyle="default" indentationWidth="10" reuseIdentifier="AboutSettingsViewCell" id="pia-wR-hLF" userLabel="AboutSettingsViewCall">
-                                <rect key="frame" x="0.0" y="363.5" width="414" height="44"/>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="aboutSettingsViewCall" selectionStyle="default" indentationWidth="10" reuseIdentifier="AboutSettingsViewCell" id="pia-wR-hLF" userLabel="AboutSettingsViewCall" customClass="CustomTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="407.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="pia-wR-hLF" id="kSH-x8-rgG">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
@@ -1351,7 +1365,7 @@
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="aboutSettingsViewCall"/>
                                 <connections>
-                                    <segue destination="Igc-un-1eD" kind="show" id="kB2-GE-bdG"/>
+                                    <segue destination="Igc-un-1eD" kind="showDetail" id="kB2-GE-bdG"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -1478,7 +1492,7 @@
                                     <outlet property="stepperView" destination="lIh-bW-tVJ" id="UOV-ja-8Wb"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="recentsSortTypeTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="RecentsSortTypeTableViewCell" id="t3G-IK-TNR" userLabel="RecentsSortTypeTableViewCell">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="recentsSortTypeTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="RecentsSortTypeTableViewCell" id="t3G-IK-TNR" userLabel="RecentsSortTypeTableViewCell" customClass="CustomTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="187.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="t3G-IK-TNR" id="1Yc-Pb-Vdc">
@@ -1645,7 +1659,7 @@
                                     <outlet property="switchView" destination="lj7-vo-80r" id="udh-ql-88C"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="maxImagePreviewSizeTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="MaxImagePreviewSizeTableViewCell" id="enK-aO-tlE" userLabel="MaxImagePreviewSizeTableViewCell">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="maxImagePreviewSizeTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="MaxImagePreviewSizeTableViewCell" id="enK-aO-tlE" userLabel="MaxImagePreviewSizeTableViewCell" customClass="CustomTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="407.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="enK-aO-tlE" id="TFD-eN-puq">
@@ -1676,7 +1690,7 @@
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="maxImagePreviewSizeTableViewCell"/>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="clearImagePreviewTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ClearImagePreviewTableViewCell" id="PeQ-ux-gi0" userLabel="ClearImagePreviewTableViewCell">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="clearImagePreviewTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ClearImagePreviewTableViewCell" id="PeQ-ux-gi0" userLabel="ClearImagePreviewTableViewCell" customClass="CustomTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="451.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="PeQ-ux-gi0" id="wgm-Nm-DPq">
@@ -2416,7 +2430,7 @@
                 <navigationController title="Contacts" automaticallyAdjustsScrollViewInsets="NO" id="Ndx-if-NHK" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" selectedImage="first" systemItem="contacts" id="W52-LN-wzX"/>
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="QfB-Do-9or">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" id="QfB-Do-9or">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -2573,31 +2587,37 @@
                                         </imageView>
                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Given name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="lc5-cu-p0w">
                                             <rect key="frame" x="88" y="11" width="492" height="30"/>
+                                            <nil key="textColor"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <textInputTraits key="textInputTraits"/>
                                         </textField>
                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Family name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="0kW-Ah-3FN">
                                             <rect key="frame" x="88" y="49" width="492" height="30"/>
+                                            <nil key="textColor"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <textInputTraits key="textInputTraits"/>
                                         </textField>
                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Full name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="2Om-Zk-kdP">
                                             <rect key="frame" x="20" y="84" width="560" height="30"/>
+                                            <nil key="textColor"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <textInputTraits key="textInputTraits"/>
                                         </textField>
                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Birthday" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="W1P-cq-mGY">
                                             <rect key="frame" x="20" y="122" width="560" height="30"/>
+                                            <nil key="textColor"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <textInputTraits key="textInputTraits"/>
                                         </textField>
                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Organization" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="6Dz-oa-6Lp">
                                             <rect key="frame" x="20" y="160" width="560" height="30"/>
+                                            <nil key="textColor"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="yes"/>
                                         </textField>
                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Role in organization" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="a0i-7m-tge">
                                             <rect key="frame" x="20" y="198" width="560" height="30"/>
+                                            <nil key="textColor"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <textInputTraits key="textInputTraits"/>
                                         </textField>
@@ -2655,6 +2675,7 @@
                                         </textField>
                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Phone number" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="T7L-8F-WZY">
                                             <rect key="frame" x="95" y="10" width="485" height="24.5"/>
+                                            <nil key="textColor"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <textInputTraits key="textInputTraits" keyboardType="phonePad"/>
                                         </textField>
@@ -2684,8 +2705,11 @@
                                         <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="contactAdd" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3h2-Cf-0au">
                                             <rect key="frame" x="8" y="14" width="22" height="16.5"/>
                                         </button>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" ambiguous="YES" text="add phone" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7JW-0r-uqT">
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" ambiguous="YES" text="add phone" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7JW-0r-uqT">
                                             <rect key="frame" x="38" y="14" width="554" height="15.5"/>
+                                            <accessibility key="accessibilityConfiguration">
+                                                <accessibilityTraits key="traits" link="YES" staticText="YES"/>
+                                            </accessibility>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
@@ -2720,6 +2744,7 @@
                                         </textField>
                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Email address" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="F4K-JV-A9y">
                                             <rect key="frame" x="95" y="10" width="485" height="24.5"/>
+                                            <nil key="textColor"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <textInputTraits key="textInputTraits" keyboardType="emailAddress"/>
                                         </textField>
@@ -2749,8 +2774,11 @@
                                         <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="contactAdd" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8uc-fp-DH5">
                                             <rect key="frame" x="8" y="14" width="22" height="16.5"/>
                                         </button>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" ambiguous="YES" text="add email" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jfW-wv-zXb">
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" ambiguous="YES" text="add email" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jfW-wv-zXb">
                                             <rect key="frame" x="38" y="14" width="554" height="15.5"/>
+                                            <accessibility key="accessibilityConfiguration">
+                                                <accessibilityTraits key="traits" link="YES" staticText="YES"/>
+                                            </accessibility>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
@@ -2777,8 +2805,11 @@
                                         <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="contactAdd" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MML-Py-bS5">
                                             <rect key="frame" x="8" y="14" width="22" height="16.5"/>
                                         </button>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" ambiguous="YES" text="add address" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zNC-xQ-nGm">
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" ambiguous="YES" text="add address" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zNC-xQ-nGm">
                                             <rect key="frame" x="38" y="14" width="554" height="15.5"/>
+                                            <accessibility key="accessibilityConfiguration">
+                                                <accessibilityTraits key="traits" link="YES" staticText="YES"/>
+                                            </accessibility>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
@@ -2813,11 +2844,13 @@
                                         </textField>
                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Street" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="25u-gh-Syk">
                                             <rect key="frame" x="95" y="8" width="485" height="30"/>
+                                            <nil key="textColor"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <textInputTraits key="textInputTraits"/>
                                         </textField>
                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Code" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="h83-Ha-ab2">
                                             <rect key="frame" x="83" y="46" width="79" height="30"/>
+                                            <nil key="textColor"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <textInputTraits key="textInputTraits"/>
                                         </textField>
@@ -2828,6 +2861,7 @@
                                         </textField>
                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Country" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="qbs-tw-hjl">
                                             <rect key="frame" x="95" y="84" width="485" height="30"/>
+                                            <nil key="textColor"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <textInputTraits key="textInputTraits"/>
                                         </textField>
@@ -3262,7 +3296,7 @@
             <objects>
                 <navigationController storyboardIdentifier="RoomViewNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="EOg-N2-aev" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="bMi-Cc-EWG">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" id="bMi-Cc-EWG">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>

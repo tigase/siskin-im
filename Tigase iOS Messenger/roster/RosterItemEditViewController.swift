@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class RosterItemEditViewController: UITableViewController, UIPickerViewDataSource, UIPickerViewDelegate {
+class RosterItemEditViewController: CustomTableViewController, UIPickerViewDataSource, UIPickerViewDelegate {
 
     var xmppService:XmppService!
     

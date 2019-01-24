@@ -21,7 +21,7 @@
 
 import UIKit
 
-class ChatSettingsViewController: UITableViewController {
+class ChatSettingsViewController: CustomTableViewController {
 
     let tree: [[SettingsEnum]] = [
         [SettingsEnum.recentsMessageLinesNo, SettingsEnum.recentsSortType],

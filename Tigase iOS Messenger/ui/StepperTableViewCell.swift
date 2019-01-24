@@ -21,7 +21,7 @@
 
 import UIKit
 
-class StepperTableViewCell: UITableViewCell {
+class StepperTableViewCell: CustomTableViewCell {
     
     @IBOutlet var labelView: UILabel!
     @IBOutlet var stepperView: UIStepper!

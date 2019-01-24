@@ -23,6 +23,8 @@ import Foundation
 import TigaseSwift
 import WebRTC
 
+#if targetEnvironment(simulator)
+#else
 class JingleManager: JingleSessionManager, EventHandler {
     
     static let instance = JingleManager();
@@ -32,7 +34,6 @@ class JingleManager: JingleSessionManager, EventHandler {
         return RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(),
                                         decoderFactory: RTCDefaultVideoDecoderFactory());
     }();
-    
     let events: [Event] = [JingleModule.JingleEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE];
     
     weak var xmppService: XmppService?;
@@ -228,3 +229,4 @@ extension String {
         return String((0...length-1).map{ _ in letters.randomElement()! });
     }
 }
+#endif

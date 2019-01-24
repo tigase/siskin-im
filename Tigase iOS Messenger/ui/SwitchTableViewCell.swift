@@ -21,7 +21,7 @@
 
 import UIKit
 
-class SwitchTableViewCell: UITableViewCell {
+class SwitchTableViewCell: CustomTableViewCell {
 
     @IBOutlet var switchView: UISwitch!
     

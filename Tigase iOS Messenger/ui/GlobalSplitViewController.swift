@@ -24,9 +24,14 @@ import UIKit
 
 class GlobalSplitViewController: UISplitViewController, UISplitViewControllerDelegate {
     
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return Appearance.current.isDark ? .lightContent : .default;
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad();
         self.delegate = self;
+        NotificationCenter.default.addObserver(self, selector: #selector(appearanceChanged), name: Appearance.CHANGED, object: nil);
     }
     
     func splitViewController(_ splitViewController: UISplitViewController, collapseSecondary secondaryViewController: UIViewController, onto primaryViewController: UIViewController) -> Bool{
@@ -57,4 +62,9 @@ class GlobalSplitViewController: UISplitViewController, UISplitViewControllerDel
         }
         return nil;
     }
+    
+    @objc func appearanceChanged(_ notification: Notification) {
+        self.setNeedsStatusBarAppearanceUpdate();
+    }
+
 }

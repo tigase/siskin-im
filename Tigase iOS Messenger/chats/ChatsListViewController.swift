@@ -24,7 +24,7 @@ import UIKit
 import UserNotifications
 import TigaseSwift
 
-class ChatsListViewController: UITableViewController, EventHandler {
+class ChatsListViewController: CustomTableViewController, EventHandler {
     var dbConnection:DBConnection!;
     var xmppService:XmppService!;
     
@@ -51,6 +51,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
         self.xmppService.registerEventHandler(self, for: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE, RosterModule.ItemUpdatedEvent.TYPE);
         //(self.tabBarController as? CustomTabBarController)?.showTabBar();
         NotificationCenter.default.addObserver(self, selector: #selector(ChatsListViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
+        self.navigationController?.navigationBar.backgroundColor = Appearance.current.controlBackgroundColor();
         super.viewWillAppear(animated);
     }
 
@@ -84,8 +85,10 @@ class ChatsListViewController: UITableViewController, EventHandler {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath as IndexPath) as! ChatsListTableViewCell;
         
         let item = dataSource.item(at: indexPath);
+        cell.nameLabel.textColor = Appearance.current.textColor();
         cell.nameLabel.text = item.name ?? item.key.jid.stringValue;
          cell.nameLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.nameLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.nameLabel.font.pointSize);
+        cell.lastMessageLabel.textColor = Appearance.current.secondaryTextColor();
         cell.lastMessageLabel.text = item.lastMessage == nil ? nil : ((item.unread > 0 ? "" : "\u{2713}") + item.lastMessage!);
         cell.lastMessageLabel.numberOfLines = Settings.RecentsMessageLinesNo.getInt();
 //        cell.lastMessageLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.lastMessageLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize);
@@ -93,6 +96,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
         
         let formattedTS = self.formatTimestamp(item.key.timestamp);
         cell.timestampLabel.text = formattedTS;
+        cell.timestampLabel.textColor = Appearance.current.secondaryTextColor();
 
         let xmppClient = self.xmppService.getClient(forJid: item.key.account);
         switch item.key.type {
@@ -112,6 +116,7 @@ class ChatsListViewController: UITableViewController, EventHandler {
     }
     
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        cell.backgroundColor = Appearance.current.tableViewCellBackgroundColor();
         if let accountCell = cell as? AccountTableViewCell {
             accountCell.avatarStatusView.updateCornerRadius();
         }

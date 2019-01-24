@@ -73,9 +73,6 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         let params:[String:Any?] = ["account" : account, "jid" : jid.bareJid];
         navigationItem.title = try! loadChatInfo.findFirst(params) { cursor in cursor["name"] } ?? jid.stringValue;
         
-        messageField.layer.borderColor = UIColor.lightGray.cgColor;
-        messageField.layer.borderWidth = 0.5;
-        messageField.layer.cornerRadius = 5.0;
         messageField.layer.masksToBounds = true;
         messageField.delegate = self;
         messageField.isScrollEnabled = false;
@@ -93,12 +90,14 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         
         placeholderView?.isHidden = false;
         
-        bottomView.layer.borderColor = UIColor.lightGray.cgColor;
-        bottomView.layer.borderWidth = 0.5;
+//        bottomView.layer.borderColor = UIColor.lightGray.cgColor;
+//        bottomView.layer.borderWidth = 0.5;
         bottomView.preservesSuperviewLayoutMargins = true;
         bottomPanelBottomConstraint = view.layoutMarginsGuide.bottomAnchor.constraint(equalTo: bottomPanel.bottomAnchor, constant: 0);
 //        bottomViewBottomConstraint = view.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor, constant: 0);
         bottomPanelBottomConstraint?.isActive = true;
+        NotificationCenter.default.addObserver(self, selector: #selector(appearanceChanged), name: Appearance.CHANGED, object: nil);
+        updateAppearance();
     }
 
     override func didReceiveMemoryWarning() {
@@ -117,6 +116,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
                 self.messageText = text;
             }
         }
+        updateAppearance();
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -128,6 +128,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         }
         let accountStr = account.stringValue.lowercased();
         let jidStr = jid.bareJid.stringValue.lowercased();
+        self.tableView.backgroundColor = Appearance.current.tableViewBackgroundColor();
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
             var toRemove = [String]();
             for notification in notifications {
@@ -188,6 +189,10 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         messageField.resignFirstResponder();
     }
     
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        cell.backgroundColor = Appearance.current.tableViewCellBackgroundColor();
+    }
+    
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         if text == "\n" {
             print("enter detected");
@@ -222,6 +227,38 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
     }
     
     func sendMessage() {
+    }
+    
+    @objc func appearanceChanged(_ notification: Notification) {
+        self.updateAppearance();
+    }
+    
+    func updateAppearance() {
+        self.messageField.keyboardAppearance = Appearance.current.isDark ? .dark : .default;
+        self.messageField.backgroundColor = Appearance.current.textBackgroundColor();
+        self.messageField.textColor = Appearance.current.textColor();
+        self.messageField.layer.borderColor = Appearance.current.textFieldBorderColor().cgColor;
+        self.messageField.layer.borderWidth = 0.5;
+        self.messageField.layer.cornerRadius = 5.0;
+        
+        self.bottomView.tintColor = Appearance.current.bottomBarTintColor();
+        self.bottomView.backgroundColor = Appearance.current.bottomBarBackgroundColor();
+        
+        self.view.tintColor = Appearance.current.tintColor();
+        self.tableView.backgroundColor = Appearance.current.tableViewBackgroundColor();
+        self.tableView.separatorColor = Appearance.current.tableViewSeparatorColor();
+        
+        if let navController = self.navigationController {
+            navController.navigationBar.barStyle = Appearance.current.navigationBarStyle();
+            navController.navigationBar.tintColor = Appearance.current.navigationBarTintColor();
+            navController.navigationBar.barTintColor = Appearance.current.controlBackgroundColor();
+            navController.navigationBar.setNeedsLayout();
+            navController.navigationBar.layoutIfNeeded();
+            navController.navigationBar.setNeedsDisplay();
+        }
+        DispatchQueue.main.async {
+            self.tableView.reloadData();
+        }
     }
 }
 

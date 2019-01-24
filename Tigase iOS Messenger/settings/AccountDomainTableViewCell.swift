@@ -22,8 +22,12 @@
 import Foundation
 import UIKit
 
-class AccountDomainTableViewCell: UITableViewCell {
+class AccountDomainTableViewCell: CustomTableViewCell {
     
     @IBOutlet var domainField: UITextField!
+    
+    override func awakeFromNib() {
+        super.awakeFromNib();
+    }
     
 }

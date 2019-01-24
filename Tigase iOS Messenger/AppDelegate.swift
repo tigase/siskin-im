@@ -42,6 +42,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         Log.initialize();
         Settings.initialize();
         AccountSettings.initialize();
+        Appearance.current = Appearance.values.first(where: { (appearance) -> Bool in
+            return appearance.id == (Settings.AppearanceTheme.getString() ?? "classic");
+        }) ?? Appearance.values.first!;
+//        Appearance.current = OrioleLightAppearance();
+//        //Appearance.current = PurpleLightAppearance();
+//        Appearance.current = PurpleDarkAppearance();
+//        Appearance.current = ClassicAppearance();
         do {
             dbConnection = try DBConnection(dbFilename: "mobile_messenger1.db");
             try DBSchemaManager(dbConnection: dbConnection).upgradeSchema();
@@ -67,9 +74,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         application.setMinimumBackgroundFetchInterval(UIApplication.backgroundFetchIntervalMinimum);
         
         (self.window?.rootViewController as? UISplitViewController)?.preferredDisplayMode = .allVisible;
-//        if AccountManager.getAccounts().isEmpty {
-//            self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SetupViewController");
-//        }
+        if AccountManager.getAccounts().isEmpty {
+            self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SetupViewController");
+        }
         
 //        let callConfig = CXProviderConfiguration(localizedName: "Tigase Messenger");
 //        self.callProvider = CXProvider(configuration: callConfig);
@@ -287,6 +294,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 print("No top controller!");
             }
         }
+        #if targetEnvironment(simulator)
+        #else
         if content.categoryIdentifier == "CALL" {
             let senderName = userInfo["senderName"] as! String;
             let senderJid = JID(userInfo["sender"] as! String);
@@ -326,7 +335,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 topController?.present(alert, animated: true, completion: nil);
             }
         }
-        
+        #endif
         completionHandler();
     }
     

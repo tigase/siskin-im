@@ -1,8 +1,8 @@
 //
-// ServerSelectorTableViewCell.swift
+// CustomTableViewCell.swift
 //
 // Tigase iOS Messenger
-// Copyright (C) 2017 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2019 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -19,15 +19,15 @@
 // If not, see http://www.gnu.org/licenses/.
 //
 
-import Foundation
 import UIKit
 
-class ServerSelectorTableViewCell: CustomTableViewCell {
+class CustomTableViewCell: UITableViewCell {
     
-    @IBOutlet var serverDomain: UILabel!
- 
     override func awakeFromNib() {
         super.awakeFromNib();
+        let tmp = UIView();
+        tmp.backgroundColor = Appearance.current.tableViewCellHighlightColor();
+        selectedBackgroundView = tmp;
     }
     
 }

@@ -24,13 +24,30 @@ import UIKit
 
 class CustomTabBarController: UITabBarController {
  
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return Appearance.current.isDark ? .lightContent : .default;
+    }
+    
     override func viewDidLoad() {
         for childController in self.children {
             if childController is UINavigationController {
-                childController.view.backgroundColor = UIColor.white;
+                childController.view.backgroundColor = Appearance.current.tableViewBackgroundColor();
             }
-            
         }
+        NotificationCenter.default.addObserver(self, selector: #selector(appearanceChanged), name: Appearance.CHANGED, object: nil);
+    }
+    
+    @objc func appearanceChanged(_ notification: Notification) {
+        self.tabBar.barTintColor = Appearance.current.bottomBarBackgroundColor();
+        self.tabBar.tintColor = Appearance.current.bottomBarTintColor();
+        self.setNeedsStatusBarAppearanceUpdate();
+//        for childController in self.children {
+//            if let navController = childController as? UINavigationController {
+//                navController.navigationBar.barStyle = Appearance.current.navigationBarStyle();
+//                navController.navigationBar.tintColor = Appearance.current.navigationBarTintColor();
+//                navController.navigationBar.barTintColor = Appearance.current.controlBackgroundColor();
+//            }
+//        }
     }
     
 }

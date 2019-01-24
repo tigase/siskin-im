@@ -23,8 +23,10 @@ import Foundation
 import TigaseSwift
 import WebRTC
 
+#if targetEnvironment(simulator)
+#else
 extension JingleManager {
-    
+
     class Session: NSObject, RTCPeerConnectionDelegate, JingleSession {
         
         fileprivate(set) weak var client: XMPPClient?;
@@ -310,3 +312,4 @@ extension JingleManager {
     }
     
 }
+#endif

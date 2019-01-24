@@ -21,7 +21,7 @@
 
 import UIKit
 
-class ExperimentalSettingsViewController: UITableViewController {
+class ExperimentalSettingsViewController: CustomTableViewController {
     
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1;

@@ -177,7 +177,7 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
                         url = URL(string: "calshow:\(match.date!.timeIntervalSinceReferenceDate)");
                     }
                     if url != nil {
-                        attrText.setAttributes(convertToOptionalNSAttributedStringKeyDictionary([convertFromNSAttributedStringKey(NSAttributedString.Key.underlineStyle): NSUnderlineStyle.single.rawValue, convertFromNSAttributedStringKey(NSAttributedString.Key.link): url!]), range: match.range);
+                        attrText.setAttributes([NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue, NSAttributedString.Key.link: url!], range: match.range);
                     }
                 }
             }
@@ -188,6 +188,7 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         } else {
             self.messageTextView.text = text;
         }
+        self.messageFrameView.backgroundColor = state.direction == .incoming ? Appearance.current.incomingBubbleColor() : Appearance.current.outgoingBubbleColor();
         self.messageTextView.textColor = self.originalTextColor;
         switch state.state {
         case .error:

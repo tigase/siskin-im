@@ -21,7 +21,7 @@
 
 import UIKit
 
-class TablePickerViewController: UITableViewController {
+class TablePickerViewController: CustomTableViewController {
 
     var selected: Int = 0;
     var items = [TablePickerViewItemsProtocol]();

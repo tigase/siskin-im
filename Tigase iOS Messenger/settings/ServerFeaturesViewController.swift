@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class ServerFeaturesViewController: UITableViewController {
+class ServerFeaturesViewController: CustomTableViewController {
 
     var xmppService: XmppService!;
 

@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class AccountSettingsViewController: UITableViewController, EventHandler {
+class AccountSettingsViewController: CustomTableViewController, EventHandler {
     
     var xmppService: XmppService!;
     
