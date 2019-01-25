@@ -678,7 +678,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#\"${SRCROOT}/\"trim.sh TigaseSwift\n";
+			shellScript = "#\"${SRCROOT}/\"trim.sh TigaseSwift\n\"${SRCROOT}/\"trim.sh WebRTC\n";
 		};
 		FECD0F2A1CDB8B1B00420DF5 /* Mark TODO and FIX ME */ = {
 			isa = PBXShellScriptBuildPhase;
