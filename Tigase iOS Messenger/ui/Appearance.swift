@@ -25,7 +25,7 @@ class Appearance {
     
     static let CHANGED = Notification.Name("appearanceChanged");
     
-    static let values: [Appearance] = [ ClassicAppearance(), OrioleLightAppearance(), PurpleLightAppearance(), OrioleDarkAppearance(), PurpleDarkAppearance() ];
+    static let values: [Appearance] = [ ClassicAppearance(), OrioleLightAppearance(), PurpleLightAppearance(), ClassicDarkAppearance(), MonoDarkAppearance(), OrioleDarkAppearance(), PurpleDarkAppearance() ];
     
     static var current: Appearance! {
         didSet {
@@ -252,6 +252,48 @@ class ClassicAppearance: Appearance {
     }
     
 }
+
+class ClassicDarkAppearance: Appearance {
+    
+    init() {
+        let base = UIColor.black;
+        let blue = UIColor(red: 0.0, green: 122.0/255.0, blue: 1.0, alpha: 1.0);
+        super.init(id: "classic-dark", name: "Classic Dark", isDark: true, baseColor: base);
+        self._tintColor = blue;
+        self._navigationBarTintColor = blue;
+        self._bottomBarBackgroundColor = base;
+        self._bottomBarTintColor = blue;
+        self._secondaryTextColor = UIColor.white.adjust(brightness: 0.66);
+        self._tableViewBackgroundColor = baseColor.adjust(brightness: 0.05);
+        self._tableViewCellBackgroundColor = baseColor.adjust(brightness: 0.05);
+        self._tableViewHeaderFooterBackgroundColor = base.adjust(brightness: 0.10);
+        self._textBackgroundColor = self._tableViewCellBackgroundColor;
+        self._incomingBubbleColor = baseColor.adjust(brightness: 0.65);
+        self._outgoingBubbleColor = blue.adjust(brightness: 0.25);
+    }
+    
+}
+
+class MonoDarkAppearance: Appearance {
+
+    init() {
+        let base = UIColor.black;
+        super.init(id: "mono-dark", name: "Black", isDark: true, baseColor: base);
+        self._tintColor = UIColor.white.adjust(brightness: 0.9);
+        self._navigationBarTintColor = UIColor.white.adjust(brightness: 0.9);
+        self._bottomBarBackgroundColor = base;
+        self._bottomBarTintColor = UIColor.white.adjust(brightness: 0.9);
+        self._secondaryTextColor = UIColor.white.adjust(brightness: 0.66);
+        self._tableViewBackgroundColor = baseColor.adjust(brightness: 0.05);
+        self._tableViewCellBackgroundColor = baseColor.adjust(brightness: 0.05);
+        self._tableViewHeaderFooterBackgroundColor = base.adjust(brightness: 0.10);
+        self._textBackgroundColor = self._tableViewCellBackgroundColor;
+        self._incomingBubbleColor = baseColor.adjust(brightness: 0.65);
+        self._outgoingBubbleColor = UIColor.white.adjust(brightness: 0.25);
+    }
+
+}
+
 
 class OrioleLightAppearance: Appearance {
    
