@@ -149,7 +149,7 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
     func handle(event: Event) {
         switch event {
         case is SocketConnector.ConnectedEvent, is SocketConnector.DisconnectedEvent, is StreamManagementModule.ResumedEvent,
-             is SessionEstablishmentModule.SessionEstablishmentSuccessEvent, is DiscoveryModule.ServerFeaturesReceivedEvent:
+             is SessionEstablishmentModule.SessionEstablishmentSuccessEvent, is DiscoveryModule.ServerFeaturesReceivedEvent, is DiscoveryModule.AccountFeaturesReceivedEvent:
             DispatchQueue.main.async {
                 self.updateView();
             }

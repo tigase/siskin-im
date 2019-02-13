@@ -54,7 +54,7 @@ class NewFeaturesDetector: EventHandler {
     
     func handle(event: Event) {
         switch event {
-        case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
+        case let e as DiscoveryModule.AccountFeaturesReceivedEvent:
             guard let account = e.sessionObject.userBareJid, let xmppService = self.xmppService else {
                 return;
             }
