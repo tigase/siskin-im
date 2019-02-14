@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "FE94E5201CCBA74F00FAE755"
-               BuildableName = "Tigase-iOS-Messenger.app"
-               BlueprintName = "Tigase-iOS-Messenger"
+               BuildableName = "Siskin.app"
+               BlueprintName = "Siskin IM"
                ReferencedContainer = "container:Tigase-iOS-Messenger.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -53,8 +53,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "FE94E5201CCBA74F00FAE755"
-            BuildableName = "Tigase-iOS-Messenger.app"
-            BlueprintName = "Tigase-iOS-Messenger"
+            BuildableName = "Siskin.app"
+            BlueprintName = "Siskin IM"
             ReferencedContainer = "container:Tigase-iOS-Messenger.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -77,8 +77,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "FE94E5201CCBA74F00FAE755"
-            BuildableName = "Tigase-iOS-Messenger.app"
-            BlueprintName = "Tigase-iOS-Messenger"
+            BuildableName = "Siskin.app"
+            BlueprintName = "Siskin IM"
             ReferencedContainer = "container:Tigase-iOS-Messenger.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -96,8 +96,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "FE94E5201CCBA74F00FAE755"
-            BuildableName = "Tigase-iOS-Messenger.app"
-            BlueprintName = "Tigase-iOS-Messenger"
+            BuildableName = "Siskin.app"
+            BlueprintName = "Siskin IM"
             ReferencedContainer = "container:Tigase-iOS-Messenger.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

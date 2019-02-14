@@ -225,7 +225,7 @@
 		FE80BDA91D92974C001914B0 /* Tigase-iOS-Messenger.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Tigase-iOS-Messenger.entitlements"; sourceTree = "<group>"; };
 		FE80BDAA1D953FC4001914B0 /* SetupViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SetupViewController.swift; sourceTree = "<group>"; };
 		FE86C4481F7BFF93009E3CB8 /* Tigase-iOS-Messenger-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Tigase-iOS-Messenger-Bridging-Header.h"; sourceTree = "<group>"; };
-		FE94E5211CCBA74F00FAE755 /* Tigase-iOS-Messenger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Tigase-iOS-Messenger.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE94E5211CCBA74F00FAE755 /* Siskin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Siskin.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE94E5241CCBA74F00FAE755 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FE94E52B1CCBA74F00FAE755 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		FE94E52D1CCBA74F00FAE755 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -460,7 +460,7 @@
 		FE94E5221CCBA74F00FAE755 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				FE94E5211CCBA74F00FAE755 /* Tigase-iOS-Messenger.app */,
+				FE94E5211CCBA74F00FAE755 /* Siskin.app */,
 				FE4DDF531F39E0B500A4CE5A /* Tigase Messenger - Share.appex */,
 			);
 			name = Products;
@@ -551,9 +551,9 @@
 			productReference = FE4DDF531F39E0B500A4CE5A /* Tigase Messenger - Share.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
-		FE94E5201CCBA74F00FAE755 /* Tigase-iOS-Messenger */ = {
+		FE94E5201CCBA74F00FAE755 /* Siskin IM */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = FE94E54B1CCBA74F00FAE755 /* Build configuration list for PBXNativeTarget "Tigase-iOS-Messenger" */;
+			buildConfigurationList = FE94E54B1CCBA74F00FAE755 /* Build configuration list for PBXNativeTarget "Siskin IM" */;
 			buildPhases = (
 				FE94E51D1CCBA74F00FAE755 /* Sources */,
 				FE94E51E1CCBA74F00FAE755 /* Frameworks */,
@@ -568,9 +568,9 @@
 			dependencies = (
 				FE4DDF5C1F39E0B500A4CE5A /* PBXTargetDependency */,
 			);
-			name = "Tigase-iOS-Messenger";
+			name = "Siskin IM";
 			productName = "Tigase iOS Messenger";
-			productReference = FE94E5211CCBA74F00FAE755 /* Tigase-iOS-Messenger.app */;
+			productReference = FE94E5211CCBA74F00FAE755 /* Siskin.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -631,7 +631,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				FE94E5201CCBA74F00FAE755 /* Tigase-iOS-Messenger */,
+				FE94E5201CCBA74F00FAE755 /* Siskin IM */,
 				FE4DDF521F39E0B500A4CE5A /* Tigase Messenger - Share */,
 			);
 		};
@@ -1030,7 +1030,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.mobile;
-				PRODUCT_NAME = "Tigase-iOS-Messenger";
+				PRODUCT_NAME = Siskin;
 				PROVISIONING_PROFILE = "";
 				STRIP_INSTALLED_PRODUCT = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/Modules/";
@@ -1063,7 +1063,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.mobile;
-				PRODUCT_NAME = "Tigase-iOS-Messenger";
+				PRODUCT_NAME = Siskin;
 				PROVISIONING_PROFILE = "";
 				STRIP_INSTALLED_PRODUCT = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/Modules/";
@@ -1093,7 +1093,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		FE94E54B1CCBA74F00FAE755 /* Build configuration list for PBXNativeTarget "Tigase-iOS-Messenger" */ = {
+		FE94E54B1CCBA74F00FAE755 /* Build configuration list for PBXNativeTarget "Siskin IM" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FE94E54C1CCBA74F00FAE755 /* Debug */,
