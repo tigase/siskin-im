@@ -73,6 +73,11 @@
 		FE7F9303200FD5AC004C6195 /* AccountManagerScramSaltedPasswordCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7F9302200FD5AC004C6195 /* AccountManagerScramSaltedPasswordCache.swift */; };
 		FE80BDA81D928AD2001914B0 /* TigaseSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE80BDA71D928AD2001914B0 /* TigaseSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE80BDAB1D953FC4001914B0 /* SetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE80BDAA1D953FC4001914B0 /* SetupViewController.swift */; };
+		FE8DD9C3221B118E0090F5AA /* Groupchat.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE8DD9C2221B118E0090F5AA /* Groupchat.storyboard */; };
+		FE8DD9C5221B153A0090F5AA /* InviteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8DD9C4221B153A0090F5AA /* InviteViewController.swift */; };
+		FE8DD9C7221B15DC0090F5AA /* AbstractRosterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8DD9C6221B15DC0090F5AA /* AbstractRosterViewController.swift */; };
+		FE8DD9C9221B29520090F5AA /* MucNewGroupchatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8DD9C8221B29520090F5AA /* MucNewGroupchatController.swift */; };
+		FE8DD9CB221DBED80090F5AA /* db-schema-4.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE8DD9CA221DBED80090F5AA /* db-schema-4.sql */; };
 		FE94E5251CCBA74F00FAE755 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE94E5241CCBA74F00FAE755 /* AppDelegate.swift */; };
 		FE94E52C1CCBA74F00FAE755 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE94E52A1CCBA74F00FAE755 /* Main.storyboard */; };
 		FE94E52E1CCBA74F00FAE755 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FE94E52D1CCBA74F00FAE755 /* Assets.xcassets */; };
@@ -225,6 +230,11 @@
 		FE80BDA91D92974C001914B0 /* Tigase-iOS-Messenger.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Tigase-iOS-Messenger.entitlements"; sourceTree = "<group>"; };
 		FE80BDAA1D953FC4001914B0 /* SetupViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SetupViewController.swift; sourceTree = "<group>"; };
 		FE86C4481F7BFF93009E3CB8 /* Tigase-iOS-Messenger-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Tigase-iOS-Messenger-Bridging-Header.h"; sourceTree = "<group>"; };
+		FE8DD9C2221B118E0090F5AA /* Groupchat.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Groupchat.storyboard; sourceTree = "<group>"; };
+		FE8DD9C4221B153A0090F5AA /* InviteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteViewController.swift; sourceTree = "<group>"; };
+		FE8DD9C6221B15DC0090F5AA /* AbstractRosterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractRosterViewController.swift; sourceTree = "<group>"; };
+		FE8DD9C8221B29520090F5AA /* MucNewGroupchatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MucNewGroupchatController.swift; sourceTree = "<group>"; };
+		FE8DD9CA221DBED80090F5AA /* db-schema-4.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-4.sql"; sourceTree = "<group>"; };
 		FE94E5211CCBA74F00FAE755 /* Tigase-iOS-Messenger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Tigase-iOS-Messenger.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE94E5241CCBA74F00FAE755 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FE94E52B1CCBA74F00FAE755 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -343,6 +353,8 @@
 				FE5628901F3621DB00452C73 /* ChatViewController_ShareExtension.swift */,
 				FE43EB561F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift */,
 				FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithContextMenuAndToolbar.swift */,
+				FE8DD9C4221B153A0090F5AA /* InviteViewController.swift */,
+				FE8DD9C8221B29520090F5AA /* MucNewGroupchatController.swift */,
 			);
 			path = chats;
 			sourceTree = "<group>";
@@ -371,6 +383,7 @@
 				FE96259F1D9AE7CB00D07118 /* RosterProvider.swift */,
 				FEDCBF661D9C3EE700AE9129 /* RosterProviderFlat.swift */,
 				FEDCBF681D9C53BA00AE9129 /* RosterProviderGrouped.swift */,
+				FE8DD9C6221B15DC0090F5AA /* AbstractRosterViewController.swift */,
 			);
 			path = roster;
 			sourceTree = "<group>";
@@ -476,10 +489,12 @@
 				FE168ACC1CCD197A003F8B26 /* db-schema-1.sql */,
 				FE2A0E8D1F74012D006ADF08 /* db-schema-2.sql */,
 				FE4496C31F87911C009F649C /* db-schema-3.sql */,
+				FE8DD9CA221DBED80090F5AA /* db-schema-4.sql */,
 				FE94E5321CCBA74F00FAE755 /* Info.plist */,
 				FE94E52F1CCBA74F00FAE755 /* LaunchScreen.storyboard */,
 				FE94E52A1CCBA74F00FAE755 /* Main.storyboard */,
 				FE4071E521E262D900F09B58 /* VoIP.storyboard */,
+				FE8DD9C2221B118E0090F5AA /* Groupchat.storyboard */,
 				FE5079FD1CDB7B3B001A015C /* chats */,
 				FEDE93951D0C200C00CA60A9 /* contacts */,
 				FE507A021CDB7B3B001A015C /* database */,
@@ -652,9 +667,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				FE233CDB21EA03DD00099281 /* Info.storyboard in Resources */,
+				FE8DD9CB221DBED80090F5AA /* db-schema-4.sql in Resources */,
 				FE4496C51F87934E009F649C /* db-schema-3.sql in Resources */,
 				FE94E5311CCBA74F00FAE755 /* LaunchScreen.storyboard in Resources */,
 				FE2A0E8E1F74012D006ADF08 /* db-schema-2.sql in Resources */,
+				FE8DD9C3221B118E0090F5AA /* Groupchat.storyboard in Resources */,
 				FE94E52E1CCBA74F00FAE755 /* Assets.xcassets in Resources */,
 				FE4071E621E262D900F09B58 /* VoIP.storyboard in Resources */,
 				FE94E52C1CCBA74F00FAE755 /* Main.storyboard in Resources */,
@@ -733,10 +750,12 @@
 				FEDE938C1D08AFE800CA60A9 /* VCardEditViewController.swift in Sources */,
 				FE36B3C821FA52E000D1F037 /* EmptyViewController.swift in Sources */,
 				FE507A161CDB7B3B001A015C /* ChatsListViewController.swift in Sources */,
+				FE8DD9C9221B29520090F5AA /* MucNewGroupchatController.swift in Sources */,
 				FE01ADA91E224CF400FA7E65 /* TigasePushNotificationsModule.swift in Sources */,
 				FE507A1F1CDB7B3B001A015C /* AccountTableViewCell.swift in Sources */,
 				FE7F645B1D281B1C00B9DF56 /* DBCapabilitiesCache.swift in Sources */,
 				FEDE93891D081C3D00CA60A9 /* Settings.swift in Sources */,
+				FE8DD9C5221B153A0090F5AA /* InviteViewController.swift in Sources */,
 				FEB5EC9D1F6AE448007FE0E7 /* BaseChatViewControllerWithContextMenuAndToolbar.swift in Sources */,
 				FE9E136F1F26049A005C0EE5 /* NotificationSettingsViewController.swift in Sources */,
 				FEA8D6641F30F9260077C12F /* XmppService_VCardExtension.swift in Sources */,
@@ -771,6 +790,7 @@
 				FE507A231CDB7B3B001A015C /* CustomTabBarController.swift in Sources */,
 				FEA8D6621F30F54B0077C12F /* XmppService.swift in Sources */,
 				FE5628911F3621DB00452C73 /* ChatViewController_ShareExtension.swift in Sources */,
+				FE8DD9C7221B15DC0090F5AA /* AbstractRosterViewController.swift in Sources */,
 				FEA7BF5D21E50CAB00D9E36C /* JingleManager_Session.swift in Sources */,
 				FE507A1A1CDB7B3B001A015C /* DBChatStore.swift in Sources */,
 				FE80BDAB1D953FC4001914B0 /* SetupViewController.swift in Sources */,

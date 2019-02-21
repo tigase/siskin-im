@@ -40,8 +40,14 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     @IBOutlet var progressBar: UIProgressView!;
     var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
     
+    lazy var loadChatInfo:DBStatement! = try? self.dbConnection.prepareStatement("SELECT name FROM roster_items WHERE account = :account AND jid = :jid");
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let params:[String:Any?] = ["account" : account, "jid" : jid.bareJid];
+        navigationItem.title = try! loadChatInfo.findFirst(params) { cursor in cursor["name"] } ?? jid.stringValue;
+        
         dataSource = ChatDataSource(controller: self);
         contextMenuDelegate = self;
         scrollDelegate = self;

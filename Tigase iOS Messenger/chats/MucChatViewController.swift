@@ -38,8 +38,14 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
     @IBOutlet var progressBar: UIProgressView!;
     var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
 
+        lazy var loadChatInfo:DBStatement! = try? self.dbConnection.prepareStatement("SELECT name FROM chats WHERE account = :account AND jid = :jid");
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let params:[String:Any?] = ["account" : account, "jid" : jid.bareJid];
+        navigationItem.title = try! loadChatInfo.findFirst(params) { cursor in cursor["name"] } ?? jid.stringValue;
+
         dataSource = MucChatDataSource(controller: self);
         contextMenuDelegate = self;
         scrollDelegate = self;
@@ -131,6 +137,11 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
         if segue.identifier == "showOccupants" {
             if let navigation = segue.destination as? UINavigationController {
                 if let occupantsController = navigation.visibleViewController as? MucChatOccupantsTableViewController {
+                    occupantsController.room = room;
+                    occupantsController.account = account;
+                }
+            } else {
+                if let occupantsController = segue.destination as? MucChatOccupantsTableViewController {
                     occupantsController.room = room;
                     occupantsController.account = account;
                 }

@@ -109,4 +109,11 @@ class MucChatOccupantsTableViewController: CustomTableViewController, EventHandl
         }
     }
 
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let invitationController = segue.destination as? InviteViewController ?? (segue.destination as? UINavigationController)?.visibleViewController as? InviteViewController {
+            invitationController.xmppService = xmppService;
+            invitationController.room = self.room;
+        }
+    }
+    
 }

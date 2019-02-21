@@ -45,6 +45,9 @@ class MucJoinViewController: CustomTableViewController, UIPickerViewDataSource, 
         // by default select first account
         if !accounts.isEmpty {
             self.accountTextField.text = accounts[0];
+            if let jid = BareJID(accountTextField.text) {
+                self.findMucComponentJid(for: jid);
+            }
         }
     }
 
@@ -75,7 +78,13 @@ class MucJoinViewController: CustomTableViewController, UIPickerViewDataSource, 
         
         let client = xmppService.getClient(forJid: accountJid);
         if let mucModule: MucModule = client?.modulesManager.getModule(MucModule.ID) {
-            _ = mucModule.join(roomName: room, mucServer: server, nickname: nickname, password: password);
+            _ = mucModule.join(roomName: room, mucServer: server, nickname: nickname, password: password, ifCreated: { room in
+                mucModule.getRoomConfiguration(roomJid: room.jid, onSuccess: { (config) in
+                    mucModule.setRoomConfiguration(roomJid: room.jid, configuration: config, onSuccess: {
+                        print("unlocked room", room.jid);
+                    }, onError: nil);
+                }, onError: nil);
+            });
             dismissView();
         } else {
             var alert: UIAlertController? = nil;
@@ -96,6 +105,40 @@ class MucJoinViewController: CustomTableViewController, UIPickerViewDataSource, 
                 self.present(alert!, animated: true, completion: nil);
             }
         }
+    }
+    
+    fileprivate func findMucComponentJid(for account: BareJID) {
+        self.serverTextField.text = nil;
+        guard let discoModule: DiscoveryModule = xmppService.getClient(forJid: account)?.modulesManager.getModule(DiscoveryModule.ID) else {
+            return;
+        }
+        
+        discoModule.getItems(for: JID(account.domain)!, onItemsReceived: { (_, items) -> Void in
+            var found: Bool = false;
+            let callback = { (jid: JID?) in
+                DispatchQueue.main.async {
+                    guard jid != nil && found == false else {
+                        return;
+                    }
+                    found = true;
+                    self.serverTextField.text = jid?.stringValue;
+                }
+            };
+            let onError: ((ErrorCondition?)->Void)? = { error in
+                callback(nil);
+            };
+            
+            items.forEach({ (item) in
+                discoModule.getInfo(for: item.jid, onInfoReceived: { (node, identities, features) in
+                    guard features.contains("http://jabber.org/protocol/muc") else {
+                        callback(nil);
+                        return;
+                    }
+                    callback(item.jid);
+                }, onError: onError);
+            });
+        }, onError: { errorCondition in
+        });
     }
     
     func checkFieldValue(_ field: UITextField) -> Bool {
@@ -121,11 +164,12 @@ class MucJoinViewController: CustomTableViewController, UIPickerViewDataSource, 
     }
     
     func dismissView() {
-        let newController = navigationController?.popViewController(animated: true);
-        if newController == nil || newController != self {
-            let emptyDetailController = storyboard!.instantiateViewController(withIdentifier: "emptyDetailViewController");
-            self.showDetailViewController(emptyDetailController, sender: self);
-        }
+//        let newController = navigationController?.popViewController(animated: true);
+//        if newController == nil || newController != self {
+//            let emptyDetailController = storyboard!.instantiateViewController(withIdentifier: "emptyDetailViewController");
+//            self.showDetailViewController(emptyDetailController, sender: self);
+//        }
+        self.dismiss(animated: true, completion: nil);
     }
 
     
@@ -143,5 +187,8 @@ class MucJoinViewController: CustomTableViewController, UIPickerViewDataSource, 
     
     func  pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         self.accountTextField.text = self.pickerView(pickerView, titleForRow: row, forComponent: component);
+        if let jid = BareJID(self.accountTextField.text) {
+            self.findMucComponentJid(for: jid);
+        }
     }
 }
