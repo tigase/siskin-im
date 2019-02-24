@@ -43,7 +43,7 @@ class MucJoinViewController: CustomTableViewController, UIPickerViewDataSource, 
         self.accountTextField.inputView = accountPicker;
         let accounts = AccountManager.getAccounts();
         // by default select first account
-        if !accounts.isEmpty {
+        if !accounts.isEmpty && (self.accountTextField.text?.isEmpty ?? true) {
             self.accountTextField.text = accounts[0];
             if let jid = BareJID(accountTextField.text) {
                 self.findMucComponentJid(for: jid);
@@ -74,7 +74,7 @@ class MucJoinViewController: CustomTableViewController, UIPickerViewDataSource, 
         let server = serverTextField.text!;
         let room = roomTextField.text!;
         let nickname = nicknameTextField.text!;
-        let password = passwordTextField.text!;
+        let password: String? = (passwordTextField.text?.isEmpty ?? true) ? nil : passwordTextField.text;
         
         let client = xmppService.getClient(forJid: accountJid);
         if let mucModule: MucModule = client?.modulesManager.getModule(MucModule.ID) {
@@ -85,6 +85,11 @@ class MucJoinViewController: CustomTableViewController, UIPickerViewDataSource, 
                     }, onError: nil);
                 }, onError: nil);
             });
+            if let pepBookmarksModule: PEPBookmarksModule = client?.modulesManager.getModule(PEPBookmarksModule.ID) {
+                if let updated = pepBookmarksModule.currentBookmarks.updateOrAdd(bookmark: Bookmarks.Conference(name: room, jid: JID(BareJID(localPart: room, domain: server)), autojoin: true, nick: nickname, password: password)) {
+                    pepBookmarksModule.publish(bookmarks: updated);
+                }
+            }
             dismissView();
         } else {
             var alert: UIAlertController? = nil;

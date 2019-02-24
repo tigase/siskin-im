@@ -141,19 +141,34 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
                     let mucModule: MucModule? = xmppClient?.modulesManager.getModule(MucModule.ID);
                     if let room = mucModule?.roomsManager.getRoom(for: item.jid) {
                         if room.presences[room.nickname]?.affiliation == .owner {
-                            let alert = UIAlertController(title: "Delete conference?", message: "You are leaving conference. Would you like to finish it?", preferredStyle: .alert);
+                            let alert = UIAlertController(title: "Delete group chat?", message: "You are leaving the group chat. Would you like to finish it?", preferredStyle: .alert);
                             alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { (action) in
+                                if let pepBookmarksModule: PEPBookmarksModule = xmppClient?.modulesManager.getModule(PEPBookmarksModule.ID) {
+                                    if let updated = pepBookmarksModule.currentBookmarks.remove(bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false)) {
+                                        pepBookmarksModule.publish(bookmarks: updated);
+                                    }
+                                }
                                 mucModule?.destroy(room: room);
                                 self.discardNotifications(for: item);
 
                             }));
                             alert.addAction(UIAlertAction(title: "No", style: .default, handler: { (action) in
+                                if let pepBookmarksModule: PEPBookmarksModule = xmppClient?.modulesManager.getModule(PEPBookmarksModule.ID) {
+                                    if let updated = pepBookmarksModule.currentBookmarks.remove(bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false)) {
+                                        pepBookmarksModule.publish(bookmarks: updated);
+                                    }
+                                }
                                 mucModule?.leave(room: room);
                                 self.discardNotifications(for: item);
 
                             }))
                             self.present(alert, animated: true, completion: nil);
                         } else {
+                            if let pepBookmarksModule: PEPBookmarksModule = xmppClient?.modulesManager.getModule(PEPBookmarksModule.ID) {
+                                if let updated = pepBookmarksModule.currentBookmarks.remove(bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false)) {
+                                    pepBookmarksModule.publish(bookmarks: updated);
+                                }
+                            }
                             mucModule?.leave(room: room);
                             discardNotifications = true;
                         }
@@ -267,7 +282,7 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
         let controller = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
         controller.popoverPresentationController?.barButtonItem = sender;
         
-        controller.addAction(UIAlertAction(title: "New private conference", style: .default, handler: { action in
+        controller.addAction(UIAlertAction(title: "New private group chat", style: .default, handler: { action in
             let newGroupchat = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "MucNewGroupchatController") as! MucNewGroupchatController;
             newGroupchat.groupchatType = .privateGroupchat;
             newGroupchat.xmppService = self.xmppService;
@@ -277,7 +292,7 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
             navController.modalPresentationStyle = .formSheet;
             self.present(navController, animated: true, completion: nil);
         }));
-        controller.addAction(UIAlertAction(title: "New public conference", style: .default, handler: { action in
+        controller.addAction(UIAlertAction(title: "New public group chat", style: .default, handler: { action in
             let newGroupchat = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "MucNewGroupchatController") as! MucNewGroupchatController;
             newGroupchat.groupchatType = .publicGroupchat;
             newGroupchat.xmppService = self.xmppService;
@@ -287,7 +302,7 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
             self.present(navController, animated: true, completion: nil);
         }));
         
-        controller.addAction(UIAlertAction(title: "Join conference", style: .default, handler: { action in
+        controller.addAction(UIAlertAction(title: "Join group chat", style: .default, handler: { action in
             let navigation = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "MucJoinNavigationController") as! UINavigationController;
             navigation.modalPresentationStyle = .formSheet;
             self.navigationController?.visibleViewController?.hidesBottomBarWhenPushed = true;

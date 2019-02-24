@@ -68,6 +68,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.serverCertificateError), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.authenticationFailure), name: XmppService.AUTHENTICATION_FAILURE, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.presenceAuthorizationRequest), name: XmppService.PRESENCE_AUTHORIZATION_REQUEST, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.mucRoomInvitationReceived), name: XmppService.MUC_ROOM_INVITATION, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.pushNotificationRegistrationFailed), name: Notification.Name("pushNotificationsRegistrationFailed"), object: nil);
         updateApplicationIconBadgeNumber(completionHandler: nil);
         
@@ -268,6 +269,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             }
             
             topController?.present(alert, animated: true, completion: nil);
+        }
+        if content.categoryIdentifier == "MUC_ROOM_INVITATION" {
+            guard let account = BareJID(content.userInfo["account"] as? String), let roomJid: BareJID = BareJID(content.userInfo["roomJid"] as? String) else {
+                return;
+            }
+            
+            let password = content.userInfo["password"] as? String;
+            
+            let navController = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "MucJoinNavigationController") as! UINavigationController;
+
+            let controller = navController.visibleViewController! as! MucJoinViewController;
+            _ = controller.view;
+            controller.accountTextField.text = account.stringValue;
+            controller.roomTextField.text = roomJid.localPart;
+            controller.serverTextField.text = roomJid.domain;
+            controller.passwordTextField.text = password;
+            
+            var topController = UIApplication.shared.keyWindow?.rootViewController;
+            while (topController?.presentedViewController != nil) {
+                topController = topController?.presentedViewController;
+            }
+//            let navController = UINavigationController(rootViewController: controller);
+            navController.modalPresentationStyle = .formSheet;
+            topController?.present(navController, animated: true, completion: nil);
         }
         if content.categoryIdentifier == "MESSAGE" {
             let senderJid = BareJID(userInfo["sender"] as! String);
@@ -561,6 +586,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         content.categoryIdentifier = "ERROR";
         content.userInfo = ["account": account!.stringValue];
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
+    }
+    
+    @objc func mucRoomInvitationReceived(_ notification: Notification) {
+        guard let e = notification.object as? MucModule.InvitationReceivedEvent, let account = e.sessionObject.userBareJid else {
+            return;
+        }
+        
+        let content = UNMutableNotificationContent();
+        content.body = "Invitation to groupchat \(e.invitation.roomJid.stringValue)";
+        if let from = e.invitation.inviter, let name = RosterModule.getRosterStore(e.sessionObject).get(for: from) {
+            content.body = "\(content.body) from \(name)";
+        }
+        content.threadIdentifier = "mucRoomInvitation=" + account.stringValue + "|room=" + e.invitation.roomJid.stringValue;
+        content.categoryIdentifier = "MUC_ROOM_INVITATION";
+        content.userInfo = ["account": account.stringValue, "roomJid": e.invitation.roomJid.stringValue, "password": e.invitation.password as Any];
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil), withCompletionHandler: nil);
     }
     
     func updateApplicationIconBadgeNumber(completionHandler: (()->Void)?) {

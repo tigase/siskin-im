@@ -220,6 +220,11 @@ class MucNewGroupchatController: CustomTableViewController, UIPickerViewDataSour
                             participants.forEach({ (participant) in
                                 mucModule.invite(to: room, invitee: participant, reason: "You are invied to join conversation \(roomName) at \(room.roomJid)");
                             })
+                            if let pepBookmarksModule: PEPBookmarksModule = client.modulesManager.getModule(PEPBookmarksModule.ID) {
+                                if let updated = pepBookmarksModule.currentBookmarks.updateOrAdd(bookmark: Bookmarks.Conference(name: roomName, jid: room.jid, autojoin: true, nick: roomNickname, password: nil)) {
+                                    pepBookmarksModule.publish(bookmarks: updated);
+                                }
+                            }
                         }, onError: nil);
                     }, onError: nil);
                 });
@@ -255,6 +260,11 @@ class MucNewGroupchatController: CustomTableViewController, UIPickerViewDataSour
                     }
                     mucModule.setRoomConfiguration(roomJid: room.jid, configuration: config, onSuccess: {
                         print("unlocked room", room.jid);
+                        if let pepBookmarksModule: PEPBookmarksModule = client.modulesManager.getModule(PEPBookmarksModule.ID) {
+                            if let updated = pepBookmarksModule.currentBookmarks.updateOrAdd(bookmark: Bookmarks.Conference(name: roomName, jid: room.jid, autojoin: true, nick: roomNickname, password: nil)) {
+                                pepBookmarksModule.publish(bookmarks: updated);
+                            }
+                        }
                     }, onError: nil);
                 }, onError: nil);
             });
