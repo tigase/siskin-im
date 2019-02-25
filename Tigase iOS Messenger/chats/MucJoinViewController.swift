@@ -85,11 +85,7 @@ class MucJoinViewController: CustomTableViewController, UIPickerViewDataSource, 
                     }, onError: nil);
                 }, onError: nil);
             });
-            if let pepBookmarksModule: PEPBookmarksModule = client?.modulesManager.getModule(PEPBookmarksModule.ID) {
-                if let updated = pepBookmarksModule.currentBookmarks.updateOrAdd(bookmark: Bookmarks.Conference(name: room, jid: JID(BareJID(localPart: room, domain: server)), autojoin: true, nick: nickname, password: password)) {
-                    pepBookmarksModule.publish(bookmarks: updated);
-                }
-            }
+            PEPBookmarksModule.updateOrAdd(xmppService: xmppService, for: accountJid, bookmark: Bookmarks.Conference(name: room, jid: JID(BareJID(localPart: room, domain: server)), autojoin: true, nick: nickname, password: password));
             dismissView();
         } else {
             var alert: UIAlertController? = nil;

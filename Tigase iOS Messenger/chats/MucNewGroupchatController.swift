@@ -190,8 +190,9 @@ class MucNewGroupchatController: CustomTableViewController, UIPickerViewDataSour
         switch self.groupchatType {
         case .privateGroupchat:
             let controller = self.storyboard!.instantiateViewController(withIdentifier: "InviteViewController") as! InviteViewController;
-            let xmppService = self.xmppService;
-            let client = xmppService!.getClient(forJid: BareJID(self.accountField.text!))!;
+            let xmppService = self.xmppService!;
+            let accountJid = BareJID(self.accountField.text!);
+            let client = xmppService.getClient(forJid: accountJid)!;
             let mucServerDomain = self.mucServer!.domain!;
             let roomName = self.roomNameField.text!;
             let roomNickname = self.roomNicknameField.text!;
@@ -220,11 +221,7 @@ class MucNewGroupchatController: CustomTableViewController, UIPickerViewDataSour
                             participants.forEach({ (participant) in
                                 mucModule.invite(to: room, invitee: participant, reason: "You are invied to join conversation \(roomName) at \(room.roomJid)");
                             })
-                            if let pepBookmarksModule: PEPBookmarksModule = client.modulesManager.getModule(PEPBookmarksModule.ID) {
-                                if let updated = pepBookmarksModule.currentBookmarks.updateOrAdd(bookmark: Bookmarks.Conference(name: roomName, jid: room.jid, autojoin: true, nick: roomNickname, password: nil)) {
-                                    pepBookmarksModule.publish(bookmarks: updated);
-                                }
-                            }
+                            PEPBookmarksModule.updateOrAdd(xmppService: xmppService, for: accountJid, bookmark: Bookmarks.Conference(name: roomName, jid: room.jid, autojoin: true, nick: roomNickname, password: nil));
                         }, onError: nil);
                     }, onError: nil);
                 });
@@ -232,7 +229,8 @@ class MucNewGroupchatController: CustomTableViewController, UIPickerViewDataSour
             self.navigationController?.pushViewController(controller, animated: true);
             break;
         case .publicGroupchat:
-            let client = self.xmppService!.getClient(forJid: BareJID(self.accountField.text!))!;
+            let accountJid = BareJID(self.accountField.text!);
+            let client = self.xmppService!.getClient(forJid: accountJid)!;
             guard let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) else {
                 return;
             }
@@ -260,11 +258,7 @@ class MucNewGroupchatController: CustomTableViewController, UIPickerViewDataSour
                     }
                     mucModule.setRoomConfiguration(roomJid: room.jid, configuration: config, onSuccess: {
                         print("unlocked room", room.jid);
-                        if let pepBookmarksModule: PEPBookmarksModule = client.modulesManager.getModule(PEPBookmarksModule.ID) {
-                            if let updated = pepBookmarksModule.currentBookmarks.updateOrAdd(bookmark: Bookmarks.Conference(name: roomName, jid: room.jid, autojoin: true, nick: roomNickname, password: nil)) {
-                                pepBookmarksModule.publish(bookmarks: updated);
-                            }
-                        }
+                        PEPBookmarksModule.updateOrAdd(xmppService: self.xmppService, for: accountJid, bookmark:  Bookmarks.Conference(name: roomName, jid: room.jid, autojoin: true, nick: roomNickname, password: nil));
                     }, onError: nil);
                 }, onError: nil);
             });

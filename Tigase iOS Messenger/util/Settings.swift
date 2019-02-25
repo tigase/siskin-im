@@ -43,6 +43,7 @@ public enum Settings: String {
     case CopyMessagesWithTimestamps
     case XmppPipelining
     case AppearanceTheme
+    case EnableBookmarksSync
     
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     

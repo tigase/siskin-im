@@ -425,7 +425,7 @@ open class XmppService: Logger, EventHandler {
         case let e as MucModule.InvitationReceivedEvent:
             NotificationCenter.default.post(name: XmppService.MUC_ROOM_INVITATION, object: e);
         case let e as PEPBookmarksModule.BookmarksChangedEvent:
-            guard let client = getClient(forJid: e.sessionObject.userBareJid!), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) else {
+            guard let client = getClient(forJid: e.sessionObject.userBareJid!), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID), Settings.EnableBookmarksSync.getBool() else {
                 return;
             }
             e.bookmarks?.items.filter { bookmark in bookmark is Bookmarks.Conference }.map { bookmark in bookmark as! Bookmarks.Conference }.filter { bookmark in

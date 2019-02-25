@@ -143,32 +143,20 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
                         if room.presences[room.nickname]?.affiliation == .owner {
                             let alert = UIAlertController(title: "Delete group chat?", message: "You are leaving the group chat. Would you like to finish it?", preferredStyle: .alert);
                             alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { (action) in
-                                if let pepBookmarksModule: PEPBookmarksModule = xmppClient?.modulesManager.getModule(PEPBookmarksModule.ID) {
-                                    if let updated = pepBookmarksModule.currentBookmarks.remove(bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false)) {
-                                        pepBookmarksModule.publish(bookmarks: updated);
-                                    }
-                                }
+                                PEPBookmarksModule.remove(xmppService: self.xmppService, from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false));
                                 mucModule?.destroy(room: room);
                                 self.discardNotifications(for: item);
 
                             }));
                             alert.addAction(UIAlertAction(title: "No", style: .default, handler: { (action) in
-                                if let pepBookmarksModule: PEPBookmarksModule = xmppClient?.modulesManager.getModule(PEPBookmarksModule.ID) {
-                                    if let updated = pepBookmarksModule.currentBookmarks.remove(bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false)) {
-                                        pepBookmarksModule.publish(bookmarks: updated);
-                                    }
-                                }
+                                PEPBookmarksModule.remove(xmppService: self.xmppService, from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false));
                                 mucModule?.leave(room: room);
                                 self.discardNotifications(for: item);
 
                             }))
                             self.present(alert, animated: true, completion: nil);
                         } else {
-                            if let pepBookmarksModule: PEPBookmarksModule = xmppClient?.modulesManager.getModule(PEPBookmarksModule.ID) {
-                                if let updated = pepBookmarksModule.currentBookmarks.remove(bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false)) {
-                                    pepBookmarksModule.publish(bookmarks: updated);
-                                }
-                            }
+                            PEPBookmarksModule.remove(xmppService: xmppService, from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false));
                             mucModule?.leave(room: room);
                             discardNotifications = true;
                         }

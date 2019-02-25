@@ -28,6 +28,7 @@
 		FE2A0E8E1F74012D006ADF08 /* db-schema-2.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE2A0E8D1F74012D006ADF08 /* db-schema-2.sql */; };
 		FE2A0E901F74051E006ADF08 /* DBSchemaManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2A0E8F1F74051E006ADF08 /* DBSchemaManager.swift */; };
 		FE3024321CE2036A00466497 /* DBVCardsCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3024311CE2036A00466497 /* DBVCardsCache.swift */; };
+		FE31291A22240BEB00A92863 /* PEPBookmarksModule_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31291922240BEB00A92863 /* PEPBookmarksModule_extension.swift */; };
 		FE31DDE4201261A200C2AB1D /* DNSSrvDiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */; };
 		FE36B3C621F8E87700D1F037 /* CustomTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE36B3C521F8E87700D1F037 /* CustomTableViewCell.swift */; };
 		FE36B3C821FA52E000D1F037 /* EmptyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */; };
@@ -180,6 +181,7 @@
 		FE2A0E8D1F74012D006ADF08 /* db-schema-2.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-2.sql"; sourceTree = "<group>"; };
 		FE2A0E8F1F74051E006ADF08 /* DBSchemaManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBSchemaManager.swift; sourceTree = "<group>"; };
 		FE3024311CE2036A00466497 /* DBVCardsCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBVCardsCache.swift; sourceTree = "<group>"; };
+		FE31291922240BEB00A92863 /* PEPBookmarksModule_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PEPBookmarksModule_extension.swift; sourceTree = "<group>"; };
 		FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSSrvDiskCache.swift; sourceTree = "<group>"; };
 		FE36B3C521F8E87700D1F037 /* CustomTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTableViewCell.swift; sourceTree = "<group>"; };
 		FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyViewController.swift; sourceTree = "<group>"; };
@@ -519,6 +521,7 @@
 				FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */,
 				FE00157C2017617B00490340 /* StreamFeaturesCache.swift */,
 				FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */,
+				FE31291922240BEB00A92863 /* PEPBookmarksModule_extension.swift */,
 			);
 			path = service;
 			sourceTree = "<group>";
@@ -763,6 +766,7 @@
 				FE1DCCA21EA52CE200850563 /* DataFormController.swift in Sources */,
 				FE2A0E901F74051E006ADF08 /* DBSchemaManager.swift in Sources */,
 				FE6545641E9E8B67006A14AC /* ServerSelectorTableViewCell.swift in Sources */,
+				FE31291A22240BEB00A92863 /* PEPBookmarksModule_extension.swift in Sources */,
 				FE00157F2019090300490340 /* ExperimentalSettingsViewController.swift in Sources */,
 				FEDE93871D07564F00CA60A9 /* SwitchTableViewCell.swift in Sources */,
 				FE507A171CDB7B3B001A015C /* ChatTableViewCell.swift in Sources */,

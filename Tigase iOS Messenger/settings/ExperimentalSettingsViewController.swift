@@ -28,7 +28,7 @@ class ExperimentalSettingsViewController: CustomTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1;
+        return 2;
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -41,6 +41,13 @@ class ExperimentalSettingsViewController: CustomTableViewController {
                 Settings.XmppPipelining.setValue(switchView.isOn);
             }
             return cell;
+        case .enableBookmarksSync:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "EnableBookmarksSyncTableViewCell", for: indexPath) as! SwitchTableViewCell;
+            cell.switchView.isOn = Settings.EnableBookmarksSync.getBool();
+            cell.valueChangedListener = {(switchView: UISwitch) in
+                Settings.EnableBookmarksSync.setValue(switchView.isOn);
+            }
+            return cell;
         }
     }
     
@@ -50,5 +57,6 @@ class ExperimentalSettingsViewController: CustomTableViewController {
     
     internal enum SettingsEnum: Int {
         case notificationsFromUnknown = 0
+        case enableBookmarksSync = 1
     }
 }
