@@ -27,7 +27,8 @@ open class AvatarManager: EventHandler {
     
     public static let AVATAR_CHANGED = Notification.Name("messengerAvatarChanged");
     
-    var defaultAvatar:UIImage;
+    var defaultAvatar: UIImage;
+    var defaultGroupchatAvatar: UIImage;
     var store: AvatarStore;
     fileprivate var cache = NSCache<NSString, AvatarHolder>();
     
@@ -35,30 +36,33 @@ open class AvatarManager: EventHandler {
     
     public init(xmppService: XmppService, store: AvatarStore) {
         self.xmppService = xmppService;
-        defaultAvatar = UIImage(named: "defaultAvatar")!;
+        defaultAvatar = UIImage(named: Appearance.current.isDark ? "defaultAvatarDark" : "defaultAvatarLight")!;
+        defaultGroupchatAvatar = UIImage(named: Appearance.current.isDark ? "defaultGroupchatAvatarDark" : "defaultGroupchatAvatarLight")!;
         cache.countLimit = 20;
         cache.totalCostLimit = 20 * 1024 * 1024;
         self.store = store;
         xmppService.registerEventHandler(self, for: PresenceModule.ContactPresenceChanged.TYPE, PEPUserAvatarModule.AvatarChangedEvent.TYPE);
         NotificationCenter.default.addObserver(self, selector: #selector(AvatarManager.vcardUpdated), name: DBVCardsCache.VCARD_UPDATED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(appearanceChanged), name: Appearance.CHANGED, object: nil);
     }
     
-    open func getAvatar(for jid:BareJID, account:BareJID) -> UIImage {
+    open func getAvatar(for jid:BareJID, account:BareJID, orDefault: UIImage?) -> UIImage? {
         let key = createKey(jid: jid);
         let val = cache.object(forKey: key as NSString);
         if val?.beginContentAccess() ?? false {
             defer {
                 val?.endContentAccess();
             }
-            return val!.image;
+            return val!.image ?? orDefault;
         }
         
-        let image = loadAvatar(for: jid, on: account) ?? defaultAvatar;
-        
-        // adding default avatar to cache to make sure we will not load data
-        // from database when retrieving avatars for jids without avatar
-        self.cache.setObject(AvatarHolder(image: image), forKey: key as NSString);
-        return image;
+        if let image = loadAvatar(for: jid, on: account) {
+            self.cache.setObject(AvatarHolder(image: image), forKey: key as NSString);
+            return image;
+        } else {
+            self.cache.setObject(AvatarHolder.EMPTY, forKey: key as NSString);
+            return orDefault;
+        }
     }
     
     open func handle(event: Event) {
@@ -188,10 +192,18 @@ open class AvatarManager: EventHandler {
         return jid.stringValue.lowercased();
     }
     
+    @objc func appearanceChanged(_ notification: Notification) {
+        self.defaultAvatar = UIImage(named: Appearance.current.isDark ? "defaultAvatarDark" : "defaultAvatarLight")!;
+        self.defaultGroupchatAvatar = UIImage(named: Appearance.current.isDark ? "defaultGroupchatAvatarDark" : "defaultGroupchatAvatarLight")!;
+        self.cache.removeAllObjects();
+    }
+    
     fileprivate class AvatarHolder: NSDiscardableContent {
         
+        fileprivate static let EMPTY = AvatarHolder(image: nil);
+        
         var counter = 0;
-        var image: UIImage!;
+        var image: UIImage?;
         
         fileprivate init?(data: NSData?) {
             guard data != nil else {
@@ -204,7 +216,7 @@ open class AvatarManager: EventHandler {
             }
         }
         
-        fileprivate init(image: UIImage) {
+        fileprivate init(image: UIImage?) {
             self.image = image;
         }
         

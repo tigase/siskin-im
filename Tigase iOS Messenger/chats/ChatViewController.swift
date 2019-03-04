@@ -187,7 +187,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         let id = incoming ? "ChatTableViewCellIncoming" : "ChatTableViewCellOutgoing";
         let cell: ChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
         cell.transform = cachedDataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-        cell.avatarView?.image = self.xmppService.avatarManager.getAvatar(for: self.jid.bareJid, account: self.account);
+        cell.avatarView?.updateAvatar(manager: self.xmppService.avatarManager, for: account, with: jid.bareJid, name: self.titleView.name, orDefault: self.xmppService.avatarManager.defaultAvatar);
         cell.setValues(data: item.data, ts: item.timestamp, id: item.id, state: item.state, preview: item.preview, downloader: self.downloadPreview);
         cell.setNeedsUpdateConstraints();
         cell.updateConstraintsIfNeeded();

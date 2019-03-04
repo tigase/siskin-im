@@ -69,7 +69,7 @@
                                     <action selector="mute:" destination="sh6-q3-LhK" eventType="touchUpInside" id="UDP-Lg-cgw"/>
                                 </connections>
                             </button>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="defaultAvatar" translatesAutoresizingMaskIntoConstraints="NO" id="clf-Xd-Ao5">
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="defaultAvatarDark" translatesAutoresizingMaskIntoConstraints="NO" id="clf-Xd-Ao5" customClass="AvatarView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                 <rect key="frame" x="-46" y="7" width="467" height="467"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="clf-Xd-Ao5" secondAttribute="height" multiplier="1:1" id="hzm-ak-F2Y"/>
@@ -110,7 +110,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="defaultAvatar" width="192" height="192"/>
+        <image name="defaultAvatarDark" width="75" height="75"/>
         <image name="endCall" width="45" height="45"/>
         <image name="mute" width="45" height="45"/>
         <image name="switchCamera" width="45" height="45"/>

@@ -28,7 +28,7 @@
                                         <view contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="8Oe-vj-1Ms" customClass="AvatarStatusView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                             <rect key="frame" x="2" y="2" width="60" height="60"/>
                                             <subviews>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="hHu-Of-AEi">
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="hHu-Of-AEi" customClass="AvatarView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                                     <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
                                                 </imageView>
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="first" translatesAutoresizingMaskIntoConstraints="NO" id="7Rs-PD-XnN">
@@ -224,7 +224,7 @@
                                             <outlet property="timestampView" destination="eGw-mb-T3I" id="s4e-RY-oTj"/>
                                         </connections>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" restorationIdentifier="ChatTableViewCellIncoming" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChatTableViewCellIncoming" id="2Y1-jf-e6K" customClass="ChatTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="ChatTableViewCellIncoming" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChatTableViewCellIncoming" id="2Y1-jf-e6K" customClass="ChatTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="72" width="600" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="2Y1-jf-e6K" id="ZfW-bW-Ai9">
@@ -237,7 +237,7 @@
                                                     <color key="textColor" red="0.66666666666666663" green="0.66666666666666663" blue="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="rEA-Xx-pue">
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="rEA-Xx-pue" customClass="AvatarView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                                     <rect key="frame" x="15" y="2" width="30" height="28.5"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="30" id="42h-cw-1fr"/>
@@ -564,7 +564,7 @@
                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PEi-Gx-E77" customClass="AvatarStatusView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                                     <rect key="frame" x="0.0" y="0.0" width="44" height="44"/>
                                                     <subviews>
-                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Jqt-KR-cfI">
+                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Jqt-KR-cfI" customClass="AvatarView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                                             <rect key="frame" x="0.0" y="0.0" width="44" height="44"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         </imageView>
@@ -723,7 +723,7 @@
                                                 <view contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="TMv-wH-5gK" customClass="AvatarStatusView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                                     <rect key="frame" x="0.0" y="0.0" width="39.5" height="39.5"/>
                                                     <subviews>
-                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="252" verticalHuggingPriority="252" horizontalCompressionResistancePriority="48" verticalCompressionResistancePriority="48" translatesAutoresizingMaskIntoConstraints="NO" id="JTa-Zf-CiU">
+                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="252" verticalHuggingPriority="252" horizontalCompressionResistancePriority="48" verticalCompressionResistancePriority="48" translatesAutoresizingMaskIntoConstraints="NO" id="JTa-Zf-CiU" customClass="AvatarView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
                                                             <rect key="frame" x="0.0" y="0.0" width="39.5" height="39.5"/>
                                                             <accessibility key="accessibilityConfiguration" identifier="accountAvatar"/>
                                                         </imageView>

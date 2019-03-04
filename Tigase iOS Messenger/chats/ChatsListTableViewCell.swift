@@ -30,6 +30,16 @@ class ChatsListTableViewCell: UITableViewCell {
     @IBOutlet var lastMessageLabel: UILabel!
     @IBOutlet var timestampLabel: UILabel!
     
+    override var backgroundColor: UIColor? {
+        get {
+            return super.backgroundColor;
+        }
+        set {
+            super.backgroundColor = newValue;
+            avatarStatusView?.backgroundColor = newValue;
+        }
+    }
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code

@@ -102,10 +102,10 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
         switch item.key.type {
         case 1:
             let mucModule: MucModule? = xmppClient?.modulesManager.getModule(MucModule.ID);
-            cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.defaultAvatar);
+            cell.avatarStatusView.updateAvatar(manager: self.xmppService.avatarManager, for: item.key.account, with: item.key.jid, name: nil, orDefault: self.xmppService.avatarManager.defaultGroupchatAvatar);
             cell.avatarStatusView.setStatus(mucModule?.roomsManager.getRoom(for: item.key.jid)?.state == .joined ? Presence.Show.online : nil);
         default:
-            cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.getAvatar(for: item.key.jid, account: item.key.account));
+            cell.avatarStatusView.updateAvatar(manager: self.xmppService.avatarManager, for: item.key.account, with: item.key.jid, name: item.name, orDefault: self.xmppService.avatarManager.defaultAvatar);
             let presenceModule: PresenceModule? = xmppClient?.modulesManager.getModule(PresenceModule.ID);
             let presence = presenceModule?.presenceStore.getBestPresence(for: item.key.jid);
             cell.avatarStatusView.setStatus(presence?.show);
@@ -117,7 +117,7 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
     
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         cell.backgroundColor = Appearance.current.tableViewCellBackgroundColor();
-        if let accountCell = cell as? AccountTableViewCell {
+        if let accountCell = cell as? ChatsListTableViewCell {
             accountCell.avatarStatusView.updateCornerRadius();
         }
     }

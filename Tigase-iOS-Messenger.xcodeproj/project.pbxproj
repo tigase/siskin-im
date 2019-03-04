@@ -29,6 +29,7 @@
 		FE2A0E901F74051E006ADF08 /* DBSchemaManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2A0E8F1F74051E006ADF08 /* DBSchemaManager.swift */; };
 		FE3024321CE2036A00466497 /* DBVCardsCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3024311CE2036A00466497 /* DBVCardsCache.swift */; };
 		FE31291A22240BEB00A92863 /* PEPBookmarksModule_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31291922240BEB00A92863 /* PEPBookmarksModule_extension.swift */; };
+		FE31291C222C0D1500A92863 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31291B222C0D1500A92863 /* AvatarView.swift */; };
 		FE31DDE4201261A200C2AB1D /* DNSSrvDiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */; };
 		FE36B3C621F8E87700D1F037 /* CustomTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE36B3C521F8E87700D1F037 /* CustomTableViewCell.swift */; };
 		FE36B3C821FA52E000D1F037 /* EmptyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */; };
@@ -182,6 +183,7 @@
 		FE2A0E8F1F74051E006ADF08 /* DBSchemaManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBSchemaManager.swift; sourceTree = "<group>"; };
 		FE3024311CE2036A00466497 /* DBVCardsCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBVCardsCache.swift; sourceTree = "<group>"; };
 		FE31291922240BEB00A92863 /* PEPBookmarksModule_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PEPBookmarksModule_extension.swift; sourceTree = "<group>"; };
+		FE31291B222C0D1500A92863 /* AvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
 		FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSSrvDiskCache.swift; sourceTree = "<group>"; };
 		FE36B3C521F8E87700D1F037 /* CustomTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTableViewCell.swift; sourceTree = "<group>"; };
 		FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyViewController.swift; sourceTree = "<group>"; };
@@ -431,6 +433,7 @@
 				FE137A4D21F8851D006B7F7C /* CustomTableViewController.swift */,
 				FE36B3C521F8E87700D1F037 /* CustomTableViewCell.swift */,
 				FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */,
+				FE31291B222C0D1500A92863 /* AvatarView.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -763,6 +766,7 @@
 				FE9E136F1F26049A005C0EE5 /* NotificationSettingsViewController.swift in Sources */,
 				FEA8D6641F30F9260077C12F /* XmppService_VCardExtension.swift in Sources */,
 				FE36B3C621F8E87700D1F037 /* CustomTableViewCell.swift in Sources */,
+				FE31291C222C0D1500A92863 /* AvatarView.swift in Sources */,
 				FE1DCCA21EA52CE200850563 /* DataFormController.swift in Sources */,
 				FE2A0E901F74051E006ADF08 /* DBSchemaManager.swift in Sources */,
 				FE6545641E9E8B67006A14AC /* ServerSelectorTableViewCell.swift in Sources */,

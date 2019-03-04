@@ -25,8 +25,18 @@ import TigaseSwift
 
 class AvatarStatusView: UIView {
 
-    @IBOutlet var avatarImageView: UIImageView!
+    @IBOutlet var avatarImageView: AvatarView!
     @IBOutlet var statusImageView: UIImageView!
+    
+    override var backgroundColor: UIColor? {
+        get {
+            return super.backgroundColor;
+        }
+        set {
+            super.backgroundColor = newValue;
+            statusImageView?.backgroundColor = newValue;
+        }
+    }
     
     /*
     // Only override drawRect: if you perform custom drawing.
@@ -42,8 +52,15 @@ class AvatarStatusView: UIView {
         updateCornerRadius();
     }
     
-    func setAvatar(_ avatar: UIImage?) {
-        self.avatarImageView.image = avatar;
+    func updateAvatar(manager: AvatarManager, for account: BareJID, with: BareJID?, name: String?, orDefault defAvatar: UIImage) {
+        self.avatarImageView.updateAvatar(manager: manager, for: account, with: with, name: name, orDefault: defAvatar);
+    }
+    
+//    func setAvatar(_ avatar: UIImage?) {
+//        self.avatarImageView.image = avatar;
+//    }
+    func resetAvatar() {
+        self.avatarImageView.resetAvatar();
     }
     
     func setStatus(_ status:Presence.Show?) {
@@ -69,6 +86,37 @@ class AvatarStatusView: UIView {
                 image = UIImage(named: "presence_dnd");
             }
         }
+        if image != nil {
+//            return self.drawStatusBorder(size: 0, status: image!);
+        }
+        return image;
+    }
+    
+    static func drawStatusBorder(backgroundColor: UIColor, status: UIImage) -> UIImage {
+        let scale = UIScreen.main.scale;
+        let size = status.size;
+
+//        if self.contentMode == .redraw || contentMode == .scaleAspectFill || contentMode == .scaleAspectFit || contentMode == .scaleToFill {
+//            size.width = (size.width * scale);
+//            size.height = (size.height * scale);
+//        }
+
+        UIGraphicsBeginImageContextWithOptions(size, false, scale);
+        print("size:", size, "scale:", scale);
+        let ctx = UIGraphicsGetCurrentContext()!;
+
+        let path = CGPath(ellipseIn: CGRect(origin: .zero, size: size), transform: nil);
+        ctx.addPath(path);
+
+        ctx.setFillColor(backgroundColor.cgColor);
+        ctx.fill(CGRect(x: 0, y: 0, width: size.width, height: size.height));
+
+
+        status.draw(in: CGRect(x: 0, y: 0, width: size.width, height: size.height));
+
+        let image = UIGraphicsGetImageFromCurrentImageContext()!;
+        UIGraphicsEndImageContext();
+
         return image;
     }
     
@@ -96,6 +144,12 @@ class AvatarStatusView: UIView {
     func updateCornerRadius() {
         avatarImageView.layer.masksToBounds = true;
         avatarImageView.layer.cornerRadius = self.frame.height / 2;
+        statusImageView.layer.opacity = 1.0;
+//        let background = (self.backgroundColor ?? self.superview?.backgroundColor ?? self.superview?.superview?.backgroundColor);
+//        print("background:", background);
+//        statusImageView.layer.backgroundColor = background?.cgColor;
+        statusImageView.layer.masksToBounds = true;
+        statusImageView.layer.cornerRadius = self.statusImageView.frame.height / 2;
     }
     
 }

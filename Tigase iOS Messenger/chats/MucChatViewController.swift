@@ -123,7 +123,7 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
         cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
         cell.nicknameLabel?.text = item.nickname;
         if item.authorJid != nil {
-            cell.avatarView?.image = self.xmppService.avatarManager.getAvatar(for: item.authorJid!, account: self.account);
+            cell.avatarView?.updateAvatar(manager: self.xmppService.avatarManager, for: self.account, with: item.authorJid!, name: item.nickname, orDefault: self.xmppService.avatarManager.defaultGroupchatAvatar);
         } else {
             cell.avatarView?.image = self.xmppService.avatarManager.defaultAvatar;
         }

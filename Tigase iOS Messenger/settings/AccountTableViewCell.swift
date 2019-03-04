@@ -26,6 +26,17 @@ class AccountTableViewCell: CustomTableViewCell {
 
     @IBOutlet var avatarStatusView: AvatarStatusView!
     @IBOutlet var nameLabel: UILabel!
+
+    override var backgroundColor: UIColor? {
+        get {
+            return super.backgroundColor;
+        }
+        set {
+            super.backgroundColor = newValue;
+            avatarStatusView?.backgroundColor = newValue;
+        }
+    }
+
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
