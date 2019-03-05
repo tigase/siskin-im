@@ -22,7 +22,7 @@
 import UIKit
 
 extension UIColor {
-    func mix(color second: UIColor, ratio: CGFloat) -> UIColor {
+    func mix(color second: UIColor, ratio _ratio: CGFloat?) -> UIColor {
         var red1: CGFloat = 0;
         var green1: CGFloat = 0;
         var blue1: CGFloat = 0;
@@ -33,6 +33,8 @@ extension UIColor {
         var blue2: CGFloat = 0;
         var alpha2: CGFloat = 0;
         second.getRed(&red2, green: &green2, blue: &blue2, alpha: &alpha2);
+        
+        let ratio = _ratio ?? alpha2;
         
         return UIColor(red: (1-ratio) * red1 + (ratio * red2), green: (1-ratio) * green1 + ratio * green2, blue: (1-ratio) * blue1 + ratio * blue2, alpha: 1.0);
     }

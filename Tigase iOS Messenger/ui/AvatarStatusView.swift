@@ -24,7 +24,7 @@ import UIKit
 import TigaseSwift
 
 class AvatarStatusView: UIView {
-
+    
     @IBOutlet var avatarImageView: AvatarView!
     @IBOutlet var statusImageView: UIImageView!
     
@@ -86,9 +86,6 @@ class AvatarStatusView: UIView {
                 image = UIImage(named: "presence_dnd");
             }
         }
-        if image != nil {
-//            return self.drawStatusBorder(size: 0, status: image!);
-        }
         return image;
     }
     
@@ -145,9 +142,6 @@ class AvatarStatusView: UIView {
         avatarImageView.layer.masksToBounds = true;
         avatarImageView.layer.cornerRadius = self.frame.height / 2;
         statusImageView.layer.opacity = 1.0;
-//        let background = (self.backgroundColor ?? self.superview?.backgroundColor ?? self.superview?.superview?.backgroundColor);
-//        print("background:", background);
-//        statusImageView.layer.backgroundColor = background?.cgColor;
         statusImageView.layer.masksToBounds = true;
         statusImageView.layer.cornerRadius = self.statusImageView.frame.height / 2;
     }

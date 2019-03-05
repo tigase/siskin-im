@@ -40,18 +40,25 @@ class ChatsListTableViewCell: UITableViewCell {
         }
     }
     
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        // Initialization code
-        let tmp = UIView();
-        tmp.backgroundColor = Appearance.current.tableViewCellHighlightColor();
-        selectedBackgroundView = tmp;
+    override func setHighlighted(_ highlighted: Bool, animated: Bool) {
+        if animated {
+            UIView.animate(withDuration: 0.2) {
+                self.backgroundColor = highlighted ? Appearance.current.tableViewCellBackgroundColor().mix(color: Appearance.current.tableViewCellHighlightColor(), ratio: nil) : Appearance.current.tableViewCellBackgroundColor();
+                //self.backgroundColor = highlighted ? Appearance.current.tableViewCellHighlightColor() : Appearance.current.tableViewCellBackgroundColor();
+            }
+        } else {
+            self.backgroundColor = highlighted ? Appearance.current.tableViewCellBackgroundColor().mix(color: Appearance.current.tableViewCellHighlightColor(), ratio: nil) : Appearance.current.tableViewCellBackgroundColor();
+        }
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-
-        // Configure the view for the selected state
+        if animated {
+            UIView.animate(withDuration: 0.2) {
+                self.backgroundColor = selected ? Appearance.current.tableViewCellBackgroundColor().mix(color: Appearance.current.tableViewCellHighlightColor(), ratio: nil) : Appearance.current.tableViewCellBackgroundColor();
+            }
+        } else {
+            self.backgroundColor = selected ? Appearance.current.tableViewCellBackgroundColor().mix(color: Appearance.current.tableViewCellHighlightColor(), ratio: nil) : Appearance.current.tableViewCellBackgroundColor();
+        }
     }
 
 }

@@ -140,7 +140,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated);
         if let account = self.account, let jid = self.jid?.bareJid {
-            self.xmppService.dbChatStore.updateMessageDraft(account: account, jid: jid, draft: messageText);
+            self.xmppService?.dbChatStore.updateMessageDraft(account: account, jid: jid, draft: messageText);
         }
     }
     
