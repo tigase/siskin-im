@@ -105,7 +105,7 @@ open class XmppService: Logger, EventHandler {
 
         let newFeaturesDetector = NewFeaturesDetector();
         newFeaturesDetector.xmppService = self;
-        self.registerEventHandler(newFeaturesDetector, for: DiscoveryModule.ServerFeaturesReceivedEvent.TYPE);
+        self.registerEventHandler(newFeaturesDetector, for: DiscoveryModule.AccountFeaturesReceivedEvent.TYPE);
         
         #if targetEnvironment(simulator)
         #else
