@@ -58,5 +58,6 @@ open class DBRoomsManager: DefaultRoomsManager {
 class DBRoom: Room {
     
     var id: Int? = nil;
+    var roomName: String? = nil;
     
 }

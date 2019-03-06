@@ -30,18 +30,35 @@ class ChatsListTableViewCell: UITableViewCell {
     @IBOutlet var lastMessageLabel: UILabel!
     @IBOutlet var timestampLabel: UILabel!
     
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        // Initialization code
-        let tmp = UIView();
-        tmp.backgroundColor = Appearance.current.tableViewCellHighlightColor();
-        selectedBackgroundView = tmp;
+    override var backgroundColor: UIColor? {
+        get {
+            return super.backgroundColor;
+        }
+        set {
+            super.backgroundColor = newValue;
+            avatarStatusView?.backgroundColor = newValue;
+        }
+    }
+    
+    override func setHighlighted(_ highlighted: Bool, animated: Bool) {
+        if animated {
+            UIView.animate(withDuration: 0.2) {
+                self.backgroundColor = highlighted ? Appearance.current.tableViewCellBackgroundColor().mix(color: Appearance.current.tableViewCellHighlightColor(), ratio: nil) : Appearance.current.tableViewCellBackgroundColor();
+                //self.backgroundColor = highlighted ? Appearance.current.tableViewCellHighlightColor() : Appearance.current.tableViewCellBackgroundColor();
+            }
+        } else {
+            self.backgroundColor = highlighted ? Appearance.current.tableViewCellBackgroundColor().mix(color: Appearance.current.tableViewCellHighlightColor(), ratio: nil) : Appearance.current.tableViewCellBackgroundColor();
+        }
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-
-        // Configure the view for the selected state
+        if animated {
+            UIView.animate(withDuration: 0.2) {
+                self.backgroundColor = selected ? Appearance.current.tableViewCellBackgroundColor().mix(color: Appearance.current.tableViewCellHighlightColor(), ratio: nil) : Appearance.current.tableViewCellBackgroundColor();
+            }
+        } else {
+            self.backgroundColor = selected ? Appearance.current.tableViewCellBackgroundColor().mix(color: Appearance.current.tableViewCellHighlightColor(), ratio: nil) : Appearance.current.tableViewCellBackgroundColor();
+        }
     }
 
 }

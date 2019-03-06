@@ -38,8 +38,14 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
     @IBOutlet var progressBar: UIProgressView!;
     var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
 
+        lazy var loadChatInfo:DBStatement! = try? self.dbConnection.prepareStatement("SELECT name FROM chats WHERE account = :account AND jid = :jid");
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let params:[String:Any?] = ["account" : account, "jid" : jid.bareJid];
+        navigationItem.title = try! loadChatInfo.findFirst(params) { cursor in cursor["name"] } ?? jid.stringValue;
+
         dataSource = MucChatDataSource(controller: self);
         contextMenuDelegate = self;
         scrollDelegate = self;
@@ -117,7 +123,7 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
         cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
         cell.nicknameLabel?.text = item.nickname;
         if item.authorJid != nil {
-            cell.avatarView?.image = self.xmppService.avatarManager.getAvatar(for: item.authorJid!, account: self.account);
+            cell.avatarView?.updateAvatar(manager: self.xmppService.avatarManager, for: self.account, with: item.authorJid!, name: item.nickname, orDefault: self.xmppService.avatarManager.defaultGroupchatAvatar);
         } else {
             cell.avatarView?.image = self.xmppService.avatarManager.defaultAvatar;
         }
@@ -131,6 +137,11 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
         if segue.identifier == "showOccupants" {
             if let navigation = segue.destination as? UINavigationController {
                 if let occupantsController = navigation.visibleViewController as? MucChatOccupantsTableViewController {
+                    occupantsController.room = room;
+                    occupantsController.account = account;
+                }
+            } else {
+                if let occupantsController = segue.destination as? MucChatOccupantsTableViewController {
                     occupantsController.room = room;
                     occupantsController.account = account;
                 }

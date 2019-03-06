@@ -104,7 +104,7 @@ public class VideoCallController: UIViewController {
             self.updateTitleLabel();
         }
     }
-    @IBOutlet fileprivate var avatar: UIImageView!;
+    @IBOutlet fileprivate var avatar: AvatarView!;
     @IBOutlet fileprivate var avatarWidthConstraint: NSLayoutConstraint!;
     @IBOutlet fileprivate var avatarHeightConstraint: NSLayoutConstraint!;
     
@@ -356,7 +356,7 @@ public class VideoCallController: UIViewController {
         let rosterModule: RosterModule? = client?.modulesManager.getModule(RosterModule.ID);
         
         self.contactName = rosterModule?.rosterStore.get(for: session.jid.withoutResource)?.name ?? session.jid.bareJid.stringValue;
-        
+        self.avatar.updateAvatar(manager: xmppService.avatarManager, for: session.account, with: session.jid.bareJid, name: self.contactName, orDefault: xmppService.avatarManager.defaultAvatar);
         var requiredMediaTypes: [AVMediaType] = [];
         if (withAudio) {
             requiredMediaTypes.append(.audio);
@@ -416,7 +416,7 @@ public class VideoCallController: UIViewController {
         let rosterModule: RosterModule? = client?.modulesManager.getModule(RosterModule.ID);
         
         self.contactName = rosterModule?.rosterStore.get(for: JID(jid))?.name ?? jid.stringValue;
-        self.avatar.image = xmppService.avatarManager.getAvatar(for: jid, account: account);
+        self.avatar.updateAvatar(manager: xmppService.avatarManager, for: account, with: jid, name: self.contactName, orDefault: xmppService.avatarManager.defaultAvatar);
         
         guard let presences = presenceModule?.presenceStore.getPresences(for: jid)?.keys, !presences.isEmpty else {
             self.showAlert(title: "Call failed", message: "It was not possible to establish connection. Recipient is unavailable.") {

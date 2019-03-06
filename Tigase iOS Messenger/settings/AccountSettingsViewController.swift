@@ -327,7 +327,7 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
     
     
     func update(vcard: VCard?) {
-        avatarView.image = xmppService.avatarManager.getAvatar(for: accountJid, account: accountJid);
+        avatarView.image = xmppService.avatarManager.getAvatar(for: accountJid, account: accountJid, orDefault: xmppService.avatarManager.defaultAvatar);
         
         if let fn = vcard?.fn {
             fullNameTextView.text = fn;

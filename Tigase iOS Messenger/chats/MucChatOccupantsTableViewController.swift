@@ -72,9 +72,9 @@ class MucChatOccupantsTableViewController: CustomTableViewController, EventHandl
         let occupant = room.presences[nickname];
         cell.nicknameLabel.text = nickname;
         if occupant?.jid != nil {
-            cell.avatarStatusView.setAvatar(xmppService.avatarManager.getAvatar(for: occupant!.jid!.bareJid, account: account));
+            cell.avatarStatusView.updateAvatar(manager: self.xmppService.avatarManager, for: account, with: occupant?.jid?.bareJid, name: nickname, orDefault: xmppService.avatarManager.defaultAvatar);
         } else {
-            cell.avatarStatusView.setAvatar(xmppService.avatarManager.defaultAvatar);
+            cell.avatarStatusView.updateAvatar(manager: self.xmppService.avatarManager, for: account, with: occupant?.jid?.bareJid, name: nickname, orDefault: xmppService.avatarManager.defaultAvatar);
         }
         cell.avatarStatusView.setStatus(occupant?.presence.show);
         cell.statusLabel.text = occupant?.presence.status;
@@ -109,4 +109,11 @@ class MucChatOccupantsTableViewController: CustomTableViewController, EventHandl
         }
     }
 
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let invitationController = segue.destination as? InviteViewController ?? (segue.destination as? UINavigationController)?.visibleViewController as? InviteViewController {
+            invitationController.xmppService = xmppService;
+            invitationController.room = self.room;
+        }
+    }
+    
 }

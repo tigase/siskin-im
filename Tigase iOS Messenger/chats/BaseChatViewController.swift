@@ -58,9 +58,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
             placeholderView?.isHidden = messageField.hasText;
         }
     }
-    
-    lazy var loadChatInfo:DBStatement! = try? self.dbConnection.prepareStatement("SELECT name FROM roster_items WHERE account = :account AND jid = :jid");
-    
+        
     override func viewDidLoad() {
         xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
         dbConnection = (UIApplication.shared.delegate as! AppDelegate).dbConnection;
@@ -70,8 +68,6 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
 
         navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem;
         navigationItem.leftItemsSupplementBackButton = true;
-        let params:[String:Any?] = ["account" : account, "jid" : jid.bareJid];
-        navigationItem.title = try! loadChatInfo.findFirst(params) { cursor in cursor["name"] } ?? jid.stringValue;
         
         messageField.layer.masksToBounds = true;
         messageField.delegate = self;
@@ -144,7 +140,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated);
         if let account = self.account, let jid = self.jid?.bareJid {
-            self.xmppService.dbChatStore.updateMessageDraft(account: account, jid: jid, draft: messageText);
+            self.xmppService?.dbChatStore.updateMessageDraft(account: account, jid: jid, draft: messageText);
         }
     }
     

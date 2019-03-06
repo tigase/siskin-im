@@ -102,10 +102,10 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
         switch item.key.type {
         case 1:
             let mucModule: MucModule? = xmppClient?.modulesManager.getModule(MucModule.ID);
-            cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.defaultAvatar);
+            cell.avatarStatusView.updateAvatar(manager: self.xmppService.avatarManager, for: item.key.account, with: item.key.jid, name: nil, orDefault: self.xmppService.avatarManager.defaultGroupchatAvatar);
             cell.avatarStatusView.setStatus(mucModule?.roomsManager.getRoom(for: item.key.jid)?.state == .joined ? Presence.Show.online : nil);
         default:
-            cell.avatarStatusView.setAvatar(self.xmppService.avatarManager.getAvatar(for: item.key.jid, account: item.key.account));
+            cell.avatarStatusView.updateAvatar(manager: self.xmppService.avatarManager, for: item.key.account, with: item.key.jid, name: item.name, orDefault: self.xmppService.avatarManager.defaultAvatar);
             let presenceModule: PresenceModule? = xmppClient?.modulesManager.getModule(PresenceModule.ID);
             let presence = presenceModule?.presenceStore.getBestPresence(for: item.key.jid);
             cell.avatarStatusView.setStatus(presence?.show);
@@ -117,7 +117,7 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
     
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         cell.backgroundColor = Appearance.current.tableViewCellBackgroundColor();
-        if let accountCell = cell as? AccountTableViewCell {
+        if let accountCell = cell as? ChatsListTableViewCell {
             accountCell.avatarStatusView.updateCornerRadius();
         }
     }
@@ -140,8 +140,26 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
                 case 1:
                     let mucModule: MucModule? = xmppClient?.modulesManager.getModule(MucModule.ID);
                     if let room = mucModule?.roomsManager.getRoom(for: item.jid) {
-                        mucModule?.leave(room: room);
-                        discardNotifications = true;
+                        if room.presences[room.nickname]?.affiliation == .owner {
+                            let alert = UIAlertController(title: "Delete group chat?", message: "You are leaving the group chat. Would you like to finish it?", preferredStyle: .alert);
+                            alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { (action) in
+                                PEPBookmarksModule.remove(xmppService: self.xmppService, from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false));
+                                mucModule?.destroy(room: room);
+                                self.discardNotifications(for: item);
+
+                            }));
+                            alert.addAction(UIAlertAction(title: "No", style: .default, handler: { (action) in
+                                PEPBookmarksModule.remove(xmppService: self.xmppService, from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false));
+                                mucModule?.leave(room: room);
+                                self.discardNotifications(for: item);
+
+                            }))
+                            self.present(alert, animated: true, completion: nil);
+                        } else {
+                            PEPBookmarksModule.remove(xmppService: xmppService, from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false));
+                            mucModule?.leave(room: room);
+                            discardNotifications = true;
+                        }
                     } else {
                         if let chatId = xmppService.dbChatStore.getId(for: item.account, with: item.jid) {
                             DispatchQueue.global().async {
@@ -175,24 +193,28 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
                 }
                 
                 if discardNotifications {
-                    let accountStr = item.account.stringValue.lowercased();
-                    let jidStr = item.jid.stringValue.lowercased();
-                    UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
-                        var toRemove = [String]();
-                        for notification in notifications {
-                            if (notification.request.content.userInfo["account"] as? String)?.lowercased() == accountStr && (notification.request.content.userInfo["sender"] as? String)?.lowercased() == jidStr {
-                                toRemove.append(notification.request.identifier);
-                            }
-                        }
-                        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
-                    
-                        if Settings.DeleteChatHistoryOnChatClose.getBool() {
-                            self.xmppService.dbChatHistoryStore.deleteMessages(for: item.account, with: item.jid);
-                        } else {
-                            self.xmppService.dbChatHistoryStore.markAsRead(for: item.account, with: item.jid);
-                        }
-                    }
+                    self.discardNotifications(for: item);
                 }
+            }
+        }
+    }
+    
+    func discardNotifications(for item: ChatsViewItemKey) {
+        let accountStr = item.account.stringValue.lowercased();
+        let jidStr = item.jid.stringValue.lowercased();
+        UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
+            var toRemove = [String]();
+            for notification in notifications {
+                if (notification.request.content.userInfo["account"] as? String)?.lowercased() == accountStr && (notification.request.content.userInfo["sender"] as? String)?.lowercased() == jidStr {
+                    toRemove.append(notification.request.identifier);
+                }
+            }
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
+            
+            if Settings.DeleteChatHistoryOnChatClose.getBool() {
+                self.xmppService.dbChatHistoryStore.deleteMessages(for: item.account, with: item.jid);
+            } else {
+                self.xmppService.dbChatHistoryStore.markAsRead(for: item.account, with: item.jid);
             }
         }
     }
@@ -201,6 +223,7 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
         tableView.deselectRow(at: indexPath as IndexPath, animated: true);
         let item = dataSource.itemKey(at: indexPath);
         var identifier: String!;
+        var controller: UIViewController? = nil;
         switch item.type {
         case 1:
             identifier = "RoomViewNavigationController";
@@ -221,11 +244,12 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
                 }
                 return;
             }
+            controller = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: identifier);
         default:
             identifier = "ChatViewNavigationController";
+            controller = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: identifier);
         }
         
-        let controller = self.storyboard?.instantiateViewController(withIdentifier: identifier);
         let navigationController = controller as? UINavigationController;
         let destination = navigationController?.visibleViewController ?? controller;
             
@@ -242,8 +266,41 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
 
     @IBAction func addMucButtonClicked(_ sender: UIBarButtonItem) {
         print("add MUC button clicked");
-        let navigation = storyboard?.instantiateViewController(withIdentifier: "MucJoinNavigationController") as! UINavigationController;
-        self.showDetailViewController(navigation, sender: self);
+        
+        let controller = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
+        controller.popoverPresentationController?.barButtonItem = sender;
+        
+        controller.addAction(UIAlertAction(title: "New private group chat", style: .default, handler: { action in
+            let newGroupchat = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "MucNewGroupchatController") as! MucNewGroupchatController;
+            newGroupchat.groupchatType = .privateGroupchat;
+            newGroupchat.xmppService = self.xmppService;
+            newGroupchat.hidesBottomBarWhenPushed = true;
+//            self.showDetailViewController(newGroupchat, sender: self);
+            let navController = UINavigationController(rootViewController: newGroupchat);
+            navController.modalPresentationStyle = .formSheet;
+            self.present(navController, animated: true, completion: nil);
+        }));
+        controller.addAction(UIAlertAction(title: "New public group chat", style: .default, handler: { action in
+            let newGroupchat = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "MucNewGroupchatController") as! MucNewGroupchatController;
+            newGroupchat.groupchatType = .publicGroupchat;
+            newGroupchat.xmppService = self.xmppService;
+            newGroupchat.hidesBottomBarWhenPushed = true;
+            let navController = UINavigationController(rootViewController: newGroupchat);
+            navController.modalPresentationStyle = .formSheet;
+            self.present(navController, animated: true, completion: nil);
+        }));
+        
+        controller.addAction(UIAlertAction(title: "Join group chat", style: .default, handler: { action in
+            let navigation = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "MucJoinNavigationController") as! UINavigationController;
+            navigation.modalPresentationStyle = .formSheet;
+            self.navigationController?.visibleViewController?.hidesBottomBarWhenPushed = true;
+//            self.showDetailViewController(navigation, sender: self);
+            self.present(navigation, animated: true, completion: nil);
+        }));
+        
+        controller.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+        
+        self.present(controller, animated: true, completion: nil);
     }
     
     func handle(event: Event) {
@@ -256,6 +313,7 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
             // we do not know position of chat which was closed
             //tableView.reloadData();
             self.dataSource.removeChat(for: e.sessionObject.userBareJid!, with: e.chat.jid.bareJid);
+            self.closeBaseChatView(for: e.sessionObject.userBareJid!, jid: e.chat.jid);
         case let e as PresenceModule.ContactPresenceChanged:
             //tableView.reloadData();
             guard e.sessionObject.userBareJid != nil, let from = e.presence.from else {
@@ -270,6 +328,7 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
         case let e as MucModule.RoomClosedEvent:
             if e.room.state == .destroyed {
                 self.dataSource.removeChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid);
+                self.closeBaseChatView(for: e.sessionObject.userBareJid!, jid: e.room.jid);
             } else {
                 self.dataSource.updateChat(for: e.sessionObject.userBareJid!, with: e.room.roomJid, onUpdate: nil);
             }
@@ -283,6 +342,18 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
             });
         default:
             break;
+        }
+    }
+    
+    fileprivate func closeBaseChatView(for account: BareJID, jid: JID) {
+        DispatchQueue.main.async {
+            if let navController = self.splitViewController?.viewControllers.first(where: { c -> Bool in
+                return c is UINavigationController;
+            }) as? UINavigationController, let controller = navController.visibleViewController as? BaseChatViewController {
+                if controller.account == account && controller.jid == jid {
+                    self.showDetailViewController(self.storyboard!.instantiateViewController(withIdentifier: "emptyDetailViewController"), sender: self);
+                }
+            }
         }
     }
     
@@ -336,6 +407,18 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
                 self.dataSource.updateChat(for: account, with: jid, onUpdate: { item in
                     if item.unread != 0 {
                         item.unread = 0;
+                        return true;
+                    }
+                    return false;
+                });
+            }
+        }
+        if action == "roomNameChanged" {
+            DispatchQueue.main.async {
+                self.dataSource.updateChat(for: account, with: jid, onUpdate: { item in
+                    let newName = notification.userInfo!["roomName"] as? String;
+                    if item.name != newName {
+                        item.name = newName;
                         return true;
                     }
                     return false;
@@ -461,7 +544,7 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
             self.controller = controller;
 //            self.getChats = try? controller.dbConnection.prepareStatement("SELECT id, jid, account, timestamp, thread_id, type, (SELECT data FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND item_type = 0 ORDER BY timestamp DESC LIMIT 1) AS last_message, (SELECT count(ch.id) FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND state = 2) as unread, (SELECT name FROM roster_items ri WHERE ri.account = c.account AND ri.jid = c.jid) as name FROM chats as c ORDER BY timestamp DESC");
             self.getChatsList = try? controller.dbConnection.prepareStatement("SELECT jid, account, type, timestamp FROM chats as c ORDER BY timestamp DESC");
-            self.getChatDetails = try? controller.dbConnection.prepareStatement("SELECT type, (SELECT data FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND item_type = 0 ORDER BY timestamp DESC LIMIT 1) AS last_message, (SELECT count(ch.id) FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND state in (\(DBChatHistoryStore.State.incoming_unread.rawValue), \(DBChatHistoryStore.State.incoming_error_unread.rawValue), \(DBChatHistoryStore.State.outgoing_error_unread.rawValue))) as unread, (SELECT name FROM roster_items ri WHERE ri.account = c.account AND ri.jid = c.jid) as name FROM chats as c WHERE c.account = :account AND c.jid = :jid");
+            self.getChatDetails = try? controller.dbConnection.prepareStatement("SELECT type, (SELECT data FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND item_type = 0 ORDER BY timestamp DESC LIMIT 1) AS last_message, (SELECT count(ch.id) FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND state in (\(DBChatHistoryStore.State.incoming_unread.rawValue), \(DBChatHistoryStore.State.incoming_error_unread.rawValue), \(DBChatHistoryStore.State.outgoing_error_unread.rawValue))) as unread, IFNULL(c.name, (SELECT name FROM roster_items ri WHERE ri.account = c.account AND ri.jid = c.jid)) as name FROM chats as c WHERE c.account = :account AND c.jid = :jid");
         }
         
         func item(at position: IndexPath) -> ChatsViewItem {

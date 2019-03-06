@@ -24,7 +24,7 @@ import UIKit
 
 class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegate {
 
-    @IBOutlet var avatarView: UIImageView?
+    @IBOutlet var avatarView: AvatarView?
     @IBOutlet var messageTextView: UILabel!
     @IBOutlet var messageFrameView: UIView!
     @IBOutlet var timestampView: UILabel!
