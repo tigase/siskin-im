@@ -23,15 +23,40 @@ import UIKit
 
 class SetupViewController: UIViewController {
     
+    @IBOutlet var appLogoView: UIImageView!;
+    
+    @IBOutlet var titleView: UILabel!;
+    @IBOutlet var subtitleView: UILabel!;
+    
     @IBOutlet var createAccountBtn: UIButton!
     @IBOutlet var existingAccountBtn: UIButton!
     
     override func viewDidLoad() {
         createAccountBtn.backgroundColor = self.view.tintColor;
         createAccountBtn.layer.borderWidth = 1;
-        createAccountBtn.layer.cornerRadius = 5;
+        //createAccountBtn.layer.cornerRadius = createAccountBtn.frame.height / 2;
         createAccountBtn.layer.borderColor = UIColor.white.cgColor;
         createAccountBtn.setTitleColor(UIColor.white, for: .normal);
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(orientationChanged(_:)), name: UIDevice.orientationDidChangeNotification, object: nil);
+        
+        createAccountBtn.backgroundColor = self.subtitleView.textColor;
+        existingAccountBtn.setTitleColor(self.subtitleView.textColor, for: .normal);
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated);
+        appLogoView.layer.masksToBounds = true;
+        orientationChanged();
+    }
+    
+    @objc func orientationChanged(_ notification: Notification) {
+        orientationChanged();
+    }
+    
+    func orientationChanged() {
+        createAccountBtn.layer.cornerRadius = createAccountBtn.frame.height / 2;
+        appLogoView.layer.cornerRadius = appLogoView.frame.width / 8;
     }
     
     @IBAction func createAccountBtnClicked(_ sender: AnyObject) {

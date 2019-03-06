@@ -43,7 +43,7 @@
 		FE4496C51F87934E009F649C /* db-schema-3.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE4496C31F87911C009F649C /* db-schema-3.sql */; };
 		FE4DDF561F39E0B500A4CE5A /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4DDF551F39E0B500A4CE5A /* ShareViewController.swift */; };
 		FE4DDF591F39E0B500A4CE5A /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE4DDF571F39E0B500A4CE5A /* MainInterface.storyboard */; };
-		FE4DDF5D1F39E0B500A4CE5A /* Tigase Messenger - Share.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = FE4DDF531F39E0B500A4CE5A /* Tigase Messenger - Share.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		FE4DDF5D1F39E0B500A4CE5A /* Siskin IM - Share.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = FE4DDF531F39E0B500A4CE5A /* Siskin IM - Share.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FE4DDF641F3A181B00A4CE5A /* AccountsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4DDF631F3A181B00A4CE5A /* AccountsTableViewController.swift */; };
 		FE4DDF661F3A207200A4CE5A /* AccountTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4DDF651F3A207200A4CE5A /* AccountTableViewCell.swift */; };
 		FE4DDF681F3A403900A4CE5A /* RecipientsSelectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4DDF671F3A403900A4CE5A /* RecipientsSelectionViewController.swift */; };
@@ -141,7 +141,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				FE4DDF5D1F39E0B500A4CE5A /* Tigase Messenger - Share.appex in Embed App Extensions */,
+				FE4DDF5D1F39E0B500A4CE5A /* Siskin IM - Share.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -195,7 +195,7 @@
 		FE43EB541F3CC55900A4CAAD /* ImageCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
 		FE43EB561F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewController_PreviewExtension.swift; sourceTree = "<group>"; };
 		FE4496C31F87911C009F649C /* db-schema-3.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-3.sql"; sourceTree = "<group>"; };
-		FE4DDF531F39E0B500A4CE5A /* Tigase Messenger - Share.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Tigase Messenger - Share.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE4DDF531F39E0B500A4CE5A /* Siskin IM - Share.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Siskin IM - Share.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE4DDF551F39E0B500A4CE5A /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		FE4DDF581F39E0B500A4CE5A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
 		FE4DDF5A1F39E0B500A4CE5A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -234,16 +234,12 @@
 		FE80BDA91D92974C001914B0 /* Tigase-iOS-Messenger.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Tigase-iOS-Messenger.entitlements"; sourceTree = "<group>"; };
 		FE80BDAA1D953FC4001914B0 /* SetupViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SetupViewController.swift; sourceTree = "<group>"; };
 		FE86C4481F7BFF93009E3CB8 /* Tigase-iOS-Messenger-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Tigase-iOS-Messenger-Bridging-Header.h"; sourceTree = "<group>"; };
-<<<<<<< HEAD
-		FE94E5211CCBA74F00FAE755 /* Siskin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Siskin.app; sourceTree = BUILT_PRODUCTS_DIR; };
-=======
 		FE8DD9C2221B118E0090F5AA /* Groupchat.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Groupchat.storyboard; sourceTree = "<group>"; };
 		FE8DD9C4221B153A0090F5AA /* InviteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteViewController.swift; sourceTree = "<group>"; };
 		FE8DD9C6221B15DC0090F5AA /* AbstractRosterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractRosterViewController.swift; sourceTree = "<group>"; };
 		FE8DD9C8221B29520090F5AA /* MucNewGroupchatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MucNewGroupchatController.swift; sourceTree = "<group>"; };
 		FE8DD9CA221DBED80090F5AA /* db-schema-4.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-4.sql"; sourceTree = "<group>"; };
-		FE94E5211CCBA74F00FAE755 /* Tigase-iOS-Messenger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Tigase-iOS-Messenger.app"; sourceTree = BUILT_PRODUCTS_DIR; };
->>>>>>> master
+		FE94E5211CCBA74F00FAE755 /* Tigase-iOS-Messenger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "Tigase-iOS-Messenger.app"; path = Siskin.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE94E5241CCBA74F00FAE755 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FE94E52B1CCBA74F00FAE755 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		FE94E52D1CCBA74F00FAE755 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -482,8 +478,8 @@
 		FE94E5221CCBA74F00FAE755 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				FE94E5211CCBA74F00FAE755 /* Siskin.app */,
-				FE4DDF531F39E0B500A4CE5A /* Tigase Messenger - Share.appex */,
+				FE94E5211CCBA74F00FAE755 /* Tigase-iOS-Messenger.app */,
+				FE4DDF531F39E0B500A4CE5A /* Siskin IM - Share.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -559,9 +555,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		FE4DDF521F39E0B500A4CE5A /* Tigase Messenger - Share */ = {
+		FE4DDF521F39E0B500A4CE5A /* Siskin IM - Share */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = FE4DDF5E1F39E0B600A4CE5A /* Build configuration list for PBXNativeTarget "Tigase Messenger - Share" */;
+			buildConfigurationList = FE4DDF5E1F39E0B600A4CE5A /* Build configuration list for PBXNativeTarget "Siskin IM - Share" */;
 			buildPhases = (
 				FE4DDF4F1F39E0B500A4CE5A /* Sources */,
 				FE4DDF501F39E0B500A4CE5A /* Frameworks */,
@@ -571,9 +567,9 @@
 			);
 			dependencies = (
 			);
-			name = "Tigase Messenger - Share";
+			name = "Siskin IM - Share";
 			productName = "Tigase Messenger - Share";
-			productReference = FE4DDF531F39E0B500A4CE5A /* Tigase Messenger - Share.appex */;
+			productReference = FE4DDF531F39E0B500A4CE5A /* Siskin IM - Share.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 		FE94E5201CCBA74F00FAE755 /* Siskin IM */ = {
@@ -595,7 +591,7 @@
 			);
 			name = "Siskin IM";
 			productName = "Tigase iOS Messenger";
-			productReference = FE94E5211CCBA74F00FAE755 /* Siskin.app */;
+			productReference = FE94E5211CCBA74F00FAE755 /* Tigase-iOS-Messenger.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -657,7 +653,7 @@
 			projectRoot = "";
 			targets = (
 				FE94E5201CCBA74F00FAE755 /* Siskin IM */,
-				FE4DDF521F39E0B500A4CE5A /* Tigase Messenger - Share */,
+				FE4DDF521F39E0B500A4CE5A /* Siskin IM - Share */,
 			);
 		};
 /* End PBXProject section */
@@ -839,7 +835,7 @@
 /* Begin PBXTargetDependency section */
 		FE4DDF5C1F39E0B500A4CE5A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = FE4DDF521F39E0B500A4CE5A /* Tigase Messenger - Share */;
+			target = FE4DDF521F39E0B500A4CE5A /* Siskin IM - Share */;
 			targetProxy = FE4DDF5B1F39E0B500A4CE5A /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -1107,7 +1103,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		FE4DDF5E1F39E0B600A4CE5A /* Build configuration list for PBXNativeTarget "Tigase Messenger - Share" */ = {
+		FE4DDF5E1F39E0B600A4CE5A /* Build configuration list for PBXNativeTarget "Siskin IM - Share" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FE4DDF5F1F39E0B600A4CE5A /* Debug */,
