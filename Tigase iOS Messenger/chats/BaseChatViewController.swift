@@ -107,9 +107,11 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil);
         
-        self.xmppService.dbChatStore.getMessageDraft(account: account, jid: jid.bareJid) { (text) in
-            DispatchQueue.main.async {
-                self.messageText = text;
+        if self.messageText?.isEmpty ?? true {
+            self.xmppService.dbChatStore.getMessageDraft(account: account, jid: jid.bareJid) { (text) in
+                DispatchQueue.main.async {
+                    self.messageText = text;
+                }
             }
         }
         updateAppearance();

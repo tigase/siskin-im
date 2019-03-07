@@ -29,6 +29,8 @@ class MucChatOccupantsTableViewController: CustomTableViewController, EventHandl
     var account: BareJID!;
     var room: Room!;
     
+    var mentionOccupant: ((String)->Void)? = nil;
+    
     override func viewDidLoad() {
         xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
         super.viewDidLoad()
@@ -84,6 +86,18 @@ class MucChatOccupantsTableViewController: CustomTableViewController, EventHandl
     
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return false;
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true);
+        
+        let nicknames = Array(room.presences.keys).sorted();
+        let nickname = nicknames[indexPath.row];
+
+        if let fn = mentionOccupant {
+            fn(nickname);
+        }
+        self.navigationController?.popViewController(animated: true);
     }
 
     /*
