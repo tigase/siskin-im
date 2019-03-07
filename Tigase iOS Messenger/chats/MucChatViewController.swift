@@ -24,6 +24,8 @@ import TigaseSwift
 
 class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, BaseChatViewControllerWithContextMenuAndToolbarDelegate, CachedViewControllerProtocol, UITableViewDataSource, EventHandler, BaseChatViewController_ShareImageExtension, BaseChatViewController_PreviewExtension {
 
+    static let MENTION_OCCUPANT = Notification.Name("groupchatMentionOccupant");
+    
     var titleView: MucTitleView!;
     var room: Room?;
 
@@ -139,11 +141,25 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
                 if let occupantsController = navigation.visibleViewController as? MucChatOccupantsTableViewController {
                     occupantsController.room = room;
                     occupantsController.account = account;
+                    occupantsController.mentionOccupant = { [weak self] name in
+                        var text = self?.messageText ?? "";
+                        if text.last != " " {
+                            text = text + " ";
+                        }
+                        self?.messageText = "\(text)@\(name) ";
+                    }
                 }
             } else {
                 if let occupantsController = segue.destination as? MucChatOccupantsTableViewController {
                     occupantsController.room = room;
                     occupantsController.account = account;
+                    occupantsController.mentionOccupant = { [weak self] name in
+                        var text = self?.messageText ?? "";
+                        if text.last != " " {
+                            text = text + " ";
+                        }
+                        self?.messageText = "\(text)@\(name) ";
+                    }
                 }
             }
         }
@@ -300,7 +316,7 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
     func refreshRoomInfo(_ room: Room) {
         titleView.state = room.state;
     }
-
+    
     class MucChatDataSource: CachedViewDataSource<MucChatViewItem> {
 
         fileprivate let getMessagesStmt: DBStatement!;
