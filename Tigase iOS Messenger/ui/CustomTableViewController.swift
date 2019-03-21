@@ -54,6 +54,13 @@ class CustomTableViewController: UITableViewController {
         }
     }
     
+    override func tableView(_ tableView: UITableView, willDisplayFooterView view: UIView, forSection section: Int) {
+        if let headerView = view as? UITableViewHeaderFooterView {
+            headerView.backgroundView?.backgroundColor = Appearance.current.tableViewHeaderFooterBackgroundColor();
+            headerView.textLabel?.textColor = Appearance.current.tableViewHeaderFooterTextColor();
+        }
+    }
+    
     fileprivate func updateSubviews(view v: UIView) {
         v.subviews.forEach({ (view) in
             updateSubviews(view: view);
@@ -100,7 +107,7 @@ class CustomTableViewController: UITableViewController {
 //            self.tableView.separatorColor = Appearance.current.tableViewSeparatorColor();
 //        }
         
-        self.tableView.backgroundColor = Appearance.current.tableViewBackgroundColor();
+        self.tableView.backgroundColor = self.tableView.style == .grouped ? Appearance.current.tableViewHeaderFooterBackgroundColor() : Appearance.current.tableViewBackgroundColor();
         self.tableView.separatorColor = Appearance.current.tableViewSeparatorColor();
 
         if let navController = self.navigationController {
