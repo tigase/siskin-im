@@ -138,7 +138,7 @@ class BaseChatViewController_ShareImagePickerDelegate: NSObject, UIImagePickerCo
                         x.addChild(Element(name: "url", cdata: slot.getUri.absoluteString));
                         
                         ImageCache.shared.set(image: photo) { (key) in
-                            self.controller.sendMessage(body: slot.getUri.absoluteString, additional: [x], preview: key == nil ? nil : "preview:image:\(key!)", completed: nil);
+                            self.controller.sendMessage(body: slot.getUri.absoluteString, additional: [x], preview: "preview:image:\(key)", completed: nil);
                         }
                         }.resume();
                 }, onError: { (error, message) in
