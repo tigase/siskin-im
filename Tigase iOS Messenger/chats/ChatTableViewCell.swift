@@ -220,7 +220,7 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         let point = recognizer.location(in: self.messageTextView);
         let layoutManager = NSLayoutManager();
         let attrText = self.messageTextView.attributedText!.mutableCopy() as! NSMutableAttributedString;
-        attrText.addAttribute(NSAttributedString.Key.font, value: self.messageTextView.font, range: NSRange(location: 0, length: attrText.length));
+        attrText.addAttribute(NSAttributedString.Key.font, value: self.messageTextView.font as Any, range: NSRange(location: 0, length: attrText.length));
         let textStorage = NSTextStorage(attributedString: attrText);
         let textContainer = NSTextContainer(size: self.messageTextView.bounds.size);
         textContainer.maximumNumberOfLines = self.messageTextView.numberOfLines;

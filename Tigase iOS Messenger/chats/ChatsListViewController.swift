@@ -636,7 +636,7 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
         }
         
         fileprivate static func position(in list: inout [ChatsViewItemKey], account: BareJID, jid: BareJID) -> Int? {
-            return list.index { $0.jid == jid && $0.account == account };
+            return list.firstIndex { $0.jid == jid && $0.account == account };
         }
         
         fileprivate func getPresence(account: BareJID, jid: BareJID) -> Presence? {

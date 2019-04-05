@@ -72,7 +72,7 @@ open class DBVCardsCache {
             callback(Data(base64Encoded: photo.binval!, options: NSData.Base64DecodingOptions.ignoreUnknownCharacters));
         } else if photo.uri != nil {
             if photo.uri!.hasPrefix("data:image") && photo.uri!.contains(";base64,") {
-                if let idx = photo.uri!.index(of: ",") {
+                if let idx = photo.uri!.firstIndex(of: ",") {
                     let data = photo.uri!.suffix(from: photo.uri!.index(after: idx));
                     callback(Data(base64Encoded: String(data), options: NSData.Base64DecodingOptions.ignoreUnknownCharacters));
                     return;

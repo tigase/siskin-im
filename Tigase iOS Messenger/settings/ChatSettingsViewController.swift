@@ -142,7 +142,7 @@ class ChatSettingsViewController: CustomTableViewController {
         case .recentsSortType:
             let controller = TablePickerViewController(style: .grouped);
             let values = [ChatsListViewController.SortOrder.byTime, ChatsListViewController.SortOrder.byAvailablityAndTime];
-            controller.selected = values.index(of: ChatsListViewController.SortOrder(rawValue: Settings.RecentsOrder.getString()!)!) ?? 0;
+            controller.selected = values.firstIndex(of: ChatsListViewController.SortOrder(rawValue: Settings.RecentsOrder.getString()!)!) ?? 0;
             controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
                 return RecentsSortTypeItem(value: it);
             });
@@ -156,7 +156,7 @@ class ChatSettingsViewController: CustomTableViewController {
         case .maxImagePreviewSize:
             let controller = TablePickerViewController(style: .grouped);
             let values: [Int] = [0, 1, 2, 4, 8, 10, 15, 30, 50, Int.max];
-            controller.selected = values.index(of: Settings.MaxImagePreviewSize.getInt() ) ?? 0;
+            controller.selected = values.firstIndex(of: Settings.MaxImagePreviewSize.getInt() ) ?? 0;
             controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
                 return MaxImagePreviewSizeItem(value: it);
             });

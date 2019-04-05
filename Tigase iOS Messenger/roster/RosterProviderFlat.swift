@@ -157,7 +157,7 @@ public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>,
     }
     
     func positionFor(item: RosterProviderItem) -> Int? {
-        return items.index { $0.jid == item.jid && $0.account == item.account };
+        return items.firstIndex { $0.jid == item.jid && $0.account == item.account };
     }
     
     override func loadItems() -> [RosterProviderFlatItem] {
@@ -167,7 +167,7 @@ public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>,
             .query() { it in it["jid"] };
         
         items.forEach { (item) in
-            item.hidden = hidden.index(of: item.jid) != nil;
+            item.hidden = hidden.firstIndex(of: item.jid) != nil;
         }
         
         return items;

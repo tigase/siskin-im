@@ -37,7 +37,7 @@ class AccountsTableViewController: UITableViewController {
     
     func getAccounts() -> [String] {
         var accounts = [String]();
-        let query = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitAll, String(kSecReturnAttributes) : kCFBooleanTrue, String(kSecAttrService) : "xmpp" ] as [String : Any];
+        let query = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitAll, String(kSecReturnAttributes) : kCFBooleanTrue as Any, String(kSecAttrService) : "xmpp" ] as [String : Any];
         var result:AnyObject?;
         
         let lastResultCode: OSStatus = withUnsafeMutablePointer(to: &result) {

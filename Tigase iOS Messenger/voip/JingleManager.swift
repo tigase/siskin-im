@@ -177,7 +177,7 @@ class JingleManager: JingleSessionManager, EventHandler {
     
     fileprivate func sessionInitiated(event e: JingleModule.JingleEvent) {
         
-        guard let content = e.contents.first, let description = content.description as? Jingle.RTP.Description else {
+        guard let content = e.contents.first, let _ = content.description as? Jingle.RTP.Description else {
             return;
         }
         

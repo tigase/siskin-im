@@ -130,7 +130,7 @@ public class RosterProviderAbstract<Item: RosterProviderItem> {
     
     func findItemIdxFor(account: BareJID, jid: JID) -> Int? {
         let jidWithoutResource = JID(jid.bareJid);
-        return allItems.index { (item) -> Bool in
+        return allItems.firstIndex { (item) -> Bool in
             return item.account == account && (item.jid.resource != nil ? item.jid == jid : item.jid == jidWithoutResource)
         }
     }

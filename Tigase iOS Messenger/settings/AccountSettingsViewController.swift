@@ -104,7 +104,7 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
         if indexPath.section == 3 && indexPath.row == 2 {
             let controller = TablePickerViewController(style: .grouped);
             let hoursArr = [0.0, 12.0, 24.0, 3*24.0, 7*24.0, 14 * 24.0, 356 * 24.0];
-            controller.selected = hoursArr.index(of: AccountSettings.MessageSyncPeriod(account).getDouble()) ?? 0;
+            controller.selected = hoursArr.firstIndex(of: AccountSettings.MessageSyncPeriod(account).getDouble()) ?? 0;
             controller.items = hoursArr.map({ (it)->TablePickerViewItemsProtocol in
                 return SyncTimeItem(hours: it);
             });

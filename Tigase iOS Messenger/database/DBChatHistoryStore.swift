@@ -165,7 +165,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
         
         appendEntry(for: account, jid: e.room.roomJid, state: state, authorJid: authorJid, authorNickname: e.nickname, data: body!, timestamp: e.timestamp, id: e.message.id) { (msgId) in
 
-            var userInfo:[AnyHashable: Any] = ["account": account, "sender": e.room.roomJid, "incoming": true, "timestamp": e.timestamp, "type": "muc", "body": body!, "state": state] ;
+            var userInfo:[AnyHashable: Any] = ["account": account, "sender": e.room.roomJid, "incoming": true, "timestamp": e.timestamp as Any, "type": "muc", "body": body!, "state": state] ;
             if e.nickname != nil {
                 userInfo["senderName"] = e.nickname!;
             }
@@ -198,7 +198,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
         
         appendEntry(for: account, jid: jid!, state: state, authorJid: author, data: body!, timestamp: e.timestamp, id: message.id) { (msgId) in
             
-            var userInfo:[AnyHashable: Any] = ["account": account, "sender": jid!, "incoming": state.direction == .incoming, "timestamp": e.timestamp, "body": body!, "state": state] ;
+            var userInfo:[AnyHashable: Any] = ["account": account, "sender": jid!, "incoming": state.direction == .incoming, "timestamp": e.timestamp as Any, "body": body!, "state": state] ;
             userInfo["fromArchive"] = true;
             userInfo["msgId"] = msgId;
             NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: nil, userInfo: userInfo);

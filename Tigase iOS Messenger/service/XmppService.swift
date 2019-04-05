@@ -494,7 +494,7 @@ open class XmppService: Logger, EventHandler {
     }
     
     open func unregisterEventHandler(_ handler:EventHandler, for events:Event...) {
-        if let idx = eventHandlers.index(where: { (holder) -> Bool in
+        if let idx = eventHandlers.firstIndex(where: { (holder) -> Bool in
             return holder.matches(handler, events: events);
         }) {
             log("removed event handler", handler, "for", events);
@@ -664,7 +664,7 @@ open class XmppService: Logger, EventHandler {
     fileprivate func clientConnected(account: BareJID) {
         DispatchQueue.main.async {
             self.log("conencted client for account", account);
-            if let idx = self.fetchClientsWaitingForReconnection.index(of: account) {
+            if let idx = self.fetchClientsWaitingForReconnection.firstIndex(of: account) {
                 self.fetchClientsWaitingForReconnection.remove(at: idx);
                 self.log("still waiting for accounts to reconnect", self.fetchClientsWaitingForReconnection);
                 if (self.fetchClientsWaitingForReconnection.isEmpty && ((self.fetchTimeLong - 4) + self.fetchStart.timeIntervalSinceNow) > 0) {

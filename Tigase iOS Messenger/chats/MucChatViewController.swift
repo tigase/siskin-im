@@ -167,7 +167,6 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
     
     func getTextOfSelectedRows(paths: [IndexPath], withTimestamps: Bool, handler: (([String]) -> Void)?) {
         let items: [MucChatViewItem] = paths.map({ index in dataSource.getItem(for: index) })
-            .filter { (it) -> Bool in it != nil }
             .sorted { (it1, it2) -> Bool in
                 it1.timestamp.compare(it2.timestamp) == .orderedAscending;
         };

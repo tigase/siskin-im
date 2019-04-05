@@ -197,7 +197,7 @@ class MucNewGroupchatController: CustomTableViewController, UIPickerViewDataSour
             let roomName = self.roomNameField.text!;
             let roomNickname = self.roomNicknameField.text!;
             controller.tableView.allowsMultipleSelection = true;
-            controller.onNext = { [weak self] (participants) in
+            controller.onNext = { (participants) in
                 print("called onNext!");
                 guard let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) else {
                     return;

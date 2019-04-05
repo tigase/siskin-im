@@ -177,7 +177,7 @@ open class TigasePushNotificationsModule: PushNotificationsModule, EventHandler 
                 discoModule.getInfo(for: item.jid, node: item.node, onInfoReceived: { (node, identities, features) in
                     if identities.filter({ (identity) -> Bool in
                         identity.category == "pubsub" && identity.type == "push"
-                    }).isEmpty || features.index(of: "urn:xmpp:push:0") == nil || features.index(of: "tigase:messenger:apns:1") == nil {
+                    }).isEmpty || features.firstIndex(of: "urn:xmpp:push:0") == nil || features.firstIndex(of: "tigase:messenger:apns:1") == nil {
                         result.failure();
                     } else {
                         result.found(item.jid);

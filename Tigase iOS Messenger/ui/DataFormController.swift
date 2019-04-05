@@ -113,7 +113,7 @@ class DataFormController: CustomTableViewController {
     
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         super.tableView(tableView, willDisplay: cell, forRowAt: indexPath);
-        if errors.index(where: { (idx)->Bool in
+        if errors.firstIndex(where: { (idx)->Bool in
             return idx.row == indexPath.row && idx.section == indexPath.section
         }) != nil {
             let backgroundColor = cell.backgroundColor;
@@ -505,7 +505,7 @@ class DataFormController: CustomTableViewController {
                 if let f: ListMultiField = field as? ListMultiField {
                     let value = f.value;
                     let selected = f.options.filter({ (option) -> Bool in
-                        return value.index(of: option.value) != nil;
+                        return value.firstIndex(of: option.value) != nil;
                     });
                     self.value = selected.map({ (option) -> String in
                         option.label ?? option.value
@@ -602,7 +602,7 @@ class DataFormController: CustomTableViewController {
             let option = options[indexPath.row];
             if let multiList: ListMultiField = field as? ListMultiField {
                 let values = multiList.value;
-                cell.accessoryType = values.index(of: option.value) != nil ? .checkmark : .none;
+                cell.accessoryType = values.firstIndex(of: option.value) != nil ? .checkmark : .none;
             } else if let singleList: ListSingleField = field as? ListSingleField {
                 cell.accessoryType = singleList.value == option.value ? .checkmark : .none;
             }
@@ -613,7 +613,7 @@ class DataFormController: CustomTableViewController {
             let value = options[indexPath.row].value;
             if let multiList: ListMultiField = field as? ListMultiField {
                 var values = multiList.value;
-                if let idx = values.index(of: value) {
+                if let idx = values.firstIndex(of: value) {
                     values.remove(at: idx);
                 } else {
                     values.append(value);

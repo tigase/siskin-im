@@ -143,7 +143,7 @@ class CachedViewDataSource<Item: CachedViewDataSourceItem>: NSObject, CachedView
     
     // does not support non-inverted view!
     func getIndexPath(withId itemId: Int) -> IndexPath? {
-        guard let pos = list.index(where: { (it) -> Bool in
+        guard let pos = list.firstIndex(where: { (it) -> Bool in
             it.id == itemId
         }) else {
             return nil;
@@ -202,10 +202,10 @@ class CachedViewDataSource<Item: CachedViewDataSourceItem>: NSObject, CachedView
         //let x = list.index { (it) -> Bool in it.timestamp.compare(timestamp) == .orderedAscending }
         //let pos = list.count == 0 ? 0 : (x ?? list.count);
         var idx: Int? = nil;
-        if self.list.index(where: { (it1) -> Bool in
+        if self.list.firstIndex(where: { (it1) -> Bool in
             it1.id == id
         }) == nil {
-            idx = self.list.index(where: { (it1) -> Bool in it1.timestamp.compare(timestamp) == .orderedAscending });
+            idx = self.list.firstIndex(where: { (it1) -> Bool in it1.timestamp.compare(timestamp) == .orderedAscending });
             self.numberOfMessages += 1;
             if idx != nil {
                 let key = CachedViewDataSourceItemKey(id: id, timestamp: timestamp);

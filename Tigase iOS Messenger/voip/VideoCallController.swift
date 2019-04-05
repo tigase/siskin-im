@@ -397,7 +397,7 @@ public class VideoCallController: UIViewController {
                             }
                             print("generated local description:", sdpAnswer!.sdp, sdpAnswer!.type);
                             self.setLocalSessionDescription(sdpAnswer!, for: session, onSuccess: {
-                                print("set local description:", session.peerConnection?.localDescription?.sdp);
+                                print("set local description:", session.peerConnection?.localDescription?.sdp as Any);
                                 
                                 let sdp = SDP(from: sdpAnswer!.sdp, creator: session.role);
                                 _  = session.accept(contents: sdp!.contents, bundle: sdp!.bundle);
@@ -681,9 +681,9 @@ public class VideoCallController: UIViewController {
         }
         
         session.peerConnection?.setRemoteDescription(sessDesc, completionHandler: { (error) in
-            print("remote description set:", session.peerConnection?.remoteDescription?.sdp);
+            print("remote description set:", session.peerConnection?.remoteDescription?.sdp as Any);
             guard error == nil else {
-                session.decline();
+                _ = session.decline();
                 
                 self.showAlert(title: "Call failed!", message: "Negotiation of the call failed", completionHandler: {
                     self.dismiss();

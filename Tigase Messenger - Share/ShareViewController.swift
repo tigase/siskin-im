@@ -259,7 +259,7 @@ class ShareViewController: SLComposeServiceViewController {
     }
     
     func shareText(url: URL) {
-        print("sharing", contentText, url);
+        print("sharing", contentText as Any, url);
         
         recipients.forEach { (recipient) in
             let message = Message();

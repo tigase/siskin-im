@@ -136,7 +136,7 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
             }
             if !displayHiddenGroup {
                 items = items.filter { (item) -> Bool in
-                    item.groups.index(of: "Hidden") == nil
+                    item.groups.firstIndex(of: "Hidden") == nil
                 }
             }
             return items;
@@ -192,8 +192,8 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
         var paths = [IndexPath]();
         
         item.groups.forEach { group in
-            if let idx = self.items[group]?.index(where: { $0.jid == item.jid && $0.account == item.account }) {
-                let gidx = groups.index(of: group);
+            if let idx = self.items[group]?.firstIndex(where: { $0.jid == item.jid && $0.account == item.account }) {
+                let gidx = groups.firstIndex(of: group);
                 paths.append(IndexPath(row: idx, section: gidx!));
             }
         }

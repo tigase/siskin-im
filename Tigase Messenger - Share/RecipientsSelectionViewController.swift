@@ -86,7 +86,7 @@ class RecipientsSelectionViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let jid = items[indexPath.row].jid;
-        if let idx = selected.index(of: jid) {
+        if let idx = selected.firstIndex(of: jid) {
             selected.remove(at: idx);
         } else {
             selected.append(jid);
