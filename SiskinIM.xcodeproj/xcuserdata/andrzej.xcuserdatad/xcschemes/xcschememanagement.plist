@@ -4,17 +4,22 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
-		<key>TIgase Messenger - Share.xcscheme</key>
+		<key>SiskinIM - Share.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
 			<integer>4</integer>
 		</dict>
-		<key>Tigase Messenger-Share.xcscheme</key>
+		<key>SiskinIM - Share.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>4</integer>
+		</dict>
+		<key>SiskinIM-Share.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
 			<integer>3</integer>
 		</dict>
-		<key>Tigase iOS Messenger.xcscheme</key>
+		<key>SiskinIM.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
 			<integer>1</integer>

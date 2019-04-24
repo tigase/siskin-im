@@ -18,7 +18,7 @@
                BlueprintIdentifier = "FE4DDF521F39E0B500A4CE5A"
                BuildableName = "Siskin IM - Share.appex"
                BlueprintName = "Siskin IM - Share"
-               ReferencedContainer = "container:Tigase-iOS-Messenger.xcodeproj">
+               ReferencedContainer = "container:SiskinIM.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -32,7 +32,7 @@
                BlueprintIdentifier = "FE94E5201CCBA74F00FAE755"
                BuildableName = "Siskin.app"
                BlueprintName = "Siskin IM"
-               ReferencedContainer = "container:Tigase-iOS-Messenger.xcodeproj">
+               ReferencedContainer = "container:SiskinIM.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -50,7 +50,7 @@
             BlueprintIdentifier = "FE4DDF521F39E0B500A4CE5A"
             BuildableName = "Siskin IM - Share.appex"
             BlueprintName = "Siskin IM - Share"
-            ReferencedContainer = "container:Tigase-iOS-Messenger.xcodeproj">
+            ReferencedContainer = "container:SiskinIM.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -74,7 +74,7 @@
             BlueprintIdentifier = "FE94E5201CCBA74F00FAE755"
             BuildableName = "Siskin.app"
             BlueprintName = "Siskin IM"
-            ReferencedContainer = "container:Tigase-iOS-Messenger.xcodeproj">
+            ReferencedContainer = "container:SiskinIM.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -94,7 +94,7 @@
             BlueprintIdentifier = "FE94E5201CCBA74F00FAE755"
             BuildableName = "Siskin.app"
             BlueprintName = "Siskin IM"
-            ReferencedContainer = "container:Tigase-iOS-Messenger.xcodeproj">
+            ReferencedContainer = "container:SiskinIM.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
