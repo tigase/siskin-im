@@ -333,7 +333,7 @@ class PurpleDarkAppearance: Appearance {
     init() {
         let baseColor = UIColor(named: "purpleColor")!.adjust(brightness: 0.20);
         super.init(id: "purple-dark", name: "Purple Dark", isDark: true, baseColor: baseColor);
-        self._navigationBarTintColor = baseColor.adjust(brightness: 0.9);
+        self._navigationBarTintColor = baseColor.adjust(brightness: 0.85);
         self._secondaryTextColor = UIColor.white.adjust(brightness: 0.66);
         self._tableViewBackgroundColor = baseColor.adjust(brightness: 0.10);
         self._tableViewCellBackgroundColor = baseColor.adjust(brightness: 0.10);

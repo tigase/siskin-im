@@ -23,7 +23,7 @@ import Foundation
 
 public class DBSchemaManager {
     
-    static let CURRENT_VERSION = 4;
+    static let CURRENT_VERSION = 5;
     
     fileprivate let dbConnection: DBConnection;
     

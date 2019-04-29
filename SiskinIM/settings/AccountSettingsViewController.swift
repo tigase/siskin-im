@@ -46,9 +46,11 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
     @IBOutlet var messageSyncAutomaticSwitch: UISwitch!;
     @IBOutlet var messageSyncPeriodLabel: UILabel!;
     
+    @IBOutlet var omemoFingerprint: UILabel!;
     
     override func viewDidLoad() {
         xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
+        tableView.contentInset = UIEdgeInsets(top: -1, left: 0, bottom: 0, right: 0);
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -74,6 +76,22 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
         //avatarView.sizeToFit();
         avatarView.layer.masksToBounds = true;
         avatarView.layer.cornerRadius = avatarView.frame.width / 2;
+        
+        let localDeviceId = Int32(bitPattern: AccountSettings.omemoRegistrationId(self.account).getUInt32() ?? 0);
+        if let omemoIdentity = DBOMEMOStore.instance.identities(forAccount: self.accountJid, andName: self.account).first(where: { (identity) -> Bool in
+            return identity.address.deviceId == localDeviceId;
+        }) {
+            var fingerprint = String(omemoIdentity.fingerprint.dropFirst(2));
+            var idx = fingerprint.startIndex;
+            for _ in 0..<(fingerprint.count / 8) {
+                idx = fingerprint.index(idx, offsetBy: 8);
+                fingerprint.insert(" ", at: idx);
+                idx = fingerprint.index(after: idx);
+            }
+            omemoFingerprint.text = fingerprint;
+        } else {
+            omemoFingerprint.text = "Key not generated!";
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -116,6 +134,20 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
             };
             self.navigationController?.pushViewController(controller, animated: true);
         }
+    }
+    
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        if section == 0 {
+            return nil;
+        }
+        return super.tableView(tableView, titleForHeaderInSection: section);
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        if section == 0 {
+            return 1.0;
+        }
+        return super.tableView(tableView, heightForHeaderInSection: section);
     }
     
     func updateView() {
@@ -178,6 +210,9 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
             destination.account = account;
         case "ShowServerFeatures":
             let destination = segue.destination as! ServerFeaturesViewController;
+            destination.account = BareJID(account);
+        case "ManageOMEMOFingerprints":
+            let destination = segue.destination as! OMEMOFingerprintsController;
             destination.account = BareJID(account);
         default:
             break;

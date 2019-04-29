@@ -116,22 +116,28 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         // Configure the view for the selected state
     }
     
-    func setValues(data text: String?, ts: Date?, id: Int?, state: DBChatHistoryStore.State, preview: String? = nil, downloader: ((URL,Int)->Void)? = nil) {
+    func setValues(data text: String?, ts: Date?, id: Int?, state: DBChatHistoryStore.State, messageEncryption: MessageEncryption = .none, preview: String? = nil, downloader: ((URL,Int)->Void)? = nil) {
         if ts != nil {
+            var timestamp = formatTimestamp(ts!);
+            switch messageEncryption {
+            case .decrypted, .notForThisDevice, .decryptionFailed:
+                timestamp = "\(timestamp) \u{1F512}";
+            default:
+                break;
+            }
             if state.direction == .outgoing {
                 timestampView.textColor = UIColor.lightGray;
                 switch state.state {
                 case .delivered:
-                    timestampView.text = formatTimestamp(ts!) + " \u{2713}";
+                    timestamp = "\(timestamp) \u{2713}";
                 case .error:
                     timestampView.textColor = UIColor.red;
-                    timestampView.text = formatTimestamp(ts!) + " Not delivered\u{203c}";
+                    timestamp = "\(timestamp) Not delivered\u{203c}";
                 default:
-                    timestampView.text = formatTimestamp(ts!);
+                    break;
                 }
-            } else {
-                timestampView.text = formatTimestamp(ts!);
             }
+            timestampView.text = timestamp;
         } else {
             timestampView.text = nil;
         }
@@ -201,6 +207,9 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         default:
             self.accessoryType = .none;
             self.tintColor = self.messageTextView.tintColor;
+            if messageEncryption == .notForThisDevice || messageEncryption == .decryptionFailed {
+                self.messageTextView.textColor = self.originalTextColor.mix(color: self.messageFrameView.backgroundColor!, ratio: 0.33);
+            }
         }
     }
     

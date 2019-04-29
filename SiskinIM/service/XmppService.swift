@@ -22,6 +22,7 @@
 
 import UIKit
 import TigaseSwift
+import TigaseSwiftOMEMO
 
 open class XmppService: Logger, EventHandler {
     
@@ -36,13 +37,14 @@ open class XmppService: Logger, EventHandler {
     
     public static let pushServiceJid = JID("push.tigase.im");
     
+    public static let instance = XmppService();
+    
     fileprivate static let CONNECTION_RETRY_NO_KEY = "CONNECTION_RETRY_NO_KEY";
     
     fileprivate var creationDate = NSDate();
     fileprivate var fetchClientsWaitingForReconnection: [BareJID] = [];
     fileprivate var fetchStart = NSDate();
     
-    fileprivate let dbConnection: DBConnection;
     open var avatarManager: AvatarManager!;
     public let dbCapsCache: DBCapabilitiesCache;
     public let dbChatStore: DBChatStore;
@@ -87,10 +89,13 @@ open class XmppService: Logger, EventHandler {
     fileprivate var backgroundFetchCompletionHandler: ((UIBackgroundFetchResult)->Void)?;
     fileprivate var backgroundFetchTimer: TigaseSwift.Timer?;
     
-    init(dbConnection:DBConnection) {
+    convenience override init() {
+        self.init(dbConnection: DBConnection.main);
+    }
+    
+    fileprivate init(dbConnection:DBConnection) {
         self.dnsSrvResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: DNSSrvDiskCache(cacheDirectoryName: "dns-cache"));
         self.streamFeaturesCache = StreamFeaturesCache();
-        self.dbConnection = dbConnection;
         self.dbCapsCache = DBCapabilitiesCache(dbConnection: dbConnection);
         self.dbChatStore = DBChatStore(dbConnection: dbConnection);
         self.dbChatHistoryStore = DBChatHistoryStore(dbConnection: dbConnection);
@@ -138,6 +143,7 @@ open class XmppService: Logger, EventHandler {
                 return;
             }
             client = XMPPClient()
+            client?.connectionConfiguration.setUserJID(userJid);
             client!.keepaliveTimeout = 0;
             registerModules(client!);
             registerEventHandlers(client!);
@@ -164,7 +170,6 @@ open class XmppService: Logger, EventHandler {
             
         }
         
-        client?.connectionConfiguration.setUserJID(userJid);
         client?.connectionConfiguration.setUserPassword(password);
         
         SslCertificateValidator.setAcceptedSslCertificate(client!.sessionObject, fingerprint: ((config?.serverCertificate?["accepted"] as? Bool) ?? false) ? (config?.serverCertificate?["cert-hash-sha1"] as? String) : nil);
@@ -219,7 +224,7 @@ open class XmppService: Logger, EventHandler {
     open func getClient(forJid account:BareJID) -> XMPPClient? {
         return clients[account];
     }
-    
+
     fileprivate func registerModules(_ client:XMPPClient) {
         client.sessionObject.dnsSrvResolver = self.dnsSrvResolver;
         _ = client.modulesManager.register(StreamManagementModule());
@@ -265,6 +270,11 @@ open class XmppService: Logger, EventHandler {
         let capsModule = client.modulesManager.register(CapabilitiesModule());
         capsModule.cache = dbCapsCache;
         ScramMechanism.setSaltedPasswordCache(AccountManager.saltedPasswordCache, sessionObject: client.sessionObject);
+        
+        let signalStorage = OMEMOStoreWrapper(context: client.context);
+        let signalContext = SignalContext(withStorage: signalStorage)!;
+        signalStorage.setup(withContext: signalContext);
+        client.modulesManager.register(OMEMOModule(aesGCMEngine: OpenSSL_AES_GCM_Engine(), signalContext: signalContext, signalStorage: signalStorage));
     }
     
     fileprivate func registerEventHandlers(_ client:XMPPClient) {

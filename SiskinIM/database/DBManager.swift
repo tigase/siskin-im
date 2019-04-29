@@ -188,6 +188,10 @@ open class DBStatement {
                 }
             case let v as Double:
                 r = sqlite3_bind_double(handle, pos, v);
+            case let v as UInt32:
+                r = sqlite3_bind_int(handle, pos, Int32(bitPattern: v));
+            case let v as Int32:
+                r = sqlite3_bind_int(handle, pos, v);
             case let v as Int:
                 r = sqlite3_bind_int64(handle, pos, Int64(v));
             case let v as Bool:
@@ -433,6 +437,10 @@ open class DBCursor {
         return Int(sqlite3_column_int64(handle, Int32(index)));
     }
 
+    subscript(index: Int) -> Int32 {
+        return sqlite3_column_int(handle, Int32(index));
+    }
+    
     subscript(index: Int) -> String? {
         let ptr = sqlite3_column_text(handle, Int32(index));
         if ptr == nil {
@@ -497,6 +505,18 @@ open class DBCursor {
 //            print("for \(column), position \($0) got \(v)")
 //            return v;
 //        }
+        if let idx = columnNames.firstIndex(of: column) {
+            return self[idx];
+        }
+        return nil;
+    }
+    
+    subscript(column: String) -> Int32? {
+        //        return forColumn(column) {
+        //            let v:Int? = self[$0];
+        //            print("for \(column), position \($0) got \(v)")
+        //            return v;
+        //        }
         if let idx = columnNames.firstIndex(of: column) {
             return self[idx];
         }

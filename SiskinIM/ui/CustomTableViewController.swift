@@ -65,7 +65,9 @@ class CustomTableViewController: UITableViewController {
         v.subviews.forEach({ (view) in
             updateSubviews(view: view);
             if let label = view as? UILabel {
-                if label.accessibilityTraits.contains(UIAccessibilityTraits.link) {
+                if label.accessibilityTraits.contains(.summaryElement) {
+                    label.textColor = Appearance.current.secondaryTextColor();
+                } else if label.accessibilityTraits.contains(UIAccessibilityTraits.link) {
                     label.textColor = Appearance.current.tintColor();
                 } else {
                     label.textColor = Appearance.current.textColor();

@@ -125,6 +125,7 @@ open class DBChatStore {
     fileprivate static let CHAT_CLOSE = "DELETE FROM chats WHERE id = :id";
     fileprivate static let CHATS_COUNT = "SELECT count(id) as count FROM chats WHERE account = :account";
     fileprivate static let UPDATE_CHAT_NAME = "UPDATE chats SET name = ? WHERE account = ? AND jid = ?";
+    fileprivate static let UPDATE_CHAT_ENCRYPTION = "UPDATE chats SET encryption = :encryption WHERE account = :account AND jid = :jid";
     
     fileprivate let dbConnection:DBConnection;
     
@@ -136,6 +137,7 @@ open class DBChatStore {
     fileprivate lazy var closeChatStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHAT_CLOSE);
     fileprivate lazy var countStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHATS_COUNT);
     fileprivate let updateChatNameStmt:DBStatement;
+    fileprivate let updateChatEncryptionStmt: DBStatement;
     
     fileprivate let updateMessageDraftStmt: DBStatement;
     fileprivate let getMessageDraftStmt: DBStatement;
@@ -149,6 +151,7 @@ open class DBChatStore {
         self.getMessageDraftStmt = try! dbConnection.prepareStatement("SELECT message_draft FROM chats WHERE account = ? AND jid = ?");
         self.updateMessageDraftStmt = try! dbConnection.prepareStatement("UPDATE chats SET message_draft = ? WHERE account = ? AND jid = ?");
         self.updateChatNameStmt = try! self.dbConnection.prepareStatement(DBChatStore.UPDATE_CHAT_NAME);
+        self.updateChatEncryptionStmt = try! self.dbConnection.prepareStatement(DBChatStore.UPDATE_CHAT_ENCRYPTION);
         
         NotificationCenter.default.addObserver(self, selector: #selector(DBChatStore.accountRemoved), name: NSNotification.Name(rawValue: "accountRemoved"), object: nil);
     }
@@ -333,6 +336,18 @@ open class DBChatStore {
         }
     }
     
+    open func changeChatEncryption(for account: BareJID, with jid: BareJID, to encryption: ChatEncryption?, completionHandler: @escaping ()->Void) {
+        updateChatEncryptionStmt.dispatcher.async {
+            if try! self.updateChatEncryptionStmt.update(["account": account, "jid": jid, "encryption": encryption?.rawValue] as [String: Any?]) > 0 {
+                DispatchQueue.main.async {
+                    let info: [String: Any] = ["action": "chatEncryptionChanged", "account": account, "jid": jid, "encryption": encryption as Any];
+                    NotificationCenter.default.post(name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil, userInfo: info)
+                }
+                completionHandler();
+            }
+        }
+    }
+    
     open func updateChatName(account: BareJID, jid: BareJID, name: String?) {
         updateChatNameStmt.dispatcher.async {
             _ = try? self.updateChatNameStmt.update(name, account, jid);
@@ -382,4 +397,9 @@ class DBChat: Chat {
     
     var id:Int? = nil;
     
+}
+
+public enum ChatEncryption: String {
+    case none = "none";
+    case omemo = "omemo";
 }

@@ -21,6 +21,7 @@
 
 import UIKit
 import TigaseSwift
+import TigaseSwiftOMEMO
 
 class ContactViewController: CustomTableViewController {
 
@@ -30,11 +31,17 @@ class ContactViewController: CustomTableViewController {
     var jid: BareJID!;
     var vcard: VCard? {
         didSet {
-            DispatchQueue.main.async() {
-                self.tableView.reloadData();
-            }
+            self.reloadData();
         }
     }
+    
+    var showEncryption: Bool = false {
+        didSet {
+            self.reloadData();
+        }
+    }
+    var encryption: ChatEncryption? = nil;
+    var omemoIdentities: [Identity] = [];
     
     var addresses: [VCard.Address] {
         return vcard?.addresses ?? [];
@@ -45,6 +52,9 @@ class ContactViewController: CustomTableViewController {
     var emails: [VCard.Email] {
         return vcard?.emails ?? [];
     }
+    
+    
+    fileprivate var sections: [Sections] = [.basic];
     
     override func viewDidLoad() {
         xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
@@ -59,6 +69,9 @@ class ContactViewController: CustomTableViewController {
         if vcard == nil {
             refreshVCard();
         }
+        omemoIdentities = DBOMEMOStore.instance.identities(forAccount: account, andName: jid.stringValue);
+        tableView.contentInset = UIEdgeInsets(top: -1, left: 0, bottom: 0, right: 0);
+        tableView.reloadData();
     }
 
     override func didReceiveMemoryWarning() {
@@ -73,82 +86,72 @@ class ContactViewController: CustomTableViewController {
     func refreshVCard() {
         DispatchQueue.global(qos: .background).async() {
             self.xmppService.refreshVCard(account: self.account, for: self.jid, onSuccess: { (vcard) in
-                self.vcard = vcard;
+                DispatchQueue.main.async {
+                    self.vcard = vcard;
+                }
             }, onError: { (errorCondition) in
                 
             });
         }
     }
     
+    func reloadData() {
+        var sections: [Sections] = [.basic];
+        if showEncryption {
+            sections.append(.encryption);
+        }
+        if phones.count > 0 {
+            sections.append(.phones);
+        }
+        if emails.count > 0 {
+            sections.append(.emails);
+        }
+        if addresses.count > 0 {
+            sections.append(.addresses);
+        }
+        self.sections = sections;
+        tableView.reloadData();
+    }
+    
     // MARK: - Table view data source
 
     override func numberOfSections(in: UITableView) -> Int {
-        var i = 1;
-//        if phones.count > 0 {
-            i += 1;
-//        }
-//        if emails.count > 0 {
-            i += 1;
-//        }
-//        if addresses.count > 0 {
-            i += 1;
-//        }
-        return i;
+        return sections.count;
     }
     
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch section {
-        case 0:
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection sectionNo: Int) -> Int {
+        switch sections[sectionNo] {
+        case .basic:
             return 1;
-        case 1:
+        case .encryption:
+            return omemoIdentities.count + 1;
+        case .phones:
             return phones.count;
-        case 2:
+        case .emails:
             return emails.count;
-        case 3:
+        case .addresses:
             return addresses.count;
-        default:
-            return 0;
         }
     }
     
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        switch section {
-        case 0:
-            return nil;
-        case 1:
-            if phones.isEmpty {
-                return nil;
-            }
-            return "Phones";
-        case 2:
-            if emails.isEmpty {
-                return nil;
-            }
-            return "Emails";
-        case 3:
-            if addresses.isEmpty {
-                return nil;
-            }
-            return "Addresses";
-        default:
-            return nil;
-        }
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection sectionNo: Int) -> String? {
+        return sections[sectionNo].label;
     }
     
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        switch indexPath.section {
-        case 0:
-            return 92;
-        case 3:
-            return 80;
-        default:
-            return 51;
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        if section == 0 {
+            return 1.0;
         }
+        return super.tableView(tableView, heightForHeaderInSection: section);
     }
-
+    
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+        return "";
+    }
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch indexPath.section {
-        case 0:
+        switch sections[indexPath.section] {
+        case .basic:
             let cell = tableView.dequeueReusableCell(withIdentifier: "BasicInfoCell", for: indexPath) as! ContactBasicTableViewCell;
         
             cell.account = account;
@@ -157,7 +160,35 @@ class ContactViewController: CustomTableViewController {
             cell.vcard = vcard;
         
             return cell;
-        case 1:
+        case .encryption:
+            if indexPath.row == 0 {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "OMEMOEncryptionCell", for: indexPath);
+                switch self.encryption ?? .none {
+                case .none:
+                    cell.detailTextLabel?.text = "None";
+                case .omemo:
+                    cell.detailTextLabel?.text = "OMEMO";
+                }
+                return cell;
+            } else {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "OMEMOIdentityCell", for: indexPath) as! OMEMOIdentityTableViewCell;
+                let identity = omemoIdentities[indexPath.row - 1];
+                var fingerprint = String(identity.fingerprint.dropFirst(2));
+                var idx = fingerprint.startIndex;
+                for _ in 0..<(fingerprint.count / 8) {
+                    idx = fingerprint.index(idx, offsetBy: 8);
+                    fingerprint.insert(" ", at: idx);
+                    idx = fingerprint.index(after: idx);
+                }
+                cell.identityLabel.text = fingerprint;
+                cell.trustSwitch.isOn = identity.status.trust == .trusted || identity.status.trust == .undecided;
+                let account = self.account!;
+                cell.valueChangedListener = { (sender) in
+                    DBOMEMOStore.instance.setStatus(identity.status.toTrust(sender.isOn ? .trusted : .compromised), forIdentity: identity.address, andAccount: account);
+                }
+                return cell;
+            }
+        case .phones:
             let cell = tableView.dequeueReusableCell(withIdentifier: "ContactFormCell", for: indexPath) as! ContactFormTableViewCell;
             let phone = phones[indexPath.row];
             let type = getVCardEntryTypeLabel(for: phone.types.first ?? VCard.EntryType.home);
@@ -166,7 +197,7 @@ class ContactViewController: CustomTableViewController {
             cell.labelView.text = phone.number?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines);
             
             return cell;
-        case 2:
+        case .emails:
             let cell = tableView.dequeueReusableCell(withIdentifier: "ContactFormCell", for: indexPath) as! ContactFormTableViewCell;
             let email = emails[indexPath.row];
             let type = getVCardEntryTypeLabel(for: email.types.first ?? VCard.EntryType.home);
@@ -175,7 +206,7 @@ class ContactViewController: CustomTableViewController {
             cell.labelView.text = email.address?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines);
             
             return cell;
-        case 3:
+        case .addresses:
             let cell = tableView.dequeueReusableCell(withIdentifier: "AddressCell", for: indexPath ) as! ContactFormTableViewCell;
             let address = addresses[indexPath.row];
             let type = getVCardEntryTypeLabel(for: address.types.first ?? VCard.EntryType.home);
@@ -213,9 +244,9 @@ class ContactViewController: CustomTableViewController {
             cell.labelView.text = text;
             
             return cell;
-        default:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "ContactFormCell", for: indexPath as IndexPath) as! ContactFormTableViewCell;
-            return cell;
+//        default:
+//            let cell = tableView.dequeueReusableCell(withIdentifier: "ContactFormCell", for: indexPath as IndexPath) as! ContactFormTableViewCell;
+//            return cell;
         }
     }
     
@@ -239,16 +270,44 @@ class ContactViewController: CustomTableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath as IndexPath, animated: true)
-        switch indexPath.section {
-        case 1:
+        switch sections[indexPath.section] {
+        case .basic:
+            return;
+        case .encryption:
+            if indexPath.row == 0 {
+                // handle change of encryption method!
+                let current = self.encryption;
+                let account = self.account!;
+                let jid = self.jid!;
+                let controller = TablePickerViewController(style: .grouped);
+                let xmppService = self.xmppService;
+                let values: [ChatEncryption?] = [nil, ChatEncryption.none, ChatEncryption.omemo];
+                controller.selected = current == nil ? 0 : (current! == .omemo ? 2 : 1);
+                controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
+                    return ContactMessageEncryptionItem(value: it);
+                });
+                //controller.selected = 1;
+                controller.onSelectionChange = { (_item) -> Void in
+                    let item = _item as! ContactMessageEncryptionItem;
+                    xmppService?.dbChatStore.changeChatEncryption(for: account, with: jid, to: item.value) {
+                        DispatchQueue.main.async {
+                            self.encryption = item.value;
+                            self.reloadData();
+                        }
+                    }
+                };
+                self.navigationController?.pushViewController(controller, animated: true);
+
+            }
+        case .phones:
             if let url = URL(string: "tel:" + phones[indexPath.row].number!) {
                 UIApplication.shared.open(url);
             }
-        case 2:
+        case .emails:
             if let url = URL(string: "mailto:" + emails[indexPath.row].address!) {
                 UIApplication.shared.open(url);
             }
-        case 3:
+        case .addresses:
             let address = addresses[indexPath.row];
             var parts = [String]();
             if let street = address.street {
@@ -264,8 +323,6 @@ class ContactViewController: CustomTableViewController {
             if let url = URL(string: "http://maps.apple.com/?q=" + query) {
                 UIApplication.shared.open(url);
             }
-        default:
-            break;
         }
     }
     
@@ -287,4 +344,50 @@ class ContactViewController: CustomTableViewController {
     }
     */
 
+    internal class ContactMessageEncryptionItem: TablePickerViewItemsProtocol {
+        
+        public static func description(of value: ChatEncryption?) -> String {
+            guard value != nil else {
+                return "Default";
+            }
+            switch value! {
+            case .omemo:
+                return "OMEMO";
+            case .none:
+                return "None";
+            }
+        }
+        
+        let description: String;
+        let value: ChatEncryption?;
+        
+        init(value: ChatEncryption?) {
+            self.value = value;
+            self.description = ContactMessageEncryptionItem.description(of: value);
+        }
+        
+    }
+    
+    enum Sections {
+        case basic
+        case encryption
+        case phones
+        case emails
+        case addresses
+        
+        var label: String {
+            switch self {
+            case .basic:
+                return "";
+            case .encryption:
+                return "Encryption";
+            case .phones:
+                return "Phones";
+            case .emails:
+                return "Emails";
+            case .addresses:
+                return "Addresses";
+            }
+        }
+    }
 }

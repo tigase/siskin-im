@@ -44,6 +44,7 @@ public enum Settings: String {
     case XmppPipelining
     case AppearanceTheme
     case EnableBookmarksSync
+    case MessageEncryption
     
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     
@@ -66,7 +67,8 @@ public enum Settings: String {
             "RecentsMessageLinesNo" : 2 as AnyObject,
             "RecentsOrder" : "byTime" as AnyObject,
             "SendMessageOnReturn" : true as AnyObject,
-            "AppearanceTheme": "classic" as AnyObject
+            "AppearanceTheme": "classic" as AnyObject,
+            "MessageEncryption": "none" as AnyObject
         ];
         store.register(defaults: defaults);
         store.dictionaryRepresentation().forEach { (k, v) in
@@ -138,6 +140,7 @@ public enum AccountSettings {
     case PushNotificationsForAway(String)
     case LastError(String)
     case KnownServerFeatures(String)
+    case omemoRegistrationId(String)
     
     public func getAccount() -> String {
         switch self {
@@ -152,6 +155,8 @@ public enum AccountSettings {
         case .LastError(let account):
             return account;
         case .KnownServerFeatures(let account):
+            return account;
+        case .omemoRegistrationId(let account):
             return account;
         }
     }
@@ -170,6 +175,8 @@ public enum AccountSettings {
             return "LastError";
         case .KnownServerFeatures( _):
             return "KnownServerFeatures";
+        case .omemoRegistrationId(_):
+            return "omemoRegistrationId";
         }
     }
     
@@ -196,6 +203,13 @@ public enum AccountSettings {
         } else {
             return Date(timeIntervalSince1970: value);
         }
+    }
+    
+    func getUInt32() -> UInt32? {
+        guard let tmp = Settings.store.string(forKey: getKey()) else {
+            return nil;
+        }
+        return UInt32(tmp);
     }
     
     public func getStrings() -> [String]? {
@@ -249,6 +263,14 @@ public enum AccountSettings {
             Settings.store.set(value, forKey: getKey());
         } else {
             Settings.store.removeObject(forKey: getKey());
+        }
+    }
+    
+    func set(uint32 value: UInt32?) {
+        if value != nil {
+            Settings.store.set(String(value!), forKey: getKey())
+        } else {
+            Settings.store.set(nil, forKey: getKey());
         }
     }
     

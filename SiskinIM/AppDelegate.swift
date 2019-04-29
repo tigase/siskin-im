@@ -25,12 +25,26 @@ import TigaseSwift
 //import CallKit
 import WebRTC
 
+extension DBConnection {
+    
+    static var main: DBConnection = {
+        let conn = try! DBConnection(dbFilename: "mobile_messenger1.db");
+        try! DBSchemaManager(dbConnection: conn).upgradeSchema();
+        return conn;
+    }();
+    
+}
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     
     var window: UIWindow?
-    var xmppService:XmppService!;
-    var dbConnection:DBConnection!;
+    var xmppService:XmppService! {
+        return XmppService.instance;
+    }
+    var dbConnection:DBConnection! {
+        return DBConnection.main;
+    }
 //    var callProvider: CXProvider?;
     fileprivate var defaultKeepOnlineOnAwayTime = TimeInterval(3 * 60);
     fileprivate var keepOnlineOnAwayTimer: TigaseSwift.Timer?;
@@ -49,14 +63,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 //        //Appearance.current = PurpleLightAppearance();
 //        Appearance.current = PurpleDarkAppearance();
 //        Appearance.current = ClassicAppearance();
-        do {
-            dbConnection = try DBConnection(dbFilename: "mobile_messenger1.db");
-            try DBSchemaManager(dbConnection: dbConnection).upgradeSchema();
-        } catch {
-            print("DB initialization error:", error);
-            fatalError("Initialization of database failed!");
-        }
-        xmppService = XmppService(dbConnection: dbConnection);
         xmppService.updateXmppClientInstance();
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
             // sending notifications not granted!
@@ -530,7 +536,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         let sender = notification.userInfo!["sender"] as! BareJID;
         let account = notification.userInfo!["account"] as! BareJID;
         let state = notification.userInfo!["state"] as! DBChatHistoryStore.State;
-        guard state == .incoming_unread || state == .incoming_error_unread else {
+        let encryption = notification.userInfo!["encryption"] as! MessageEncryption;
+        guard state == .incoming_unread || state == .incoming_error_unread || encryption == .notForThisDevice else {
             return;
         }
         

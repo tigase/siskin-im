@@ -22,6 +22,7 @@
 
 import Foundation
 import TigaseSwift
+import TigaseSwiftOMEMO
 
 open class DBChatHistoryStore: Logger, EventHandler {
     
@@ -30,15 +31,15 @@ open class DBChatHistoryStore: Logger, EventHandler {
     public static let MESSAGE_UPDATED = Notification.Name("messengerMessageUpdated");
     
     fileprivate static let CHAT_GET_ID_WITH_ACCOUNT_PARTICIPANT_AND_STANZA_ID = "SELECT id FROM chat_history WHERE account = :account AND jid = :jid AND stanza_id = :stanzaId";
-    fileprivate static let CHAT_MSG_APPEND = "INSERT INTO chat_history (account, jid, author_jid, author_nickname, timestamp, item_type, data, stanza_id, state) VALUES (:account, :jid, :author_jid, :author_nickname, :timestamp, :item_type, :data, :stanza_id, :state)";
+    fileprivate static let CHAT_MSG_APPEND = "INSERT INTO chat_history (account, jid, author_jid, author_nickname, timestamp, item_type, data, stanza_id, state, encryption, fingerprint) VALUES (:account, :jid, :author_jid, :author_nickname, :timestamp, :item_type, :data, :stanza_id, :state, :encryption, :fingerprint)";
     fileprivate static let CHAT_MSGS_COUNT = "SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid";
     fileprivate static let CHAT_MSGS_COUNT_UNREAD_CHATS = "select count(1) FROM (SELECT account, jid FROM chat_history WHERE state in (\(State.incoming_unread.rawValue), \(State.incoming_error_unread.rawValue), \(State.outgoing_error_unread.rawValue)) GROUP BY account, jid) as x";
     fileprivate static let CHAT_MSGS_DELETE = "DELETE FROM chat_history WHERE account = :account AND jid = :jid";
-    fileprivate static let CHAT_MSGS_GET = "SELECT id, author_jid, author_nickname, timestamp, item_type, data, state, preview FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp DESC LIMIT :limit OFFSET :offset"
+    fileprivate static let CHAT_MSGS_GET = "SELECT id, author_jid, author_nickname, timestamp, item_type, data, state, preview, encryption, fingerprint FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp DESC LIMIT :limit OFFSET :offset"
     fileprivate static let CHAT_MSG_UPDATE_PREVIEW = "UPDATE chat_history SET preview = :preview WHERE id = :id";
     fileprivate static let CHAT_MSGS_MARK_AS_READ = "UPDATE chat_history SET state = case state when \(State.incoming_error_unread.rawValue) then \(State.incoming_error.rawValue) when \(State.outgoing_error_unread.rawValue) then \(State.outgoing_error.rawValue) else \(State.incoming.rawValue) end WHERE account = :account AND jid = :jid AND state in (\(State.incoming_unread.rawValue), \(State.incoming_error_unread.rawValue), \(State.outgoing_error_unread.rawValue))";
     fileprivate static let CHAT_MSG_CHANGE_STATE = "UPDATE chat_history SET state = :newState WHERE id = :id AND (:oldState IS NULL OR state = :oldState)";
-    fileprivate static let MSG_ALREADY_ADDED = "SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND timestamp BETWEEN :ts_from AND :ts_to AND item_type = :item_type AND data = :data AND (:stanza_id IS NULL OR (stanza_id IS NOT NULL AND stanza_id = :stanza_id)) AND (:author_jid is null OR author_jid = :author_jid) AND (:author_nickname is null OR author_nickname = :author_nickname)";
+    fileprivate static let MSG_ALREADY_ADDED = "SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND timestamp BETWEEN :ts_from AND :ts_to AND item_type = :item_type AND (:data IS NULL OR data = :data) AND (:stanza_id IS NULL OR (stanza_id IS NOT NULL AND stanza_id = :stanza_id)) AND (:author_jid is null OR author_jid = :author_jid) AND (:author_nickname is null OR author_nickname = :author_nickname)";
     
     public let dbConnection:DBConnection;
     
@@ -60,7 +61,10 @@ open class DBChatHistoryStore: Logger, EventHandler {
     fileprivate lazy var markMessageAsErrorStmt: DBStatement! = try? self.dbConnection.prepareStatement("UPDATE chat_history SET state = :state, error = :error WHERE id = :id");
     fileprivate lazy var getMessageErrorDetails: DBStatement! = try? self.dbConnection.prepareStatement("SELECT error FROM chat_history WHERE id = ?");
     
+    fileprivate let dispatcher: QueueDispatcher;
+    
     public init(dbConnection:DBConnection) {
+        self.dispatcher = QueueDispatcher(label: "chat_history_store");
         self.dbConnection = dbConnection;
         super.init();
         NotificationCenter.default.addObserver(self, selector: #selector(DBChatHistoryStore.accountRemoved), name: NSNotification.Name(rawValue: "accountRemoved"), object: nil);
@@ -68,14 +72,8 @@ open class DBChatHistoryStore: Logger, EventHandler {
     }
     
     open func appendMessage(for sessionObject: SessionObject, message: Message, preview: String? = nil, carbonAction: MessageCarbonsModule.Action? = nil, fromArchive: Bool = false) {
-        if message.type == StanzaType.error {
-            // handle messages of type error here
-            guard !markMessageAsError(message: message) else {
-                return;
-            }
-        }
-        
-        let body = prepareBody(message: message);
+        let account = sessionObject.userBareJid!;
+        let (body, encryption, fingerprint) = prepareBody(message: message, forAccount:  account);
         // for now we support only messages with body
         guard body != nil else {
             return;
@@ -85,23 +83,13 @@ open class DBChatHistoryStore: Logger, EventHandler {
             ? message.from != ResourceBinderModule.getBindedJid(sessionObject)
             : message.from?.bareJid != sessionObject.userBareJid);
         
-        let account = sessionObject.userBareJid!;
         let jid = incoming ? message.from?.bareJid : message.to?.bareJid
         let author = incoming ? message.from?.bareJid : account;
         let timestamp = message.delay?.stamp ?? Date();
         let state = calculateState(incoming: incoming, fromArchive: fromArchive, stanzaType: message.type);
         let itemType = ItemType.message;
         
-        appendEntry(for: account, jid: jid!, state: state, authorJid: author, itemType: itemType, data: body!, timestamp: timestamp, id: message.id) { (msgId) in
-
-            var userInfo:[AnyHashable: Any] = ["account": account, "sender": jid!, "incoming": incoming, "timestamp": timestamp, "body": body!, "state": state] ;
-            if carbonAction != nil {
-                userInfo["carbonAction"] = carbonAction!.rawValue;
-            }
-            userInfo["fromArchive"] = fromArchive;
-            userInfo["msgId"] = msgId;
-            NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: nil, userInfo: userInfo);
-            AccountSettings.MessageSyncTime(account.description).set(date: timestamp, condition: ComparisonResult.orderedAscending);
+        appendEntry(for: account, jid: jid!, state: state, authorJid: author, itemType: itemType, data: body!, timestamp: timestamp, id: message.id, encryption: encryption, encryptionFingerprint: fingerprint, fromArchive: fromArchive, carbonAction: carbonAction, nicknameInRoom: nil) { (msgId) in
         }
     }
     
@@ -120,95 +108,147 @@ open class DBChatHistoryStore: Logger, EventHandler {
         }
     }
     
-    fileprivate func markMessageAsError(message: Message) -> Bool {
-        guard message.to != nil && message.from != nil else {
-            print("got message without a to or from!");
+//    fileprivate func markMessageAsError(message: Message) -> Bool {
+//        guard let account = message.to?.bareJid, let jid = message.from?.bareJid, let id = message.id else {
+//            print("got error message without a to or from or id!");
+//            return false;
+//        }
+//
+//        return processOutgoingError(for: account, with: jid, stanzaId: id, errorCondition: message.errorCondition, errorMessage: message.errorText);
+//    }
+    
+    fileprivate func processOutgoingError(for account: BareJID, with jid: BareJID, stanzaId: String, errorCondition: ErrorCondition?, errorMessage: String?) -> Bool {
+
+        guard let msgId = self.getMessageIdInt(account: account, jid: jid, stanzaId: stanzaId) else {
             return false;
         }
-        guard let msgId = self.getMessageIdInt(account: message.to!.bareJid, jid: message.from!.bareJid, stanzaId: message.id) else {
-            return false;
-        }
-            
-        let params: [String: Any?] = ["id": msgId, "state": State.outgoing_error_unread.rawValue, "error": message.errorText ?? message.errorCondition?.rawValue ?? "Unknown error"];
+
+        let params: [String: Any?] = ["id": msgId, "state": State.outgoing_error_unread.rawValue, "error": errorMessage ?? errorCondition?.rawValue ?? "Unknown error"];
         if try! self.markMessageAsErrorStmt.update(params) > 0 {
             DispatchQueue.global().async {
                 NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_UPDATED, object: self, userInfo: ["message-id": msgId, "state": State.outgoing_error_unread]);
             }
         }
-        return true;
+
+        return true
     }
     
-    fileprivate func prepareBody(message: Message) -> String? {
-        guard let body = message.body ?? message.oob else {
-            return nil;
-        }
-        guard message.type != StanzaType.error else {
-            guard let error = message.errorCondition else {
-                return "Error: Unknown error\n------\n\(body)";
+    fileprivate func prepareBody(message: Message, forAccount account: BareJID) -> (String?, MessageEncryption, String?) {
+        var encryption: MessageEncryption = .none;
+        var fingerprint: String? = nil;
+        
+        var encryptionErrorBody: String?;
+        if let omemoModule: OMEMOModule = XmppService.instance.getClient(forJid: account)?.modulesManager.getModule(OMEMOModule.ID) {
+            switch omemoModule.decode(message: message) {
+            case .successMessage(let decodedMessage, let keyFingerprint):
+                encryption = .decrypted;
+                fingerprint = keyFingerprint
+                break;
+            case .successTransportKey(let key, let iv):
+                print("got transport key with key and iv!");
+            case .failure(let error):
+                switch error {
+                case .invalidMessage:
+                    encryption = .notForThisDevice;
+                    encryptionErrorBody = "Message was not encrypted for this device.";
+                case .duplicateMessage:
+                    if let from = message.from?.bareJid, checkItemAlreadyAdded(for: account, with: from, authorNickname: nil, itemType: .message, timestamp: message.delay?.stamp ?? Date(), stanzaId: message.getAttribute("id"), data: nil) {
+                        return (nil, .none, nil);
+                    }
+                case .notEncrypted:
+                    encryption = .none;
+                default:
+                    encryption = .decryptionFailed;
+                    encryptionErrorBody = "Message decryption failed!";
+                }
+                break;
             }
-            
-            return "Error: \(message.errorText ?? error.rawValue)\n------\n\(body)"
         }
         
-        return body;
+        guard let body = message.body ?? message.oob ?? encryptionErrorBody else {
+            return (nil, encryption, nil);
+        }
+        guard (message.type ?? .chat) != .error else {
+            guard let error = message.errorCondition else {
+                return ("Error: Unknown error\n------\n\(body)", encryption, nil);
+            }
+            return ("Error: \(message.errorText ?? error.rawValue)\n------\n\(body)", encryption, nil);
+        }
+        return (body, encryption, fingerprint);
     }
     
     fileprivate func appendMucMessage(event e: MucModule.MessageReceivedEvent) {
-        let body = prepareBody(message: e.message);
+        let account = e.sessionObject.userBareJid!;
+        let (body, encryption, fingerprint) = prepareBody(message: e.message, forAccount: account);
         guard body != nil else {
             return;
         }
         
-        let account = e.sessionObject.userBareJid!;
         let authorJid: BareJID? = e.nickname == nil ? nil : e.room.presences[e.nickname!]?.jid?.bareJid;
         let state = calculateState(incoming: e.nickname != e.room.nickname, fromArchive: false, stanzaType: e.message.type);
         
-        appendEntry(for: account, jid: e.room.roomJid, state: state, authorJid: authorJid, authorNickname: e.nickname, data: body!, timestamp: e.timestamp, id: e.message.id) { (msgId) in
-
-            var userInfo:[AnyHashable: Any] = ["account": account, "sender": e.room.roomJid, "incoming": true, "timestamp": e.timestamp as Any, "type": "muc", "body": body!, "state": state] ;
-            if e.nickname != nil {
-                userInfo["senderName"] = e.nickname!;
-            }
-            userInfo["roomNickname"] = e.room.nickname;
-            userInfo["msgId"] = msgId;
-            NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: nil, userInfo: userInfo);
-            AccountSettings.MessageSyncTime(account.description).set(date: e.timestamp, condition: ComparisonResult.orderedAscending);
+        appendEntry(for: account, jid: e.room.roomJid, state: state, authorJid: authorJid, authorNickname: e.nickname, data: body!, timestamp: e.timestamp, id: e.message.id, encryption: encryption, encryptionFingerprint: fingerprint, fromArchive: false, carbonAction: nil, nicknameInRoom: e.room.nickname) { (msgId) in
         }
     }
     
     func appendMessage(event e: MessageArchiveManagementModule.ArchivedMessageReceivedEvent) {
-        if e.message.type == StanzaType.error {
-            // handle messages of type error here
-            guard !markMessageAsError(message: e.message) else {
-                return;
-            }
-        }
         
-        let body = prepareBody(message: e.message);
+        let account = e.sessionObject.userBareJid!;
+        let (body, encryption, fingerprint) = prepareBody(message: e.message, forAccount: account);
         // for now we support only messages with body
         guard body != nil else {
             return;
         }
         let message = e.message!;
 
-        let account = e.sessionObject.userBareJid!;
         let state = calculateState(incoming: (message.from != nil && message.from!.bareJid != account), fromArchive: true, stanzaType: message.type);
         let jid = state.direction == .incoming ? message.from?.bareJid : message.to?.bareJid
         let author = state.direction == .incoming ? message.from?.bareJid : account;
         
-        appendEntry(for: account, jid: jid!, state: state, authorJid: author, data: body!, timestamp: e.timestamp, id: message.id) { (msgId) in
-            
-            var userInfo:[AnyHashable: Any] = ["account": account, "sender": jid!, "incoming": state.direction == .incoming, "timestamp": e.timestamp as Any, "body": body!, "state": state] ;
-            userInfo["fromArchive"] = true;
-            userInfo["msgId"] = msgId;
-            NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: nil, userInfo: userInfo);
-            AccountSettings.MessageSyncTime(account.description).set(date: e.timestamp, condition: ComparisonResult.orderedAscending);
+        appendEntry(for: account, jid: jid!, state: state, authorJid: author, data: body!, timestamp: e.timestamp, id: message.id, encryption: encryption, encryptionFingerprint: fingerprint, fromArchive: true, carbonAction: nil, nicknameInRoom: nil) { (msgId) in
         }
     }
     
-    fileprivate func appendEntry(for account: BareJID, jid: BareJID, state: State, authorJid: BareJID?, authorNickname: String? = nil, itemType: ItemType = ItemType.message, data: String, timestamp: Date, id: String?, callback: @escaping (Int)->Void) {
+    public func appendEntry(for account: BareJID, jid: BareJID, state: State, authorJid: BareJID?, authorNickname: String? = nil, itemType: ItemType = ItemType.message, data: String, timestamp: Date, id: String?, chatState: ChatState? = nil, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, encryption: MessageEncryption, encryptionFingerprint: String?, fromArchive: Bool, carbonAction: MessageCarbonsModule.Action?, nicknameInRoom: String?, callback: @escaping (Int)->Void) {
+        dispatcher.async {
+            guard !state.isError || id == nil || !self.processOutgoingError(for: account, with: jid, stanzaId: id!, errorCondition: errorCondition, errorMessage: errorMessage) else {
+                return;
+            }
+            
+            guard !self.checkItemAlreadyAdded(for: account, with: jid, authorNickname: authorNickname, itemType: itemType, timestamp: timestamp, stanzaId: id, data: data) else {
+                return;
+            }
+            
+            let params:[String:Any?] = ["account" : account, "jid" : jid, "author_jid" : authorJid, "author_nickname": authorNickname, "timestamp": timestamp, "item_type": itemType.rawValue, "data": data, "state": state.rawValue, "stanza_id": id, "encryption": encryption.rawValue, "fingerprint": encryptionFingerprint]
+            let msgId = try! self.msgAppendStmt.insert(params);
+            let cu_params:[String:Any?] = ["account" : account, "jid" : jid, "timestamp" : timestamp ];
+            _ = try! self.chatUpdateTimestamp.update(cu_params);
+
+            DispatchQueue.main.async {
+                var userInfo:[AnyHashable: Any] = ["account": account, "sender": jid, "incoming": state.direction == .incoming, "timestamp": timestamp, "body": data, "state": state, "encryption": encryption, "msgId": msgId!] ;
+
+                
+                // FIXME: are those neeeded?
+                userInfo["senderName"] = authorNickname;
+                userInfo["roomNickname"] = nicknameInRoom;
+                if nicknameInRoom != nil {
+                    userInfo["type"] = "muc";
+                }
+                userInfo["carbonAction"] = carbonAction?.rawValue;
+                userInfo["fromArchive"] = fromArchive;
+
+                NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: nil, userInfo: userInfo);
+                AccountSettings.MessageSyncTime(account.description).set(date: timestamp, condition: ComparisonResult.orderedAscending);
+
+
+                callback(msgId!);
+            }
+        }
+    }
+
+    fileprivate func appendEntryOld(for account: BareJID, jid: BareJID, state: State, authorJid: BareJID?, authorNickname: String? = nil, itemType: ItemType = ItemType.message, data: String, timestamp: Date, id: String?, encryption: MessageEncryption, encryptionFingerprint: String?, callback: @escaping (Int)->Void) {
         ifNotEntryAlreadyAdded(for: account, jid: jid, authorJid: nil, itemType: itemType, data: data, timestamp: timestamp, id: id) {
-            let params:[String:Any?] = ["account" : account, "jid" : jid, "author_jid" : authorJid, "author_nickname": authorNickname, "timestamp": timestamp, "item_type": itemType.rawValue, "data": data, "state": state.rawValue, "stanza_id": id]
+            let params:[String:Any?] = ["account" : account, "jid" : jid, "author_jid" : authorJid, "author_nickname": authorNickname, "timestamp": timestamp, "item_type": itemType.rawValue, "data": data, "state": state.rawValue, "stanza_id": id, "encryption": encryption.rawValue, "fingerprint": encryptionFingerprint]
             let msgId = try! self.msgAppendStmt.insert(params);
             let cu_params:[String:Any?] = ["account" : account, "jid" : jid, "timestamp" : timestamp ];
             _ = try! self.chatUpdateTimestamp.update(cu_params);
@@ -219,7 +259,7 @@ open class DBChatHistoryStore: Logger, EventHandler {
             }
         }
     }
-    
+
     fileprivate func ifNotEntryAlreadyAdded(for account: BareJID, jid: BareJID, authorJid: BareJID?, authorNickname: String? = nil, itemType: ItemType, data: String, timestamp: Date, id: String?, callback: @escaping ()->Void) {
         let range = id == nil ? 5.0 : 60.0;
         let ts_from = timestamp.addingTimeInterval(-60 * range);
@@ -231,6 +271,15 @@ open class DBChatHistoryStore: Logger, EventHandler {
                 callback();
             }
         }
+    }
+    
+    fileprivate func checkItemAlreadyAdded(for account: BareJID, with jid: BareJID, authorNickname: String? = nil, itemType: ItemType, timestamp: Date, stanzaId id: String?, data: String?) -> Bool {
+        let range = id == nil ? 5.0 : 60.0;
+        let ts_from = timestamp.addingTimeInterval(-60 * range);
+        let ts_to = timestamp.addingTimeInterval(60 * range);
+        
+        let params:[String:Any?] = ["account": account, "jid": jid, "ts_from": ts_from, "ts_to": ts_to, "item_type": itemType.rawValue, "data": data, "stanza_id": id, "author_jid": nil, "author_nickname": authorNickname];
+        return try! (self.msgAlreadyAddedStmt.scalar(params) ?? 0) > 0;
     }
     
     open func countMessages(for account:BareJID, with jid:BareJID) -> Int {
@@ -331,13 +380,15 @@ open class DBChatHistoryStore: Logger, EventHandler {
     }
     
     fileprivate func changeMessageState(account: BareJID, jid: BareJID, stanzaId: String, oldState: State, newState: State, completion: ((Int)->Void)?) {
-        guard let msgId = self.getMessageIdInt(account: account, jid: jid, stanzaId: stanzaId) else {
-            return;
-        }
-        let params: [String: Any?] = ["id": msgId, "oldState": oldState.rawValue, "newState": newState.rawValue];
-        if try! self.msgUpdateStateStmt.update(params) > 0 {
-            DispatchQueue.global().async {
-                completion?(msgId);
+        dispatcher.async {
+            guard let msgId = self.getMessageIdInt(account: account, jid: jid, stanzaId: stanzaId) else {
+                return;
+            }
+            let params: [String: Any?] = ["id": msgId, "oldState": oldState.rawValue, "newState": newState.rawValue];
+            if try! self.msgUpdateStateStmt.update(params) > 0 {
+                DispatchQueue.global().async {
+                    completion?(msgId);
+                }
             }
         }
     }
@@ -412,6 +463,10 @@ open class DBChatHistoryStore: Logger, EventHandler {
             case .incoming_error, .incoming_error_unread, .outgoing_error, .outgoing_error_unread:
                 return .error;
             }
+        }
+        
+        var isError: Bool {
+            return state == .error;
         }
     }
     

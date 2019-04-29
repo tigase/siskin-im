@@ -25,7 +25,7 @@ class ChatSettingsViewController: CustomTableViewController {
 
     let tree: [[SettingsEnum]] = [
         [SettingsEnum.recentsMessageLinesNo, SettingsEnum.recentsSortType],
-        [SettingsEnum.sendMessageOnReturn, SettingsEnum.deleteChatHistoryOnClose, SettingsEnum.enableMessageCarbons, SettingsEnum.messageDeliveryReceipts],
+        [SettingsEnum.sendMessageOnReturn, SettingsEnum.deleteChatHistoryOnClose, SettingsEnum.enableMessageCarbons, SettingsEnum.messageDeliveryReceipts, SettingsEnum.messageEncryption],
         [SettingsEnum.sharingViaHttpUpload, SettingsEnum.simplifiedLinkToHTTPFile, SettingsEnum.maxImagePreviewSize, SettingsEnum.clearImagePreviewCache],
     ];
     
@@ -132,6 +132,12 @@ class ChatSettingsViewController: CustomTableViewController {
                 Settings.SendMessageOnReturn.setValue(switchView.isOn);
             };
             return cell;
+        case .messageEncryption:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "MessageEncryptionTableViewCell", for: indexPath);
+            let label = MessageEncryptionItem.description(of: ChatEncryption(rawValue: Settings.MessageEncryption.getString() ?? "") ?? .none);
+            (cell.contentView.subviews[1] as! UILabel).text = label;
+            cell.accessoryType = .disclosureIndicator;
+            return cell;
         }
     }
     
@@ -184,6 +190,22 @@ class ChatSettingsViewController: CustomTableViewController {
             alert.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: indexPath);
             
             self.present(alert, animated: true, completion: nil);
+        case .messageEncryption:
+            let current = ChatEncryption(rawValue: Settings.MessageEncryption.getString() ?? "") ?? .none;
+            let controller = TablePickerViewController(style: .grouped);
+            let values: [ChatEncryption] = [.none, .omemo];
+            controller.selected = values.firstIndex(of: current ) ?? 0;
+            controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
+                return MessageEncryptionItem(value: it);
+            });
+            //controller.selected = 1;
+            controller.onSelectionChange = { (_item) -> Void in
+                let item = _item as! MessageEncryptionItem;
+                Settings.MessageEncryption.setValue(item.value.rawValue);
+                self.tableView.reloadData();
+            };
+            self.navigationController?.pushViewController(controller, animated: true);
+
         default:
             break;
         }
@@ -200,6 +222,7 @@ class ChatSettingsViewController: CustomTableViewController {
         case messageDeliveryReceipts = 7;
         case simplifiedLinkToHTTPFile = 8;
         case sendMessageOnReturn = 9;
+        case messageEncryption = 10;
     }
     
     internal class MaxImagePreviewSizeItem: TablePickerViewItemsProtocol {
@@ -222,6 +245,27 @@ class ChatSettingsViewController: CustomTableViewController {
         
     }
     
+    internal class MessageEncryptionItem: TablePickerViewItemsProtocol {
+        
+        public static func description(of value: ChatEncryption) -> String {
+            switch value {
+            case .omemo:
+                return "OMEMO";
+            case .none:
+                return "None";
+            }
+        }
+        
+        let description: String;
+        let value: ChatEncryption;
+        
+        init(value: ChatEncryption) {
+            self.value = value;
+            self.description = MessageEncryptionItem.description(of: value);
+        }
+        
+    }
+
     internal class RecentsSortTypeItem: TablePickerViewItemsProtocol {
         
         public static func description(of value: ChatsListViewController.SortOrder) -> String {

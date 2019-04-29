@@ -372,11 +372,12 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
             let account = notification.userInfo!["account"] as? BareJID;
             let jid = notification.userInfo!["sender"] as? BareJID;
             let ts = notification.userInfo!["timestamp"] as? Date;
+            let encryption = notification.userInfo!["encryption"] as! MessageEncryption;
             if account != nil && jid != nil {
                 //DispatchQueue.main.async {
                     self.dataSource.updateChat(for: account!, with: jid!, type: nil, timestamp: ts, onUpdate: { item in
                         if (ts != nil && item.key.timestamp.compare(ts!) == ComparisonResult.orderedSame) || item.lastMessage == nil {
-                            item.lastMessage = notification.userInfo!["body"] as? String;
+                            item.lastMessage = encryption.message() ?? (notification.userInfo!["body"] as? String);
                             switch state {
                                 case .incoming_unread, .incoming_error_unread:
                                     item.unread += 1;
@@ -521,7 +522,8 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
         func load(from cursor: DBCursor) {
             self.name = cursor["name"];
             self.unread = cursor["unread"]!;
-            self.lastMessage = cursor["last_message"];
+            let encryption = MessageEncryption(rawValue: cursor["last_encryption"] ?? 0) ?? .none;
+            self.lastMessage = encryption.message() ?? cursor["last_message"];
         }
     }
     
@@ -544,7 +546,7 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
             self.controller = controller;
 //            self.getChats = try? controller.dbConnection.prepareStatement("SELECT id, jid, account, timestamp, thread_id, type, (SELECT data FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND item_type = 0 ORDER BY timestamp DESC LIMIT 1) AS last_message, (SELECT count(ch.id) FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND state = 2) as unread, (SELECT name FROM roster_items ri WHERE ri.account = c.account AND ri.jid = c.jid) as name FROM chats as c ORDER BY timestamp DESC");
             self.getChatsList = try? controller.dbConnection.prepareStatement("SELECT jid, account, type, timestamp FROM chats as c ORDER BY timestamp DESC");
-            self.getChatDetails = try? controller.dbConnection.prepareStatement("SELECT type, (SELECT data FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND item_type = 0 ORDER BY timestamp DESC LIMIT 1) AS last_message, (SELECT count(ch.id) FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND state in (\(DBChatHistoryStore.State.incoming_unread.rawValue), \(DBChatHistoryStore.State.incoming_error_unread.rawValue), \(DBChatHistoryStore.State.outgoing_error_unread.rawValue))) as unread, IFNULL(c.name, (SELECT name FROM roster_items ri WHERE ri.account = c.account AND ri.jid = c.jid)) as name FROM chats as c WHERE c.account = :account AND c.jid = :jid");
+            self.getChatDetails = try? controller.dbConnection.prepareStatement("SELECT type, last.data AS last_message, last.encryption AS last_encryption, (SELECT count(ch.id) FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND state in (\(DBChatHistoryStore.State.incoming_unread.rawValue), \(DBChatHistoryStore.State.incoming_error_unread.rawValue), \(DBChatHistoryStore.State.outgoing_error_unread.rawValue))) as unread, IFNULL(c.name, (SELECT name FROM roster_items ri WHERE ri.account = c.account AND ri.jid = c.jid)) as name FROM chats as c LEFT JOIN (SELECT data, encryption FROM chat_history ch WHERE ch.account = :account AND ch.jid = :jid AND item_type = 0 ORDER BY timestamp DESC LIMIT 1) last WHERE c.account = :account AND c.jid = :jid");
         }
         
         func item(at position: IndexPath) -> ChatsViewItem {
