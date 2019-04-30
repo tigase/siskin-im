@@ -519,18 +519,22 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
             case .failure(let error):
                 switch error {
                 case .noSession:
-                    let alert = UIAlertController(title: "Could not send a message", message: "It was not possible to send encrypted message as there is no trusted device.\n\nWould you like to disable encryption for this chat and send a message?", preferredStyle: .alert);
-                    alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
-                    alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { action in
-                        self.xmppService.dbChatStore.changeChatEncryption(for: account, with: jid.bareJid, to: ChatEncryption.none, completionHandler: {
-                            self.sendUnencryptedMessage(body: body, completionHandler: completionHandler);
-                        })
-                    }))
-                    self.present(alert, animated: true, completion: nil);
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(title: "Could not send a message", message: "It was not possible to send encrypted message as there is no trusted device.\n\nWould you like to disable encryption for this chat and send a message?", preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
+                        alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { action in
+                            self.xmppService.dbChatStore.changeChatEncryption(for: account, with: jid.bareJid, to: ChatEncryption.none, completionHandler: {
+                                self.sendUnencryptedMessage(body: body, completionHandler: completionHandler);
+                            })
+                        }))
+                        self.present(alert, animated: true, completion: nil);
+                    }
                 default:
-                    let alert = UIAlertController(title: "Could not send a message", message: "It was not possible to send encrypted message due to encryption error", preferredStyle: .alert);
-                    alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
-                    self.present(alert, animated: true, completion: nil);
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(title: "Could not send a message", message: "It was not possible to send encrypted message due to encryption error", preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
+                        self.present(alert, animated: true, completion: nil);
+                    }
                 }
                 break;
             case .successMessage(let encryptedMessage, let fingerprint):
@@ -681,6 +685,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         
         fileprivate func refresh() {
             DispatchQueue.main.async {
+                let encryption = self.encryption ?? ChatEncryption(rawValue: Settings.MessageEncryption.getString() ?? "") ?? .none;
                 if self.connected {
                     let statusIcon = NSTextAttachment();
                     statusIcon.image = AvatarStatusView.getStatusImage(self.status?.show);
@@ -705,12 +710,12 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
                             }
                         }
                     }
-                    let statusText = NSMutableAttributedString(string: self.encryption == .none ? "" : "\u{1F512} ");
+                    let statusText = NSMutableAttributedString(string: encryption == .none ? "" : "\u{1F512} ");
                     statusText.append(NSAttributedString(attachment: statusIcon));
                     statusText.append(NSAttributedString(string: desc!));
                     self.statusView.attributedText = statusText;
                 } else {
-                    switch self.encryption ?? ChatEncryption(rawValue: Settings.MessageEncryption.getString() ?? "") ?? .none {
+                    switch encryption {
                     case .omemo:
                         self.statusView.text = "\u{1F512} \u{26A0} Not connected!";
                     case .none:

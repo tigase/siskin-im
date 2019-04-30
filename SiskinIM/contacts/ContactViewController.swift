@@ -163,11 +163,15 @@ class ContactViewController: CustomTableViewController {
         case .encryption:
             if indexPath.row == 0 {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "OMEMOEncryptionCell", for: indexPath);
-                switch self.encryption ?? .none {
-                case .none:
-                    cell.detailTextLabel?.text = "None";
-                case .omemo:
-                    cell.detailTextLabel?.text = "OMEMO";
+                if self.encryption != nil {
+                    switch self.encryption! {
+                    case .none:
+                        cell.detailTextLabel?.text = "None";
+                    case .omemo:
+                        cell.detailTextLabel?.text = "OMEMO";
+                    }
+                } else {
+                    cell.detailTextLabel?.text = "Default";
                 }
                 return cell;
             } else {
