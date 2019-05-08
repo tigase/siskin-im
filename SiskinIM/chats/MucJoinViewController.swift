@@ -42,9 +42,14 @@ class MucJoinViewController: CustomTableViewController, UIPickerViewDataSource, 
         accountPicker.delegate = self;
         self.accountTextField.inputView = accountPicker;
         let accounts = AccountManager.getAccounts();
-        // by default select first account
+        // by default select first account        
         if !accounts.isEmpty && (self.accountTextField.text?.isEmpty ?? true) {
             self.accountTextField.text = accounts[0];
+        }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        if self.serverTextField.text?.isEmpty ?? true {
             if let jid = BareJID(accountTextField.text) {
                 self.findMucComponentJid(for: jid);
             }
