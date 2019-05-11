@@ -534,7 +534,13 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
         
         weak var controller: ChatsListViewController?;
 
-        fileprivate var list: [ChatsViewItemKey] = [];
+        fileprivate var list: [ChatsViewItemKey] = []
+//        {
+//            willSet {
+//                // list will change, so we should execute any delayed refresh requests
+//                executeDelayedReloadRow();
+//            }
+//        }
         fileprivate var cache = NSCache<ChatsViewItemKey,ChatsViewItem>();
         fileprivate var queue = DispatchQueue(label: "chats_data_source", qos: .background);
         
@@ -570,7 +576,7 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
         }
         
         func reloadData() {
-            delayedReloadIndexPath = nil;
+//            delayedReloadIndexPath = nil;
             queue.async {
                 var list: [ChatsViewItemKey] = try! self.getChatsList.query() { (cursor) in ChatsViewItemKey(cursor: cursor) }
                 DispatchQueue.main.async {
@@ -676,73 +682,44 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
         func notify(from: IndexPath?, to: IndexPath?, needRefresh: Bool = true) {
             if from != nil && to != nil {
                 if from != to {
-                    if delayedReloadIndexPath != nil {
-                        if from!.row < delayedReloadIndexPath!.row {
-                            calculateDelayedReloadRow(offset: -1);
-                        } else if from!.row == delayedReloadIndexPath!.row {
-                            if needRefresh {
-                                delayedReloadIndexPath = nil;
-                            } else {
-                                delayedReloadIndexPath = to!;
-                            }
-                        } else {
-                            calculateDelayedReloadRow(offset: 1);
-                        }
-                    }
                     controller?.tableView.moveRow(at: from!, to: to!);
-                    executeDelayedReloadRow();
                 }
                 if needRefresh {
-                    delayedReloadRows(at: to!);
+                    controller?.tableView.reloadRows(at: [to!], with: .none);
                 }
-//                controller?.tableView.reloadRows(at: [to!], with: .fade);
             } else if to == nil {
-                if delayedReloadIndexPath != nil {
-                    if from!.row < delayedReloadIndexPath!.row {
-                        calculateDelayedReloadRow(offset: -1);
-                    } else if from!.row == delayedReloadIndexPath!.row {
-                        delayedReloadIndexPath = nil;
-                    }
-                }
                 controller?.tableView.deleteRows(at: [from!], with: .fade);
-                executeDelayedReloadRow();
             } else {
-                if delayedReloadIndexPath != nil {
-                    if to!.row <= delayedReloadIndexPath!.row {
-                        calculateDelayedReloadRow(offset: 1);
-                    }
-                }
                 controller?.tableView.insertRows(at: [to!], with: .fade);
-                executeDelayedReloadRow();
             }
         }
         
-        fileprivate var delayedReloadIndexPath: IndexPath? = nil;
-        
-        func calculateDelayedReloadRow(offset: Int) {
-            delayedReloadIndexPath = IndexPath(row: delayedReloadIndexPath!.row + offset, section: 0);
-        }
-        
-        func delayedReloadRows(at indexPath: IndexPath) {
-            if delayedReloadIndexPath != nil && delayedReloadIndexPath! == indexPath {
-                return;
-            }
-            executeDelayedReloadRow();
-            delayedReloadIndexPath = indexPath;
-            
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
-                self.executeDelayedReloadRow();
-            }
-        }
-        
-        func executeDelayedReloadRow() {
-            guard delayedReloadIndexPath != nil else {
-                return;
-            }
-            
-            controller?.tableView.reloadRows(at: [delayedReloadIndexPath!], with: .fade);
-            delayedReloadIndexPath = nil;
-        }
+//        fileprivate var delayedReloadIndexPath: IndexPath? = nil;
+//
+//        func calculateDelayedReloadRow(offset: Int) {
+//            delayedReloadIndexPath = IndexPath(row: delayedReloadIndexPath!.row + offset, section: 0);
+//        }
+
+//        func delayedReloadRows(at indexPath: IndexPath) {
+//            if delayedReloadIndexPath != nil && delayedReloadIndexPath! == indexPath {
+//                return;
+//            }
+//            executeDelayedReloadRow();
+//            delayedReloadIndexPath = indexPath;
+//
+//            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
+//                self.executeDelayedReloadRow();
+//            }
+//        }
+//
+//        func executeDelayedReloadRow() {
+//            guard delayedReloadIndexPath != nil else {
+//                return;
+//            }
+//
+//            controller?.tableView.reloadRows(at: [delayedReloadIndexPath!], with: .fade);
+//            delayedReloadIndexPath = nil;
+//        }
     }
     
     public enum SortOrder: String {
