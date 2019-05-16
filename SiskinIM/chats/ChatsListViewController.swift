@@ -477,7 +477,8 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
         let jid: BareJID;
         var timestamp: Date;
         var type: Int;
-        
+        var show: Presence.Show?;
+
         override var description: String {
             return "account: \(account), jid: \(jid), ts: \(timestamp)"
         }
@@ -579,7 +580,10 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
 //            delayedReloadIndexPath = nil;
             queue.async {
                 var list: [ChatsViewItemKey] = try! self.getChatsList.query() { (cursor) in ChatsViewItemKey(cursor: cursor) }
-                DispatchQueue.main.async {
+                list.forEach({ (item) in
+                    item.show = self.getPresence(account: item.account, jid: item.jid)?.show;
+                })
+                DispatchQueue.main.sync {
                     self.list = self.sort(list: &list);
                     self.cache.removeAllObjects();
                     self.controller?.tableView.reloadData();
@@ -595,12 +599,14 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
                 if fromPosition == nil {
                     if type != nil && timestamp != nil {
                         let item = ChatsViewItemKey(account: account, jid: jid, type: type!, timestamp: timestamp!);
+                        item.show = self.getPresence(account: account, jid: jid)?.show;
                         list.append(item);
                     } else {
                         return;
                     }
                 } else {
                     let item = list[fromPosition!];
+                    item.show = self.getPresence(account: account, jid: jid)?.show;
                     let viewItem = self.cache.object(forKey: item);
                     if timestamp != nil && ((item.timestamp.compare(timestamp!) == ComparisonResult.orderedAscending) || (viewItem != nil && viewItem!.lastMessage == nil)) {
                         item.timestamp = timestamp!;
@@ -655,8 +661,8 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
         fileprivate func sort(list: inout [ChatsViewItemKey]) -> [ChatsViewItemKey] {
             if SortOrder(rawValue: Settings.RecentsOrder.getString()!) == SortOrder.byAvailablityAndTime {
                 return list.sorted { (i1, i2) -> Bool in
-                    let p1 = getPresence(account: i1.account, jid: i1.jid)?.show;
-                    let p2 = getPresence(account: i2.account, jid: i2.jid)?.show;
+                    let p1 = i1.show;
+                    let p2 = i2.show;
                     if (p1 != nil && p2 == nil) {
                         return true;
                     } else if (p1 == nil && p2 != nil) {
