@@ -294,7 +294,21 @@ extension NewFeaturesDetectorSuggestion {
             
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
             
-            UIApplication.shared.keyWindow?.rootViewController?.present(alert, animated: true, completion: nil);
+            let rootViewController = UIApplication.shared.keyWindow?.rootViewController;
+            self.visibleViewController(rootViewController: rootViewController)?.present(alert, animated: true, completion: nil);
+        }
+    }
+    
+    func visibleViewController(rootViewController: UIViewController?) -> UIViewController? {
+        guard let presentedViewController = rootViewController?.presentedViewController else {
+            return rootViewController;
+        }
+        if let navController = presentedViewController as? UINavigationController {
+            return navController.viewControllers.last;
+        } else if let tabController = presentedViewController as? UITabBarController {
+            return tabController.selectedViewController;
+        } else {
+            return visibleViewController(rootViewController: presentedViewController);
         }
     }
     
@@ -328,6 +342,7 @@ class NewFeatureSuggestionView: UIViewController {
     
     @IBAction func enableClicked(_ sender: UIButton) {
         self.progressIndicator.startAnimating();
+        self.enableButton.isEnabled = false;
         onEnable!(self.onCompleted);
     }
     
@@ -336,6 +351,7 @@ class NewFeatureSuggestionView: UIViewController {
     }
     
     func onCompleted() {
+        self.enableButton.isEnabled = true;
         self.progressIndicator.stopAnimating();
     }
 }
