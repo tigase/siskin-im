@@ -54,8 +54,8 @@ public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>,
         if let item = findItemFor(account: e.sessionObject.userBareJid!, jid: e.presence.from!) {
             let presence = PresenceModule.getPresenceStore(e.sessionObject).getBestPresence(for: e.presence.from!.bareJid);
             let changed = order != .alphabetical && item.presence?.show != presence?.show;
-            item.update(presence: presence);
             let fromPos = positionFor(item: item);
+            item.update(presence: presence);
             if changed {
                 if updateItems() {
                     notify(refresh: true);

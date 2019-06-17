@@ -149,9 +149,11 @@ class RosterItemEditViewController: CustomTableViewController, UIPickerViewDataS
             }
         };
         let onError = {(errorCondition:ErrorCondition?)->Void in
-            let alert = UIAlertController.init(title: "Failure", message: "Server returned error: " + (errorCondition?.rawValue ?? "Operation timed out"), preferredStyle: .alert);
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
-            self.present(alert, animated: true, completion: nil);
+            DispatchQueue.main.async {
+                let alert = UIAlertController.init(title: "Failure", message: "Server returned error: " + (errorCondition?.rawValue ?? "Operation timed out"), preferredStyle: .alert);
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                self.present(alert, animated: true, completion: nil);
+            }
         };
 
         let rosterModule:RosterModule = client!.modulesManager.getModule(RosterModule.ID)!;

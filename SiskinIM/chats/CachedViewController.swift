@@ -178,7 +178,7 @@ class CachedViewDataSource<Item: CachedViewDataSourceItem>: NSObject, CachedView
             
             loadData(afterMessageWithId: lastMsgId, offset: list.count == 0 ? 0 : 1, limit: rowsToFetch) { (idx, it) in
                 self.cache.setObject(it, forKey: it.id as NSNumber);
-                if idx == expPos {
+                if idx == expPos || item == nil {
                     item = it;
                 }
 //                if idx >= list.count {

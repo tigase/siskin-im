@@ -84,31 +84,32 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
         let cellIdentifier = "ChatsListTableViewCell";
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath as IndexPath) as! ChatsListTableViewCell;
         
-        let item = dataSource.item(at: indexPath);
-        cell.nameLabel.textColor = Appearance.current.textColor();
-        cell.nameLabel.text = item.name ?? item.key.jid.stringValue;
-         cell.nameLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.nameLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.nameLabel.font.pointSize);
-        cell.lastMessageLabel.textColor = Appearance.current.secondaryTextColor();
-        cell.lastMessageLabel.text = item.lastMessage == nil ? nil : ((item.unread > 0 ? "" : "\u{2713}") + item.lastMessage!);
-        cell.lastMessageLabel.numberOfLines = Settings.RecentsMessageLinesNo.getInt();
-//        cell.lastMessageLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.lastMessageLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize);
-
-        
-        let formattedTS = self.formatTimestamp(item.key.timestamp);
-        cell.timestampLabel.text = formattedTS;
-        cell.timestampLabel.textColor = Appearance.current.secondaryTextColor();
-
-        let xmppClient = self.xmppService.getClient(forJid: item.key.account);
-        switch item.key.type {
-        case 1:
-            let mucModule: MucModule? = xmppClient?.modulesManager.getModule(MucModule.ID);
-            cell.avatarStatusView.updateAvatar(manager: self.xmppService.avatarManager, for: item.key.account, with: item.key.jid, name: nil, orDefault: self.xmppService.avatarManager.defaultGroupchatAvatar);
-            cell.avatarStatusView.setStatus(mucModule?.roomsManager.getRoom(for: item.key.jid)?.state == .joined ? Presence.Show.online : nil);
-        default:
-            cell.avatarStatusView.updateAvatar(manager: self.xmppService.avatarManager, for: item.key.account, with: item.key.jid, name: item.name, orDefault: self.xmppService.avatarManager.defaultAvatar);
-            let presenceModule: PresenceModule? = xmppClient?.modulesManager.getModule(PresenceModule.ID);
-            let presence = presenceModule?.presenceStore.getBestPresence(for: item.key.jid);
-            cell.avatarStatusView.setStatus(presence?.show);
+        if let item = dataSource.item(at: indexPath) {
+            cell.nameLabel.textColor = Appearance.current.textColor();
+            cell.nameLabel.text = item.name ?? item.key.jid.stringValue;
+            cell.nameLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.nameLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.nameLabel.font.pointSize);
+            cell.lastMessageLabel.textColor = Appearance.current.secondaryTextColor();
+            cell.lastMessageLabel.text = item.lastMessage == nil ? nil : ((item.unread > 0 ? "" : "\u{2713}") + item.lastMessage!);
+            cell.lastMessageLabel.numberOfLines = Settings.RecentsMessageLinesNo.getInt();
+            //        cell.lastMessageLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.lastMessageLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize);
+            
+            
+            let formattedTS = self.formatTimestamp(item.key.timestamp);
+            cell.timestampLabel.text = formattedTS;
+            cell.timestampLabel.textColor = Appearance.current.secondaryTextColor();
+            
+            let xmppClient = self.xmppService.getClient(forJid: item.key.account);
+            switch item.key.type {
+            case 1:
+                let mucModule: MucModule? = xmppClient?.modulesManager.getModule(MucModule.ID);
+                cell.avatarStatusView.updateAvatar(manager: self.xmppService.avatarManager, for: item.key.account, with: item.key.jid, name: nil, orDefault: self.xmppService.avatarManager.defaultGroupchatAvatar);
+                cell.avatarStatusView.setStatus(mucModule?.roomsManager.getRoom(for: item.key.jid)?.state == .joined ? Presence.Show.online : nil);
+            default:
+                cell.avatarStatusView.updateAvatar(manager: self.xmppService.avatarManager, for: item.key.account, with: item.key.jid, name: item.name, orDefault: self.xmppService.avatarManager.defaultAvatar);
+                let presenceModule: PresenceModule? = xmppClient?.modulesManager.getModule(PresenceModule.ID);
+                let presence = presenceModule?.presenceStore.getBestPresence(for: item.key.jid);
+                cell.avatarStatusView.setStatus(presence?.show);
+            }
         }
         cell.avatarStatusView.updateCornerRadius();
         
@@ -556,19 +557,21 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
             self.getChatDetails = try? controller.dbConnection.prepareStatement("SELECT type, last.data AS last_message, last.encryption AS last_encryption, (SELECT count(ch.id) FROM chat_history ch WHERE ch.account = c.account AND ch.jid = c.jid AND state in (\(DBChatHistoryStore.State.incoming_unread.rawValue), \(DBChatHistoryStore.State.incoming_error_unread.rawValue), \(DBChatHistoryStore.State.outgoing_error_unread.rawValue))) as unread, IFNULL(c.name, (SELECT name FROM roster_items ri WHERE ri.account = c.account AND ri.jid = c.jid)) as name FROM chats as c LEFT JOIN (SELECT data, encryption FROM chat_history ch WHERE ch.account = :account AND ch.jid = :jid AND item_type = 0 ORDER BY timestamp DESC LIMIT 1) last WHERE c.account = :account AND c.jid = :jid");
         }
         
-        func item(at position: IndexPath) -> ChatsViewItem {
+        func item(at position: IndexPath) -> ChatsViewItem? {
             let key = list[position.row];
             if let item = cache.object(forKey: key) {
                 return item;
             }
             
             let params: [String: Any?] = [ "account" : key.account, "jid" : key.jid];
-            let item: ChatsViewItem = try! getChatDetails.findFirst(params) { (cursor) in
+            let item: ChatsViewItem? = try! getChatDetails.findFirst(params) { (cursor) in
                 let tmp = ChatsViewItem(key: key);
                 tmp.load(from: cursor);
                 return tmp;
-            }!;
-            cache.setObject(item, forKey: key);
+            };
+            if item != nil {
+                cache.setObject(item!, forKey: key);
+            }
             return item;
         }
         
