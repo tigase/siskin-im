@@ -65,7 +65,8 @@ open class XmppService: Logger, EventHandler {
     }
     
     fileprivate let reachability: Reachability;
-    
+
+    fileprivate let dispatcher: QueueDispatcher = QueueDispatcher(label: "xmpp_service_clients")
     fileprivate var clients = [BareJID:XMPPClient]();
     
     fileprivate var eventHandlers: [EventHandlerHolder] = [];
@@ -132,7 +133,13 @@ open class XmppService: Logger, EventHandler {
         }
     }
     
-    open func updateXmppClientInstance(forJid userJid:BareJID) {
+    open func updateXmppClientInstance(forJid userJid: BareJID) {
+        dispatcher.sync {
+            self.updateXmppClientInstanceInternal(forJid: userJid);
+        }
+    }
+    
+    fileprivate func updateXmppClientInstanceInternal(forJid userJid:BareJID) {
         print("updating xmppclient instance for", userJid);
         var client = clients[userJid];
         let password = AccountManager.getAccountPassword(forJid: userJid.stringValue);
@@ -216,13 +223,17 @@ open class XmppService: Logger, EventHandler {
     }
     
     open func getClients(filter: ((XMPPClient)->Bool)? = nil) -> [XMPPClient] {
-        return clients.values.filter(filter ?? { (client) -> Bool in
-            return true;
+        return dispatcher.sync {
+            return self.clients.values.filter(filter ?? { (client) -> Bool in
+                return true;
             });
+        }
     }
     
     open func getClient(forJid account:BareJID) -> XMPPClient? {
-        return clients[account];
+        return dispatcher.sync {
+            return self.clients[account];
+        }
     }
 
     fileprivate func registerModules(_ client:XMPPClient) {
@@ -274,7 +285,7 @@ open class XmppService: Logger, EventHandler {
         let signalStorage = OMEMOStoreWrapper(context: client.context);
         let signalContext = SignalContext(withStorage: signalStorage)!;
         signalStorage.setup(withContext: signalContext);
-        client.modulesManager.register(OMEMOModule(aesGCMEngine: OpenSSL_AES_GCM_Engine(), signalContext: signalContext, signalStorage: signalStorage));
+        _ = client.modulesManager.register(OMEMOModule(aesGCMEngine: OpenSSL_AES_GCM_Engine(), signalContext: signalContext, signalStorage: signalStorage));
     }
     
     fileprivate func registerEventHandlers(_ client:XMPPClient) {
@@ -452,26 +463,26 @@ open class XmppService: Logger, EventHandler {
     }
     
     open func keepalive() {
-        for client in clients.values {
+        forEachClient { (client) in
             client.keepalive();
         }
     }
     
     fileprivate func applicationStateChanged() {
         sendAutoPresence();
-        for client in clients.values {
+        forEachClient { (client) in
             if client.state == .connected {
                 let csiModule: ClientStateIndicationModule? = client.modulesManager.getModule(ClientStateIndicationModule.ID);
                 if csiModule != nil && csiModule!.available {
-                    _ = csiModule!.setState(applicationState == .active);
+                    _ = csiModule!.setState(self.applicationState == .active);
                 }
                 else if let mobileModeModule: MobileModeModule = client.modulesManager.getModule(MobileModeModule.ID) {
-                    _ = mobileModeModule.setState(applicationState == .inactive);
+                    _ = mobileModeModule.setState(self.applicationState == .inactive);
                 }
             }
         }
         if applicationState == .active {
-            for client in clients.values {
+            forEachClient { client in
                 client.sessionObject.setProperty(XmppService.CONNECTION_RETRY_NO_KEY, value: nil);
                 if client.state == .disconnected { // && client.pushNotificationsEnabled {
                     client.login();
@@ -482,7 +493,7 @@ open class XmppService: Logger, EventHandler {
     }
     
     fileprivate func sendAutoPresence() {
-        for client in clients.values {
+        forEachClient { (client) in
             if client.state == .connected {
                 if let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID) {
                     presenceModule.setPresence(show: .online, status: nil, priority: nil);
@@ -498,7 +509,7 @@ open class XmppService: Logger, EventHandler {
     open func registerEventHandler(_ handler: EventHandler, forEvents events: [Event]) {
         log("registered event handler", handler, "for", events);
         eventHandlers.append(EventHandlerHolder(handler: handler, events: events));
-        for client in clients.values {
+        forEachClient { (client) in
             client.eventBus.register(handler: handler, for: events);
         }
     }
@@ -512,7 +523,7 @@ open class XmppService: Logger, EventHandler {
         } else {
             log("failed to remove event handler", handler, "for", events);
         }
-        for client in clients.values {
+        forEachClient { (client) in
             client.eventBus.unregister(handler: handler, for: events);
         }
     }
@@ -537,7 +548,7 @@ open class XmppService: Logger, EventHandler {
         switch setting {
         case .EnableMessageCarbons:
             let value = setting.getBool();
-            for client in clients.values {
+            forEachClient { (client) in
                 if client.state == .connected {
                     let messageCarbonsModule: MessageCarbonsModule? = client.modulesManager.getModule(MessageCarbonsModule.ID);
                     messageCarbonsModule?.setState(value, callback: nil);
@@ -547,7 +558,7 @@ open class XmppService: Logger, EventHandler {
             sendAutoPresence();
         case .DeviceToken:
             let newDeviceId = notification.userInfo?["newValue"] as? String;
-            for client in clients.values {
+            forEachClient { (client) in
                 if let pushModule: TigasePushNotificationsModule = client.modulesManager.getModule(PushNotificationsModule.ID) {
                     pushModule.deviceId = newDeviceId;
                 }
@@ -557,17 +568,25 @@ open class XmppService: Logger, EventHandler {
         }
     }
     
+    func forEachClient(_ task: @escaping (XMPPClient)->Void) {
+        dispatcher.async {
+            self.clients.values.forEach(task);
+        }
+    }
+    
     open func backgroundTaskFinished() -> Bool {
         guard applicationState != .active else {
             return false;
         }
         var stopping = 0;
-        for client in clients.values {
-            if client.state == .connected && client.pushNotificationsEnabled {
-                // we need to close connection so that push notifications will be delivered to us!
-                // this is in generic case, some severs may have optimizations to improve this
-                client.disconnect();
-                stopping += 1;
+        dispatcher.sync {
+            for client in clients.values {
+                if client.state == .connected && client.pushNotificationsEnabled {
+                    // we need to close connection so that push notifications will be delivered to us!
+                    // this is in generic case, some severs may have optimizations to improve this
+                    client.disconnect();
+                    stopping += 1;
+                }
             }
         }
         return stopping > 0;
@@ -605,21 +624,23 @@ open class XmppService: Logger, EventHandler {
                 return;
             }
         } else {
-            for client in clients.values {
-                // try to send keepalive to ensure connection is valid
-                // if it fails it will try to resume connection
-                if client.state != .connected {
-                    if !client.pushNotificationsEnabled {
-                        self.fetchClientsWaitingForReconnection.append(client.sessionObject.userBareJid!);
-                        countLong += 1;
+            dispatcher.sync {
+                for client in clients.values {
+                    // try to send keepalive to ensure connection is valid
+                    // if it fails it will try to resume connection
+                    if client.state != .connected {
+                        if !client.pushNotificationsEnabled {
+                            self.fetchClientsWaitingForReconnection.append(client.sessionObject.userBareJid!);
+                            countLong += 1;
+                        }
+                        // it looks like this is causing an issue
+                        //                if client.state == .disconnected {
+                        //                    client.login();
+                        //                }
+                    } else {
+                        client.keepalive();
+                        countShort += 1;
                     }
-                // it looks like this is causing an issue
-//                if client.state == .disconnected {
-//                    client.login();
-//                }
-                } else {
-                    client.keepalive();
-                    countShort += 1;
                 }
             }
         }
@@ -693,12 +714,14 @@ open class XmppService: Logger, EventHandler {
         if applicationState != .active {
             // do not close here - may be race condtion with opening of an app!
             //disconnectClients(true);
-            for client in clients.values {
-                if client.state == .connected {
-                    if let streamManagement:StreamManagementModule = client.modulesManager.getModule(StreamManagementModule.ID) {
-                        streamManagement.sendAck();
-                    } else {
-                        client.keepalive();
+            dispatcher.sync {
+                for client in self.clients.values {
+                    if client.state == .connected {
+                        if let streamManagement:StreamManagementModule = client.modulesManager.getModule(StreamManagementModule.ID) {
+                            streamManagement.sendAck();
+                        } else {
+                            client.keepalive();
+                        }
                     }
                 }
             }
@@ -721,14 +744,14 @@ open class XmppService: Logger, EventHandler {
     }
     
     fileprivate func connectClients(force: Bool = true) {
-        for client in clients.values {
+        forEachClient { client in
             client.sessionObject.setProperty(XmppService.CONNECTION_RETRY_NO_KEY, value: nil);
             client.login();
         }
     }
     
     fileprivate func disconnectClients(force:Bool = false) {
-        for client in clients.values {
+        forEachClient { client in
             client.disconnect(force);
         }
     }
