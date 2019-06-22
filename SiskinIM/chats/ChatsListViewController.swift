@@ -142,19 +142,21 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
                     let mucModule: MucModule? = xmppClient?.modulesManager.getModule(MucModule.ID);
                     if let room = mucModule?.roomsManager.getRoom(for: item.jid) {
                         if room.presences[room.nickname]?.affiliation == .owner {
-                            let alert = UIAlertController(title: "Delete group chat?", message: "You are leaving the group chat. Would you like to finish it?", preferredStyle: .alert);
-                            alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { (action) in
-                                PEPBookmarksModule.remove(xmppService: self.xmppService, from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false));
-                                mucModule?.destroy(room: room);
-                                self.discardNotifications(for: item);
-
-                            }));
-                            alert.addAction(UIAlertAction(title: "No", style: .default, handler: { (action) in
+                            let alert = UIAlertController(title: "Delete group chat?", message: "You are leaving the group chat \((room as? DBRoom)?.roomName ?? room.roomJid.stringValue)", preferredStyle: .actionSheet);
+                            alert.addAction(UIAlertAction(title: "Leave chat", style: .default, handler: { (action) in
                                 PEPBookmarksModule.remove(xmppService: self.xmppService, from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false));
                                 mucModule?.leave(room: room);
                                 self.discardNotifications(for: item);
 
                             }))
+                            alert.addAction(UIAlertAction(title: "Delete chat", style: .destructive, handler: { (action) in
+                                PEPBookmarksModule.remove(xmppService: self.xmppService, from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false));
+                                mucModule?.destroy(room: room);
+                                self.discardNotifications(for: item);
+                                
+                            }));
+                            alert.popoverPresentationController?.sourceView = self.view;
+                            alert.popoverPresentationController?.sourceRect = tableView.rectForRow(at: indexPath);
                             self.present(alert, animated: true, completion: nil);
                         } else {
                             PEPBookmarksModule.remove(xmppService: xmppService, from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false));
