@@ -450,7 +450,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         print("Push notification received with fetch request: \(userInfo)");
         //let fetchStart = Date();
-        if let account = JID(userInfo[AnyHashable("account")] as? String), let unreadMessages = userInfo["unread-messages"] as? Int {
+        if let account = JID(userInfo[AnyHashable("account")] as? String), let unreadMessages = userInfo[AnyHashable("unread-messages")] as? Int {
             if let sender = JID(userInfo[AnyHashable("sender")] as? String) {
                 if let body = userInfo[AnyHashable("body")] as? String {
                     notifyNewMessage(account: account, sender: sender, body: body, type: "chat", data: userInfo, isPush: true) {
