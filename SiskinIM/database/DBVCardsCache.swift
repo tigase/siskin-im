@@ -78,9 +78,11 @@ open class DBVCardsCache {
                     return;
                 }
             }
-            let url = URL(string: photo.uri!);
-            URLSession.shared.dataTask(with: url!) { (data, response, err) in
-                callback(data);
+            if let url = URL(string: photo.uri!) {
+                let task = URLSession.shared.dataTask(with: url) { (data, response, err) in
+                    callback(data);
+                };
+                task.resume();
             }
         } else {
             callback(nil);
