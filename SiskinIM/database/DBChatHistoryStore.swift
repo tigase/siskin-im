@@ -202,10 +202,12 @@ open class DBChatHistoryStore: Logger, EventHandler {
         let message = e.message!;
 
         let state = calculateState(incoming: (message.from != nil && message.from!.bareJid != account), fromArchive: true, stanzaType: message.type);
-        let jid = state.direction == .incoming ? message.from?.bareJid : message.to?.bareJid
+        guard let jid = state.direction == .incoming ? message.from?.bareJid : message.to?.bareJid else {
+            return;
+        }
         let author = state.direction == .incoming ? message.from?.bareJid : account;
         
-        appendEntry(for: account, jid: jid!, state: state, authorJid: author, data: body!, timestamp: e.timestamp, id: message.id, encryption: encryption, encryptionFingerprint: fingerprint, fromArchive: true, carbonAction: nil, nicknameInRoom: nil) { (msgId) in
+        appendEntry(for: account, jid: jid, state: state, authorJid: author, data: body!, timestamp: e.timestamp, id: message.id, encryption: encryption, encryptionFingerprint: fingerprint, fromArchive: true, carbonAction: nil, nicknameInRoom: nil) { (msgId) in
         }
     }
     

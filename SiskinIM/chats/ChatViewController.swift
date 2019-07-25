@@ -78,7 +78,9 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     }
     
     func getTextOfSelectedRows(paths: [IndexPath], withTimestamps: Bool, handler: (([String]) -> Void)?) {
-        let items: [ChatViewItem] = paths.map({ index in dataSource.getItem(for: index) })
+        let items: [ChatViewItem] = paths.map({ index in dataSource.getItem(for: index) }).filter({ it -> Bool in
+            return it != nil;
+        }).map({ it -> ChatViewItem in return it! })
             .sorted { (it1, it2) -> Bool in
                 it1.timestamp.compare(it2.timestamp) == .orderedAscending;
             };
@@ -181,7 +183,9 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let item = dataSource.getItem(for: indexPath);
+        guard let item = dataSource.getItem(for: indexPath) else {
+            return tableView.dequeueReusableCell(withIdentifier: "ChatTableViewCellIncoming", for: indexPath);
+        }
         let incoming = item.state.direction == .incoming;
         let id = incoming ? "ChatTableViewCellIncoming" : "ChatTableViewCellOutgoing";
         let cell: ChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
@@ -196,7 +200,9 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     
     func tableView(_ tableView: UITableView, accessoryButtonTappedForRowWith indexPath: IndexPath) {
         print("accessory button cliecked at", indexPath)
-        let item = dataSource.getItem(for: indexPath);
+        guard let item = dataSource.getItem(for: indexPath) else {
+            return;
+        }
         print("cliked message with id", item.id);
         guard item.data != nil else {
             return;
@@ -222,9 +228,10 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     func updateItem(msgId: Int, handler: @escaping (BaseChatViewController_PreviewExtension_PreviewAwareItem) -> Void) {
         DispatchQueue.main.async {
             if let indexPath = self.dataSource.getIndexPath(withId: msgId) {
-                let item = self.dataSource.getItem(for: indexPath);
-                handler(item);
-                self.tableView.reloadRows(at: [indexPath], with: .automatic);
+                if let item = self.dataSource.getItem(for: indexPath) {
+                    handler(item);
+                    self.tableView.reloadRows(at: [indexPath], with: .automatic);
+                }
             }
         }
     }

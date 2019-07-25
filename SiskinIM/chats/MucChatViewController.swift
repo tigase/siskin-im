@@ -105,7 +105,9 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let item: MucChatViewItem = dataSource.getItem(for: indexPath);
+        guard let item: MucChatViewItem = dataSource.getItem(for: indexPath) else {
+            return tableView.dequeueReusableCell(withIdentifier: "MucChatTableViewCellIncoming", for: indexPath)
+        }
 
         let incoming = item.nickname != self.room?.nickname;
         var state = item.state!;
@@ -166,7 +168,9 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
     }
     
     func getTextOfSelectedRows(paths: [IndexPath], withTimestamps: Bool, handler: (([String]) -> Void)?) {
-        let items: [MucChatViewItem] = paths.map({ index in dataSource.getItem(for: index) })
+        let items: [MucChatViewItem] = paths.map({ index in dataSource.getItem(for: index) }).filter({ (it) -> Bool in
+            it != nil;
+        }).map({ it -> MucChatViewItem in it! })
             .sorted { (it1, it2) -> Bool in
                 it1.timestamp.compare(it2.timestamp) == .orderedAscending;
         };
@@ -252,9 +256,10 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
 //            self.dataSource.reset();
 //            self.tableView.reloadData();
             if let indexPath = self.dataSource.getIndexPath(withId: msgId) {
-                let item = self.dataSource.getItem(for: indexPath);
-                handler(item);
-                self.tableView.reloadRows(at: [indexPath], with: .automatic);
+                if let item = self.dataSource.getItem(for: indexPath) {
+                    handler(item);
+                    self.tableView.reloadRows(at: [indexPath], with: .automatic);
+                }
             }
         }
     }

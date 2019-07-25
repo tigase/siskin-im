@@ -78,7 +78,9 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let item = roster.item(at: indexPath);
+        guard let item = roster?.item(at: indexPath) else {
+            return;
+        }
 
         let xmppClient = self.xmppService.getClient(forJid: item.account);
         let messageModule:MessageModule? = xmppClient?.modulesManager.getModule(MessageModule.ID);

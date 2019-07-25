@@ -151,7 +151,7 @@ class CachedViewDataSource<Item: CachedViewDataSourceItem>: NSObject, CachedView
         return IndexPath(row: pos, section: 0);
     }
     
-    func getItem(for indexPath: IndexPath) -> Item {
+    func getItem(for indexPath: IndexPath) -> Item? {
         let down = prevRowIndex >= indexPath.row;
         prevRowIndex = indexPath.row;
 
@@ -159,7 +159,7 @@ class CachedViewDataSource<Item: CachedViewDataSourceItem>: NSObject, CachedView
             let id = list[indexPath.row].id;
             var item = cache.object(forKey: id as NSNumber);
             guard item == nil else {
-                return item!;
+                return item;
             }
             
             loadData(afterMessageWithId: id, offset: down ? (1 - numberOfMessagesToFetch) : 0, limit: numberOfMessagesToFetch) { (idx, it) in
@@ -168,7 +168,7 @@ class CachedViewDataSource<Item: CachedViewDataSourceItem>: NSObject, CachedView
                     item = it;
                 }
             }
-            return item!;
+            return item;
         } else {
             let lastMsgId = list.last?.id;
             let expPos = indexPath.row - list.count;
@@ -186,7 +186,7 @@ class CachedViewDataSource<Item: CachedViewDataSourceItem>: NSObject, CachedView
 //                }
             }
 
-            return item!;
+            return item;
         }
     }
     
