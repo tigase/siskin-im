@@ -186,12 +186,18 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         guard let item = dataSource.getItem(for: indexPath) else {
             return tableView.dequeueReusableCell(withIdentifier: "ChatTableViewCellIncoming", for: indexPath);
         }
+        var continuation = false;
+        if Settings.EnableNewUI.getBool() && (indexPath.row + 1) < dataSource.numberOfMessages {
+            if let prevItem = dataSource.getItem(for: IndexPath(row: indexPath.row + 1, section: 0)) {
+                continuation = prevItem.state.direction == item.state.direction && (abs(item.timestamp.timeIntervalSince(prevItem.timestamp)) < 30.0);
+            }
+        }
         let incoming = item.state.direction == .incoming;
-        let id = incoming ? "ChatTableViewCellIncoming" : "ChatTableViewCellOutgoing";
+        let id = Settings.EnableNewUI.getBool() ? (continuation ? "ChatTableViewCellContinuation" : "ChatTableViewCell") : (incoming ? "ChatTableViewCellIncoming" : "ChatTableViewCellOutgoing");
         let cell: ChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
         cell.transform = cachedDataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-        cell.avatarView?.updateAvatar(manager: self.xmppService.avatarManager, for: account, with: jid.bareJid, name: self.titleView.name, orDefault: self.xmppService.avatarManager.defaultAvatar);
-        cell.setValues(data: item.data, ts: item.timestamp, id: item.id, state: item.state, messageEncryption: item.encryption, preview: item.preview, downloader: self.downloadPreview);
+        cell.avatarView?.updateAvatar(manager: self.xmppService.avatarManager, for: account, with: incoming ? jid.bareJid : account, name: self.titleView.name, orDefault: self.xmppService.avatarManager.defaultAvatar);
+        cell.setValues(data: item.data, ts: item.timestamp, id: item.id, nickname: incoming ? (self.titleView.name ?? self.jid!.bareJid.stringValue) : "Me", state: item.state, messageEncryption: item.encryption, preview: item.preview, downloader: self.downloadPreview);
         cell.setNeedsUpdateConstraints();
         cell.updateConstraintsIfNeeded();
         
@@ -313,8 +319,10 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         guard ((notification.userInfo?["jid"] as? BareJID) == jid.bareJid) else {
             return;
         }
-        if let indexPaths = tableView.indexPathsForVisibleRows {
-            tableView.reloadRows(at: indexPaths, with: .none);
+        DispatchQueue.main.async {
+            if let indexPaths = self.tableView.indexPathsForVisibleRows {
+                self.tableView.reloadRows(at: indexPaths, with: .none);
+            }
         }
     }
     

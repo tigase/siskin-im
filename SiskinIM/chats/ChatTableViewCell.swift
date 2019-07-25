@@ -25,9 +25,10 @@ import UIKit
 class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegate {
 
     @IBOutlet var avatarView: AvatarView?
+    @IBOutlet var nicknameView: UILabel?;
     @IBOutlet var messageTextView: UILabel!
-    @IBOutlet var messageFrameView: UIView!
-    @IBOutlet var timestampView: UILabel!
+    @IBOutlet var messageFrameView: UIView?
+    @IBOutlet var timestampView: UILabel?
     
     @IBOutlet var previewView: UIImageView?;
     
@@ -37,6 +38,7 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
     fileprivate var previewViewTapGestureRecognizer: UITapGestureRecognizer?;
     
     fileprivate var originalTextColor: UIColor!;
+    fileprivate var links: [Link] = [];
     
     fileprivate static let todaysFormatter = ({()-> DateFormatter in
         var f = DateFormatter();
@@ -77,8 +79,14 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         if messageFrameView != nil {
             originalTextColor = messageTextView.textColor;
             //messageFrameView.backgroundColor = UIColor.li();
-            messageFrameView.layer.masksToBounds = true;
-            messageFrameView.layer.cornerRadius = 6;
+            messageFrameView?.layer.masksToBounds = true;
+            messageFrameView?.layer.cornerRadius = 6;
+        } else {
+            originalTextColor = messageTextView.textColor;
+            if previewView != nil {
+                previewView?.layer.masksToBounds = true;
+                previewView?.layer.cornerRadius = 6;
+            }
         }
         if avatarView != nil {
             avatarView!.layer.masksToBounds = true;
@@ -116,7 +124,8 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         // Configure the view for the selected state
     }
     
-    func setValues(data text: String?, ts: Date?, id: Int?, state: DBChatHistoryStore.State, messageEncryption: MessageEncryption = .none, preview: String? = nil, downloader: ((URL,Int)->Void)? = nil) {
+    func setValues(data text: String?, ts: Date?, id: Int?, nickname: String?, state: DBChatHistoryStore.State, messageEncryption: MessageEncryption = .none, preview: String? = nil, downloader: ((URL,Int)->Void)? = nil) {
+        nicknameView?.text = nickname;
         if ts != nil {
             var timestamp = formatTimestamp(ts!);
             switch messageEncryption {
@@ -126,23 +135,34 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
                 break;
             }
             if state.direction == .outgoing {
-                timestampView.textColor = UIColor.lightGray;
+                timestampView?.textColor = UIColor.lightGray;
                 switch state.state {
                 case .delivered:
                     timestamp = "\(timestamp) \u{2713}";
                 case .error:
-                    timestampView.textColor = UIColor.red;
+                    timestampView?.textColor = UIColor.red;
                     timestamp = "\(timestamp) Not delivered\u{203c}";
                 default:
                     break;
                 }
             }
-            timestampView.text = timestamp;
+            timestampView?.text = timestamp;
         } else {
-            timestampView.text = nil;
+            timestampView?.text = nil;
         }
         self.previewUrl = nil;
         self.previewView?.image = nil;
+        
+        if messageFrameView != nil {
+            self.messageFrameView?.backgroundColor = state.direction == .incoming ? Appearance.current.incomingBubbleColor() : Appearance.current.outgoingBubbleColor();
+            self.nicknameView?.textColor = Appearance.current.secondaryTextColor();
+            self.messageTextView.textColor = self.originalTextColor;
+        } else {
+            self.nicknameView?.textColor = Appearance.current.textColor();
+            self.messageTextView?.textColor = Appearance.current.textColor();
+        }
+        
+        self.links.removeAll();
         if text != nil {
             var previewRange: NSRange? = nil;
             var previewSourceUrl: URL? = nil;
@@ -183,19 +203,21 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
                         url = URL(string: "calshow:\(match.date!.timeIntervalSinceReferenceDate)");
                     }
                     if url != nil {
-                        attrText.setAttributes([NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue, NSAttributedString.Key.link: url!], range: match.range);
+                        self.links.append(Link(url: url!, range: match.range));
+                        attrText.setAttributes([NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue, NSAttributedString.Key.foregroundColor: (Appearance.current.isDark && Settings.EnableNewUI.getBool()) ? UIColor.blue.adjust(brightness: 0.75) : UIColor.blue], range: match.range);
                     }
                 }
             }
             if previewSourceUrl != nil && Settings.SimplifiedLinkToFileIfPreviewIsAvailable.getBool() {
                 attrText.mutableString.replaceCharacters(in: previewRange!, with: "Link to file");
             }
+            if Settings.EnableMarkdownFormatting.getBool() {
+                Markdown.applyStyling(attributedString: attrText, font: self.messageTextView.font, showEmoticons: Settings.ShowEmoticons.getBool());
+            }
             self.messageTextView.attributedText = attrText;
         } else {
             self.messageTextView.text = text;
         }
-        self.messageFrameView.backgroundColor = state.direction == .incoming ? Appearance.current.incomingBubbleColor() : Appearance.current.outgoingBubbleColor();
-        self.messageTextView.textColor = self.originalTextColor;
         switch state.state {
         case .error:
             if state.direction == .incoming {
@@ -208,7 +230,11 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
             self.accessoryType = .none;
             self.tintColor = self.messageTextView.tintColor;
             if messageEncryption == .notForThisDevice || messageEncryption == .decryptionFailed {
-                self.messageTextView.textColor = self.originalTextColor.mix(color: self.messageFrameView.backgroundColor!, ratio: 0.33);
+                if let messageFrameView = self.messageFrameView {
+                    self.messageTextView.textColor = self.originalTextColor.mix(color: messageFrameView.backgroundColor!, ratio: 0.33);
+                } else {
+                    self.messageTextView.textColor = Appearance.current.textColor();
+                }
             }
         }
     }
@@ -240,8 +266,9 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         textStorage.addLayoutManager(layoutManager);
         
         let idx = layoutManager.characterIndex(for: point, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil);
-        if let url = attrText.attribute(NSAttributedString.Key.link, at: idx, effectiveRange: nil) as? NSURL {
-            UIApplication.shared.open(url as URL);
+        if let url = links.first(where: { link -> Bool in link.contains(idx: idx)}) {
+//        if let url = attrText.attribute(NSAttributedString.Key.link, at: idx, effectiveRange: nil) as? NSURL {
+            UIApplication.shared.open(url.url);
         }
     }
     
@@ -254,6 +281,20 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         documentController.delegate = self;
         //documentController.presentPreview(animated: true);
         documentController.presentOptionsMenu(from: CGRect.zero, in: self.previewView!, animated: true);
+    }
+    
+    class Link {
+        let url: URL;
+        let range: NSRange;
+        
+        init(url: URL, range: NSRange) {
+            self.url = url;
+            self.range = range;
+        }
+        
+        func contains(idx: Int) -> Bool {
+            return range.contains(idx);
+        }
     }
 }
 

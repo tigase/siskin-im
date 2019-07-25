@@ -81,15 +81,27 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cellIdentifier = "ChatsListTableViewCell";
+        let cellIdentifier = Settings.EnableNewUI.getBool() ? "ChatsListTableViewCellNew" : "ChatsListTableViewCell";
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath as IndexPath) as! ChatsListTableViewCell;
         
         if let item = dataSource.item(at: indexPath) {
             cell.nameLabel.textColor = Appearance.current.textColor();
             cell.nameLabel.text = item.name ?? item.key.jid.stringValue;
             cell.nameLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.nameLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.nameLabel.font.pointSize);
-            cell.lastMessageLabel.textColor = Appearance.current.secondaryTextColor();
-            cell.lastMessageLabel.text = item.lastMessage == nil ? nil : ((item.unread > 0 ? "" : "\u{2713}") + item.lastMessage!);
+            if Settings.EnableNewUI.getBool() {
+                cell.lastMessageLabel.textColor = Appearance.current.textColor();
+            } else {
+                cell.lastMessageLabel.textColor = Appearance.current.secondaryTextColor();
+            }
+            if item.lastMessage != nil && Settings.EnableMarkdownFormatting.getBool() {
+                let msg = NSMutableAttributedString(string: item.lastMessage!);
+                Markdown.applyStyling(attributedString: msg, font: cell.lastMessageLabel.font, showEmoticons: Settings.ShowEmoticons.getBool())
+                let text = NSMutableAttributedString(string: item.unread > 0 ? "" : "\u{2713}");
+                text.append(msg);
+                cell.lastMessageLabel.attributedText = text;
+            } else {
+                cell.lastMessageLabel.text = item.lastMessage == nil ? nil : ((item.unread > 0 ? "" : "\u{2713}") + item.lastMessage!);
+            }
             cell.lastMessageLabel.numberOfLines = Settings.RecentsMessageLinesNo.getInt();
             //        cell.lastMessageLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.lastMessageLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize);
             

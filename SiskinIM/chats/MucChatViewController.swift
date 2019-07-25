@@ -109,6 +109,12 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
             return tableView.dequeueReusableCell(withIdentifier: "MucChatTableViewCellIncoming", for: indexPath)
         }
 
+        var continuation = false;
+        if Settings.EnableNewUI.getBool() && (indexPath.row + 1) < dataSource.numberOfMessages {
+            if let prevItem = dataSource.getItem(for: IndexPath(row: indexPath.row + 1, section: 0)) {
+                continuation = prevItem.state.direction == item.state.direction && (abs(item.timestamp.timeIntervalSince(prevItem.timestamp)) < 30.0);
+            }
+        }
         let incoming = item.nickname != self.room?.nickname;
         var state = item.state!;
         if !incoming {
@@ -121,17 +127,18 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
                 state = .outgoing_delivered;
             }
         }
-        let id = incoming ? "MucChatTableViewCellIncoming" : "MucChatTableViewCellOutgoing"
+        
+        let id = Settings.EnableNewUI.getBool() ? (continuation ? "MucChatTableViewCellContinuation" : "MucChatTableViewCell") : (incoming ? "MucChatTableViewCellIncoming" : "MucChatTableViewCellOutgoing")
 
-        let cell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! MucChatTableViewCell;
+        let cell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
         cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-        cell.nicknameLabel?.text = item.nickname;
+//        cell.nicknameLabel?.text = item.nickname;
         if item.authorJid != nil {
             cell.avatarView?.updateAvatar(manager: self.xmppService.avatarManager, for: self.account, with: item.authorJid!, name: item.nickname, orDefault: self.xmppService.avatarManager.defaultGroupchatAvatar);
         } else {
             cell.avatarView?.image = self.xmppService.avatarManager.defaultAvatar;
         }
-        cell.setValues(data: item.data, ts: item.timestamp, id: item.id, state: state, preview: item.preview, downloader: self.downloadPreview);
+        cell.setValues(data: item.data, ts: item.timestamp, id: item.id, nickname: item.nickname, state: state, preview: item.preview, downloader: self.downloadPreview);
         cell.backgroundColor = Appearance.current.tableViewCellBackgroundColor();
         return cell;
     }

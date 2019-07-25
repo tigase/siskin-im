@@ -45,6 +45,9 @@ public enum Settings: String {
     case AppearanceTheme
     case EnableBookmarksSync
     case MessageEncryption
+    case EnableNewUI = "new-ui"
+    case EnableMarkdownFormatting = "markdown"
+    case ShowEmoticons
     
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     

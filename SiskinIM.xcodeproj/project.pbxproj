@@ -71,6 +71,7 @@
 		FE6545601E9E7B85006A14AC /* RegisterAccountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE65455F1E9E7B85006A14AC /* RegisterAccountController.swift */; };
 		FE6545621E9E7FDE006A14AC /* AccountDomainTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6545611E9E7FDE006A14AC /* AccountDomainTableViewCell.swift */; };
 		FE6545641E9E8B67006A14AC /* ServerSelectorTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6545631E9E8B67006A14AC /* ServerSelectorTableViewCell.swift */; };
+		FE65D62822E9F8EB0065DEA5 /* Markdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE65D62722E9F8EB0065DEA5 /* Markdown.swift */; };
 		FE719E742271AF88007CEEC9 /* db-schema-5.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE719E732271AF88007CEEC9 /* db-schema-5.sql */; };
 		FE719E762271B2BA007CEEC9 /* OpenSSL_AES_GCM_Engine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE719E752271B2BA007CEEC9 /* OpenSSL_AES_GCM_Engine.swift */; };
 		FE719E782271B439007CEEC9 /* MessageEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE719E772271B439007CEEC9 /* MessageEncryption.swift */; };
@@ -103,7 +104,6 @@
 		FEA8D65D1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8D65C1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift */; };
 		FEA8D6621F30F54B0077C12F /* XmppService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8D6611F30F54B0077C12F /* XmppService.swift */; };
 		FEA8D6641F30F9260077C12F /* XmppService_VCardExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8D6631F30F9260077C12F /* XmppService_VCardExtension.swift */; };
-		FEAC71771CECA09B00ABABEF /* MucChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC71761CECA09B00ABABEF /* MucChatTableViewCell.swift */; };
 		FEAC71791CECE50400ABABEF /* MucChatOccupantsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */; };
 		FEAC717B1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */; };
 		FEB5EC9D1F6AE448007FE0E7 /* BaseChatViewControllerWithContextMenuAndToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithContextMenuAndToolbar.swift */; };
@@ -241,6 +241,7 @@
 		FE65455F1E9E7B85006A14AC /* RegisterAccountController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegisterAccountController.swift; sourceTree = "<group>"; };
 		FE6545611E9E7FDE006A14AC /* AccountDomainTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountDomainTableViewCell.swift; sourceTree = "<group>"; };
 		FE6545631E9E8B67006A14AC /* ServerSelectorTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerSelectorTableViewCell.swift; sourceTree = "<group>"; };
+		FE65D62722E9F8EB0065DEA5 /* Markdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Markdown.swift; sourceTree = "<group>"; };
 		FE719E732271AF88007CEEC9 /* db-schema-5.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-5.sql"; sourceTree = "<group>"; };
 		FE719E752271B2BA007CEEC9 /* OpenSSL_AES_GCM_Engine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSSL_AES_GCM_Engine.swift; sourceTree = "<group>"; };
 		FE719E772271B439007CEEC9 /* MessageEncryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEncryption.swift; sourceTree = "<group>"; };
@@ -276,7 +277,6 @@
 		FEA8D65C1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VCardEntryTypeAwareTableViewCell.swift; sourceTree = "<group>"; };
 		FEA8D6611F30F54B0077C12F /* XmppService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XmppService.swift; sourceTree = "<group>"; };
 		FEA8D6631F30F9260077C12F /* XmppService_VCardExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XmppService_VCardExtension.swift; sourceTree = "<group>"; };
-		FEAC71761CECA09B00ABABEF /* MucChatTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatTableViewCell.swift; sourceTree = "<group>"; };
 		FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatOccupantsTableViewController.swift; sourceTree = "<group>"; };
 		FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatOccupantsTableViewCell.swift; sourceTree = "<group>"; };
 		FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithContextMenuAndToolbar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewControllerWithContextMenuAndToolbar.swift; sourceTree = "<group>"; };
@@ -374,7 +374,6 @@
 				FEC514231CEB2FF7003AF765 /* MucJoinViewController.swift */,
 				FEC514251CEB74F8003AF765 /* BaseChatViewController.swift */,
 				FEC514271CEB82E9003AF765 /* MucChatViewController.swift */,
-				FEAC71761CECA09B00ABABEF /* MucChatTableViewCell.swift */,
 				FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */,
 				FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */,
 				FE0A674C1D4F645F00124480 /* CachedViewController.swift */,
@@ -460,6 +459,7 @@
 				FE36B3C521F8E87700D1F037 /* CustomTableViewCell.swift */,
 				FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */,
 				FE31291B222C0D1500A92863 /* AvatarView.swift */,
+				FE65D62722E9F8EB0065DEA5 /* Markdown.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -822,9 +822,9 @@
 				FE137A4E21F8851D006B7F7C /* CustomTableViewController.swift in Sources */,
 				FEFB63AD1F31E4EE00EFB3E7 /* MainTabBarController.swift in Sources */,
 				FE0A674D1D4F645F00124480 /* CachedViewController.swift in Sources */,
+				FE65D62822E9F8EB0065DEA5 /* Markdown.swift in Sources */,
 				FEC514241CEB2FF7003AF765 /* MucJoinViewController.swift in Sources */,
 				FE507A201CDB7B3B001A015C /* AddAccountController.swift in Sources */,
-				FEAC71771CECA09B00ABABEF /* MucChatTableViewCell.swift in Sources */,
 				FE507A151CDB7B3B001A015C /* ChatsListTableViewCell.swift in Sources */,
 				FE43EB551F3CC55900A4CAAD /* ImageCache.swift in Sources */,
 				FE507A1C1CDB7B3B001A015C /* DBRosterStore.swift in Sources */,

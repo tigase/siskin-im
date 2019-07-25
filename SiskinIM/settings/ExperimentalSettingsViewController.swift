@@ -28,7 +28,7 @@ class ExperimentalSettingsViewController: CustomTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 2;
+        return 5;
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -48,6 +48,32 @@ class ExperimentalSettingsViewController: CustomTableViewController {
                 Settings.EnableBookmarksSync.setValue(switchView.isOn);
             }
             return cell;
+        case .enableNewUI:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "EnableNewUITableViewCell", for: indexPath) as! SwitchTableViewCell;
+            cell.switchView.isOn = Settings.EnableNewUI.getBool();
+            cell.valueChangedListener = {(switchView: UISwitch) in
+                Settings.EnableNewUI.setValue(switchView.isOn);
+            }
+            return cell;
+        case .enableMarkdown:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "EnableMarkdownTableViewCell", for: indexPath) as! SwitchTableViewCell;
+            cell.switchView.isOn = Settings.EnableMarkdownFormatting.getBool();
+            cell.valueChangedListener = {(switchView: UISwitch) in
+                Settings.EnableMarkdownFormatting.setValue(switchView.isOn);
+                if !switchView.isOn {
+                    Settings.ShowEmoticons.setValue(false);
+                }
+                self.tableView.reloadData();
+            }
+            return cell;
+        case .showEmoticons:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "EnableEmoticonsTableViewCell", for: indexPath) as! SwitchTableViewCell;
+            cell.switchView.isOn = Settings.ShowEmoticons.getBool();
+            cell.switchView.isEnabled = Settings.EnableMarkdownFormatting.getBool();
+            cell.valueChangedListener = {(switchView: UISwitch) in
+                Settings.ShowEmoticons.setValue(switchView.isOn);
+            }
+            return cell;
         }
     }
     
@@ -58,5 +84,8 @@ class ExperimentalSettingsViewController: CustomTableViewController {
     internal enum SettingsEnum: Int {
         case notificationsFromUnknown = 0
         case enableBookmarksSync = 1
+        case enableNewUI = 2
+        case enableMarkdown = 3
+        case showEmoticons = 4
     }
 }

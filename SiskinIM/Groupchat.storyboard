@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -13,7 +13,7 @@
         <!--Room Controller-->
         <scene sceneID="Z00-oy-pAK">
             <objects>
-                <viewController title="Room Controller" id="uV2-vL-T54" customClass="MucChatViewController" customModule="Tigase_iOS_Messenger" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Room Controller" id="uV2-vL-T54" customClass="MucChatViewController" customModule="Siskin" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Sim-Jc-r23">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="603"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -23,7 +23,7 @@
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <gestureRecognizers/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="ChatTableViewCellOutgoing" selectionStyle="default" indentationWidth="10" reuseIdentifier="MucChatTableViewCellOutgoing" rowHeight="42" id="hfn-DY-9WO" customClass="MucChatTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="ChatTableViewCellOutgoing" selectionStyle="default" indentationWidth="10" reuseIdentifier="MucChatTableViewCellOutgoing" rowHeight="42" id="hfn-DY-9WO" customClass="ChatTableViewCell" customModule="Siskin" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="28" width="414" height="42"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="hfn-DY-9WO" id="VSo-6t-dZh">
@@ -85,7 +85,7 @@
                                             <outlet property="timestampView" destination="eu7-WK-b7v" id="Cqh-6d-oqn"/>
                                         </connections>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="MucChatTableViewCellIncoming" selectionStyle="default" indentationWidth="10" reuseIdentifier="MucChatTableViewCellIncoming" id="W4v-4P-YD6" customClass="MucChatTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="MucChatTableViewCellIncoming" selectionStyle="default" indentationWidth="10" reuseIdentifier="MucChatTableViewCellIncoming" id="W4v-4P-YD6" customClass="ChatTableViewCell" customModule="Siskin" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="70" width="414" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="W4v-4P-YD6" id="ZXT-32-hvW">
@@ -135,7 +135,7 @@
                                                     <color key="textColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="nru-BN-5oN" customClass="AvatarView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="nru-BN-5oN" customClass="AvatarView" customModule="Siskin" customModuleProvider="target">
                                                     <rect key="frame" x="15" y="34" width="30" height="28.5"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="30" id="Aue-Ex-hYK"/>
@@ -160,9 +160,115 @@
                                             <outlet property="avatarView" destination="nru-BN-5oN" id="2dR-dA-mb4"/>
                                             <outlet property="messageFrameView" destination="Sb3-cw-NYv" id="k3R-lr-7rG"/>
                                             <outlet property="messageTextView" destination="ouq-Ks-VIp" id="omm-G3-p7d"/>
-                                            <outlet property="nicknameLabel" destination="CML-cD-nxX" id="bVh-Hw-sPf"/>
+                                            <outlet property="nicknameView" destination="CML-cD-nxX" id="oMy-br-Kgm"/>
                                             <outlet property="previewView" destination="I01-Rg-O9P" id="eKi-Cg-7Xm"/>
                                             <outlet property="timestampView" destination="iCS-Bz-wPg" id="NfP-FF-Xyb"/>
+                                        </connections>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="MucChatTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="MucChatTableViewCell" rowHeight="106" id="Bao-z7-vK8" customClass="ChatTableViewCell" customModule="Siskin" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="114" width="414" height="106"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="Bao-z7-vK8" id="FaA-wG-hX8">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="105.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Temporary label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tX3-Qg-Trf">
+                                                    <rect key="frame" x="318.5" y="6" width="89.5" height="16"/>
+                                                    <fontDescription key="fontDescription" type="system" weight="light" pointSize="12"/>
+                                                    <color key="textColor" red="0.66666666669999997" green="0.66666666669999997" blue="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="lsv-vn-uow" customClass="AvatarView" customModule="Siskin" customModuleProvider="target">
+                                                    <rect key="frame" x="6" y="5" width="30" height="30"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" constant="30" id="0hN-gE-SZR"/>
+                                                        <constraint firstAttribute="height" constant="30" id="KtH-CC-WE1"/>
+                                                    </constraints>
+                                                </imageView>
+                                                <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Incoming message" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rfj-q1-YJd">
+                                                    <rect key="frame" x="44" y="25" width="364" height="17"/>
+                                                    <fontDescription key="fontDescription" type="system" weight="light" pointSize="14"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <imageView clipsSubviews="YES" contentMode="scaleAspectFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" verticalCompressionResistancePriority="754" translatesAutoresizingMaskIntoConstraints="NO" id="hhF-rV-ZOC">
+                                                    <rect key="frame" x="44" y="42" width="364" height="59.5"/>
+                                                    <accessibility key="accessibilityConfiguration">
+                                                        <accessibilityTraits key="traits" image="YES" allowsDirectInteraction="YES"/>
+                                                        <bool key="isElement" value="YES"/>
+                                                    </accessibility>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" relation="greaterThanOrEqual" secondItem="hhF-rV-ZOC" secondAttribute="height" multiplier="3:2" id="HU2-np-we2"/>
+                                                    </constraints>
+                                                </imageView>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" highlighted="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YMW-VZ-mYs" userLabel="Nickname">
+                                                    <rect key="frame" x="44" y="5" width="165" height="17"/>
+                                                    <fontDescription key="fontDescription" type="system" weight="medium" pointSize="15"/>
+                                                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="rfj-q1-YJd" firstAttribute="leading" secondItem="YMW-VZ-mYs" secondAttribute="leading" id="3vj-UW-OH0"/>
+                                                <constraint firstItem="hhF-rV-ZOC" firstAttribute="trailing" secondItem="rfj-q1-YJd" secondAttribute="trailing" id="7rl-y3-hks"/>
+                                                <constraint firstItem="YMW-VZ-mYs" firstAttribute="leading" secondItem="lsv-vn-uow" secondAttribute="trailing" constant="8" id="B8Y-9k-Bch"/>
+                                                <constraint firstItem="hhF-rV-ZOC" firstAttribute="leading" secondItem="rfj-q1-YJd" secondAttribute="leading" id="Chy-7k-zxq"/>
+                                                <constraint firstItem="tX3-Qg-Trf" firstAttribute="top" secondItem="FaA-wG-hX8" secondAttribute="top" constant="6" id="GgD-fE-wn4"/>
+                                                <constraint firstItem="lsv-vn-uow" firstAttribute="leading" secondItem="FaA-wG-hX8" secondAttribute="leading" constant="6" id="Gj1-dl-ZmK"/>
+                                                <constraint firstItem="rfj-q1-YJd" firstAttribute="trailing" secondItem="tX3-Qg-Trf" secondAttribute="trailing" id="Gwl-2a-LuM"/>
+                                                <constraint firstAttribute="trailing" secondItem="tX3-Qg-Trf" secondAttribute="trailing" constant="6" id="LJb-6w-qRi"/>
+                                                <constraint firstItem="hhF-rV-ZOC" firstAttribute="top" secondItem="rfj-q1-YJd" secondAttribute="bottom" id="bKd-jc-wG8"/>
+                                                <constraint firstItem="tX3-Qg-Trf" firstAttribute="bottom" secondItem="YMW-VZ-mYs" secondAttribute="bottom" id="cWJ-4y-avo"/>
+                                                <constraint firstItem="YMW-VZ-mYs" firstAttribute="top" secondItem="lsv-vn-uow" secondAttribute="top" id="fiK-5j-FMH"/>
+                                                <constraint firstItem="rfj-q1-YJd" firstAttribute="top" secondItem="YMW-VZ-mYs" secondAttribute="bottom" constant="2" id="qRR-Mg-4sD"/>
+                                                <constraint firstAttribute="bottom" secondItem="hhF-rV-ZOC" secondAttribute="bottom" constant="4" id="qtB-d2-YRb"/>
+                                                <constraint firstItem="tX3-Qg-Trf" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="YMW-VZ-mYs" secondAttribute="trailing" constant="10" id="uzn-XZ-lAs"/>
+                                                <constraint firstItem="lsv-vn-uow" firstAttribute="top" secondItem="FaA-wG-hX8" secondAttribute="top" constant="5" id="waw-TD-b4j"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <outlet property="avatarView" destination="lsv-vn-uow" id="EMf-xg-3on"/>
+                                            <outlet property="messageTextView" destination="rfj-q1-YJd" id="IJP-SR-LHq"/>
+                                            <outlet property="nicknameView" destination="YMW-VZ-mYs" id="rZH-gq-k4Q"/>
+                                            <outlet property="previewView" destination="hhF-rV-ZOC" id="aFZ-DB-CYf"/>
+                                            <outlet property="timestampView" destination="tX3-Qg-Trf" id="dd8-gu-hig"/>
+                                        </connections>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="MucChatTableViewCellContinuation" selectionStyle="default" indentationWidth="10" reuseIdentifier="MucChatTableViewCellContinuation" rowHeight="106" id="dYP-lW-wpx" customClass="ChatTableViewCell" customModule="Siskin" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="220" width="414" height="106"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="dYP-lW-wpx" id="fko-5f-K5r">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="105.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Incoming message" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dEP-he-X8w">
+                                                    <rect key="frame" x="44" y="2" width="364" height="17"/>
+                                                    <fontDescription key="fontDescription" type="system" weight="light" pointSize="14"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <imageView clipsSubviews="YES" contentMode="scaleAspectFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" verticalCompressionResistancePriority="754" translatesAutoresizingMaskIntoConstraints="NO" id="RsO-ps-NkX">
+                                                    <rect key="frame" x="44" y="19" width="364" height="82.5"/>
+                                                    <accessibility key="accessibilityConfiguration">
+                                                        <accessibilityTraits key="traits" image="YES" allowsDirectInteraction="YES"/>
+                                                        <bool key="isElement" value="YES"/>
+                                                    </accessibility>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" relation="greaterThanOrEqual" secondItem="RsO-ps-NkX" secondAttribute="height" multiplier="3:2" id="byc-Ki-gdv"/>
+                                                    </constraints>
+                                                </imageView>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstAttribute="bottom" secondItem="RsO-ps-NkX" secondAttribute="bottom" constant="4" id="ApI-ah-xHN"/>
+                                                <constraint firstItem="RsO-ps-NkX" firstAttribute="leading" secondItem="dEP-he-X8w" secondAttribute="leading" id="GKS-t3-996"/>
+                                                <constraint firstItem="dEP-he-X8w" firstAttribute="leading" secondItem="fko-5f-K5r" secondAttribute="leading" constant="44" id="I07-rN-ZmV"/>
+                                                <constraint firstItem="dEP-he-X8w" firstAttribute="top" secondItem="fko-5f-K5r" secondAttribute="top" constant="2" id="LwM-oa-9I1"/>
+                                                <constraint firstAttribute="trailing" secondItem="dEP-he-X8w" secondAttribute="trailing" constant="6" id="M7N-f1-L3t"/>
+                                                <constraint firstItem="RsO-ps-NkX" firstAttribute="top" secondItem="dEP-he-X8w" secondAttribute="bottom" id="fd7-O9-xfn"/>
+                                                <constraint firstItem="RsO-ps-NkX" firstAttribute="trailing" secondItem="dEP-he-X8w" secondAttribute="trailing" id="l3o-aw-ggf"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <outlet property="messageTextView" destination="dEP-he-X8w" id="17V-GJ-gQW"/>
+                                            <outlet property="previewView" destination="RsO-ps-NkX" id="Ne3-fm-hvn"/>
                                         </connections>
                                     </tableViewCell>
                                 </prototypes>
@@ -170,7 +276,7 @@
                                     <outletCollection property="gestureRecognizers" destination="Z94-Hf-jAY" appends="YES" id="0jw-xb-dCn"/>
                                 </connections>
                             </tableView>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6jU-hz-cbI" customClass="ChatBottomView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6jU-hz-cbI" customClass="ChatBottomView" customModule="Siskin" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="559" width="375" height="44"/>
                                 <subviews>
                                     <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GhR-KW-E6O">
@@ -296,28 +402,28 @@
                     </connections>
                 </tapGestureRecognizer>
             </objects>
-            <point key="canvasLocation" x="4275.36231884058" y="-43.526785714285715"/>
+            <point key="canvasLocation" x="4274.3999999999996" y="-43.628185907046479"/>
         </scene>
         <!--Muc Chat Occupants Table View Controller-->
         <scene sceneID="kjl-KP-Zw3">
             <objects>
-                <tableViewController id="EpF-TK-mfh" customClass="MucChatOccupantsTableViewController" customModule="Tigase_iOS_Messenger" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController id="EpF-TK-mfh" customClass="MucChatOccupantsTableViewController" customModule="Siskin" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" id="xPb-sa-myB">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="603"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="MucChatOccupantsTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="MucChatOccupantsTableViewCell" id="7wm-Ue-Wm8" customClass="MucChatOccupantsTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="MucChatOccupantsTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="MucChatOccupantsTableViewCell" id="7wm-Ue-Wm8" customClass="MucChatOccupantsTableViewCell" customModule="Siskin" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="28" width="375" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="7wm-Ue-Wm8" id="JkW-NK-c1c">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PgP-AH-o2M" customClass="AvatarStatusView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PgP-AH-o2M" customClass="AvatarStatusView" customModule="Siskin" customModuleProvider="target">
                                             <rect key="frame" x="2" y="2" width="44" height="39.5"/>
                                             <subviews>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="EEa-Ra-bcb" customClass="AvatarView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="EEa-Ra-bcb" customClass="AvatarView" customModule="Siskin" customModuleProvider="target">
                                                     <rect key="frame" x="0.0" y="0.0" width="44" height="44"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                 </imageView>
@@ -430,7 +536,7 @@
         <!--Muc Join View Controller-->
         <scene sceneID="IMO-Q1-4m6">
             <objects>
-                <tableViewController id="nCm-jy-JfA" customClass="MucJoinViewController" customModule="Tigase_iOS_Messenger" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController id="nCm-jy-JfA" customClass="MucJoinViewController" customModule="Siskin" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="44" sectionHeaderHeight="18" sectionFooterHeight="18" id="jzR-A1-Pga">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -591,13 +697,13 @@
         <!--Invite to chat-->
         <scene sceneID="AmP-9Z-zZb">
             <objects>
-                <tableViewController restorationIdentifier="InviteViewController" storyboardIdentifier="InviteViewController" title="Invite to chat" id="SOJ-3n-8YB" customClass="InviteViewController" customModule="Tigase_iOS_Messenger" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController restorationIdentifier="InviteViewController" storyboardIdentifier="InviteViewController" title="Invite to chat" id="SOJ-3n-8YB" customClass="InviteViewController" customModule="Siskin" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" id="EYb-W4-nW2">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="RosterItemTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="RosterItemTableViewCell" rowHeight="48" id="mXn-Pc-kMI" customClass="RosterItemTableViewCell" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="RosterItemTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="RosterItemTableViewCell" rowHeight="48" id="mXn-Pc-kMI" customClass="RosterItemTableViewCell" customModule="Siskin" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="28" width="375" height="48"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="mXn-Pc-kMI" id="bfL-M0-loC">
@@ -607,10 +713,10 @@
                                         <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="TJo-cT-fvx">
                                             <rect key="frame" x="2" y="2" width="371" height="44"/>
                                             <subviews>
-                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fY2-Td-KDv" customClass="AvatarStatusView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fY2-Td-KDv" customClass="AvatarStatusView" customModule="Siskin" customModuleProvider="target">
                                                     <rect key="frame" x="0.0" y="0.0" width="44" height="44"/>
                                                     <subviews>
-                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="f12-QZ-Q6j" customClass="AvatarView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="f12-QZ-Q6j" customClass="AvatarView" customModule="Siskin" customModuleProvider="target">
                                                             <rect key="frame" x="0.0" y="0.0" width="44" height="44"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         </imageView>
@@ -694,7 +800,7 @@
         <!--MucNewGroupchatController-->
         <scene sceneID="j7t-9T-WK6">
             <objects>
-                <tableViewController restorationIdentifier="MucNewGroupchatController" storyboardIdentifier="MucNewGroupchatController" id="rrb-zc-tVA" userLabel="MucNewGroupchatController" customClass="MucNewGroupchatController" customModule="Tigase_iOS_Messenger" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController restorationIdentifier="MucNewGroupchatController" storyboardIdentifier="MucNewGroupchatController" id="rrb-zc-tVA" userLabel="MucNewGroupchatController" customClass="MucNewGroupchatController" customModule="Siskin" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="44" sectionHeaderHeight="18" sectionFooterHeight="18" id="SX8-AT-EpL">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -854,8 +960,8 @@
         </scene>
     </scenes>
     <resources>
-        <image name="attach" width="72" height="72"/>
+        <image name="attach" width="36" height="36"/>
         <image name="first" width="30" height="30"/>
-        <image name="send" width="72" height="72"/>
+        <image name="send" width="36" height="36"/>
     </resources>
 </document>
