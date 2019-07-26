@@ -88,11 +88,11 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
             cell.nameLabel.textColor = Appearance.current.textColor();
             cell.nameLabel.text = item.name ?? item.key.jid.stringValue;
             cell.nameLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.nameLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.nameLabel.font.pointSize);
-            if Settings.EnableNewUI.getBool() {
+//            if Settings.EnableNewUI.getBool() {
                 cell.lastMessageLabel.textColor = Appearance.current.textColor();
-            } else {
+//            } else {
                 cell.lastMessageLabel.textColor = Appearance.current.secondaryTextColor();
-            }
+//            }
             if item.lastMessage != nil && Settings.EnableMarkdownFormatting.getBool() {
                 let msg = NSMutableAttributedString(string: item.lastMessage!);
                 Markdown.applyStyling(attributedString: msg, font: cell.lastMessageLabel.font, showEmoticons: Settings.ShowEmoticons.getBool())

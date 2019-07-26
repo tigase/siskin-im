@@ -159,7 +159,7 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
             self.messageTextView.textColor = self.originalTextColor;
         } else {
             self.nicknameView?.textColor = Appearance.current.textColor();
-            self.messageTextView?.textColor = Appearance.current.textColor();
+            self.messageTextView?.textColor = Appearance.current.secondaryTextColor();
         }
         
         self.links.removeAll();
