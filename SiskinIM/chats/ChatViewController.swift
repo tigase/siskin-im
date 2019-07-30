@@ -219,7 +219,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
                 let alert = UIAlertController(title: "Details", message: error ?? "Unknown error occurred", preferredStyle: .alert);
                 alert.addAction(UIAlertAction(title: "Resend", style: .default, handler: {(action) in
                     print("resending message with body", item.data ?? "<nil>");
-                    self.sendMessage(body: item.data!, additional: [], completed: nil);
+                    self.sendMessage(body: item.data!, completed: nil);
                 }));
                 alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
                 self.present(alert, animated: true, completion: nil);
@@ -461,25 +461,25 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
             return;
         }
         
-        sendMessage(body: text!, additional: [], completed: {() in
+        sendMessage(body: text!, completed: {() in
             DispatchQueue.main.async {
                 self.messageText = nil;
             }
         });
     }
     
-    func sendMessage(body: String, additional: [Element], preview: String? = nil, completed: (()->Void)?) {
+    func sendMessage(body: String, url: String? = nil, preview: String? = nil, completed: (()->Void)?) {
         let client = xmppService.getClient(forJid: account);
         if client != nil && client!.state == .connected {
             let encryption = self.titleView.encryption ?? ChatEncryption(rawValue: Settings.MessageEncryption.getString() ?? "") ?? .none
             DispatchQueue.global(qos: .default).async {
                 switch encryption {
                 case .none:
-                    self.sendUnencryptedMessage(body: body, completionHandler: { (message) in
+                    self.sendUnencryptedMessage(body: body, url: url, completionHandler: { (message) in
                         completed?();
                     });
                 case .omemo:
-                    self.sendEncryptedMessage(body: body, completionHandler: { (message) in
+                    self.sendEncryptedMessage(body: body, url: url, completionHandler: { (message) in
                         completed?();
                     });
                 }
@@ -505,8 +505,8 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         }
     }
     
-    fileprivate func sendUnencryptedMessage(body: String, completionHandler: @escaping (Message)->Void) {
-        guard let (message, messageModule) = createMessage(body: body) else {
+    fileprivate func sendUnencryptedMessage(body: String, url: String?, completionHandler: @escaping (Message)->Void) {
+        guard let (message, messageModule) = createMessage(body: body, url: url) else {
             return;
         }
         
@@ -517,7 +517,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         }
     }
     
-    fileprivate func sendEncryptedMessage(body: String, completionHandler: @escaping (Message)->Void) {
+    fileprivate func sendEncryptedMessage(body: String, url: String?, completionHandler: @escaping (Message)->Void) {
         guard let (message, messageModule) = createMessage(body: body) else {
             return;
         }
@@ -529,7 +529,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
             print("NO OMEMO MODULE!");
             return;
         }
-        let completionHandler: ((EncryptionResult<Message, SignalError>)->Void)? = { (result) in
+        let completionHandler: ((EncryptionResult<Message, SignalError>)->Void) = { (result) in
             switch result {
             case .failure(let error):
                 switch error {
@@ -539,7 +539,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
                         alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
                         alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { action in
                             self.xmppService.dbChatStore.changeChatEncryption(for: account, with: jid.bareJid, to: ChatEncryption.none, completionHandler: {
-                                self.sendUnencryptedMessage(body: body, completionHandler: completionHandler);
+                                self.sendUnencryptedMessage(body: body, url: url, completionHandler: completionHandler);
                             })
                         }))
                         self.present(alert, animated: true, completion: nil);
@@ -559,10 +559,10 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
             }
         };
         
-        omemoModule.send(message: message, completionHandler: completionHandler!);
+        omemoModule.send(message: message, completionHandler: completionHandler);
     }
     
-    fileprivate func createMessage(body: String) -> (Message, MessageModule)? {
+    fileprivate func createMessage(body: String, url: String? = nil) -> (Message, MessageModule)? {
         guard let messageModule: MessageModule = XmppService.instance.getClient(forJid: account)?.modulesManager.getModule(MessageModule.ID) else {
             return nil;
         }
@@ -572,6 +572,9 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         }
         
         let message = chat.createMessage(body);
+        if url != nil {
+            message.oob = url;
+        }
         if Settings.MessageDeliveryReceiptsEnabled.getBool() {
             message.messageDelivery = MessageDeliveryReceiptEnum.request;
         }

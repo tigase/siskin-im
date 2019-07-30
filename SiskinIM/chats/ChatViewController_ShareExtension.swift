@@ -34,7 +34,7 @@ protocol BaseChatViewController_ShareImageExtension: class {
     var jid: JID! { get }
     
     
-    func sendMessage(body: String, additional: [Element], preview: String?, completed: (()->Void)?);
+    func sendMessage(body: String, url: String?, preview: String?, completed: (()->Void)?);
     
     func present(_ controller: UIViewController, animated: Bool, completion: (()->Void)?);
 }
@@ -134,11 +134,8 @@ class BaseChatViewController_ShareImagePickerDelegate: NSObject, UIImagePickerCo
                             self.showAlert(title: "Upload failed", message: "Upload to HTTP server failed.");
                             return;
                         }
-                        let x = Element(name: "x", xmlns: "jabber:x:oob");
-                        x.addChild(Element(name: "url", cdata: slot.getUri.absoluteString));
-                        
                         ImageCache.shared.set(image: photo) { (key) in
-                            self.controller.sendMessage(body: slot.getUri.absoluteString, additional: [x], preview: "preview:image:\(key)", completed: nil);
+                            self.controller.sendMessage(body: slot.getUri.absoluteString, url: slot.getUri.absoluteString, preview: "preview:image:\(key)", completed: nil);
                         }
                         }.resume();
                 }, onError: { (error, message) in

@@ -288,7 +288,7 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
             return;
         }
         
-        self.sendMessage(body: text!, additional: [], completed: {() in
+        self.sendMessage(body: text!, url: nil, completed: {() in
             DispatchQueue.main.async {
                 self.messageText = nil;
             }
@@ -299,8 +299,8 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
         self.showPhotoSelector(sender);
     }
 
-    func sendMessage(body: String, additional: [Element], preview: String? = nil, completed: (()->Void)?) {
-        self.room!.sendMessage(body, additionalElements: additional);
+    func sendMessage(body: String, url: String? = nil, preview: String? = nil, completed: (()->Void)?) {
+        self.room!.sendMessage(body, url: url, additionalElements: []);
         completed?();
     }
 
