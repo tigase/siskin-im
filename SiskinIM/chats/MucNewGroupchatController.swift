@@ -224,6 +224,10 @@ class MucNewGroupchatController: CustomTableViewController, UIPickerViewDataSour
                             PEPBookmarksModule.updateOrAdd(xmppService: xmppService, for: accountJid, bookmark: Bookmarks.Conference(name: roomName, jid: room.jid, autojoin: true, nick: roomNickname, password: nil));
                         }, onError: nil);
                     }, onError: nil);
+                }, onJoined: { room in
+                    room.registerForTigasePushNotification(true, completionHandler: { (result) in
+                        print("automatically enabled push for:", room.roomJid, "result:", result);
+                    })
                 });
             };
             self.navigationController?.pushViewController(controller, animated: true);
@@ -261,6 +265,10 @@ class MucNewGroupchatController: CustomTableViewController, UIPickerViewDataSour
                         PEPBookmarksModule.updateOrAdd(xmppService: self.xmppService, for: accountJid, bookmark:  Bookmarks.Conference(name: roomName, jid: room.jid, autojoin: true, nick: roomNickname, password: nil));
                     }, onError: nil);
                 }, onError: nil);
+            }, onJoined: { room in
+                room.registerForTigasePushNotification(true, completionHandler: { (result) in
+                    print("automatically enabled push for:", room.roomJid, "result:", result);
+                })
             });
             
             self.dismiss(animated: true, completion: nil);

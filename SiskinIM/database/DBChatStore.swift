@@ -117,14 +117,15 @@ open class DBChatStoreWrapper: ChatStore {
 
 open class DBChatStore {
     
-    fileprivate static let CHATS_GET = "SELECT id, type, thread_id, resource, nickname, password, timestamp FROM chats WHERE account = :account AND jid = :jid";
-    fileprivate static let CHATS_LIST = "SELECT id, jid, type, thread_id, resource, nickname, password, timestamp FROM chats WHERE account = :account";
+    fileprivate static let CHATS_GET = "SELECT id, type, thread_id, resource, nickname, password, timestamp, options FROM chats WHERE account = :account AND jid = :jid";
+    fileprivate static let CHATS_LIST = "SELECT id, jid, type, thread_id, resource, nickname, password, timestamp, options FROM chats WHERE account = :account";
     fileprivate static let CHAT_IS = "SELECT count(id) as count FROM chats WHERE account = :account AND jid = :jid";
     fileprivate static let CHAT_OPEN = "INSERT INTO chats (account, jid, timestamp, type, resource, thread_id) VALUES (:account, :jid, :timestamp, :type, :resource, :thread)";
     fileprivate static let ROOM_OPEN = "INSERT INTO chats (account, jid, timestamp, type, nickname, password) VALUES (:account, :jid, :timestamp, :type, :nickname, :password)";
     fileprivate static let CHAT_CLOSE = "DELETE FROM chats WHERE id = :id";
     fileprivate static let CHATS_COUNT = "SELECT count(id) as count FROM chats WHERE account = :account";
     fileprivate static let UPDATE_CHAT_NAME = "UPDATE chats SET name = ? WHERE account = ? AND jid = ?";
+    fileprivate static let UPDATE_CHAT_OPTIONS = "UPDATE chats SET options = ? WHERE account = ? AND jid = ?";
     fileprivate static let UPDATE_CHAT_ENCRYPTION = "UPDATE chats SET encryption = :encryption WHERE account = :account AND jid = :jid";
     
     fileprivate let dbConnection:DBConnection;
@@ -136,6 +137,7 @@ open class DBChatStore {
     fileprivate lazy var openRoomStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.ROOM_OPEN);
     fileprivate lazy var closeChatStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHAT_CLOSE);
     fileprivate lazy var countStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHATS_COUNT);
+    fileprivate let updateChatOptionsStmt: DBStatement;
     fileprivate let updateChatNameStmt:DBStatement;
     fileprivate let updateChatEncryptionStmt: DBStatement;
     
@@ -152,7 +154,7 @@ open class DBChatStore {
         self.updateMessageDraftStmt = try! dbConnection.prepareStatement("UPDATE chats SET message_draft = ? WHERE account = ? AND jid = ?");
         self.updateChatNameStmt = try! self.dbConnection.prepareStatement(DBChatStore.UPDATE_CHAT_NAME);
         self.updateChatEncryptionStmt = try! self.dbConnection.prepareStatement(DBChatStore.UPDATE_CHAT_ENCRYPTION);
-        
+        self.updateChatOptionsStmt = try! self.dbConnection.prepareStatement(DBChatStore.UPDATE_CHAT_OPTIONS);
         NotificationCenter.default.addObserver(self, selector: #selector(DBChatStore.accountRemoved), name: NSNotification.Name(rawValue: "accountRemoved"), object: nil);
     }
     
@@ -180,6 +182,9 @@ open class DBChatStore {
                         (r as! DBRoom).id = cursor["id"];
                         (r as! DBRoom).password = password;
                         (r as! DBRoom).lastMessageDate = cursor["timestamp"];
+                        if let dataStr: String = cursor["options"], let data = dataStr.data(using: .utf8), let options = try? JSONDecoder().decode(RoomOptions.self, from: data) {
+                            (r as! DBRoom).options = options;
+                        }
                         return r;
                     }
                     break;
@@ -215,6 +220,9 @@ open class DBChatStore {
                         (r as! DBRoom).id = cursor["id"];
                         (r as! DBRoom).password = password;
                         (r as! DBRoom).lastMessageDate = cursor["timestamp"];
+                        if let dataStr: String = cursor["options"], let data = dataStr.data(using: .utf8), let options = try? JSONDecoder().decode(RoomOptions.self, from: data) {
+                            (r as! DBRoom).options = options;
+                        }
                         return r;
                     }
                     break;
@@ -249,6 +257,9 @@ open class DBChatStore {
                         (r as! DBRoom).id = id;
                         (r as! DBRoom).password = password;
                         (r as! DBRoom).lastMessageDate = cursor["timestamp"];
+                        if let dataStr: String = cursor["options"], let data = dataStr.data(using: .utf8), let options = try? JSONDecoder().decode(RoomOptions.self, from: data) {
+                            (r as! DBRoom).options = options;
+                        }
                         return r;
                     }
                     break;
@@ -358,6 +369,19 @@ open class DBChatStore {
         }
     }
     
+    open func updateOptions(account: BareJID, jid: BareJID, options: ChatOptionsProtocol) {
+        switch options {
+        case let options as RoomOptions:
+            let data = try? JSONEncoder().encode(options);
+            let dataStr = data != nil ? String(data: data!, encoding: .utf8)! : nil;
+            self.updateChatOptionsStmt.dispatcher.async {
+                _ = try? self.updateChatOptionsStmt.update(dataStr, account, jid);
+            }
+        default:
+            break;
+        }
+    }
+    
     open func updateMessageDraft(account: BareJID, jid: BareJID, draft: String?) {
         updateMessageDraftStmt.dispatcher.async {
             _ = try? self.updateMessageDraftStmt.update(draft, account, jid);
@@ -390,6 +414,10 @@ extension ChatProtocol {
             return nil;
         }
     }
+    
+}
+
+public protocol ChatOptionsProtocol {
     
 }
 

@@ -173,6 +173,27 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
                         } else {
                             PEPBookmarksModule.remove(xmppService: xmppService, from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false));
                             mucModule?.leave(room: room);
+
+                            room.checkTigasePushNotificationRegistrationStatus { (result) in
+                                switch result {
+                                case .failure(_):
+                                    break;
+                                case .success(let value):
+                                    guard value else {
+                                        return;
+                                    }
+                                    room.registerForTigasePushNotification(false, completionHandler: { (regResult) in
+                                        DispatchQueue.main.async {
+                                            let alert = UIAlertController(title: "Push notifications", message: "You've left there room \((room as? DBRoom)?.roomName ?? room.roomJid.stringValue) and push notifications for this room were disabled!\nYou may need to reenable them on other devices.", preferredStyle: .actionSheet);
+                                            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                                            alert.popoverPresentationController?.sourceView = self.view;
+                                            alert.popoverPresentationController?.sourceRect = tableView.rectForRow(at: indexPath);
+                                            self.present(alert, animated: true, completion: nil);
+                                        }
+                                    })
+                                }
+                            }
+
                             discardNotifications = true;
                         }
                     } else {

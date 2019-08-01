@@ -157,6 +157,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         //xmppService.applicationState = .active;
         //self.keepOnlineOnAwayTimer?.execute();
         //self.keepOnlineOnAwayTimer = nil;
+        UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
+            let toDiscard = notifications.filter({(notification) in  notification.request.content.categoryIdentifier == "MESSAGE_NO_SENDER"}).map({ (notiication) -> String in
+                return notiication.request.identifier;
+            });
+            guard !toDiscard.isEmpty else {
+                return;
+            }
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toDiscard)
+            self.updateApplicationIconBadgeNumber(completionHandler: nil);
+        }
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
@@ -310,7 +320,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             }
             
             if topController != nil {
-                let controller = topController!.storyboard?.instantiateViewController(withIdentifier: "ChatViewNavigationController");
+                let controller = (userInfo["type"] as? String == "muc") ? UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "RoomViewNavigationController") : topController!.storyboard?.instantiateViewController(withIdentifier: "ChatViewNavigationController");
                 let navigationController = controller as? UINavigationController;
                 let destination = navigationController?.visibleViewController ?? controller;
                 
@@ -371,7 +381,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        if notification.request.content.categoryIdentifier == "MESSAGE" {
+        if notification.request.content.categoryIdentifier == "MESSAGE" || notification.request.content.categoryIdentifier == "MESSAGE_NO_SENDER" {
             let account = notification.request.content.userInfo["account"] as? String;
             let sender = notification.request.content.userInfo["sender"] as? String;
             if (isChatVisible(account: account, with: sender) && xmppService.applicationState == .active) {
@@ -450,37 +460,62 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         print("Push notification received with fetch request: \(userInfo)");
         //let fetchStart = Date();
-        if let account = JID(userInfo[AnyHashable("account")] as? String), let unreadMessages = userInfo[AnyHashable("unread-messages")] as? Int {
-            if let sender = JID(userInfo[AnyHashable("sender")] as? String) {
-                if let body = userInfo[AnyHashable("body")] as? String {
-                    notifyNewMessage(account: account, sender: sender, body: body, type: "chat", data: userInfo, isPush: true) {
+        if let account = JID(userInfo[AnyHashable("account")] as? String) {
+            if let unreadMessages = userInfo[AnyHashable("unread-messages")] as? Int {
+                if let sender = JID(userInfo[AnyHashable("sender")] as? String) {
+                    if let body = userInfo[AnyHashable("body")] as? String {
+                        let nickname = userInfo[AnyHashable("nickname")] as? String;
+                        notifyNewMessage(account: account, sender: sender, body: body, type: nickname == nil ? "chat" : "muc", data: userInfo, isPush: true) {
+                            completionHandler(.newData);
+                        }
+                        return;
+                    } else {
+                        notifyNewMessageWaiting(account: account) {
+                            completionHandler(.newData);
+                        }
+                        return;
+                    }
+                }
+                else if unreadMessages == 0 {
+                    let state = self.xmppService.getClient(forJid: account.bareJid)?.state;
+                    print("unread messages retrieved, client state =", state as Any);
+                    if state != .connected {
+                        dismissPushNotifications(for: account) {
+                            completionHandler(.newData);
+                        }
+                        return;
+                    }
+                } else {
+                    notifyNewMessageWaiting(account: account) {
                         completionHandler(.newData);
                     }
-                    return;
                 }
-            // what is the point of fetching data/offline messages here?
-            // we should do this on user request!
-//            print(Date(), "starting fetching data");
-//            xmppService.preformFetch(for: account.bareJid) {(result) in
-//                completionHandler(result);
-//                let fetchEnd = Date();
-//                let time = fetchEnd.timeIntervalSince(fetchStart);
-//                print(Date(), "fetched date in \(time) seconds with result = \(result)");
-//            };
-            }
-            else if unreadMessages == 0 {
-                let state = self.xmppService.getClient(forJid: account.bareJid)?.state;
-                print("unread messages retrieved, client state =", state as Any);
-                if state != .connected {
-                    dismissPushNotifications(for: account) {
-                        completionHandler(.newData);
-                    }
-                    return;
+            } else {
+                notifyNewMessageWaiting(account: account) {
+                    completionHandler(.newData);
                 }
+                return;
             }
         }
         
         completionHandler(.newData);
+    }
+    
+    func notifyNewMessageWaiting(account: JID, completionHandler: @escaping ()->Void) {
+        let threadId = "account=" + account.stringValue;
+        UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
+            let content = UNMutableNotificationContent();
+            content.body = "New message received!";
+            content.sound = UNNotificationSound.default;
+            content.categoryIdentifier = "MESSAGE_NO_SENDER";
+            content.userInfo = ["account": account.stringValue, "push": true];
+            content.threadIdentifier = threadId;
+                
+            UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil), withCompletionHandler: {(error) in
+                print("message notification error", error as Any);
+                self.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
+            });
+        }
     }
     
     func notifyNewMessage(account: JID, sender: JID, body: String, type: String?, data userInfo: [AnyHashable:Any], isPush: Bool, completionHandler: (()->Void)?) {
@@ -491,10 +526,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         var alertBody: String?;
         switch (type ?? "chat") {
         case "muc":
-            guard body.contains(userInfo["roomNickname"] as! String), let nick = userInfo["senderName"] as? String else {
+            guard let mucModule: MucModule = xmppService.getClient(forJid: account.bareJid)?.modulesManager.getModule(MucModule.ID) else {
                 return;
             }
-            alertBody = "\(nick) mentioned you: \(body)";
+            guard let room: DBRoom = mucModule.roomsManager.getRoom(for: sender.bareJid) as? DBRoom else {
+                return;
+            }
+            guard let nick = userInfo["senderName"] as? String ?? userInfo[AnyHashable("nickname")] as? String else {
+                return;
+            }
+
+            switch room.options.notifications {
+            case .none:
+                return;
+            case .always:
+                alertBody = "\(nick): \(body)";
+            case .mention:
+                let myNickname = room.nickname;
+                if body.contains(myNickname) {
+                    alertBody = "\(nick) mentioned you: \(body)";
+                } else {
+                    return;
+                }
+            }
         default:
             guard let sessionObject = xmppService.getClient(forJid: account.bareJid)?.sessionObject else {
                 return;
@@ -520,7 +574,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 //content.title = "Received new message from \(senderName!)";
                 content.body = alertBody!;
                 content.sound = UNNotificationSound.default;
-                content.userInfo = ["account": account.stringValue, "sender": sender.bareJid.stringValue, "push": isPush];
+                content.userInfo = ["account": account.stringValue, "sender": sender.bareJid.stringValue, "push": isPush, "type": (type ?? "chat")];
                 content.categoryIdentifier = "MESSAGE";
                 content.threadIdentifier = threadId;
                 
@@ -546,7 +600,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
     func dismissPushNotifications(for account: JID, completionHandler: (()-> Void)?) {
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
-            let toRemove = notifications.filter({ (notification) in notification.request.content.categoryIdentifier == "MESSAGE" }).filter({ (notification) in (notification.request.content.userInfo["account"] as? String) == account.stringValue && (notification.request.content.userInfo["push"] as? Bool ?? false) }).map({ (notification) in notification.request.identifier });
+            let toRemove = notifications.filter({ (notification) in notification.request.content.categoryIdentifier == "MESSAGE" || notification.request.content.categoryIdentifier == "MESSAGE_NO_SENDER" }).filter({ (notification) in (notification.request.content.userInfo["account"] as? String) == account.stringValue && (notification.request.content.userInfo["push"] as? Bool ?? false) }).map({ (notification) in notification.request.identifier });
             UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
             self.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
         }

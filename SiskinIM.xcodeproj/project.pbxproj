@@ -131,6 +131,8 @@
 		FEDE93991D0C207100CA60A9 /* ContactBasicTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE93981D0C207100CA60A9 /* ContactBasicTableViewCell.swift */; };
 		FEDE939B1D0C38B000CA60A9 /* ContactFormTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE939A1D0C38B000CA60A9 /* ContactFormTableViewCell.swift */; };
 		FEE097621F1FCE1800B1CEAB /* TablePicketViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE097611F1FCE1800B1CEAB /* TablePicketViewController.swift */; };
+		FEE9608A22F191980009B191 /* MucChatSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE9608922F191980009B191 /* MucChatSettingsViewController.swift */; };
+		FEE9608C22F2F8950009B191 /* db-schema-6.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEE9608B22F2F8950009B191 /* db-schema-6.sql */; };
 		FEF80DB21CDBBBFE005645A7 /* AccountSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF80DB11CDBBBFE005645A7 /* AccountSettingsViewController.swift */; };
 		FEFB63AD1F31E4EE00EFB3E7 /* MainTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEFB63AC1F31E4EE00EFB3E7 /* MainTabBarController.swift */; };
 /* End PBXBuildFile section */
@@ -302,6 +304,8 @@
 		FEDE93981D0C207100CA60A9 /* ContactBasicTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactBasicTableViewCell.swift; sourceTree = "<group>"; };
 		FEDE939A1D0C38B000CA60A9 /* ContactFormTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactFormTableViewCell.swift; sourceTree = "<group>"; };
 		FEE097611F1FCE1800B1CEAB /* TablePicketViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TablePicketViewController.swift; sourceTree = "<group>"; };
+		FEE9608922F191980009B191 /* MucChatSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MucChatSettingsViewController.swift; sourceTree = "<group>"; };
+		FEE9608B22F2F8950009B191 /* db-schema-6.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-6.sql"; sourceTree = "<group>"; };
 		FEF80DB11CDBBBFE005645A7 /* AccountSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountSettingsViewController.swift; sourceTree = "<group>"; };
 		FEFB63AC1F31E4EE00EFB3E7 /* MainTabBarController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainTabBarController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -382,6 +386,7 @@
 				FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithContextMenuAndToolbar.swift */,
 				FE8DD9C4221B153A0090F5AA /* InviteViewController.swift */,
 				FE8DD9C8221B29520090F5AA /* MucNewGroupchatController.swift */,
+				FEE9608922F191980009B191 /* MucChatSettingsViewController.swift */,
 			);
 			path = chats;
 			sourceTree = "<group>";
@@ -526,6 +531,7 @@
 				FE4496C31F87911C009F649C /* db-schema-3.sql */,
 				FE8DD9CA221DBED80090F5AA /* db-schema-4.sql */,
 				FE719E732271AF88007CEEC9 /* db-schema-5.sql */,
+				FEE9608B22F2F8950009B191 /* db-schema-6.sql */,
 				FE94E5321CCBA74F00FAE755 /* Info.plist */,
 				FE94E52F1CCBA74F00FAE755 /* LaunchScreen.storyboard */,
 				FE94E52A1CCBA74F00FAE755 /* Main.storyboard */,
@@ -711,6 +717,7 @@
 				FE719E742271AF88007CEEC9 /* db-schema-5.sql in Resources */,
 				FE94E5311CCBA74F00FAE755 /* LaunchScreen.storyboard in Resources */,
 				FE2A0E8E1F74012D006ADF08 /* db-schema-2.sql in Resources */,
+				FEE9608C22F2F8950009B191 /* db-schema-6.sql in Resources */,
 				FE8DD9C3221B118E0090F5AA /* Groupchat.storyboard in Resources */,
 				FE94E52E1CCBA74F00FAE755 /* Assets.xcassets in Resources */,
 				FE4071E621E262D900F09B58 /* VoIP.storyboard in Resources */,
@@ -799,6 +806,7 @@
 				FED353892270C1D000B69C53 /* DBOMEMOStore.swift in Sources */,
 				FE8DD9C5221B153A0090F5AA /* InviteViewController.swift in Sources */,
 				FEB5EC9D1F6AE448007FE0E7 /* BaseChatViewControllerWithContextMenuAndToolbar.swift in Sources */,
+				FEE9608A22F191980009B191 /* MucChatSettingsViewController.swift in Sources */,
 				FE9E136F1F26049A005C0EE5 /* NotificationSettingsViewController.swift in Sources */,
 				FEA8D6641F30F9260077C12F /* XmppService_VCardExtension.swift in Sources */,
 				FE36B3C621F8E87700D1F037 /* CustomTableViewCell.swift in Sources */,

@@ -89,6 +89,29 @@ class MucJoinViewController: CustomTableViewController, UIPickerViewDataSource, 
                         print("unlocked room", room.jid);
                     }, onError: nil);
                 }, onError: nil);
+                if let regModule: InBandRegistrationModule = client!.modulesManager.getModule(InBandRegistrationModule.ID) {
+                    regModule.retrieveRegistrationForm(from: room.jid, onSuccess: { (isForm, form) in
+                        if isForm {
+                            if let nickField: TextSingleField = form.getField(named: "muc#register_roomnick") {
+                                nickField.value = nickname;
+                            }
+                            if let offlineField: BooleanField = form.getField(named: "{http://tigase.org/protocol/muc}offline") {
+                                offlineField.value = true;
+                            }
+                            regModule.submitRegistrationForm(to: room.jid, form: form, onSuccess: {
+                                print("nickname registered!");
+                            }, onError: { (err, msg) in
+                                print("got error:", err, msg);
+                            })
+                        }
+                    }, onError: { (err, msg) in
+                        print("got error:", err, msg);
+                    })
+                }
+            }, onJoined: { room in
+                room.registerForTigasePushNotification(true, completionHandler: { (result) in
+                    print("automatically enabled push for:", room.roomJid, "result:", result);
+                })
             });
             PEPBookmarksModule.updateOrAdd(xmppService: xmppService, for: accountJid, bookmark: Bookmarks.Conference(name: room, jid: JID(BareJID(localPart: room, domain: server)), autojoin: true, nick: nickname, password: password));
             dismissView();

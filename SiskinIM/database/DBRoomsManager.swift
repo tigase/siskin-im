@@ -53,11 +53,54 @@ open class DBRoomsManager: DefaultRoomsManager {
             }
         }
     }
+    
+    open func updateOptions(roomJid: BareJID, options: RoomOptions) {
+        if let room = getRoom(for: roomJid) as? DBRoom {
+            room.options = options;
+            store.updateOptions(account: self.context.sessionObject.userBareJid!, jid: roomJid, options: options);
+        }
+    }
 }
 
 class DBRoom: Room {
     
     var id: Int? = nil;
     var roomName: String? = nil;
+    var options: RoomOptions = RoomOptions();
     
+}
+
+public struct RoomOptions: Codable, ChatOptionsProtocol {
+    
+    var notifications: RoomNotifications;
+    
+    init() {
+        notifications = .mention;
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self);
+        if let val = try container.decodeIfPresent(String.self, forKey: .notifications) {
+            notifications = RoomNotifications(rawValue: val) ?? .mention;
+        } else {
+            notifications = .mention;
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self);
+        if notifications != .mention {
+            try container.encode(notifications.rawValue, forKey: .notifications);
+        }
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case notifications = "notifications"
+    }
+}
+
+enum RoomNotifications: String {
+    case none
+    case mention
+    case always
 }

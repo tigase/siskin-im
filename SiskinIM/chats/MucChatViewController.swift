@@ -68,7 +68,13 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
         titleView = MucTitleView(width: width, height: navBarHeight);
         titleView.name = navigationItem.title;
 
-        self.navigationItem.titleView = titleView;
+        let roomBtn = UIButton(type: .system);
+        roomBtn.frame = CGRect(x: 0, y: 0, width: width, height: navBarHeight);
+        roomBtn.addSubview(titleView);
+        
+        roomBtn.addTarget(self, action: #selector(MucChatViewController.roomInfoClicked(_:)), for: .touchDown);
+        self.navigationItem.titleView = roomBtn;
+        
         initSharing();
     }
 
@@ -304,6 +310,17 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
         completed?();
     }
 
+    @objc func roomInfoClicked(_ sender: UIButton) {
+        print("room info for", account, room?.roomJid, "clicked!");
+        guard let settingsController = self.storyboard?.instantiateViewController(withIdentifier: "MucChatSettingsViewController") as? MucChatSettingsViewController else {
+            return;
+        }
+        settingsController.account = self.account;
+        settingsController.room = self.room as? DBRoom;
+        
+        self.navigationController?.pushViewController(settingsController, animated: true);
+    }
+    
     func handle(event: Event) {
         switch event {
         case let e as MucModule.JoinRequestedEvent:
