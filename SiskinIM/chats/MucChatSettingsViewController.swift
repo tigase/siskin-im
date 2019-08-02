@@ -123,12 +123,10 @@ class MucChatSettingsViewController: CustomTableViewController {
             })!;
             controller.onSelectionChange = { item in
                 self.notificationsField.text = item.description;
-                var options = self.room.options;
-                options.notifications = (item as! NotificationItem).type;
-                guard let mucModule: MucModule = XmppService.instance.getClient(forJid: self.account)?.modulesManager.getModule(MucModule.ID), let roomManager = mucModule.roomsManager as? DBRoomsManager else {
-                    return;
-                }
-                roomManager.updateOptions(roomJid: self.room.roomJid, options: options);
+                
+                self.room.modifyOptions({ (options) in
+                    options.notifications = (item as! NotificationItem).type;
+                })
             }
             self.navigationController?.pushViewController(controller, animated: true);
         }

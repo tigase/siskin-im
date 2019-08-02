@@ -20,6 +20,7 @@
 //
 
 import Foundation
+import TigaseSwift
 
 public class DBSchemaManager {
     
@@ -59,6 +60,31 @@ public class DBSchemaManager {
             try dbConnection.execute("select error from chat_history");
         } catch {
             try dbConnection.execute("ALTER TABLE chat_history ADD COLUMN error TEXT;");
+        }
+        
+        let queryStmt = try dbConnection.prepareStatement("SELECT account, jid, encryption FROM chats WHERE encryption IS NOT NULL AND options IS NULL");
+        let toConvert = try queryStmt.query { (cursor) -> (BareJID, BareJID, ChatEncryption)? in
+            let account: BareJID = cursor["account"]!;
+            let jid: BareJID = cursor["jid"]!;
+            guard let encryptionStr: String = cursor["encryption"] else {
+                return nil;
+            }
+            guard let encryption = ChatEncryption(rawValue: encryptionStr) else {
+                return nil;
+            }
+            
+            return (account, jid, encryption);
+        }
+        if !toConvert.isEmpty {
+            let updateStmt = try dbConnection.prepareStatement("UPDATE chats SET options = ?, encryption = null WHERE account = ? AND jid = ?");
+            try toConvert.forEach { (arg0) in
+                let (account, jid, encryption) = arg0
+                var options = ChatOptions();
+                options.encryption = encryption;
+                let data = try? JSONEncoder().encode(options);
+                let dataStr = data != nil ? String(data: data!, encoding: .utf8)! : nil;
+                _ = try updateStmt.update(dataStr, account, jid);
+            }
         }
     }
     

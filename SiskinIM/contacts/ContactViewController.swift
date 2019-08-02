@@ -40,7 +40,12 @@ class ContactViewController: CustomTableViewController {
             self.reloadData();
         }
     }
-    var encryption: ChatEncryption? = nil;
+    var encryption: ChatEncryption? {
+        get {
+            return chat?.options.encryption;
+        }
+    }
+    var chat: DBChat?;
     var omemoIdentities: [Identity] = [];
     
     var addresses: [VCard.Address] {
@@ -60,6 +65,10 @@ class ContactViewController: CustomTableViewController {
         xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
         super.viewDidLoad()
 
+        if self.chat == nil {
+            chat = DBChatStore.instance.getChat(for: account, with: jid) as? DBChat;
+        }
+        
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
 
@@ -281,10 +290,7 @@ class ContactViewController: CustomTableViewController {
             if indexPath.row == 0 {
                 // handle change of encryption method!
                 let current = self.encryption;
-                let account = self.account!;
-                let jid = self.jid!;
                 let controller = TablePickerViewController(style: .grouped);
-                let xmppService = self.xmppService;
                 let values: [ChatEncryption?] = [nil, ChatEncryption.none, ChatEncryption.omemo];
                 controller.selected = current == nil ? 0 : (current! == .omemo ? 2 : 1);
                 controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
@@ -292,10 +298,14 @@ class ContactViewController: CustomTableViewController {
                 });
                 //controller.selected = 1;
                 controller.onSelectionChange = { (_item) -> Void in
-                    let item = _item as! ContactMessageEncryptionItem;
-                    xmppService?.dbChatStore.changeChatEncryption(for: account, with: jid, to: item.value) {
+                    guard let item = _item as? ContactMessageEncryptionItem, let chat = self.chat else {
+                        return;
+                    }
+                    
+                    chat.modifyOptions({ (options) in
+                        options.encryption = item.value;
+                    }) {
                         DispatchQueue.main.async {
-                            self.encryption = item.value;
                             self.reloadData();
                         }
                     }

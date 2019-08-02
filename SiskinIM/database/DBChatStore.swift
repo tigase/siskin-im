@@ -24,98 +24,65 @@ import TigaseSwift
 
 open class DBChatStoreWrapper: ChatStore {
     
-    fileprivate let cache: NSCache<NSString, AnyObject>?;
     fileprivate let store: DBChatStore;
     fileprivate let sessionObject: SessionObject;
     
     open var count:Int {
-        return store.count(for: sessionObject);
+        return store.count(for: sessionObject.userBareJid!);
     }
     
     open var items:[ChatProtocol] {
-        return store.getAll(for: sessionObject);
+        return store.getChats(for: sessionObject.userBareJid!);
     }
     
     public let dispatcher: QueueDispatcher;
         
-    public init(sessionObject:SessionObject, store:DBChatStore, useCache: Bool = true) {
+    public init(sessionObject:SessionObject) {
         self.sessionObject = sessionObject;
-        self.store = store;
-        self.cache = useCache ? NSCache() : nil;
-        self.cache?.countLimit = 100;
-        self.cache?.totalCostLimit = 512 * 1024;
+        self.store = DBChatStore.instance;
         self.dispatcher = store.dispatcher;
     }
     
-    open func getChat<T: AnyObject>(with jid: BareJID, filter: @escaping (T) -> Bool) -> T? {
-        return self.dispatcher.sync {
-            if cache != nil {
-                let key = createKey(jid: jid);
-                if let chats = self.cache!.object(forKey: key as NSString) as? [T] {
-                    for chat in chats {
-                        if filter(chat) {
-                            return chat;
-                        }
-                    }
-                    return nil;
-                }
-                
-                let chats: [T] = self.store.getAll(for: self.sessionObject, with: jid);
-                guard !chats.isEmpty else {
-                    return nil;
-                }
-                
-                self.cache?.setObject(chats as NSArray, forKey: key as NSString);
-                
-                for chat in chats {
-                    if filter(chat) {
-                        return chat;
-                    }
-                }
-                return nil;
-            } else {
-               return store.get(for: sessionObject, with: jid, filter: filter);
-            }
-        }
+    deinit {
+        self.store.unloadChats(for: self.sessionObject.userBareJid!);
     }
     
-    open func getAllChats<T>() -> [T] {
-        return store.getAll(for: sessionObject);
+    open func getChat<T>(with jid: BareJID, filter: @escaping (T) -> Bool) -> T? where T: ChatProtocol {
+        return store.getChat(for: sessionObject.userBareJid!, with: jid) as? T;
+    }
+    
+    open func getAllChats<T>() -> [T] where T :  ChatProtocol {
+        return items as! [T];
     }
     
     open func isFor(jid: BareJID) -> Bool {
-        return store.isFor(sessionObject, jid: jid);
+        return store.getChat(for: sessionObject.userBareJid!, with: jid) != nil;
     }
     
     open func open<T: AnyObject>(chat:ChatProtocol) -> T? {
-        return self.dispatcher.sync(flags: .barrier) {
-            let dbChat: T? = store.open(for: sessionObject, chat: chat);
-            if dbChat != nil && cache != nil {
-                let key = self.createKey(jid: chat.jid.bareJid);
-                var chats = (self.cache!.object(forKey: key as NSString) as? [T]) ?? [];
-                chats.append(dbChat!);
-                self.cache?.setObject(chats as NSArray, forKey: key as NSString);
-            }
-            return dbChat;
-        }
+        return store.open(for: sessionObject.userBareJid!, chat: chat);
     }
     
     open func close(chat:ChatProtocol) -> Bool {
-        return self.dispatcher.sync(flags: .barrier) {
-            let closed = store.close(chat: chat);
-            if closed && cache != nil {
-                self.cache?.removeObject(forKey: self.createKey(jid: chat.jid.bareJid) as NSString);
-            }
-            return closed;
-        }
+        return store.close(for: sessionObject.userBareJid!, chat: chat);
+    }
+ 
+    open func initialize() {
+        store.loadChats(for: sessionObject.userBareJid!, context: sessionObject.context);
     }
     
-    fileprivate func createKey(jid: BareJID) -> String {
-        return jid.stringValue.lowercased();
+    public func deinitialize() {
+        store.unloadChats(for: sessionObject.userBareJid!);
     }
 }
 
 open class DBChatStore {
+    
+    static let CHAT_OPENED = Notification.Name("CHAT_OPENED");
+    static let CHAT_CLOSED = Notification.Name("CHAT_CLOSED");
+    static let CHAT_UPDATED = Notification.Name("CHAT_UPDATED");
+
+    public static let instance = DBChatStore.init();
     
     fileprivate static let CHATS_GET = "SELECT id, type, thread_id, resource, nickname, password, timestamp, options FROM chats WHERE account = :account AND jid = :jid";
     fileprivate static let CHATS_LIST = "SELECT id, jid, type, thread_id, resource, nickname, password, timestamp, options FROM chats WHERE account = :account";
@@ -126,259 +93,264 @@ open class DBChatStore {
     fileprivate static let CHATS_COUNT = "SELECT count(id) as count FROM chats WHERE account = :account";
     fileprivate static let UPDATE_CHAT_NAME = "UPDATE chats SET name = ? WHERE account = ? AND jid = ?";
     fileprivate static let UPDATE_CHAT_OPTIONS = "UPDATE chats SET options = ? WHERE account = ? AND jid = ?";
-    fileprivate static let UPDATE_CHAT_ENCRYPTION = "UPDATE chats SET encryption = :encryption WHERE account = :account AND jid = :jid";
     
     fileprivate let dbConnection:DBConnection;
     
-    fileprivate lazy var getStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHATS_GET);
-    fileprivate lazy var getAllStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHATS_LIST);
-    fileprivate lazy var isForStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHAT_IS);
-    fileprivate lazy var openChatStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHAT_OPEN);
-    fileprivate lazy var openRoomStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.ROOM_OPEN);
-    fileprivate lazy var closeChatStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHAT_CLOSE);
-    fileprivate lazy var countStmt:DBStatement! = try? self.dbConnection.prepareStatement(DBChatStore.CHATS_COUNT);
+    fileprivate let getStmt: DBStatement;
+    fileprivate let getAllStmt: DBStatement;
+    fileprivate let isForStmt: DBStatement;
+    fileprivate let openChatStmt: DBStatement;
+    fileprivate let openRoomStmt: DBStatement;
+    fileprivate let closeChatStmt: DBStatement;
+    fileprivate let countStmt: DBStatement;
     fileprivate let updateChatOptionsStmt: DBStatement;
-    fileprivate let updateChatNameStmt:DBStatement;
-    fileprivate let updateChatEncryptionStmt: DBStatement;
+    fileprivate let updateChatNameStmt: DBStatement;
     
     fileprivate let updateMessageDraftStmt: DBStatement;
     fileprivate let getMessageDraftStmt: DBStatement;
     
+    fileprivate var accountChats = [BareJID: AccountChats]();
+    
     public let dispatcher: QueueDispatcher;
+    
+    public convenience init() {
+        self.init(dbConnection: DBConnection.main, dispatcher: QueueDispatcher(label: "chat_store"));
+    }
     
     public init(dbConnection:DBConnection, dispatcher: QueueDispatcher? = nil) {
         self.dbConnection = dbConnection;
         self.dispatcher = dispatcher ?? QueueDispatcher(queue: DispatchQueue(label: "db_chat_store_queue", attributes: DispatchQueue.Attributes.concurrent), queueTag: DispatchSpecificKey<DispatchQueue?>());
 
+        self.getStmt = try! self.dbConnection.prepareStatement(DBChatStore.CHATS_GET);
+        self.getAllStmt = try! self.dbConnection.prepareStatement(DBChatStore.CHATS_LIST);
+        self.isForStmt = try! self.dbConnection.prepareStatement(DBChatStore.CHAT_IS);
+        self.openChatStmt = try! self.dbConnection.prepareStatement(DBChatStore.CHAT_OPEN);
+        self.openRoomStmt = try! self.dbConnection.prepareStatement(DBChatStore.ROOM_OPEN);
+        self.closeChatStmt = try! self.dbConnection.prepareStatement(DBChatStore.CHAT_CLOSE);
+        self.countStmt = try! self.dbConnection.prepareStatement(DBChatStore.CHATS_COUNT);
         self.getMessageDraftStmt = try! dbConnection.prepareStatement("SELECT message_draft FROM chats WHERE account = ? AND jid = ?");
         self.updateMessageDraftStmt = try! dbConnection.prepareStatement("UPDATE chats SET message_draft = ? WHERE account = ? AND jid = ?");
         self.updateChatNameStmt = try! self.dbConnection.prepareStatement(DBChatStore.UPDATE_CHAT_NAME);
-        self.updateChatEncryptionStmt = try! self.dbConnection.prepareStatement(DBChatStore.UPDATE_CHAT_ENCRYPTION);
         self.updateChatOptionsStmt = try! self.dbConnection.prepareStatement(DBChatStore.UPDATE_CHAT_OPTIONS);
+        
         NotificationCenter.default.addObserver(self, selector: #selector(DBChatStore.accountRemoved), name: NSNotification.Name(rawValue: "accountRemoved"), object: nil);
     }
     
-    open func count(for sessionObject: SessionObject) -> Int {
-        let params:[String:Any?] = [ "account" : sessionObject.userBareJid?.description ];
-        do {
-            return try countStmt.scalar(params) ?? 0;
-        } catch _ {
-            
-        }
-        return 0;
-    }
-    
-    open func get<T>(for sessionObject: SessionObject, with jid: BareJID, filter: ((T) -> Bool)?) -> T? {
-        let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : jid ];
-        let context = getContext(sessionObject)!;
+    open func count(for account: BareJID) -> Int {
         return dispatcher.sync {
-            return try! self.getStmt.queryFirstMatching(params) { (cursor) -> T? in
-                let type:Int = cursor["type"]!;
-                switch type {
-                case 1:
-                    let nickname: String = cursor["nickname"]!;
-                    let password: String? = cursor["password"];
-                    if let r = DBRoom(context: context, roomJid: jid, nickname: nickname) as? T {
-                        (r as! DBRoom).id = cursor["id"];
-                        (r as! DBRoom).password = password;
-                        (r as! DBRoom).lastMessageDate = cursor["timestamp"];
-                        if let dataStr: String = cursor["options"], let data = dataStr.data(using: .utf8), let options = try? JSONDecoder().decode(RoomOptions.self, from: data) {
-                            (r as! DBRoom).options = options;
-                        }
-                        return r;
-                    }
-                    break;
-                default:
-                    let resource:String? = cursor["resource"];
-                    let thread:String? = cursor["thread_id"];
-                    let jid = JID(jid, resource: resource);
-                    let c = DBChat(jid: jid, thread: thread);
-                    c.id = cursor["id"];
-                    if let chat = c as? T {
-                        if filter == nil || filter!(chat) {
-                            return chat;
-                        }
-                    }
-                }
-                return nil;
-            }
+            return self.accountChats[account]?.count ?? 0;
         }
     }
     
-    open func getAll<T>(for sessionObject: SessionObject, with forJid: BareJID) -> [T] {
-        let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : forJid ];
-        let context = getContext(sessionObject)!;
+    open func getChats() -> [DBChatProtocol] {
         return dispatcher.sync {
-            try! self.getStmt.query(params) { (cursor) -> T? in
-                let type:Int = cursor["type"]!;
-                switch type {
-                case 1:
-                    let jid: BareJID = forJid;
-                    let nickname: String = cursor["nickname"]!;
-                    let password: String? = cursor["password"];
-                    if let r = DBRoom(context: context, roomJid: jid, nickname: nickname) as? T {
-                        (r as! DBRoom).id = cursor["id"];
-                        (r as! DBRoom).password = password;
-                        (r as! DBRoom).lastMessageDate = cursor["timestamp"];
-                        if let dataStr: String = cursor["options"], let data = dataStr.data(using: .utf8), let options = try? JSONDecoder().decode(RoomOptions.self, from: data) {
-                            (r as! DBRoom).options = options;
-                        }
-                        return r;
-                    }
-                    break;
-                default:
-                    let resource:String? = cursor["resource"];
-                    let thread:String? = cursor["thread_id"];
-                    let jid = JID(forJid, resource: resource);
-                    let c = DBChat(jid: jid, thread: thread);
-                    c.id = cursor["id"];
-                    if let chat = c as? T {
-                        return chat;
-                    }
-                }
-                return nil;
-            }
+            var items: [DBChatProtocol] = [];
+            self.accountChats.values.forEach({ (accountChats) in
+                items.append(contentsOf: accountChats.items);
+            });
+            return items;
         }
     }
     
-    open func getAll<T>(for sessionObject:SessionObject) -> [T] {
-        let context = getContext(sessionObject);
-        let params:[String:Any?] = [ "account" : sessionObject.userBareJid ];
+    open func getChats(for account: BareJID) -> [DBChatProtocol] {
+        return mapChats(for: account, map: { (chats) in
+            return chats?.items ?? [];
+        });
+    }
+    
+    func mapChats<T>(for account: BareJID, map: (AccountChats?)->T) -> T {
         return dispatcher.sync {
-            return try! self.getAllStmt.query(params) { (cursor) -> T? in
-                let type:Int = cursor["type"]!;
-                let id: Int? = cursor["id"];
-                switch type {
-                case 1:
-                    let jid: BareJID = cursor["jid"]!;
-                    let nickname: String = cursor["nickname"]!;
-                    let password: String? = cursor["password"];
-                    if let r = DBRoom(context: context!, roomJid: jid, nickname: nickname) as? T {
-                        (r as! DBRoom).id = id;
-                        (r as! DBRoom).password = password;
-                        (r as! DBRoom).lastMessageDate = cursor["timestamp"];
-                        if let dataStr: String = cursor["options"], let data = dataStr.data(using: .utf8), let options = try? JSONDecoder().decode(RoomOptions.self, from: data) {
-                            (r as! DBRoom).options = options;
-                        }
-                        return r;
-                    }
-                    break;
-                default:
-                    let resource:String? = cursor["resource"];
-                    let thread:String? = cursor["thread_id"];
-                    let bareJid:BareJID = cursor["jid"]!;
-                    let jid = JID(bareJid, resource: resource);
-                    if let c = DBChat(jid: jid, thread: thread) as? T {
-                        (c as! DBChat).id = id;
-                        return c;
-                    }
-                }
-                return nil;
-            }
+            return map(accountChats[account]);
         }
     }
     
-    open func getId(for account: BareJID, with jid: BareJID) -> Int? {
-        let params:[String:Any?] = [ "account" : account, "jid" : jid ];
+    func getChat(for account: BareJID, with jid: BareJID) -> DBChatProtocol? {
         return dispatcher.sync {
-            return try! self.getStmt.queryFirstMatching(params) { (cursor) -> Int? in
-                    return cursor["id"]!;
-            }
+            return accountChats[account]?.get(with: jid);
         }
     }
-    
-    open func isFor(_ sessionObject:SessionObject, jid:BareJID) -> Bool {
-        return dispatcher.sync {
-            let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : jid ];
-            let count = try! self.isForStmt.scalar(params, columnName: "count") ?? 0;
-            
-            return count > 0;
-        }
-    }
-    
-    open func open<T>(for sessionObject:SessionObject, chat:ChatProtocol) -> T? {
-        return dispatcher.sync(flags: .barrier) {
-            let current:ChatProtocol? = get(for: sessionObject, with: chat.jid.bareJid, filter: nil);
-            if current?.allowFullJid == false {
-                return current as? T;
-            }
         
-            switch chat {
-            case let c as Chat:
-                let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : c.jid.bareJid, "timestamp": NSDate(), "type" : 0, "resource" : c.jid.resource, "thread" : c.thread ];
-                let id = try! self.openChatStmt.insert(params);
-                let dbChat = DBChat(jid: c.jid, thread: c.thread);
-                dbChat.id = id;
-                return dbChat as? T;
-            case let r as Room:
-                let params:[String:Any?] = [ "account" : sessionObject.userBareJid, "jid" : r.jid.bareJid, "timestamp": NSDate(), "type" : 1, "nickname" : r.nickname, "password" : r.password ];
-                let id = try! self.openRoomStmt.insert(params);
-                let dbRoom = DBRoom(context: r.context, roomJid: r.roomJid, nickname: r.nickname);
-                dbRoom.password = r.password;
-                dbRoom.id = id;
-                return dbRoom as? T;
-            default:
-                return nil;
+    open func open<T>(for account: BareJID, chat: ChatProtocol) -> T? {
+        return dispatcher.sync {
+            let accountChats = self.accountChats[account]!;
+            guard let dbChat = accountChats.get(with: chat.jid.bareJid) else {
+                guard let dbChat = createChat(account: account, chat: chat) else {
+                    return nil;
+                }
+                guard let result = accountChats.open(chat: dbChat) as? T else {
+                    return nil;
+                }
+                
+                NotificationCenter.default.post(name: DBChatStore.CHAT_OPENED, object: result);
+                
+                return result;
             }
+            return dbChat as? T;
         }
     }
     
-    open func close(chat:ChatProtocol) -> Bool {
-        return dispatcher.sync(flags: .barrier) {
-            if let id = chat.id {
-                let params:[String:Any?] = [ "id" : id ];
-                return try! closeChatStmt.update(params) > 0;
-            }
+    open func close(for account: BareJID, chat:ChatProtocol) -> Bool {
+        guard let dbChat = chat as? DBChatProtocol else {
             return false;
         }
-    }
-    
-    open func close(withId id: Int) -> Bool {
-        let params:[String:Any?] = [ "id" : id ];
-        return dispatcher.sync(flags: .barrier) {
-            return try! closeChatStmt.update(params) > 0;
+        
+        return dispatcher.sync {
+            guard let accountChats = self.accountChats[account] else {
+                return false;
+            }
+            
+            guard accountChats.close(chat: dbChat) else {
+                return false;
+            }
+            
+            destroyChat(account: account, chat: dbChat);
+            
+//            if dbChat.unread > 0 {
+//                self.unreadMessagesCount = self.unreadMessagesCount - dbChat.unread;
+//
+//                DBChatHistoryStore.instance.markAsRead(for: account, with: dbChat.jid.bareJid);
+//            }
+            
+            NotificationCenter.default.post(name: DBChatStore.CHAT_CLOSED, object: dbChat
+            );
+            
+            return true;
         }
     }
+
+    
+    fileprivate func createChat(account: BareJID, chat: ChatProtocol) -> DBChatProtocol? {
+        guard chat as? DBChatProtocol == nil else {
+            return chat as? DBChatProtocol;
+        }
+        switch chat {
+        case let c as Chat:
+            let params:[String:Any?] = [ "account" : account, "jid" : c.jid.bareJid, "timestamp": NSDate(), "type" : 0, "resource" : c.jid.resource, "thread" : c.thread ];
+            let id = try! self.openChatStmt.insert(params);
+            return DBChat(id: id!, account: account, jid: c.jid.bareJid);
+        case let r as Room:
+            let params:[String:Any?] = [ "account" : account, "jid" : r.jid.bareJid, "timestamp": NSDate(), "type" : 1, "nickname" : r.nickname, "password" : r.password ];
+            let id = try! self.openRoomStmt.insert(params);
+            return DBRoom(id: id!, context: r.context, account: account, roomJid: r.roomJid, roomName: nil, nickname: r.nickname, password: r.password);
+        default:
+            return nil;
+        }
+    }
+    
+    fileprivate func destroyChat(account: BareJID, chat: DBChatProtocol) {
+        let params: [String: Any?] = ["id": chat.id];
+        _ = try! self.closeChatStmt.update(params);
+    }
+    
+//    open func close(withId id: Int) -> Bool {
+//        let params:[String:Any?] = [ "id" : id ];
+//        return dispatcher.sync(flags: .barrier) {
+//            return try! closeChatStmt.update(params) > 0;
+//        }
+//    }
     
     @objc open func accountRemoved(_ notification: NSNotification) {
         if let data = notification.userInfo {
-            let accountStr = data["account"] as! String;
-            _ = try! dbConnection.prepareStatement("DELETE FROM chats WHERE account = ?").update(accountStr);
+            let account = BareJID(data["account"] as! String);
+            self.unloadChats(for: account)
+            _ = try! dbConnection.prepareStatement("DELETE FROM chats WHERE account = ?").update(account);
         }
     }
     
-    open func changeChatEncryption(for account: BareJID, with jid: BareJID, to encryption: ChatEncryption?, completionHandler: @escaping ()->Void) {
-        updateChatEncryptionStmt.dispatcher.async {
-            if try! self.updateChatEncryptionStmt.update(["account": account, "jid": jid, "encryption": encryption?.rawValue] as [String: Any?]) > 0 {
-                DispatchQueue.main.async {
-                    let info: [String: Any] = ["action": "chatEncryptionChanged", "account": account, "jid": jid, "encryption": encryption as Any];
-                    NotificationCenter.default.post(name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil, userInfo: info)
+    open func loadChats(for account: BareJID, context: Context) {
+        let params:[String:Any?] = [ "account" : account ];
+        dispatcher.async {
+            let chats = try! self.getAllStmt.query(params) { (cursor) -> DBChatProtocol? in
+                let id: Int = cursor["id"]!;
+                let type:Int = cursor["type"]!;
+                let jid: BareJID = cursor["jid"]!;
+
+                switch type {
+                case 1:
+                    let nickname: String = cursor["nickname"]!;
+                    let password: String? = cursor["password"];
+                    let name: String? = cursor["name"];
+                    let room = DBRoom(id: id, context: context, account: account, roomJid: jid, roomName: name, nickname: nickname, password: password);
+                    room.lastMessageDate = cursor["timestamp"];
+                    
+                    if let dataStr: String = cursor["options"], let data = dataStr.data(using: .utf8), let options = try? JSONDecoder().decode(RoomOptions.self, from: data) {
+                        room.options = options;
+                    }
+                    return room;
+                default:
+                    let c = DBChat(id: id, account: account, jid: jid);
+                    if let dataStr: String = cursor["options"], let data = dataStr.data(using: .utf8), let options = try? JSONDecoder().decode(ChatOptions.self, from: data) {
+                        c.options = options;
+                    }
+                    return c;
                 }
-                completionHandler();
             }
+            let accountChats = AccountChats(items: chats);
+            self.accountChats[account] = accountChats;
+            chats.forEach { item in
+                NotificationCenter.default.post(name: DBChatStore.CHAT_OPENED, object: item);
+            }
+        }
+    }
+    
+    func unloadChats(for account: BareJID) {
+        dispatcher.async {
+            guard let accountChats = self.accountChats.removeValue(forKey: account) else {
+                return;
+            }
+            
+//            var unread = 0;
+            accountChats.items.forEach { item in
+//                unread = unread + item.unread;
+                NotificationCenter.default.post(name: DBChatStore.CHAT_CLOSED, object: item);
+            }
+//            if unread > 0 {
+//                self.unreadMessagesCount = self.unreadMessagesCount - unread;
+//            }
         }
     }
     
     open func updateChatName(account: BareJID, jid: BareJID, name: String?) {
-        updateChatNameStmt.dispatcher.async {
+        dispatcher.async {
             _ = try? self.updateChatNameStmt.update(name, account, jid);
-            DispatchQueue.main.async {
-                let info: [String: Any] = ["action": "roomNameChanged", "account": account, "jid": jid, "roomName": name as Any];
-                NotificationCenter.default.post(name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil, userInfo: info)
+            if let r = self.getChat(for: account, with: jid) as? DBRoom {
+                r.roomName = name;
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: r, userInfo: nil);
+                }
             }
         }
     }
     
-    open func updateOptions(account: BareJID, jid: BareJID, options: ChatOptionsProtocol) {
-        switch options {
-        case let options as RoomOptions:
-            let data = try? JSONEncoder().encode(options);
-            let dataStr = data != nil ? String(data: data!, encoding: .utf8)! : nil;
-            self.updateChatOptionsStmt.dispatcher.async {
+    open func updateOptions<T>(for account: BareJID, jid: BareJID, options: T, completionHandler: (()->Void)?) where T: ChatOptionsProtocol {
+        dispatcher.async {
+            switch options {
+            case let options as RoomOptions:
+                let data = try? JSONEncoder().encode(options);
+                let dataStr = data != nil ? String(data: data!, encoding: .utf8)! : nil;
                 _ = try? self.updateChatOptionsStmt.update(dataStr, account, jid);
+                if let c = self.getChat(for: account, with: jid) as? DBRoom {
+                    c.options = options;
+                    DispatchQueue.main.async {
+                        NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: c, userInfo: nil);
+                    }
+                }
+                completionHandler?();
+            case let options as ChatOptions:
+                let data = try? JSONEncoder().encode(options);
+                let dataStr = data != nil ? String(data: data!, encoding: .utf8)! : nil;
+                _ = try? self.updateChatOptionsStmt.update(dataStr, account, jid);
+                if let c = self.getChat(for: account, with: jid) as? DBChat {
+                    c.options = options;
+                    DispatchQueue.main.async {
+                        NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: c, userInfo: nil);
+                    }
+                }
+                completionHandler?();
+            default:
+                completionHandler?();
+                break;
             }
-        default:
-            break;
         }
     }
     
@@ -400,31 +372,154 @@ open class DBChatStore {
     fileprivate func getContext(_ sessionObject: SessionObject) -> Context? {
         return sessionObject.context;
     }
+    
+    class AccountChats {
+        
+        fileprivate var chats = [BareJID: DBChatProtocol]();
+        
+        var count: Int {
+            return chats.count;
+        }
+        
+        var items: [DBChatProtocol] {
+            return chats.values.map({ (chat) -> DBChatProtocol in
+                return chat;
+            });
+        }
+        
+        init(items: [DBChatProtocol]) {
+            items.forEach { item in
+                self.chats[item.jid.bareJid] = item;
+            }
+        }
+        
+        func open(chat: DBChatProtocol) -> DBChatProtocol {
+            guard let existingChat = chats[chat.jid.bareJid] else {
+                chats[chat.jid.bareJid] = chat;
+                return chat;
+            }
+            return existingChat;
+        }
+        
+        func close(chat: DBChatProtocol) -> Bool {
+            return chats.removeValue(forKey: chat.jid.bareJid) != nil;
+        }
+        
+        func isFor(jid: BareJID) -> Bool {
+            return chats[jid] != nil;
+        }
+        
+        func get(with jid: BareJID) -> DBChatProtocol? {
+            return chats[jid];
+        }
+        
+//        func lastMessageTimestamp() -> Date {
+//            var timestamp = Date(timeIntervalSince1970: 0);
+//            chats.values.forEach { (chat) in
+//                guard chat.lastMessage != nil else {
+//                    return;
+//                }
+//                timestamp = max(timestamp, chat.timestamp);
+//            }
+//            return timestamp;
+//        }
+    }
 }
 
-extension ChatProtocol {
+public protocol  DBChatProtocol: ChatProtocol {
     
-    var id:Int? {
-        switch self {
-        case let c as DBChat:
-            return c.id;
-        case let r as DBRoom:
-            return r.id;
-        default:
-            return nil;
-        }
-    }
+    var id: Int { get };
+    var account: BareJID { get }
     
 }
+
+//extension ChatProtocol {
+//
+//    var id:Int? {
+//        switch self {
+//        case let c as DBChat:
+//            return c.id;
+//        case let r as DBRoom:
+//            return r.id;
+//        default:
+//            return nil;
+//        }
+//    }
+//
+//}
 
 public protocol ChatOptionsProtocol {
     
 }
 
-class DBChat: Chat {
+public struct ChatOptions: Codable, ChatOptionsProtocol {
     
-    var id:Int? = nil;
+    var encryption: ChatEncryption?;
     
+    init() {}
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self);
+        if let val = try container.decodeIfPresent(String.self, forKey: .encryption) {
+            encryption = ChatEncryption(rawValue: val);
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self);
+        if encryption != nil {
+            try container.encode(encryption!.rawValue, forKey: .encryption);
+        }
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case encryption = "encrypt"
+    }
+}
+
+class DBChat: Chat, DBChatProtocol {
+
+    let id: Int;
+    let account: BareJID;
+    fileprivate(set) var options: ChatOptions = ChatOptions();
+    
+    init(id: Int, account: BareJID, jid: BareJID) {
+        self.id = id;
+        self.account = account;
+        super.init(jid: JID(jid), thread: nil);
+    }
+ 
+    func modifyOptions(_ fn: @escaping (inout ChatOptions)->Void, completionHandler: (()->Void)? = nil) {
+        DispatchQueue.main.async {
+            var options = self.options;
+            fn(&options);
+            DBChatStore.instance.updateOptions(for: self.account, jid: self.jid.bareJid, options: options, completionHandler: completionHandler);
+        }
+    }
+
+}
+
+class DBRoom: Room, DBChatProtocol {
+    
+    let id: Int;
+    let account: BareJID;
+    var roomName: String? = nil;
+    fileprivate(set) var options: RoomOptions = RoomOptions();
+    
+    init(id: Int, context: Context, account: BareJID, roomJid: BareJID, roomName: String?, nickname: String, password: String?) {
+        self.id = id;
+        self.account = account;
+        super.init(context: context, roomJid: roomJid, nickname: nickname);
+        self.password = password;
+    }
+    
+    func modifyOptions(_ fn: @escaping (inout RoomOptions)->Void, completionHandler: (()->Void)? = nil) {
+        DispatchQueue.main.async {
+            var options = self.options;
+            fn(&options);
+            DBChatStore.instance.updateOptions(for: self.account, jid: self.roomJid, options: options, completionHandler: completionHandler);
+        }
+    }
 }
 
 public enum ChatEncryption: String {

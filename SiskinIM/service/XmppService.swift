@@ -98,7 +98,7 @@ open class XmppService: Logger, EventHandler {
         self.dnsSrvResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: DNSSrvDiskCache(cacheDirectoryName: "dns-cache"));
         self.streamFeaturesCache = StreamFeaturesCache();
         self.dbCapsCache = DBCapabilitiesCache(dbConnection: dbConnection);
-        self.dbChatStore = DBChatStore(dbConnection: dbConnection);
+        self.dbChatStore = DBChatStore.instance;
         self.dbChatHistoryStore = DBChatHistoryStore(dbConnection: dbConnection);
         self.dbRosterStore = DBRosterStore(dbConnection: dbConnection);
         self.dbVCardsCache = DBVCardsCache(dbConnection: dbConnection);
@@ -157,6 +157,10 @@ open class XmppService: Logger, EventHandler {
             
             SslCertificateValidator.registerSslCertificateValidator(client!.sessionObject);
             
+            if let messageModule: MessageModule = client?.modulesManager.getModule(MessageModule.ID) {
+                ((messageModule.chatManager as! DefaultChatManager).chatStore as! DBChatStoreWrapper).initialize();
+            }
+            
             DispatchQueue.global(qos: .default).async {
                 NotificationCenter.default.post(name: XmppService.ACCOUNT_STATE_CHANGED, object: self, userInfo: ["account":userJid.stringValue]);
             }
@@ -168,6 +172,11 @@ open class XmppService: Logger, EventHandler {
             
             if password == nil || config == nil || config?.active != true {
                 clients.removeValue(forKey: userJid);
+                if config != nil && config!.active == false {
+                    if let messageModule: MessageModule = client?.modulesManager.getModule(MessageModule.ID) {
+                        ((messageModule.chatManager as! DefaultChatManager).chatStore as! DBChatStoreWrapper).deinitialize();
+                    }
+                }
                 unregisterEventHandlers(client!);
                 DispatchQueue.global(qos: .default).async {
                     NotificationCenter.default.post(name: XmppService.ACCOUNT_STATE_CHANGED, object: self, userInfo: ["account":userJid.stringValue]);
@@ -261,7 +270,7 @@ open class XmppService: Logger, EventHandler {
         rosterModule.versionProvider = dbRosterStore;
         _ = client.modulesManager.register(PresenceModule());
         let messageModule = client.modulesManager.register(MessageModule());
-        let chatManager = CustomChatManager(context: client.context, chatStore: DBChatStoreWrapper(sessionObject: client.sessionObject, store: dbChatStore));
+        let chatManager = CustomChatManager(context: client.context, chatStore: DBChatStoreWrapper(sessionObject: client.sessionObject));
         messageModule.chatManager = chatManager;
         _ = client.modulesManager.register(MessageCarbonsModule());
         _ = client.modulesManager.register(MessageArchiveManagementModule());

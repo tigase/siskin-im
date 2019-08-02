@@ -29,6 +29,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     var titleView: ChatTitleView!;
     
     let log: Logger = Logger();
+    var chat: DBChat?;
     
     var dataSource: ChatDataSource!;
     var cachedDataSource: CachedViewDataSourceProtocol {
@@ -41,10 +42,13 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     @IBOutlet var progressBar: UIProgressView!;
     var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
     
-    fileprivate static let loadChatInfo: DBStatement = try! DBConnection.main.prepareStatement("SELECT r.name, c.encryption FROM roster_items r, chats c WHERE r.account = :account AND r.jid = :jid AND c.account = :account AND c.jid = :jid");
+    fileprivate static let loadChatInfo: DBStatement = try! DBConnection.main.prepareStatement("SELECT r.name FROM roster_items r WHERE r.account = :account AND r.jid = :jid");
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let messageModule: MessageModule? = xmppService.getClient(forJid: account)?.modulesManager.getModule(MessageModule.ID);
+        self.chat = messageModule?.chatManager.getChat(with: self.jid, thread: nil) as? DBChat;
         
         dataSource = ChatDataSource(controller: self);
         contextMenuDelegate = self;
@@ -128,7 +132,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         let contactView = navigation.visibleViewController as! ContactViewController;
         contactView.account = account;
         contactView.jid = jid.bareJid;
-        contactView.encryption = self.titleView.encryption;
+        contactView.chat = self.chat;
         contactView.showEncryption = true;
         navigation.title = self.navigationItem.title;
         self.showDetailViewController(navigation, sender: self);
@@ -141,7 +145,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(accountStateChanged), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(messageUpdated), name: DBChatHistoryStore.MESSAGE_UPDATED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(chatItemsChanged), name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(chatChanged(_:)), name: DBChatStore.CHAT_UPDATED, object: nil);
         xmppService.registerEventHandler(self, for: PresenceModule.ContactPresenceChanged.TYPE, RosterModule.ItemUpdatedEvent.TYPE);
         
         self.updateTitleView();
@@ -357,12 +361,17 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         }
     }
     
-    @objc func chatItemsChanged(_ notification: Notification) {
-        guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? BareJID, "chatEncryptionChanged" == (notification.userInfo?["action"] as? String) && self.account == account && jid == self.jid?.bareJid else {
+    @objc func chatChanged(_ notification: Notification) {
+        guard let chat = notification.object as? DBChat else {
+            return;
+        }
+        guard self.account == chat.account && self.jid.bareJid == chat.jid.bareJid else {
             return;
         }
         
-        titleView.encryption = (notification.userInfo?["encryption"] as? ChatEncryption) ?? .none;
+        self.chat = chat;
+        
+        titleView.encryption = chat.options.encryption;//(notification.userInfo?["encryption"] as? ChatEncryption) ?? .none;
     }
     
     fileprivate func updateTitleView() {
@@ -538,9 +547,13 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
                         let alert = UIAlertController(title: "Could not send a message", message: "It was not possible to send encrypted message as there is no trusted device.\n\nWould you like to disable encryption for this chat and send a message?", preferredStyle: .alert);
                         alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
                         alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { action in
-                            self.xmppService.dbChatStore.changeChatEncryption(for: account, with: jid.bareJid, to: ChatEncryption.none, completionHandler: {
-                                self.sendUnencryptedMessage(body: body, url: url, completionHandler: completionHandler);
-                            })
+                            self.chat?.modifyOptions({ (options) in
+                                options.encryption = .none;
+                            }) {
+                                DispatchQueue.main.async {
+                                    self.sendUnencryptedMessage(body: body, url: url, completionHandler: completionHandler);
+                                }
+                            }
                         }))
                         self.present(alert, animated: true, completion: nil);
                     }
@@ -691,14 +704,12 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         
         func reload(for account: BareJID, with jid: BareJID) {
             let params:[String:Any?] = ["account" : account, "jid" : jid];
-            let (name, encryption) = try! ChatViewController.loadChatInfo.findFirst(params) { (cursor) -> (String, ChatEncryption?)? in
-                let name: String = cursor["name"] ?? jid.stringValue;
-                let encryption: ChatEncryption? = ChatEncryption(rawValue: cursor["encryption"] ?? "");
-                return (name, encryption);
-                } ?? (jid.stringValue, nil);
+            let name = try! ChatViewController.loadChatInfo.findFirst(params) { (cursor) -> (String)? in
+                return cursor["name"] ?? jid.stringValue;
+                } ?? jid.stringValue;
             
             self.name = name;
-            self.encryption = encryption;
+            self.encryption = (DBChatStore.instance.getChat(for: account, with: jid) as? DBChat)?.options.encryption;
         }
         
         fileprivate func refresh() {

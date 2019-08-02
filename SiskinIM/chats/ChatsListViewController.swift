@@ -43,6 +43,7 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
         tableView.dataSource = self;
         NotificationCenter.default.addObserver(self, selector: #selector(ChatsListViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(ChatsListViewController.chatItemsUpdated), name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(ChatsListViewController.chatChanged(_:)), name: DBChatStore.CHAT_UPDATED, object: nil);
         updateBadge();
     }
     
@@ -197,9 +198,9 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
                             discardNotifications = true;
                         }
                     } else {
-                        if let chatId = xmppService.dbChatStore.getId(for: item.account, with: item.jid) {
+                        if let chat = xmppService.dbChatStore.getChat(for: item.account, with: item.jid) {
                             DispatchQueue.global().async {
-                                if self.xmppService.dbChatStore.close(withId: chatId) {
+                                if self.xmppService.dbChatStore.close(for: item.account, chat: chat) {
                                     DispatchQueue.main.async() {
                                         self.dataSource.removeChat(for: item.account, with: item.jid);
                                     }
@@ -215,9 +216,9 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
                         _ = messageModule?.chatManager.close(chat: chat);
                         discardNotifications = true;
                     } else {
-                        if let chatId = xmppService.dbChatStore.getId(for: item.account, with: item.jid) {
+                        if let chat = xmppService.dbChatStore.getChat(for: item.account, with: item.jid) {
                             DispatchQueue.global().async {
-                                if self.xmppService.dbChatStore.close(withId: chatId) {
+                                if self.xmppService.dbChatStore.close(for: item.account, chat: chat) {
                                     DispatchQueue.main.async() {
                                         self.dataSource.removeChat(for: item.account, with: item.jid);
                                     }
@@ -450,19 +451,23 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
                 });
             }
         }
-        if action == "roomNameChanged" {
-            DispatchQueue.main.async {
-                self.dataSource.updateChat(for: account, with: jid, onUpdate: { item in
-                    let newName = notification.userInfo!["roomName"] as? String;
-                    if item.name != newName {
-                        item.name = newName;
-                        return true;
-                    }
-                    return false;
-                });
-            }
-        }
         updateBadge();
+    }
+    
+    @objc func chatChanged(_ notification: NSNotification) {
+        guard let room = notification.object as? DBRoom else {
+            return;
+        }
+        DispatchQueue.main.async {
+            self.dataSource.updateChat(for: room.account, with: room.roomJid, onUpdate: { item in
+                let newName = room.roomName;
+                if item.name != newName {
+                    item.name = newName;
+                    return true;
+                }
+                return false;
+            });
+        }
     }
     
     func updateBadge() {

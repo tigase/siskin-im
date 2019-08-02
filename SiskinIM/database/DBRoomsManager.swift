@@ -26,6 +26,10 @@ open class DBRoomsManager: DefaultRoomsManager {
     
     fileprivate let store: DBChatStore;
     
+    public convenience init() {
+        self.init(store: DBChatStore.instance);
+    }
+    
     public init(store: DBChatStore) {
         self.store = store;
         super.init(dispatcher: store.dispatcher);
@@ -33,40 +37,49 @@ open class DBRoomsManager: DefaultRoomsManager {
     
     open override func createRoomInstance(roomJid: BareJID, nickname: String, password: String?) -> Room {
         let room = super.createRoomInstance(roomJid: roomJid, nickname: nickname, password: password);
-        return store.open(for: context.sessionObject, chat: room)!;
+        return store.open(for: context.sessionObject.userBareJid!, chat: room)!;
     }
     
-    open override func initialize() {
-        guard self.getRooms().count == 0 else {
-            return;
+    open override func contains(roomJid: BareJID) -> Bool {
+        return getRoom(for: roomJid) != nil;
+    }
+    
+    open override func getRoom(for roomJid: BareJID) -> Room? {
+        return store.getChat(for: context.sessionObject.userBareJid!, with: roomJid) as? Room;
+    }
+    
+    open override func getRoomOrCreate(for roomJid: BareJID, nickname: String, password: String?, onCreate: @escaping (Room) -> Void) -> Room {
+        let room = super.createRoomInstance(roomJid: roomJid, nickname: nickname, password: password);
+        let account: BareJID = context.sessionObject.userBareJid!;
+        let dbRoom: DBRoom = store.open(for: account, chat: room)!;
+        if dbRoom.state == .not_joined {
+            onCreate(dbRoom);
         }
-        let rooms:[Room] = store.getAll(for: context.sessionObject);
-        for room in rooms {
-            register(room: room);
-        }
+        return dbRoom;
+    }
+    
+    open override func getRooms() -> [Room] {
+        return store.getChats(for: context.sessionObject.userBareJid!).filter({ (item) -> Bool in
+            return item is Room;
+        }).map({ item -> Room in item as! Room });
+    }
+    
+    open override func register(room: Room) {
+        // nothing to do....
     }
     
     open override func remove(room: Room) {
-        dispatcher.sync(flags: .barrier) {
-            if self.store.close(chat: room) {
-                super.remove(room: room);
-            }
-        }
+        _ = store.close(for: context!.sessionObject.userBareJid!, chat: room);
     }
-    
-    open func updateOptions(roomJid: BareJID, options: RoomOptions) {
-        if let room = getRoom(for: roomJid) as? DBRoom {
-            room.options = options;
-            store.updateOptions(account: self.context.sessionObject.userBareJid!, jid: roomJid, options: options);
-        }
-    }
-}
 
-class DBRoom: Room {
+    open override func initialize() {
+        super.initialize();
+        store.loadChats(for: context!.sessionObject.userBareJid!, context: context);
+    }
     
-    var id: Int? = nil;
-    var roomName: String? = nil;
-    var options: RoomOptions = RoomOptions();
+    public func deinitialize() {
+        store.unloadChats(for: context!.sessionObject.userBareJid!);
+    }
     
 }
 
