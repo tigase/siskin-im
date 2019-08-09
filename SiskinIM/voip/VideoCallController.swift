@@ -177,7 +177,6 @@ public class VideoCallController: UIViewController {
     fileprivate var sessionsInProgress: [JingleManager.Session] = [];
 
     public override func viewDidLoad() {
-        RTCSetMinDebugLogLevel(RTCLoggingSeverity.sensitive);
         xmppService = (UIApplication.shared.delegate as? AppDelegate)?.xmppService;
         super.viewDidLoad();
         let mtkview = self.view.subviews.last!;

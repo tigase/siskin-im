@@ -34,7 +34,7 @@ public enum MessageEncryption: Int {
         case .decryptionFailed:
             return "Message decryption failed!";
         case .notForThisDevice:
-            return "Message was not encrypted for this devices";
+            return "Message was not encrypted for this device";
         }
     }
 }
