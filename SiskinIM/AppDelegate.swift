@@ -185,6 +185,110 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         print(NSDate(), "application terminated!")
     }
 
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return false;
+        }
+        
+        print("got url to open:", components);
+        guard let xmppUri = XmppUri(url: url) else {
+            return false;
+        }
+        print("got xmpp url with jid:", xmppUri.jid, "action:", xmppUri.action, "params:", xmppUri.dict);
+
+        if let action = xmppUri.action {
+            self.open(xmppUri: xmppUri, action: action);
+            return true;
+        } else {
+            DispatchQueue.main.async {
+                let alert = UIAlertController(title: "Open URL", message: "What do you want to do with \(url)?", preferredStyle: .alert);
+                alert.addAction(UIAlertAction(title: "Open chat", style: .default, handler: { (action) in
+                    self.open(xmppUri: xmppUri, action: .message);
+                }))
+                alert.addAction(UIAlertAction(title: "Join room", style: .default, handler: { (action) in
+                    self.open(xmppUri: xmppUri, action: .join);
+                }))
+                alert.addAction(UIAlertAction(title: "Add contact", style: .default, handler: { (action) in
+                    self.open(xmppUri: xmppUri, action: .roster);
+                }))
+                alert.addAction(UIAlertAction(title: "Nothing", style: .cancel, handler: nil));
+                self.window?.rootViewController?.present(alert, animated: true, completion: nil);
+            }
+            return false;
+        }
+    }
+    
+    fileprivate func open(xmppUri: XmppUri, action: XmppUri.Action) {
+        switch action {
+        case .join:
+            let navController = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "MucJoinNavigationController") as! UINavigationController;
+            let newGroupchat = navController.visibleViewController as! MucJoinViewController;
+            newGroupchat.xmppService = self.xmppService;
+            newGroupchat.hidesBottomBarWhenPushed = true;
+            navController.modalPresentationStyle = .formSheet;
+            self.window?.rootViewController?.present(navController, animated: true, completion: {
+                newGroupchat.serverTextField.text = xmppUri.jid.domain;
+                newGroupchat.roomTextField.text = xmppUri.jid.localPart;
+                newGroupchat.passwordTextField.text = xmppUri.dict?["password"];
+            });
+        case .message:
+            let alert = UIAlertController(title: "Start chatting", message: "Select account to open chat from", preferredStyle: .alert);
+            let accounts = self.xmppService.getClients().map({ (client) -> BareJID in
+                return client.sessionObject.userBareJid!;
+            }).sorted { (a1, a2) -> Bool in
+                return a1.stringValue.compare(a2.stringValue) == .orderedAscending;
+            }
+            
+            let openChatFn: (BareJID)->Void = { (account) in
+                let xmppClient = self.xmppService.getClient(forJid: account);
+                let messageModule:MessageModule? = xmppClient?.modulesManager.getModule(MessageModule.ID);
+                
+                guard messageModule != nil else {
+                    return;
+                }
+                
+                _ = messageModule!.chatManager!.getChatOrCreate(with: xmppUri.jid.withoutResource, thread: nil);
+                
+                guard let destination = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: "ChatViewNavigationController") as? UINavigationController else {
+                    return;
+                }
+                
+                let chatController = destination.children[0] as! ChatViewController;
+                chatController.hidesBottomBarWhenPushed = true;
+                chatController.account = account;
+                chatController.jid = xmppUri.jid.withoutResource;
+                self.window?.rootViewController?.showDetailViewController(destination, sender: self);
+            }
+            
+            if accounts.count == 1 {
+                openChatFn(accounts.first!);
+            } else {
+                accounts.forEach({ account in
+                    alert.addAction(UIAlertAction(title: account.stringValue, style: .default, handler: { (action) in
+                        openChatFn(account);
+                    }));
+                })
+            
+                self.window?.rootViewController?.present(alert, animated: true, completion: nil);
+            }
+        case .roster:
+            guard let navigationController = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: "RosterItemEditNavigationController") as? UINavigationController else {
+                return;
+            }
+            let itemEditController = navigationController.visibleViewController as? RosterItemEditViewController;
+            itemEditController?.hidesBottomBarWhenPushed = true;
+            navigationController.modalPresentationStyle = .formSheet;
+            self.window?.rootViewController?.present(navigationController, animated: true, completion: {
+                itemEditController?.account = nil;
+                itemEditController?.jid = xmppUri.jid;
+                itemEditController?.jidTextField.text = xmppUri.jid.stringValue;
+                itemEditController?.nameTextField.text = xmppUri.dict?["name"];
+            });
+        default:
+            break;
+        }
+    }
+    
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         let content = response.notification.request.content;
         let userInfo = content.userInfo;
@@ -718,6 +822,51 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateInitialViewController();
         (self.window?.rootViewController as? UISplitViewController)?.preferredDisplayMode = .allVisible;
     }
-    
+ 
+    struct XmppUri {
+        
+        let jid: JID;
+        let action: Action?;
+        let dict: [String: String]?;
+        
+        init?(url: URL?) {
+            guard url != nil else {
+                return nil;
+            }
+            
+            guard let components = URLComponents(url: url!, resolvingAgainstBaseURL: false) else {
+                return nil;
+            }
+            
+            guard components.host == nil else {
+                return nil;
+            }
+            self.jid = JID(components.path);
+            
+            if var pairs = components.query?.split(separator: ";").map({ (it: Substring) -> [Substring] in it.split(separator: "=") }) {
+                if let first = pairs.first, first.count == 1 {
+                    action = Action(rawValue: String(first.first!));
+                    pairs = Array(pairs.dropFirst());
+                } else {
+                    action = nil;
+                }
+                var dict: [String: String] = [:];
+                for pair in pairs {
+                    dict[String(pair[0])] = pair.count == 1 ? "" : String(pair[1]);
+                }
+                self.dict = dict;
+            } else {
+                self.action = nil;
+                self.dict = nil;
+            }
+        }
+        
+        enum Action: String {
+            case message
+            case join
+            case roster
+        }
+    }
+
 }
 

@@ -201,7 +201,8 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
         itemEditController?.hidesBottomBarWhenPushed = true;
         itemEditController?.account = account;
         itemEditController?.jid = jid;
-        self.showDetailViewController(navigationController, sender: self);
+        navigationController.modalPresentationStyle = .formSheet;
+        self.present(navigationController, animated: true, completion: nil);
     }
     
     func showItemInfo(for account: BareJID, jid: JID) {
@@ -211,8 +212,8 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
         contactView.account = account;
         contactView.jid = jid.bareJid;
         navigation.title = self.navigationItem.title;
-        self.showDetailViewController(navigation, sender: self);
-        
+        navigation.modalPresentationStyle = .formSheet;
+        self.present(navigation, animated: true, completion: nil);
     }
     
 }

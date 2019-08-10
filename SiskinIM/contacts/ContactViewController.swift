@@ -88,6 +88,10 @@ class ContactViewController: CustomTableViewController {
         // Dispose of any resources that can be recreated.
     }
 
+    @IBAction func doneClicked(_ sender: UIBarButtonItem) {
+        self.dismiss(animated: true, completion: nil);
+    }
+    
     @IBAction func refreshVCard(_ sender: UIBarButtonItem) {
         refreshVCard();
     }

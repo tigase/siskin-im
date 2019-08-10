@@ -396,7 +396,7 @@
                                             <outlet property="timestampView" destination="RG5-TE-xcd" id="Gns-G7-AEM"/>
                                         </connections>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="ChatTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChatTableViewCell" rowHeight="71" id="LeS-8c-zb0" customClass="ChatTableViewCell" customModule="Siskin" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" restorationIdentifier="ChatTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChatTableViewCell" rowHeight="71" id="LeS-8c-zb0" customClass="ChatTableViewCell" customModule="Siskin" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="116" width="600" height="71"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="LeS-8c-zb0" id="Rua-Sn-7If">
@@ -3258,6 +3258,11 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="Informations" id="bNp-S8-ulX">
+                        <barButtonItem key="leftBarButtonItem" systemItem="done" id="shA-0g-aTU">
+                            <connections>
+                                <action selector="doneClicked:" destination="rSR-7g-CFO" id="X7W-lO-tWv"/>
+                            </connections>
+                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" systemItem="refresh" id="flK-IV-gGc">
                             <connections>
                                 <action selector="refreshVCard:" destination="rSR-7g-CFO" id="roD-Jf-aXn"/>

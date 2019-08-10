@@ -93,11 +93,7 @@ class RosterItemEditViewController: CustomTableViewController, UIPickerViewDataS
     }
     
     func dismissView() {
-        let newController = navigationController?.popViewController(animated: true);
-        if newController == nil || newController != self {
-            let emptyDetailController = storyboard!.instantiateViewController(withIdentifier: "emptyDetailViewController");
-            self.showDetailViewController(emptyDetailController, sender: self);
-        }
+        self.dismiss(animated: true, completion: nil);
     }
     
     func blinkError(_ field: UITextField) {

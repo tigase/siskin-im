@@ -31,8 +31,10 @@ class MucNewGroupchatController: CustomTableViewController, UIPickerViewDataSour
     var groupchatType: GroupchatType = .privateGroupchat;
     var mucServer: JID? = nil {
         didSet {
-            self.updateXmppAddress();
-            self.updateNextEnabled();
+            if roomNameField != nil {
+                self.updateXmppAddress();
+                self.updateNextEnabled();
+            }
         }
     }
     
@@ -83,8 +85,12 @@ class MucNewGroupchatController: CustomTableViewController, UIPickerViewDataSour
             nextButton.title = "Create";
         }
         super.viewWillAppear(animated);
-        if let account = BareJID(self.accountField.text) {
+        if let account = BareJID(self.accountField.text), self.mucServer == nil {
             findMucComponentJid(for: account);
+        } else if self.mucServer != nil {
+            self.roomNameField.text = self.mucServer?.localPart;
+            self.updateXmppAddress();
+            self.updateNextEnabled();
         }
     }
     
