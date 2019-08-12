@@ -98,11 +98,15 @@ class AddAccountController: CustomTableViewController, UITextFieldDelegate {
     }
     
     func validateAccount() {
+        guard let jid = BareJID(self.jidTextField.text), let password = self.passwordTextField.text, !password.isEmpty else {
+            return;
+        }
+        
         self.saveButton.isEnabled = false;
         showIndicator();
         
         self.accountValidatorTask = AccountValidatorTask(controller: self);
-        self.accountValidatorTask?.check(account: BareJID(self.jidTextField.text)!, password: self.passwordTextField.text!, callback: self.handleResult);
+        self.accountValidatorTask?.check(account: jid, password: password, callback: self.handleResult);
     }
     
     func saveAccount(acceptedCertificate: SslCertificateInfo?) {
