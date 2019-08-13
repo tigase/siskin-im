@@ -42,6 +42,10 @@ class MucChatSettingsViewController: CustomTableViewController {
         refresh();
     }
     
+    @objc func dismissView() {
+        self.dismiss(animated: true, completion: nil);
+    }
+    
     func refresh() {
         notificationsField.text = NotificationItem(type: room.options.notifications).description;
         

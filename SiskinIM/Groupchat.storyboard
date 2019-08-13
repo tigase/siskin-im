@@ -374,7 +374,50 @@
                         <viewLayoutGuide key="safeArea" id="7WM-tQ-tL0"/>
                     </view>
                     <extendedEdge key="edgesForExtendedLayout"/>
-                    <navigationItem key="navigationItem" title="Room" id="jz1-lz-vTl">
+                    <navigationItem key="navigationItem" id="jz1-lz-vTl">
+                        <nil key="title"/>
+                        <view key="titleView" contentMode="scaleToFill" id="Ht8-Rt-tH2" customClass="MucTitleView" customModule="Siskin" customModuleProvider="target">
+                            <rect key="frame" x="60" y="2" width="255" height="40"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <subviews>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="750" verticalHuggingPriority="251" ambiguous="YES" text="Room name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="az1-E9-Dy7">
+                                    <rect key="frame" x="82" y="2" width="91" height="21"/>
+                                    <constraints>
+                                        <constraint firstAttribute="width" relation="lessThanOrEqual" constant="150" id="5MI-Je-AxZ"/>
+                                    </constraints>
+                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                    <nil key="textColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="750" verticalHuggingPriority="251" ambiguous="YES" text="Offline" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="54Z-E5-MZp">
+                                    <rect key="frame" x="108.5" y="24" width="38" height="15"/>
+                                    <constraints>
+                                        <constraint firstAttribute="width" relation="lessThanOrEqual" constant="210" id="eKL-xa-Bun"/>
+                                    </constraints>
+                                    <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                    <nil key="textColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <button opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="detailDisclosure" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Eec-Rr-KiG">
+                                    <rect key="frame" x="179" y="2" width="22" height="22"/>
+                                    <inset key="imageEdgeInsets" minX="4" minY="4" maxX="4" maxY="4"/>
+                                </button>
+                            </subviews>
+                            <constraints>
+                                <constraint firstItem="az1-E9-Dy7" firstAttribute="top" secondItem="Ht8-Rt-tH2" secondAttribute="top" constant="2" id="0kL-lQ-dCC"/>
+                                <constraint firstItem="az1-E9-Dy7" firstAttribute="centerX" secondItem="Ht8-Rt-tH2" secondAttribute="centerX" id="6o2-bM-4SK"/>
+                                <constraint firstItem="Eec-Rr-KiG" firstAttribute="centerY" secondItem="az1-E9-Dy7" secondAttribute="centerY" id="E4v-Cj-cQJ"/>
+                                <constraint firstItem="az1-E9-Dy7" firstAttribute="trailing" secondItem="Eec-Rr-KiG" secondAttribute="leading" constant="-6" id="PBS-kR-0z1"/>
+                                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Eec-Rr-KiG" secondAttribute="trailing" constant="10" id="bxJ-ht-BJq"/>
+                                <constraint firstItem="54Z-E5-MZp" firstAttribute="centerX" secondItem="Ht8-Rt-tH2" secondAttribute="centerX" id="jVY-Iw-g2X"/>
+                                <constraint firstItem="54Z-E5-MZp" firstAttribute="top" secondItem="az1-E9-Dy7" secondAttribute="bottom" constant="2" id="kn5-Si-1pl"/>
+                                <constraint firstAttribute="bottom" secondItem="54Z-E5-MZp" secondAttribute="bottom" constant="2" id="mXc-f8-Rde"/>
+                            </constraints>
+                            <connections>
+                                <outlet property="nameView" destination="az1-E9-Dy7" id="UQJ-Vn-B7k"/>
+                                <outlet property="statusView" destination="54Z-E5-MZp" id="TOe-Ah-ytU"/>
+                            </connections>
+                        </view>
                         <barButtonItem key="rightBarButtonItem" image="participants" id="IAv-qR-TZk">
                             <connections>
                                 <segue destination="EpF-TK-mfh" kind="show" identifier="showOccupants" id="XJg-IM-zVN"/>

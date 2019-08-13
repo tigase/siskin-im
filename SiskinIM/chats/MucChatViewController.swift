@@ -26,7 +26,11 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
 
     static let MENTION_OCCUPANT = Notification.Name("groupchatMentionOccupant");
     
-    var titleView: MucTitleView!;
+    var titleView: MucTitleView! {
+        get {
+            return self.navigationItem.titleView as! MucTitleView;
+        }
+    }
     var room: Room?;
 
     let log: Logger = Logger();
@@ -59,21 +63,13 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
         let mucModule: MucModule? = xmppService.getClient(forJid: account)?.modulesManager?.getModule(MucModule.ID);
         room = mucModule?.roomsManager.getRoom(for: jid.bareJid);
+        
+        titleView.name = navigationItem.title;
+        let recognizer = UITapGestureRecognizer(target: self, action: #selector(MucChatViewController.roomInfoClicked));
+        self.titleView.isUserInteractionEnabled = true;
+        self.navigationController?.navigationBar.addGestureRecognizer(recognizer);
 
         tableView.dataSource = self;
-
-        let navBarHeight = self.navigationController!.navigationBar.frame.size.height;
-        let width = CGFloat(220);
-
-        titleView = MucTitleView(width: width, height: navBarHeight);
-        titleView.name = navigationItem.title;
-
-        let roomBtn = UIButton(type: .system);
-        roomBtn.frame = CGRect(x: 0, y: 0, width: width, height: navBarHeight);
-        roomBtn.addSubview(titleView);
-        
-        roomBtn.addTarget(self, action: #selector(MucChatViewController.roomInfoClicked(_:)), for: .touchDown);
-        self.navigationItem.titleView = roomBtn;
         
         initSharing();
     }
@@ -310,7 +306,7 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
         completed?();
     }
 
-    @objc func roomInfoClicked(_ sender: UIButton) {
+    @objc func roomInfoClicked() {
         print("room info for", account, room?.roomJid, "clicked!");
         guard let settingsController = self.storyboard?.instantiateViewController(withIdentifier: "MucChatSettingsViewController") as? MucChatSettingsViewController else {
             return;
@@ -318,7 +314,12 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
         settingsController.account = self.account;
         settingsController.room = self.room as? DBRoom;
         
-        self.navigationController?.pushViewController(settingsController, animated: true);
+        let navigation = UINavigationController(rootViewController: settingsController);
+        navigation.title = self.title;
+        navigation.modalPresentationStyle = .formSheet;
+        settingsController.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: settingsController, action: #selector(MucChatSettingsViewController.dismissView));
+        self.present(navigation, animated: true, completion: nil);
+        //self.navigationController?.pushViewController(settingsController, animated: true);
     }
     
     func handle(event: Event) {
@@ -399,97 +400,79 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
 
     }
 
-    class MucTitleView: UIView {
+}
 
-        let nameView: UILabel!;
-        let statusView: UILabel!;
-        let statusHeight: CGFloat!;
-
-        var name: String? {
-            get {
-                return nameView.text;
-            }
-            set {
-                nameView.text = newValue;
-            }
+class MucTitleView: UIView {
+    
+    @IBOutlet var nameView: UILabel!;
+    @IBOutlet var statusView: UILabel!;
+    var statusViewHeight: NSLayoutConstraint?;
+    
+    var name: String? {
+        get {
+            return nameView.text;
         }
-
-        var connected: Bool = false {
-            didSet {
-                guard connected != oldValue else {
-                    return;
+        set {
+            nameView.text = newValue;
+        }
+    }
+    
+    var connected: Bool = false {
+        didSet {
+            guard connected != oldValue else {
+                return;
+            }
+            
+            refresh();
+        }
+    }
+    
+    var state: Room.State = Room.State.not_joined {
+        didSet {
+            refresh();
+        }
+    }
+    
+    override func layoutSubviews() {
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            if UIDevice.current.orientation.isLandscape {
+                if statusViewHeight == nil {
+                    statusViewHeight = statusView.heightAnchor.constraint(equalToConstant: 0);
                 }
-
-                refresh();
-            }
-        }
-
-        var state: Room.State = Room.State.not_joined {
-            didSet {
-                refresh();
-            }
-        }
-
-        init(width: CGFloat, height: CGFloat) {
-            let spacing = (height * 0.23) / 3;
-            statusHeight = height * 0.32;
-            nameView = UILabel(frame: CGRect(x: 0, y: spacing, width: width, height: height * 0.48));
-            statusView = UILabel(frame: CGRect(x: 0, y: (height * 0.44) + (spacing * 2), width: width, height: statusHeight));
-            super.init(frame: CGRect(x: 0, y: 0, width: width, height: height));
-
-
-            var font = nameView.font;
-            font = font?.withSize((font?.pointSize)!);
-            nameView.font = font;
-            nameView.textAlignment = .center;
-            nameView.adjustsFontSizeToFitWidth = true;
-
-            font = statusView.font;
-            font = font?.withSize((font?.pointSize)! - 5);
-            statusView.font = font;
-            statusView.textAlignment = .center;
-            statusView.adjustsFontSizeToFitWidth = true;
-
-            self.isUserInteractionEnabled = false;
-
-            self.addSubview(nameView);
-            self.addSubview(statusView);
-        }
-
-        required init?(coder aDecoder: NSCoder) {
-            statusHeight = nil;
-            statusView = nil;
-            nameView = nil;
-            super.init(coder: aDecoder);
-        }
-
-        func refresh() {
-            if connected {
-                let statusIcon = NSTextAttachment();
-
-                var show: Presence.Show?;
-                var desc = "Offline";
-                switch state {
-                case .joined:
-                    show = Presence.Show.online;
-                    desc = "Online";
-                case .requested:
-                    show = Presence.Show.away;
-                    desc = "Joining...";
-                default:
-                    break;
-                }
-
-                statusIcon.image = AvatarStatusView.getStatusImage(show);
-                statusIcon.bounds = CGRect(x: 0, y: -3, width: statusHeight, height: statusHeight);
-
-                let statusText = NSMutableAttributedString(attributedString: NSAttributedString(attachment: statusIcon));
-                statusText.append(NSAttributedString(string: desc));
-                statusView.attributedText = statusText;
+                statusViewHeight?.isActive = true;
             } else {
-                statusView.text = "\u{26A0} Not connected!";
+                statusViewHeight?.isActive = false;
+                self.refresh();
             }
         }
     }
 
+    func refresh() {
+        if connected {
+            let statusIcon = NSTextAttachment();
+            
+            var show: Presence.Show?;
+            var desc = "Offline";
+            switch state {
+            case .joined:
+                show = Presence.Show.online;
+                desc = "Online";
+            case .requested:
+                show = Presence.Show.away;
+                desc = "Joining...";
+            default:
+                break;
+            }
+            
+            statusIcon.image = AvatarStatusView.getStatusImage(show);
+            let height = statusView.frame.height;
+            statusIcon.bounds = CGRect(x: 0, y: -3, width: height, height: height);
+            
+            let statusText = NSMutableAttributedString(attributedString: NSAttributedString(attachment: statusIcon));
+            statusText.append(NSAttributedString(string: desc));
+            statusView.attributedText = statusText;
+        } else {
+            statusView.text = "\u{26A0} Not connected!";
+        }
+    }
 }

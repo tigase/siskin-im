@@ -26,7 +26,11 @@ import TigaseSwiftOMEMO
 
 class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, BaseChatViewControllerWithContextMenuAndToolbarDelegate, UITableViewDataSource, EventHandler, CachedViewControllerProtocol, BaseChatViewController_ShareImageExtension, BaseChatViewController_PreviewExtension {
 
-    var titleView: ChatTitleView!;
+    var titleView: ChatTitleView! {
+        get {
+            return self.navigationItem.titleView as! ChatTitleView;
+        }
+    }
     
     let log: Logger = Logger();
     var chat: DBChat?;
@@ -62,18 +66,22 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
         
-        let navBarHeight = self.navigationController!.navigationBar.frame.size.height;
-        let width = CGFloat(220);
+//        let navBarHeight = self.navigationController!.navigationBar.frame.size.height;
+//        let width = CGFloat(220);
 
-        titleView = ChatTitleView(width: width, height: navBarHeight);
+//        titleView = ChatTitleView(width: width, height: navBarHeight);
 //        titleView.name = navigationItem.title;
         
-        let buddyBtn = UIButton(type: .system);
-        buddyBtn.frame = CGRect(x: 0, y: 0, width: width, height: navBarHeight);
-        buddyBtn.addSubview(titleView);
+//        let buddyBtn = UIButton(type: .system);
+//        buddyBtn.frame = CGRect(x: 0, y: 0, width: width, height: navBarHeight);
+//        buddyBtn.addSubview(titleView);
         
-        buddyBtn.addTarget(self, action: #selector(ChatViewController.showBuddyInfo), for: .touchDown);
-        self.navigationItem.titleView = buddyBtn;
+//        buddyBtn.addTarget(self, action: #selector(ChatViewController.showBuddyInfo), for: .touchDown);
+        //self.navigationItem.titleView = buddyBtn;
+        
+        let recognizer = UITapGestureRecognizer(target: self, action: #selector(ChatViewController.showBuddyInfo));
+        self.titleView.isUserInteractionEnabled = true;
+        self.navigationController?.navigationBar.addGestureRecognizer(recognizer);
 
         self.refreshControl = UIRefreshControl();
         self.refreshControl?.addTarget(self, action: #selector(ChatViewController.refreshChatHistory), for: UIControl.Event.valueChanged);
@@ -126,7 +134,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         handler?(texts);
     }
     
-    @objc func showBuddyInfo(_ button: UIButton) {
+    @objc func showBuddyInfo() {//_ button: UIButton) {
         print("open buddy info!");
         let navigation = storyboard?.instantiateViewController(withIdentifier: "ContactViewNavigationController") as! UINavigationController;
         let contactView = navigation.visibleViewController as! ContactViewController;
@@ -135,7 +143,8 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         contactView.chat = self.chat;
         contactView.showEncryption = true;
         navigation.title = self.navigationItem.title;
-        self.showDetailViewController(navigation, sender: self);
+        navigation.modalPresentationStyle = .formSheet;
+        self.present(navigation, animated: true, completion: nil);
 
     }
     
@@ -631,130 +640,112 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         }
         
     }
-    
-    class ChatTitleView: UIView {
-        
-        let nameView: UILabel!;
-        let statusView: UILabel!;
-        let statusHeight: CGFloat!;
-        
-        var encryption: ChatEncryption? = nil {
-            didSet {
-                self.refresh();
-            }
-        }
+}
 
-        var name: String? {
-            get {
-                return nameView.text;
-            }
-            set {
-                nameView.text = newValue;
-            }
+class ChatTitleView: UIView {
+    
+    @IBOutlet var nameView: UILabel!;
+    @IBOutlet var statusView: UILabel!;
+    var statusViewHeight: NSLayoutConstraint?;
+
+    var encryption: ChatEncryption? = nil {
+        didSet {
+            self.refresh();
         }
-        
-        var connected: Bool = false {
-            didSet {
-                guard oldValue != connected else {
-                    return;
+    }
+    
+    var name: String? {
+        get {
+            return nameView.text;
+        }
+        set {
+            nameView.text = newValue;
+        }
+    }
+    
+    var connected: Bool = false {
+        didSet {
+            guard oldValue != connected else {
+                return;
+            }
+            refresh();
+        }
+    }
+    
+    var status: Presence? {
+        didSet {
+            self.refresh();
+        }
+    }
+    
+    override func layoutSubviews() {
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            if UIDevice.current.orientation.isLandscape {
+                if statusViewHeight == nil {
+                    statusViewHeight = statusView.heightAnchor.constraint(equalToConstant: 0);
                 }
-                refresh();
-            }
-        }
-        
-        var status: Presence? {
-            didSet {
+                statusViewHeight?.isActive = true;
+            } else {
+                statusViewHeight?.isActive = false;
                 self.refresh();
             }
         }
+    }
+    
+    
+    func reload(for account: BareJID, with jid: BareJID) {
+        let params:[String:Any?] = ["account" : account, "jid" : jid];
+        let name = try! ChatViewController.loadChatInfo.findFirst(params) { (cursor) -> (String)? in
+            return cursor["name"] ?? jid.stringValue;
+            } ?? jid.stringValue;
         
-        init(width: CGFloat, height: CGFloat) {
-            let spacing = (height * 0.23) / 3;
-            statusHeight = height * 0.32;
-            nameView = UILabel(frame: CGRect(x: 0, y: spacing, width: width, height: height * 0.48));
-            statusView = UILabel(frame: CGRect(x: 0, y: (height * 0.44) + (spacing * 2), width: width, height: statusHeight));
-            super.init(frame: CGRect(x: 0, y: 0, width: width, height: height));
-            
-            var font = nameView.font;
-            font = font?.withSize((font?.pointSize)!);
-            nameView.font = font;
-            nameView.textAlignment = .center;
-            nameView.adjustsFontSizeToFitWidth = true;
-            
-            font = statusView.font;
-            font = font?.withSize((font?.pointSize)! - 5);
-            statusView.font = font;
-            statusView.textAlignment = .center;
-            statusView.adjustsFontSizeToFitWidth = true;
-            
-            self.isUserInteractionEnabled = false;
-            
-            self.addSubview(nameView);
-            self.addSubview(statusView);
-//            self.nameView.textColor = UIColor.white;
-//            self.statusView.textColor = UIColor.white;
-        }
-        
-        required init?(coder aDecoder: NSCoder) {
-            statusHeight = nil;
-            statusView = nil;
-            nameView = nil;
-            super.init(coder: aDecoder);
-        }
-        
-        func reload(for account: BareJID, with jid: BareJID) {
-            let params:[String:Any?] = ["account" : account, "jid" : jid];
-            let name = try! ChatViewController.loadChatInfo.findFirst(params) { (cursor) -> (String)? in
-                return cursor["name"] ?? jid.stringValue;
-                } ?? jid.stringValue;
-            
-            self.name = name;
-            self.encryption = (DBChatStore.instance.getChat(for: account, with: jid) as? DBChat)?.options.encryption;
-        }
-        
-        fileprivate func refresh() {
-            DispatchQueue.main.async {
-                let encryption = self.encryption ?? ChatEncryption(rawValue: Settings.MessageEncryption.getString() ?? "") ?? .none;
-                if self.connected {
-                    let statusIcon = NSTextAttachment();
-                    statusIcon.image = AvatarStatusView.getStatusImage(self.status?.show);
-                    statusIcon.bounds = CGRect(x: 0, y: -3, width: self.statusHeight, height: self.statusHeight);
-                    var desc = self.status?.status;
-                    if desc == nil {
-                        let show = self.status?.show;
-                        if show == nil {
-                            desc = "Offline";
-                        } else {
-                            switch(show!) {
-                            case .online:
-                                desc = "Online";
-                            case .chat:
-                                desc = "Free for chat";
-                            case .away:
-                                desc = "Be right back";
-                            case .xa:
-                                desc = "Away";
-                            case .dnd:
-                                desc = "Do not disturb";
-                            }
+        self.name = name;
+        self.encryption = (DBChatStore.instance.getChat(for: account, with: jid) as? DBChat)?.options.encryption;
+    }
+    
+    fileprivate func refresh() {
+        DispatchQueue.main.async {
+            let encryption = self.encryption ?? ChatEncryption(rawValue: Settings.MessageEncryption.getString() ?? "") ?? .none;
+            if self.connected {
+                let statusIcon = NSTextAttachment();
+                statusIcon.image = AvatarStatusView.getStatusImage(self.status?.show);
+                let height = self.statusView.frame.height;
+                statusIcon.bounds = CGRect(x: 0, y: -3, width: height, height: height);
+                var desc = self.status?.status;
+                if desc == nil {
+                    let show = self.status?.show;
+                    if show == nil {
+                        desc = "Offline";
+                    } else {
+                        switch(show!) {
+                        case .online:
+                            desc = "Online";
+                        case .chat:
+                            desc = "Free for chat";
+                        case .away:
+                            desc = "Be right back";
+                        case .xa:
+                            desc = "Away";
+                        case .dnd:
+                            desc = "Do not disturb";
                         }
                     }
-                    let statusText = NSMutableAttributedString(string: encryption == .none ? "" : "\u{1F512} ");
-                    statusText.append(NSAttributedString(attachment: statusIcon));
-                    statusText.append(NSAttributedString(string: desc!));
-                    self.statusView.attributedText = statusText;
-                } else {
-                    switch encryption {
-                    case .omemo:
-                        self.statusView.text = "\u{1F512} \u{26A0} Not connected!";
-                    case .none:
-                        self.statusView.text = "\u{26A0} Not connected!";
-                    }
                 }
-                self.nameView.textColor = Appearance.current.navigationBarTextColor();
-                self.statusView.textColor = Appearance.current.navigationBarTextColor();
-
+                let statusText = NSMutableAttributedString(string: encryption == .none ? "" : "\u{1F512} ");
+                statusText.append(NSAttributedString(attachment: statusIcon));
+                statusText.append(NSAttributedString(string: desc!));
+                self.statusView.attributedText = statusText;
+            } else {
+                switch encryption {
+                case .omemo:
+                    self.statusView.text = "\u{1F512} \u{26A0} Not connected!";
+                case .none:
+                    self.statusView.text = "\u{26A0} Not connected!";
+                }
             }
+            self.nameView.textColor = Appearance.current.navigationBarTextColor();
+            self.statusView.textColor = Appearance.current.navigationBarTextColor();
+            
         }
     }
 }
