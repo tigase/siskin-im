@@ -198,6 +198,7 @@ class ContactViewController: CustomTableViewController {
                     idx = fingerprint.index(after: idx);
                 }
                 cell.identityLabel.text = fingerprint;
+                cell.trustSwitch.isEnabled = identity.status.isActive;
                 cell.trustSwitch.isOn = identity.status.trust == .trusted || identity.status.trust == .undecided;
                 let account = self.account!;
                 cell.valueChangedListener = { (sender) in
