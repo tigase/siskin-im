@@ -330,7 +330,7 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
         controller.addAction(UIAlertAction(title: "Join group chat", style: .default, handler: { action in
             let navigation = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "MucJoinNavigationController") as! UINavigationController;
             navigation.modalPresentationStyle = .formSheet;
-            navigation.visibleViewController?.hidesBottomBarWhenPushed = true;
+//            navigation.visibleViewController?.hidesBottomBarWhenPushed = true;
 //            self.showDetailViewController(navigation, sender: self);
             self.present(navigation, animated: true, completion: nil);
         }));

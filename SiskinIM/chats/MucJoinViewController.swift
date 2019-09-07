@@ -54,6 +54,7 @@ class MucJoinViewController: CustomTableViewController, UIPickerViewDataSource, 
                 self.findMucComponentJid(for: jid);
             }
         }
+        super.viewWillAppear(animated);
     }
 
     override func didReceiveMemoryWarning() {
