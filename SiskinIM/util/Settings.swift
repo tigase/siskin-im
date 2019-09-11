@@ -144,6 +144,7 @@ public enum AccountSettings {
     case LastError(String)
     case KnownServerFeatures(String)
     case omemoRegistrationId(String)
+    case reconnectionLocation(String)
     
     public func getAccount() -> String {
         switch self {
@@ -160,6 +161,8 @@ public enum AccountSettings {
         case .KnownServerFeatures(let account):
             return account;
         case .omemoRegistrationId(let account):
+            return account;
+        case .reconnectionLocation(let account):
             return account;
         }
     }
@@ -180,6 +183,8 @@ public enum AccountSettings {
             return "KnownServerFeatures";
         case .omemoRegistrationId(_):
             return "omemoRegistrationId";
+        case .reconnectionLocation(_):
+            return "reconnectionLocation";
         }
     }
     

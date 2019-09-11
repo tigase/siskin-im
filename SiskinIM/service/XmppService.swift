@@ -71,6 +71,7 @@ open class XmppService: Logger, EventHandler {
     
     fileprivate var eventHandlers: [EventHandlerHolder] = [];
     
+    fileprivate let dnsSrvResolverCache: DNSSrvResolverCache;
     fileprivate let dnsSrvResolver: DNSSrvResolver;
     fileprivate var networkAvailable:Bool {
         didSet {
@@ -95,7 +96,8 @@ open class XmppService: Logger, EventHandler {
     }
     
     fileprivate init(dbConnection:DBConnection) {
-        self.dnsSrvResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: DNSSrvDiskCache(cacheDirectoryName: "dns-cache"));
+        self.dnsSrvResolverCache = DNSSrvResolverWithCache.InMemoryCache(store: DNSSrvDiskCache(cacheDirectoryName: "dns-cache"));
+        self.dnsSrvResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: self.dnsSrvResolverCache);
         self.streamFeaturesCache = StreamFeaturesCache();
         self.dbCapsCache = DBCapabilitiesCache(dbConnection: dbConnection);
         self.dbChatStore = DBChatStore.instance;
@@ -151,6 +153,9 @@ open class XmppService: Logger, EventHandler {
             }
             client = XMPPClient()
             client?.connectionConfiguration.setUserJID(userJid);
+            if let seeOtherHostStr = AccountSettings.reconnectionLocation(userJid.stringValue).getString(), let seeOtherHost = Data(base64Encoded: seeOtherHostStr), let val = try? JSONDecoder().decode(XMPPSrvRecord.self, from: seeOtherHost) {
+                client?.sessionObject.setUserProperty(SocketConnector.SEE_OTHER_HOST_KEY, value: val);
+            }
             client!.keepaliveTimeout = 0;
             registerModules(client!);
             registerEventHandlers(client!);
@@ -349,6 +354,11 @@ open class XmppService: Logger, EventHandler {
                 DispatchQueue.global(qos: .default).async {
                     NotificationCenter.default.post(name: XmppService.ACCOUNT_STATE_CHANGED, object: self, userInfo: ["account":jid.stringValue]);
                     if let client = self.getClient(forJid: jid) {
+                        if e.clean, let connDetails = e.connectionDetails, let json = try? JSONEncoder().encode(connDetails) {
+                            AccountSettings.reconnectionLocation(jid.stringValue).set(string: json.base64EncodedString());
+                        } else {
+                            AccountSettings.reconnectionLocation(jid.stringValue).set(string: nil);
+                        }
                         let retryNo = client.sessionObject.getProperty(XmppService.CONNECTION_RETRY_NO_KEY, defValue: 0) + 1;
                         client.sessionObject.setProperty(XmppService.CONNECTION_RETRY_NO_KEY, value: retryNo);
                         self.updateXmppClientInstance(forJid: jid);

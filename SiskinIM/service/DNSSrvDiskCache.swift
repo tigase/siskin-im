@@ -34,6 +34,6 @@ open class DNSSrvDiskCache: DNSSrvResolverWithCache.DiskCache {
             return;
         }
         
-        self.store(for: account.domain, records: nil);
+        self.store(for: account.domain, result: nil);
     }
 }
