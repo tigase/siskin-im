@@ -63,6 +63,10 @@ class RosterItemEditViewController: CustomTableViewController, UIPickerViewDataS
                 }
             }
         } else {
+            if account == nil && AccountManager.getAccounts().count == 1 {
+                self.account = BareJID(AccountManager.getAccounts().first);
+                self.accountTextField.text = account?.stringValue;
+            }
             self.nameTextField.text = nil;
         }
     }
