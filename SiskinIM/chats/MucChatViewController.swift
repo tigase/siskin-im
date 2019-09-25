@@ -43,6 +43,7 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
     @IBOutlet var shareButton: UIButton!;
     @IBOutlet var progressBar: UIProgressView!;
     var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
+    var filePickerDelegate: BaseChatViewController_ShareFilePickerDelegate?;
 
         lazy var loadChatInfo:DBStatement! = try? self.dbConnection.prepareStatement("SELECT name FROM chats WHERE account = :account AND jid = :jid");
     

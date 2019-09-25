@@ -45,6 +45,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     @IBOutlet var shareButton: UIButton!;
     @IBOutlet var progressBar: UIProgressView!;
     var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
+    var filePickerDelegate: BaseChatViewController_ShareFilePickerDelegate?;
     
     fileprivate static let loadChatInfo: DBStatement = try! DBConnection.main.prepareStatement("SELECT r.name FROM roster_items r WHERE r.account = :account AND r.jid = :jid");
     

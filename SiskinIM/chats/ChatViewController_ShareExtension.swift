@@ -20,6 +20,7 @@
 //
 
 import UIKit
+import MobileCoreServices
 import TigaseSwift
 
 protocol BaseChatViewController_ShareImageExtension: class {
@@ -28,6 +29,7 @@ protocol BaseChatViewController_ShareImageExtension: class {
     var shareButton: UIButton! { get set }
     
     var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate? { get set }
+    var filePickerDelegate: BaseChatViewController_ShareFilePickerDelegate? { get set }
     
     var xmppService: XmppService! { get }
     var account: BareJID! { get }
@@ -46,21 +48,22 @@ extension BaseChatViewController_ShareImageExtension {
     }
     
     func showPhotoSelector(_ sender: UIView) {
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
         if UIImagePickerController.isSourceTypeAvailable(.camera) {
-            let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
             alert.addAction(UIAlertAction(title: "Take photo", style: .default, handler: { (action) in
                 self.selectPhoto(.camera);
             }));
-            alert.addAction(UIAlertAction(title: "Select photo", style: .default, handler: { (action) in
-                self.selectPhoto(.photoLibrary);
-            }));
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
-            alert.popoverPresentationController?.sourceView = sender;
-            alert.popoverPresentationController?.sourceRect = sender.bounds;
-            present(alert, animated: true, completion: nil);
-        } else {
-            selectPhoto(.photoLibrary);
         }
+        alert.addAction(UIAlertAction(title: "Select photo", style: .default, handler: { (action) in
+            self.selectPhoto(.photoLibrary);
+        }));
+        alert.addAction(UIAlertAction(title: "Select file", style: .default, handler: { (action) in
+            self.selectFile();
+        }));
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+        alert.popoverPresentationController?.sourceView = sender;
+        alert.popoverPresentationController?.sourceRect = sender.bounds;
+        present(alert, animated: true, completion: nil);
     }
     
     func selectPhoto(_ source: UIImagePickerController.SourceType) {
@@ -72,31 +75,93 @@ extension BaseChatViewController_ShareImageExtension {
         present(picker, animated: true, completion: nil);
     }
 
+    func selectFile() {
+        let picker = UIDocumentPickerViewController(documentTypes: [String(kUTTypeData)], in: .open);
+        self.filePickerDelegate = BaseChatViewController_ShareFilePickerDelegate(self);
+        picker.delegate = self.filePickerDelegate;
+        picker.allowsMultipleSelection = false;
+        self.present(picker, animated: true, completion: nil);
+    }
+    
 }
 
-class BaseChatViewController_ShareImagePickerDelegate: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate, URLSessionDelegate, URLSessionTaskDelegate {
+enum ShareError: Error {
+    case unknownError
+    case noAccessError
+    case noFileSizeError
+    case noMimeTypeError
     
+    case notSupported
+    case fileTooBig
+    
+    case httpError
+    
+    var message: String {
+        switch self {
+        case .unknownError:
+            return "Please try again later."
+        case .noAccessError:
+            return "It was not possible to access the file."
+        case .noFileSizeError:
+            return "Could not retrieve file size.";
+        case .noMimeTypeError:
+            return "Could not detect MIME type of a file.";
+        case .notSupported:
+            return "Feature not supported by XMPP server";
+        case .fileTooBig:
+            return "File is too big to share";
+        case .httpError:
+            return "Upload to HTTP server failed.";
+        }
+    }
+}
+
+class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
+ 
     let controller: BaseChatViewController_ShareImageExtension;
     
     init(_ controller: BaseChatViewController_ShareImageExtension) {
         self.controller = controller;
     }
-    
-    @objc func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        guard let photo = (info[UIImagePickerController.InfoKey.editedImage] as? UIImage) ?? (info[UIImagePickerController.InfoKey.originalImage] as? UIImage) else {
+
+    func share(filename: String, url: URL, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
+        guard url.startAccessingSecurityScopedResource() else {
+            completionHandler(.failure(.noAccessError));
             return;
         }
-        print("photo", photo.size, "originalImage", info[UIImagePickerController.InfoKey.originalImage] as Any);
-        let imageName = "image.jpg";
+        guard let values = try? url.resourceValues(forKeys: [.fileSizeKey, .typeIdentifierKey]), let size = values.fileSize else {
+            url.stopAccessingSecurityScopedResource();
+            completionHandler(.failure(.noFileSizeError));
+            return;
+        }
         
-        // saving photo
-        let data = photo.jpegData(compressionQuality: 0.9);
-        picker.dismiss(animated: true, completion: nil);
+        var mimeType: String = "application/octet-stream";
         
-        if data != nil, let client = self.controller.xmppService.getClient(forJid: self.controller.account) {
+        if let type = values.typeIdentifier, let mimeTypeRef = UTTypeCopyPreferredTagWithClass(type as CFString, kUTTagClassMIMEType) {
+            mimeType = mimeTypeRef.takeUnretainedValue() as String;
+            mimeTypeRef.release();
+        }
+        
+        guard let inputStream = InputStream(url: url) else {
+            url.stopAccessingSecurityScopedResource();
+            completionHandler(.failure(.noAccessError));
+            return;
+        }
+        self.share(filename: filename, inputStream: inputStream, filesize: size, mimeType: mimeType, completionHandler: { result in
+            url.stopAccessingSecurityScopedResource();
+            switch result {
+            case .success(let getUri):
+                completionHandler(.success(getUri));
+            case .failure(let error):
+                completionHandler(.failure(error));
+            }
+        });
+    }
+    
+    func share(filename: String, inputStream: InputStream, filesize size: Int, mimeType: String, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
+        if let client = self.controller.xmppService.getClient(forJid: self.controller.account) {
             let httpUploadModule: HttpFileUploadModule = client.modulesManager.getModule(HttpFileUploadModule.ID)!;
             httpUploadModule.findHttpUploadComponent(onSuccess: { (results) in
-                let size = data!.count;
                 var compJid: JID? = nil;
                 results.forEach({ (k,v) in
                     if compJid != nil {
@@ -110,14 +175,14 @@ class BaseChatViewController_ShareImagePickerDelegate: NSObject, UIImagePickerCo
 
                 guard compJid != nil else {
                     guard results.count > 0 else {
-                        self.showAlert(title: "Upload failed", message: "Feature not supported by XMPP server");
+                        completionHandler(.failure(.notSupported));
                         return;
                     }
-                    self.showAlert(title: "Upload failed", message: "Selected image is too big!");
+                    completionHandler(.failure(.fileTooBig));
                     return;
                 }
-                
-                httpUploadModule.requestUploadSlot(componentJid: compJid!, filename: imageName, size: size, contentType: "image/jpeg", onSuccess: { (slot) in
+            
+                httpUploadModule.requestUploadSlot(componentJid: compJid!, filename: filename, size: size, contentType: mimeType, onSuccess: { (slot) in
                     DispatchQueue.main.async {
                         self.controller.progressBar.isHidden = false;
                     }
@@ -126,30 +191,32 @@ class BaseChatViewController_ShareImagePickerDelegate: NSObject, UIImagePickerCo
                         request.addValue(v, forHTTPHeaderField: k);
                     });
                     request.httpMethod = "PUT";
-                    request.httpBody = data;
-                    request.addValue("image/jpeg", forHTTPHeaderField: "Content-Type");
+                    request.httpBodyStream = inputStream;
+                    request.addValue(String(size), forHTTPHeaderField: "Content-Lenght");
+                    request.addValue(mimeType, forHTTPHeaderField: "Content-Type");
                     let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: OperationQueue.main);
                     session.dataTask(with: request) { (data, response, error) in
                         guard error == nil && ((response as? HTTPURLResponse)?.statusCode ?? 500) == 201 else {
-                            self.showAlert(title: "Upload failed", message: "Upload to HTTP server failed.");
+                            completionHandler(.failure(.httpError));
                             return;
                         }
-                        ImageCache.shared.set(image: photo) { (key) in
-                            self.controller.sendMessage(body: slot.getUri.absoluteString, url: slot.getUri.absoluteString, preview: "preview:image:\(key)", completed: nil);
-                        }
+                        completionHandler(.success(slot.getUri));
                         }.resume();
                 }, onError: { (error, message) in
-                    self.showAlert(title: "Upload failed", message: message ?? "Please try again later.");
+                    completionHandler(.failure(.unknownError));
                 })
             }, onError: { (error) in
                 if error != nil && error! == ErrorCondition.item_not_found {
-                    self.showAlert(title: "Upload failed", message: "Feature not supported by XMPP server");
+                    completionHandler(.failure(.notSupported));
                 } else {
-                    self.showAlert(title: "Upload failed", message: "Please try again later.");
+                    completionHandler(.failure(.unknownError));
                 }
             })
         }
-        controller.imagePickerDelegate = nil;
+    }
+    
+    func showAlert(shareError: ShareError) {
+        self.showAlert(title: "Upload failed", message: shareError.message);
     }
     
     func showAlert(title: String, message: String) {
@@ -161,11 +228,6 @@ class BaseChatViewController_ShareImagePickerDelegate: NSObject, UIImagePickerCo
         }
     }
     
-    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        controller.imagePickerDelegate = nil;
-        picker.dismiss(animated: true, completion: nil);
-    }
-    
     func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
         self.controller.progressBar.progress = Float(totalBytesSent) / Float(totalBytesExpectedToSend);
         if self.controller.progressBar.progress == 1.0 {
@@ -173,6 +235,70 @@ class BaseChatViewController_ShareImagePickerDelegate: NSObject, UIImagePickerCo
             self.controller.progressBar.progress = 0;
         }
     }
+}
+
+class BaseChatViewController_ShareFilePickerDelegate: BaseChatViewController_SharePickerDelegate, UIDocumentPickerDelegate {
+    
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let url = urls.first else {
+            return;
+        }
+        print("url:", url);
+        controller.dismiss(animated: true, completion: nil);
+        self.controller.filePickerDelegate = nil;
+            
+        share(filename: url.lastPathComponent, url: url) { (result) in
+            switch result {
+            case .success(let getUri):
+                print("file uploaded to:", getUri);
+                self.controller.sendMessage(body: getUri.absoluteString, url: getUri.absoluteString, preview: nil, completed: nil);
+            case .failure(let error):
+                self.showAlert(shareError: error);
+            }
+        }
+    }
+    
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+        self.controller.filePickerDelegate = nil;
+        controller.dismiss(animated: true, completion: nil);
+    }
+    
+}
+
+class BaseChatViewController_ShareImagePickerDelegate: BaseChatViewController_SharePickerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    @objc func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        controller.imagePickerDelegate = nil;
+        picker.dismiss(animated: true, completion: nil);
+    }
+    
+    @objc func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        
+        guard let photo = (info[UIImagePickerController.InfoKey.editedImage] as? UIImage) ?? (info[UIImagePickerController.InfoKey.originalImage] as? UIImage) else {
+            return;
+        }
+        print("photo", photo.size, "originalImage", info[UIImagePickerController.InfoKey.originalImage] as Any);
+        let imageName = "image.jpg";
+        
+        // saving photo
+        let data = photo.jpegData(compressionQuality: 0.9);
+        picker.dismiss(animated: true, completion: nil);
+        if data != nil {
+            self.share(filename: "image.jpg", inputStream: InputStream(data: data!), filesize: data!.count, mimeType: "image/jpeg") { (result) in
+                switch result {
+                case .success(let getUri):
+                    print("file uploaded to:", getUri);
+                    ImageCache.shared.set(image: photo) { (key) in
+                        self.controller.sendMessage(body: getUri.absoluteString, url: getUri.absoluteString, preview: "preview:image:\(key)", completed: nil);
+                    }
+                case .failure(let error):
+                    self.showAlert(shareError: error);
+                }
+            }
+        }
+        controller.imagePickerDelegate = nil;
+    }
+    
 }
 
 // Helper function inserted by Swift 4.2 migrator.
