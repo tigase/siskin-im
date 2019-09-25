@@ -109,11 +109,11 @@ class AbstractRosterViewController: CustomTableViewController, UISearchResultsUp
         
         if let item = roster?.item(at: indexPath) {
             cell.nameLabel.text = item.displayName;
-            cell.nameLabel.textColor = Appearance.current.textColor();
-            cell.statusLabel.textColor = Appearance.current.secondaryTextColor();
+            cell.nameLabel.textColor = Appearance.current.labelColor;
+            cell.statusLabel.textColor = Appearance.current.secondaryLabelColor;
             cell.statusLabel.text = item.account.stringValue;
             cell.avatarStatusView.setStatus(item.presence?.show);
-            cell.avatarStatusView.backgroundColor = Appearance.current.textBackgroundColor();
+            cell.avatarStatusView.backgroundColor = Appearance.current.systemBackground;
             cell.avatarStatusView.updateAvatar(manager: xmppService.avatarManager, for: item.account, with: item.jid.bareJid, name: item.displayName, orDefault: xmppService.avatarManager.defaultAvatar);
         }
         
@@ -122,7 +122,29 @@ class AbstractRosterViewController: CustomTableViewController, UISearchResultsUp
     
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         // nothing to do in this case
-        cell.backgroundColor = Appearance.current.tableViewCellBackgroundColor();
+        cell.backgroundColor = Appearance.current.systemBackground;
+    }
+    
+//    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+//        guard self.roster is RosterProviderGrouped else {
+//            return nil;
+//        }
+//        guard let header = self.tableView(tableView, titleForHeaderInSection: section) else {
+//            return nil;
+//        }
+//        let label = UILabel();
+//        label.text = header;
+//        return label;
+//    }
+    
+    override func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        super.tableView(tableView, willDisplayHeaderView: view, forSection: section);
+        if let v = view as? UITableViewHeaderFooterView {
+            v.textLabel?.font = UIFont.preferredFont(forTextStyle: .subheadline);
+            v.textLabel?.text = v.textLabel?.text?.uppercased();
+            v.tintColor = Appearance.current.secondarySystemBackground;
+            v.textLabel?.backgroundColor = Appearance.current.secondarySystemBackground;
+        }
     }
     
     func updateSearchResults(for searchController: UISearchController) {

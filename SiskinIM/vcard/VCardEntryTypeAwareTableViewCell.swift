@@ -56,7 +56,7 @@ class VCardEntryTypeAwareTableViewCell: UITableViewCell, UIPickerViewDelegate, U
         guard let title = self.pickerView(pickerView, titleForRow: row, forComponent: component) else {
             return nil;
         }
-        return NSAttributedString(string: title, attributes: [.foregroundColor : Appearance.current.textColor()]);
+        return NSAttributedString(string: title, attributes: [.foregroundColor : Appearance.current.labelColor]);
     }
     
     func numberOfComponents(in pickerView: UIPickerView) -> Int {

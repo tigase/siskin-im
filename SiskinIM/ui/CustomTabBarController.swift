@@ -31,23 +31,25 @@ class CustomTabBarController: UITabBarController {
     override func viewDidLoad() {
         for childController in self.children {
             if childController is UINavigationController {
-                childController.view.backgroundColor = Appearance.current.tableViewBackgroundColor();
+                childController.view.backgroundColor = Appearance.current.systemBackground;
             }
         }
         NotificationCenter.default.addObserver(self, selector: #selector(appearanceChanged), name: Appearance.CHANGED, object: nil);
     }
     
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection);
+        if #available(iOS 13.0, *) {
+            if previousTraitCollection?.hasDifferentColorAppearance(comparedTo: traitCollection) ?? false {
+                Appearance.sync();
+            }
+        }
+    }
+    
     @objc func appearanceChanged(_ notification: Notification) {
-        self.tabBar.barTintColor = Appearance.current.bottomBarBackgroundColor();
-        self.tabBar.tintColor = Appearance.current.bottomBarTintColor();
+        self.tabBar.barTintColor = Appearance.current.bottomBarBackgroundColor;
+        self.tabBar.tintColor = Appearance.current.bottomBarTintColor;
         self.setNeedsStatusBarAppearanceUpdate();
-//        for childController in self.children {
-//            if let navController = childController as? UINavigationController {
-//                navController.navigationBar.barStyle = Appearance.current.navigationBarStyle();
-//                navController.navigationBar.tintColor = Appearance.current.navigationBarTintColor();
-//                navController.navigationBar.barTintColor = Appearance.current.controlBackgroundColor();
-//            }
-//        }
     }
     
 }

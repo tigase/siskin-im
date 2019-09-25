@@ -141,7 +141,7 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
             cell.avatarView?.image = self.xmppService.avatarManager.defaultAvatar;
         }
         cell.setValues(data: item.data, ts: item.timestamp, id: item.id, nickname: item.nickname, state: state, preview: item.preview, downloader: self.downloadPreview);
-        cell.backgroundColor = Appearance.current.tableViewCellBackgroundColor();
+        cell.backgroundColor = Appearance.current.systemBackground;
         return cell;
     }
 
@@ -255,8 +255,8 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
         let state = xmppService.getClient(forJid: self.account)?.state;
         DispatchQueue.main.async {
             self.titleView.connected = state != nil && state == .connected;
-            self.titleView.nameView.textColor = Appearance.current.navigationBarTextColor();
-            self.titleView.statusView.textColor = Appearance.current.navigationBarTextColor();
+            self.titleView.nameView.textColor = Appearance.current.navigationBarTextColor;
+            self.titleView.statusView.textColor = Appearance.current.navigationBarTextColor;
         }
     }
 

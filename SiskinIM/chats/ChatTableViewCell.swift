@@ -155,11 +155,11 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         
         if messageFrameView != nil {
             self.messageFrameView?.backgroundColor = state.direction == .incoming ? Appearance.current.incomingBubbleColor() : Appearance.current.outgoingBubbleColor();
-            self.nicknameView?.textColor = Appearance.current.secondaryTextColor();
+            self.nicknameView?.textColor = Appearance.current.secondaryLabelColor;
             self.messageTextView.textColor = self.originalTextColor;
         } else {
-            self.nicknameView?.textColor = Appearance.current.textColor();
-            self.messageTextView?.textColor = Appearance.current.secondaryTextColor();
+            self.nicknameView?.textColor = Appearance.current.labelColor;
+            self.messageTextView?.textColor = Appearance.current.secondaryLabelColor;
         }
         
         self.links.removeAll();
@@ -233,7 +233,7 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
                 if let messageFrameView = self.messageFrameView {
                     self.messageTextView.textColor = self.originalTextColor.mix(color: messageFrameView.backgroundColor!, ratio: 0.33);
                 } else {
-                    self.messageTextView.textColor = Appearance.current.textColor();
+                    self.messageTextView.textColor = Appearance.current.labelColor;
                 }
             }
         }

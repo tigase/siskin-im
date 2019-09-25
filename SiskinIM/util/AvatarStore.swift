@@ -34,7 +34,7 @@ open class AvatarStore {
     fileprivate lazy var insertAvatarHashForJidStmt: DBStatement! = try? self.dbConnection.prepareStatement("INSERT INTO avatars_cache (jid, account, hash, type) VALUES (:jid,:account,:hash,:type)");
     
     public init(dbConnection: DBConnection) {
-        self.dispatcher = QueueDispatcher(queue: DispatchQueue(label: "AvatarStore", attributes: .concurrent), queueTag: DispatchSpecificKey<DispatchQueue?>());
+        self.dispatcher = QueueDispatcher(label: "AvatarStore", attributes: .concurrent);
         self.dbConnection = dbConnection;
         
         avatarCacheUrl = try! FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("avatars", isDirectory: true);

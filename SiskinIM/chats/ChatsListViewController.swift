@@ -52,7 +52,7 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
         self.xmppService.registerEventHandler(self, for: MessageModule.ChatCreatedEvent.TYPE, MessageModule.ChatClosedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE, RosterModule.ItemUpdatedEvent.TYPE);
         //(self.tabBarController as? CustomTabBarController)?.showTabBar();
         NotificationCenter.default.addObserver(self, selector: #selector(ChatsListViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
-        self.navigationController?.navigationBar.backgroundColor = Appearance.current.controlBackgroundColor();
+        self.navigationController?.navigationBar.backgroundColor = Appearance.current.controlBackgroundColor;
         super.viewWillAppear(animated);
     }
 
@@ -86,13 +86,13 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath as IndexPath) as! ChatsListTableViewCell;
         
         if let item = dataSource.item(at: indexPath) {
-            cell.nameLabel.textColor = Appearance.current.textColor();
+            cell.nameLabel.textColor = Appearance.current.labelColor;
             cell.nameLabel.text = item.name ?? item.key.jid.stringValue;
             cell.nameLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.nameLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.nameLabel.font.pointSize);
 //            if Settings.EnableNewUI.getBool() {
-                cell.lastMessageLabel.textColor = Appearance.current.textColor();
+                cell.lastMessageLabel.textColor = Appearance.current.labelColor;
 //            } else {
-                cell.lastMessageLabel.textColor = Appearance.current.secondaryTextColor();
+            cell.lastMessageLabel.textColor = Appearance.current.secondaryLabelColor;
 //            }
             if item.lastMessage != nil && Settings.EnableMarkdownFormatting.getBool() {
                 let msg = NSMutableAttributedString(string: item.lastMessage!);
@@ -109,7 +109,7 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
             
             let formattedTS = self.formatTimestamp(item.key.timestamp);
             cell.timestampLabel.text = formattedTS;
-            cell.timestampLabel.textColor = Appearance.current.secondaryTextColor();
+            cell.timestampLabel.textColor = Appearance.current.secondaryLabelColor;
             
             let xmppClient = self.xmppService.getClient(forJid: item.key.account);
             switch item.key.type {
@@ -130,7 +130,7 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
     }
     
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        cell.backgroundColor = Appearance.current.tableViewCellBackgroundColor();
+        cell.backgroundColor = Appearance.current.systemBackground;
         if let accountCell = cell as? ChatsListTableViewCell {
             accountCell.avatarStatusView.updateCornerRadius();
         }
@@ -380,6 +380,19 @@ class ChatsListViewController: CustomTableViewController, EventHandler {
         default:
             break;
         }
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection);
+//        if #available(iOS 13.0, *) {
+//            let changed = previousTraitCollection?.hasDifferentColorAppearance(comparedTo: traitCollection) ?? false;
+//            
+//            let subtype: Appearance.SubColorType = traitCollection.userInterfaceStyle == .dark ? .dark : .light;
+//            let colorType = Appearance.current.colorType;
+//            Appearance.current = Appearance.values.first(where: { (item) -> Bool in
+//                return item.colorType == colorType && item.subtype == subtype;
+//            })
+//        }
     }
     
     fileprivate func closeBaseChatView(for account: BareJID, jid: JID) {

@@ -53,7 +53,7 @@ extension UIColor {
         var brightness: CGFloat = 0;
         var alpha: CGFloat = 0;
         if !getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
-            print("error: invalid color space!");
+//            print("error: invalid color space!");
             var red1: CGFloat = 0;
             var green1: CGFloat = 0;
             var blue1: CGFloat = 0;
@@ -61,13 +61,13 @@ extension UIColor {
             self.getRed(&red1, green: &green1, blue: &blue1, alpha: &alpha1);
             let tmp = UIColor(red: red1, green: green1, blue: blue1, alpha: alpha1);
             if !tmp.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
-                print("error: invalid color space 2!");
+//                print("error: invalid color space 2!");
                 return self;
             }
         }
         
         let change =  ratio;//brightness * ratio;//darker ? (brightness * ratio) : ((1-brightness) * ratio);
-        print("hue:", hue, "saturation:", saturation, ", brightness:", brightness, ", alpha:", alpha, "change:", change);
+//        print("hue:", hue, "saturation:", saturation, ", brightness:", brightness, ", alpha:", alpha, "change:", change);
         
         if darker {
             return UIColor(hue: hue, saturation: saturation, brightness: max(brightness - change, 0.0), alpha: alpha);
@@ -82,7 +82,7 @@ extension UIColor {
         var oldBrightness: CGFloat = 0;
         var alpha: CGFloat = 0;
         if !getHue(&hue, saturation: &saturation, brightness: &oldBrightness, alpha: &alpha) {
-            print("error: invalid color space!");
+//            print("error: invalid color space!");
             var red1: CGFloat = 0;
             var green1: CGFloat = 0;
             var blue1: CGFloat = 0;
@@ -90,11 +90,11 @@ extension UIColor {
             self.getRed(&red1, green: &green1, blue: &blue1, alpha: &alpha1);
             let tmp = UIColor(red: red1, green: green1, blue: blue1, alpha: alpha1);
             if !tmp.getHue(&hue, saturation: &saturation, brightness: &oldBrightness, alpha: &alpha) {
-                print("error: invalid color space 2!");
+//                print("error: invalid color space 2!");
                 return self;
             }
         }
-        print("hue:", hue, "saturation:", saturation, ", brightness:", brightness, oldBrightness, ", alpha:", alpha);
+//        print("hue:", hue, "saturation:", saturation, ", brightness:", brightness, oldBrightness, ", alpha:", alpha);
         return UIColor(hue: hue, saturation: saturation, brightness: brightness, alpha: alpha);
     }
 
@@ -125,7 +125,7 @@ extension UIColor {
         
         let saturation = maxColor == 0 ? 0 : (delta / maxColor);
         let oldBrightness = maxColor;
-        print("hue:", hue/360, "saturation:", saturation, ", brightness:", brightness, oldBrightness, ", alpha:", a);
+//        print("hue:", hue/360, "saturation:", saturation, ", brightness:", brightness, oldBrightness, ", alpha:", a);
         return UIColor(hue: hue/360, saturation: saturation, brightness: brightness, alpha: a);
     }
     
@@ -158,9 +158,9 @@ extension UIColor {
             }
             h = h / 6;
         }
-        print("old color:", r * 255, g * 255, b * 255)
-        
-        print("chaning brightness from", l, "to", brightness);
+//        print("old color:", r * 255, g * 255, b * 255)
+//
+//        print("chaning brightness from", l, "to", brightness);
         l = brightness;
         
         if s == 0 {
@@ -194,8 +194,24 @@ extension UIColor {
             g = fn(p, q, h);
             b = fn(p, q, h - 1/3);
         }
-        print("new color:", r * 255, g * 255, b * 255);
+//        print("new color:", r * 255, g * 255, b * 255);
         return UIColor(red: r, green: g, blue: b, alpha: a);
     }
 
+    func toHex() -> String {
+//        var r: CGFloat = 0;
+//        var g: CGFloat = 0;
+//        var b: CGFloat = 0;
+//        var a: CGFloat = 0;
+//        self.getRed(&r, green: &g, blue: &b, alpha: &a);
+        guard let components = cgColor.converted(to: CGColorSpace(name: CGColorSpace.sRGB)!, intent: .perceptual, options: nil)?.components, components.count >= 3 else {
+            return "nil";
+        }
+        
+        let r = lroundf(Float(components[0]) * 255);
+        let g = lroundf(Float(components[1]) * 255);
+        let b = lroundf(Float(components[2]) * 255);
+        let a = components.count >= 4 ? lroundf(Float(components[3]) * 255) : 255;
+        return String(format: "%02lX%02lX%02lX%02lX", r, g, b, a);
+    }
 }

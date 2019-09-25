@@ -26,8 +26,29 @@ class CustomTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib();
         let tmp = UIView();
-        tmp.backgroundColor = Appearance.current.tableViewCellHighlightColor();
+        tmp.backgroundColor = Appearance.current.systemBackground;
         selectedBackgroundView = tmp;
     }
-    
+ 
+    override func setHighlighted(_ highlighted: Bool, animated: Bool) {
+        if animated {
+            UIView.animate(withDuration: 0.2) {
+                self.backgroundColor = highlighted ? Appearance.current.systemBackground.mix(color: Appearance.current.tableViewCellHighlightColor, ratio: nil) : Appearance.current.systemBackground;
+                //self.backgroundColor = highlighted ? Appearance.current.tableViewCellHighlightColor() : Appearance.current.tableViewCellBackgroundColor();
+            }
+        } else {
+            self.backgroundColor = highlighted ? Appearance.current.systemBackground.mix(color: Appearance.current.tableViewCellHighlightColor, ratio: nil) : Appearance.current.systemBackground;
+        }
+    }
+
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        if animated {
+            UIView.animate(withDuration: 0.2) {
+                self.backgroundColor = selected ? Appearance.current.systemBackground.mix(color: Appearance.current.tableViewCellHighlightColor, ratio: nil) : Appearance.current.systemBackground;
+            }
+        } else {
+            self.backgroundColor = selected ? Appearance.current.systemBackground.mix(color: Appearance.current.tableViewCellHighlightColor, ratio: nil) : Appearance.current.systemBackground;
+        }
+    }
+
 }

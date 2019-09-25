@@ -56,13 +56,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         Log.initialize();
         Settings.initialize();
         AccountSettings.initialize();
-        Appearance.current = Appearance.values.first(where: { (appearance) -> Bool in
-            return appearance.id == (Settings.AppearanceTheme.getString() ?? "classic");
-        }) ?? Appearance.values.first!;
-//        Appearance.current = OrioleLightAppearance();
-//        //Appearance.current = PurpleLightAppearance();
-//        Appearance.current = PurpleDarkAppearance();
-//        Appearance.current = ClassicAppearance();
+        Appearance.sync();
         xmppService.updateXmppClientInstance();
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
             // sending notifications not granted!
@@ -153,6 +147,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func applicationWillEnterForeground(_ application: UIApplication) {
+        if #available(iOS 13.0, *) {
+            Appearance.sync();
+        }
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
         //xmppService.applicationState = .active;
         //self.keepOnlineOnAwayTimer?.execute();

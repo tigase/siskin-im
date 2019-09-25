@@ -238,48 +238,9 @@ class SettingsViewController: CustomTableViewController, EventHandler {
                 }));
                 self.present(alert, animated: true, completion: nil);
             }
-        } else if indexPath.section == 2 {
-            if indexPath.row == 0 {
-                let controller = TablePickerViewController(style: .grouped);
-                controller.title = "Select theme";
-                controller.selected = Appearance.values.map({ (it) -> String in
-                    return it.id
-                }).firstIndex(of: Appearance.current.id) ?? 0;
-                controller.items = Appearance.values.map({ (it)->ThemeSelector in
-                    return ThemeSelector(value: it);
-                });
-                //controller.selected = 1;
-                controller.onSelectionChange = { [weak controller] (_item) -> Void in
-                    let item = _item as! ThemeSelector;
-                    Appearance.current = item.value;
-                    let tmp = UIViewController();
-                    tmp.view.backgroundColor = Appearance.current.tableViewBackgroundColor();
-                    controller?.navigationController?.pushViewController(tmp, animated: true);
-                    DispatchQueue.main.async {
-                        controller?.navigationController?.popViewController(animated: true);
-                    }
-                    Settings.AppearanceTheme.setValue(item.value.id);
-//                    controller?.navigationController?.popViewController(animated: true);
-                };
-                let navController = UINavigationController(rootViewController: controller);
-                navController.navigationBar.isTranslucent = false;
-                controller.hidesBottomBarWhenPushed = true;
-                self.showDetailViewController(navController, sender: self);
-//                self.navigationController?.pushViewController(controller, animated: true);
-            }
         }
     }
     
-    internal class ThemeSelector: TablePickerViewItemsProtocol {
-        let description: String;
-        let value: Appearance;
-        
-        init(value: Appearance) {
-            self.value = value;
-            self.description = value.name;
-        }
-    }
-
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         if (indexPath.section == 0) {
             let accounts = AccountManager.getAccounts();

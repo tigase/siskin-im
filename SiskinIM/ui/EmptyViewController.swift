@@ -25,7 +25,7 @@ class EmptyViewController: UIViewController {
         
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        self.view.backgroundColor = Appearance.current.textBackgroundColor();
+        self.view.backgroundColor = Appearance.current.systemBackground;
     }
 
 }

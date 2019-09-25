@@ -189,7 +189,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
             label.textAlignment = .center;
             label.transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0);
             label.sizeToFit();
-            label.textColor = Appearance.current.textColor();
+            label.textColor = Appearance.current.labelColor;
             self.tableView.backgroundView = label;
         }
         return dataSource.numberOfMessages;
@@ -743,8 +743,8 @@ class ChatTitleView: UIView {
                     self.statusView.text = "\u{26A0} Not connected!";
                 }
             }
-            self.nameView.textColor = Appearance.current.navigationBarTextColor();
-            self.statusView.textColor = Appearance.current.navigationBarTextColor();
+            self.nameView.textColor = Appearance.current.navigationBarTextColor;
+            self.statusView.textColor = Appearance.current.navigationBarTextColor;
             
         }
     }

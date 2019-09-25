@@ -22,7 +22,7 @@
 
 import UIKit
 
-class ChatsListTableViewCell: UITableViewCell {
+class ChatsListTableViewCell: CustomTableViewCell {
 
     // MARK: Properties
     @IBOutlet var nameLabel: UILabel!
@@ -38,27 +38,6 @@ class ChatsListTableViewCell: UITableViewCell {
             super.backgroundColor = newValue;
             avatarStatusView?.backgroundColor = newValue;
         }
-    }
-    
-    override func setHighlighted(_ highlighted: Bool, animated: Bool) {
-        if animated {
-            UIView.animate(withDuration: 0.2) {
-                self.backgroundColor = highlighted ? Appearance.current.tableViewCellBackgroundColor().mix(color: Appearance.current.tableViewCellHighlightColor(), ratio: nil) : Appearance.current.tableViewCellBackgroundColor();
-                //self.backgroundColor = highlighted ? Appearance.current.tableViewCellHighlightColor() : Appearance.current.tableViewCellBackgroundColor();
-            }
-        } else {
-            self.backgroundColor = highlighted ? Appearance.current.tableViewCellBackgroundColor().mix(color: Appearance.current.tableViewCellHighlightColor(), ratio: nil) : Appearance.current.tableViewCellBackgroundColor();
-        }
-    }
-
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        if animated {
-            UIView.animate(withDuration: 0.2) {
-                self.backgroundColor = selected ? Appearance.current.tableViewCellBackgroundColor().mix(color: Appearance.current.tableViewCellHighlightColor(), ratio: nil) : Appearance.current.tableViewCellBackgroundColor();
-            }
-        } else {
-            self.backgroundColor = selected ? Appearance.current.tableViewCellBackgroundColor().mix(color: Appearance.current.tableViewCellHighlightColor(), ratio: nil) : Appearance.current.tableViewCellBackgroundColor();
-        }
-    }
+    }    
 
 }

@@ -63,6 +63,9 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
         dbConnection = (UIApplication.shared.delegate as! AppDelegate).dbConnection;
         super.viewDidLoad()
+        if #available(iOS 13.0, *) {
+            overrideUserInterfaceStyle = .light
+        };
         placeholderView?.text = "from \(account.stringValue)...";
         isFirstTime = scrollToBottomOnShow;
 
@@ -126,7 +129,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         }
         let accountStr = account.stringValue.lowercased();
         let jidStr = jid.bareJid.stringValue.lowercased();
-        self.tableView.backgroundColor = Appearance.current.tableViewBackgroundColor();
+        self.tableView.backgroundColor = Appearance.current.systemBackground;
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
             var toRemove = [String]();
             for notification in notifications {
@@ -188,7 +191,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        cell.backgroundColor = Appearance.current.tableViewCellBackgroundColor();
+        cell.backgroundColor = Appearance.current.systemBackground;
     }
     
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
@@ -233,23 +236,23 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
     
     func updateAppearance() {
         self.messageField.keyboardAppearance = Appearance.current.isDark ? .dark : .default;
-        self.messageField.backgroundColor = Appearance.current.textBackgroundColor();
-        self.messageField.textColor = Appearance.current.textColor();
-        self.messageField.layer.borderColor = Appearance.current.textFieldBorderColor().cgColor;
+        self.messageField.backgroundColor = Appearance.current.systemBackground;
+        self.messageField.textColor = Appearance.current.labelColor;
+        self.messageField.layer.borderColor = Appearance.current.textFieldBorderColor.cgColor;
         self.messageField.layer.borderWidth = 0.5;
         self.messageField.layer.cornerRadius = 5.0;
         
-        self.bottomView.tintColor = Appearance.current.bottomBarTintColor();
-        self.bottomView.backgroundColor = Appearance.current.bottomBarBackgroundColor();
+        self.bottomView.tintColor = Appearance.current.bottomBarTintColor;
+        self.bottomView.backgroundColor = Appearance.current.bottomBarBackgroundColor;
         
-        self.view.tintColor = Appearance.current.tintColor();
-        self.tableView.backgroundColor = Appearance.current.tableViewBackgroundColor();
-        self.tableView.separatorColor = Appearance.current.tableViewSeparatorColor();
+        self.view.tintColor = Appearance.current.tintColor;
+        self.tableView.backgroundColor = Appearance.current.systemBackground;
+        self.tableView.separatorColor = Appearance.current.secondarySystemBackground;
         
         if let navController = self.navigationController {
-            navController.navigationBar.barStyle = Appearance.current.navigationBarStyle();
-            navController.navigationBar.tintColor = Appearance.current.navigationBarTintColor();
-            navController.navigationBar.barTintColor = Appearance.current.controlBackgroundColor();
+            navController.navigationBar.barStyle = Appearance.current.navigationBarStyle;
+            navController.navigationBar.tintColor = Appearance.current.navigationBarTintColor;
+            navController.navigationBar.barTintColor = Appearance.current.controlBackgroundColor;
             navController.navigationBar.setNeedsLayout();
             navController.navigationBar.layoutIfNeeded();
             navController.navigationBar.setNeedsDisplay();

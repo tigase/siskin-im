@@ -39,10 +39,7 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
         tableView.addGestureRecognizer(lpgr);
 
         navigationItem.leftBarButtonItem = self.editButtonItem
-        //navigationItem.rightBarButtonItem?.tintColor = Appearance.current.labelColor();
         let availabilityFilterSelector = UISegmentedControl(items: ["All", "Available"]);
-//        availabilityFilterSelector.tintColor = Appearance.current.tintColor();
-//        availabilityFilterSelector.setTitleTextAttributes([NSAttributedString.Key.foregroundColor : Appearance.current.selectedTextColor()], for: .selected);
         navigationItem.titleView = availabilityFilterSelector;
         availabilityFilterSelector.selectedSegmentIndex = Settings.RosterAvailableOnly.getBool() ? 1 : 0;
         availabilityFilterSelector.addTarget(self, action: #selector(RosterViewController.availabilityFilterChanged), for: .valueChanged);
@@ -66,11 +63,11 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
         
         if let item = roster?.item(at: indexPath) {
             cell.nameLabel.text = item.displayName;
-            cell.nameLabel.textColor = Appearance.current.textColor();
-            cell.statusLabel.textColor = Appearance.current.secondaryTextColor();
+            cell.nameLabel.textColor = Appearance.current.labelColor;
+            cell.statusLabel.textColor = Appearance.current.secondaryLabelColor;
             cell.statusLabel.text = item.presence?.status ?? item.jid.stringValue;
             cell.avatarStatusView.setStatus(item.presence?.show);
-            cell.avatarStatusView.backgroundColor = Appearance.current.textBackgroundColor();
+            cell.avatarStatusView.backgroundColor = Appearance.current.systemBackground;
             cell.avatarStatusView.updateAvatar(manager: xmppService.avatarManager, for: item.account, with: item.jid.bareJid, name: item.displayName, orDefault: xmppService.avatarManager.defaultAvatar);
         }
         

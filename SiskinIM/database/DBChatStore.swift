@@ -119,7 +119,7 @@ open class DBChatStore {
     
     public init(dbConnection:DBConnection, dispatcher: QueueDispatcher? = nil) {
         self.dbConnection = dbConnection;
-        self.dispatcher = dispatcher ?? QueueDispatcher(queue: DispatchQueue(label: "db_chat_store_queue", attributes: DispatchQueue.Attributes.concurrent), queueTag: DispatchSpecificKey<DispatchQueue?>());
+        self.dispatcher = dispatcher ?? QueueDispatcher(label: "db_chat_store_queue", attributes: DispatchQueue.Attributes.concurrent);
 
         self.getStmt = try! self.dbConnection.prepareStatement(DBChatStore.CHATS_GET);
         self.getAllStmt = try! self.dbConnection.prepareStatement(DBChatStore.CHATS_LIST);

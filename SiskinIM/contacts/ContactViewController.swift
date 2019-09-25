@@ -269,12 +269,12 @@ class ContactViewController: CustomTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        cell.tintColor = Appearance.current.tintColor();
-        cell.backgroundColor = Appearance.current.tableViewCellBackgroundColor();
+        cell.tintColor = Appearance.current.tintColor;
+        cell.backgroundColor = Appearance.current.systemBackground;
         cell.subviews.first?.subviews.forEach({ (view) in
-            (view as? UILabel)?.textColor = Appearance.current.tintColor();
+            (view as? UILabel)?.textColor = Appearance.current.tintColor;
             if let textField = view as? UITextField, textField.inputView != nil {
-                textField.textColor = Appearance.current.tintColor();
+                textField.textColor = Appearance.current.tintColor;
             }
         })
     }

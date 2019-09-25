@@ -136,6 +136,7 @@
 		FEE9608C22F2F8950009B191 /* db-schema-6.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEE9608B22F2F8950009B191 /* db-schema-6.sql */; };
 		FEF80DB21CDBBBFE005645A7 /* AccountSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF80DB11CDBBBFE005645A7 /* AccountSettingsViewController.swift */; };
 		FEFB63AD1F31E4EE00EFB3E7 /* MainTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEFB63AC1F31E4EE00EFB3E7 /* MainTabBarController.swift */; };
+		FEFBEC5D233A7EAE00E5CCA5 /* AppearanceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEFBEC5C233A7EAE00E5CCA5 /* AppearanceViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -309,6 +310,7 @@
 		FEE9608B22F2F8950009B191 /* db-schema-6.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-6.sql"; sourceTree = "<group>"; };
 		FEF80DB11CDBBBFE005645A7 /* AccountSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountSettingsViewController.swift; sourceTree = "<group>"; };
 		FEFB63AC1F31E4EE00EFB3E7 /* MainTabBarController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainTabBarController.swift; sourceTree = "<group>"; };
+		FEFBEC5C233A7EAE00E5CCA5 /* AppearanceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -441,6 +443,7 @@
 				FE2809802167CE18002F5BD0 /* server_features_list.xml */,
 				FE2809822167CF1B002F5BD0 /* ServerFeaturesViewController.swift */,
 				FE719E7D2274D20D007CEEC9 /* OMEMOFingerprintsController.swift */,
+				FEFBEC5C233A7EAE00E5CCA5 /* AppearanceViewController.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -870,6 +873,7 @@
 				FE2809832167CF1B002F5BD0 /* ServerFeaturesViewController.swift in Sources */,
 				FEC514281CEB82E9003AF765 /* MucChatViewController.swift in Sources */,
 				FE719E7A227307D0007CEEC9 /* OMEMOEncryptionSwitchTableViewCell.swift in Sources */,
+				FEFBEC5D233A7EAE00E5CCA5 /* AppearanceViewController.swift in Sources */,
 				FE3024321CE2036A00466497 /* DBVCardsCache.swift in Sources */,
 				FE507A1B1CDB7B3B001A015C /* DBManager.swift in Sources */,
 				FE507A241CDB7B3B001A015C /* GlobalSplitViewController.swift in Sources */,
@@ -1016,7 +1020,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -1070,7 +1074,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = iphoneos;
