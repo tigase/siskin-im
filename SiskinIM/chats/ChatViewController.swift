@@ -544,7 +544,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         let account = self.account!;
         let jid = self.jid!;
 
-        guard let omemoModule: OMEMOModule = XmppService.instance.getClient(forJid: account)?.modulesManager.getModule(OMEMOModule.ID) else {
+        guard let client = XmppService.instance.getClient(forJid: account), let omemoModule: OMEMOModule = client.modulesManager.getModule(OMEMOModule.ID) else {
             print("NO OMEMO MODULE!");
             return;
         }
@@ -576,13 +576,14 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
                 }
                 break;
             case .successMessage(let encryptedMessage, let fingerprint):
+                client.context.writer?.write(encryptedMessage);
                 self.xmppService.dbChatHistoryStore.appendEntry(for: account, jid: jid.bareJid, state: .outgoing, authorJid: account, data: body, timestamp: Date(), id: encryptedMessage.id, encryption: .decrypted, encryptionFingerprint: fingerprint, fromArchive: false, carbonAction: nil, nicknameInRoom: nil) { msgId in
                     completionHandler(encryptedMessage);
                 }
             }
         };
         
-        omemoModule.send(message: message, completionHandler: completionHandler);
+        omemoModule.encode(message: message, completionHandler: completionHandler);
     }
     
     fileprivate func createMessage(body: String, url: String? = nil) -> (Message, MessageModule)? {
