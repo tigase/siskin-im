@@ -90,6 +90,9 @@ open class DBRosterStoreWrapper: RosterStore {
 
 open class DBRosterStore: RosterCacheProvider {
     
+    static let ITEM_UPDATED = Notification.Name("rosterItemUpdated");
+    static let instance: DBRosterStore = DBRosterStore.init();
+
     fileprivate let dbConnection: DBConnection;
     
     fileprivate lazy var countItemsStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM roster_items WHERE account = :account");
@@ -107,7 +110,11 @@ open class DBRosterStore: RosterCacheProvider {
     fileprivate lazy var insertItemGroupStmt: DBStatement! = try? self.dbConnection.prepareStatement("INSERT INTO roster_items_groups (item_id, group_id) VALUES (:item_id, :group_id)");
     fileprivate lazy var updateItemStmt: DBStatement! = try? self.dbConnection.prepareStatement("UPDATE roster_items SET name = :name, subscription = :subscription, timestamp = :timestamp, ask = :ask WHERE account = :account AND jid = :jid");
     
-    open var dispatcher = QueueDispatcher(label: "db_roster_store_queue", attributes: .concurrent);
+    fileprivate var dispatcher = QueueDispatcher(label: "db_roster_store_queue", attributes: .concurrent);
+    
+    convenience init() {
+        self.init(dbConnection: DBConnection.main);
+    }
     
     public init(dbConnection:DBConnection) {
         self.dbConnection = dbConnection;

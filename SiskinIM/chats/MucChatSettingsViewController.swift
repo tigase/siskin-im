@@ -35,7 +35,7 @@ class MucChatSettingsViewController: CustomTableViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         view.backgroundColor = Appearance.current.secondarySystemBackground;
-        roomNameField.text = room.roomName ?? "";
+        roomNameField.text = room.name ?? "";
         pushNotificationsSwitch.isEnabled = false;
         pushNotificationsSwitch.isOn = false;
         

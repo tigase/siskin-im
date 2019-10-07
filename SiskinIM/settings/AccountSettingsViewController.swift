@@ -22,16 +22,9 @@
 import UIKit
 import TigaseSwift
 
-class AccountSettingsViewController: CustomTableViewController, EventHandler {
+class AccountSettingsViewController: CustomTableViewController {
     
-    var xmppService: XmppService!;
-    
-    var account: String! {
-        didSet {
-            accountJid = BareJID(account);
-        }
-    }
-    var accountJid: BareJID!;
+    var account: BareJID!;
     
     @IBOutlet var avatarView: UIImageView!
     @IBOutlet var fullNameTextView: UILabel!
@@ -49,19 +42,19 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
     @IBOutlet var omemoFingerprint: UILabel!;
     
     override func viewDidLoad() {
-        xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
         tableView.contentInset = UIEdgeInsets(top: -1, left: 0, bottom: 0, right: 0);
+        NotificationCenter.default.addObserver(self, selector: #selector(refreshOnNotification), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(refreshOnNotification), name: DiscoEventHandler.ACCOUNT_FEATURES_RECEIVED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(refreshOnNotification), name: DiscoEventHandler.SERVER_FEATURES_RECEIVED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        navigationItem.title = account;
+        navigationItem.title = account.stringValue;
 
-        xmppService.registerEventHandler(self, for: SocketConnector.ConnectedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE);
-
-        NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
         
-        let config = AccountManager.getAccount(forJid: account);
+        let config = AccountManager.getAccount(forJid: account.stringValue);
         enabledSwitch.isOn = config?.active ?? false;
         pushNotificationSwitch.isOn = config?.pushNotifications ?? false;
         archivingEnabledSwitch.isOn = false;
@@ -70,7 +63,7 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
 
         updateView();
         
-        let vcard = xmppService.dbVCardsCache.getVCard(for: accountJid);
+        let vcard = XmppService.instance.dbVCardsCache.getVCard(for: account);
         update(vcard: vcard);
 
         //avatarView.sizeToFit();
@@ -78,7 +71,7 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
         avatarView.layer.cornerRadius = avatarView.frame.width / 2;
         
         let localDeviceId = Int32(bitPattern: AccountSettings.omemoRegistrationId(self.account).getUInt32() ?? 0);
-        if let omemoIdentity = DBOMEMOStore.instance.identities(forAccount: self.accountJid, andName: self.account).first(where: { (identity) -> Bool in
+        if let omemoIdentity = DBOMEMOStore.instance.identities(forAccount: self.account, andName: self.account.stringValue).first(where: { (identity) -> Bool in
             return identity.address.deviceId == localDeviceId;
         }) {
             var fingerprint = String(omemoIdentity.fingerprint.dropFirst(2));
@@ -102,8 +95,6 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated);
-        xmppService.unregisterEventHandler(self, for: SocketConnector.ConnectedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE);
-        NotificationCenter.default.removeObserver(self);
     }
 
     
@@ -111,7 +102,7 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
         if indexPath.row == 0 && indexPath.section == 1 {
             return nil;
         }
-        if indexPath.section == 1 && indexPath.row == 1 && xmppService.getClient(forJid: accountJid)?.state != .connected {
+        if indexPath.section == 1 && indexPath.row == 1 && XmppService.instance.getClient(for: account)?.state != .connected {
             return nil;
         }
         return indexPath;
@@ -122,7 +113,7 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
         if indexPath.section == 3 && indexPath.row == 2 {
             let controller = TablePickerViewController(style: .grouped);
             let hoursArr = [0.0, 12.0, 24.0, 3*24.0, 7*24.0, 14 * 24.0, 356 * 24.0];
-            controller.selected = hoursArr.firstIndex(of: AccountSettings.MessageSyncPeriod(account).getDouble()) ?? 0;
+            controller.selected = hoursArr.firstIndex(of: AccountSettings.messageSyncPeriod(account).getDouble()) ?? 0;
             controller.items = hoursArr.map({ (it)->TablePickerViewItemsProtocol in
                 return SyncTimeItem(hours: it);
             });
@@ -130,7 +121,7 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
             controller.onSelectionChange = { (_item) -> Void in
                 let item = _item as! SyncTimeItem;
                 print("select sync of last", item.hours, "hours");
-                AccountSettings.MessageSyncPeriod(self.account).set(double: item.hours);
+                AccountSettings.messageSyncPeriod(self.account).set(double: item.hours);
             };
             self.navigationController?.pushViewController(controller, animated: true);
         }
@@ -151,12 +142,12 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
     }
     
     func updateView() {
-        let client = xmppService.getClient(forJid: accountJid);
+        let client = XmppService.instance.getClient(for: account);
         let pushModule: TigasePushNotificationsModule? = client?.modulesManager.getModule(TigasePushNotificationsModule.ID);
         pushNotificationSwitch.isEnabled = (pushModule?.deviceId != nil) && (pushModule?.isAvailable ?? false);
         pushNotificationsForAwaySwitch.isEnabled = pushNotificationSwitch.isEnabled && (pushModule?.isAvailablePushForAway ?? false);
         
-        messageSyncAutomaticSwitch.isOn = AccountSettings.MessageSyncAutomatic(accountJid.description).getBool();
+        messageSyncAutomaticSwitch.isOn = AccountSettings.messageSyncAuto(account).getBool();
         archivingEnabledSwitch.isEnabled = false;
         
         if (client?.state ?? SocketConnector.State.disconnected == SocketConnector.State.connected), let mamModule: MessageArchiveManagementModule = client?.modulesManager.getModule(MessageArchiveManagementModule.ID) {
@@ -175,25 +166,19 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
                 }
             })
         }
-        messageSyncPeriodLabel.text = SyncTimeItem.descriptionFromHours(hours: AccountSettings.MessageSyncPeriod(account).getDouble());
-    }
-    
-    func handle(event: Event) {
-        switch event {
-        case is SocketConnector.ConnectedEvent, is SocketConnector.DisconnectedEvent, is StreamManagementModule.ResumedEvent,
-             is SessionEstablishmentModule.SessionEstablishmentSuccessEvent, is DiscoveryModule.ServerFeaturesReceivedEvent, is DiscoveryModule.AccountFeaturesReceivedEvent:
-            DispatchQueue.main.async {
-                self.updateView();
-            }
-        default:
-            break;
-        }
+        messageSyncPeriodLabel.text = SyncTimeItem.descriptionFromHours(hours: AccountSettings.messageSyncPeriod(account).getDouble());
     }
     
     @objc func avatarChanged() {
-        let vcard = xmppService.dbVCardsCache.getVCard(for: accountJid);
+        let vcard = XmppService.instance.dbVCardsCache.getVCard(for: account);
         DispatchQueue.main.async {
             self.update(vcard: vcard);
+        }
+    }
+    
+    @objc func refreshOnNotification() {
+        DispatchQueue.main.async {
+            self.updateView();
         }
     }
     
@@ -204,23 +189,23 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
         switch segue.identifier! {
         case "EditAccountSegue":
             let destination = segue.destination as! AddAccountController;
-            destination.account = account;
+            destination.account = account.stringValue;
         case "EditAccountVCardSegue":
             let destination = segue.destination as! VCardEditViewController;
             destination.account = account;
         case "ShowServerFeatures":
             let destination = segue.destination as! ServerFeaturesViewController;
-            destination.account = BareJID(account);
+            destination.account = account;
         case "ManageOMEMOFingerprints":
             let destination = segue.destination as! OMEMOFingerprintsController;
-            destination.account = BareJID(account);
+            destination.account = account;
         default:
             break;
         }
     }
         
     @IBAction func enabledSwitchChangedValue(_ sender: AnyObject) {
-        if let config = AccountManager.getAccount(forJid: account) {
+        if let config = AccountManager.getAccount(forJid: account!.stringValue) {
             config.active = enabledSwitch.isOn;
             AccountSettings.LastError(account).set(string: nil);
             AccountManager.updateAccount(config);
@@ -243,7 +228,7 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
     }
     
     fileprivate func enablePushNotifications(action: UIAlertAction) {
-        let accountJid = self.accountJid!;
+        let accountJid = self.account!;
         let onError = { (_ errorCondition: ErrorCondition?) in
             DispatchQueue.main.async {
                 var userInfo: [AnyHashable:Any] = ["account": accountJid];
@@ -254,7 +239,7 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
             }
         }
         // let's check if push notifications component is accessible
-        if let pushModule: TigasePushNotificationsModule = xmppService.getClient(forJid: accountJid)?.modulesManager.getModule(TigasePushNotificationsModule.ID) {
+        if let pushModule: TigasePushNotificationsModule = XmppService.instance.getClient(forJid: accountJid)?.modulesManager.getModule(TigasePushNotificationsModule.ID) {
             pushModule.findPushComponent(completionHandler: {(jid) in
                 pushModule.pushServiceJid = jid ?? XmppService.pushServiceJid;
                 pushModule.pushServiceNode = nil;
@@ -289,7 +274,7 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
         }
         
         AccountSettings.PushNotificationsForAway(account).set(bool: self.pushNotificationsForAwaySwitch.isOn);
-        guard let pushModule: TigasePushNotificationsModule = xmppService.getClient(forJid: accountJid)?.modulesManager.getModule(TigasePushNotificationsModule.ID) else {
+        guard let pushModule: TigasePushNotificationsModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(TigasePushNotificationsModule.ID) else {
             return;
         }
         
@@ -302,14 +287,14 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
                 guard self.pushNotificationsForAwaySwitch.isOn else {
                     return;
                 }
-                let syncPeriod = AccountSettings.MessageSyncPeriod(self.account).getDouble();
-                if !AccountSettings.MessageSyncAutomatic(self.account).getBool() || syncPeriod < 12 {
+                let syncPeriod = AccountSettings.messageSyncPeriod(self.account).getDouble();
+                if !AccountSettings.messageSyncAuto(self.account).getBool() || syncPeriod < 12 {
                     let alert = UIAlertController(title: "Enable automatic message synchronization", message: "For best experience it is suggested to enable Message Archving with automatic message synchronization of at least last 12 hours.\nDo you wish to do this now?", preferredStyle: .alert);
                     alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
                     alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(action) in
-                        AccountSettings.MessageSyncAutomatic(self.account).set(bool: true);
+                        AccountSettings.messageSyncAuto(self.account).set(bool: true);
                         if (syncPeriod < 12) {
-                            AccountSettings.MessageSyncPeriod(self.account).set(double: 12.0);
+                            AccountSettings.messageSyncPeriod(self.account).set(double: 12.0);
                         }
                         self.updateView();
                     }));
@@ -324,15 +309,15 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
         });
     }
     
-    func setPushNotificationsEnabled(forJid account: String, value: Bool) {
-        if let config = AccountManager.getAccount(forJid: account) {
+    func setPushNotificationsEnabled(forJid account: BareJID, value: Bool) {
+        if let config = AccountManager.getAccount(forJid: account.stringValue) {
             config.pushNotifications = pushNotificationSwitch.isOn;
             AccountManager.updateAccount(config);
         }
     }
     
     @IBAction func archivingSwitchChangedValue(_ sender: Any) {
-        let client = xmppService.getClient(forJid: accountJid);
+        let client = XmppService.instance.getClient(forJid: account);
         if let mamModule: MessageArchiveManagementModule = client?.modulesManager.getModule(MessageArchiveManagementModule.ID) {
             let defValue = archivingEnabledSwitch.isOn ? MessageArchiveManagementModule.DefaultValue.always : MessageArchiveManagementModule.DefaultValue.never;
             mamModule.retrieveSettings(onSuccess: { (oldDefValue, always, never) in
@@ -357,19 +342,19 @@ class AccountSettingsViewController: CustomTableViewController, EventHandler {
     }
     
     @IBAction func messageSyncAutomaticSwitchChangedValue(_ sender: Any) {
-        AccountSettings.MessageSyncAutomatic(accountJid.description).set(bool: self.messageSyncAutomaticSwitch.isOn);
+        AccountSettings.messageSyncAuto(account).set(bool: self.messageSyncAutomaticSwitch.isOn);
     }
     
     
     func update(vcard: VCard?) {
-        avatarView.image = xmppService.avatarManager.getAvatar(for: accountJid, account: accountJid, orDefault: xmppService.avatarManager.defaultAvatar);
+        avatarView.image = AvatarManager.instance.getAvatar(for: account, account: account, orDefault: AvatarManager.instance.defaultAvatar);
         
         if let fn = vcard?.fn {
             fullNameTextView.text = fn;
         } else if let surname = vcard?.surname, let given = vcard?.givenName {
             fullNameTextView.text = "\(given) \(surname)";
         } else {
-            fullNameTextView.text = account;
+            fullNameTextView.text = account.stringValue;
         }
         
         let company = vcard?.organizations.first?.name;

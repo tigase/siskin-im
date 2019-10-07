@@ -33,6 +33,10 @@ open class AvatarStore {
     fileprivate lazy var deleteAvatarHashForJidStmt: DBStatement! = try? self.dbConnection.prepareStatement("DELETE FROM avatars_cache WHERE jid = :jid AND account = :account AND (:type IS NULL OR type = :type)");
     fileprivate lazy var insertAvatarHashForJidStmt: DBStatement! = try? self.dbConnection.prepareStatement("INSERT INTO avatars_cache (jid, account, hash, type) VALUES (:jid,:account,:hash,:type)");
     
+    public convenience init() {
+        self.init(dbConnection: DBConnection.main);
+    }
+    
     public init(dbConnection: DBConnection) {
         self.dispatcher = QueueDispatcher(label: "AvatarStore", attributes: .concurrent);
         self.dbConnection = dbConnection;

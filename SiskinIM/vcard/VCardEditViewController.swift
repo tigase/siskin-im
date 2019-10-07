@@ -27,14 +27,8 @@ class VCardEditViewController: CustomTableViewController, UIImagePickerControlle
     let picker = UIImagePickerController();
 
     var xmppService: XmppService!;
-    
-    var account: String! {
-        didSet {
-            accountJid = BareJID(account);
-        }
-    }
-    
-    var accountJid: BareJID!;
+        
+    var account: BareJID!;
     var vcard: VCard!;
     
     override func viewDidLoad() {
@@ -42,7 +36,7 @@ class VCardEditViewController: CustomTableViewController, UIImagePickerControlle
         super.viewDidLoad()
         
         // Do any additional setup after loading the view.
-        vcard = xmppService.dbVCardsCache.getVCard(for: accountJid) ?? VCard();
+        vcard = xmppService.dbVCardsCache.getVCard(for: account) ?? VCard();
         if vcard != nil {
             tableView.reloadData();
         }
@@ -74,7 +68,7 @@ class VCardEditViewController: CustomTableViewController, UIImagePickerControlle
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: "BasicInfoCell") as! VCardEditBasicTableViewCell;
             cell.avatarManager = xmppService.avatarManager;
-            cell.accountJid = accountJid;
+            cell.accountJid = account;
             cell.vcard = vcard;
             
             let singleTap = UITapGestureRecognizer(target: self, action: #selector(VCardEditViewController.photoClicked));
@@ -222,7 +216,7 @@ class VCardEditViewController: CustomTableViewController, UIImagePickerControlle
     
     @IBAction func refreshVCard(_ sender: UIBarButtonItem) {
         DispatchQueue.global(qos: .default).async {
-            self.xmppService.refreshVCard(account: self.accountJid, for: self.accountJid, onSuccess: { (vcard) in
+            self.xmppService.refreshVCard(account: self.account, for: self.account, onSuccess: { (vcard) in
                 self.vcard = vcard;
                 DispatchQueue.main.async() {
                     self.tableView.reloadData();
@@ -234,14 +228,14 @@ class VCardEditViewController: CustomTableViewController, UIImagePickerControlle
     
     @IBAction func publishVCard(_ sender: UIBarButtonItem) {
         DispatchQueue.global(qos: .default).async {
-            self.xmppService.publishVCard(account: self.accountJid, vcard: self.vcard, onSuccess: {() in
+            self.xmppService.publishVCard(account: self.account, vcard: self.vcard, onSuccess: {() in
                 DispatchQueue.main.async() {
                     _ = self.navigationController?.popViewController(animated: true);
                 }
                 
                 if let photo = self.vcard.photos.first {
                     self.xmppService.dbVCardsCache.fetchPhoto(photo: photo) { (data) in
-                        guard data != nil, let client = self.xmppService.getClient(forJid: self.accountJid) else {
+                        guard data != nil, let client = self.xmppService.getClient(for: self.account) else {
                             return;
                         }
                         let avatarHash = Digest.sha1.digest(toHex: data);
@@ -315,7 +309,7 @@ class VCardEditViewController: CustomTableViewController, UIImagePickerControlle
         tableView.reloadData();
         picker.dismiss(animated: true, completion: nil);
         
-        if data != nil, let client = self.xmppService.getClient(forJid: self.accountJid) {
+        if data != nil, let client = self.xmppService.getClient(forJid: self.account) {
             if let pepUserAvatarModule:PEPUserAvatarModule = client.modulesManager.getModule(PEPUserAvatarModule.ID) {
                 if pepUserAvatarModule.isPepAvailable {
                     let question = UIAlertController(title: nil, message: "Do you wish to publish this photo as avatar?", preferredStyle: .actionSheet);

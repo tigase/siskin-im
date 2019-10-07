@@ -20,6 +20,7 @@
 //
 
 import UIKit
+import TigaseSwift
 
 class MainTabBarController: CustomTabBarController {
     
@@ -38,7 +39,7 @@ class MainTabBarController: CustomTabBarController {
         let count = xmppService.getClients(filter: {(client)->Bool in
             return client.state != .connected;
         }).count + AccountManager.getAccounts().filter({(name)->Bool in
-            return AccountSettings.LastError(name).getString() != nil
+            return AccountSettings.LastError(BareJID(name)).getString() != nil
         }).count;
         DispatchQueue.main.async {
             self.tabBar.items![MainTabBarController.MORE_TAB].badgeValue = count == 0 ? nil : count.description;

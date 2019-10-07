@@ -23,7 +23,7 @@
 import UIKit
 import TigaseSwift
 
-class SettingsViewController: CustomTableViewController, EventHandler {
+class SettingsViewController: CustomTableViewController {
    
     var statusNames = [
         "chat" : "Chat",
@@ -33,22 +33,18 @@ class SettingsViewController: CustomTableViewController, EventHandler {
         "dnd" : "Do not disturb"
     ];
     
-    var xmppService:XmppService!;
-    
     override func viewDidLoad() {
-        xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
         super.viewDidLoad();
+        NotificationCenter.default.addObserver(self, selector: #selector(accountStateChanged), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil);
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        xmppService.registerEventHandler(self, for: SocketConnector.ConnectedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE);
         tableView.reloadData();
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated);
-        xmppService.unregisterEventHandler(self, for: SocketConnector.ConnectedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE);
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -96,8 +92,8 @@ class SettingsViewController: CustomTableViewController, EventHandler {
                 let account = AccountManager.getAccount(forJid: accounts[indexPath.row]);
                 cell.nameLabel.text = account?.name;
                 let jid = BareJID(account!.name);
-                cell.avatarStatusView.updateAvatar(manager: xmppService.avatarManager, for: BareJID(account!.name), with: jid, name: nil, orDefault: xmppService.avatarManager.defaultAvatar);
-                if let client = xmppService.getClient(forJid: jid) {
+                cell.avatarStatusView.updateAvatar(manager: AvatarManager.instance, for: BareJID(account!.name), with: jid, name: nil, orDefault: AvatarManager.instance.defaultAvatar);
+                if let client = XmppService.instance.getClient(for: jid) {
                     cell.avatarStatusView.statusImageView.isHidden = false;
                     var status: Presence.Show? = nil;
                     switch client.state {
@@ -109,7 +105,7 @@ class SettingsViewController: CustomTableViewController, EventHandler {
                         break;
                     }
                     cell.avatarStatusView.setStatus(status);
-                } else if AccountSettings.LastError(account!.name).getString() != nil {
+                } else if AccountSettings.LastError(jid).getString() != nil {
                     cell.avatarStatusView.statusImageView.isHidden = false;
                     cell.avatarStatusView.statusImageView.image = UIImage(named: "presence_error")!;
                 } else {
@@ -201,7 +197,7 @@ class SettingsViewController: CustomTableViewController, EventHandler {
                 let navigation = storyboard?.instantiateViewController(withIdentifier: "AccountSettingsNavigationController") as! UINavigationController;
                 let accountSettingsController = navigation.visibleViewController! as! AccountSettingsViewController;
                 accountSettingsController.hidesBottomBarWhenPushed = true;
-                accountSettingsController.account = account;
+                accountSettingsController.account = BareJID(account);
                 self.showDetailViewController(navigation, sender: self);
             }
         } else if indexPath.section == 1 {
@@ -255,7 +251,7 @@ class SettingsViewController: CustomTableViewController, EventHandler {
                 let accounts = AccountManager.getAccounts();
                 if accounts.count > indexPath.row {
                     let account = accounts[indexPath.row];
-                    let client = self.xmppService.getClient(forJid: BareJID(account));
+                    let client = XmppService.instance.getClient(forJid: BareJID(account));
                     let alert = UIAlertController(title: "Account removal", message: client != nil ? "Should account be removed from server as well?" : "Remove account from application?", preferredStyle: .actionSheet);
                     if client != nil {
                         alert.addAction(UIAlertAction(title: "Remove from server", style: .destructive, handler: { (action) in
@@ -285,16 +281,10 @@ class SettingsViewController: CustomTableViewController, EventHandler {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         (segue.destination as? UINavigationController)?.visibleViewController?.hidesBottomBarWhenPushed = true;
     }
-    
-    func handle(event: Event) {
-        switch event {
-        case is SocketConnector.ConnectedEvent, is SocketConnector.DisconnectedEvent, is StreamManagementModule.ResumedEvent,
-             is SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
-            DispatchQueue.main.async() {
-                self.tableView.reloadData();
-            }
-        default:
-            break;
+        
+    @objc func accountStateChanged(_ notification: Notification) {
+        DispatchQueue.main.async() {
+            self.tableView.reloadData();
         }
     }
     

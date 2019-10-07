@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-protocol RosterProvider: EventHandler {
+protocol RosterProvider {
     
     var availableOnly: Bool { get set };
 
@@ -51,11 +51,37 @@ public enum RosterType: String {
     case grouped
 }
 
-public class RosterProviderAbstract<Item: RosterProviderItem> {
+public class RosterProviderAbstractBase {
+    @objc func contactPresenceChanged(_ notification: Notification) {
+        guard let e = notification.object as? PresenceModule.ContactPresenceChanged else {
+            return;
+        }
+        
+        DispatchQueue.main.async {
+            self.handle(presenceEvent: e);
+        }
+    }
+    
+    @objc func rosterItemUpdated(_ notification: Notification) {
+        guard let e = notification.object as? RosterModule.ItemUpdatedEvent else {
+            return;
+        }
+        
+        DispatchQueue.main.async {
+            self.handle(rosterItemUpdatedEvent: e);
+        }
+    }
+    
+    func handle(presenceEvent e: PresenceModule.ContactPresenceChanged) {
+    }
+    
+    func handle(rosterItemUpdatedEvent e: RosterModule.ItemUpdatedEvent) {
+    }
+}
+
+public class RosterProviderAbstract<Item: RosterProviderItem>: RosterProviderAbstractBase {
     
     let dbConnection:DBConnection;
-    
-    let xmppService: XmppService;
     
     var availableOnly: Bool = false {
         didSet {
@@ -87,34 +113,15 @@ public class RosterProviderAbstract<Item: RosterProviderItem> {
     
     internal var queryString: String? = nil;
     
-    init(xmppService: XmppService, dbConnection: DBConnection, order: RosterSortingOrder, availableOnly: Bool, displayHiddenGroup: Bool, updateNotificationName: Notification.Name) {
-        self.xmppService = xmppService;
+    init(dbConnection: DBConnection, order: RosterSortingOrder, availableOnly: Bool, displayHiddenGroup: Bool, updateNotificationName: Notification.Name) {
         self.dbConnection = dbConnection;
         self.order = order;
         self.updateNotificationName = updateNotificationName;
         self.availableOnly = availableOnly;
         self.displayHiddenGroup = displayHiddenGroup;
+        super.init();
         self.allItems = self.loadItems();
         _ = updateItems();
-    }
-    
-    public func handle(event: Event) {
-        DispatchQueue.main.async {
-            switch(event) {
-            case let e as PresenceModule.ContactPresenceChanged:
-                self.handle(presenceEvent: e);
-            case let e as RosterModule.ItemUpdatedEvent:
-                self.handle(rosterItemUpdatedEvent: e);
-            default:
-                break;
-            }
-        }
-    }
-    
-    func handle(presenceEvent e: PresenceModule.ContactPresenceChanged) {
-    }
-    
-    func handle(rosterItemUpdatedEvent e: RosterModule.ItemUpdatedEvent) {
     }
     
     func updateItems() -> Bool {

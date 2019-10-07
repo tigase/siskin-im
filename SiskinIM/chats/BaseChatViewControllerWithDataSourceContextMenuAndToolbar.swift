@@ -1,5 +1,5 @@
 //
-// BaseChatViewControllerWithContextMenuAndToolbar.swift
+// BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.swift
 //
 // Siskin IM
 // Copyright (C) 2017 "Tigase, Inc." <office@tigase.com>
@@ -20,18 +20,10 @@
 //
 
 import UIKit
+import TigaseSwift
 
-protocol BaseChatViewControllerWithContextMenuAndToolbarDelegate: class {
-    
-    func getTextOfSelectedRows(paths: [IndexPath], withTimestamps: Bool, handler: (([String])->Void)?);
-    
-}
+class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatViewControllerWithDataSource {
 
-
-class BaseChatViewControllerWithContextMenuAndToolbar: BaseChatViewController {
-
-    weak var contextMenuDelegate: BaseChatViewControllerWithContextMenuAndToolbarDelegate?
-    
     @IBOutlet var customToolbar: UIToolbar?;
     @IBOutlet var customToolbarHeightConstraint: NSLayoutConstraint?;
     @IBOutlet var bottomViewHeightConstraint: NSLayoutConstraint?;
@@ -73,14 +65,14 @@ class BaseChatViewControllerWithContextMenuAndToolbar: BaseChatViewController {
                 self.tableView?.selectRow(at: selected, animated: false, scrollPosition: .none);
             }
             
-            self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(BaseChatViewControllerWithContextMenuAndToolbar.editCancelClicked));
-            let timestampsSwitch = UIBarButtonItem(title: "Timestamps: \(self.withTimestamps ? "ON" : "OFF")", style: .plain, target: self, action: #selector(BaseChatViewControllerWithContextMenuAndToolbar.switchWithTimestamps));
+            self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.editCancelClicked));
+            let timestampsSwitch = UIBarButtonItem(title: "Timestamps: \(self.withTimestamps ? "ON" : "OFF")", style: .plain, target: self, action: #selector(BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.switchWithTimestamps));
             self.timestampsSwitch = timestampsSwitch;
 
             let items = [
                 timestampsSwitch,
                 UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
-                UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(BaseChatViewControllerWithContextMenuAndToolbar.shareSelectedMessages))
+                UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.shareSelectedMessages))
 //                UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
             ];
             self.customToolbar?.items = items;
@@ -123,14 +115,14 @@ class BaseChatViewControllerWithContextMenuAndToolbar: BaseChatViewController {
     }
     
     fileprivate func copyMessageInt(paths: [IndexPath]) {
-        contextMenuDelegate?.getTextOfSelectedRows(paths: paths, withTimestamps: false) { (texts) in
+        getTextOfSelectedRows(paths: paths, withTimestamps: false) { (texts) in
             UIPasteboard.general.strings = texts;
             UIPasteboard.general.string = texts.joined(separator: "\n");
         };
     }
     
     fileprivate func shareMessageInt(paths: [IndexPath]) {
-        contextMenuDelegate?.getTextOfSelectedRows(paths: paths, withTimestamps: withTimestamps) { (texts) in
+        getTextOfSelectedRows(paths: paths, withTimestamps: withTimestamps) { (texts) in
             let text = texts.joined(separator: "\n");
             let activityController = UIActivityViewController(activityItems: [text], applicationActivities: nil);
             self.navigationController?.present(activityController, animated: true, completion: nil);
@@ -157,5 +149,50 @@ class BaseChatViewControllerWithContextMenuAndToolbar: BaseChatViewController {
         }
         hideEditToolbar();
     }
+
+    func getTextOfSelectedRows(paths: [IndexPath], withTimestamps: Bool, handler: (([String]) -> Void)?) {
+        let items: [ChatMessage] = paths.map({ index in dataSource.getItem(at: index.row) }).map({ it -> ChatMessage? in
+            return it as? ChatMessage;
+        }).filter({ it -> Bool in it != nil }).map({ it -> ChatMessage in return it! }).sorted { (it1, it2) -> Bool in
+              it1.timestamp.compare(it2.timestamp) == .orderedAscending;
+                };
     
+        guard items.count > 1 else {
+            let texts = items.map({ (it) -> String in
+                return it.message;
+            });
+            handler?(texts);
+            return;
+        }
+    
+        let withoutPrefix = Set(items.map({it in it.state.direction})).count == 1;
+    
+        let formatter = DateFormatter();
+        formatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "dd.MM.yyyy jj:mm", options: 0, locale: NSLocale.current);
+    
+        var direction: MessageDirection? = nil;
+        let rosterModule: RosterModule? = XmppService.instance.getClient(for: self.account)?.modulesManager.getModule(RosterModule.ID);
+        let rosterStore = rosterModule?.rosterStore;
+        let texts = items.map { (it) -> String in
+            if withoutPrefix {
+                if withTimestamps {
+                    return "[\(formatter.string(from: it.timestamp))] \(it.message)";
+                } else {
+                    return it.message;
+                }
+            } else {
+                let prefix = (direction == nil || it.state.direction != direction!) ?
+                    "\(it.state.direction == .incoming ? (it.authorNickname ?? rosterStore?.get(for: JID(it.jid))?.name ?? chat.jid.localPart ?? chat.jid.domain)  : "Me"):\n" : "";
+                direction = it.state.direction;
+                if withTimestamps {
+                    return "\(prefix)  [\(formatter.string(from: it.timestamp))] \(it.message ?? "")"
+                } else {
+                    return "\(prefix)  \(it.message ?? "")"
+                }
+            }
+        }
+            
+        print("got texts", texts);
+        handler?(texts);
+    }
 }

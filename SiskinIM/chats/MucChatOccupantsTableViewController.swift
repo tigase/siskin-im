@@ -22,14 +22,27 @@
 import UIKit
 import TigaseSwift
 
-class MucChatOccupantsTableViewController: CustomTableViewController, EventHandler {
+class MucChatOccupantsTableViewController: CustomTableViewController {
     
     var xmppService:XmppService!;
     
     var account: BareJID!;
-    var room: Room!;
+    var room: DBRoom! {
+        didSet {
+            self.participants.removeAll();
+            room?.presences.values.forEach { occupant in
+                self.participants.append(occupant);
+            }
+            self.participants.sort(by: { (i1, i2) -> Bool in
+                return i1.nickname.caseInsensitiveCompare(i2.nickname) == .orderedAscending;
+            });
+            tableView?.reloadData();
+        }
+    }
     
     var mentionOccupant: ((String)->Void)? = nil;
+    
+    private var participants: [MucOccupant] = [];
     
     override func viewDidLoad() {
         xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
@@ -40,6 +53,9 @@ class MucChatOccupantsTableViewController: CustomTableViewController, EventHandl
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(occupantsChanged(_:)), name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged), name: MucEventHandler.ROOM_STATUS_CHANGED, object: nil);
     }
 
     override func didReceiveMemoryWarning() {
@@ -49,10 +65,8 @@ class MucChatOccupantsTableViewController: CustomTableViewController, EventHandl
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        xmppService.registerEventHandler(self, for: MucModule.OccupantChangedPresenceEvent.TYPE, MucModule.OccupantComesEvent.TYPE, MucModule.OccupantLeavedEvent.TYPE);
     }
     override func viewWillDisappear(_ animated: Bool) {
-        xmppService.unregisterEventHandler(self, for: MucModule.OccupantChangedPresenceEvent.TYPE, MucModule.OccupantComesEvent.TYPE, MucModule.OccupantLeavedEvent.TYPE);
         super.viewWillDisappear(animated);
     }
     
@@ -63,23 +77,17 @@ class MucChatOccupantsTableViewController: CustomTableViewController, EventHandl
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return room.presences.count;
+        return participants.count;
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MucChatOccupantsTableViewCell", for: indexPath as IndexPath) as! MucChatOccupantsTableViewCell;
 
-        let nicknames = Array(room.presences.keys).sorted();
-        let nickname = nicknames[indexPath.row];
-        let occupant = room.presences[nickname];
-        cell.nicknameLabel.text = nickname;
-        if occupant?.jid != nil {
-            cell.avatarStatusView.updateAvatar(manager: self.xmppService.avatarManager, for: account, with: occupant?.jid?.bareJid, name: nickname, orDefault: xmppService.avatarManager.defaultAvatar);
-        } else {
-            cell.avatarStatusView.updateAvatar(manager: self.xmppService.avatarManager, for: account, with: occupant?.jid?.bareJid, name: nickname, orDefault: xmppService.avatarManager.defaultAvatar);
-        }
-        cell.avatarStatusView.setStatus(occupant?.presence.show);
-        cell.statusLabel.text = occupant?.presence.status;
+        let occupant = participants[indexPath.row];
+        cell.nicknameLabel.text = occupant.nickname;
+        cell.avatarStatusView.updateAvatar(manager: self.xmppService.avatarManager, for: account, with: occupant.jid?.bareJid, name: occupant.nickname, orDefault: xmppService.avatarManager.defaultAvatar);
+        cell.avatarStatusView.setStatus(occupant.presence.show);
+        cell.statusLabel.text = occupant.presence.status;
         
         return cell
     }
@@ -91,11 +99,10 @@ class MucChatOccupantsTableViewController: CustomTableViewController, EventHandl
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true);
         
-        let nicknames = Array(room.presences.keys).sorted();
-        let nickname = nicknames[indexPath.row];
+        let occupant = participants[indexPath.row];
 
         if let fn = mentionOccupant {
-            fn(nickname);
+            fn(occupant.nickname);
         }
         self.navigationController?.popViewController(animated: true);
     }
@@ -112,22 +119,124 @@ class MucChatOccupantsTableViewController: CustomTableViewController, EventHandl
     }
     */
     
-    func handle(event: Event) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let invitationController = segue.destination as? InviteViewController ?? (segue.destination as? UINavigationController)?.visibleViewController as? InviteViewController {
+            invitationController.room = self.room;
+        }
+    }
+    
+    @objc func occupantsChanged(_ notification: Notification) {
+        guard let event = notification.object as? MucModule.AbstractOccupantEvent else {
+            guard let occupant = notification.object as? MucOccupant else {
+                return;
+            }
+            DispatchQueue.main.async {
+                var tmp = self.participants;
+                tmp.append(occupant);
+                tmp.sort(by: { (i1, i2) -> Bool in
+                    return i1.nickname.caseInsensitiveCompare(i2.nickname) == .orderedAscending;
+                })
+                guard let idx = tmp.firstIndex(where: { (i) -> Bool in
+                    i.nickname == occupant.nickname;
+                }) else {
+                    return;
+                }
+                self.participants = tmp;
+                self.tableView?.insertRows(at: [IndexPath(row: idx, section: 0)], with: .automatic);
+            }
+            return;
+        }
+        guard let room = self.room, event.room === room else {
+            return;
+        }
+        
         switch event {
-        case is MucModule.OccupantLeavedEvent, is MucModule.OccupantComesEvent, is MucModule.OccupantChangedPresenceEvent, is MucModule.OccupantChangedNickEvent:
-            DispatchQueue.main.async() {
-                self.tableView.reloadData();
+        case let e as MucModule.OccupantComesEvent:
+            DispatchQueue.main.async {
+                var tmp = self.participants;
+                if let idx = tmp.firstIndex(where: { (i) -> Bool in
+                    i.nickname == e.occupant.nickname;
+                }) {
+                    tmp[idx] = e.occupant;
+                    self.participants = tmp;
+                    self.tableView?.reloadRows(at: [IndexPath(row: idx, section: 0)], with: .automatic);
+                } else {
+                    tmp.append(e.occupant);
+                    tmp.sort(by: { (i1, i2) -> Bool in
+                        return i1.nickname.caseInsensitiveCompare(i2.nickname) == .orderedAscending;
+                    })
+                    guard let idx = tmp.firstIndex(where: { (i) -> Bool in
+                        i.nickname == e.occupant.nickname;
+                    }) else {
+                        return;
+                    }
+                    self.participants = tmp;
+                    self.tableView?.insertRows(at: [IndexPath(row: idx, section: 0)], with: .automatic);
+                }
+            }
+        case let e as MucModule.OccupantLeavedEvent:
+            DispatchQueue.main.async {
+                var tmp = self.participants;
+                guard let idx = tmp.firstIndex(where: { (i) -> Bool in
+                    i.nickname == e.occupant.nickname;
+                }) else {
+                    return;
+                }
+                tmp.remove(at: idx);
+                self.participants = tmp;
+                self.tableView?.deleteRows(at: [IndexPath(row: idx, section: 0)], with: .automatic);
+            }
+        case let e as MucModule.OccupantChangedPresenceEvent:
+            DispatchQueue.main.async {
+                var tmp = self.participants;
+                guard let idx = tmp.firstIndex(where: { (i) -> Bool in
+                    i.nickname == e.occupant.nickname;
+                }) else {
+                    return;
+                }
+                tmp[idx] = e.occupant;
+                self.participants = tmp;
+                self.tableView?.reloadRows(at: [IndexPath(row: idx, section: 0)], with: .automatic);
+            }
+        case let e as MucModule.OccupantChangedNickEvent:
+            DispatchQueue.main.async {
+                var tmp = self.participants;
+                guard let oldIdx = tmp.firstIndex(where: { (i) -> Bool in
+                    i.nickname == e.nickname;
+                }) else {
+                    return;
+                }
+                tmp.remove(at: oldIdx);
+                tmp.append(e.occupant);
+                tmp.sort(by: { (i1, i2) -> Bool in
+                    return i1.nickname.caseInsensitiveCompare(i2.nickname) == .orderedAscending;
+                })
+                guard let newIdx = tmp.firstIndex(where: { (i) -> Bool in
+                    i.nickname == e.occupant.nickname;
+                }) else {
+                    return;
+                }
+                
+                self.participants = tmp;
+                self.tableView?.moveRow(at: IndexPath(row: oldIdx, section: 0), to: IndexPath(row: newIdx, section: 0));
+                self.tableView?.reloadRows(at: [IndexPath(row: newIdx, section: 0)], with: .automatic);
             }
         default:
             break;
         }
     }
-
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let invitationController = segue.destination as? InviteViewController ?? (segue.destination as? UINavigationController)?.visibleViewController as? InviteViewController {
-            invitationController.xmppService = xmppService;
-            invitationController.room = self.room;
+    
+    @objc func roomStatusChanged(_ notification: Notification) {
+        guard let room = notification.object as? DBRoom, (self.room?.id ?? 0) == room.id else {
+            return;
+        }
+        
+        if room.state != .joined {
+            DispatchQueue.main.async {
+                self.participants.removeAll();
+                self.tableView?.reloadData();
+            }
         }
     }
-    
+
 }

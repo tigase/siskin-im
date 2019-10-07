@@ -24,7 +24,7 @@ import UIKit
 import TigaseSwift
 import TigaseSwiftOMEMO
 
-class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, BaseChatViewControllerWithContextMenuAndToolbarDelegate, UITableViewDataSource, EventHandler, CachedViewControllerProtocol, BaseChatViewController_ShareImageExtension, BaseChatViewController_PreviewExtension {
+class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar, UITableViewDataSource, BaseChatViewController_ShareImageExtension, BaseChatViewController_PreviewExtension {
 
     var titleView: ChatTitleView! {
         get {
@@ -33,12 +33,8 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     }
     
     let log: Logger = Logger();
-    var chat: DBChat?;
     
-    var dataSource: ChatDataSource!;
-    var cachedDataSource: CachedViewDataSourceProtocol {
-        return dataSource as CachedViewDataSourceProtocol;
-    }
+    //var dataSource: ChatViewDataSource = ChatViewDataSource();
     
     var refreshControl: UIRefreshControl!;
     
@@ -53,12 +49,8 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         super.viewDidLoad()
         
         let messageModule: MessageModule? = xmppService.getClient(forJid: account)?.modulesManager.getModule(MessageModule.ID);
-        self.chat = messageModule?.chatManager.getChat(with: self.jid, thread: nil) as? DBChat;
+        self.chat = messageModule?.chatManager.getChat(with: JID(self.jid), thread: nil) as? DBChat;
         
-        dataSource = ChatDataSource(controller: self);
-        contextMenuDelegate = self;
-        scrollDelegate = self;
-        self.initialize();
         tableView.dataSource = self;
         tableView.delegate = self;
         // Uncomment the following line to preserve selection between presentations
@@ -88,51 +80,13 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         self.refreshControl?.addTarget(self, action: #selector(ChatViewController.refreshChatHistory), for: UIControl.Event.valueChanged);
         self.tableView.addSubview(refreshControl);
         initSharing();
-    }
-    
-    func getTextOfSelectedRows(paths: [IndexPath], withTimestamps: Bool, handler: (([String]) -> Void)?) {
-        let items: [ChatViewItem] = paths.map({ index in dataSource.getItem(for: index) }).filter({ it -> Bool in
-            return it != nil;
-        }).map({ it -> ChatViewItem in return it! })
-            .sorted { (it1, it2) -> Bool in
-                it1.timestamp.compare(it2.timestamp) == .orderedAscending;
-            };
         
-        guard items.count > 1 else {
-            let texts = items.map({ (it) -> String in
-                return it.data ?? "";
-            });
-            handler?(texts);
-            return;
-        }
-        
-        let withoutPrefix = Set(items.map({it in it.state.direction})).count == 1;
-        
-        let formatter = DateFormatter();
-        formatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "dd.MM.yyyy jj:mm", options: 0, locale: NSLocale.current);
-        
-        var direction: DBChatHistoryStore.MessageDirection? = nil;
-        let texts = items.map { (it) -> String in
-            if withoutPrefix {
-                if withTimestamps {
-                    return "[\(formatter.string(from: it.timestamp))] \(it.data ?? "")";
-                } else {
-                    return it.data ?? "";
-                }
-            } else {
-                let prefix = (direction == nil || it.state.direction != direction!) ?
-                    "\(it.state.direction == .incoming ? self.navigationItem.title! : "Me"):\n" : "";
-                direction = it.state.direction;
-                if withTimestamps {
-                    return "\(prefix)  [\(formatter.string(from: it.timestamp))] \(it.data ?? "")"
-                } else {
-                    return "\(prefix)  \(it.data ?? "")"
-                }
-            }
-        }
-        
-        print("got texts", texts);
-        handler?(texts);
+        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(accountStateChanged), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(chatChanged(_:)), name: DBChatStore.CHAT_UPDATED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged(_:)), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(rosterItemUpdated(_:)), name: DBRosterStore.ITEM_UPDATED, object: self);
+
     }
     
     @objc func showBuddyInfo() {//_ button: UIButton) {
@@ -140,8 +94,8 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         let navigation = storyboard?.instantiateViewController(withIdentifier: "ContactViewNavigationController") as! UINavigationController;
         let contactView = navigation.visibleViewController as! ContactViewController;
         contactView.account = account;
-        contactView.jid = jid.bareJid;
-        contactView.chat = self.chat;
+        contactView.jid = jid;
+        contactView.chat = self.chat as! DBChat;
         contactView.showEncryption = true;
         navigation.title = self.navigationItem.title;
         navigation.modalPresentationStyle = .formSheet;
@@ -151,24 +105,16 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(accountStateChanged), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(messageUpdated), name: DBChatHistoryStore.MESSAGE_UPDATED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(chatChanged(_:)), name: DBChatStore.CHAT_UPDATED, object: nil);
-        xmppService.registerEventHandler(self, for: PresenceModule.ContactPresenceChanged.TYPE, RosterModule.ItemUpdatedEvent.TYPE);
         
         self.updateTitleView();
-
+        
         let presenceModule: PresenceModule? = xmppService.getClient(forJid: account)?.modulesManager.getModule(PresenceModule.ID);
-        titleView.status = presenceModule?.presenceStore.getBestPresence(for: jid.bareJid);
+        titleView.status = presenceModule?.presenceStore.getBestPresence(for: jid);
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         NotificationCenter.default.removeObserver(self);
         super.viewDidDisappear(animated);
-        
-        xmppService.unregisterEventHandler(self, for: PresenceModule.ContactPresenceChanged.TYPE, RosterModule.ItemUpdatedEvent.TYPE);
     }
     
     override func didReceiveMemoryWarning() {
@@ -183,7 +129,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if dataSource.numberOfMessages == 0 {
+        if dataSource.count == 0 {
             let label = UILabel(frame: CGRect(x: 0, y:0, width: self.view.bounds.size.width, height: self.view.bounds.size.height));
             label.text = "No messages available. Pull up to refresh message history.";
             label.numberOfLines = 0;
@@ -192,145 +138,72 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
             label.sizeToFit();
             label.textColor = Appearance.current.labelColor;
             self.tableView.backgroundView = label;
+        } else {
+            self.tableView.backgroundView = nil;
         }
-        return dataSource.numberOfMessages;
+        return dataSource.count;
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let item = dataSource.getItem(for: indexPath) else {
+        guard let dsItem = dataSource.getItem(at: indexPath.row) else {
             return tableView.dequeueReusableCell(withIdentifier: "ChatTableViewCellIncoming", for: indexPath);
         }
-        var continuation = false;
-        if Settings.EnableNewUI.getBool() && (indexPath.row + 1) < dataSource.numberOfMessages {
-            if let prevItem = dataSource.getItem(for: IndexPath(row: indexPath.row + 1, section: 0)) {
-                continuation = prevItem.state.direction == item.state.direction && (abs(item.timestamp.timeIntervalSince(prevItem.timestamp)) < 30.0);
+
+        switch dsItem {
+        case let item as ChatMessage:
+            var continuation = false;
+            if Settings.EnableNewUI.getBool() && (indexPath.row + 1) < dataSource.count {
+                if let prevItem = dataSource.getItem(at: indexPath.row + 1) {
+                    continuation = item.isMergeable(with: prevItem);
+                }
             }
+            let incoming = item.state.direction == .incoming;
+            let id = Settings.EnableNewUI.getBool() ? (continuation ? "ChatTableViewCellContinuation" : "ChatTableViewCell") : (incoming ? "ChatTableViewCellIncoming" : "ChatTableViewCellOutgoing");
+            let cell: ChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
+            cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+            let name = incoming ? self.titleView.name : "Me";
+            cell.avatarView?.updateAvatar(manager: AvatarManager.instance, for: account, with: incoming ? jid : account, name: name, orDefault: AvatarManager.instance.defaultAvatar);
+            cell.nicknameView?.text = name;
+            cell.set(message: item, downloader: self.downloadPreview(url:msgId:account:jid:));
+            cell.setNeedsUpdateConstraints();
+            cell.updateConstraintsIfNeeded();
+            
+            return cell;
+        case let item as SystemMessage:
+            let cell: ChatTableViewSystemCell = tableView.dequeueReusableCell(withIdentifier: "ChatTableViewSystemCell", for: indexPath) as! ChatTableViewSystemCell;
+            cell.set(item: item);
+            cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+            return cell;
+        default:
+            return tableView.dequeueReusableCell(withIdentifier: "ChatTableViewCellIncoming", for: indexPath);
         }
-        let incoming = item.state.direction == .incoming;
-        let id = Settings.EnableNewUI.getBool() ? (continuation ? "ChatTableViewCellContinuation" : "ChatTableViewCell") : (incoming ? "ChatTableViewCellIncoming" : "ChatTableViewCellOutgoing");
-        let cell: ChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
-        cell.transform = cachedDataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-        cell.avatarView?.updateAvatar(manager: self.xmppService.avatarManager, for: account, with: incoming ? jid.bareJid : account, name: self.titleView.name, orDefault: self.xmppService.avatarManager.defaultAvatar);
-        cell.setValues(data: item.data, ts: item.timestamp, id: item.id, nickname: incoming ? (self.titleView.name ?? self.jid!.bareJid.stringValue) : "Me", state: item.state, messageEncryption: item.encryption, preview: item.preview, downloader: self.downloadPreview);
-        cell.setNeedsUpdateConstraints();
-        cell.updateConstraintsIfNeeded();
-        
-        return cell;
     }
     
     func tableView(_ tableView: UITableView, accessoryButtonTappedForRowWith indexPath: IndexPath) {
         print("accessory button cliecked at", indexPath)
-        guard let item = dataSource.getItem(for: indexPath) else {
-            return;
-        }
-        print("cliked message with id", item.id);
-        guard item.data != nil else {
+        guard let item = dataSource.getItem(at: indexPath.row) as? ChatMessage else {
             return;
         }
         
-        self.xmppService.dbChatHistoryStore.getMessageError(msgId: item.id) { error in
-            DispatchQueue.main.async {
-                let alert = UIAlertController(title: "Details", message: error ?? "Unknown error occurred", preferredStyle: .alert);
-                alert.addAction(UIAlertAction(title: "Resend", style: .default, handler: {(action) in
-                    print("resending message with body", item.data ?? "<nil>");
-                    self.sendMessage(body: item.data!, completed: nil);
-                }));
-                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
-                self.present(alert, animated: true, completion: nil);
-            }
+        DispatchQueue.main.async {
+            let alert = UIAlertController(title: "Details", message: item.error ?? "Unknown error occurred", preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: "Resend", style: .default, handler: {(action) in
+                print("resending message with body", item.message);
+                let url = item.message.starts(with: "http:") || item.message.starts(with: "https:") ? item.message : nil;
+                self.sendMessage(body: item.message, url: url, completed: nil);
+                DBChatHistoryStore.instance.removeItem(for: item.account, with: item.jid, itemId: item.id);
+            }));
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+            self.present(alert, animated: true, completion: nil);
         }
     }
     
     @IBAction func shareClicked(_ sender: UIButton) {
         self.showPhotoSelector(sender);
     }
-    
-    func updateItem(msgId: Int, handler: @escaping (BaseChatViewController_PreviewExtension_PreviewAwareItem) -> Void) {
-        DispatchQueue.main.async {
-            if let indexPath = self.dataSource.getIndexPath(withId: msgId) {
-                if let item = self.dataSource.getItem(for: indexPath) {
-                    handler(item);
-                    self.tableView.reloadRows(at: [indexPath], with: .automatic);
-                }
-            }
-        }
-    }
-    
-    class ChatViewItem: CachedViewDataSourceItem, BaseChatViewController_PreviewExtension_PreviewAwareItem {
-        let id: Int;
-        var state: DBChatHistoryStore.State;
-        let data: String?;
-        let timestamp: Date;
-        let encryption: MessageEncryption;
-        let fingerprint: String?;
-        var preview: String?;
-        
-        init(cursor: DBCursor) {
-            id = cursor["id"]!;
-            state = DBChatHistoryStore.State(rawValue: cursor["state"]!)!;
-            data = cursor["data"];
-            timestamp = cursor["timestamp"]!;
-            preview = cursor["preview"];
-            encryption = MessageEncryption(rawValue: cursor["encryption"] ?? 0) ?? .none;
-            fingerprint = cursor["fingerprint"];
-        }
-        
-    }
-    
-    func handle(event: Event) {
-        switch event {
-        case let cpc as PresenceModule.ContactPresenceChanged:
-            guard cpc.presence.from?.bareJid == self.jid.bareJid && cpc.sessionObject.userBareJid == account else {
-                return;
-            }
             
-            DispatchQueue.main.async() {
-                self.titleView.status = cpc.presence;
-                self.updateTitleView();
-            }
-        case let e as RosterModule.ItemUpdatedEvent:
-            guard e.sessionObject.userBareJid != nil && e.rosterItem != nil else {
-                return;
-            }
-            guard e.sessionObject.userBareJid! == self.account && e.rosterItem!.jid.bareJid == self.jid.bareJid else {
-                return;
-            }
-            DispatchQueue.main.async {
-                self.titleView.name = e.rosterItem!.name ?? e.rosterItem!.jid.stringValue;
-            }
-        default:
-            break;
-        }
-    }
-    
-    @objc func newMessage(_ notification: NSNotification) {
-        guard ((notification.userInfo!["account"] as? BareJID) == account) && ((notification.userInfo!["sender"] as? BareJID) == jid.bareJid) else {
-            return;
-        }
-        
-        let ts: Date = notification.userInfo!["timestamp"] as! Date;
-        let msgId: Int = notification.userInfo!["msgId"] as! Int;
-//        guard notification.userInfo?["fromArchive"] as? Bool ?? false == false else {
-//            if !self.syncInProgress {
-//                cachedDataSource.reset();
-//                tableView.reloadData();
-//            }
-//            return;
-//        }
-        
-        //DispatchQueue.main.async {
-        self.newItemAdded(id: msgId, timestamp: ts);
-        //}
-
-        if let state = notification.userInfo?["state"] as? DBChatHistoryStore.State {
-            if state == .incoming_unread || state == .incoming_error_unread {
-                self.xmppService.dbChatHistoryStore.markAsRead(for: account, with: jid.bareJid);
-            }
-        }
-    }
-    
     @objc func avatarChanged(_ notification: NSNotification) {
-        guard ((notification.userInfo?["jid"] as? BareJID) == jid.bareJid) else {
+        guard ((notification.userInfo?["jid"] as? BareJID) == jid) else {
             return;
         }
         DispatchQueue.main.async {
@@ -349,45 +222,56 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
         }
     }
     
-    @objc func messageUpdated(_ notification: Notification) {
-        guard let data = notification.userInfo else {
-            return;
-        }
-        guard let id = data["message-id"] as? Int else {
-            return;
-        }
-        updateItem(msgId: id) { (item) in
-            if let state = data["state"] as? DBChatHistoryStore.State {
-                (item as? ChatViewItem)?.state = state;
-                if state == DBChatHistoryStore.State.outgoing_error_unread {
-                    DispatchQueue.global(qos: .background).async {
-                        self.xmppService.dbChatHistoryStore.markAsRead(for: self.account, with: self.jid.bareJid);
-                    }
-                }
-            }
-            if data.keys.contains("preview") {
-                (item as? ChatViewItem)?.preview = data["preview"] as? String;
-            }
-        }
-    }
-    
     @objc func chatChanged(_ notification: Notification) {
         guard let chat = notification.object as? DBChat else {
             return;
         }
-        guard self.account == chat.account && self.jid.bareJid == chat.jid.bareJid else {
+        guard self.account == chat.account && self.jid == chat.jid.bareJid else {
             return;
         }
         
-        self.chat = chat;
+        DispatchQueue.main.async {
+            self.chat = chat;
+            
+            self.titleView.encryption = chat.options.encryption;//(notification.userInfo?["encryption"] as? ChatEncryption) ?? .none;
+        }
+    }
+    
+    @objc func contactPresenceChanged(_ notification: Notification) {
+        guard let cpc = notification.object as? PresenceModule.ContactPresenceChanged else {
+            return;
+        }
         
-        titleView.encryption = chat.options.encryption;//(notification.userInfo?["encryption"] as? ChatEncryption) ?? .none;
+        guard cpc.presence.from?.bareJid == self.jid && cpc.sessionObject.userBareJid == account else {
+            return;
+        }
+
+        DispatchQueue.main.async() {
+            self.titleView.status = cpc.presence;
+            self.updateTitleView();
+        }
+    }
+    
+    @objc func rosterItemUpdated(_ notification: Notification) {
+        guard let e = notification.object as? RosterModule.ItemUpdatedEvent else {
+            return;
+        }
+        
+        guard e.sessionObject.userBareJid != nil && e.rosterItem != nil else {
+            return;
+        }
+        guard e.sessionObject.userBareJid! == self.account && e.rosterItem!.jid.bareJid == self.jid else {
+            return;
+        }
+        DispatchQueue.main.async {
+            self.titleView.name = e.rosterItem!.name ?? e.rosterItem!.jid.stringValue;
+        }
     }
     
     fileprivate func updateTitleView() {
         let state = xmppService.getClient(forJid: self.account)?.state;
 
-        titleView.reload(for: self.account, with: self.jid.bareJid);
+        titleView.reload(for: self.account, with: self.jid);
 
         DispatchQueue.main.async {
             self.titleView.connected = state != nil && state == .connected;
@@ -437,7 +321,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     #endif
     
     @objc func refreshChatHistory() {
-        let syncPeriod = AccountSettings.MessageSyncPeriod(account.stringValue).getDouble();
+        let syncPeriod = AccountSettings.messageSyncPeriod(account).getDouble();
         guard syncPeriod != 0 else {
             self.refreshControl.endRefreshing();
             return;
@@ -453,7 +337,7 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
             return;
         }
         
-        mamModule.queryItems(with: jid, start: start, queryId: "sync-2", rsm: rsmQuery ?? RSM.Query(lastItems: 100), onSuccess: {(queryid,complete,rsmResponse) in
+        mamModule.queryItems(with: JID(jid), start: start, queryId: "sync-2", rsm: rsmQuery ?? RSM.Query(lastItems: 100), onSuccess: {(queryid,complete,rsmResponse) in
             self.log("received items from archive", queryid, complete, rsmResponse);
             if rsmResponse != nil && rsmResponse!.index != 0 && rsmResponse?.first != nil {
                 self.syncHistory(start: start, rsm: rsmResponse?.previous(100));
@@ -488,160 +372,10 @@ class ChatViewController : BaseChatViewControllerWithContextMenuAndToolbar, Base
     }
     
     func sendMessage(body: String, url: String? = nil, preview: String? = nil, completed: (()->Void)?) {
-        let client = xmppService.getClient(forJid: account);
-        if client != nil && client!.state == .connected {
-            let encryption = self.titleView.encryption ?? ChatEncryption(rawValue: Settings.MessageEncryption.getString() ?? "") ?? .none
-            DispatchQueue.global(qos: .default).async {
-                switch encryption {
-                case .none:
-                    self.sendUnencryptedMessage(body: body, url: url, completionHandler: { (message) in
-                        completed?();
-                    });
-                case .omemo:
-                    self.sendEncryptedMessage(body: body, url: url, completionHandler: { (message) in
-                        completed?();
-                    });
-                }
-            }
-        } else {
-            var alert: UIAlertController? = nil;
-            if client == nil {
-                alert = UIAlertController.init(title: "Warning", message: "Account is disabled.\nDo you want to enable account?", preferredStyle: .alert);
-                alert?.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
-                alert?.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(alertAction) in
-                    if let account = AccountManager.getAccount(forJid: self.account.stringValue) {
-                        account.active = true;
-                        AccountManager.updateAccount(account);
-                    }
-                }));
-            } else if client?.state != .connected {
-                alert = UIAlertController.init(title: "Warning", message: "Account is disconnected.\nPlease wait until account will reconnect", preferredStyle: .alert);
-                alert?.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
-            }
-            if alert != nil {
-                self.present(alert!, animated: true, completion: nil);
-            }
-        }
+        MessageEventHandler.sendMessage(chat: self.chat as! DBChat, body: body, url: url);
+        completed?();
     }
-    
-    fileprivate func sendUnencryptedMessage(body: String, url: String?, completionHandler: @escaping (Message)->Void) {
-        guard let (message, messageModule) = createMessage(body: body, url: url) else {
-            return;
-        }
         
-        messageModule.context.writer?.write(message);
-
-        self.xmppService.dbChatHistoryStore.appendEntry(for: account, jid: jid!.bareJid, state: .outgoing, authorJid: account, data: body, timestamp: Date(), id: message.id, encryption: .none, encryptionFingerprint: nil, fromArchive: false, carbonAction: nil, nicknameInRoom: nil) { msgId in
-            completionHandler(message);
-        }
-    }
-    
-    fileprivate func sendEncryptedMessage(body: String, url: String?, completionHandler: @escaping (Message)->Void) {
-        guard let (message, messageModule) = createMessage(body: body) else {
-            return;
-        }
-        
-        let account = self.account!;
-        let jid = self.jid!;
-
-        guard let client = XmppService.instance.getClient(forJid: account), let omemoModule: OMEMOModule = client.modulesManager.getModule(OMEMOModule.ID) else {
-            print("NO OMEMO MODULE!");
-            return;
-        }
-        let completionHandler: ((EncryptionResult<Message, SignalError>)->Void) = { (result) in
-            switch result {
-            case .failure(let error):
-                switch error {
-                case .noSession:
-                    DispatchQueue.main.async {
-                        let alert = UIAlertController(title: "Could not send a message", message: "It was not possible to send encrypted message as there is no trusted device.\n\nWould you like to disable encryption for this chat and send a message?", preferredStyle: .alert);
-                        alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
-                        alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { action in
-                            self.chat?.modifyOptions({ (options) in
-                                options.encryption = .none;
-                            }) {
-                                DispatchQueue.main.async {
-                                    self.sendUnencryptedMessage(body: body, url: url, completionHandler: completionHandler);
-                                }
-                            }
-                        }))
-                        self.present(alert, animated: true, completion: nil);
-                    }
-                default:
-                    DispatchQueue.main.async {
-                        let alert = UIAlertController(title: "Could not send a message", message: "It was not possible to send encrypted message due to encryption error", preferredStyle: .alert);
-                        alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
-                        self.present(alert, animated: true, completion: nil);
-                    }
-                }
-                break;
-            case .successMessage(let encryptedMessage, let fingerprint):
-                client.context.writer?.write(encryptedMessage);
-                self.xmppService.dbChatHistoryStore.appendEntry(for: account, jid: jid.bareJid, state: .outgoing, authorJid: account, data: body, timestamp: Date(), id: encryptedMessage.id, encryption: .decrypted, encryptionFingerprint: fingerprint, fromArchive: false, carbonAction: nil, nicknameInRoom: nil) { msgId in
-                    completionHandler(encryptedMessage);
-                }
-            }
-        };
-        
-        omemoModule.encode(message: message, completionHandler: completionHandler);
-    }
-    
-    fileprivate func createMessage(body: String, url: String? = nil) -> (Message, MessageModule)? {
-        guard let messageModule: MessageModule = XmppService.instance.getClient(forJid: account)?.modulesManager.getModule(MessageModule.ID) else {
-            return nil;
-        }
-        
-        guard let chat = messageModule.chatManager.getChat(with: jid, thread: nil) else {
-            return nil;
-        }
-        
-        let message = chat.createMessage(body);
-        if url != nil {
-            message.oob = url;
-        }
-        if Settings.MessageDeliveryReceiptsEnabled.getBool() {
-            message.messageDelivery = MessageDeliveryReceiptEnum.request;
-        }
-        if message.id == nil {
-            message.id = UUID().uuidString;
-        }
-        return (message, messageModule);
-    }
-    
-    class ChatDataSource: CachedViewDataSource<ChatViewItem> {
-        
-        fileprivate let getMessagesStmt: DBStatement!;
-
-        weak var controller: ChatViewController?;
-        
-        init(controller: ChatViewController) {
-            self.controller = controller;
-            self.getMessagesStmt = controller.xmppService.dbChatHistoryStore.getMessagesStatementForAccountAndJid();
-        }
-        
-        override func getItemsCount() -> Int {
-            return controller!.xmppService.dbChatHistoryStore.countMessages(for: controller!.account, with: controller!.jid.bareJid);
-        }
-        
-        override func loadData(afterMessageWithId msgId: Int?, offset: Int, limit: Int, forEveryItem: (Int, ChatViewItem)->Void) {
-            controller!.xmppService.dbChatHistoryStore.msgAlreadyAddedStmt.dispatcher.sync {
-                let position = msgId != nil
-                    ? controller!.xmppService.dbChatHistoryStore.getMessagePosition(for: controller!.account, with: controller!.jid.bareJid, msgId: msgId!, inverted: true)
-                    : 0;
-                var off = position + offset;
-                if off < 0 {
-                    off = 0;
-                }
-                var idx = 0
-                controller!.xmppService.dbChatHistoryStore.forEachMessage(stmt: getMessagesStmt, account: controller!.account, jid: controller!.jid.bareJid, limit: limit,
-                                                                          offset: off, forEach: { (cursor)-> Void in
-                    forEveryItem(idx, ChatViewItem(cursor: cursor));
-                    idx = idx + 1;
-                });
-            }
-        }
-        
-    }
 }
 
 class ChatTitleView: UIView {
@@ -707,7 +441,7 @@ class ChatTitleView: UIView {
     
     fileprivate func refresh() {
         DispatchQueue.main.async {
-            let encryption = self.encryption ?? ChatEncryption(rawValue: Settings.MessageEncryption.getString() ?? "") ?? .none;
+            let encryption = self.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.getString() ?? "") ?? .none;
             if self.connected {
                 let statusIcon = NSTextAttachment();
                 statusIcon.image = AvatarStatusView.getStatusImage(self.status?.show);

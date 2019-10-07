@@ -20,10 +20,11 @@
 //
 
 import Foundation
+import TigaseSwift
 
 public enum Settings: String {
     case DeleteChatHistoryOnChatClose
-    case EnableMessageCarbons
+    case enableMessageCarbons;
     case StatusType
     case StatusMessage
     case RosterType
@@ -43,8 +44,8 @@ public enum Settings: String {
     case CopyMessagesWithTimestamps
     case XmppPipelining
     case AppearanceTheme
-    case EnableBookmarksSync
-    case MessageEncryption
+    case enableBookmarksSync
+    case messageEncryption
     case EnableNewUI = "new-ui"
     case EnableMarkdownFormatting = "markdown"
     case ShowEmoticons
@@ -60,7 +61,7 @@ public enum Settings: String {
     public static func initialize() {
         let defaults: [String: AnyObject] = [
             "DeleteChatHistoryOnChatClose" : false as AnyObject,
-            "EnableMessageCarbons" : true as AnyObject,
+            "enableMessageCarbons" : true as AnyObject,
             "RosterType" : "flat" as AnyObject,
             "RosterItemsOrder" : RosterSortingOrder.alphabetical.rawValue as AnyObject,
             "RosterAvailableOnly" : false as AnyObject,
@@ -71,9 +72,15 @@ public enum Settings: String {
             "RecentsOrder" : "byTime" as AnyObject,
             "SendMessageOnReturn" : true as AnyObject,
             "AppearanceTheme": "classic" as AnyObject,
-            "MessageEncryption": "none" as AnyObject
+            "messageEncryption": "none" as AnyObject
         ];
         store.register(defaults: defaults);
+        ["EnableMessageCarbons": Settings.enableMessageCarbons, "MessageEncryption": .messageEncryption, "EnableBookmarksSync": Settings.enableBookmarksSync].forEach { (oldKey, newKey) in
+            if let val = store.object(forKey: oldKey) {
+                store.removeObject(forKey: oldKey);
+                store.set(val, forKey: newKey.rawValue)
+            }
+        }
         store.dictionaryRepresentation().forEach { (k, v) in
             if let key = Settings(rawValue: k) {
                 if isShared(key: key) {
@@ -105,8 +112,16 @@ public enum Settings: String {
         Settings.store.set(value, forKey: self.rawValue);
     }
     
+    func bool() -> Bool {
+        return getBool();
+    }
+    
     public func getBool() -> Bool {
         return Settings.store.bool(forKey: self.rawValue);
+    }
+    
+    func string() -> String? {
+        return getString();
     }
     
     public func getString() -> String? {
@@ -137,20 +152,20 @@ public enum Settings: String {
 }
 
 public enum AccountSettings {
-    case MessageSyncAutomatic(String)
-    case MessageSyncPeriod(String)
-    case MessageSyncTime(String)
-    case PushNotificationsForAway(String)
-    case LastError(String)
-    case KnownServerFeatures(String)
-    case omemoRegistrationId(String)
-    case reconnectionLocation(String)
+    case messageSyncAuto(BareJID)
+    case messageSyncPeriod(BareJID)
+    case MessageSyncTime(BareJID)
+    case PushNotificationsForAway(BareJID)
+    case LastError(BareJID)
+    case KnownServerFeatures(BareJID)
+    case omemoRegistrationId(BareJID)
+    case reconnectionLocation(BareJID)
     
-    public func getAccount() -> String {
+    public var account: BareJID {
         switch self {
-        case .MessageSyncAutomatic(let account):
+        case .messageSyncAuto(let account):
             return account;
-        case .MessageSyncPeriod(let account):
+        case .messageSyncPeriod(let account):
             return account;
         case .MessageSyncTime(let account):
             return account;
@@ -167,11 +182,11 @@ public enum AccountSettings {
         }
     }
     
-    public func getName() -> String {
+    public var name: String {
         switch self {
-        case .MessageSyncAutomatic( _):
+        case .messageSyncAuto( _):
             return "MessageSyncAutomatic";
-        case .MessageSyncPeriod( _):
+        case .messageSyncPeriod( _):
             return "MessageSyncPeriod";
         case .MessageSyncTime( _):
             return "MessageSyncTime";
@@ -188,24 +203,40 @@ public enum AccountSettings {
         }
     }
     
-    fileprivate func getKey() -> String {
-        return "Account-" + getAccount() + "-" + getName();
+    public var key: String {
+        return "accounts.\(account).\(name)";
+    }
+    
+    public func string() -> String? {
+        return getString();
     }
     
     public func getString() -> String? {
-        return Settings.store.string(forKey: getKey());
+        return Settings.store.string(forKey: key);
     }
-    
+
+    func bool() -> Bool {
+        return Settings.store.bool(forKey: key);
+    }
+
     public func getBool() -> Bool {
-        return Settings.store.bool(forKey: getKey());
+        return bool();
     }
     
+    func object() -> Any? {
+        return Settings.store.object(forKey: key);
+    }
+
+    public func double() -> Double {
+        return Settings.store.double(forKey: key);
+    }
+
     public func getDouble() -> Double {
-        return Settings.store.double(forKey: getKey());
+        return double();
     }
     
-    public func getDate() -> Date? {
-        let value = Settings.store.double(forKey: getKey());
+    func date() -> Date? {
+        let value = Settings.store.double(forKey: key);
         if value == 0 {
             return nil;
         } else {
@@ -213,31 +244,39 @@ public enum AccountSettings {
         }
     }
     
+    public func getDate() -> Date? {
+        return date();
+    }
+    
+    func uint32() -> UInt32? {
+        return getUInt32();
+    }
+    
     func getUInt32() -> UInt32? {
-        guard let tmp = Settings.store.string(forKey: getKey()) else {
+        guard let tmp = Settings.store.string(forKey: key) else {
             return nil;
         }
         return UInt32(tmp);
     }
     
     public func getStrings() -> [String]? {
-        let obj = Settings.store.object(forKey: getKey());
+        let obj = Settings.store.object(forKey: key);
         return obj as? [String];
     }
     
     public func set(bool value: Bool) {
-        Settings.store.set(value, forKey: getKey());
+        Settings.store.set(value, forKey: key);
     }
     
     public func set(double value: Double) {
-        Settings.store.set(value, forKey: getKey());
+        Settings.store.set(value, forKey: key);
     }
     
     public func set(date value: Date?, condition: ComparisonResult? = nil) {
         if value == nil {
-            Settings.store.set(nil, forKey: getKey());
+            Settings.store.set(nil, forKey: key);
         } else {
-            let key = getKey();
+            let key = self.key;
             let oldValue = Settings.store.double(forKey: key)
             let newValue = value!.timeIntervalSince1970;
             if condition != nil {
@@ -260,25 +299,25 @@ public enum AccountSettings {
     
     public func set(string value: String?) {
         if value != nil {
-            Settings.store.setValue(value, forKey: getKey());
+            Settings.store.setValue(value, forKey: key);
         } else {
-            Settings.store.removeObject(forKey: getKey());
+            Settings.store.removeObject(forKey: key);
         }
     }
     
     public func set(strings value: [String]?) {
         if value != nil {
-            Settings.store.set(value, forKey: getKey());
+            Settings.store.set(value, forKey: key);
         } else {
-            Settings.store.removeObject(forKey: getKey());
+            Settings.store.removeObject(forKey: key);
         }
     }
     
     func set(uint32 value: UInt32?) {
         if value != nil {
-            Settings.store.set(String(value!), forKey: getKey())
+            Settings.store.set(String(value!), forKey: key)
         } else {
-            Settings.store.set(nil, forKey: getKey());
+            Settings.store.set(nil, forKey: key);
         }
     }
     

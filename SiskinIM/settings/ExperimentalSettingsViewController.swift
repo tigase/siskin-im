@@ -43,9 +43,9 @@ class ExperimentalSettingsViewController: CustomTableViewController {
             return cell;
         case .enableBookmarksSync:
             let cell = tableView.dequeueReusableCell(withIdentifier: "EnableBookmarksSyncTableViewCell", for: indexPath) as! SwitchTableViewCell;
-            cell.switchView.isOn = Settings.EnableBookmarksSync.getBool();
+            cell.switchView.isOn = Settings.enableBookmarksSync.getBool();
             cell.valueChangedListener = {(switchView: UISwitch) in
-                Settings.EnableBookmarksSync.setValue(switchView.isOn);
+                Settings.enableBookmarksSync.setValue(switchView.isOn);
             }
             return cell;
         case .enableNewUI:

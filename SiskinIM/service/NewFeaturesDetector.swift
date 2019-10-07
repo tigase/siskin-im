@@ -22,7 +22,9 @@
 import UIKit
 import TigaseSwift
 
-class NewFeaturesDetector: EventHandler {
+class NewFeaturesDetector: XmppServiceEventHandler {
+    
+    let events: [Event] = [DiscoveryModule.AccountFeaturesReceivedEvent.TYPE];
     
     let suggestions: [NewFeaturesDetectorSuggestion] = [MAMSuggestion(), PushSuggestion()];
     weak var xmppService: XmppService?;
@@ -62,7 +64,7 @@ class NewFeaturesDetector: EventHandler {
                 return;
             }
 
-            let knownFeatures: [String] = AccountSettings.KnownServerFeatures(account.stringValue).getStrings() ?? [];
+            let knownFeatures: [String] = AccountSettings.KnownServerFeatures(account).getStrings() ?? [];
             let newFeatures = e.features.filter { (feature) -> Bool in
                 return !knownFeatures.contains(feature);
             };
@@ -77,7 +79,7 @@ class NewFeaturesDetector: EventHandler {
                 })
             }
             
-            AccountSettings.KnownServerFeatures(account.stringValue).set(strings: newKnownFeatures);
+            AccountSettings.KnownServerFeatures(account).set(strings: newKnownFeatures);
             
             break;
         default:
@@ -160,7 +162,7 @@ class NewFeaturesDetector: EventHandler {
         }
         
         fileprivate func askToEnableMessageSync(xmppService: XmppService, account: BareJID, onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
-            guard !AccountSettings.MessageSyncAutomatic(account.stringValue).getBool() else {
+            guard !AccountSettings.messageSyncAuto(account).getBool() else {
                 completionHandler([]);
                 return;
             }
@@ -181,10 +183,10 @@ Have it enabled will keep synchronized copy of your messages exchanged using \(a
                     controller.dismiss(animated: true, completion: onNext);
                 }
                 controller.onEnable = { (handler) in
-                    AccountSettings.MessageSyncPeriod(account.stringValue).set(double: 24 * 7);
-                    AccountSettings.MessageSyncAutomatic(account.stringValue).set(bool: true);
+                    AccountSettings.messageSyncPeriod(account).set(double: 24 * 7);
+                    AccountSettings.messageSyncAuto(account).set(bool: true);
                     
-                    xmppService.syncMessages(for: account);
+                    MessageEventHandler.syncMessages(for: account);
                     
                     controller.dismiss(animated: true, completion: onNext);
                 }

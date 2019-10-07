@@ -64,7 +64,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         UNUserNotificationCenter.current().delegate = self;
         application.registerForRemoteNotifications();
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.chatItemsUpdated), name: DBChatHistoryStore.CHAT_ITEMS_UPDATED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.unreadMessagesCountChanged), name: DBChatStore.UNREAD_MESSAGES_COUNT_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.serverCertificateError), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.authenticationFailure), name: XmppService.AUTHENTICATION_FAILURE, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.presenceAuthorizationRequest), name: XmppService.PRESENCE_AUTHORIZATION_REQUEST, object: nil);
@@ -155,13 +155,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         //self.keepOnlineOnAwayTimer?.execute();
         //self.keepOnlineOnAwayTimer = nil;
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
-            let toDiscard = notifications.filter({(notification) in  notification.request.content.categoryIdentifier == "MESSAGE_NO_SENDER"}).map({ (notiication) -> String in
+            let toDiscard = notifications.filter({(notification) in  notification.request.content.categoryIdentifier == "MESSAGE_NO_SENDER" || notification.request.content.categoryIdentifier == "UNSENT_MESSAGES"}).map({ (notiication) -> String in
                 return notiication.request.identifier;
             });
             guard !toDiscard.isEmpty else {
                 return;
             }
-            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toDiscard)
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toDiscard)
             self.updateApplicationIconBadgeNumber(completionHandler: nil);
         }
     }
@@ -253,7 +253,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 let chatController = destination.children[0] as! ChatViewController;
                 chatController.hidesBottomBarWhenPushed = true;
                 chatController.account = account;
-                chatController.jid = xmppUri.jid.withoutResource;
+                chatController.jid = xmppUri.jid.bareJid;
                 self.window?.rootViewController?.showDetailViewController(destination, sender: self);
             }
             
@@ -301,7 +301,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     certInfo?["accepted"] = true as NSObject;
                     account.serverCertificate = certInfo;
                     account.active = true;
-                    AccountSettings.LastError(accountJid.stringValue).set(string: nil);
+                    AccountSettings.LastError(accountJid).set(string: nil);
                     AccountManager.updateAccount(account);
                 }, onDeny: nil);
                 
@@ -427,7 +427,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 
                 if let baseChatViewController = destination as? BaseChatViewController {
                     baseChatViewController.account = accountJid;
-                    baseChatViewController.jid = JID(senderJid);
+                    baseChatViewController.jid = senderJid;
                 }
                 destination?.hidesBottomBarWhenPushed = true;
                 
@@ -528,7 +528,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
         
         print("comparing", baseChatController!.account.stringValue, account, baseChatController!.jid.stringValue, jid);
-        return (baseChatController!.account == BareJID(account)) && (baseChatController!.jid.bareJid == BareJID(jid));
+        return (baseChatController!.account == BareJID(account)) && (baseChatController!.jid == BareJID(jid));
     }
     
     func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
@@ -609,6 +609,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
     }
     
+    func notifyNewMessage(account: BareJID, sender: BareJID, body: String, type: String?, isPush: Bool, completionHandler: (()->Void)?) {
+        notifyNewMessage(account: JID(account), sender: JID(sender), body: body, type: type, data: [:], isPush: isPush, completionHandler: completionHandler);
+    }
+    
     func notifyNewMessage(account: JID, sender: JID, body: String, type: String?, data userInfo: [AnyHashable:Any], isPush: Bool, completionHandler: (()->Void)?) {
         guard userInfo["carbonAction"] == nil else {
             return;
@@ -678,15 +682,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     @objc func newMessage(_ notification: NSNotification) {
-        let sender = notification.userInfo!["sender"] as! BareJID;
-        let account = notification.userInfo!["account"] as! BareJID;
-        let state = notification.userInfo!["state"] as! DBChatHistoryStore.State;
-        let encryption = notification.userInfo!["encryption"] as! MessageEncryption;
-        guard state == .incoming_unread || state == .incoming_error_unread || encryption == .notForThisDevice else {
+        guard let message = notification.object as? ChatMessage else {
+            return;
+        }
+        guard message.state == .incoming_unread || message.state == .incoming_error_unread || message.encryption == .notForThisDevice else {
             return;
         }
         
-        notifyNewMessage(account: JID(account), sender: JID(sender), body: notification.userInfo!["body"] as! String, type: notification.userInfo!["type"] as? String, data: notification.userInfo!, isPush: false, completionHandler: nil);
+        notifyNewMessage(account: message.account, sender: message.jid, body: message.message, type: message.authorNickname != nil ? "muc" : "chat", isPush: false, completionHandler: nil);
     }
     
     func dismissPushNotifications(for account: JID, completionHandler: (()-> Void)?) {
@@ -697,7 +700,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
     }
     
-    @objc func chatItemsUpdated(_ notification: NSNotification) {
+    @objc func unreadMessagesCountChanged(_ notification: NSNotification) {
         updateApplicationIconBadgeNumber(completionHandler: nil);
     }
     
@@ -762,9 +765,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 return notification.request.content.threadIdentifier;
             }));
             
-            self.xmppService.dbChatHistoryStore.forEachUnreadChat(forEach: { (account, jid) in
-                unreadChats.insert("account=" + account.stringValue + "|sender=" + jid.stringValue);
-            });
+            DBChatStore.instance.getChats().filter({ chat -> Bool in
+                return chat.unread > 0;
+            }).forEach { (chat) in
+                unreadChats.insert("account=" + chat.account.stringValue + "|sender=" + chat.jid.bareJid.stringValue)
+            }
             let badge = unreadChats.count;
             DispatchQueue.main.async {
                 print("setting badge to", badge);
@@ -802,6 +807,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         content.userInfo = info;
         content.categoryIdentifier = "ERROR";
         content.threadIdentifier = "account=" + account.stringValue;
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
+    }
+    
+    func notifyUnsentMessages(count: Int) {
+        let content = UNMutableNotificationContent();
+        content.body = "It was not possible to send \(count) messages. Open the app to retry";
+        content.categoryIdentifier = "UNSENT_MESSAGES";
+        content.threadIdentifier = "unsent-messages";
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
 

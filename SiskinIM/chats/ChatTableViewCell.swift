@@ -21,6 +21,7 @@
 
 
 import UIKit
+import TigaseSwift
 
 class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegate {
 
@@ -29,6 +30,7 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
     @IBOutlet var messageTextView: UILabel!
     @IBOutlet var messageFrameView: UIView?
     @IBOutlet var timestampView: UILabel?
+    @IBOutlet var stateView: UILabel?;
     
     @IBOutlet var previewView: UIImageView?;
     
@@ -124,37 +126,49 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         // Configure the view for the selected state
     }
     
-    func setValues(data text: String?, ts: Date?, id: Int?, nickname: String?, state: DBChatHistoryStore.State, messageEncryption: MessageEncryption = .none, preview: String? = nil, downloader: ((URL,Int)->Void)? = nil) {
-        nicknameView?.text = nickname;
-        if ts != nil {
-            var timestamp = formatTimestamp(ts!);
-            switch messageEncryption {
-            case .decrypted, .notForThisDevice, .decryptionFailed:
-                timestamp = "\(timestamp) \u{1F512}";
-            default:
-                break;
-            }
-            if state.direction == .outgoing {
+    
+    func set(message item: ChatMessage, downloader: ((URL,Int,BareJID,BareJID)->Void)? = nil) {
+        var timestamp = formatTimestamp(item.timestamp);
+        switch item.encryption {
+        case .decrypted, .notForThisDevice, .decryptionFailed:
+            timestamp = "\u{1F512} \(timestamp)";
+        default:
+            break;
+        }
+        switch item.state {
+        case .incoming_error, .incoming_error_unread:
+            //elf.message.textColor = NSColor.systemRed;
+            self.stateView?.text = "\u{203c}";
+        case .outgoing_unsent:
+            //self.message.textColor = NSColor.secondaryLabelColor;
+            self.stateView?.text = "\u{1f4e4}";
+        case .outgoing_delivered:
+            //self.message.textColor = nil;
+            self.stateView?.text = "\u{2713}";
+        case .outgoing_error, .outgoing_error_unread:
+            //self.message.textColor = nil;
+            self.stateView?.text = "\u{203c}";
+        default:
+            //self.state?.stringValue = "";
+            self.stateView?.text = nil;//NSColor.textColor;
+        }
+        if stateView == nil {
+            if item.state.direction == .outgoing {
                 timestampView?.textColor = UIColor.lightGray;
-                switch state.state {
-                case .delivered:
-                    timestamp = "\(timestamp) \u{2713}";
-                case .error:
+                if item.state.isError {
                     timestampView?.textColor = UIColor.red;
                     timestamp = "\(timestamp) Not delivered\u{203c}";
-                default:
-                    break;
+                } else if item.state == .outgoing_delivered {
+                    timestamp = "\(timestamp) \u{2713}";
                 }
             }
-            timestampView?.text = timestamp;
-        } else {
-            timestampView?.text = nil;
         }
+        timestampView?.text = timestamp;
         self.previewUrl = nil;
         self.previewView?.image = nil;
         
         if messageFrameView != nil {
-            self.messageFrameView?.backgroundColor = state.direction == .incoming ? Appearance.current.incomingBubbleColor() : Appearance.current.outgoingBubbleColor();
+            self.messageFrameView?.backgroundColor = item.state.direction == .incoming ? Appearance.current.incomingBubbleColor() : Appearance.current.outgoingBubbleColor();
             self.nicknameView?.textColor = Appearance.current.secondaryLabelColor;
             self.messageTextView.textColor = self.originalTextColor;
         } else {
@@ -163,73 +177,68 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         }
         
         self.links.removeAll();
-        if text != nil {
-            var previewRange: NSRange? = nil;
-            var previewSourceUrl: URL? = nil;
-            let attrText = NSMutableAttributedString(string: text!);
             
-            var first = true;
-            if let detect = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue | NSTextCheckingResult.CheckingType.date.rawValue) {
-                let matches = detect.matches(in: text!, options: .reportCompletion, range: NSMakeRange(0, text!.count));
-                for match in matches {
-                    var url: URL? = nil;
-                    if match.url != nil {
-                        url = match.url;
-                        if first && id != nil {
-                            first = false;
-                            if (preview?.hasPrefix("preview:image:") ?? true) {
-                                let previewKey = preview == nil ? nil : String(preview!.dropFirst(14));
-                                previewView?.image = ImageCache.shared.get(for: previewKey, ifMissing: {
-                                    downloader?(url!, id!);
-                                })
-                                if previewView?.image != nil && previewKey != nil {
-                                    previewUrl = ImageCache.shared.getURL(for: previewKey);
-                                    previewRange = match.range;
-                                    previewSourceUrl = url;
-                                }
+        var previewRange: NSRange? = nil;
+        var previewSourceUrl: URL? = nil;
+        let attrText = NSMutableAttributedString(string: item.message);
+            
+        var first = true;
+        if let detect = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue | NSTextCheckingResult.CheckingType.date.rawValue) {
+            let matches = detect.matches(in: item.message, options: .reportCompletion, range: NSMakeRange(0, item.message.count));
+            for match in matches {
+                var url: URL? = nil;
+                if match.url != nil {
+                    url = match.url;
+                    if first {
+                        first = false;
+                        if (item.preview?.hasPrefix("preview:image:") ?? true) {
+                            let previewKey = item.preview == nil ? nil : String(item.preview!.dropFirst(14));
+                            previewView?.image = ImageCache.shared.get(for: previewKey, ifMissing: {
+                                downloader?(url!, item.id, item.account, item.jid);
+                            })
+                            if previewView?.image != nil && previewKey != nil {
+                                previewUrl = ImageCache.shared.getURL(for: previewKey);
+                                previewRange = match.range;
+                                previewSourceUrl = url;
                             }
                         }
                     }
-                    if match.phoneNumber != nil {
-                        url = URL(string: "tel:\(match.phoneNumber!.replacingOccurrences(of: " ", with: "-"))");
-                    }
-                    if match.addressComponents != nil {
-                        let query = match.addressComponents!.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
-                        if query != nil {
-                            url = URL(string: "http://maps.apple.com/?q=\(query!)");
-                        }
-                    }
-                    if match.date != nil {
-                        url = URL(string: "calshow:\(match.date!.timeIntervalSinceReferenceDate)");
-                    }
-                    if url != nil {
-                        self.links.append(Link(url: url!, range: match.range));
-                        attrText.setAttributes([NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue, NSAttributedString.Key.foregroundColor: (Appearance.current.isDark && Settings.EnableNewUI.getBool()) ? UIColor.blue.adjust(brightness: 0.75) : UIColor.blue], range: match.range);
+                }
+                if match.phoneNumber != nil {
+                    url = URL(string: "tel:\(match.phoneNumber!.replacingOccurrences(of: " ", with: "-"))");
+                }
+                if match.addressComponents != nil {
+                    if let query = match.addressComponents!.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) {
+                        url = URL(string: "http://maps.apple.com/?q=\(query)");
                     }
                 }
+                if match.date != nil {
+                    url = URL(string: "calshow:\(match.date!.timeIntervalSinceReferenceDate)");
+                }
+                if url != nil {
+                    self.links.append(Link(url: url!, range: match.range));
+                    attrText.setAttributes([NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue, NSAttributedString.Key.foregroundColor: (Appearance.current.isDark && Settings.EnableNewUI.getBool()) ? UIColor.blue.adjust(brightness: 0.75) : UIColor.blue], range: match.range);
+                }
             }
-            if previewSourceUrl != nil && Settings.SimplifiedLinkToFileIfPreviewIsAvailable.getBool() {
-                attrText.mutableString.replaceCharacters(in: previewRange!, with: "Link to file");
-            }
-            if Settings.EnableMarkdownFormatting.getBool() {
-                Markdown.applyStyling(attributedString: attrText, font: self.messageTextView.font, showEmoticons: Settings.ShowEmoticons.getBool());
-            }
-            self.messageTextView.attributedText = attrText;
-        } else {
-            self.messageTextView.text = text;
         }
-        switch state.state {
-        case .error:
-            if state.direction == .incoming {
+        if previewSourceUrl != nil && Settings.SimplifiedLinkToFileIfPreviewIsAvailable.getBool() {
+            attrText.mutableString.replaceCharacters(in: previewRange!, with: "Link to file");
+        }
+        if Settings.EnableMarkdownFormatting.getBool() {
+            Markdown.applyStyling(attributedString: attrText, font: self.messageTextView.font, showEmoticons:Settings.ShowEmoticons.getBool());
+        }
+        self.messageTextView.attributedText = attrText;
+        if item.state.isError {
+            if item.state.direction == .incoming {
                 self.messageTextView.textColor = UIColor.red;
             } else {
                 self.accessoryType = .detailButton;
                 self.tintColor = UIColor.red;
             }
-        default:
+        } else {
             self.accessoryType = .none;
             self.tintColor = self.messageTextView.tintColor;
-            if messageEncryption == .notForThisDevice || messageEncryption == .decryptionFailed {
+            if item.encryption == .notForThisDevice || item.encryption == .decryptionFailed {
                 if let messageFrameView = self.messageFrameView {
                     self.messageTextView.textColor = self.originalTextColor.mix(color: messageFrameView.backgroundColor!, ratio: 0.33);
                 } else {
@@ -237,6 +246,8 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
                 }
             }
         }
+        self.stateView?.textColor = self.messageTextView.textColor;
+        self.timestampView?.textColor = self.messageTextView.textColor;
     }
     
     @objc func actionMore(_ sender: UIMenuController) {

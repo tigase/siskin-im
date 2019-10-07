@@ -62,9 +62,9 @@ class ChatSettingsViewController: CustomTableViewController {
             return cell;
         case .enableMessageCarbons:
             let cell = tableView.dequeueReusableCell(withIdentifier: "EnableMessageCarbonsTableViewCell", for: indexPath ) as! SwitchTableViewCell;
-            cell.switchView.isOn = Settings.EnableMessageCarbons.getBool();
+            cell.switchView.isOn = Settings.enableMessageCarbons.getBool();
             cell.valueChangedListener = {(switchView: UISwitch) in
-                Settings.EnableMessageCarbons.setValue(switchView.isOn);
+                Settings.enableMessageCarbons.setValue(switchView.isOn);
             }
             return cell;
         case .recentsMessageLinesNo:
@@ -134,7 +134,7 @@ class ChatSettingsViewController: CustomTableViewController {
             return cell;
         case .messageEncryption:
             let cell = tableView.dequeueReusableCell(withIdentifier: "MessageEncryptionTableViewCell", for: indexPath);
-            let label = MessageEncryptionItem.description(of: ChatEncryption(rawValue: Settings.MessageEncryption.getString() ?? "") ?? .none);
+            let label = MessageEncryptionItem.description(of: ChatEncryption(rawValue: Settings.messageEncryption.getString() ?? "") ?? .none);
             (cell.contentView.subviews[1] as! UILabel).text = label;
             cell.accessoryType = .disclosureIndicator;
             return cell;
@@ -191,7 +191,7 @@ class ChatSettingsViewController: CustomTableViewController {
             
             self.present(alert, animated: true, completion: nil);
         case .messageEncryption:
-            let current = ChatEncryption(rawValue: Settings.MessageEncryption.getString() ?? "") ?? .none;
+            let current = ChatEncryption(rawValue: Settings.messageEncryption.getString() ?? "") ?? .none;
             let controller = TablePickerViewController(style: .grouped);
             let values: [ChatEncryption] = [.none, .omemo];
             controller.selected = values.firstIndex(of: current ) ?? 0;
@@ -201,7 +201,7 @@ class ChatSettingsViewController: CustomTableViewController {
             //controller.selected = 1;
             controller.onSelectionChange = { (_item) -> Void in
                 let item = _item as! MessageEncryptionItem;
-                Settings.MessageEncryption.setValue(item.value.rawValue);
+                Settings.messageEncryption.setValue(item.value.rawValue);
                 self.tableView.reloadData();
             };
             self.navigationController?.pushViewController(controller, animated: true);

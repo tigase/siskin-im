@@ -25,7 +25,7 @@ import TigaseSwift
 extension PEPBookmarksModule {
     
     static func updateOrAdd(xmppService: XmppService, for account: BareJID, bookmark item: Bookmarks.Item) {
-        guard Settings.EnableBookmarksSync.getBool(), let pepBookmarksModule: PEPBookmarksModule = xmppService.getClient(forJid: account)?.modulesManager.getModule(PEPBookmarksModule.ID) else {
+        guard Settings.enableBookmarksSync.getBool(), let pepBookmarksModule: PEPBookmarksModule = xmppService.getClient(forJid: account)?.modulesManager.getModule(PEPBookmarksModule.ID) else {
             return;
         }
         
@@ -35,7 +35,7 @@ extension PEPBookmarksModule {
     }
     
     static func remove(xmppService: XmppService, from account: BareJID, bookmark item: Bookmarks.Item) {
-        guard Settings.EnableBookmarksSync.getBool(), let pepBookmarksModule: PEPBookmarksModule = xmppService.getClient(forJid: account)?.modulesManager.getModule(PEPBookmarksModule.ID) else {
+        guard Settings.enableBookmarksSync.getBool(), let pepBookmarksModule: PEPBookmarksModule = xmppService.getClient(forJid: account)?.modulesManager.getModule(PEPBookmarksModule.ID) else {
             return;
         }
         

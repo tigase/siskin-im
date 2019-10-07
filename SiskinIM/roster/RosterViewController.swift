@@ -25,8 +25,6 @@ import TigaseSwift
 
 class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDelegate {
 
-    fileprivate static let UPDATE_NOTIFICATION_NAME = Notification.Name("ROSTER_UPDATE");
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         searchController.searchBar.delegate = self;
@@ -68,7 +66,7 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
             cell.statusLabel.text = item.presence?.status ?? item.jid.stringValue;
             cell.avatarStatusView.setStatus(item.presence?.show);
             cell.avatarStatusView.backgroundColor = Appearance.current.systemBackground;
-            cell.avatarStatusView.updateAvatar(manager: xmppService.avatarManager, for: item.account, with: item.jid.bareJid, name: item.displayName, orDefault: xmppService.avatarManager.defaultAvatar);
+            cell.avatarStatusView.updateAvatar(manager: AvatarManager.instance, for: item.account, with: item.jid.bareJid, name: item.displayName, orDefault: AvatarManager.instance.defaultAvatar);
         }
         
         return cell;
@@ -79,7 +77,7 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
             return;
         }
 
-        let xmppClient = self.xmppService.getClient(forJid: item.account);
+        let xmppClient = XmppService.instance.getClient(forJid: item.account);
         let messageModule:MessageModule? = xmppClient?.modulesManager.getModule(MessageModule.ID);
         
         guard messageModule != nil else {
@@ -92,7 +90,7 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
         let chatController = destination.children[0] as! ChatViewController;
         chatController.hidesBottomBarWhenPushed = true;
         chatController.account = item.account;
-        chatController.jid = item.jid;
+        chatController.jid = item.jid.bareJid;
         self.showDetailViewController(destination, sender: self);
     }
     
@@ -183,7 +181,7 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
     }
     
     func deleteItem(for account: BareJID, jid: JID) {
-        if let rosterModule:RosterModule = self.xmppService.getClient(forJid: account)?.modulesManager.getModule(RosterModule.ID) {
+        if let rosterModule:RosterModule = XmppService.instance.getClient(forJid: account)?.modulesManager.getModule(RosterModule.ID) {
             rosterModule.rosterStore.remove(jid: jid, onSuccess: nil, onError: { (errorCondition) in
                 let alert = UIAlertController.init(title: "Failure", message: "Server returned error: " + (errorCondition?.rawValue ?? "Operation timed out"), preferredStyle: .alert);
                 alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));

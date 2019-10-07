@@ -26,9 +26,9 @@ public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>,
     
     fileprivate var items: [RosterProviderFlatItem];
     
-    override init(xmppService: XmppService, dbConnection: DBConnection, order: RosterSortingOrder, availableOnly: Bool, displayHiddenGroup: Bool, updateNotificationName: Notification.Name) {
+    override init(dbConnection: DBConnection, order: RosterSortingOrder, availableOnly: Bool, displayHiddenGroup: Bool, updateNotificationName: Notification.Name) {
         self.items = [];
-        super.init(xmppService: xmppService, dbConnection: dbConnection, order: order, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup, updateNotificationName: updateNotificationName);
+        super.init(dbConnection: dbConnection, order: order, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup, updateNotificationName: updateNotificationName);
     }
     
     func numberOfSections() -> Int {
@@ -175,7 +175,7 @@ public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>,
     
     override func processDBloadQueryResult(it: DBCursor) -> RosterProviderFlatItem? {
         let account: BareJID = it["account"]!;
-        if let sessionObject = xmppService.getClient(forJid: account)?.sessionObject {
+        if let sessionObject = XmppService.instance.getClient(forJid: account)?.sessionObject {
             let presenceStore = PresenceModule.getPresenceStore(sessionObject);
             let jid: JID = it["jid"]!;
             return RosterProviderFlatItem(account: account, jid: jid, name: it["name"], presence: presenceStore.getBestPresence(for: jid.bareJid));

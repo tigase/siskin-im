@@ -34,20 +34,18 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
     
     var bottomPanelBottomConstraint: NSLayoutConstraint?;
     
-    @IBInspectable var scrollToBottomOnShow: Bool = false;
     @IBInspectable var animateScrollToBottom: Bool = true;
     
     @IBOutlet var messageFieldTrailingConstraint: NSLayoutConstraint!
     @IBOutlet var sendButtonWidthConstraint: NSLayoutConstraint!
     
+    var chat: DBChatProtocol!;
+    
     var dbConnection:DBConnection!;
     var xmppService:XmppService!;
     
     var account:BareJID!;
-    var jid:JID!;
-    
-    weak var scrollDelegate: BaseChatViewControllerScrollDelegate?;
-    var isFirstTime = true;
+    var jid:BareJID!;
     
     var messageText: String? {
         get {
@@ -67,7 +65,6 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
             overrideUserInterfaceStyle = .light
         };
         placeholderView?.text = "from \(account.stringValue)...";
-        isFirstTime = scrollToBottomOnShow;
 
         navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem;
         navigationItem.leftItemsSupplementBackButton = true;
@@ -111,7 +108,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil);
         
         if self.messageText?.isEmpty ?? true {
-            self.xmppService.dbChatStore.getMessageDraft(account: account, jid: jid.bareJid) { (text) in
+            self.xmppService.dbChatStore.getMessageDraft(account: account, jid: jid) { (text) in
                 DispatchQueue.main.async {
                     self.messageText = text;
                 }
@@ -122,13 +119,8 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated);
-        if isFirstTime {
-            // scroll to bottom?
-            scrollToNewestMessage(animated: true);
-            isFirstTime = false;
-        }
         let accountStr = account.stringValue.lowercased();
-        let jidStr = jid.bareJid.stringValue.lowercased();
+        let jidStr = jid.stringValue.lowercased();
         self.tableView.backgroundColor = Appearance.current.systemBackground;
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
             var toRemove = [String]();
@@ -138,13 +130,13 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
                 }
             }
             UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
-            self.xmppService.dbChatHistoryStore.markAsRead(for: self.account, with: self.jid.bareJid);
+            self.xmppService.dbChatHistoryStore.markAsRead(for: self.account, with: self.jid);
         }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated);
-        if let account = self.account, let jid = self.jid?.bareJid {
+        if let account = self.account, let jid = self.jid {
             self.xmppService?.dbChatStore.updateMessageDraft(account: account, jid: jid, draft: messageText);
         }
     }
@@ -173,8 +165,6 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
                     bottomPanelBottomConstraint?.constant = newHeight;
                     UIView.animate(withDuration: duration, delay: 0.0, options: [UIView.AnimationOptions(rawValue: curve), UIView.AnimationOptions.layoutSubviews, UIView.AnimationOptions.beginFromCurrentState], animations: {
                         self.view.layoutIfNeeded();
-                        self.scrollToNewestMessage(animated: true);
-                        
                         }, completion: nil);
                 }
             }
@@ -207,24 +197,6 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
     
     func textViewDidEndEditing(_ textView: UITextView) {
         textView.resignFirstResponder();
-    }
-    
-    func scrollToNewestMessage(animated: Bool) {
-        if scrollDelegate != nil {
-            scrollDelegate?.tableViewScrollToNewestMessage(animated: animated)
-        } else {
-            scrollToNewestMessageImpl(animated: animated);
-        }
-    }
-    
-    func scrollToNewestMessageImpl(animated: Bool) {
-        func scrollToNewestMessage(_ animated: Bool) {
-            let count = xmppService.dbChatHistoryStore.countMessages(for: account, with: jid.bareJid);
-            if count > 0 {
-                let path = IndexPath(row: count - 1, section: 0);
-                self.tableView.scrollToRow(at: path, at: .bottom, animated: animated);
-            }
-        }
     }
     
     func sendMessage() {
@@ -261,10 +233,4 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
             self.tableView.reloadData();
         }
     }
-}
-
-protocol BaseChatViewControllerScrollDelegate: class {
-    
-    func tableViewScrollToNewestMessage(animated: Bool);
-    
 }

@@ -85,7 +85,7 @@ open class TigasePushNotificationsModule: PushNotificationsModule, EventHandler 
     open func registerDevice(onSuccess: @escaping ()-> Void, onError: @escaping (ErrorCondition?)->Void) {
         self.registerDevice(serviceJid: self.pushServiceJid!, provider: self.provider, deviceId: self.deviceId!, onSuccess: { (node) in
             self.pushServiceNode = node;
-            self.enable(serviceJid: self.pushServiceJid!, node: node, enableForAway: AccountSettings.PushNotificationsForAway(self.context.sessionObject.userBareJid!.stringValue).getBool(), onSuccess: { (stanza) in
+            self.enable(serviceJid: self.pushServiceJid!, node: node, enableForAway: AccountSettings.PushNotificationsForAway(self.context.sessionObject.userBareJid!).getBool(), onSuccess: { (stanza) in
                 onSuccess();
             }, onError: onError);
         }, onError: onError);

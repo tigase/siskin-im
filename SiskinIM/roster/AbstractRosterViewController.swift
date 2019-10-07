@@ -26,23 +26,21 @@ class AbstractRosterViewController: CustomTableViewController, UISearchResultsUp
     
     fileprivate static let UPDATE_NOTIFICATION_NAME = Notification.Name("ROSTER_UPDATE");
     
-    var xmppService:XmppService!;
-    
     var searchController: UISearchController!;
     
     var roster: RosterProvider! {
         didSet {
             if oldValue != nil {
-                xmppService.unregisterEventHandler(oldValue!, for: PresenceModule.ContactPresenceChanged.TYPE, RosterModule.ItemUpdatedEvent.TYPE);
+                NotificationCenter.default.removeObserver(oldValue!);
             }
             if roster != nil {
-                xmppService.registerEventHandler(roster!, for: PresenceModule.ContactPresenceChanged.TYPE, RosterModule.ItemUpdatedEvent.TYPE);
+                NotificationCenter.default.addObserver(roster!, selector: #selector(RosterProviderAbstractBase.contactPresenceChanged(_:)), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
+                NotificationCenter.default.addObserver(roster!, selector: #selector(RosterProviderAbstractBase.rosterItemUpdated(_:)), name: DBRosterStore.ITEM_UPDATED, object: nil);
             }
         }
     }
     
     override func viewDidLoad() {
-        xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
         super.viewDidLoad()
         searchController = UISearchController(searchResultsController: nil);
         searchController.dimsBackgroundDuringPresentation = false;
@@ -79,9 +77,9 @@ class AbstractRosterViewController: CustomTableViewController, UISearchResultsUp
         let dbConnection = (UIApplication.shared.delegate as! AppDelegate).dbConnection!;
         switch rosterType {
         case .flat:
-            roster = RosterProviderFlat(xmppService: xmppService, dbConnection: dbConnection, order: sortOrder, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup,  updateNotificationName: RosterViewController.UPDATE_NOTIFICATION_NAME);
+            roster = RosterProviderFlat(dbConnection: dbConnection, order: sortOrder, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup,  updateNotificationName: RosterViewController.UPDATE_NOTIFICATION_NAME);
         case .grouped:
-            roster = RosterProviderGrouped(xmppService: xmppService, dbConnection: dbConnection, order: sortOrder, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup, updateNotificationName: RosterViewController.UPDATE_NOTIFICATION_NAME);
+            roster = RosterProviderGrouped(dbConnection: dbConnection, order: sortOrder, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup, updateNotificationName: RosterViewController.UPDATE_NOTIFICATION_NAME);
         }
     }
     
@@ -114,7 +112,7 @@ class AbstractRosterViewController: CustomTableViewController, UISearchResultsUp
             cell.statusLabel.text = item.account.stringValue;
             cell.avatarStatusView.setStatus(item.presence?.show);
             cell.avatarStatusView.backgroundColor = Appearance.current.systemBackground;
-            cell.avatarStatusView.updateAvatar(manager: xmppService.avatarManager, for: item.account, with: item.jid.bareJid, name: item.displayName, orDefault: xmppService.avatarManager.defaultAvatar);
+            cell.avatarStatusView.updateAvatar(manager: AvatarManager.instance, for: item.account, with: item.jid.bareJid, name: item.displayName, orDefault: AvatarManager.instance.defaultAvatar);
         }
         
         return cell;

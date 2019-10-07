@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, BaseChatViewControllerWithContextMenuAndToolbarDelegate, CachedViewControllerProtocol, UITableViewDataSource, EventHandler, BaseChatViewController_ShareImageExtension, BaseChatViewController_PreviewExtension {
+class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar, UITableViewDataSource, BaseChatViewController_ShareImageExtension, BaseChatViewController_PreviewExtension {
 
     static let MENTION_OCCUPANT = Notification.Name("groupchatMentionOccupant");
     
@@ -31,39 +31,33 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
             return self.navigationItem.titleView as! MucTitleView;
         }
     }
-    var room: Room?;
+    var room: DBRoom? {
+        get {
+            return self.chat as? DBRoom;
+        }
+        set {
+            self.chat = newValue;
+        }
+    }
 
     let log: Logger = Logger();
-
-    var dataSource: MucChatDataSource!;
-    var cachedDataSource: CachedViewDataSourceProtocol {
-        return dataSource as CachedViewDataSourceProtocol;
-    }
 
     @IBOutlet var shareButton: UIButton!;
     @IBOutlet var progressBar: UIProgressView!;
     var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
     var filePickerDelegate: BaseChatViewController_ShareFilePickerDelegate?;
 
-        lazy var loadChatInfo:DBStatement! = try? self.dbConnection.prepareStatement("SELECT name FROM chats WHERE account = :account AND jid = :jid");
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let params:[String:Any?] = ["account" : account, "jid" : jid.bareJid];
-        navigationItem.title = try! loadChatInfo.findFirst(params) { cursor in cursor["name"] } ?? jid.stringValue;
-
-        dataSource = MucChatDataSource(controller: self);
-        contextMenuDelegate = self;
-        scrollDelegate = self;
-        initialize();
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
         let mucModule: MucModule? = xmppService.getClient(forJid: account)?.modulesManager?.getModule(MucModule.ID);
-        room = mucModule?.roomsManager.getRoom(for: jid.bareJid);
+        room = mucModule?.roomsManager.getRoom(for: jid) as? DBRoom;
+        navigationItem.title = room?.name ?? jid.stringValue;
         
         titleView.name = navigationItem.title;
         let recognizer = UITapGestureRecognizer(target: self, action: #selector(MucChatViewController.roomInfoClicked));
@@ -71,24 +65,25 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
         self.navigationController?.navigationBar.addGestureRecognizer(recognizer);
 
         tableView.dataSource = self;
+        tableView.delegate = self;
         
         initSharing();
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(MucChatViewController.roomStatusChanged), name: MucEventHandler.ROOM_NAME_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(MucChatViewController.roomStatusChanged), name: MucEventHandler.ROOM_STATUS_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(MucChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(accountStateChanged), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil)
+
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        xmppService.registerEventHandler(self, for: MucModule.YouJoinedEvent.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
-        NotificationCenter.default.addObserver(self, selector: #selector(MucChatViewController.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(MucChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(accountStateChanged), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil)
-
+        
         self.updateTitleView();
         refreshRoomInfo(room!);
     }
 
     override func viewDidDisappear(_ animated: Bool) {
-        xmppService.unregisterEventHandler(self, for: MucModule.YouJoinedEvent.TYPE, MucModule.JoinRequestedEvent.TYPE, MucModule.RoomClosedEvent.TYPE);
-        NotificationCenter.default.removeObserver(self);
         super.viewDidDisappear(animated);
     }
 
@@ -104,46 +99,46 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return dataSource.numberOfMessages;
+        return dataSource.count;
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let item: MucChatViewItem = dataSource.getItem(for: indexPath) else {
-            return tableView.dequeueReusableCell(withIdentifier: "MucChatTableViewCellIncoming", for: indexPath)
-        }
-
-        var continuation = false;
-        if Settings.EnableNewUI.getBool() && (indexPath.row + 1) < dataSource.numberOfMessages {
-            if let prevItem = dataSource.getItem(for: IndexPath(row: indexPath.row + 1, section: 0)) {
-                continuation = prevItem.state.direction == item.state.direction && (abs(item.timestamp.timeIntervalSince(prevItem.timestamp)) < 30.0);
-            }
-        }
-        let incoming = item.nickname != self.room?.nickname;
-        var state = item.state!;
-        if !incoming {
-            switch state {
-            case .incoming_error:
-                state = .outgoing_error;
-            case .incoming_error_unread:
-                state = .outgoing_error_unread;
-            default:
-                state = .outgoing_delivered;
-            }
+        guard let dbItem = dataSource.getItem(at: indexPath.row) else {
+            return tableView.dequeueReusableCell(withIdentifier: "MucChatTableViewCellIncoming", for: indexPath);
         }
         
-        let id = Settings.EnableNewUI.getBool() ? (continuation ? "MucChatTableViewCellContinuation" : "MucChatTableViewCell") : (incoming ? "MucChatTableViewCellIncoming" : "MucChatTableViewCellOutgoing")
+        switch dbItem {
+        case let item as ChatMessage:
+            var continuation = false;
+            if Settings.EnableNewUI.getBool() && (indexPath.row + 1) < dataSource.count {
+                if let prevItem = dataSource.getItem(at:  indexPath.row + 1) {
+                    continuation = item.isMergeable(with: prevItem);
+                }
+            }
+                    
+            let id = Settings.EnableNewUI.getBool() ? (continuation ? "MucChatTableViewCellContinuation" : "MucChatTableViewCell") : (item.state.direction == .incoming ? "MucChatTableViewCellIncoming" : "MucChatTableViewCellOutgoing")
 
-        let cell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
-        cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-//        cell.nicknameLabel?.text = item.nickname;
-        if item.authorJid != nil {
-            cell.avatarView?.updateAvatar(manager: self.xmppService.avatarManager, for: self.account, with: item.authorJid!, name: item.nickname, orDefault: self.xmppService.avatarManager.defaultGroupchatAvatar);
-        } else {
-            cell.avatarView?.image = self.xmppService.avatarManager.defaultAvatar;
+            let cell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
+            cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+            //        cell.nicknameLabel?.text = item.nickname;
+            if item.authorJid != nil {
+                cell.avatarView?.updateAvatar(manager: AvatarManager.instance, for: self.account, with: item.authorJid!, name: item.authorNickname, orDefault: AvatarManager.instance.defaultGroupchatAvatar);
+            } else {
+                cell.avatarView?.image = self.xmppService.avatarManager.defaultAvatar;
+            }
+            cell.nicknameView?.text = item.authorNickname;
+            cell.set(message: item, downloader: downloadPreview(url:msgId:account:jid:));
+            cell.backgroundColor = Appearance.current.systemBackground;
+            return cell;
+        case let item as SystemMessage:
+            let cell: ChatTableViewSystemCell = tableView.dequeueReusableCell(withIdentifier: "MucChatTableViewSystemCell", for: indexPath) as! ChatTableViewSystemCell;
+            cell.set(item: item);
+            cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+            return cell;
+        default:
+            return tableView.dequeueReusableCell(withIdentifier: "MucChatTableViewCellIncoming", for: indexPath);
         }
-        cell.setValues(data: item.data, ts: item.timestamp, id: item.id, nickname: item.nickname, state: state, preview: item.preview, downloader: self.downloadPreview);
-        cell.backgroundColor = Appearance.current.systemBackground;
-        return cell;
+
     }
 
 
@@ -176,66 +171,10 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
             }
         }
     }
-    
-    func getTextOfSelectedRows(paths: [IndexPath], withTimestamps: Bool, handler: (([String]) -> Void)?) {
-        let items: [MucChatViewItem] = paths.map({ index in dataSource.getItem(for: index) }).filter({ (it) -> Bool in
-            it != nil;
-        }).map({ it -> MucChatViewItem in it! })
-            .sorted { (it1, it2) -> Bool in
-                it1.timestamp.compare(it2.timestamp) == .orderedAscending;
-        };
-        
-        guard items.count > 1 else {
-            let texts = items.map({ (it) -> String in
-                return it.data ?? "";
-            });
-            handler?(texts);
-            return;
-        }
-        
-        let withoutPrefix = Set(items.map({it in it.nickname ?? it.authorJid?.stringValue ?? ""})).count == 1;
-        
-        let formatter = DateFormatter();
-        formatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "dd.MM.yyyy jj:mm", options: 0, locale: NSLocale.current);
-        
-        var prevSender: String = "";
-        let texts = items.map { (it) -> String in
-            if withoutPrefix {
-                if withTimestamps {
-                    return "[\(formatter.string(from: it.timestamp))] \(it.data ?? "")"
-                } else {
-                    return it.data ?? "";
-                }
-            } else {
-                let sender = it.nickname ?? it.authorJid?.stringValue ?? "";
-                let prefix = (prevSender != sender) ?
-                    "\(it.state.direction == .incoming ? sender : "Me"):\n" : "";
-                prevSender = sender;
-                if withTimestamps {
-                    return "\(prefix)  [\(formatter.string(from: it.timestamp))] \(it.data ?? "")"
-                } else {
-                    return "\(prefix)  \(it.data ?? "")"
-                }
-            }
-        }
-        
-        print("got texts", texts);
-        handler?(texts);
-    }
-
-    @objc func newMessage(_ notification: NSNotification) {
-        guard ((notification.userInfo!["account"] as? BareJID) == account) && ((notification.userInfo!["sender"] as? BareJID) == jid.bareJid) else {
-            return;
-        }
-
-        let msgId = notification.userInfo!["msgId"] as! Int;
-        self.newItemAdded(id: msgId, timestamp: notification.userInfo!["timestamp"] as! Date);
-        xmppService.dbChatHistoryStore.markAsRead(for: account, with: jid.bareJid);
-    }
 
     @objc func avatarChanged(_ notification: NSNotification) {
         // TODO: adjust this to make it work properly with MUC
-        guard ((notification.userInfo?["jid"] as? BareJID) == jid.bareJid) else {
+        guard ((notification.userInfo?["jid"] as? BareJID) == jid) else {
             return;
         }
         DispatchQueue.main.async {
@@ -248,7 +187,9 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
     @objc func accountStateChanged(_ notification: Notification) {
         let account = BareJID(notification.userInfo!["account"]! as! String);
         if self.account == account {
-            updateTitleView();
+            DispatchQueue.main.async {
+                self.updateTitleView();
+            }
         }
     }
 
@@ -260,20 +201,7 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
             self.titleView.statusView.textColor = Appearance.current.navigationBarTextColor;
         }
     }
-
-    func updateItem(msgId: Int, handler: @escaping (BaseChatViewController_PreviewExtension_PreviewAwareItem) -> Void) {
-        DispatchQueue.main.async {
-//            self.dataSource.reset();
-//            self.tableView.reloadData();
-            if let indexPath = self.dataSource.getIndexPath(withId: msgId) {
-                if let item = self.dataSource.getItem(for: indexPath) {
-                    handler(item);
-                    self.tableView.reloadRows(at: [indexPath], with: .automatic);
-                }
-            }
-        }
-    }
-
+    
     @IBAction func sendClicked(_ sender: UIButton) {
         self.sendMessage();
     }
@@ -323,82 +251,20 @@ class MucChatViewController: BaseChatViewControllerWithContextMenuAndToolbar, Ba
         //self.navigationController?.pushViewController(settingsController, animated: true);
     }
     
-    func handle(event: Event) {
-        switch event {
-        case let e as MucModule.JoinRequestedEvent:
-            DispatchQueue.main.async {
-                self.refreshRoomInfo(e.room);
+    @objc func roomStatusChanged(_ notification: Notification) {
+        guard let room = notification.object as? DBRoom else {
+            return;
+        }
+        DispatchQueue.main.async {
+            guard self.room?.id == room.id else {
+                return;
             }
-        case let e as MucModule.YouJoinedEvent:
-            DispatchQueue.main.async {
-                self.refreshRoomInfo(e.room);
-            }
-        case let e as MucModule.RoomClosedEvent:
-            DispatchQueue.main.async {
-                self.refreshRoomInfo(e.room);
-            }
-        default:
-            break;
+            self.refreshRoomInfo(room);
         }
     }
 
     func refreshRoomInfo(_ room: Room) {
         titleView.state = room.state;
-    }
-    
-    class MucChatDataSource: CachedViewDataSource<MucChatViewItem> {
-
-        fileprivate let getMessagesStmt: DBStatement!;
-
-        weak var controller: MucChatViewController?;
-
-        init(controller: MucChatViewController) {
-            self.controller = controller;
-            self.getMessagesStmt = controller.xmppService.dbChatHistoryStore.getMessagesStatementForAccountAndJid();
-        }
-
-        override func getItemsCount() -> Int {
-            return controller!.xmppService.dbChatHistoryStore.countMessages(for: controller!.account, with: controller!.jid.bareJid);
-        }
-
-        override func loadData(afterMessageWithId msgId: Int?, offset: Int, limit: Int, forEveryItem: (Int, MucChatViewItem)->Void) {
-            controller!.xmppService.dbChatHistoryStore.msgAlreadyAddedStmt.dispatcher.sync {
-                let position = msgId != nil
-                    ? controller!.xmppService.dbChatHistoryStore.getMessagePosition(for: controller!.account, with: controller!.jid.bareJid, msgId: msgId!, inverted: true)
-                    : 0;
-                var off = position + offset;
-                if off < 0 {
-                    off = 0;
-                }
-                var idx = 0;
-                controller!.xmppService.dbChatHistoryStore.forEachMessage(stmt: getMessagesStmt, account: controller!.account, jid: controller!.jid.bareJid, limit: limit,
-                                                                          offset: off, forEach: { (cursor)-> Void in
-                                                                            forEveryItem(idx, MucChatViewItem(cursor: cursor));
-                                                                            idx = idx + 1;
-                });
-            }
-        }
-    }
-
-    open class MucChatViewItem: CachedViewDataSourceItem, BaseChatViewController_PreviewExtension_PreviewAwareItem {
-        let id: Int;
-        let nickname: String?;
-        let timestamp: Date;
-        let data: String?;
-        let authorJid: BareJID?;
-        var preview: String?;
-        let state: DBChatHistoryStore.State!;
-
-        init(cursor: DBCursor) {
-            id = cursor["id"]!;
-            nickname = cursor["author_nickname"];
-            timestamp = cursor["timestamp"]!;
-            data = cursor["data"];
-            authorJid = cursor["author_jid"];
-            preview = cursor["preview"];
-            state = DBChatHistoryStore.State(rawValue: cursor["state"]!)!;
-        }
-
     }
 
 }

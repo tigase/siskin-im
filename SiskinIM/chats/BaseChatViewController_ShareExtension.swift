@@ -33,7 +33,7 @@ protocol BaseChatViewController_ShareImageExtension: class {
     
     var xmppService: XmppService! { get }
     var account: BareJID! { get }
-    var jid: JID! { get }
+    var jid: BareJID! { get }
     
     
     func sendMessage(body: String, url: String?, preview: String?, completed: (()->Void)?);

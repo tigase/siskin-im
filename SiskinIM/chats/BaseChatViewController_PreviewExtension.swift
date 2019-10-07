@@ -20,24 +20,15 @@
 //
 
 import UIKit
+import TigaseSwift
 
 protocol BaseChatViewController_PreviewExtension {
-
-    var xmppService: XmppService! { get }
-    
-    func updateItem(msgId: Int, handler: @escaping (BaseChatViewController_PreviewExtension_PreviewAwareItem)->Void);
-    
-}
-
-protocol BaseChatViewController_PreviewExtension_PreviewAwareItem: class {
-
-    var preview: String? { get set }
     
 }
 
 extension BaseChatViewController_PreviewExtension {
     
-    func downloadPreview(url: URL, msgId: Int) {
+    func downloadPreview(url: URL, msgId: Int, account: BareJID, jid: BareJID) {
         guard Settings.MaxImagePreviewSize.getInt() != 0 else {
             return;
         }
@@ -46,16 +37,10 @@ extension BaseChatViewController_PreviewExtension {
             if mimeType?.hasPrefix("image/") ?? false && (size ?? Int64.max) < self.getImageDownloadSizeLimit() {
                 self.downloadImageFile(url: url, completion: { (key) in
                     let previewKey = key == nil ? nil : "preview:image:\(key!)";
-                    self.xmppService.dbChatHistoryStore.updatePreview(msgId: msgId, preview: previewKey ?? "", completion: { (msgId) in
-                        if key != nil {
-                            self.updateItem(msgId: msgId, handler: { (item) in
-                                item.preview = previewKey;
-                            })
-                        }
-                    })
+                    DBChatHistoryStore.instance.updateItem(for: account, with: jid, id: msgId, preview: previewKey ?? "");
                 })
             } else {
-                self.xmppService.dbChatHistoryStore.updatePreview(msgId: msgId, preview: "", completion: nil);
+                DBChatHistoryStore.instance.updateItem(for: account, with: jid, id: msgId, preview: "");
             }
         }
     }
