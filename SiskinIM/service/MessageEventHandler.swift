@@ -72,7 +72,7 @@ class MessageEventHandler: XmppServiceEventHandler {
         return (body, encryption, fingerprint);
     }
     
-    let events: [Event] = [MessageModule.MessageReceivedEvent.TYPE, MessageDeliveryReceiptsModule.ReceiptEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, MessageArchiveManagementModule.ArchivedMessageReceivedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, OMEMOModule.AvailabilityChangedEvent.TYPE];
+    let events: [Event] = [MessageModule.MessageReceivedEvent.TYPE, MessageDeliveryReceiptsModule.ReceiptEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, MessageArchiveManagementModule.ArchivedMessageReceivedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, OMEMOModule.AvailabilityChangedEvent.TYPE];
     
     init() {
     }
@@ -100,18 +100,10 @@ class MessageEventHandler: XmppServiceEventHandler {
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
             let account = e.sessionObject.userBareJid!;
             MessageEventHandler.syncMessages(for: account);
-            DBChatHistoryStore.instance.loadUnsentMessage(for: account, completionHandler: { (account, jid, data, stanzaId, encryption) in
-                    
-                var chat = DBChatStore.instance.getChat(for: account, with: jid);
-                if chat == nil {
-                    chat = DBChatStore.instance.open(for: account, chat: Chat(jid: JID(jid), thread: nil));
-                }
-                    
-                if let dbChat = chat as? DBChat {
-                    let url = data.starts(with: "http:") || data.starts(with: "https:") ? data : nil
-                    MessageEventHandler.sendMessage(chat: dbChat, body: data, url: data, stanzaId: stanzaId);
-                }
-            });
+            sendUnsentMessages(for: account);
+        case let e as StreamManagementModule.ResumedEvent:
+            let account = e.sessionObject.userBareJid!;
+            sendUnsentMessages(for: account);
         case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
             guard Settings.enableMessageCarbons.bool() else {
                 return;
@@ -285,6 +277,20 @@ class MessageEventHandler: XmppServiceEventHandler {
             omemoModule.encode(message: message, completionHandler: completionHandler!);
         }
 
+    fileprivate func sendUnsentMessages(for account: BareJID) {
+        DBChatHistoryStore.instance.loadUnsentMessage(for: account, completionHandler: { (account, jid, data, stanzaId, encryption) in
+                
+            var chat = DBChatStore.instance.getChat(for: account, with: jid);
+            if chat == nil {
+                chat = DBChatStore.instance.open(for: account, chat: Chat(jid: JID(jid), thread: nil));
+            }
+                
+            if let dbChat = chat as? DBChat {
+                let url = data.starts(with: "http:") || data.starts(with: "https:") ? data : nil
+                MessageEventHandler.sendMessage(chat: dbChat, body: data, url: data, stanzaId: stanzaId);
+            }
+        });
+    }
     
     fileprivate func calculateState(direction: MessageDirection, error: Bool, unread: Bool) -> MessageState {
         if direction == .incoming {

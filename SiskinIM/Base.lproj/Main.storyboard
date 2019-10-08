@@ -619,6 +619,7 @@
                                             <constraint firstAttribute="trailing" secondItem="Wud-KB-gIx" secondAttribute="trailing" constant="8" id="Q7o-dZ-m7q"/>
                                             <constraint firstItem="Usd-qW-q8K" firstAttribute="centerY" secondItem="tM8-yl-Xfw" secondAttribute="centerY" id="Sm2-66-rp4"/>
                                             <constraint firstItem="lXk-P5-gwH" firstAttribute="top" secondItem="HK7-Bq-Vwt" secondAttribute="top" id="StI-ry-xsy"/>
+                                            <constraint firstAttribute="trailing" secondItem="tM8-yl-Xfw" secondAttribute="trailing" constant="12" id="WlT-lO-esd"/>
                                             <constraint firstAttribute="height" id="X3C-2R-ann"/>
                                             <constraint firstItem="Usd-qW-q8K" firstAttribute="centerX" secondItem="tM8-yl-Xfw" secondAttribute="centerX" id="agE-5h-7xk"/>
                                             <constraint firstItem="hEk-n0-vGX" firstAttribute="centerY" secondItem="HK7-Bq-Vwt" secondAttribute="centerY" id="bBk-kK-qO0"/>
@@ -707,6 +708,7 @@
                         <outlet property="customToolbar" destination="J4D-LI-5Um" id="s6m-n8-BiY"/>
                         <outlet property="customToolbarHeightConstraint" destination="3zt-Oy-N2i" id="C6r-DW-dRm"/>
                         <outlet property="messageField" destination="tM8-yl-Xfw" id="M4U-3x-ViV"/>
+                        <outlet property="messageFieldTrailingConstraint" destination="WlT-lO-esd" id="pWP-7V-sYp"/>
                         <outlet property="placeholderView" destination="Usd-qW-q8K" id="9cr-sd-EvI"/>
                         <outlet property="progressBar" destination="lXk-P5-gwH" id="Y3e-lf-hkR"/>
                         <outlet property="sendButton" destination="Wud-KB-gIx" id="PO6-Ym-dpM"/>

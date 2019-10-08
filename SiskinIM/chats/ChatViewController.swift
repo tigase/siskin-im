@@ -278,7 +278,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
         }
         #if targetEnvironment(simulator)
         #else
-        let jingleSupported = JingleManager.instance.support(for: self.jid.withoutResource, on: self.account);
+        let jingleSupported = JingleManager.instance.support(for: JID(self.jid), on: self.account);
         var count = jingleSupported.contains(.audio) ? 1 : 0;
         if jingleSupported.contains(.video) {
             count = count + 1;
@@ -312,11 +312,11 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     #if targetEnvironment(simulator)
     #else
     @objc func audioCall() {
-        VideoCallController.call(jid: self.jid.bareJid, from: self.account, withAudio: true, withVideo: false, sender: self);
+        VideoCallController.call(jid: self.jid, from: self.account, withAudio: true, withVideo: false, sender: self);
     }
     
     @objc func videoCall() {
-        VideoCallController.call(jid: self.jid.bareJid, from: self.account, withAudio: true, withVideo: true, sender: self);
+        VideoCallController.call(jid: self.jid, from: self.account, withAudio: true, withVideo: true, sender: self);
     }
     #endif
     

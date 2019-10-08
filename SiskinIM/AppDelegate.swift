@@ -46,7 +46,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         return DBConnection.main;
     }
 //    var callProvider: CXProvider?;
-    fileprivate var defaultKeepOnlineOnAwayTime = TimeInterval(3 * 60);
+    fileprivate var defaultKeepOnlineOnAwayTime = TimeInterval(27);
     fileprivate var keepOnlineOnAwayTimer: TigaseSwift.Timer?;
     
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
@@ -112,19 +112,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
         xmppService.applicationState = .inactive;
-        
+
         self.keepOnlineOnAwayTimer?.execute();
         self.keepOnlineOnAwayTimer = nil;
-        
+
         var taskId = UIBackgroundTaskIdentifier.invalid;
         taskId = application.beginBackgroundTask {
             print("keep online on away background task expired", taskId);
             self.applicationKeepOnlineOnAwayFinished(application, taskId: taskId);
         }
-        
-        let timeout = min(defaultKeepOnlineOnAwayTime, application.backgroundTimeRemaining - 15);
+        print("keep online task started", taskId);
+        print("keep online test", self.defaultKeepOnlineOnAwayTime, application.backgroundTimeRemaining, application.backgroundTimeRemaining - 6);
+        let timeout = min(self.defaultKeepOnlineOnAwayTime, application.backgroundTimeRemaining) - 6;
         print("keep online on away background task", taskId, "started at", NSDate(), "for", timeout, "s");
-        
         self.keepOnlineOnAwayTimer = Timer(delayInSeconds: timeout, repeats: false, callback: {
             self.applicationKeepOnlineOnAwayFinished(application, taskId: taskId);
         });
@@ -136,12 +136,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         self.keepOnlineOnAwayTimer = nil;
         print("keep online timer finished at", taskId, NSDate());
         if (self.xmppService.backgroundTaskFinished()) {
-            _ = Timer(delayInSeconds: 6, repeats: false, callback: {
+            _ = Timer(delayInSeconds: 2, repeats: false, callback: {
                 print("finshed disconnection of push accounts", taskId);
+                print("keep online timer endBackgroundTask for", taskId, application.backgroundTimeRemaining);
                 application.endBackgroundTask(taskId);
             });
         } else {
             // mark background task as ended
+            print("keep online timer endBackgroundTask for", taskId, application.backgroundTimeRemaining);
             application.endBackgroundTask(taskId);
         }
     }
@@ -815,6 +817,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         content.body = "It was not possible to send \(count) messages. Open the app to retry";
         content.categoryIdentifier = "UNSENT_MESSAGES";
         content.threadIdentifier = "unsent-messages";
+        content.sound = .default;
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
 

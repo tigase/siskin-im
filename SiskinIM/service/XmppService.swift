@@ -46,8 +46,11 @@ open class XmppService: Logger, EventHandler {
     fileprivate var fetchClientsWaitingForReconnection: [BareJID] = [];
     fileprivate var fetchStart = NSDate();
         
+    #if targetEnvironment(simulator)
     fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler(), PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler()];
-
+    #else
+    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler(), PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), JingleManager.instance];
+    #endif
     
     open var avatarManager: AvatarManager! {
         return AvatarManager.instance;
@@ -72,7 +75,7 @@ open class XmppService: Logger, EventHandler {
     
     fileprivate let reachability: Reachability;
 
-    fileprivate let dispatcher: QueueDispatcher = QueueDispatcher(label: "xmpp_service_clients")
+    fileprivate let dispatcher: QueueDispatcher = QueueDispatcher(label: "xmpp_service_clients", attributes: [.concurrent]);
     fileprivate var clients = [BareJID:XMPPClient]();
     
     fileprivate let dnsSrvResolverCache: DNSSrvResolverCache;
@@ -115,12 +118,6 @@ open class XmppService: Logger, EventHandler {
         
         super.init();
         
-        #if targetEnvironment(simulator)
-        #else
-        let jingleManager = JingleManager.instance;
-        jingleManager.xmppService = self;
-        self.registerEventHandler(jingleManager, forEvents: jingleManager.events);
-        #endif
         NotificationCenter.default.addObserver(self, selector: #selector(XmppService.accountConfigurationChanged), name: AccountManager.ACCOUNT_CONFIGURATION_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(XmppService.connectivityChanged), name: Reachability.CONNECTIVITY_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(XmppService.settingsChanged), name: Settings.SETTINGS_CHANGED, object: nil);
@@ -135,7 +132,7 @@ open class XmppService: Logger, EventHandler {
     }
     
     open func updateXmppClientInstance(forJid userJid: BareJID) {
-        dispatcher.sync {
+        dispatcher.sync(flags: .barrier) {
             self.updateXmppClientInstanceInternal(forJid: userJid);
         }
     }
@@ -532,25 +529,36 @@ open class XmppService: Logger, EventHandler {
         guard applicationState != .active else {
             return false;
         }
+        // FIXME: this will fail if there is no connected client!! as task will end before async is called!!
+        let group = DispatchGroup();
+        group.enter();
+        let delegate = UIApplication.shared.delegate as? AppDelegate;
+        DBChatHistoryStore.instance.countUnsentMessages() { unsent in
+            guard unsent > 0  else {
+                group.leave();
+                return;
+            }
+            
+            delegate?.notifyUnsentMessages(count: unsent);
+            group.leave();
+        }
         var stopping = 0;
+        // we should handle this concurrently!!
         dispatcher.sync {
-            for client in clients.values {
-                if client.state == .connected && client.pushNotificationsEnabled {
-                    // we need to close connection so that push notifications will be delivered to us!
-                    // this is in generic case, some severs may have optimizations to improve this
-                    client.disconnect();
-                    stopping += 1;
+            for client in self.clients.values {
+                group.enter();
+                self.dispatcher.async {
+                    if client.state == .connected && client.pushNotificationsEnabled {
+                        // we need to close connection so that push notifications will be delivered to us!
+                        // this is in generic case, some severs may have optimizations to improve this
+                        client.disconnect();
+                        stopping += 1;
+                    }
+                    group.leave();
                 }
             }
         }
-        DBChatHistoryStore.instance.countUnsentMessages() { unsent in
-            guard unsent > 0  else {
-                return;
-            }
-            DispatchQueue.main.async {
-                (UIApplication.shared.delegate as? AppDelegate)?.notifyUnsentMessages(count: unsent);
-            }
-        }
+        group.wait();
         return stopping > 0;
     }
     

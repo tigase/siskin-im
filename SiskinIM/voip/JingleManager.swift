@@ -25,7 +25,7 @@ import WebRTC
 
 #if targetEnvironment(simulator)
 #else
-class JingleManager: JingleSessionManager, EventHandler {
+class JingleManager: JingleSessionManager, XmppServiceEventHandler {
     
     static let instance = JingleManager();
     
@@ -36,7 +36,6 @@ class JingleManager: JingleSessionManager, EventHandler {
     }();
     let events: [Event] = [JingleModule.JingleEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE];
     
-    weak var xmppService: XmppService?;
     fileprivate var connections: [Session] = [];
     
     let dispatcher = QueueDispatcher(label: "jingleEventHandler");
@@ -131,7 +130,7 @@ class JingleManager: JingleSessionManager, EventHandler {
     }
     
     func support(for jid: JID, on account: BareJID) -> Set<ContentType> {
-        guard let client = xmppService?.getClient(forJid: account), let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID) else {
+        guard let client = XmppService.instance.getClient(forJid: account), let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID) else {
             return [];
         }
         
@@ -141,13 +140,13 @@ class JingleManager: JingleSessionManager, EventHandler {
             presenceModule.presenceStore.getPresences(for: jid.bareJid)?.values.filter({ (p) -> Bool in
                 return (p.type ?? .available) == .available;
             }).forEach({ (p) in
-                guard let node = p.capsNode, let f = xmppService?.dbCapsCache.getFeatures(for: node) else {
+                guard let node = p.capsNode, let f = XmppService.instance.dbCapsCache.getFeatures(for: node) else {
                     return;
                 }
                 features.append(contentsOf: f);
             })
         } else {
-            guard let p = presenceModule.presenceStore.getPresence(for: jid), (p.type ?? .available) == .available, let node = p.capsNode, let f = xmppService?.dbCapsCache.getFeatures(for: node) else {
+            guard let p = presenceModule.presenceStore.getPresence(for: jid), (p.type ?? .available) == .available, let node = p.capsNode, let f = XmppService.instance.dbCapsCache.getFeatures(for: node) else {
                 return [];
             }
             features.append(contentsOf: f);

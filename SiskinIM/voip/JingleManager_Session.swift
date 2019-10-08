@@ -56,7 +56,7 @@ extension JingleManager {
         
         required init(account: BareJID, jid: JID, sid: String? = nil, role: Jingle.Content.Creator) {
             self.account = account;
-            self.client = JingleManager.instance.xmppService?.getClient(forJid: account);
+            self.client = XmppService.instance.getClient(forJid: account);
             self.jid = jid;
             self.sid = sid ?? "";
             self.role = role;
