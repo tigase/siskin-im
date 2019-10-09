@@ -525,11 +525,10 @@ open class XmppService: Logger, EventHandler {
         }
     }
     
-    open func backgroundTaskFinished() -> Bool {
+    open func backgroundTaskFinished() {
         guard applicationState != .active else {
-            return false;
+            return;
         }
-        // FIXME: this will fail if there is no connected client!! as task will end before async is called!!
         let group = DispatchGroup();
         group.enter();
         let delegate = UIApplication.shared.delegate as? AppDelegate;
@@ -551,15 +550,18 @@ open class XmppService: Logger, EventHandler {
                     if client.state == .connected && client.pushNotificationsEnabled {
                         // we need to close connection so that push notifications will be delivered to us!
                         // this is in generic case, some severs may have optimizations to improve this
-                        client.disconnect();
+                        client.disconnect() {
+                            print("leaving group by", client.sessionObject.userBareJid!);
+                            group.leave();
+                        }
                         stopping += 1;
+                    } else {
+                        group.leave();
                     }
-                    group.leave();
                 }
             }
         }
         group.wait();
-        return stopping > 0;
     }
     
     open func preformFetch(for account: BareJID? = nil, _ completionHandler: @escaping (UIBackgroundFetchResult)->Void) {

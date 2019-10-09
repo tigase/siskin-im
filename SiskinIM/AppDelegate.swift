@@ -45,9 +45,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     var dbConnection:DBConnection! {
         return DBConnection.main;
     }
-//    var callProvider: CXProvider?;
-    fileprivate var defaultKeepOnlineOnAwayTime = TimeInterval(27);
-    fileprivate var keepOnlineOnAwayTimer: TigaseSwift.Timer?;
     
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         RTCInitFieldTrialDictionary([:]);
@@ -107,45 +104,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
     }
 
+    private var backgroundTaskId = UIBackgroundTaskIdentifier.invalid;
+    
     func applicationDidEnterBackground(_ application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
         xmppService.applicationState = .inactive;
 
-        self.keepOnlineOnAwayTimer?.execute();
-        self.keepOnlineOnAwayTimer = nil;
-
-        var taskId = UIBackgroundTaskIdentifier.invalid;
-        taskId = application.beginBackgroundTask {
-            print("keep online on away background task expired", taskId);
-            self.applicationKeepOnlineOnAwayFinished(application, taskId: taskId);
+        backgroundTaskId = application.beginBackgroundTask {
+            print("keep online on away background task expired", self.backgroundTaskId);
+            self.applicationKeepOnlineOnAwayFinished(application);
         }
-        print("keep online task started", taskId);
-        print("keep online test", self.defaultKeepOnlineOnAwayTime, application.backgroundTimeRemaining, application.backgroundTimeRemaining - 6);
-        let timeout = min(self.defaultKeepOnlineOnAwayTime, application.backgroundTimeRemaining) - 6;
-        print("keep online on away background task", taskId, "started at", NSDate(), "for", timeout, "s");
-        self.keepOnlineOnAwayTimer = Timer(delayInSeconds: timeout, repeats: false, callback: {
-            self.applicationKeepOnlineOnAwayFinished(application, taskId: taskId);
-        });
+        print("keep online task started", backgroundTaskId, Date());
     }
 
-    func applicationKeepOnlineOnAwayFinished(_ application: UIApplication, taskId: UIBackgroundTaskIdentifier) {
-        // make sure timer is cancelled
-        self.keepOnlineOnAwayTimer?.cancel();
-        self.keepOnlineOnAwayTimer = nil;
-        print("keep online timer finished at", taskId, NSDate());
-        if (self.xmppService.backgroundTaskFinished()) {
-            _ = Timer(delayInSeconds: 2, repeats: false, callback: {
-                print("finshed disconnection of push accounts", taskId);
-                print("keep online timer endBackgroundTask for", taskId, application.backgroundTimeRemaining);
-                application.endBackgroundTask(taskId);
-            });
-        } else {
-            // mark background task as ended
-            print("keep online timer endBackgroundTask for", taskId, application.backgroundTimeRemaining);
-            application.endBackgroundTask(taskId);
+    func applicationKeepOnlineOnAwayFinished(_ application: UIApplication) {
+        let taskId = backgroundTaskId;
+        guard taskId != .invalid else {
+            return;
         }
+        backgroundTaskId = .invalid;
+        print("keep online task expired at", taskId, NSDate());
+        self.xmppService.backgroundTaskFinished();
+        print("keep online calling end background task", taskId, NSDate());
+        application.endBackgroundTask(taskId);
     }
     
     func applicationWillEnterForeground(_ application: UIApplication) {
@@ -153,9 +136,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             Appearance.sync();
         }
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
-        //xmppService.applicationState = .active;
-        //self.keepOnlineOnAwayTimer?.execute();
-        //self.keepOnlineOnAwayTimer = nil;
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
             let toDiscard = notifications.filter({(notification) in  notification.request.content.categoryIdentifier == "MESSAGE_NO_SENDER" || notification.request.content.categoryIdentifier == "UNSENT_MESSAGES"}).map({ (notiication) -> String in
                 return notiication.request.identifier;
@@ -171,9 +151,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
         xmppService.applicationState = .active;
-        self.keepOnlineOnAwayTimer?.execute();
-        self.keepOnlineOnAwayTimer = nil;
-        
+        applicationKeepOnlineOnAwayFinished(application);
+
         self.updateApplicationIconBadgeNumber(completionHandler: nil);
     }
 
