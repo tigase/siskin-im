@@ -269,9 +269,7 @@ class Appearance {
     }
         
     func update(seachBar: UISearchBar) {
-        seachBar.barStyle = self.navigationBarStyle;
-        seachBar.tintColor = self.navigationBarTintColor;
-        seachBar.barTintColor = self.controlBackgroundColor;
+        seachBar.isTranslucent = false;
         seachBar.setNeedsLayout();
         seachBar.setNeedsDisplay();
 //        seachBar.subviews.forEach { (subview1) in

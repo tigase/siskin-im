@@ -47,7 +47,6 @@ class AbstractRosterViewController: CustomTableViewController, UISearchResultsUp
         searchController.searchResultsUpdater = self;
         searchController.searchBar.searchBarStyle = .prominent;
         
-        Appearance.current.update(seachBar: self.searchController.searchBar);
         navigationItem.searchController = self.searchController;
         self.definesPresentationContext = true;
         tableView.rowHeight = 48;//UITableViewAutomaticDimension;
@@ -68,6 +67,7 @@ class AbstractRosterViewController: CustomTableViewController, UISearchResultsUp
         reloadData();
         NotificationCenter.default.addObserver(self, selector: #selector(RosterViewController.reloadData), name: AvatarManager.AVATAR_CHANGED, object: nil);
         super.viewWillAppear(animated);
+        navigationController?.view.backgroundColor = Appearance.current.controlBackgroundColor;
         Appearance.current.update(seachBar: searchController.searchBar);
     }
     

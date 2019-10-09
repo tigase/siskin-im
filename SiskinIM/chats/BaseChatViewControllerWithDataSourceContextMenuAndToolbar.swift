@@ -44,6 +44,8 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         items.append(UIMenuItem(title: "More..", action: #selector(ChatTableViewCell.actionMore(_:))));
         UIMenuController.shared.menuItems = items;
         
+        customToolbar?.barStyle = Appearance.current.isDark ? .black : .default;
+        
         super.viewWillAppear(animated);
         NotificationCenter.default.addObserver(self, selector: #selector(showEditToolbar), name: NSNotification.Name("tableViewCellShowEditToolbar"), object: nil);
     }
