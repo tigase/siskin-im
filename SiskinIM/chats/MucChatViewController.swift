@@ -121,10 +121,14 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             let cell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
             cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
             //        cell.nicknameLabel?.text = item.nickname;
-            if item.authorJid != nil {
-                cell.avatarView?.updateAvatar(manager: AvatarManager.instance, for: self.account, with: item.authorJid!, name: item.authorNickname, orDefault: AvatarManager.instance.defaultGroupchatAvatar);
-            } else {
-                cell.avatarView?.image = self.xmppService.avatarManager.defaultAvatar;
+            if cell.avatarView != nil {
+                if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
+                    cell.avatarView?.set(name: item.authorNickname, avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
+                } else if let nickname = item.authorNickname, let photoHash = self.room?.presences[nickname]?.presence.vcardTempPhoto {
+                    cell.avatarView?.set(name: item.authorNickname, avatar: AvatarManager.instance.avatar(withHash: photoHash), orDefault: AvatarManager.instance.defaultAvatar);
+                } else {
+                    cell.avatarView?.set(name: item.authorNickname, avatar: nil, orDefault: AvatarManager.instance.defaultAvatar);
+                }
             }
             cell.nicknameView?.text = item.authorNickname;
             cell.set(message: item, downloader: downloadPreview(url:msgId:account:jid:));

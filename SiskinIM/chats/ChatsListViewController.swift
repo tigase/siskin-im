@@ -103,7 +103,7 @@ class ChatsListViewController: CustomTableViewController {
             let xmppClient = self.xmppService.getClient(forJid: item.account);
             switch item {
             case let room as DBRoom:
-                cell.avatarStatusView.updateAvatar(manager: self.xmppService.avatarManager, for: item.account, with: room.roomJid, name: nil, orDefault: self.xmppService.avatarManager.defaultGroupchatAvatar);
+                cell.avatarStatusView.set(name: nil, avatar: AvatarManager.instance.avatar(for: room.roomJid, on: room.account), orDefault: AvatarManager.instance.defaultGroupchatAvatar);
                 cell.avatarStatusView.setStatus(room.state == .joined ? Presence.Show.online : nil);
                 cell.nameLabel.text = room.name ?? item.jid.stringValue;
             default:
@@ -111,7 +111,7 @@ class ChatsListViewController: CustomTableViewController {
                 let rosterItem = rosterModule?.rosterStore.get(for: item.jid);
                 let name = rosterItem?.name ?? item.jid.bareJid.stringValue;
                 cell.nameLabel.text = name;
-                cell.avatarStatusView.updateAvatar(manager: self.xmppService.avatarManager, for: item.account, with: item.jid.bareJid, name: name, orDefault: self.xmppService.avatarManager.defaultAvatar);
+                cell.avatarStatusView.set(name: name, avatar: AvatarManager.instance.avatar(for: item.jid.bareJid, on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
                 let presenceModule: PresenceModule? = xmppClient?.modulesManager.getModule(PresenceModule.ID);
                 let presence = presenceModule?.presenceStore.getBestPresence(for: item.jid.bareJid);
                 cell.avatarStatusView.setStatus(presence?.show);

@@ -85,7 +85,13 @@ class MucChatOccupantsTableViewController: CustomTableViewController {
 
         let occupant = participants[indexPath.row];
         cell.nicknameLabel.text = occupant.nickname;
-        cell.avatarStatusView.updateAvatar(manager: self.xmppService.avatarManager, for: account, with: occupant.jid?.bareJid, name: occupant.nickname, orDefault: xmppService.avatarManager.defaultAvatar);
+        if let jid = occupant.jid {
+            cell.avatarStatusView.set(name: occupant.nickname, avatar: AvatarManager.instance.avatar(for: jid.bareJid, on: self.account), orDefault: AvatarManager.instance.defaultAvatar);
+        } else if let photoHash = occupant.presence.vcardTempPhoto {
+            cell.avatarStatusView.set(name: occupant.nickname, avatar: AvatarManager.instance.avatar(withHash: photoHash), orDefault: AvatarManager.instance.defaultAvatar);
+        } else {
+            cell.avatarStatusView.set(name: occupant.nickname, avatar: nil, orDefault: AvatarManager.instance.defaultAvatar);
+        }
         cell.avatarStatusView.setStatus(occupant.presence.show);
         cell.statusLabel.text = occupant.presence.status;
         

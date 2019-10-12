@@ -24,7 +24,7 @@ import TigaseSwift
 
 class AvatarView: UIImageView {
     
-    var name: String? {
+    private var name: String? {
         didSet {
             if let parts = name?.uppercased().components(separatedBy: CharacterSet.letters.inverted) {
                 let first = parts.first?.first;
@@ -55,23 +55,23 @@ class AvatarView: UIImageView {
 //    }
     fileprivate(set) var initials: String?;
     
-    func updateAvatar(manager avatarManager: AvatarManager, for account: BareJID, with: BareJID?, name: String?, orDefault defAvatar: UIImage) {
-        if self.name != name {
-            self.name = name;
-        }
-        if let jid = with, let avatar = avatarManager.getAvatar(for: jid, account: account, orDefault: nil) {
+    func set(name: String?, avatar: UIImage?, orDefault defAvatar: UIImage) {
+        if avatar != nil {
             self.image = avatar;
-        } else if let initials = self.initials {
-            self.image = self.prepareInitialsAvatar(for: initials);
+        } else if self.name != nil {
+            if self.name != name {
+                self.name = name;
+            }
+            if let initials = self.initials {
+                self.image = self.prepareInitialsAvatar(for: initials);
+            } else {
+                 self.image = defAvatar;
+            }
         } else {
-            self.image = defAvatar;
+             self.image = defAvatar;
         }
     }
-    
-    func resetAvatar() {
-        self.image = nil;
-    }
-    
+        
     func prepareInitialsAvatar(for text: String) -> UIImage {
         let scale = UIScreen.main.scale;
         var size = self.bounds.size;

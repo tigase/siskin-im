@@ -347,7 +347,7 @@ class AccountSettingsViewController: CustomTableViewController {
     
     
     func update(vcard: VCard?) {
-        avatarView.image = AvatarManager.instance.getAvatar(for: account, account: account, orDefault: AvatarManager.instance.defaultAvatar);
+        avatarView.image = AvatarManager.instance.avatar(for: account, on: account) ?? AvatarManager.instance.defaultAvatar;
         
         if let fn = vcard?.fn {
             fullNameTextView.text = fn;

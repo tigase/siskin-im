@@ -26,200 +26,185 @@ import TigaseSwift
 open class AvatarManager {
     
     public static let AVATAR_CHANGED = Notification.Name("messengerAvatarChanged");
+    public static let AVATAR_FOR_HASH_CHANGED = Notification.Name("avatarForHashChanged")
     public static let instance = AvatarManager(store: AvatarStore());
     
     var defaultAvatar: UIImage;
     var defaultGroupchatAvatar: UIImage;
-    var store: AvatarStore;
-    fileprivate var cache = NSCache<NSString, AvatarHolder>();
+    fileprivate let store: AvatarStore;
+    fileprivate var dispatcher = QueueDispatcher(label: "avatar_manager", attributes: .concurrent);
+    private var cache: [BareJID: AccountAvatarHashes] = [:];
 
     public init(store: AvatarStore) {
         defaultAvatar = UIImage(named: Appearance.current.isDark ? "defaultAvatarDark" : "defaultAvatarLight")!;
         defaultGroupchatAvatar = UIImage(named: Appearance.current.isDark ? "defaultGroupchatAvatarDark" : "defaultGroupchatAvatarLight")!;
-        cache.countLimit = 20;
-        cache.totalCostLimit = 20 * 1024 * 1024;
         self.store = store;
         NotificationCenter.default.addObserver(self, selector: #selector(AvatarManager.vcardUpdated), name: DBVCardsCache.VCARD_UPDATED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(appearanceChanged), name: Appearance.CHANGED, object: nil);
     }
     
-    open func getAvatar(for jid:BareJID, account:BareJID, orDefault: UIImage?) -> UIImage? {
-        let key = createKey(jid: jid);
-        let val = cache.object(forKey: key as NSString);
-        if val?.beginContentAccess() ?? false {
-            defer {
-                val?.endContentAccess();
+    open func avatar(for jid: BareJID, on account: BareJID) -> UIImage? {
+        return dispatcher.sync(flags: .barrier) {
+            if let hash = self.avatars(on: account).avatarHash(for: jid) {
+                return store.avatar(for: hash);
             }
-            return val!.image ?? orDefault;
-        }
-        
-        if let image = loadAvatar(for: jid, on: account) {
-            self.cache.setObject(AvatarHolder(image: image), forKey: key as NSString);
-            return image;
-        } else {
-            self.cache.setObject(AvatarHolder.EMPTY, forKey: key as NSString);
-            return orDefault;
+            return nil;
         }
     }
-        
-    func updateAvatarHashFromVCard(account: BareJID, for jid: BareJID, photoHash: String?) {
-        guard photoHash != nil else {
+    
+    open func hasAvatar(withHash hash: String) -> Bool {
+        return store.hasAvatarFor(hash: hash);
+    }
+    
+    open func avatar(withHash hash: String) -> UIImage? {
+        return store.avatar(for: hash);
+    }
+    
+    open func storeAvatar(data: Data) -> String {
+        let hash = Digest.sha1.digest(toHex: data)!;
+        self.store.storeAvatar(data: data, for: hash);
+        NotificationCenter.default.post(name: AvatarManager.AVATAR_FOR_HASH_CHANGED, object: hash);
+        return hash;
+    }
+    
+    open func updateAvatar(hash: String, forType type: AvatarType, forJid jid: BareJID, on account: BareJID) {
+        dispatcher.async(flags: .barrier) {
+            let oldHash = self.store.avatarHash(for: jid, on: account)[type];
+            if oldHash == nil || oldHash! != hash {
+                self.store.updateAvatar(hash: hash, type: type, for: jid, on: account, completionHandler: {
+                    self.dispatcher.async(flags: .barrier) {
+                        self.avatars(on: account).invalidateAvatarHash(for: jid);
+                    }
+                });
+            }
+        }
+    }
+    
+    open func avatarHashChanged(for jid: BareJID, on account: BareJID, type: AvatarType, hash: String) {
+        if hasAvatar(withHash: hash) {
+            updateAvatar(hash: hash, forType: type, forJid: jid, on: account);
+        } else {
+            switch type {
+            case .vcardTemp:
+                XmppService.instance.refreshVCard(account: account, for: jid, onSuccess: nil, onError: nil);
+            case .pepUserAvatar:
+                self.retrievePepUserAvatar(for: jid, on: account, hash: hash);
+            }
+        }
+    }
+    
+    @objc func vcardUpdated(_ notification: Notification) {
+        guard let vcardItem = notification.object as? DBVCardsCache.VCardItem else {
             return;
         }
-        
-        DispatchQueue.global(qos: .background).async() {
-            guard !self.store.isAvatarAvailable(hash: photoHash!) else {
+
+        DispatchQueue.global().async {
+            guard let photo = vcardItem.vcard.photos.first else {
                 return;
             }
-        
-            XmppService.instance.dbVCardsCache.fetchPhoto(for: jid) { (photoData) in
-                let hash = Digest.sha1.digest(toHex: photoData);
-                
-                if hash != photoHash {
-                    XmppService.instance.refreshVCard(account: account, for: jid, onSuccess: { (vcard) in
-                        
-                    }, onError: { (errorCondition) in
-                        let key = self.createKey(jid: jid);
-                        self.cache.removeObject(forKey: key as NSString);
-                    });
-                } else if hash != nil {
-                    self.store.storeAvatar(data: photoData!, hash: hash!);
-                    self.notifyAvatarChanged(hash: hash!, type: .vcardTemp, for: jid, on: account);
+
+            AvatarManager.fetchData(photo: photo) { data in
+                guard data != nil else {
+                    return;
                 }
+
+                let hash = self.storeAvatar(data: data!);
+                self.updateAvatar(hash: hash, forType: .vcardTemp, forJid: vcardItem.jid, on: vcardItem.account);
             }
-        }
-    }
-    
-    func updateAvatarHashFromUserAvatar(account: BareJID, for jid: BareJID, photoHash: String?) {
-        DispatchQueue.global(qos: .background).async() {
-            guard photoHash != nil else {
-                self.notifyAvatarChanged(hash: nil, type: .pepUserAvatar, for: jid, on: account);
-                return;
-            }
-            guard !self.store.isAvatarAvailable(hash: photoHash!) else {
-                return;
-            }
-            self.retrievePepUserAvatar(for: jid, on: account, photoHash: photoHash!);
         }
     }
 
-    func loadAvatar(for jid: BareJID, on account: BareJID) -> UIImage? {
-        let hashes = store.getAvatarHashes(for: jid, on: account);
-        if let hash = hashes[AvatarType.pepUserAvatar] {
-            if let image = store.getAvatar(hash: hash) {
-                return image;
-            }
-            DispatchQueue.global(qos: .background).async {
-                self.retrievePepUserAvatar(for: jid, on: account, photoHash: hash);
-            }
-        }
-        if let hash = hashes[AvatarType.vcardTemp] {
-            if let image = store.getAvatar(hash: hash) {
-                return image;
-            }
-            XmppService.instance.dbVCardsCache.fetchPhoto(for: jid) { (data) in
-                if data != nil {
-                    self.store.storeAvatar(data: data!, hash: hash);
-                    self.notifyAvatarChanged(hash: hash, type: .vcardTemp, for: jid, on: account);
-                }
-            }
-            return store.getAvatar(hash: hash);
-        }
-        
-        return nil;
-    }
-
-    func retrievePepUserAvatar(for jid: BareJID, on account: BareJID, photoHash: String) {
-        if let pepUserAvatarModule: PEPUserAvatarModule = XmppService.instance.getClient(forJid: account)?.modulesManager.getModule(PEPUserAvatarModule.ID) {
-            pepUserAvatarModule.retrieveAvatar(from: jid, itemId: photoHash, onSuccess: { (jid, hash, photoData) in
-                DispatchQueue.global(qos: .background).async {
-                    guard photoData != nil else  {
-                        self.notifyAvatarChanged(hash: nil, type: .pepUserAvatar, for: jid, on: account);
-                        return;
-                    }
-                    self.store.storeAvatar(data: photoData!, hash: hash);
-                    self.notifyAvatarChanged(hash: hash, type: .pepUserAvatar, for: jid, on: account);
-                }
-                }, onError: nil);
-        }
-    }
-    
-    @objc func vcardUpdated(_ notification: NSNotification) {
-        if let jid = notification.userInfo?["jid"] as? BareJID, let account = notification.userInfo?["account"] as? BareJID {
-            XmppService.instance.dbVCardsCache.fetchPhoto(for: jid) { (data) in
-                let hash = Digest.sha1.digest(toHex: data);
-                if data != nil {
-                    self.store.storeAvatar(data: data!, hash: hash!);
-                }
-                self.notifyAvatarChanged(hash: hash, type: .vcardTemp, for: jid, on: account);
-            }
-        }
-    }
-    
-    func notifyAvatarChanged(hash: String?, type: AvatarType, for jid: BareJID, on account: BareJID) {
-        self.store.updateAvatar(hash: hash, type: type, for: jid, on: account) {
-            let key = self.createKey(jid: jid);
-            self.cache.removeObject(forKey: key as NSString);
-            NotificationCenter.default.post(name: AvatarManager.AVATAR_CHANGED, object: nil, userInfo: ["jid": jid, "account": account]);
-        }
-    }
-    
-    func clearCache() {
-        cache.removeAllObjects();
-    }
-    
-    fileprivate func createKey(jid: BareJID) -> String {
-        return jid.stringValue.lowercased();
-    }
-    
     @objc func appearanceChanged(_ notification: Notification) {
         self.defaultAvatar = UIImage(named: Appearance.current.isDark ? "defaultAvatarDark" : "defaultAvatarLight")!;
         self.defaultGroupchatAvatar = UIImage(named: Appearance.current.isDark ? "defaultGroupchatAvatarDark" : "defaultGroupchatAvatarLight")!;
-        self.cache.removeAllObjects();
     }
     
-    fileprivate class AvatarHolder: NSDiscardableContent {
-        
-        fileprivate static let EMPTY = AvatarHolder(image: nil);
-        
-        var counter = 0;
-        var image: UIImage?;
-        
-        fileprivate init?(data: NSData?) {
-            guard data != nil else {
-                return nil;
-            }
-            
-            image = UIImage(data: data! as Data);
-            guard image != nil else {
-                return nil;
-            }
-        }
-        
-        fileprivate init(image: UIImage?) {
-            self.image = image;
-        }
-        
-        @objc fileprivate func discardContentIfPossible() {
-            if counter == 0 {
-                image = nil;
-            }
+    func retrievePepUserAvatar(for jid: BareJID, on account: BareJID, hash: String) {
+        guard let pepModule: PEPUserAvatarModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PEPUserAvatarModule.ID) else {
+            return;
         }
 
-        @objc fileprivate func isContentDiscarded() -> Bool {
-            return image == nil;
-        }
-        
-        @objc fileprivate func beginContentAccess() -> Bool {
-            guard !isContentDiscarded() else {
-                return false;
+        pepModule.retrieveAvatar(from: jid, itemId: hash, onSuccess: { (jid, hash, photoData) in
+            guard let data = photoData else {
+                return;
             }
-            counter += 1;
-            return true;
+            self.store.storeAvatar(data: data, for: hash);
+            self.updateAvatar(hash: hash, forType: .pepUserAvatar, forJid: jid, on: account);
+        }, onError: nil);
+    }
+    
+    func clearCache() {
+        store.clearCache();
+    }
+    
+    private func avatars(on account: BareJID) -> AvatarManager.AccountAvatarHashes {
+        if let avatars = self.cache[account] {
+            return avatars;
         }
-        
-        @objc fileprivate func endContentAccess() {
-            counter -= 1;
+        let avatars = AccountAvatarHashes(store: store, account: account);
+        self.cache[account] = avatars;
+        return avatars;
+    }
+
+    static func fetchData(photo: VCard.Photo, completionHandler: @escaping (Data?)->Void) {
+        if let data = photo.binval {
+            completionHandler(Data(base64Encoded: data, options: Data.Base64DecodingOptions.ignoreUnknownCharacters));
+        } else if let uri = photo.uri {
+            if uri.hasPrefix("data:image") && uri.contains(";base64,") {
+                let idx = uri.index(uri.firstIndex(of: ",")!, offsetBy: 1);
+                let data = String(uri[idx...]);
+                print("got avatar:", data);
+                completionHandler(Data(base64Encoded: data, options: Data.Base64DecodingOptions.ignoreUnknownCharacters));
+            } else {
+                let url = URL(string: uri)!;
+                let task = URLSession.shared.dataTask(with: url) { (data, response, err) in
+                    completionHandler(data);
+                }
+                task.resume();
+            }
+        } else {
+            completionHandler(nil);
         }
     }
+
+    private class AccountAvatarHashes {
+
+        private static let AVATAR_TYPES_ORDER: [AvatarType] = [.pepUserAvatar, .vcardTemp];
+        
+        private var avatarHashes: [BareJID: Optional<String>] = [:];
+
+        private let store: AvatarStore;
+        let account: BareJID;
+        
+        init(store: AvatarStore, account: BareJID) {
+            self.store = store;
+            self.account = account;
+        }
+        
+        func avatarHash(for jid: BareJID) -> String? {
+            if let hash = avatarHashes[jid] {
+                return hash;
+            }
+            
+            let hashes: [AvatarType:String] = store.avatarHash(for: jid, on: account);
+        
+            for type in AccountAvatarHashes.AVATAR_TYPES_ORDER {
+                if let hash = hashes[type] {
+                    if store.hasAvatarFor(hash: hash) {
+                        avatarHashes[jid] = .some(hash);
+                        return hash;
+                    }
+                }
+            }
+            avatarHashes[jid] = .none;
+            return nil;
+        }
+        
+        func invalidateAvatarHash(for jid: BareJID) {
+            avatarHashes.removeValue(forKey: jid);
+            NotificationCenter.default.post(name: AvatarManager.AVATAR_CHANGED, object: self, userInfo: ["account": account, "jid": jid]);
+        }
+        
+    }
+
 }

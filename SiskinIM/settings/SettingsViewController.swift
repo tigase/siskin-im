@@ -92,7 +92,7 @@ class SettingsViewController: CustomTableViewController {
                 let account = AccountManager.getAccount(forJid: accounts[indexPath.row]);
                 cell.nameLabel.text = account?.name;
                 let jid = BareJID(account!.name);
-                cell.avatarStatusView.updateAvatar(manager: AvatarManager.instance, for: BareJID(account!.name), with: jid, name: nil, orDefault: AvatarManager.instance.defaultAvatar);
+                cell.avatarStatusView.set(name: nil, avatar: AvatarManager.instance.avatar(for: jid, on: jid), orDefault: AvatarManager.instance.defaultAvatar);
                 if let client = XmppService.instance.getClient(for: jid) {
                     cell.avatarStatusView.statusImageView.isHidden = false;
                     var status: Presence.Show? = nil;
@@ -114,7 +114,7 @@ class SettingsViewController: CustomTableViewController {
                 cell.avatarStatusView.updateCornerRadius();
             } else {
                 cell.nameLabel.text = "Add account";
-                cell.avatarStatusView.resetAvatar();
+                cell.avatarStatusView.avatarImageView.image = nil;
                 cell.avatarStatusView.isHidden = true;
             }
             return cell;

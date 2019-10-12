@@ -42,7 +42,9 @@ open class DBVCardsCache {
             if try! self.updateVCardStmt.update(params) == 0 {
                 _ = try! self.insertVCardStmt.insert(params);
             }
-            NotificationCenter.default.post(name: DBVCardsCache.VCARD_UPDATED, object: self, userInfo: ["jid": jid, "account": account]);
+            if vcard != nil {
+                NotificationCenter.default.post(name: DBVCardsCache.VCARD_UPDATED, object: VCardItem(vcard: vcard!, for: jid, on: account));
+            }
         }
     }
     
@@ -89,4 +91,16 @@ open class DBVCardsCache {
         }
     }
     
+    class VCardItem {
+        
+        let vcard: VCard;
+        let account: BareJID;
+        let jid: BareJID;
+        
+        init(vcard: VCard, for jid: BareJID, on account: BareJID) {
+            self.vcard = vcard;
+            self.jid = jid;
+            self.account = account;
+        }
+    }
 }

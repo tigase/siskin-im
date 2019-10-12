@@ -24,9 +24,9 @@ import TigaseSwift
 
 extension XmppService {
     
-    open func refreshVCard(account: BareJID, for jid: BareJID?, onSuccess: @escaping (VCard)->Void, onError: @escaping (ErrorCondition?)->Void) {
+    open func refreshVCard(account: BareJID, for jid: BareJID?, onSuccess: ((VCard)->Void)?, onError:  ((ErrorCondition?)->Void)?) {
         guard let client = getClient(forJid: account) else {
-            onError(ErrorCondition.service_unavailable);
+            onError?(ErrorCondition.service_unavailable);
             return;
         }
         
@@ -35,24 +35,26 @@ extension XmppService {
                 if let vcardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID) {
                     self.refreshVCard(module: vcardTempModule, for: jid, onSuccess: onSuccess, onError: onError);
                 } else {
-                    onError(error);
+                    onError?(error);
                 }
             });
         } else if let vcardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID) {
             refreshVCard(module: vcardTempModule, for: jid, onSuccess: onSuccess, onError: onError);
         } else {
-            onError(ErrorCondition.service_unavailable);
+            onError?(ErrorCondition.service_unavailable);
         }
     }
     
-    fileprivate func refreshVCard(module: VCardModuleProtocol, for jid: BareJID?, onSuccess: @escaping (VCard)->Void, onError: @escaping (ErrorCondition?)->Void) {
+    fileprivate func refreshVCard(module: VCardModuleProtocol, for jid: BareJID?, onSuccess: ((VCard)->Void)?, onError: ((ErrorCondition?)->Void)?) {
         let account = (module as? ContextAware)!.context.sessionObject.userBareJid!;
         module.retrieveVCard(from: jid == nil ? nil : JID(jid!), onSuccess: {(vcard) in
             DispatchQueue.global(qos: .default).async() {
                 self.dbVCardsCache.updateVCard(for: jid ?? account, on: account, vcard: vcard);
-                onSuccess(vcard);
+                onSuccess?(vcard);
             }
-        }, onError: onError);
+        }, onError: { errorCondition in
+            onError?(errorCondition);
+        });
     }
     
     open func publishVCard(account: BareJID, vcard: VCard, onSuccess: @escaping ()->Void, onError: @escaping (ErrorCondition?)->Void) {

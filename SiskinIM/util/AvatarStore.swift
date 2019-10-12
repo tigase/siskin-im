@@ -24,10 +24,12 @@ import TigaseSwift
 
 open class AvatarStore {
     
-    let avatarCacheUrl: URL;
-    let dbConnection: DBConnection;
+    fileprivate let avatarCacheUrl: URL;
+    fileprivate let dbConnection: DBConnection;
     
-    let dispatcher: QueueDispatcher;
+    fileprivate let dispatcher: QueueDispatcher;
+    
+    private let cache = NSCache<NSString,UIImage>();
     
     fileprivate lazy var findAvatarHashForJidStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT type, hash FROM avatars_cache WHERE jid = :jid AND account = :account");
     fileprivate lazy var deleteAvatarHashForJidStmt: DBStatement! = try? self.dbConnection.prepareStatement("DELETE FROM avatars_cache WHERE jid = :jid AND account = :account AND (:type IS NULL OR type = :type)");
@@ -44,23 +46,13 @@ open class AvatarStore {
         avatarCacheUrl = try! FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("avatars", isDirectory: true);
     }
     
-    open func removeAvatar(hash: String) {
-        dispatcher.sync(flags: .barrier) {
-            try? FileManager.default.removeItem(at: avatarCacheUrl.appendingPathComponent(hash));
+    open func hasAvatarFor(hash: String) -> Bool {
+        return dispatcher.sync {
+            return FileManager.default.fileExists(atPath: avatarCacheUrl.appendingPathComponent(hash).path);
         }
     }
     
-    open func storeAvatar(data: Data, hash: String) {
-        dispatcher.sync(flags: .barrier) {
-            if !FileManager.default.fileExists(atPath: avatarCacheUrl.path) {
-                try? FileManager.default.createDirectory(at: avatarCacheUrl, withIntermediateDirectories: true, attributes: nil);
-            }
-            
-            _ = FileManager.default.createFile(atPath: avatarCacheUrl.appendingPathComponent(hash).path, contents: data, attributes: nil);
-        }
-    }
-    
-    open func getAvatarHashes(for jid: BareJID, on account: BareJID) -> [AvatarType:String] {
+    open func avatarHash(for jid: BareJID, on account: BareJID) -> [AvatarType:String] {
         let params = ["account": account, "jid": jid] as [String : Any?];
         var hashes: [AvatarType:String] = [:];
         try! self.findAvatarHashForJidStmt.query(params, forEach: { (cursor) -> Void in
@@ -75,41 +67,64 @@ open class AvatarStore {
         return hashes;
     }
     
-    open func getAvatar(hash: String) -> UIImage? {
-        return UIImage(contentsOfFile: avatarCacheUrl.appendingPathComponent(hash).path);
+    open func avatar(for hash: String) -> UIImage? {
+        return dispatcher.sync {
+            if let image = cache.object(forKey: hash as NSString) {
+                return image;
+            }
+            if let image = UIImage(contentsOfFile: avatarCacheUrl.appendingPathComponent(hash).path) {
+                cache.setObject(image, forKey: hash as NSString);
+                return image;
+            }
+            return nil;
+        }
+    }
+
+    open func removeAvatar(for hash: String) {
+        dispatcher.sync(flags: .barrier) {
+            try? FileManager.default.removeItem(at: avatarCacheUrl.appendingPathComponent(hash));
+            cache.removeObject(forKey: hash as NSString);
+        }
     }
     
-    open func isAvatarAvailable(hash: String) -> Bool {
-        return FileManager.default.fileExists(atPath: avatarCacheUrl.appendingPathComponent(hash).path);
-    }
-    
-    open func updateAvatar(hash: String?, type: AvatarType, for jid: BareJID, on account: BareJID, onFinish: @escaping ()->Void) {
+    open func storeAvatar(data: Data, for hash: String) {
         dispatcher.async(flags: .barrier) {
-            let oldHash = self.getAvatarHashes(for: jid, on: account)[type];
-            guard oldHash != hash else {
-                return;
+            if !FileManager.default.fileExists(atPath: self.avatarCacheUrl.path) {
+                try? FileManager.default.createDirectory(at: self.avatarCacheUrl, withIntermediateDirectories: true, attributes: nil);
             }
-        
-            if oldHash != nil {
-                DispatchQueue.global(qos: .background).async {
-                    self.removeAvatar(hash: oldHash!);
+            
+            _ = FileManager.default.createFile(atPath: self.avatarCacheUrl.appendingPathComponent(hash).path, contents: data, attributes: nil);
+        }
+    }
+            
+    open func updateAvatar(hash: String?, type: AvatarType, for jid: BareJID, on account: BareJID, completionHandler: @escaping ()->Void) {
+        dispatcher.async(flags: .barrier) {
+            if let oldHash = self.avatarHash(for: jid, on: account)[type] {
+                guard hash == nil || hash! != oldHash else {
+                    return;
                 }
+                DispatchQueue.global(qos: .background).async {
+                    self.removeAvatar(for: oldHash);
+                }
+                let params = ["account": account, "jid": jid, "type": type.rawValue] as [String : Any?];
+                _ = try! self.deleteAvatarHashForJidStmt.update(params);
             }
-        
-            var params = ["account": account, "jid": jid, "type": type.rawValue] as [String : Any?];
-            _ = try! self.deleteAvatarHashForJidStmt.update(params);
-    
+            
             guard hash != nil else {
                 return;
             }
         
-            params["hash"] = hash!;
+            let params = ["account": account, "jid": jid, "type": type.rawValue, "hash": hash!] as [String : Any?];
             _ = try! self.insertAvatarHashForJidStmt.insert(params);
             
             DispatchQueue.global(qos: .background).async {
-                onFinish();
+                completionHandler();
             }
         }
+    }
+    
+    public func clearCache() {
+        cache.removeAllObjects();
     }
 }
 

@@ -30,7 +30,6 @@ class ContactBasicTableViewCell: UITableViewCell {
     @IBOutlet var jidView: UILabel!;
     @IBOutlet var accountView: UILabel!;
     
-    var avatarManager: AvatarManager!;
     var account: BareJID!;
     var jid: BareJID!;
     var vcard: VCard? {
@@ -52,7 +51,7 @@ class ContactBasicTableViewCell: UITableViewCell {
                 companyView.text = org ?? role;
             }
             
-            avatarView.image = avatarManager.getAvatar(for: jid, account: account, orDefault: avatarManager.defaultAvatar);
+            avatarView.image = AvatarManager.instance.avatar(for: jid, on: account) ?? AvatarManager.instance.defaultAvatar;
             jidView.text = jid.stringValue;
             accountView.text = "using \(account.stringValue)";
         }

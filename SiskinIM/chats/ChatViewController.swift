@@ -162,7 +162,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
             let cell: ChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
             cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
             let name = incoming ? self.titleView.name : "Me";
-            cell.avatarView?.updateAvatar(manager: AvatarManager.instance, for: account, with: incoming ? jid : account, name: name, orDefault: AvatarManager.instance.defaultAvatar);
+            cell.avatarView?.set(name: name, avatar: AvatarManager.instance.avatar(for: incoming ? jid : account, on: account), orDefault: AvatarManager.instance.defaultAvatar);
             cell.nicknameView?.text = name;
             cell.set(message: item, downloader: self.downloadPreview(url:msgId:account:jid:));
             cell.setNeedsUpdateConstraints();

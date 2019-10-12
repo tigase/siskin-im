@@ -52,17 +52,10 @@ class AvatarStatusView: UIView {
         updateCornerRadius();
     }
     
-    func updateAvatar(manager: AvatarManager, for account: BareJID, with: BareJID?, name: String?, orDefault defAvatar: UIImage) {
-        self.avatarImageView.updateAvatar(manager: manager, for: account, with: with, name: name, orDefault: defAvatar);
+    func set(name: String?, avatar: UIImage?, orDefault defAvatar: UIImage) {
+        self.avatarImageView.set(name: name, avatar: avatar, orDefault: defAvatar);
     }
-    
-//    func setAvatar(_ avatar: UIImage?) {
-//        self.avatarImageView.image = avatar;
-//    }
-    func resetAvatar() {
-        self.avatarImageView.resetAvatar();
-    }
-    
+        
     func setStatus(_ status:Presence.Show?) {
         let image:UIImage? = AvatarStatusView.getStatusImage(status);
 

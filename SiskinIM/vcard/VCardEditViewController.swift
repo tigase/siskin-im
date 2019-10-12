@@ -67,7 +67,6 @@ class VCardEditViewController: CustomTableViewController, UIImagePickerControlle
         switch indexPath.section {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: "BasicInfoCell") as! VCardEditBasicTableViewCell;
-            cell.avatarManager = xmppService.avatarManager;
             cell.accountJid = account;
             cell.vcard = vcard;
             

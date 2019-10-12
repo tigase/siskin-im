@@ -169,7 +169,6 @@ class ContactViewController: CustomTableViewController {
         
             cell.account = account;
             cell.jid = jid;
-            cell.avatarManager = xmppService.avatarManager;
             cell.vcard = vcard;
         
             return cell;

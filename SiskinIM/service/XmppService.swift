@@ -52,9 +52,6 @@ open class XmppService: Logger, EventHandler {
     fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler(), PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), JingleManager.instance];
     #endif
     
-    open var avatarManager: AvatarManager! {
-        return AvatarManager.instance;
-    }
     public let dbCapsCache: DBCapabilitiesCache;
     public let dbChatStore: DBChatStore;
     public let dbChatHistoryStore: DBChatHistoryStore;
@@ -67,7 +64,7 @@ open class XmppService: Logger, EventHandler {
                 applicationStateChanged();
             }
             if applicationState != .active {
-                avatarManager.clearCache();
+                AvatarManager.instance.clearCache();
                 ImageCache.shared.clearInMemoryCache();
             }
         }
@@ -309,6 +306,8 @@ open class XmppService: Logger, EventHandler {
         let signalContext = SignalContext(withStorage: signalStorage)!;
         signalStorage.setup(withContext: signalContext);
         _ = client.modulesManager.register(OMEMOModule(aesGCMEngine: OpenSSL_AES_GCM_Engine(), signalContext: signalContext, signalStorage: signalStorage));
+        
+//        client.sessionObject.setUserProperty(SessionObject.COMPRESSION_DISABLED, value: true);
     }
     
     fileprivate func registerEventHandlers(_ client:XMPPClient) {
@@ -391,6 +390,11 @@ open class XmppService: Logger, EventHandler {
             client?.sessionObject.setProperty(XmppService.CONNECTION_RETRY_NO_KEY, value: nil);
             DispatchQueue.global(qos: .default).async {
                 NotificationCenter.default.post(name: XmppService.ACCOUNT_STATE_CHANGED, object: self, userInfo: ["account":e.sessionObject.userBareJid!.stringValue]);
+            }
+            if let c = client {
+                let end = Date().timeIntervalSinceReferenceDate
+                let start = c.sessionObject.getProperty("startTime", defValue: Date()).timeIntervalSinceReferenceDate;
+                print("connected", c.sessionObject.userBareJid!, "from:", start, "to:", end, "in:", end-start);
             }
             if applicationState == .inactive {
                 let csiModule: ClientStateIndicationModule? = client?.modulesManager.getModule(ClientStateIndicationModule.ID);

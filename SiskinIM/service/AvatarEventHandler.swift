@@ -33,14 +33,14 @@ class AvatarEventHandler: XmppServiceEventHandler {
             guard let photoId = e.presence.vcardTempPhoto, let from = e.presence.from?.bareJid, let to = e.presence.to?.bareJid, e.presence.findChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") == nil else {
                 return;
             }
-            AvatarManager.instance.updateAvatarHashFromVCard(account: to, for: from, photoHash: photoId);
+            AvatarManager.instance.updateAvatar(hash: photoId, forType: .vcardTemp, forJid: from, on: to);
         case let e as PEPUserAvatarModule.AvatarChangedEvent:
             guard let item = e.info.first(where: { info -> Bool in
                 return info.url == nil;
             }) else {
                 return;
             }
-            AvatarManager.instance.updateAvatarHashFromUserAvatar(account: e.sessionObject.userBareJid!, for: e.jid.bareJid, photoHash: item.id);
+            AvatarManager.instance.updateAvatar(hash: item.id, forType: .pepUserAvatar, forJid: e.jid.bareJid, on: e.sessionObject.userBareJid!);
         default:
             break;
         }

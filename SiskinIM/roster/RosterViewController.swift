@@ -66,7 +66,7 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
             cell.statusLabel.text = item.presence?.status ?? item.jid.stringValue;
             cell.avatarStatusView.setStatus(item.presence?.show);
             cell.avatarStatusView.backgroundColor = Appearance.current.systemBackground;
-            cell.avatarStatusView.updateAvatar(manager: AvatarManager.instance, for: item.account, with: item.jid.bareJid, name: item.displayName, orDefault: AvatarManager.instance.defaultAvatar);
+            cell.avatarStatusView.set(name: item.displayName, avatar: AvatarManager.instance.avatar(for: item.jid.bareJid, on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
         }
         
         return cell;

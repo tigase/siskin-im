@@ -355,7 +355,7 @@ public class VideoCallController: UIViewController {
         let rosterModule: RosterModule? = client?.modulesManager.getModule(RosterModule.ID);
         
         self.contactName = rosterModule?.rosterStore.get(for: session.jid.withoutResource)?.name ?? session.jid.bareJid.stringValue;
-        self.avatar.updateAvatar(manager: xmppService.avatarManager, for: session.account, with: session.jid.bareJid, name: self.contactName, orDefault: xmppService.avatarManager.defaultAvatar);
+        self.avatar.set(name: self.contactName, avatar: AvatarManager.instance.avatar(for: session.jid.bareJid, on: session.account), orDefault: AvatarManager.instance.defaultAvatar);
         var requiredMediaTypes: [AVMediaType] = [];
         if (withAudio) {
             requiredMediaTypes.append(.audio);
@@ -415,7 +415,7 @@ public class VideoCallController: UIViewController {
         let rosterModule: RosterModule? = client?.modulesManager.getModule(RosterModule.ID);
         
         self.contactName = rosterModule?.rosterStore.get(for: JID(jid))?.name ?? jid.stringValue;
-        self.avatar.updateAvatar(manager: xmppService.avatarManager, for: account, with: jid, name: self.contactName, orDefault: xmppService.avatarManager.defaultAvatar);
+        self.avatar.set(name: self.contactName, avatar: AvatarManager.instance.avatar(for: jid, on: account), orDefault: AvatarManager.instance.defaultAvatar);
         
         guard let presences = presenceModule?.presenceStore.getPresences(for: jid)?.keys, !presences.isEmpty else {
             self.showAlert(title: "Call failed", message: "It was not possible to establish connection. Recipient is unavailable.") {
