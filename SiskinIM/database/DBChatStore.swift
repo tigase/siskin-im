@@ -154,7 +154,7 @@ open class DBChatStore {
         self.closeChatStmt = try! self.dbConnection.prepareStatement(DBChatStore.CHAT_CLOSE);
         self.countStmt = try! self.dbConnection.prepareStatement(DBChatStore.CHATS_COUNT);
         self.getMessageDraftStmt = try! dbConnection.prepareStatement("SELECT message_draft FROM chats WHERE account = ? AND jid = ?");
-        self.updateMessageDraftStmt = try! dbConnection.prepareStatement("UPDATE chats SET message_draft = ? WHERE account = ? AND jid = ?");
+        self.updateMessageDraftStmt = try! dbConnection.prepareStatement("UPDATE chats SET message_draft = ? WHERE account = ? AND jid = ? AND IFNULL(message_draft, '') <> IFNULL(?, '')");
         getLastMessageStmt = try! DBConnection.main.prepareStatement(DBChatStore.GET_LAST_MESSAGE);
         getLastMessageTimestampForAccountStmt = try! DBConnection.main.prepareStatement(DBChatStore.GET_LAST_MESSAGE_TIMESTAMP_FOR_ACCOUNT);
         self.updateChatNameStmt = try! self.dbConnection.prepareStatement(DBChatStore.UPDATE_CHAT_NAME);
@@ -451,7 +451,7 @@ open class DBChatStore {
     
     open func updateMessageDraft(account: BareJID, jid: BareJID, draft: String?) {
         updateMessageDraftStmt.dispatcher.async {
-            _ = try? self.updateMessageDraftStmt.update(draft, account, jid);
+            _ = try? self.updateMessageDraftStmt.update(draft, account, jid, draft);
         }
     }
     
