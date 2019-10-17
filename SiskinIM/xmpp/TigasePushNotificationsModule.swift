@@ -46,10 +46,10 @@ open class TigasePushNotificationsModule: PushNotificationsModule, EventHandler 
     open var enabled: Bool = false;
     open var pushServiceNode: String? {
         didSet {
-            if let account = AccountManager.getAccount(forJid: context.sessionObject.userBareJid!.stringValue) {
+            if let account = AccountManager.getAccount(for: context.sessionObject) {
                 if pushServiceNode != account.pushServiceNode {
                     account.pushServiceNode = pushServiceNode;
-                    AccountManager.updateAccount(account, notifyChange: false);
+                    AccountManager.save(account: account);
                 }
             }
         }
@@ -144,20 +144,20 @@ open class TigasePushNotificationsModule: PushNotificationsModule, EventHandler 
         self.registerDevice(onSuccess: {
             print("registered device", self.deviceId ?? "nil", "for push notifications at", self.pushServiceNode ?? "nil");
         }, onError: { (error) in
-            let accountJid = self.context.sessionObject.userBareJid!.stringValue;
-            if let account = AccountManager.getAccount(forJid: accountJid) {
+            let accountJid = self.context.sessionObject.userBareJid!;
+            if let account = AccountManager.getAccount(for: accountJid) {
                 account.pushNotifications = false;
                 self.enabled = false;
-                AccountManager.updateAccount(account, notifyChange: false);
+                AccountManager.save(account: account);
                 
                 let notification = UNMutableNotificationContent();
                 notification.title = "Error";
-                notification.userInfo = ["account": accountJid];
-                notification.body = "Push Notifications for account \(accountJid) disabled due to error during registration in Push Notification servce: \(error ?? ErrorCondition.undefined_condition)";
+                notification.userInfo = ["account": accountJid.stringValue];
+                notification.body = "Push Notifications for account \(accountJid.stringValue) disabled due to error during registration in Push Notification servce: \(error ?? ErrorCondition.undefined_condition)";
                 notification.sound = UNNotificationSound.default;
                 notification.categoryIdentifier = "ERROR";
                 DispatchQueue.main.async {
-                    UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "push-notifications-" + accountJid, content: notification, trigger: nil));
+                    UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "push-notifications-" + accountJid.stringValue, content: notification, trigger: nil));
                 }
             }
         })

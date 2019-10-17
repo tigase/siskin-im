@@ -48,7 +48,7 @@ open class AccountManagerScramSaltedPasswordCache: ScramSaltedPasswordCacheProto
         }
         
         account.saltedPassword = value;
-        AccountManager.updateAccount(account, notifyChange: false);
+        AccountManager.save(account: account);
     }
     
 }

@@ -188,7 +188,7 @@ open class DBRosterStore: RosterCacheProvider {
     }
     
     open func getCachedVersion(_ sessionObject: SessionObject) -> String? {
-        return AccountManager.getAccount(forJid: sessionObject.userBareJid!.stringValue)?.rosterVersion;
+        return AccountManager.getAccount(for: sessionObject.userBareJid!)?.rosterVersion;
     }
     
     open func loadCachedRoster(_ sessionObject: SessionObject) -> [RosterItem] {
@@ -196,9 +196,9 @@ open class DBRosterStore: RosterCacheProvider {
     }
     
     open func updateReceivedVersion(_ sessionObject: SessionObject, ver: String?) {
-        if let account = AccountManager.getAccount(forJid: sessionObject.userBareJid!.stringValue) {
+        if let account = AccountManager.getAccount(for: sessionObject.userBareJid!) {
             account.rosterVersion = ver;
-            AccountManager.updateAccount(account, notifyChange: false);
+            AccountManager.save(account: account);
         }
     }
     

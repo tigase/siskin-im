@@ -64,7 +64,7 @@ class RosterItemEditViewController: CustomTableViewController, UIPickerViewDataS
             }
         } else {
             if account == nil && AccountManager.getAccounts().count == 1 {
-                self.account = BareJID(AccountManager.getAccounts().first);
+                self.account = AccountManager.getAccounts().first;
                 self.accountTextField.text = account?.stringValue;
             }
             self.nameTextField.text = nil;
@@ -133,9 +133,9 @@ class RosterItemEditViewController: CustomTableViewController, UIPickerViewDataS
                 _ = self.navigationController?.popViewController(animated: true);
             }));
             alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(alertAction) in
-                if let account = AccountManager.getAccount(forJid: self.account!.stringValue) {
+                if let account = AccountManager.getAccount(for: self.account!) {
                     account.active = true;
-                    AccountManager.updateAccount(account);
+                    AccountManager.save(account: account);
                 }
             }));
             self.present(alert, animated: true, completion: nil);
@@ -214,7 +214,7 @@ class RosterItemEditViewController: CustomTableViewController, UIPickerViewDataS
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return AccountManager.getAccounts()[row];
+        return AccountManager.getAccounts()[row].stringValue;
     }
     
     func  pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {

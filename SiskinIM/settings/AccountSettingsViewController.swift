@@ -54,7 +54,7 @@ class AccountSettingsViewController: CustomTableViewController {
         navigationItem.title = account.stringValue;
 
         
-        let config = AccountManager.getAccount(forJid: account.stringValue);
+        let config = AccountManager.getAccount(for: account);
         enabledSwitch.isOn = config?.active ?? false;
         pushNotificationSwitch.isOn = config?.pushNotifications ?? false;
         archivingEnabledSwitch.isOn = false;
@@ -205,10 +205,10 @@ class AccountSettingsViewController: CustomTableViewController {
     }
         
     @IBAction func enabledSwitchChangedValue(_ sender: AnyObject) {
-        if let config = AccountManager.getAccount(forJid: account!.stringValue) {
+        if let config = AccountManager.getAccount(for: account!) {
             config.active = enabledSwitch.isOn;
             AccountSettings.LastError(account).set(string: nil);
-            AccountManager.updateAccount(config);
+            AccountManager.save(account: config);
         }
     }
     
@@ -246,11 +246,11 @@ class AccountSettingsViewController: CustomTableViewController {
                 pushModule.deviceId = Settings.DeviceToken.getString();
                 pushModule.enabled = true;
                 pushModule.registerDevice(onSuccess: {
-                    if let config = AccountManager.getAccount(forJid: accountJid.stringValue) {
+                    if let config = AccountManager.getAccount(for: accountJid) {
                         config.pushServiceNode = pushModule.pushServiceNode
                         config.pushServiceJid = jid;
                         config.pushNotifications = true;
-                        AccountManager.updateAccount(config, notifyChange: false);
+                        AccountManager.save(account: config);
                     }
                 }, onError: { (errorCondition) in
                     DispatchQueue.main.async {
@@ -310,9 +310,9 @@ class AccountSettingsViewController: CustomTableViewController {
     }
     
     func setPushNotificationsEnabled(forJid account: BareJID, value: Bool) {
-        if let config = AccountManager.getAccount(forJid: account.stringValue) {
+        if let config = AccountManager.getAccount(for: account) {
             config.pushNotifications = pushNotificationSwitch.isOn;
-            AccountManager.updateAccount(config);
+            AccountManager.save(account: config);
         }
     }
     

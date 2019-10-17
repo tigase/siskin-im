@@ -334,7 +334,7 @@ public enum AccountSettings {
         let accounts = AccountManager.getAccounts();
         let toRemove = Settings.store.dictionaryRepresentation().keys.filter { (key) -> Bool in
             return key.hasPrefix("Account-") && accounts.firstIndex(where: { (account) -> Bool in
-                return key.hasPrefix("Account-" + account + "-");
+                return key.hasPrefix("Account-\(account.stringValue)-");
             }) == nil;
         };
         toRemove.forEach { (key) in

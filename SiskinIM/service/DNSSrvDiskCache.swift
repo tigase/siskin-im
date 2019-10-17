@@ -26,14 +26,17 @@ open class DNSSrvDiskCache: DNSSrvResolverWithCache.DiskCache {
     
     public override init(cacheDirectoryName: String) {
         super.init(cacheDirectoryName: cacheDirectoryName);
-        NotificationCenter.default.addObserver(self, selector: #selector(accountRemoved(_:)), name: AccountManager.ACCOUNT_REMOVED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(accountChanged(_:)), name: AccountManager.ACCOUNT_CHANGED, object: nil);
     }
     
-    @objc fileprivate func accountRemoved(_ notification: Notification) {
-        guard let account = JID(notification.userInfo!["account"] as? String) else {
+    @objc fileprivate func accountChanged(_ notification: Notification) {
+        guard let account = notification.object as? AccountManager.Account else {
+            return;
+        }
+        guard !(AccountManager.getAccount(for: account.name)?.active ?? false) else {
             return;
         }
         
-        self.store(for: account.domain, result: nil);
+        self.store(for: account.name.domain, result: nil);
     }
 }

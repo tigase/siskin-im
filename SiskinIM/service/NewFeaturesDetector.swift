@@ -215,7 +215,7 @@ Have it enabled will keep synchronized copy of your messages exchanged using \(a
                 return;
             }
             
-            guard !(AccountManager.getAccount(forJid: account.stringValue)?.pushNotifications ?? true) else {
+            guard !(AccountManager.getAccount(for: account)?.pushNotifications ?? true) else {
                 completionHandler([]);
                 return;
             }
@@ -259,11 +259,11 @@ With this feature enabled Tigase iOS Messenger can be automatically notified abo
                 pushModule.registerDevice(onSuccess: {
                     DispatchQueue.main.async {
                         operationFinished();
-                        if let config = AccountManager.getAccount(forJid: accountJid.stringValue) {
+                        if let config = AccountManager.getAccount(for: accountJid) {
                             config.pushServiceNode = pushModule.pushServiceNode
                             config.pushServiceJid = jid;
                             config.pushNotifications = true;
-                            AccountManager.updateAccount(config, notifyChange: false);
+                            AccountManager.save(account: config);
                         }
                         completionHandler();
                     }

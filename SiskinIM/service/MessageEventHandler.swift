@@ -26,6 +26,7 @@ import TigaseSwiftOMEMO
 class MessageEventHandler: XmppServiceEventHandler {
     
     public static let OMEMO_AVAILABILITY_CHANGED = Notification.Name(rawValue: "OMEMOAvailabilityChanged");
+    public static let MESSAGE_SYNCHRONIZATION_FINISHED = Notification.Name(rawValue: "MessageSynchronizationFinished");
     
     static func prepareBody(message: Message, forAccount account: BareJID) -> (String?, MessageEncryption, String?) {
         var encryption: MessageEncryption = .none;
@@ -112,6 +113,9 @@ class MessageEventHandler: XmppServiceEventHandler {
                 return;
             }
             guard let mcModule: MessageCarbonsModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MessageCarbonsModule.ID) else {
+                return;
+            }
+            guard !XmppService.instance.isFetch else {
                 return;
             }
             mcModule.enable();
@@ -314,24 +318,30 @@ class MessageEventHandler: XmppServiceEventHandler {
             }
             let syncMessagesSince = max(DBChatStore.instance.lastMessageTimestamp(for: account), Date(timeIntervalSinceNow: -1 * syncPeriod * 3600));
                 
+            print("synchronizing messages for account:", account)
             MessageEventHandler.syncMessages(for: account, since: syncMessagesSince);
         }
     }
     
     static func syncMessages(for account: BareJID, since: Date, rsmQuery: RSM.Query? = nil) {
-        guard let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
+        guard let client = XmppService.instance.getClient(for: account), client.state == .connected, let mamModule: MessageArchiveManagementModule = client.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
+            NotificationCenter.default.post(name: MessageEventHandler.MESSAGE_SYNCHRONIZATION_FINISHED, object: self, userInfo: ["account": account]);
             return;
         }
         
         let queryId = UUID().uuidString;
-        mamModule.queryItems(start: since, queryId: queryId, rsm: rsmQuery ?? RSM.Query(lastItems: 100), onSuccess: { (queryid,complete,rsmResponse) in
-            if rsmResponse != nil && rsmResponse!.index != 0 && rsmResponse?.first != nil {
+        mamModule.queryItems(start: since, queryId: queryId, rsm: rsmQuery ?? RSM.Query(max: 100), onSuccess: { (queryid,complete,rsmResponse) in
+            if rsmResponse != nil && rsmResponse!.count == 100 && !complete {
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                    MessageEventHandler.syncMessages(for: account, since: since, rsmQuery: rsmResponse?.previous(100));
+                    MessageEventHandler.syncMessages(for: account, since: since, rsmQuery: rsmResponse?.next(100));
                 }
+            } else {
+                NotificationCenter.default.post(name: MessageEventHandler.MESSAGE_SYNCHRONIZATION_FINISHED, object: self, userInfo: ["account": account]);
             }
+            print("synchronized", rsmResponse?.count as Any, "messages for", account);
         }) { (error, stanza) in
-            print("could not synchronize message archive for:", account, "got", error as Any);
+            print("could not synchronize message archive for:", account, "got", error as Any, stanza as Any);
+            NotificationCenter.default.post(name: MessageEventHandler.MESSAGE_SYNCHRONIZATION_FINISHED, object: self, userInfo: ["account": account]);
         }
     }
 }

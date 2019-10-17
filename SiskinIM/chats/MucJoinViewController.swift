@@ -44,7 +44,7 @@ class MucJoinViewController: CustomTableViewController, UIPickerViewDataSource, 
         let accounts = AccountManager.getAccounts();
         // by default select first account        
         if !accounts.isEmpty && (self.accountTextField.text?.isEmpty ?? true) {
-            self.accountTextField.text = accounts[0];
+            self.accountTextField.text = accounts[0].stringValue;
         }
     }
     
@@ -122,9 +122,9 @@ class MucJoinViewController: CustomTableViewController, UIPickerViewDataSource, 
                 alert = UIAlertController.init(title: "Warning", message: "Account is disabled.\nDo you want to enable account?", preferredStyle: .alert);
                 alert?.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
                 alert?.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(alertAction) in
-                    if let account = AccountManager.getAccount(forJid: accountJid.stringValue) {
+                    if let account = AccountManager.getAccount(for: accountJid) {
                         account.active = true;
-                        AccountManager.updateAccount(account);
+                        AccountManager.save(account: account);
                     }
                 }));
             } else if client?.state != .connected {
@@ -212,7 +212,7 @@ class MucJoinViewController: CustomTableViewController, UIPickerViewDataSource, 
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return AccountManager.getAccounts()[row];
+        return AccountManager.getAccounts()[row].stringValue;
     }
     
     func  pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {

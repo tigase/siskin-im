@@ -34,6 +34,9 @@ class MucEventHandler: XmppServiceEventHandler {
     func handle(event: Event) {
         switch event {
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
+            guard !XmppService.instance.isFetch else {
+                return;
+            }
             if let mucModule: MucModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MucModule.ID) {
                 mucModule.roomsManager.getRooms().forEach { (room) in
                     _ = room.rejoin();

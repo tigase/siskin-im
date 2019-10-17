@@ -27,145 +27,144 @@ import TigaseSwift
 
 open class AccountManager {
     
-    public static let ACCOUNT_CONFIGURATION_CHANGED = Notification.Name("accountConfigurationChanged");
-    public static let ACCOUNT_REMOVED = Notification.Name("accountRemoved");
+    public static let ACCOUNT_CHANGED = Notification.Name(rawValue: "accountChanged");
     
     public static let saltedPasswordCache = AccountManagerScramSaltedPasswordCache();
     
-    static func getAccounts() -> [String] {
-        var accounts = [String]();
+    static func getActiveAccounts() -> [BareJID] {
+        return getAccounts().filter({ jid -> Bool in
+            return AccountManager.getAccount(for: jid)?.active ?? false;
+        });
+    }
+    
+    static func getAccounts() -> [BareJID] {
         let query = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitAll, String(kSecReturnAttributes) : kCFBooleanTrue as Any, String(kSecAttrService) : "xmpp" ] as [String : Any];
-        var result:AnyObject?;
+        var result: CFTypeRef?;
         
-        let lastResultCode: OSStatus = withUnsafeMutablePointer(to: &result) {
-            SecItemCopyMatching(query as CFDictionary, UnsafeMutablePointer($0));
+        guard SecItemCopyMatching(query as CFDictionary, &result) == noErr else {
+            return [];
         }
         
-        if lastResultCode == noErr {
-            if let results = result as? [[String:NSObject]] {
-                for var r in results {
-                    let name = r[String(kSecAttrAccount)] as! String;
-                    accounts.append(name);
-                }
-            }
-            
+        guard let results = result as? [[String: NSObject]] else {
+            return [];
         }
-        return accounts;
+        
+        return results.map { item -> BareJID in
+            return BareJID(item[kSecAttrAccount as String] as! String);
+            }.sorted(by: { (j1, j2) -> Bool in
+                j1.stringValue.compare(j2.stringValue) == .orderedAscending
+            });
     }
 
-    static func getAccount(forJid account:String) -> Account? {
-        let query = AccountManager.getAccountQuery(account);
+    static func getAccount(for jid: BareJID) -> Account? {
+        let query = AccountManager.getAccountQuery(jid.stringValue);
         
-        var result:AnyObject?;
+        var result: CFTypeRef?;
         
-        let lastResultCode: OSStatus = withUnsafeMutablePointer(to: &result) {
-            SecItemCopyMatching(query as CFDictionary, UnsafeMutablePointer($0));
+        guard SecItemCopyMatching(query as CFDictionary, &result) == noErr else {
+            return nil;
         }
         
-        if lastResultCode == noErr {
-            if let r = result as? [String:NSObject] {
-                if let data = r[String(kSecAttrGeneric)] as? NSData {
-                    let dict = NSKeyedUnarchiver.unarchiveObject(with: data as Data) as? [String:AnyObject];
-                    return Account(name: account, data: dict!);
-                } else {
-                    return Account(name: account);
-                }
-            }
+        guard let r = result as? [String: NSObject] else {
+            return nil;
         }
-        return nil;
+        
+        var dict: [String: Any]? = nil;
+        if let data = r[String(kSecAttrGeneric)] as? NSData {
+            dict = NSKeyedUnarchiver.unarchiveObject(with: data as Data) as? [String: Any];
+        }
+        
+        return Account(name: jid, data: dict);
     }
     
     static func getAccount(for sessionObject: SessionObject) -> Account? {
-        guard let accountName = sessionObject.userBareJid?.stringValue else {
+        guard let jid = sessionObject.userBareJid else {
             return nil;
         }
-        return AccountManager.getAccount(forJid: accountName);
+        return AccountManager.getAccount(for: jid);
     }
     
     
-    static func getAccountPassword(forJid account:String) -> String? {
-        let query = AccountManager.getAccountQuery(account, withData: kSecReturnData);
-
-        var result:AnyObject?;
+    static func getAccountPassword(for account: BareJID) -> String? {
+        let query = AccountManager.getAccountQuery(account.stringValue, withData: kSecReturnData);
         
-        let lastResultCode: OSStatus = withUnsafeMutablePointer(to: &result) {
-            SecItemCopyMatching(query as CFDictionary, UnsafeMutablePointer($0));
+        var result: CFTypeRef?;
+        
+        guard SecItemCopyMatching(query as CFDictionary, &result) == noErr else {
+            return nil;
         }
         
-        if lastResultCode == noErr {
-            if let data = result as? NSData {
-                return String(data: data as Data, encoding: String.Encoding.utf8);
-            }
+        guard let data = result as? Data else {
+            return nil;
         }
-        return nil;
+        
+        return String(data: data, encoding: .utf8);
     }
     
-    static func updateAccount(forJid account:String, password:String) {
-        let update = [ String(kSecValueData) : password.data(using: String.Encoding.utf8)! ];
-        updateAccount(account, dataForUpdate: update as [String : NSObject]);
-    }
-    
-    static func deleteAccount(forJid name:String) {
-        var query = AccountManager.getAccountQuery(name);
-        query.removeValue(forKey: String(kSecMatchLimit));
-        query.removeValue(forKey: String(kSecReturnAttributes));
-        _ = SecItemDelete(query as CFDictionary);
-        AccountSettings.removeSettings(for: name);
-        NotificationCenter.default.post(name: AccountManager.ACCOUNT_CONFIGURATION_CHANGED, object: self, userInfo: ["account":name]);
-        NotificationCenter.default.post(name: AccountManager.ACCOUNT_REMOVED, object: self, userInfo: ["account":name]);
-    }
-    
-    fileprivate static func updateAccount(_ account:String, dataForUpdate: [String:NSObject], notifyChange: Bool = true) {
-        var query = AccountManager.getAccountQuery(account);
-        
-        var result:AnyObject?;
-        
-        var lastResultCode: OSStatus = withUnsafeMutablePointer(to: &result) {
-            return SecItemCopyMatching(query as CFDictionary, UnsafeMutablePointer($0));
-        }
-        
-        var found:[String:NSObject]? = nil;
-        
-        if lastResultCode == noErr {
-            found = result as? [String:NSObject];
-        }
-
-        // Removing from query attributtes forbidden in insert/update query
+    static func save(account: Account, withPassword: String? = nil) -> Bool {
+        var query = AccountManager.getAccountQuery(account.name.stringValue);
         query.removeValue(forKey: String(kSecMatchLimit));
         query.removeValue(forKey: String(kSecReturnAttributes));
 
-        if found == nil {
-            found = query;
-            for (k,v) in dataForUpdate {
-                found?[k] = v;
+        var update: [String: Any] = [ kSecAttrGeneric as String: try! NSKeyedArchiver.archivedData(withRootObject: account.data, requiringSecureCoding: false), kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock ];
+
+        if let password = withPassword {
+            update[kSecValueData as String] = password.data(using: String.Encoding.utf8)!;
+        }
+
+        var result = false;
+        let prevAccount = getAccount(for: account.name);
+        if prevAccount == nil {
+            query.merge(update) { (v1, v2) -> Any in
+                return v1;
             }
-            found?[String(kSecAttrAccessible)] = kSecAttrAccessibleAfterFirstUnlock;
-            lastResultCode = SecItemAdd(found! as CFDictionary, nil);
+            result = SecItemAdd(query as CFDictionary, nil) == noErr;
         } else {
-            var data = dataForUpdate
-            data[String(kSecAttrAccessible)] = kSecAttrAccessibleAfterFirstUnlock;
-            lastResultCode = SecItemUpdate(query as CFDictionary, data as CFDictionary);
+            result = SecItemUpdate(query as CFDictionary, update as CFDictionary) == noErr;
         }
-        if notifyChange {
-            NotificationCenter.default.post(name: AccountManager.ACCOUNT_CONFIGURATION_CHANGED, object: self, userInfo: ["account": account]);
+        
+        // notify about account change only if password or active is changed!
+        if withPassword != nil || ((prevAccount?.active ?? false) != account.active) {
+            AccountManager.accountChanged(account: account);
         }
+        return result;
+    }
+
+    static func deleteAccount(for jid: BareJID) -> Bool {
+        guard let account = getAccount(for: jid) else {
+            return false;
+        }
+        return delete(account: account);
     }
     
-    fileprivate static func getAccountQuery(_ name:String, withData:CFString = kSecReturnAttributes) -> [String:NSObject] {
+    static func delete(account: Account) -> Bool {
+        var query = AccountManager.getAccountQuery(account.name.stringValue);
+        query.removeValue(forKey: String(kSecMatchLimit));
+        query.removeValue(forKey: String(kSecReturnAttributes));
+        
+        guard SecItemDelete(query as CFDictionary) == noErr else {
+            return false;
+        }
+        
+        AccountSettings.removeSettings(for: account.name.stringValue);
+        AccountManager.accountChanged(account: account);
+
+        return true;
+    }
+    
+    private static func accountChanged(account: Account) {
+        NotificationCenter.default.post(name: AccountManager.ACCOUNT_CHANGED, object: account);
+    }
+    
+    fileprivate static func getAccountQuery(_ name:String, withData:CFString = kSecReturnAttributes) -> [String: Any] {
         return [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitOne, String(withData) : kCFBooleanTrue, String(kSecAttrService) : "xmpp" as NSObject, String(kSecAttrAccount) : name as NSObject ];
-    }
-    
-    static func updateAccount(_ account:Account, notifyChange: Bool = true) {
-        let data = NSKeyedArchiver.archivedData(withRootObject: account.data);
-        let update = [ String(kSecAttrGeneric) : data];
-        updateAccount(account.name, dataForUpdate: update as [String : NSObject], notifyChange: notifyChange);
     }
     
     open class Account {
         
-        fileprivate var data:[String:AnyObject];
+        fileprivate var data:[String: Any];
         
-        public let name:String;
+        public let name: BareJID;
         
         open var active:Bool {
             get {
@@ -178,10 +177,10 @@ open class AccountManager {
         
         open var password:String {
             get {
-                return AccountManager.getAccountPassword(forJid: name)!;
+                return AccountManager.getAccountPassword(for: name)!;
             }
             set {
-                AccountManager.updateAccount(forJid: name, password: newValue);
+                AccountManager.save(account: self, withPassword: newValue);
             }
         }
         
@@ -284,15 +283,10 @@ open class AccountManager {
                 }
             }
         }
-        
-        public init(name:String) {
+                
+        public init(name: BareJID, data: [String: Any]? = nil) {
             self.name = name;
-            self.data = [String:AnyObject]();
-        }
-        
-        fileprivate init(name:String, data:[String:AnyObject]) {
-            self.name = name;
-            self.data = data;
+            self.data = data ?? [String: Any]();
         }
         
         open func acceptCertificate(_ certData: SslCertificateInfo?) {

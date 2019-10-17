@@ -89,8 +89,8 @@ class SettingsViewController: CustomTableViewController {
             let accounts = AccountManager.getAccounts();
             if accounts.count > indexPath.row {
                 cell.avatarStatusView.isHidden = false;
-                let account = AccountManager.getAccount(forJid: accounts[indexPath.row]);
-                cell.nameLabel.text = account?.name;
+                let account = AccountManager.getAccount(for: accounts[indexPath.row]);
+                cell.nameLabel.text = account?.name.stringValue;
                 let jid = BareJID(account!.name);
                 cell.avatarStatusView.set(name: nil, avatar: AvatarManager.instance.avatar(for: jid, on: jid), orDefault: AvatarManager.instance.defaultAvatar);
                 if let client = XmppService.instance.getClient(for: jid) {
@@ -258,14 +258,14 @@ class SettingsViewController: CustomTableViewController {
                             let regModule = client!.modulesManager.register(InBandRegistrationModule());
                             regModule.unregister({ (stanza) in
                                 DispatchQueue.main.async() {
-                                    AccountManager.deleteAccount(forJid: account);
+                                    AccountManager.deleteAccount(for: account);
                                     self.tableView.reloadData();
                                 }
                             })
                         }));
                     }
                     alert.addAction(UIAlertAction(title: "Remove from application", style: .default, handler: { (action) in
-                        AccountManager.deleteAccount(forJid: account);
+                        AccountManager.deleteAccount(for: account);
                         self.tableView.reloadData();
                     }));
                     alert.addAction(UIAlertAction(title: "Cancel", style: .default, handler: nil));

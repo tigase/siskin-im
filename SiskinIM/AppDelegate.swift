@@ -24,6 +24,7 @@ import UserNotifications
 import TigaseSwift
 //import CallKit
 import WebRTC
+import BackgroundTasks
 
 extension DBConnection {
     
@@ -38,6 +39,8 @@ extension DBConnection {
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     
+    fileprivate let backgroundRefreshTaskIdentifier = "org.tigase.messenger.mobile.refresh";
+    
     var window: UIWindow?
     var xmppService:XmppService! {
         return XmppService.instance;
@@ -47,6 +50,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        if #available(iOS 13, *) {
+            BGTaskScheduler.shared.register(forTaskWithIdentifier: backgroundRefreshTaskIdentifier, using: nil) { (task) in
+                self.handleAppRefresh(task: task as! BGAppRefreshTask);
+            }
+        }
         RTCInitFieldTrialDictionary([:]);
         RTCInitializeSSL();
         RTCSetupInternalTracer();
@@ -54,7 +62,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         Settings.initialize();
         AccountSettings.initialize();
         Appearance.sync();
-        xmppService.updateXmppClientInstance();
+        xmppService.initialize();
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
             // sending notifications not granted!
         }
@@ -69,7 +77,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.pushNotificationRegistrationFailed), name: Notification.Name("pushNotificationsRegistrationFailed"), object: nil);
         updateApplicationIconBadgeNumber(completionHandler: nil);
         
-        application.setMinimumBackgroundFetchInterval(UIApplication.backgroundFetchIntervalMinimum);
+        if #available(iOS 13, *) {
+        } else {
+            application.setMinimumBackgroundFetchInterval(UIApplication.backgroundFetchIntervalMinimum);
+        }
         
         (self.window?.rootViewController as? UISplitViewController)?.preferredDisplayMode = .allVisible;
         if AccountManager.getAccounts().isEmpty {
@@ -128,6 +139,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         print("keep online task expired at", taskId, NSDate());
         self.xmppService.backgroundTaskFinished();
         print("keep online calling end background task", taskId, NSDate());
+        if #available(iOS 13, *) {
+            scheduleAppRefresh();
+        }
         application.endBackgroundTask(taskId);
     }
     
@@ -149,6 +163,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
+        if #available(iOS 13, *) {
+            BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: backgroundRefreshTaskIdentifier);
+        }
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
         xmppService.applicationState = .active;
         applicationKeepOnlineOnAwayFinished(application);
@@ -267,6 +284,37 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
     }
     
+    @available(iOS 13, *)
+    func scheduleAppRefresh() {
+        let request = BGAppRefreshTaskRequest(identifier: backgroundRefreshTaskIdentifier);
+        request.earliestBeginDate = Date(timeIntervalSinceNow: 3500);
+        
+        do {
+            try BGTaskScheduler.shared.submit(request);
+        } catch {
+            print("Could not schedule app refresh: \(error)")
+        }
+    }
+    
+    @available(iOS 13, *)
+    func handleAppRefresh(task: BGAppRefreshTask) {
+        self.scheduleAppRefresh();
+        let fetchStart = Date();
+        print("starting fetching", fetchStart);
+        xmppService.preformFetch(completionHandler: {(result) in
+            let fetchEnd = Date();
+            let time = fetchEnd.timeIntervalSince(fetchStart);
+            print(Date(), "fetched date in \(time) seconds with result = \(result)");
+            task.setTaskCompleted(success: result != .failed);
+        });
+        
+        task.expirationHandler = {
+            print("task expiration reached, start", Date());
+            self.xmppService.performFetchExpired();
+            print("task expiration reached, end", Date());
+        }
+    }
+    
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         let content = response.notification.request.content;
         let userInfo = content.userInfo;
@@ -275,7 +323,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 let accountJid = BareJID(userInfo["account"] as! String);
                 let alert = CertificateErrorAlert.create(domain: accountJid.domain, certName: userInfo["cert-name"] as! String, certHash: userInfo["cert-hash-sha1"] as! String, issuerName: userInfo["issuer-name"] as? String, issuerHash: userInfo["issuer-hash-sha1"] as? String, onAccept: {
                     print("accepted certificate!");
-                    guard let account = AccountManager.getAccount(forJid: accountJid.stringValue) else {
+                    guard let account = AccountManager.getAccount(for: accountJid) else {
                         return;
                     }
                     var certInfo = account.serverCertificate;
@@ -283,7 +331,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     account.serverCertificate = certInfo;
                     account.active = true;
                     AccountSettings.LastError(accountJid).set(string: nil);
-                    AccountManager.updateAccount(account);
+                    AccountManager.save(account: account);
                 }, onDeny: nil);
                 
                 var topController = UIApplication.shared.keyWindow?.rootViewController;
@@ -513,20 +561,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        let fetchStart = Date();
-        print(Date(), "starting fetching data");
-        xmppService.preformFetch({(result) in
-            completionHandler(result);
-            let fetchEnd = Date();
-            let time = fetchEnd.timeIntervalSince(fetchStart);
-            print(Date(), "fetched date in \(time) seconds with result = \(result)");
-        });
+        if #available(iOS 13, *) {
+            
+        } else {
+            let fetchStart = Date();
+            print(Date(), "OLD: starting fetching data");
+            xmppService.preformFetch(completionHandler: {(result) in
+                completionHandler(result);
+                let fetchEnd = Date();
+                let time = fetchEnd.timeIntervalSince(fetchStart);
+                print(Date(), "OLD: fetched date in \(time) seconds with result = \(result)");
+            });
+        }
     }
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let tokenString = deviceToken.reduce("", {$0 + String(format: "%02X", $1)});
         
         print("Device Token:", tokenString)
+        print("Device Token:", deviceToken.map({ String(format: "%02x", $0 )}).joined());
         Settings.DeviceToken.setValue(tokenString);
     }
     

@@ -47,7 +47,7 @@ class AddAccountController: CustomTableViewController, UITextFieldDelegate {
         super.viewDidLoad();
         if account != nil {
             jidTextField.text = account;
-            passwordTextField.text = AccountManager.getAccountPassword(forJid: account!);
+            passwordTextField.text = AccountManager.getAccountPassword(for: BareJID(account)!);
             jidTextField.isEnabled = false;
         } else {
             navigationController?.navigationItem.leftBarButtonItem = nil;
@@ -111,9 +111,12 @@ class AddAccountController: CustomTableViewController, UITextFieldDelegate {
     
     func saveAccount(acceptedCertificate: SslCertificateInfo?) {
         print("sign in button clicked");
-        let account = AccountManager.getAccount(forJid: jidTextField.text!) ?? AccountManager.Account(name: jidTextField.text!);
+        guard let jid = BareJID(jidTextField.text) else {
+            return;
+        }
+        let account = AccountManager.getAccount(for: jid) ?? AccountManager.Account(name: jid);
         account.acceptCertificate(acceptedCertificate);
-        AccountManager.updateAccount(account);
+        AccountManager.save(account: account);
         account.password = passwordTextField.text!;
 
         onAccountAdded?();

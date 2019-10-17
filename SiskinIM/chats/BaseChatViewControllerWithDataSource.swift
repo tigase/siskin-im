@@ -38,7 +38,9 @@ class BaseChatViewControllerWithDataSource: BaseChatViewController, ChatViewData
      
         self.dataSource.refreshData(unread: chat.unread) { (firstUnread) in
             print("got first unread at:", firstUnread);
-            self.tableView.scrollToRow(at: IndexPath(row: firstUnread ?? 0, section: 0), at: .none, animated: true);
+            if self.tableView.numberOfRows(inSection: 0) > 0 {
+                self.tableView.scrollToRow(at: IndexPath(row: firstUnread ?? 0, section: 0), at: .none, animated: true);
+            }
         }
     }
     

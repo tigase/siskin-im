@@ -168,9 +168,9 @@ class RegisterAccountController: DataFormController, UITextFieldDelegate {
     }
     
     func saveAccount(acceptedCertificate: SslCertificateInfo?) {
-        let account = AccountManager.getAccount(forJid: self.account!.stringValue) ?? AccountManager.Account(name: self.account!.stringValue);
+        let account = AccountManager.getAccount(for: self.account!) ?? AccountManager.Account(name: self.account!);
         account.acceptCertificate(acceptedCertificate);
-        AccountManager.updateAccount(account);
+        AccountManager.save(account: account);
         account.password = self.password!;
         
         onAccountAdded?();
