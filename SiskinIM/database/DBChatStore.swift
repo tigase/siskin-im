@@ -385,6 +385,8 @@ open class DBChatStore {
                         self.unreadMessagesCount = self.unreadMessagesCount + 1;
                     }
                     NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
+                } else {
+                    print("not updated chat for", account, jid, message, timestamp, chat.timestamp, chat.lastMessage);
                 }
             }
             completionHandler();

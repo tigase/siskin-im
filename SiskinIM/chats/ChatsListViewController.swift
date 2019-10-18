@@ -367,11 +367,9 @@ class ChatsListViewController: CustomTableViewController {
         weak var controller: ChatsListViewController?;
 
         fileprivate var dispatcher = DispatchQueue(label: "chats_data_source", qos: .background);
-        
-        private var items: [DBChatProtocol] = [];
-        
+                
         var count: Int {
-            return items.count;
+            self.store.count;
         }
         
         init(controller: ChatsListViewController) {
@@ -384,23 +382,23 @@ class ChatsListViewController: CustomTableViewController {
             NotificationCenter.default.addObserver(self, selector: #selector(chatClosed), name: DBChatStore.CHAT_CLOSED, object: nil);
             NotificationCenter.default.addObserver(self, selector: #selector(chatUpdated), name: DBChatStore.CHAT_UPDATED, object: nil);
             
-            dispatcher.async {
+            applyActionsQueue.async {
                 DispatchQueue.main.sync {
-                    self.items = DBChatStore.instance.getChats().sorted(by: self.chatsSorter);
+                    self.store = ChatsStore(items: DBChatStore.instance.getChats().sorted(by: ChatsDataSource.chatsSorter));
                     self.controller?.tableView.reloadData();
                 }
             }
         }
         
         func item(at indexPath: IndexPath) -> DBChatProtocol? {
-            return items[indexPath.row];
+            return self.store.item(at: indexPath.row);
         }
         
         func getChat(at index: Int) -> DBChatProtocol? {
-            return items[index];
+            return self.store.item(at: index);
         }
 
-        func chatsSorter(i1: DBChatProtocol, i2: DBChatProtocol) -> Bool {
+        static func chatsSorter(i1: DBChatProtocol, i2: DBChatProtocol) -> Bool {
             return i1.timestamp.compare(i2.timestamp) == .orderedDescending;
         }
         
@@ -424,21 +422,7 @@ class ChatsListViewController: CustomTableViewController {
                 return;
             }
             
-            dispatcher.async {
-                var items = DispatchQueue.main.sync { return self.items };
-                guard let idx = items.firstIndex(where: { (item) -> Bool in
-                    item.id == opened.id
-                }) else {
-                    return;
-                }
-                
-                _ = items.remove(at: idx);
-                
-                DispatchQueue.main.async {
-                    self.items = items;
-                    self.controller?.tableView.deleteRows(at: [IndexPath(row: idx, section: 0)], with: .automatic);
-                }
-            }
+            self.removeItem(for: opened.account, jid: opened.jid.bareJid);
         }
         
         @objc func chatUpdated(_ notification: Notification) {
@@ -446,34 +430,7 @@ class ChatsListViewController: CustomTableViewController {
                 return;
             }
             
-            dispatcher.async {
-                var items = DispatchQueue.main.sync { return self.items };
-                guard let oldIdx = items.firstIndex(where: { (item) -> Bool in
-                    item.id == e.id;
-                }) else {
-                    return;
-                }
-                
-                let item = items.remove(at: oldIdx);
-                
-                let newIdx = items.firstIndex(where: { (it) -> Bool in
-                    it.timestamp.compare(item.timestamp) == .orderedAscending;
-                }) ?? items.count;
-                items.insert(item, at: newIdx);
-                
-                if oldIdx == newIdx {
-                    DispatchQueue.main.async {
-                        self.items = items;
-                        self.controller?.tableView.reloadRows(at: [IndexPath(row: newIdx, section: 0)], with: .automatic);
-                    }
-                } else {
-                    DispatchQueue.main.async {
-                        self.items = items;
-                        self.controller?.tableView.moveRow(at: IndexPath(row: oldIdx, section: 0), to: IndexPath(row: newIdx, section: 0));
-                        self.controller?.tableView.reloadRows(at: [IndexPath(row: newIdx, section: 0)], with: .automatic);
-                    }
-                }
-            }
+            self.refreshItem(for: e.account, with: e.jid.bareJid);
         }
         
         @objc func contactPresenceChanged(_ notification: Notification) {
@@ -499,63 +456,294 @@ class ChatsListViewController: CustomTableViewController {
             self.refreshItem(for: account, with: rosterItem.jid.bareJid);
         }
         
+        private var store: ChatsStore = ChatsStore();
+        private var actionQueue: [ChatsStoreQueueItem] = [];
+        private var actionSemaphore = DispatchSemaphore(value: 1);
+        private let applyActionsQueue = QueueDispatcher(label: "applyActionsQueue");
+        
+        private func applyActions() {
+            actionSemaphore.wait();
+            let actions = dispatcher.sync { () -> [ChatsStoreQueueItem] in
+                let tmp = self.actionQueue;
+                self.actionQueue = [];
+                return tmp;
+            }
+            
+            print("XX: executing for", actions.count, "actions");
+            
+            var store = DispatchQueue.main.sync { return self.store };
+            
+//            let removeIndexes = store.indexes(for: actions.filter { (item) -> Bool in
+//                item.action == .remove;
+//            });
+//            let refreshActions = actions.filter { (item) -> Bool in
+//                item.action == .refresh;
+//            };
+//            let refreshIndexes = store.indexes(for: refreshActions);
+//
+//            store.remove(for: removeIndexes);
+//
+//            let addActions = actions.filter { (item) -> Bool in
+//                return item.action == .add;
+//            }
+//
+//            addActions.forEach { (item) in
+//                _ = store.add(for: item)
+//            }
+//
+//            let addIndexes = store.indexes(for: addActions + refreshActions);
+
+            let removeIndexes = store.indexes(for: actions.filter { (item) -> Bool in
+                item.action != .add;
+            });
+            let refreshActions = actions.filter { (item) -> Bool in
+                item.action == .refresh;
+            };
+            let refreshIndexes = store.indexes(for: refreshActions);
+            let refreshAddActions = refreshIndexes.map { DBChatQueueItem(action: .add, chat: store.item(at: $0)!) };
+            
+            store.remove(for: removeIndexes);
+            
+            let addActions = actions.filter({ (item) -> Bool in
+                return item.action == .add;
+            }) + refreshAddActions;
+
+            addActions.forEach { (item) in
+                _ = store.add(for: item)
+            }
+            
+            let addIndexes = store.indexes(for: addActions);
+            
+            DispatchQueue.main.async {
+                self.store = store;
+                if let tableView = self.controller?.tableView {
+                    tableView.performBatchUpdates({
+//                        tableView.deleteRows(at: (removeIndexes + refreshIndexes).map{ IndexPath(row: $0, section: 0)}, with: .fade);
+                        tableView.deleteRows(at: removeIndexes.map{ IndexPath(row: $0, section: 0)}, with: .fade);
+                        tableView.insertRows(at: addIndexes.map { IndexPath(row: $0, section: 0)}, with: .fade);
+                    }, completion: { (result) in
+                        DispatchQueue.global().asyncAfter(deadline: .now() + 0.05) {
+                            self.actionSemaphore.signal();
+                        }
+                    })
+                } else {
+                    print("failed to access table view");
+                }
+            }
+        }
+        
         func refreshItem(for account: BareJID, with jid: BareJID) {
             dispatcher.async {
-                var items = DispatchQueue.main.sync { return self.items };
-                guard let idx = items.firstIndex(where: { (item) -> Bool in
-                    item.account == account && item.jid.bareJid == jid;
-                }) else {
-                    return;
+                if let idx = self.actionQueue.firstIndex(where: { (it) -> Bool in
+                    return it.equals(account: account, jid: jid);
+                }) {
+                    let it = self.actionQueue[idx];
+                    switch it.action {
+                    case .add:
+                        return;
+                    case .remove:
+                        return;
+                    case .refresh:
+                        // this should not happen
+                        return;
+                    }
+                } else {
+                    self.actionQueue.append(AccountJidQueueItem(action: .refresh, account: account, jid: jid));
                 }
-                
-                DispatchQueue.main.async {
-                    self.items = items;
-                    self.controller?.tableView.reloadRows(at: [IndexPath(row: idx, section: 0)], with: .automatic);
+                if self.actionQueue.count == 1{
+                    self.applyActionsQueue.async {
+                        self.applyActions();
+                    }
                 }
-
             }
         }
         
         func addItem(chat opened: DBChatProtocol) {
             dispatcher.async {
                 print("opened chat account =", opened.account, ", jid =", opened.jid)
-                
-                var items = DispatchQueue.main.sync { return self.items };
-                
-                guard items.firstIndex(where: { (item) -> Bool in
-                    item.id == opened.id
-                }) == nil else {
-                    return;
+                if let idx = self.actionQueue.firstIndex(where: { (it) -> Bool in
+                    return it.equals(chat: opened);
+                }) {
+                    let it = self.actionQueue[idx];
+                    switch it.action {
+                    case .add:
+                        return;
+                    case .remove:
+                        self.actionQueue.remove(at: idx);
+                        self.actionQueue.append(DBChatQueueItem(action: .refresh, chat: opened));
+                        return;
+                    case .refresh:
+                        // this should not happen
+                        return;
+                    }
+                } else {
+                    self.actionQueue.append(DBChatQueueItem(action: .add, chat: opened));
                 }
-                
-                let item = opened;
-                let idx = items.firstIndex(where: { (it) -> Bool in
-                    it.timestamp.compare(item.timestamp) == .orderedAscending;
-                }) ?? items.count;
-                items.insert(item, at: idx);
-                
-                DispatchQueue.main.async {
-                    self.items = items;
-                    self.controller?.tableView.insertRows(at: [IndexPath(row: idx, section: 0)], with: .automatic);
+                if self.actionQueue.count == 1{
+                    self.applyActionsQueue.async {
+                        self.applyActions();
+                    }
                 }
             }
         }
         
         func removeItem(for account: BareJID, jid: BareJID) {
             dispatcher.async {
-                var items = DispatchQueue.main.sync { return self.items };
-                guard let idx = items.firstIndex(where: { (item) -> Bool in
-                    item.account == account && item.jid.bareJid == jid;
-                }) else {
+                if let idx = self.actionQueue.firstIndex(where: { (it) -> Bool in
+                    return it.equals(account: account, jid: jid);
+                }) {
+                    let it = self.actionQueue[idx];
+                    switch it.action {
+                    case .add:
+                        self.actionQueue.remove(at: idx);
+                        return;
+                    case .remove:
+                        return;
+                    case .refresh:
+                        self.actionQueue.remove(at: idx);
+                        self.actionQueue.append(AccountJidQueueItem(action: .remove, account: account, jid: jid));
+                        return;
+                    }
+                } else {
+                    self.actionQueue.append(AccountJidQueueItem(action: .remove, account: account, jid: jid));
+                }
+                if self.actionQueue.count == 1{
+                    self.applyActionsQueue.async {
+                        self.applyActions();
+                    }
+                }
+            }
+        }
+        
+        enum Action {
+            case add
+            case refresh
+            case remove
+        }
+        
+        class ChatsStoreQueueItem: CustomStringConvertible {
+            
+            let action: Action;
+            
+            var description: String {
+                switch action {
+                case .add:
+                    return "add";
+                case .remove:
+                    return "remove";
+                case .refresh:
+                    return "refresh";
+                }
+            }
+            
+            init(action: Action) {
+                self.action = action;
+            }
+            
+            func equals(chat: DBChatProtocol) -> Bool {
+                return false;
+            }
+         
+            func equals(account: BareJID, jid: BareJID) -> Bool {
+                return false;
+            }
+
+        }
+
+        class DBChatQueueItem: ChatsStoreQueueItem {
+            
+            let chat: DBChatProtocol;
+            
+            override var description: String {
+                return "(\(super.description), \(chat.account.stringValue), \(chat.jid.bareJid))";
+            }
+            
+            init(action: Action, chat: DBChatProtocol) {
+                self.chat = chat;
+                super.init(action: action);
+            }
+            
+            override func equals(chat: DBChatProtocol) -> Bool {
+                return chat.id == self.chat.id;
+            }
+            
+            override func equals(account: BareJID, jid: BareJID) -> Bool {
+                return chat.account == account && chat.jid.bareJid == jid;
+            }
+            
+        }
+        
+        class AccountJidQueueItem: ChatsStoreQueueItem {
+            
+            private let account: BareJID;
+            private let jid: BareJID;
+
+            override var description: String {
+                return "(\(super.description), \(account.stringValue), \(jid))";
+            }
+            
+            init(action: Action, account: BareJID, jid: BareJID) {
+                self.account = account;
+                self.jid = jid;
+                super.init(action: action);
+            }
+            
+            override func equals(chat: DBChatProtocol) -> Bool {
+                return chat.account == account && chat.jid.bareJid == jid;
+            }
+            
+            override func equals(account: BareJID, jid: BareJID) -> Bool {
+                return self.account == account && self.jid == jid;
+            }
+
+        }
+
+        struct ChatsStore {
+            
+            fileprivate var items: [DBChatProtocol] = [];
+            var count: Int {
+                return items.count;
+            }
+            
+            func item(at idx: Int) -> DBChatProtocol? {
+                return items[idx];
+            }
+            
+            func indexes(for queue: [ChatsStoreQueueItem]) -> [Int] {
+                var results: [Int] = [];
+                for item in queue {
+                    if let idx = index(for: item) {
+                        results.append(idx);
+                    }
+                }
+                return results;
+            }
+            
+            func index(for queueItem: ChatsStoreQueueItem) -> Int? {
+                return self.items.firstIndex(where: queueItem.equals(chat:));
+            }
+            
+            mutating func remove(for indexes: [Int]) {
+                indexes.sorted(by: { (i1, i2) -> Bool in
+                    return i2 < i1;
+                }).forEach { idx in
+                    self.items.remove(at: idx)
+                }
+            }
+            
+            mutating func add(for queueItem: ChatsStoreQueueItem) {
+                guard let item = queueItem as? DBChatQueueItem else {
                     return;
                 }
                 
-                _ = items.remove(at: idx);
-                
-                DispatchQueue.main.async {
-                    self.items = items;
-                    self.controller?.tableView.deleteRows(at: [IndexPath(row: idx, section: 0)], with: .automatic);
+                guard items.firstIndex(where: item.equals(chat:)) == nil else {
+                    return;
                 }
+
+                let idx = items.firstIndex(where: { (it) -> Bool in
+                    it.timestamp.compare(item.chat.timestamp) == .orderedAscending;
+                }) ?? items.count;
+                items.insert(item.chat, at: idx);
             }
         }
 
@@ -566,4 +754,3 @@ class ChatsListViewController: CustomTableViewController {
         case byAvailablityAndTime
     }
 }
-

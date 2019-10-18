@@ -318,7 +318,6 @@ class MessageEventHandler: XmppServiceEventHandler {
             }
             let syncMessagesSince = max(DBChatStore.instance.lastMessageTimestamp(for: account), Date(timeIntervalSinceNow: -1 * syncPeriod * 3600));
                 
-            print("synchronizing messages for account:", account)
             MessageEventHandler.syncMessages(for: account, since: syncMessagesSince);
         }
     }
@@ -330,15 +329,12 @@ class MessageEventHandler: XmppServiceEventHandler {
         }
         
         let queryId = UUID().uuidString;
-        mamModule.queryItems(start: since, queryId: queryId, rsm: rsmQuery ?? RSM.Query(max: 100), onSuccess: { (queryid,complete,rsmResponse) in
-            if rsmResponse != nil && rsmResponse!.count == 100 && !complete {
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                    MessageEventHandler.syncMessages(for: account, since: since, rsmQuery: rsmResponse?.next(100));
-                }
+        mamModule.queryItems(start: since, queryId: queryId, rsm: rsmQuery ?? RSM.Query(max: 150), onSuccess: { (queryid,complete,rsmResponse) in
+            if rsmResponse != nil && !complete {
+                MessageEventHandler.syncMessages(for: account, since: since, rsmQuery: rsmResponse?.next(150));
             } else {
                 NotificationCenter.default.post(name: MessageEventHandler.MESSAGE_SYNCHRONIZATION_FINISHED, object: self, userInfo: ["account": account]);
             }
-            print("synchronized", rsmResponse?.count as Any, "messages for", account);
         }) { (error, stanza) in
             print("could not synchronize message archive for:", account, "got", error as Any, stanza as Any);
             NotificationCenter.default.post(name: MessageEventHandler.MESSAGE_SYNCHRONIZATION_FINISHED, object: self, userInfo: ["account": account]);
