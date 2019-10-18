@@ -683,7 +683,7 @@ open class XmppService: Logger, EventHandler {
             signalStorage.setup(withContext: signalContext);
             _ = client.modulesManager.register(OMEMOModule(aesGCMEngine: OpenSSL_AES_GCM_Engine(), signalContext: signalContext, signalStorage: signalStorage));
             
-    //        client.sessionObject.setUserProperty(SessionObject.COMPRESSION_DISABLED, value: true);
+            client.sessionObject.setUserProperty(SessionObject.COMPRESSION_DISABLED, value: true);
             client.modulesManager.initIfRequired();
         }
         
