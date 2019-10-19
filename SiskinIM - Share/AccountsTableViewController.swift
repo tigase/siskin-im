@@ -46,7 +46,7 @@ class AccountsTableViewController: UITableViewController {
         
         if lastResultCode == noErr {
             if let results = result as? [[String:NSObject]] {
-                for var r in results {
+                for r in results {
                     let name = r[String(kSecAttrAccount)] as! String;
                     if let data = r[String(kSecAttrGeneric)] as? NSData {
                         let dict = NSKeyedUnarchiver.unarchiveObject(with: data as Data) as? [String:AnyObject];

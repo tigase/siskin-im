@@ -493,25 +493,18 @@ class ChatsListViewController: CustomTableViewController {
 //
 //            let addIndexes = store.indexes(for: addActions + refreshActions);
 
-            let removeIndexes = store.indexes(for: actions.filter { (item) -> Bool in
-                item.action != .add;
-            });
-            let refreshActions = actions.filter { (item) -> Bool in
-                item.action == .refresh;
-            };
-            let refreshIndexes = store.indexes(for: refreshActions);
-            let refreshAddActions = refreshIndexes.map { DBChatQueueItem(action: .add, chat: store.item(at: $0)!) };
+            let removeIndexes = store.indexes(for: actions);
             
+            let addDBChatItems = actions.filter({ item -> Bool in return item.action != .remove && item is DBChatQueueItem }).map({ (item) -> DBChatQueueItem in
+                return item as! DBChatQueueItem;
+            });
+            
+            let addAccountJidItems = actions.filter({ item -> Bool in return item.action != .remove && item is AccountJidQueueItem });
+            let addMappedAccountJidItems = store.indexes(for: addAccountJidItems).map(({ DBChatQueueItem(action: .add, chat: store.item(at: $0)!) }));
+
             store.remove(for: removeIndexes);
             
-            let addActions = actions.filter({ (item) -> Bool in
-                return item.action == .add;
-            }) + refreshAddActions;
-
-            addActions.forEach { (item) in
-                _ = store.add(for: item)
-            }
-            
+            let addActions = (addDBChatItems + addMappedAccountJidItems).filter({ item -> Bool in return store.add(for: item); });
             let addIndexes = store.indexes(for: addActions);
             
             DispatchQueue.main.async {
@@ -519,7 +512,9 @@ class ChatsListViewController: CustomTableViewController {
                 if let tableView = self.controller?.tableView {
                     tableView.performBatchUpdates({
 //                        tableView.deleteRows(at: (removeIndexes + refreshIndexes).map{ IndexPath(row: $0, section: 0)}, with: .fade);
+                        print("removing rows:", removeIndexes);
                         tableView.deleteRows(at: removeIndexes.map{ IndexPath(row: $0, section: 0)}, with: .fade);
+                        print("adding rows:", addIndexes);
                         tableView.insertRows(at: addIndexes.map { IndexPath(row: $0, section: 0)}, with: .fade);
                     }, completion: { (result) in
                         DispatchQueue.global().asyncAfter(deadline: .now() + 0.05) {
@@ -731,19 +726,20 @@ class ChatsListViewController: CustomTableViewController {
                 }
             }
             
-            mutating func add(for queueItem: ChatsStoreQueueItem) {
+            mutating func add(for queueItem: ChatsStoreQueueItem) -> Bool {
                 guard let item = queueItem as? DBChatQueueItem else {
-                    return;
+                    return false;
                 }
                 
                 guard items.firstIndex(where: item.equals(chat:)) == nil else {
-                    return;
+                    return false;
                 }
 
                 let idx = items.firstIndex(where: { (it) -> Bool in
                     it.timestamp.compare(item.chat.timestamp) == .orderedAscending;
                 }) ?? items.count;
                 items.insert(item.chat, at: idx);
+                return true;
             }
         }
 

@@ -562,7 +562,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
     func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         if #available(iOS 13, *) {
-            
+            completionHandler(.noData);
         } else {
             let fetchStart = Date();
             print(Date(), "OLD: starting fetching data");
