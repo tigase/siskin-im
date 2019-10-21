@@ -553,6 +553,10 @@ open class XmppService: Logger, EventHandler {
             return;
         }
         
+        if let seeOtherHostStr = AccountSettings.reconnectionLocation(account.name).getString(), let seeOtherHost = Data(base64Encoded: seeOtherHostStr), let val = try? JSONDecoder().decode(XMPPSrvRecord.self, from: seeOtherHost) {
+            client.sessionObject.setUserProperty(SocketConnector.SEE_OTHER_HOST_KEY, value: val);
+        }
+
         client.connectionConfiguration.setUserPassword(account.password);
         SslCertificateValidator.setAcceptedSslCertificate(client.sessionObject, fingerprint: ((account.serverCertificate?["accepted"] as? Bool) ?? false) ? (account.serverCertificate?["cert-hash-sha1"] as? String) : nil);
 
@@ -600,9 +604,6 @@ open class XmppService: Logger, EventHandler {
 
         let client = XMPPClient();
         client.connectionConfiguration.setUserJID(jid);
-        if let seeOtherHostStr = AccountSettings.reconnectionLocation(jid).getString(), let seeOtherHost = Data(base64Encoded: seeOtherHostStr), let val = try? JSONDecoder().decode(XMPPSrvRecord.self, from: seeOtherHost) {
-            client.sessionObject.setUserProperty(SocketConnector.SEE_OTHER_HOST_KEY, value: val);
-        }
         client.keepaliveTimeout = 0;
         registerModules(client);
         

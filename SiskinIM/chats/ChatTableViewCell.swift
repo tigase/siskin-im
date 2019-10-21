@@ -247,7 +247,11 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
             }
         }
         self.stateView?.textColor = self.messageTextView.textColor;
-        self.timestampView?.textColor = self.messageTextView.textColor;
+        if messageFrameView != nil {
+            self.timestampView?.textColor = Appearance.current.labelColor;
+        } else {
+            self.timestampView?.textColor = self.messageTextView.textColor;
+        }
     }
     
     @objc func actionMore(_ sender: UIMenuController) {
