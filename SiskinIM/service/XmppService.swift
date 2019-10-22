@@ -182,9 +182,6 @@ open class XmppService: Logger, EventHandler {
         case let e as SocketConnector.DisconnectedEvent:
             networkAvailable = reachability.isConnectedToNetwork();
             if let jid = e.sessionObject.userBareJid {
-                DispatchQueue.global(qos: .default).async {
-                    NotificationCenter.default.post(name: XmppService.ACCOUNT_STATE_CHANGED, object: self, userInfo: ["account":jid.stringValue]);
-                }
                 if let client = self.getClient(forJid: jid) {
                     if e.clean, let connDetails = e.connectionDetails, let json = try? JSONEncoder().encode(connDetails) {
                         AccountSettings.reconnectionLocation(jid).set(string: json.base64EncodedString());
@@ -193,6 +190,9 @@ open class XmppService: Logger, EventHandler {
                     }
                     
                     disconnected(client: client);
+                }
+                DispatchQueue.global(qos: .default).async {
+                    NotificationCenter.default.post(name: XmppService.ACCOUNT_STATE_CHANGED, object: self, userInfo: ["account":jid.stringValue]);
                 }
             }
         case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
