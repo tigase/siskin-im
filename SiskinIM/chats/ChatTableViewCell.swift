@@ -229,6 +229,9 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
         }
         self.messageTextView.attributedText = attrText;
         if item.state.isError {
+            if (self.messageTextView.text?.isEmpty ?? true), let error = item.error {
+                self.messageTextView.text = "Error: \(error)";
+            }
             if item.state.direction == .incoming {
                 self.messageTextView.textColor = UIColor.red;
             } else {
