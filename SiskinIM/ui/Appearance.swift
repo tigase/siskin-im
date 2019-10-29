@@ -52,7 +52,7 @@ class Appearance {
     
     static func settings() -> (ColorType,SubColorType) {
         let val = Settings.AppearanceTheme.getString()!.split(separator: "-");
-        let colorType = ColorType(rawValue: String(val[0]))!;
+        let colorType = ColorType(rawValue: String(val[0])) ?? .classic;
         let subType: SubColorType = val.count == 1 ? .auto : SubColorType(rawValue: String(val[1]))!;
         return (colorType, subType);
     }

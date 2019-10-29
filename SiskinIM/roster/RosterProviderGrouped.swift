@@ -57,20 +57,20 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
         }
         if let item = findItemFor(account: e.sessionObject.userBareJid!, jid: e.presence.from!) {
             let presence = PresenceModule.getPresenceStore(e.sessionObject).getBestPresence(for: e.presence.from!.bareJid);
-            let changed = order != .alphabetical && item.presence?.show != presence?.show;
+//            let changed = order != .alphabetical && item.presence?.show != presence?.show;
             item.update(presence: presence);
 
             let fromPos = positionsFor(item: item);
-            if changed {
+//            if changed {
                 if updateItems() {
                     notify(refresh: true);
                     return;
                 }
                 let toPos = positionsFor(item: item);
                 notify(from: fromPos, to: toPos);
-            } else {
-                notify(from: fromPos, to: fromPos);
-            }
+//            } else {
+//                notify(from: fromPos, to: fromPos);
+//            }
         }
     }
     

@@ -175,9 +175,9 @@ open class AccountManager {
             }
         }
         
-        open var password:String {
+        open var password:String? {
             get {
-                return AccountManager.getAccountPassword(for: name)!;
+                return AccountManager.getAccountPassword(for: name);
             }
             set {
                 AccountManager.save(account: self, withPassword: newValue);

@@ -323,7 +323,7 @@ open class XmppService: Logger, EventHandler {
             return;
         }
         
-        dispatcher.async {
+        dispatcher.async(flags: .barrier) {
             if let client = self.clients[account.name] {
                 self.disconnect(client: client);
             } else if let client = self.initializeClient(jid: account.name) {
@@ -612,7 +612,7 @@ open class XmppService: Logger, EventHandler {
     }
     
     fileprivate func register(client: XMPPClient, for account: BareJID) -> XMPPClient {
-        self.dispatcher.sync {
+        self.dispatcher.sync(flags: .barrier) {
             self.registerEventHandlers(client);
             self.clients[account] = client;
         }
@@ -623,7 +623,7 @@ open class XmppService: Logger, EventHandler {
     }
     
     fileprivate func unregisterClient(for account: BareJID) {
-        guard let client = self.dispatcher.sync(execute: {  return self.clients.removeValue(forKey: account) }) else {
+        guard let client = self.dispatcher.sync(flags: .barrier, execute: {  return self.clients.removeValue(forKey: account) }) else {
             return;
         }
         if let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) {
