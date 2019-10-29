@@ -192,7 +192,7 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
                     });
                     request.httpMethod = "PUT";
                     request.httpBodyStream = inputStream;
-                    request.addValue(String(size), forHTTPHeaderField: "Content-Lenght");
+                    request.addValue(String(size), forHTTPHeaderField: "Content-Length");
                     request.addValue(mimeType, forHTTPHeaderField: "Content-Type");
                     let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: OperationQueue.main);
                     session.dataTask(with: request) { (data, response, error) in

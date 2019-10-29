@@ -610,7 +610,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             } else if body != nil {
                 if sender != nil {
                     let nickname = userInfo[AnyHashable("nickname")] as? String;
-                    notifyNewMessage(account: account, sender: sender!, body: body!, type: nickname == nil ? "chat" : "muc", data: userInfo, isPush: true) {
+                    let isMuc = DBChatStore.instance.getChat(for: account.bareJid, with: sender!.bareJid) as? DBRoom != nil;
+                    notifyNewMessage(account: account, sender: sender!, body: body!, type: (nickname == nil && !isMuc) ? "chat" : "muc", data: userInfo, isPush: true) {
                         completionHandler(.newData);
                     }
                     return;
@@ -651,9 +652,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         guard userInfo["carbonAction"] == nil else {
             return;
         }
-        
+
+        let isMuc = DBChatStore.instance.getChat(for: account.bareJid, with: sender.bareJid) as? DBRoom != nil;
         var alertBody: String?;
-        switch (type ?? "chat") {
+        switch (isMuc ? "muc" : (type ?? "chat")) {
         case "muc":
             guard let mucModule: MucModule = xmppService.getClient(forJid: account.bareJid)?.modulesManager.getModule(MucModule.ID) else {
                 return;

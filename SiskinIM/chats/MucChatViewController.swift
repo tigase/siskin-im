@@ -267,8 +267,9 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         }
     }
 
-    func refreshRoomInfo(_ room: Room) {
+    func refreshRoomInfo(_ room: DBRoom) {
         titleView.state = room.state;
+        titleView.name = room.name ?? jid.stringValue;
     }
 
 }
