@@ -20,6 +20,7 @@
 //
 
 import Foundation
+import Shared
 import TigaseSwift
 import TigaseSwiftOMEMO
 

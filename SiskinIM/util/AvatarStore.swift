@@ -20,6 +20,7 @@
 //
 
 import UIKit
+import Shared
 import TigaseSwift
 
 open class AvatarStore {

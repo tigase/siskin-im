@@ -1,5 +1,5 @@
 //
-// OpenSSL_AES_GCM_Engine.swift
+// NotificationCategory.swift
 //
 // Siskin IM
 // Copyright (C) 2019 "Tigase, Inc." <office@tigase.com>
@@ -18,15 +18,22 @@
 // along with this program. Look for COPYING file in the top folder.
 // If not, see https://www.gnu.org/licenses/.
 //
+
 import Foundation
-import TigaseSwiftOMEMO
-import Shared
 
-class OpenSSL_AES_GCM_Engine: Cipher.AES_GCM, AES_GCM_Engine {
-     
-    override init() {
-        super.init();
+public enum NotificationCategory: String {
+    case UNKNOWN
+    case ERROR
+    case MESSAGE
+    case SUBSCRIPTION_REQUEST
+    case MUC_ROOM_INVITATION
+    case CALL
+    case UNSENT_MESSAGES
+
+    public static func from(identifier: String?) -> NotificationCategory {
+        guard let str = identifier else {
+            return .UNKNOWN;
+        }
+        return NotificationCategory(rawValue: str) ?? .UNKNOWN;
     }
-    
 }
-

@@ -41,7 +41,6 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
     
     var chat: DBChatProtocol!;
     
-    var dbConnection:DBConnection!;
     var xmppService:XmppService!;
     
     var account:BareJID!;
@@ -59,7 +58,6 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         
     override func viewDidLoad() {
         xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
-        dbConnection = (UIApplication.shared.delegate as! AppDelegate).dbConnection;
         super.viewDidLoad()
         if #available(iOS 13.0, *) {
             overrideUserInterfaceStyle = .light
@@ -130,7 +128,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
                 }
             }
             UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
-            self.xmppService.dbChatHistoryStore.markAsRead(for: self.account, with: self.jid);
+//            self.xmppService.dbChatHistoryStore.markAsRead(for: self.account, with: self.jid);
         }
     }
     

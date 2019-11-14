@@ -25,16 +25,14 @@ import UserNotifications
 import TigaseSwift
 
 class ChatsListViewController: CustomTableViewController {
-    var dbConnection:DBConnection!;
     var xmppService:XmppService!;
     
     @IBOutlet var addMucButton: UIBarButtonItem!
     
-    var dataSource: ChatsDataSource!;
+    var dataSource: ChatsDataSource?;
     
     override func viewDidLoad() {
         xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
-        dbConnection = (UIApplication.shared.delegate as! AppDelegate).dbConnection;
         dataSource = ChatsDataSource(controller: self);
         super.viewDidLoad();
         
@@ -42,11 +40,15 @@ class ChatsListViewController: CustomTableViewController {
         tableView.estimatedRowHeight = 66.0;
         tableView.dataSource = self;
         NotificationCenter.default.addObserver(self, selector: #selector(ChatsListViewController.unreadCountChanged), name: DBChatStore.UNREAD_MESSAGES_COUNT_CHANGED, object: nil);
+//        NotificationCenter.default.addObserver(self, selector: #selector(appMovedToBackground), name: UIApplication.didEnterBackgroundNotification, object: nil);
         self.updateBadge();
     }
     
     override func viewWillAppear(_ animated: Bool) {
         self.navigationController?.navigationBar.backgroundColor = Appearance.current.controlBackgroundColor;
+//        if dataSource == nil {
+//            dataSource = ChatsDataSource(controller: self);
+//        }
         super.viewWillAppear(animated);
     }
 
@@ -58,6 +60,12 @@ class ChatsListViewController: CustomTableViewController {
         NotificationCenter.default.removeObserver(self);
     }
     
+//    @objc func appMovedToBackground(_ notification: Notification) {
+//        DispatchQueue.main.async {
+//            self.dataSource = nil;
+//        }
+//    }
+//    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -68,14 +76,14 @@ class ChatsListViewController: CustomTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return dataSource.count;
+        return dataSource?.count ?? 0;
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cellIdentifier = Settings.EnableNewUI.getBool() ? "ChatsListTableViewCellNew" : "ChatsListTableViewCell";
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath as IndexPath) as! ChatsListTableViewCell;
         
-        if let item = dataSource.item(at: indexPath) {
+        if let item = dataSource!.item(at: indexPath) {
             cell.nameLabel.textColor = Appearance.current.labelColor;
             cell.nameLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.nameLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.nameLabel.font.pointSize);
 //            if Settings.EnableNewUI.getBool() {
@@ -139,7 +147,7 @@ class ChatsListViewController: CustomTableViewController {
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == UITableViewCell.EditingStyle.delete {
             if indexPath.section == 0 {
-                guard let item = dataSource.item(at: indexPath) else {
+                guard let item = dataSource!.item(at: indexPath) else {
                     return;
                 }
                 
@@ -224,7 +232,7 @@ class ChatsListViewController: CustomTableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath as IndexPath, animated: true);
-        guard let item = dataSource.item(at: indexPath) else {
+        guard let item = dataSource!.item(at: indexPath) else {
             return;
         }
         var identifier: String!;

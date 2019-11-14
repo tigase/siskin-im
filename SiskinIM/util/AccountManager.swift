@@ -22,6 +22,7 @@
 
 import Foundation
 import Security
+import Shared
 import TigaseSwift
 
 
@@ -147,6 +148,7 @@ open class AccountManager {
         }
         
         AccountSettings.removeSettings(for: account.name.stringValue);
+        NotificationEncryptionKeys.set(key: nil, for: account.name);
         AccountManager.accountChanged(account: account);
 
         return true;
@@ -232,7 +234,24 @@ open class AccountManager {
             }
         }
         
-        open var pushServiceJid: JID? {
+        open var pushSettings: SiskinPushNotificationsModule.PushSettings? {
+            get {
+                guard let settings = SiskinPushNotificationsModule.PushSettings(dictionary: data["push"] as? [String: Any]) else {
+                    guard let pushServiceNode = self.pushServiceNode, let deviceId = Settings.DeviceToken.string() else {
+                        return nil;
+                    }
+                    return SiskinPushNotificationsModule.PushSettings(jid: self.pushServiceJid ?? XmppService.pushServiceJid, node: pushServiceNode, deviceId: deviceId, encryption: false);
+                }
+                return settings;
+            }
+            set {
+                data["push"] = newValue?.dictionary();
+                data.removeValue(forKey: "pushServiceJid");
+                data.removeValue(forKey: "pushServiceNode");
+            }
+        }
+        
+        private var pushServiceJid: JID? {
             get {
                 return JID(data["pushServiceJid"] as? String);
             }
@@ -245,7 +264,7 @@ open class AccountManager {
             }
         }
         
-        open var pushServiceNode: String? {
+        private var pushServiceNode: String? {
             get {
                 return data["pushServiceNode"] as? String;
             }

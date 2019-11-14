@@ -1,5 +1,5 @@
 //
-// OpenSSL_AES_GCM_Engine.swift
+// Shared.h
 //
 // Siskin IM
 // Copyright (C) 2019 "Tigase, Inc." <office@tigase.com>
@@ -18,15 +18,15 @@
 // along with this program. Look for COPYING file in the top folder.
 // If not, see https://www.gnu.org/licenses/.
 //
-import Foundation
-import TigaseSwiftOMEMO
-import Shared
 
-class OpenSSL_AES_GCM_Engine: Cipher.AES_GCM, AES_GCM_Engine {
-     
-    override init() {
-        super.init();
-    }
-    
-}
+#import <Foundation/Foundation.h>
+
+//! Project version number for Shared.
+//FOUNDATION_EXPORT double SharedVersionNumber;
+
+//! Project version string for Shared.
+//FOUNDATION_EXPORT const unsigned char SharedVersionString[];
+
+// In this header, you should import all the public headers of your framework using statements like #import <Shared/PublicHeader.h>
+
 

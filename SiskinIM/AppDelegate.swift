@@ -23,21 +23,12 @@ import UIKit
 import UserNotifications
 import TigaseSwift
 //import CallKit
+import Shared
 import WebRTC
 import BackgroundTasks
 
-extension DBConnection {
-    
-    static var main: DBConnection = {
-        let conn = try! DBConnection(dbFilename: "mobile_messenger1.db");
-        try! DBSchemaManager(dbConnection: conn).upgradeSchema();
-        return conn;
-    }();
-    
-}
-
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate {
     
     fileprivate let backgroundRefreshTaskIdentifier = "org.tigase.messenger.mobile.refresh";
     
@@ -49,12 +40,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         return DBConnection.main;
     }
     
+    let notificationCenterDelegate = NotificationCenterDelegate();
+    
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         if #available(iOS 13, *) {
             BGTaskScheduler.shared.register(forTaskWithIdentifier: backgroundRefreshTaskIdentifier, using: nil) { (task) in
                 self.handleAppRefresh(task: task as! BGAppRefreshTask);
             }
         }
+        try! DBConnection.migrateToGroupIfNeeded();
         RTCInitFieldTrialDictionary([:]);
         RTCInitializeSSL();
         RTCSetupInternalTracer();
@@ -62,11 +56,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         Settings.initialize();
         AccountSettings.initialize();
         Appearance.sync();
+        NotificationManager.instance.initialize(provider: MainNotificationManagerProvider());
         xmppService.initialize();
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
             // sending notifications not granted!
         }
-        UNUserNotificationCenter.current().delegate = self;
+        UNUserNotificationCenter.current().delegate = self.notificationCenterDelegate;
+        let categories = [
+            UNNotificationCategory(identifier: "MESSAGE", actions: [], intentIdentifiers: [], hiddenPreviewsBodyPlaceholder: "New message", options: [.customDismissAction])
+        ];
+        UNUserNotificationCenter.current().setNotificationCategories(Set(categories));
         application.registerForRemoteNotifications();
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.unreadMessagesCountChanged), name: DBChatStore.UNREAD_MESSAGES_COUNT_CHANGED, object: nil);
@@ -142,6 +141,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         if #available(iOS 13, *) {
             scheduleAppRefresh();
         }
+        print("keep online task ended", taskId, NSDate());
         application.endBackgroundTask(taskId);
     }
     
@@ -151,7 +151,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
-            let toDiscard = notifications.filter({(notification) in  notification.request.content.categoryIdentifier == "MESSAGE_NO_SENDER" || notification.request.content.categoryIdentifier == "UNSENT_MESSAGES"}).map({ (notiication) -> String in
+            let toDiscard = notifications.filter({(notification) in
+                switch NotificationCategory.from(identifier: notification.request.content.categoryIdentifier) {
+                case .UNSENT_MESSAGES:
+                    return true;
+                case .MESSAGE:
+                    return notification.request.content.userInfo["sender"] as? String == nil;
+                default:
+                    return false;
+                }
+                }).map({ (notiication) -> String in
                 return notiication.request.identifier;
             });
             guard !toDiscard.isEmpty else {
@@ -167,6 +176,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: backgroundRefreshTaskIdentifier);
         }
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        
+        // TODO: XmppService::initialize() call in application:willFinishLaunchingWithOptions results in starting a connections while it may not always be desired if ie. app is relauched in the background due to crash
+        // Shouldn't it wait for reconnection till it becomes active? or background refresh task is called?
+        
         xmppService.applicationState = .active;
         applicationKeepOnlineOnAwayFinished(application);
 
@@ -315,216 +328,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
     }
     
-    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        let content = response.notification.request.content;
-        let userInfo = content.userInfo;
-        if content.categoryIdentifier == "ERROR" {
-            if userInfo["cert-name"] != nil {
-                let accountJid = BareJID(userInfo["account"] as! String);
-                let alert = CertificateErrorAlert.create(domain: accountJid.domain, certName: userInfo["cert-name"] as! String, certHash: userInfo["cert-hash-sha1"] as! String, issuerName: userInfo["issuer-name"] as? String, issuerHash: userInfo["issuer-hash-sha1"] as? String, onAccept: {
-                    print("accepted certificate!");
-                    guard let account = AccountManager.getAccount(for: accountJid) else {
-                        return;
-                    }
-                    var certInfo = account.serverCertificate;
-                    certInfo?["accepted"] = true as NSObject;
-                    account.serverCertificate = certInfo;
-                    account.active = true;
-                    AccountSettings.LastError(accountJid).set(string: nil);
-                    AccountManager.save(account: account);
-                }, onDeny: nil);
-                
-                var topController = UIApplication.shared.keyWindow?.rootViewController;
-                while (topController?.presentedViewController != nil) {
-                    topController = topController?.presentedViewController;
-                }
-                
-                topController?.present(alert, animated: true, completion: nil);
-            }
-            if let authError = userInfo["auth-error-type"] {
-                let accountJid = BareJID(userInfo["account"] as! String);
-                
-                let alert = UIAlertController(title: "Authentication issue", message: "Authentication for account \(accountJid) failed: \(authError)\nVerify provided account password.", preferredStyle: .alert);
-                alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
-                
-                var topController = UIApplication.shared.keyWindow?.rootViewController;
-                while (topController?.presentedViewController != nil) {
-                    topController = topController?.presentedViewController;
-                }
-                
-                topController?.present(alert, animated: true, completion: nil);
-            } else {
-                let alert = UIAlertController(title: content.title, message: content.body, preferredStyle: .alert);
-                alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
-                
-                var topController = UIApplication.shared.keyWindow?.rootViewController;
-                while (topController?.presentedViewController != nil) {
-                    topController = topController?.presentedViewController;
-                }
-                
-                topController?.present(alert, animated: true, completion: nil);
-            }
-        }
-        if content.categoryIdentifier == "SUBSCRIPTION_REQUEST" {
-            let userInfo = content.userInfo;
-            let senderJid = BareJID(userInfo["sender"] as! String);
-            let accountJid = BareJID(userInfo["account"] as! String);
-            var senderName = userInfo["senderName"] as! String;
-            if senderName != senderJid.stringValue {
-                senderName = "\(senderName) (\(senderJid.stringValue))";
-            }
-            let alert = UIAlertController(title: "Subscription request", message: "Received presence subscription request from\n\(senderName)\non account \(accountJid.stringValue)", preferredStyle: .alert);
-            alert.addAction(UIAlertAction(title: "Accept", style: .default, handler: {(action) in
-                guard let presenceModule: PresenceModule = self.xmppService.getClient(forJid: accountJid)?.context.modulesManager.getModule(PresenceModule.ID) else {
-                    return;
-                }
-                presenceModule.subscribed(by: JID(senderJid));
-                if let sessionObject = self.xmppService.getClient(forJid: accountJid)?.context.sessionObject {
-                    let subscription = RosterModule.getRosterStore(sessionObject).get(for: JID(senderJid))?.subscription ?? RosterItem.Subscription.none;
-                    guard !subscription.isTo else {
-                        return;
-                    }
-                }
-                if (Settings.AutoSubscribeOnAcceptedSubscriptionRequest.getBool()) {
-                    presenceModule.subscribe(to: JID(senderJid));
-                } else {
-                    let alert2 = UIAlertController(title: "Subscribe to " + senderName, message: "Do you wish to subscribe to \n\(senderName)\non account \(accountJid.stringValue)", preferredStyle: .alert);
-                    alert2.addAction(UIAlertAction(title: "Accept", style: .default, handler: {(action) in
-                        presenceModule.subscribe(to: JID(senderJid));
-                    }));
-                    alert2.addAction(UIAlertAction(title: "Reject", style: .destructive, handler: nil));
-                    
-                    var topController = UIApplication.shared.keyWindow?.rootViewController;
-                    while (topController?.presentedViewController != nil) {
-                        topController = topController?.presentedViewController;
-                    }
-                    
-                    topController?.present(alert2, animated: true, completion: nil);
-                }
-            }));
-            alert.addAction(UIAlertAction(title: "Reject", style: .destructive, handler: {(action) in
-                guard let presenceModule: PresenceModule = self.xmppService.getClient(forJid: accountJid)?.context.modulesManager.getModule(PresenceModule.ID) else {
-                    return;
-                }
-                presenceModule.unsubscribed(by: JID(senderJid));
-            }));
-            
-            var topController = UIApplication.shared.keyWindow?.rootViewController;
-            while (topController?.presentedViewController != nil) {
-                topController = topController?.presentedViewController;
-            }
-            
-            topController?.present(alert, animated: true, completion: nil);
-        }
-        if content.categoryIdentifier == "MUC_ROOM_INVITATION" {
-            guard let account = BareJID(content.userInfo["account"] as? String), let roomJid: BareJID = BareJID(content.userInfo["roomJid"] as? String) else {
-                return;
-            }
-            
-            let password = content.userInfo["password"] as? String;
-            
-            let navController = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "MucJoinNavigationController") as! UINavigationController;
-
-            let controller = navController.visibleViewController! as! MucJoinViewController;
-            _ = controller.view;
-            controller.accountTextField.text = account.stringValue;
-            controller.roomTextField.text = roomJid.localPart;
-            controller.serverTextField.text = roomJid.domain;
-            controller.passwordTextField.text = password;
-            
-            var topController = UIApplication.shared.keyWindow?.rootViewController;
-            while (topController?.presentedViewController != nil) {
-                topController = topController?.presentedViewController;
-            }
-//            let navController = UINavigationController(rootViewController: controller);
-            navController.modalPresentationStyle = .formSheet;
-            topController?.present(navController, animated: true, completion: nil);
-        }
-        if content.categoryIdentifier == "MESSAGE" {
-            let senderJid = BareJID(userInfo["sender"] as! String);
-            let accountJid = BareJID(userInfo["account"] as! String);
-            
-            var topController = UIApplication.shared.keyWindow?.rootViewController;
-            while (topController?.presentedViewController != nil) {
-                topController = topController?.presentedViewController;
-            }
-            
-            if topController != nil {
-                let controller = (userInfo["type"] as? String == "muc") ? UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "RoomViewNavigationController") : topController!.storyboard?.instantiateViewController(withIdentifier: "ChatViewNavigationController");
-                let navigationController = controller as? UINavigationController;
-                let destination = navigationController?.visibleViewController ?? controller;
-                
-                if let baseChatViewController = destination as? BaseChatViewController {
-                    baseChatViewController.account = accountJid;
-                    baseChatViewController.jid = senderJid;
-                }
-                destination?.hidesBottomBarWhenPushed = true;
-                
-                topController!.showDetailViewController(controller!, sender: self);
-            } else {
-                print("No top controller!");
-            }
-        }
-        #if targetEnvironment(simulator)
-        #else
-        if content.categoryIdentifier == "CALL" {
-            let senderName = userInfo["senderName"] as! String;
-            let senderJid = JID(userInfo["sender"] as! String);
-            let accountJid = BareJID(userInfo["account"] as! String);
-            let sdp = userInfo["sdpOffer"] as! String;
-            let sid = userInfo["sid"] as! String;
-            
-            var topController = UIApplication.shared.keyWindow?.rootViewController;
-            while (topController?.presentedViewController != nil) {
-                topController = topController?.presentedViewController;
-            }
-            
-            if let session = JingleManager.instance.session(for: accountJid, with: senderJid, sid: sid) {
-                // can still can be received!
-                let alert = UIAlertController(title: "Incoming call", message: "Incoming call from \(senderName)", preferredStyle: .alert);
-                switch AVCaptureDevice.authorizationStatus(for: .video) {
-                case .denied, .restricted:
-                    break;
-                default:
-                    alert.addAction(UIAlertAction(title: "Video call", style: .default, handler: { action in
-                        // accept video
-                        VideoCallController.accept(session: session, sdpOffer: sdp, withAudio: true, withVideo: true, sender: topController!);
-                    }))
-                }
-                alert.addAction(UIAlertAction(title: "Audio call", style: .default, handler: { action in
-                    VideoCallController.accept(session: session, sdpOffer: sdp, withAudio: true, withVideo: false, sender: topController!);
-                }));
-                alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: { action in
-                    _ = session.decline();
-                }));
-                topController?.present(alert, animated: true, completion: nil);
-            } else {
-                // call missed...
-                let alert = UIAlertController(title: "Missed call", message: "Missed incoming call from \(senderName)", preferredStyle: .alert);
-                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
-                
-                topController?.present(alert, animated: true, completion: nil);
-            }
-        }
-        #endif
-        completionHandler();
-    }
-    
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        if notification.request.content.categoryIdentifier == "MESSAGE" || notification.request.content.categoryIdentifier == "MESSAGE_NO_SENDER" {
-            let account = notification.request.content.userInfo["account"] as? String;
-            let sender = notification.request.content.userInfo["sender"] as? String;
-            if (isChatVisible(account: account, with: sender) && xmppService.applicationState == .active) {
-                completionHandler([]);
-            } else {
-                completionHandler([.alert, .sound]);
-            }
-        } else {
-            completionHandler([.alert, .sound]);
-        }
-    }
-    
-    func isChatVisible(account acc: String?, with j: String?) -> Bool {
+    static func isChatVisible(account acc: String?, with j: String?) -> Bool {
         guard let account = acc, let jid = j else {
             return false;
         }
@@ -580,12 +384,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
         print("Device Token:", tokenString)
         print("Device Token:", deviceToken.map({ String(format: "%02x", $0 )}).joined());
-        Settings.DeviceToken.setValue(tokenString);
+        PushEventHandler.instance.deviceId = tokenString;
+//        Settings.DeviceToken.setValue(tokenString);
     }
     
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("Failed to register:", error);
-        Settings.DeviceToken.setValue(nil);
+        PushEventHandler.instance.deviceId = nil;
+//        Settings.DeviceToken.setValue(nil);
     }
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any]) {
@@ -598,125 +404,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         if let account = JID(userInfo[AnyHashable("account")] as? String) {
             let sender = JID(userInfo[AnyHashable("sender")] as? String);
             let body = userInfo[AnyHashable("body")] as? String;
+            
             if let unreadMessages = userInfo[AnyHashable("unread-messages")] as? Int, unreadMessages == 0 && sender == nil && body == nil {
                 let state = self.xmppService.getClient(forJid: account.bareJid)?.state;
                 print("unread messages retrieved, client state =", state as Any);
                 if state != .connected {
-                    dismissPushNotifications(for: account) {
+                    dismissNewMessageNotifications(for: account) {
                         completionHandler(.newData);
                     }
                     return;
                 }
             } else if body != nil {
-                if sender != nil {
-                    let nickname = userInfo[AnyHashable("nickname")] as? String;
-                    let isMuc = DBChatStore.instance.getChat(for: account.bareJid, with: sender!.bareJid) as? DBRoom != nil;
-                    notifyNewMessage(account: account, sender: sender!, body: body!, type: (nickname == nil && !isMuc) ? "chat" : "muc", data: userInfo, isPush: true) {
-                        completionHandler(.newData);
-                    }
-                    return;
-                } else {
-                    notifyNewMessageWaiting(account: account) {
-                        completionHandler(.newData);
-                    }
-                    return;
-                }
+                NotificationManager.instance.notifyNewMessage(account: account.bareJid, sender: sender?.bareJid, type: .unknown, nickname: userInfo[AnyHashable("nickname")] as? String, body: body!);
             }
         }
         
         completionHandler(.newData);
     }
-    
-    func notifyNewMessageWaiting(account: JID, completionHandler: @escaping ()->Void) {
-        let threadId = "account=" + account.stringValue;
-        UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
-            let content = UNMutableNotificationContent();
-            content.body = "New message received!";
-            content.sound = UNNotificationSound.default;
-            content.categoryIdentifier = "MESSAGE_NO_SENDER";
-            content.userInfo = ["account": account.stringValue, "push": true];
-            content.threadIdentifier = threadId;
-                
-            UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil), withCompletionHandler: {(error) in
-                print("message notification error", error as Any);
-                self.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
-            });
-        }
-    }
-    
-    func notifyNewMessage(account: BareJID, sender: BareJID, body: String, type: String?, isPush: Bool, completionHandler: (()->Void)?) {
-        notifyNewMessage(account: JID(account), sender: JID(sender), body: body, type: type, data: [:], isPush: isPush, completionHandler: completionHandler);
-    }
-    
-    func notifyNewMessage(account: JID, sender: JID, body: String, type: String?, data userInfo: [AnyHashable:Any], isPush: Bool, completionHandler: (()->Void)?) {
-        guard userInfo["carbonAction"] == nil else {
-            return;
-        }
-
-        let isMuc = DBChatStore.instance.getChat(for: account.bareJid, with: sender.bareJid) as? DBRoom != nil;
-        var alertBody: String?;
-        switch (isMuc ? "muc" : (type ?? "chat")) {
-        case "muc":
-            guard let mucModule: MucModule = xmppService.getClient(forJid: account.bareJid)?.modulesManager.getModule(MucModule.ID) else {
-                return;
-            }
-            guard let room: DBRoom = mucModule.roomsManager.getRoom(for: sender.bareJid) as? DBRoom else {
-                return;
-            }
-            guard let nick = userInfo["senderName"] as? String ?? userInfo[AnyHashable("nickname")] as? String else {
-                return;
-            }
-
-            switch room.options.notifications {
-            case .none:
-                return;
-            case .always:
-                alertBody = "\(nick): \(body)";
-            case .mention:
-                let myNickname = room.nickname;
-                if body.contains(myNickname) {
-                    alertBody = "\(nick) mentioned you: \(body)";
-                } else {
-                    return;
-                }
-            }
-        default:
-            guard let sessionObject = xmppService.getClient(forJid: account.bareJid)?.sessionObject else {
-                return;
-            }
-            
-            if let senderRosterItem = RosterModule.getRosterStore(sessionObject).get(for: sender.withoutResource) {
-                let senderName = senderRosterItem.name ?? sender.withoutResource.stringValue;
-                alertBody = "\(senderName): \(body)";
-            } else {
-                guard Settings.NotificationsFromUnknown.getBool() else {
-                    return;
-                }
-                alertBody = "Message from unknown: " + sender.withoutResource.stringValue;
-            }
-        }
         
-        let threadId = "account=" + account.stringValue + "|sender=" + sender.bareJid.stringValue;
-        
-        let id = threadId + ":body=" + body.prefix(400);
-        UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
-            if notifications.filter({(notification) in  notification.request.identifier == id}).isEmpty {
-                let content = UNMutableNotificationContent();
-                //content.title = "Received new message from \(senderName!)";
-                content.body = alertBody!;
-                content.sound = UNNotificationSound.default;
-                content.userInfo = ["account": account.stringValue, "sender": sender.bareJid.stringValue, "push": isPush, "type": (type ?? "chat")];
-                content.categoryIdentifier = "MESSAGE";
-                content.threadIdentifier = threadId;
-                
-                UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil), withCompletionHandler: {(error) in
-                    print("message notification error", error as Any);
-                    self.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
-                });
-            }
-        }
-    }
-    
     @objc func newMessage(_ notification: NSNotification) {
         guard let message = notification.object as? ChatMessage else {
             return;
@@ -725,12 +430,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             return;
         }
         
-        notifyNewMessage(account: message.account, sender: message.jid, body: message.message, type: message.authorNickname != nil ? "muc" : "chat", isPush: false, completionHandler: nil);
+        NotificationManager.instance.notifyNewMessage(account: message.account, sender: message.jid, type: message.authorNickname != nil ? .groupchat : .chat, nickname: message.authorNickname, body: message.message);
     }
     
-    func dismissPushNotifications(for account: JID, completionHandler: (()-> Void)?) {
+    func dismissNewMessageNotifications(for account: JID, completionHandler: (()-> Void)?) {
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
-            let toRemove = notifications.filter({ (notification) in notification.request.content.categoryIdentifier == "MESSAGE" || notification.request.content.categoryIdentifier == "MESSAGE_NO_SENDER" }).filter({ (notification) in (notification.request.content.userInfo["account"] as? String) == account.stringValue && (notification.request.content.userInfo["push"] as? Bool ?? false) }).map({ (notification) in notification.request.identifier });
+            let toRemove = notifications.filter({ (notification) in
+                switch NotificationCategory.from(identifier: notification.request.content.categoryIdentifier) {
+                case .MESSAGE:
+                    return (notification.request.content.userInfo["account"] as? String) == account.stringValue;
+                default:
+                    return false;
+                }
+            }).map({ (notification) in notification.request.identifier });
             UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
             self.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
         }
@@ -796,23 +508,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func updateApplicationIconBadgeNumber(completionHandler: (()->Void)?) {
-        UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
-            var unreadChats = Set(notifications.filter({(notification) in notification.request.content.categoryIdentifier == "MESSAGE" }).map({ (notification) in
-                return notification.request.content.threadIdentifier;
-            }));
-            
-            DBChatStore.instance.getChats().filter({ chat -> Bool in
-                return chat.unread > 0;
-            }).forEach { (chat) in
-                unreadChats.insert("account=" + chat.account.stringValue + "|sender=" + chat.jid.bareJid.stringValue)
-            }
-            let badge = unreadChats.count;
+        NotificationManager.instance.provider.countBadge(withThreadId: nil, completionHandler: { count in
             DispatchQueue.main.async {
-                print("setting badge to", badge);
-                UIApplication.shared.applicationIconBadgeNumber = badge;
+                print("setting badge to", count);
+                UIApplication.shared.applicationIconBadgeNumber = count;
                 completionHandler?();
             }
-        }
+        });
     }
     
     @objc func serverCertificateError(_ notification: NSNotification) {

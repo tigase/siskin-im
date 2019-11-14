@@ -20,6 +20,7 @@
 //
 
 import UIKit
+import Shared
 import TigaseSwift
 
 open class DBChatStoreWrapper: ChatStore {
@@ -82,7 +83,7 @@ open class DBChatStore {
     public static let instance = DBChatStore.init();
     
     fileprivate static let CHATS_GET = "SELECT id, type, thread_id, resource, nickname, password, timestamp, options FROM chats WHERE account = :account AND jid = :jid";
-    fileprivate static let CHATS_LIST = "SELECT c.id, c.type, c.jid, c.name, c.nickname, c.password, c.timestamp as creation_timestamp, last.timestamp as timestamp, last1.data, last1.encryption as lastEncryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread, c.options FROM chats c LEFT JOIN (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account GROUP BY ch.account, ch.jid) last ON c.jid = last.jid AND c.account = last.account LEFT JOIN chat_history last1 ON last1.account = c.account AND last1.jid = c.jid AND last1.timestamp = last.timestamp WHERE c.account = :account";
+    fileprivate static let CHATS_LIST = "SELECT c.id, c.type, c.jid, c.name, c.nickname, c.password, c.timestamp as creation_timestamp, cr.timestamp as read_till, last.timestamp as timestamp, last1.data, last1.encryption as lastEncryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread, c.options FROM chats c LEFT JOIN chats_read cr on c.account = cr.account AND c.jid = cr.jid LEFT JOIN (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account GROUP BY ch.account, ch.jid) last ON c.jid = last.jid AND c.account = last.account LEFT JOIN chat_history last1 ON last1.account = c.account AND last1.jid = c.jid AND last1.timestamp = last.timestamp WHERE c.account = :account";
     fileprivate static let CHAT_IS = "SELECT count(id) as count FROM chats WHERE account = :account AND jid = :jid";
     fileprivate static let CHAT_OPEN = "INSERT INTO chats (account, jid, timestamp, type, resource, thread_id) VALUES (:account, :jid, :timestamp, :type, :resource, :thread)";
     fileprivate static let ROOM_OPEN = "INSERT INTO chats (account, jid, timestamp, type, nickname, password) VALUES (:account, :jid, :timestamp, :type, :nickname, :password)";
@@ -112,6 +113,8 @@ open class DBChatStore {
     fileprivate let getMessageDraftStmt: DBStatement;
     
     fileprivate var accountChats = [BareJID: AccountChats]();
+    
+    fileprivate var deleteReadTillStmt: DBStatement;
     
     var unreadChats: Int {
         if unreadMessagesCount > 0 {
@@ -159,7 +162,9 @@ open class DBChatStore {
         getLastMessageTimestampForAccountStmt = try! DBConnection.main.prepareStatement(DBChatStore.GET_LAST_MESSAGE_TIMESTAMP_FOR_ACCOUNT);
         self.updateChatNameStmt = try! self.dbConnection.prepareStatement(DBChatStore.UPDATE_CHAT_NAME);
         self.updateChatOptionsStmt = try! self.dbConnection.prepareStatement(DBChatStore.UPDATE_CHAT_OPTIONS);
-        
+        self.getReadTillStmt = try! DBConnection.main.prepareStatement("SELECT timestamp FROM chats_read WHERE account = :account AND jid = :jid");
+        self.updateReadTillStmt = try! DBConnection.main.prepareStatement("INSERT INTO chats_read (account, jid, timestamp) VALUES (:account, :jid, :before) ON CONFLICT(account, jid) DO UPDATE SET timestamp = max(timestamp, excluded.timestamp)");
+        self.deleteReadTillStmt = try! DBConnection.main.prepareStatement("DELETE FROM chats_read WHERE account = :account AND jid = :jid");
         NotificationCenter.default.addObserver(self, selector: #selector(DBChatStore.accountRemoved), name: NSNotification.Name(rawValue: "accountRemoved"), object: nil);
     }
     
@@ -233,7 +238,7 @@ open class DBChatStore {
             destroyChat(account: account, chat: dbChat);
 
             if dbChat.unread > 0 {
-                DBChatHistoryStore.instance.markAsRead(for: account, with: dbChat.jid.bareJid);
+                DBChatHistoryStore.instance.markAsRead(for: account, with: dbChat.jid.bareJid, before: dbChat.timestamp);
             }
             if Settings.DeleteChatHistoryOnChatClose.getBool() {
                 DBChatHistoryStore.instance.deleteMessages(for: account, with: chat.jid.bareJid);
@@ -254,11 +259,11 @@ open class DBChatStore {
         case let c as Chat:
             let params:[String:Any?] = [ "account" : account, "jid" : c.jid.bareJid, "timestamp": NSDate(), "type" : 0, "resource" : c.jid.resource, "thread" : c.thread ];
             let id = try! self.openChatStmt.insert(params);
-            return DBChat(id: id!, account: account, jid: c.jid.bareJid, timestamp: Date(), lastMessage: getLastMessage(for: account, jid: c.jid.bareJid), unread: 0);
+            return DBChat(id: id!, account: account, jid: c.jid.bareJid, timestamp: Date(), readTill: getReadTill(for: account, with: c.jid.bareJid), lastMessage: getLastMessage(for: account, jid: c.jid.bareJid), unread: 0);
         case let r as Room:
             let params:[String:Any?] = [ "account" : account, "jid" : r.jid.bareJid, "timestamp": NSDate(), "type" : 1, "nickname" : r.nickname, "password" : r.password ];
             let id = try! self.openRoomStmt.insert(params);
-            return DBRoom(id: id!, context: r.context, account: account, roomJid: r.roomJid, roomName: nil, nickname: r.nickname, password: r.password, timestamp: Date(), lastMessage: getLastMessage(for: account, jid: r.jid.bareJid), unread: 0);
+            return DBRoom(id: id!, context: r.context, account: account, roomJid: r.roomJid, roomName: nil, nickname: r.nickname, password: r.password, timestamp: Date(), readTill: getReadTill(for: account, with: r.jid.bareJid), lastMessage: getLastMessage(for: account, jid: r.jid.bareJid), unread: 0);
         default:
             return nil;
         }
@@ -267,6 +272,18 @@ open class DBChatStore {
     fileprivate func destroyChat(account: BareJID, chat: DBChatProtocol) {
         let params: [String: Any?] = ["id": chat.id];
         _ = try! self.closeChatStmt.update(params);
+        _ = try! self.deleteReadTillStmt.update(["account": account, "jid": chat.jid.bareJid] as [String: Any?]);
+    }
+    
+    var getReadTillStmt: DBStatement;
+    
+    fileprivate func getReadTill(for account: BareJID, with jid: BareJID) -> Date {
+        return dispatcher.sync {
+            let params: [String: Any?] = ["account": account, "jid": jid];
+            return try! self.getReadTillStmt.queryFirstMatching(params, forEachRowUntil: { (cursor) -> Date? in
+                return cursor["timestamp"];
+            }) ?? Date.distantPast;
+        }
     }
 
     fileprivate func getLastMessage(for account: BareJID, jid: BareJID) -> String? {
@@ -312,6 +329,7 @@ open class DBChatStore {
                 let lastMessageTimestamp: Date = cursor["timestamp"]!;
                 let lastMessageEncryption = MessageEncryption(rawValue: cursor["lastEncryption"] ?? 0) ?? .none;
                 let lastMessage: String? = lastMessageEncryption.message() ?? cursor["data"];
+                let readTill: Date = cursor["read_till"] ?? Date.distantPast;
                 let unread: Int = cursor["unread"]!;
                 
                 let timestamp = creationTimestamp.compare(lastMessageTimestamp) == .orderedAscending ? lastMessageTimestamp : creationTimestamp;
@@ -322,7 +340,7 @@ open class DBChatStore {
                     let nickname: String = cursor["nickname"]!;
                     let password: String? = cursor["password"];
                     let name: String? = cursor["name"];
-                    let room = DBRoom(id: id, context: context, account: account, roomJid: jid, roomName: name, nickname: nickname, password: password, timestamp: timestamp, lastMessage: lastMessage, unread: unread);
+                    let room = DBRoom(id: id, context: context, account: account, roomJid: jid, roomName: name, nickname: nickname, password: password, timestamp: timestamp, readTill: readTill, lastMessage: lastMessage, unread: unread);
                     if lastMessage != nil {
                         room.lastMessageDate = timestamp;
                     }
@@ -332,7 +350,7 @@ open class DBChatStore {
                     }
                     return room;
                 default:
-                    let c = DBChat(id: id, account: account, jid: jid, timestamp: timestamp, lastMessage: lastMessage, unread: unread);
+                    let c = DBChat(id: id, account: account, jid: jid, timestamp: timestamp, readTill: readTill, lastMessage: lastMessage, unread: unread);
                     if let dataStr: String = cursor["options"], let data = dataStr.data(using: .utf8), let options = try? JSONDecoder().decode(ChatOptions.self, from: data) {
                         c.options = options;
                     }
@@ -393,16 +411,21 @@ open class DBChatStore {
         }
     }
     
-    func markAsRead(for account: BareJID, with jid: BareJID, count: Int? = nil) {
+    let updateReadTillStmt: DBStatement;
+
+    func markAsRead(for account: BareJID, with jid: BareJID, before: Date, count: Int? = nil, completionHandler: (()->Void)? = nil) {
         dispatcher.async {
+            _ = try! self.updateReadTillStmt.insert(["account": account, "jid": jid, "before": before] as [String: Any?]);
+
             if let chat = self.getChat(for: account, with: jid) {
                 let unread = chat.unread;
-                if chat.markAsRead(count: count ?? unread) {
+                if chat.markAsRead(before: before, count: count ?? unread) {
                     //if !self.isMuted(chat: chat) {
                         self.unreadMessagesCount = self.unreadMessagesCount - (count ?? unread);
                     //}
                     NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
                 }
+                completionHandler?();
             }
         }
     }
@@ -527,11 +550,12 @@ public protocol  DBChatProtocol: ChatProtocol {
     
     var id: Int { get };
     var account: BareJID { get }
+    var readTill: Date { get }
     var unread: Int { get }
     var timestamp: Date { get }
     var lastMessage: String? { get }
     
-    func markAsRead(count: Int) -> Bool;
+    func markAsRead(before: Date, count: Int) -> Bool;
 
     func updateLastMessage(_ message: String?, timestamp: Date, isUnread: Bool) -> Bool
     
@@ -586,6 +610,7 @@ class DBChat: Chat, DBChatProtocol {
     let id: Int;
     let account: BareJID;
     var timestamp: Date;
+    var readTill: Date;
     var lastMessage: String? = nil;
     var unread: Int;
     fileprivate(set) var options: ChatOptions = ChatOptions();
@@ -599,16 +624,18 @@ class DBChat: Chat, DBChatProtocol {
         }
     }
     
-    init(id: Int, account: BareJID, jid: BareJID, timestamp: Date, lastMessage: String?, unread: Int) {
+    init(id: Int, account: BareJID, jid: BareJID, timestamp: Date, readTill: Date, lastMessage: String?, unread: Int) {
         self.id = id;
         self.account = account;
         self.timestamp = timestamp;
         self.lastMessage = lastMessage;
         self.unread = unread;
+        self.readTill = readTill;
         super.init(jid: JID(jid), thread: nil);
     }
  
-    func markAsRead(count: Int) -> Bool {
+    func markAsRead(before: Date, count: Int) -> Bool {
+        self.readTill = before;
         guard unread > 0 else {
             return false;
         }
@@ -647,22 +674,25 @@ class DBRoom: Room, DBChatProtocol {
     var timestamp: Date;
     var lastMessage: String? = nil;
     var subject: String?;
+    var readTill: Date;
     var unread: Int;
     var name: String? = nil;
     fileprivate(set) var options: RoomOptions = RoomOptions();
     
-    init(id: Int, context: Context, account: BareJID, roomJid: BareJID, roomName: String?, nickname: String, password: String?, timestamp: Date, lastMessage: String?, unread: Int) {
+    init(id: Int, context: Context, account: BareJID, roomJid: BareJID, roomName: String?, nickname: String, password: String?, timestamp: Date, readTill: Date, lastMessage: String?, unread: Int) {
         self.id = id;
         self.account = account;
         self.timestamp = timestamp;
         self.lastMessage = lastMessage;
         self.name = roomName;
+        self.readTill = readTill;
         self.unread = unread;
         super.init(context: context, roomJid: roomJid, nickname: nickname);
         self.password = password;
     }
     
-    func markAsRead(count: Int) -> Bool {
+    func markAsRead(before: Date, count: Int) -> Bool {
+        self.readTill = before;
         guard unread > 0 else {
             return false;
         }

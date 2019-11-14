@@ -210,7 +210,7 @@ Have it enabled will keep synchronized copy of your messages exchanged using \(a
                 return;
             }
             
-            guard let pushModule: TigasePushNotificationsModule = xmppService.getClient(forJid: account)?.modulesManager.getModule(TigasePushNotificationsModule.ID), pushModule.deviceId != nil else {
+            guard let pushModule: SiskinPushNotificationsModule = xmppService.getClient(forJid: account)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), PushEventHandler.instance.deviceId != nil else {
                 completionHandler([]);
                 return;
             }
@@ -246,35 +246,33 @@ With this feature enabled Tigase iOS Messenger can be automatically notified abo
         }
         
         func enablePush(xmppService: XmppService, account accountJid: BareJID, operationFinished: @escaping ()->Void, completionHandler: @escaping ()->Void) {
-            guard let pushModule: TigasePushNotificationsModule = xmppService.getClient(forJid: accountJid)?.modulesManager.getModule(TigasePushNotificationsModule.ID) else {
+            guard let pushModule: SiskinPushNotificationsModule = xmppService.getClient(forJid: accountJid)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), let deviceId = PushEventHandler.instance.deviceId else {
                 completionHandler();
                 return;
             }
             
-            pushModule.findPushComponent(completionHandler: {(jid) in
-                pushModule.pushServiceJid = jid ?? XmppService.pushServiceJid;
-                pushModule.pushServiceNode = nil;
-                pushModule.deviceId = Settings.DeviceToken.getString();
-                pushModule.enabled = true;
-                pushModule.registerDevice(onSuccess: {
+            
+            pushModule.registerDeviceAndEnable(deviceId: deviceId) { (result) in
+                // FIXME: handle this somehow??
+                switch result {
+                case .success(_):
                     DispatchQueue.main.async {
                         operationFinished();
-                        if let config = AccountManager.getAccount(for: accountJid) {
-                            config.pushServiceNode = pushModule.pushServiceNode
-                            config.pushServiceJid = jid;
-                            config.pushNotifications = true;
-                            AccountManager.save(account: config);
-                        }
+//                        if let config = AccountManager.getAccount(for: accountJid) {
+//                            config.pushServiceNode = pushModule.pushServiceNode
+//                            config.pushServiceJid = jid;
+//                            config.pushNotifications = true;
+//                            AccountManager.save(account: config);
+//                        }
                         completionHandler();
                     }
-                }, onError: { (errorCondition) in
+                case .failure(let errorCondition):
                     DispatchQueue.main.async {
                         operationFinished();
                         self.showError(title: "Push Notifications Error", message: "Server \(accountJid.domain) returned an error on the request to enable push notifications. You can try to enable this feature later on from the account settings.");
                     }
-                })
-            });
-
+                }
+            }
         }
         
     }

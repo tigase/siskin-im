@@ -9,10 +9,20 @@
 			<key>orderHint</key>
 			<integer>5</integer>
 		</dict>
+		<key>Shared.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>7</integer>
+		</dict>
 		<key>SiskinIM - Share.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
 			<integer>4</integer>
+		</dict>
+		<key>SiskinIM - Shared.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>8</integer>
 		</dict>
 		<key>SiskinIM-Share.xcscheme</key>
 		<dict>
@@ -33,6 +43,11 @@
 			<true/>
 		</dict>
 		<key>FE4DDF521F39E0B500A4CE5A</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>FE759FA02370ACA4001E78D9</key>
 		<dict>
 			<key>primary</key>
 			<true/>

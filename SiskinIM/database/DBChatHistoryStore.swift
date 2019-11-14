@@ -21,6 +21,7 @@
 
 
 import Foundation
+import Shared
 import TigaseSwift
 import TigaseSwiftOMEMO
 
@@ -79,15 +80,17 @@ open class DBChatHistoryStore: Logger {
         NotificationCenter.default.addObserver(self, selector: #selector(DBChatHistoryStore.imageRemovedFromCache), name: ImageCache.DISK_CACHE_IMAGE_REMOVED, object: nil);
     }
             
-    public func appendItem(for account: BareJID, with jid: BareJID, state: MessageState, authorNickname: String? = nil, authorJid: BareJID? = nil, type: ItemType = .message, timestamp: Date, stanzaId id: String?, data: String, chatState: ChatState? = nil, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, encryption: MessageEncryption, encryptionFingerprint: String?, completionHandler: ((Int)->Void)?) {
+    public func appendItem(for account: BareJID, with jid: BareJID, state inState: MessageState, authorNickname: String? = nil, authorJid: BareJID? = nil, type: ItemType = .message, timestamp: Date, stanzaId id: String?, data: String, chatState: ChatState? = nil, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, encryption: MessageEncryption, encryptionFingerprint: String?, completionHandler: ((Int)->Void)?) {
         dispatcher.async {
-            guard !state.isError || id == nil || !self.processOutgoingError(for: account, with: jid, stanzaId: id!, errorCondition: errorCondition, errorMessage: errorMessage) else {
+            guard !inState.isError || id == nil || !self.processOutgoingError(for: account, with: jid, stanzaId: id!, errorCondition: errorCondition, errorMessage: errorMessage) else {
                 return;
             }
             
-            guard !self.checkItemAlreadyAdded(for: account, with: jid, authorNickname: authorNickname, type: type, timestamp: timestamp, direction: state.direction, stanzaId: id, data: data) else {
+            guard !self.checkItemAlreadyAdded(for: account, with: jid, authorNickname: authorNickname, type: type, timestamp: timestamp, direction: inState.direction, stanzaId: id, data: data) else {
                 return;
             }
+            
+            let state = self.calculateState(for: account, with: jid, timestamp: timestamp, state: inState);
             
             let params:[String:Any?] = ["account" : account, "jid" : jid, "timestamp": timestamp, "data": data, "item_type": type.rawValue, "state": state.rawValue, "stanza_id": id, "author_jid" : authorJid, "author_nickname": authorNickname, "encryption": encryption.rawValue, "fingerprint": encryptionFingerprint]
             guard let msgId = try! self.appendMessageStmt.insert(params) else {
@@ -100,6 +103,17 @@ open class DBChatHistoryStore: Logger {
                 NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: item);
             }
         }
+    }
+    
+    private func calculateState(for account: BareJID, with jid: BareJID, timestamp: Date, state: MessageState) -> MessageState {
+        guard state.isUnread else {
+            return state;
+        }
+        let readTill = DBChatStore.instance.getChat(for: account, with: jid)?.readTill ?? Date.distantPast;
+        guard timestamp <= readTill else {
+            return state;
+        }
+        return state.toRead();
     }
     
     fileprivate func processOutgoingError(for account: BareJID, with jid: BareJID, stanzaId: String, errorCondition: ErrorCondition?, errorMessage: String?) -> Bool {
@@ -181,21 +195,22 @@ open class DBChatHistoryStore: Logger {
         }
     }
     
-    open func markAsRead(for account: BareJID, with jid: BareJID, before: Date? = nil) {
+    open func markAsRead(for account: BareJID, with jid: BareJID, before: Date, completionHandler: (()->Void)? = nil) {
         dispatcher.async {
-            if before == nil {
-                let params:[String:Any?] = ["account":account, "jid":jid];
-                let updatedRecords = try! self.msgsMarkAsReadStmt.update(params);
-                if updatedRecords > 0 {
-                    DBChatStore.instance.markAsRead(for: account, with: jid);
-                }
-            } else {
-                let params:[String:Any?] = ["account":account, "jid":jid, "before": before];
-                let updatedRecords = try! self.msgsMarkAsReadBeforeStmt.update(params);
-                if updatedRecords > 0 {
-                    DBChatStore.instance.markAsRead(for: account, with: jid, count: updatedRecords);
-                }
-            }
+//            if before == nil {
+//                let params:[String:Any?] = ["account":account, "jid":jid];
+//                let updatedRecords = try! self.msgsMarkAsReadStmt.update(params);
+//                if updatedRecords > 0 {
+//                    DBChatStore.instance.markAsRead(for: account, with: jid, completionHandler: completionHandler);
+//                } else {
+//                    completionHandler?();
+//                }
+//            } else {
+            let params:[String:Any?] = ["account":account, "jid":jid, "before": before];
+            
+            let updatedRecords = try! self.msgsMarkAsReadBeforeStmt.update(params);
+            DBChatStore.instance.markAsRead(for: account, with: jid, before: before, count: updatedRecords, completionHandler: completionHandler);
+
         }
     }
     
@@ -263,11 +278,6 @@ open class DBChatHistoryStore: Logger {
                 
                 completionHandler(account, jid, data, stanzaId, encryption);
             });
-        }
-    }
-    
-    fileprivate func changeMessageState(account: BareJID, jid: BareJID, stanzaId: String, oldState: MessageState, newState: MessageState, completion: ((Int)->Void)?) {
-        dispatcher.async {
         }
     }
     
@@ -359,6 +369,19 @@ public enum MessageState: Int {
             return true;
         default:
             return false;
+        }
+    }
+    
+    func toRead() -> MessageState {
+        switch self {
+        case .incoming_unread:
+            return .incoming;
+        case .incoming_error_unread:
+            return .incoming_error;
+        case .outgoing_error_unread:
+            return .outgoing_error;
+        default:
+            return self;
         }
     }
 }

@@ -32,6 +32,7 @@ public enum Settings: String {
     case RosterAvailableOnly
     case RosterDisplayHiddenGroup
     case AutoSubscribeOnAcceptedSubscriptionRequest
+    @available(swift, deprecated: 1.0)
     case DeviceToken
     case NotificationsFromUnknown
     case RecentsMessageLinesNo
@@ -160,6 +161,7 @@ public enum AccountSettings {
     case KnownServerFeatures(BareJID)
     case omemoRegistrationId(BareJID)
     case reconnectionLocation(BareJID)
+    case pushHash(BareJID)
     
     public var account: BareJID {
         switch self {
@@ -178,6 +180,8 @@ public enum AccountSettings {
         case .omemoRegistrationId(let account):
             return account;
         case .reconnectionLocation(let account):
+            return account;
+        case .pushHash(let account):
             return account;
         }
     }
@@ -200,6 +204,8 @@ public enum AccountSettings {
             return "omemoRegistrationId";
         case .reconnectionLocation(_):
             return "reconnectionLocation";
+        case .pushHash(_):
+            return "pushHash";
         }
     }
     
@@ -246,6 +252,10 @@ public enum AccountSettings {
     
     public func getDate() -> Date? {
         return date();
+    }
+    
+    public func int() -> Int {
+        return Settings.store.integer(forKey: key);
     }
     
     func uint32() -> UInt32? {
@@ -319,6 +329,10 @@ public enum AccountSettings {
         } else {
             Settings.store.set(nil, forKey: key);
         }
+    }
+    
+    func set(int value: Int) {
+        Settings.store.set(value, forKey: key);
     }
     
     public static func removeSettings(for account: String) {

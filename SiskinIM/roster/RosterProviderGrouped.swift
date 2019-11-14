@@ -20,6 +20,7 @@
 //
 
 import UIKit
+import Shared
 import TigaseSwift
 
 public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGroupedItem>, RosterProvider {

@@ -21,7 +21,9 @@
 
 
 import Foundation
+import UIKit
 import TigaseSwift
+import SQLite3
 
 let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
@@ -45,17 +47,16 @@ open class DBConnection {
         return Int(sqlite3_changes(handle));
     }
     
-    init(dbFilename:String) throws {
+    convenience public init(dbUrl: URL) throws {
+        try self.init(dbPath: dbUrl.path);
+    }
+    
+    public init(dbPath: String) throws {
         dispatcher = QueueDispatcher(label: "db_queue");
-        
         try dispatcher.sync {
-            let paths = NSSearchPathForDirectoriesInDomains(FileManager.SearchPathDirectory.documentDirectory, FileManager.SearchPathDomainMask.userDomainMask, true);
-            let documentDirectory = paths[0];
-            let path = documentDirectory.appending("/" + dbFilename);
-        
             let flags = SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE;
         
-            _ = try self.check(sqlite3_open_v2(path, &self.handle_, flags | SQLITE_OPEN_FULLMUTEX, nil));
+            _ = try self.check(sqlite3_open_v2(dbPath, &self.handle_, flags | SQLITE_OPEN_FULLMUTEX, nil));
         }
     }
     
@@ -424,24 +425,24 @@ open class DBCursor {
         return String(cString: sqlite3_column_name(self.handle, idx)!);
     }
     
-    init(statement:DBStatement) {
+    public init(statement:DBStatement) {
         self.connection = statement.connection;
         self.handle = statement.handle!;
     }
 
-    subscript(index: Int) -> Double {
+    open subscript(index: Int) -> Double {
         return sqlite3_column_double(handle, Int32(index));
     }
     
-    subscript(index: Int) -> Int {
+    open subscript(index: Int) -> Int {
         return Int(sqlite3_column_int64(handle, Int32(index)));
     }
 
-    subscript(index: Int) -> Int32 {
+    open subscript(index: Int) -> Int32 {
         return sqlite3_column_int(handle, Int32(index));
     }
     
-    subscript(index: Int) -> String? {
+    open subscript(index: Int) -> String? {
         let ptr = sqlite3_column_text(handle, Int32(index));
         if ptr == nil {
             return nil;
@@ -449,11 +450,11 @@ open class DBCursor {
         return String(cString: UnsafePointer(ptr!));
     }
     
-    subscript(index: Int) -> Bool {
+    open subscript(index: Int) -> Bool {
         return sqlite3_column_int64(handle, Int32(index)) != 0;
     }
     
-    subscript(index: Int) -> [UInt8]? {
+    open subscript(index: Int) -> [UInt8]? {
         let idx = Int32(index);
         let origPtr = sqlite3_column_blob(handle, idx);
         if origPtr == nil {
@@ -464,7 +465,7 @@ open class DBCursor {
         return DBCursor.convert(count, data: ptr!);
     }
 
-    subscript(index: Int) -> Data? {
+    open subscript(index: Int) -> Data? {
         let idx = Int32(index);
         let origPtr = sqlite3_column_blob(handle, idx);
         if origPtr == nil {
@@ -474,32 +475,32 @@ open class DBCursor {
         return Data(bytes: origPtr!, count: count);
     }
     
-    subscript(index: Int) -> Date {
+    open subscript(index: Int) -> Date {
         let timestamp = Double(sqlite3_column_int64(handle, Int32(index))) / 1000;
         return Date(timeIntervalSince1970: timestamp);
     }
     
-    subscript(index: Int) -> JID? {
+    open subscript(index: Int) -> JID? {
         if let str:String = self[index] {
             return JID(str);
         }
         return nil;
     }
 
-    subscript(index: Int) -> BareJID? {
+    open subscript(index: Int) -> BareJID? {
         if let str:String = self[index] {
             return BareJID(str);
         }
         return nil;
     }
     
-    subscript(column: String) -> Double? {
+    open subscript(column: String) -> Double? {
         return forColumn(column) {
             return self[$0];
         }
     }
 
-    subscript(column: String) -> Int? {
+    open subscript(column: String) -> Int? {
 //        return forColumn(column) {
 //            let v:Int? = self[$0];
 //            print("for \(column), position \($0) got \(v)")
@@ -511,7 +512,7 @@ open class DBCursor {
         return nil;
     }
     
-    subscript(column: String) -> Int32? {
+    open subscript(column: String) -> Int32? {
         //        return forColumn(column) {
         //            let v:Int? = self[$0];
         //            print("for \(column), position \($0) got \(v)")
@@ -523,43 +524,43 @@ open class DBCursor {
         return nil;
     }
 
-    subscript(column: String) -> String? {
+    open subscript(column: String) -> String? {
         return forColumn(column) {
             return self[$0];
         }
     }
 
-    subscript(column: String) -> Bool? {
+    open subscript(column: String) -> Bool? {
         return forColumn(column) {
             return self[$0];
         }
     }
 
-    subscript(column: String) -> [UInt8]? {
+    open subscript(column: String) -> [UInt8]? {
         return forColumn(column) {
             return self[$0];
         }
     }
     
-    subscript(column: String) -> Data? {
+    open subscript(column: String) -> Data? {
         return forColumn(column) {
             return self[$0];
         }
     }
     
-    subscript(column: String) -> Date? {
+    open subscript(column: String) -> Date? {
         return forColumn(column) {
             return self[$0];
         }
     }
     
-    subscript(column: String) -> JID? {
+    open subscript(column: String) -> JID? {
         return forColumn(column) {
             return self[$0];
         }
     }
 
-    subscript(column: String) -> BareJID? {
+    open subscript(column: String) -> BareJID? {
         return forColumn(column) {
             return self[$0];
         }

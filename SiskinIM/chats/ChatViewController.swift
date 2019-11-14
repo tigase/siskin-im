@@ -21,6 +21,7 @@
 
 
 import UIKit
+import Shared
 import TigaseSwift
 import TigaseSwiftOMEMO
 

@@ -21,6 +21,7 @@
 
 
 import UIKit
+import Shared
 import TigaseSwift
 import TigaseSwiftOMEMO
 
@@ -47,9 +48,9 @@ open class XmppService: Logger, EventHandler {
     fileprivate var fetchStart = NSDate();
         
     #if targetEnvironment(simulator)
-    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler(), PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler()];
+    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler(), PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), PushEventHandler.instance];
     #else
-    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler(), PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), JingleManager.instance];
+    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler(), PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), PushEventHandler.instance, JingleManager.instance];
     #endif
     
     public let dbCapsCache: DBCapabilitiesCache;
@@ -58,7 +59,7 @@ open class XmppService: Logger, EventHandler {
     fileprivate let dbRosterStore: DBRosterStore;
     public let dbVCardsCache: DBVCardsCache;
     fileprivate let avatarStore: AvatarStore;
-    open var applicationState: ApplicationState {
+    open var applicationState: ApplicationState = .inactive {
         didSet {
             if oldValue != applicationState {
                 applicationStateChanged();
@@ -81,7 +82,9 @@ open class XmppService: Logger, EventHandler {
         didSet {
             if networkAvailable {
                 if !oldValue {
-                    connectClients();
+                    if applicationState == .active {
+                        connectClients();
+                    }
                 } else {
                     keepalive();
                 }
@@ -287,10 +290,10 @@ open class XmppService: Logger, EventHandler {
                         mcModule.enable();
                     }
                 }
-                if client.state == .disconnected { // && client.pushNotificationsEnabled {
-                    client.login();
-                    //updateXmppClientInstance(forJid: client.sessionObject.userBareJid!);
-                }
+//                if client.state == .disconnected { // && client.pushNotificationsEnabled {
+//                    client.login();
+//                    //updateXmppClientInstance(forJid: client.sessionObject.userBareJid!);
+//                }
             }
         }
     }
@@ -357,11 +360,12 @@ open class XmppService: Logger, EventHandler {
             sendAutoPresence();
         case .DeviceToken:
             let newDeviceId = notification.userInfo?["newValue"] as? String;
-            forEachClient { (client) in
-                if let pushModule: TigasePushNotificationsModule = client.modulesManager.getModule(PushNotificationsModule.ID) {
-                    pushModule.deviceId = newDeviceId;
-                }
-            }
+            // FIXME: do something about it? is it needed?
+//            forEachClient { (client) in
+//                if let pushModule: TigasePushNotificationsModule = client.modulesManager.getModule(PushNotificationsModule.ID) {
+//                    pushModule.deviceId = newDeviceId;
+//                }
+//            }
         default:
             break;
         }
@@ -446,17 +450,19 @@ open class XmppService: Logger, EventHandler {
                         fetchGroup?.enter();
                         fetchingFor.append(client.sessionObject.userBareJid!);
                         print("reconnecting client:", client.sessionObject.userBareJid!);
-                        client.login();
+                        if !self.connect(client: client) {
+                            self.fetchEnded(for: client.sessionObject.userBareJid!);
+                        }
                     }
                 } else {
                     client.keepalive();
                 }
             }
-        }
-        fetchGroup?.notify(queue: DispatchQueue.main) {
-            self.isFetch = false;
-            self.fetchGroup = nil;
-            completionHandler(.newData);
+            fetchGroup?.notify(queue: DispatchQueue.main) {
+                self.isFetch = false;
+                self.fetchGroup = nil;
+                completionHandler(.newData);
+            }
         }
     }
     
@@ -548,9 +554,10 @@ open class XmppService: Logger, EventHandler {
         }
     }
     
-    fileprivate func connect(client: XMPPClient) {
+    @discardableResult
+    fileprivate func connect(client: XMPPClient) -> Bool {
         guard let account = AccountManager.getAccount(for: client.sessionObject.userBareJid!), account.active, self.networkAvailable, client.state == .disconnected else {
-            return;
+            return false;
         }
         
         if let seeOtherHostStr = AccountSettings.reconnectionLocation(account.name).getString(), let seeOtherHost = Data(base64Encoded: seeOtherHostStr), let val = try? JSONDecoder().decode(XMPPSrvRecord.self, from: seeOtherHost) {
@@ -568,11 +575,9 @@ open class XmppService: Logger, EventHandler {
         client.sessionObject.setUserProperty(SoftwareVersionModule.VERSION_KEY, value: Bundle.main.infoDictionary!["CFBundleVersion"] as! String);
         client.sessionObject.setUserProperty(SoftwareVersionModule.OS_KEY, value: UIDevice.current.systemName);
         
-        if let pushModule: TigasePushNotificationsModule = client.modulesManager.getModule(TigasePushNotificationsModule.ID) {
-            pushModule.pushServiceJid = account.pushServiceJid ?? XmppService.pushServiceJid;
-            pushModule.pushServiceNode = account.pushServiceNode;
-            pushModule.deviceId = Settings.DeviceToken.getString();
-            pushModule.enabled = account.pushNotifications;
+        if let pushModule: SiskinPushNotificationsModule = client.modulesManager.getModule(SiskinPushNotificationsModule.ID) {
+            pushModule.pushSettings = account.pushSettings;
+            pushModule.shouldEnable = account.pushNotifications;
         }
         if let smModule: StreamManagementModule = client.modulesManager.getModule(StreamManagementModule.ID) {
             // for push notifications this needs to be far lower value, ie. 60-90 seconds
@@ -587,6 +592,7 @@ open class XmppService: Logger, EventHandler {
         DispatchQueue.global(qos: .default).async {
             NotificationCenter.default.post(name: XmppService.ACCOUNT_STATE_CHANGED, object: self, userInfo: ["account": account.name.stringValue]);
         }
+        return true;
     }
     
     fileprivate func disconnect(client: XMPPClient, force: Bool = false, completionHandler: (()->Void)? = nil) {
@@ -665,7 +671,7 @@ open class XmppService: Logger, EventHandler {
             mucModule.roomsManager = DBRoomsManager(store: dbChatStore);
             _ = client.modulesManager.register(mucModule);
             _ = client.modulesManager.register(AdHocCommandsModule());
-            _ = client.modulesManager.register(TigasePushNotificationsModule(pushServiceJid: XmppService.pushServiceJid));
+            _ = client.modulesManager.register(SiskinPushNotificationsModule(defaultPushServiceJid: XmppService.pushServiceJid, provider: SiskinPushNotificationsModuleProvider()));
             _ = client.modulesManager.register(HttpFileUploadModule());
             _ = client.modulesManager.register(MessageDeliveryReceiptsModule());
             #if targetEnvironment(simulator)
@@ -707,13 +713,4 @@ open class XmppService: Logger, EventHandler {
         case active
         case inactive
     }
-}
-
-extension XMPPClient {
-    
-    var  pushNotificationsEnabled: Bool {
-        let pushNotificationModule: TigasePushNotificationsModule? = self.modulesManager.getModule(TigasePushNotificationsModule.ID);
-        return pushNotificationModule?.enabled ?? false;
-    }
-    
 }

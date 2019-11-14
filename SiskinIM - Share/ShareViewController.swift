@@ -20,6 +20,7 @@
 //
 import UIKit
 import Social
+import Shared
 import TigaseSwift
 import MobileCoreServices
 
@@ -77,6 +78,18 @@ class ShareViewController: SLComposeServiceViewController {
     
     override func isContentValid() -> Bool {
         return account != nil && xmppClient.state == .connected && recipients.count > 0;
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad();
+        let dbURL = DBConnection.mainDbURL();
+        if !FileManager.default.fileExists(atPath: dbURL.path) {
+            let controller = UIAlertController(title: "Please launch application from the home screen before continuing.", message: nil, preferredStyle: .alert);
+            controller.addAction(UIAlertAction(title: "OK", style: .destructive, handler: { (action) in
+                self.extensionContext?.cancelRequest(withError: ShareError.firstRun);
+            }))
+            self.present(controller, animated: true, completion: nil);
+        }
     }
     
     override func presentationAnimationDidFinish() {
@@ -294,6 +307,7 @@ class ShareViewController: SLComposeServiceViewController {
     }
     
     enum ShareError: Error {
+        case firstRun
         case featureNotAvailable
         case tooBig
         case failure

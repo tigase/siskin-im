@@ -20,15 +20,16 @@
 //
 
 import Foundation
+import Shared
 import TigaseSwift
 
 public class DBSchemaManager {
     
-    static let CURRENT_VERSION = 7;
+    static let CURRENT_VERSION = 8;
     
     fileprivate let dbConnection: DBConnection;
     
-    init(dbConnection: DBConnection) {
+    public init(dbConnection: DBConnection) {
         self.dbConnection = dbConnection;
     }
     
@@ -54,6 +55,13 @@ public class DBSchemaManager {
             version = try! getSchemaVersion();
         }
 
+        let journalMode = try dbConnection.prepareStatement("pragma journal_mode").findFirst(map: { cursor -> String? in
+            return cursor["journal_mode"];
+        })!;
+        if journalMode != "wal" {
+            try dbConnection.execute("PRAGMA journal_mode=WAL");
+        }
+        
         // need to make sure that "error" column exists as there was an issue with db-schema-2.sql
         // which did not create this column
         do {
@@ -62,30 +70,30 @@ public class DBSchemaManager {
             try dbConnection.execute("ALTER TABLE chat_history ADD COLUMN error TEXT;");
         }
         
-        let queryStmt = try dbConnection.prepareStatement("SELECT account, jid, encryption FROM chats WHERE encryption IS NOT NULL AND options IS NULL");
-        let toConvert = try queryStmt.query { (cursor) -> (BareJID, BareJID, ChatEncryption)? in
-            let account: BareJID = cursor["account"]!;
-            let jid: BareJID = cursor["jid"]!;
-            guard let encryptionStr: String = cursor["encryption"] else {
-                return nil;
-            }
-            guard let encryption = ChatEncryption(rawValue: encryptionStr) else {
-                return nil;
-            }
-            
-            return (account, jid, encryption);
-        }
-        if !toConvert.isEmpty {
-            let updateStmt = try dbConnection.prepareStatement("UPDATE chats SET options = ?, encryption = null WHERE account = ? AND jid = ?");
-            try toConvert.forEach { (arg0) in
-                let (account, jid, encryption) = arg0
-                var options = ChatOptions();
-                options.encryption = encryption;
-                let data = try? JSONEncoder().encode(options);
-                let dataStr = data != nil ? String(data: data!, encoding: .utf8)! : nil;
-                _ = try updateStmt.update(dataStr, account, jid);
-            }
-        }
+//        let queryStmt = try dbConnection.prepareStatement("SELECT account, jid, encryption FROM chats WHERE encryption IS NOT NULL AND options IS NULL");
+//        let toConvert = try queryStmt.query { (cursor) -> (BareJID, BareJID, ChatEncryption)? in
+//            let account: BareJID = cursor["account"]!;
+//            let jid: BareJID = cursor["jid"]!;
+//            guard let encryptionStr: String = cursor["encryption"] else {
+//                return nil;
+//            }
+//            guard let encryption = ChatEncryption(rawValue: encryptionStr) else {
+//                return nil;
+//            }
+//
+//            return (account, jid, encryption);
+//        }
+//        if !toConvert.isEmpty {
+//            let updateStmt = try dbConnection.prepareStatement("UPDATE chats SET options = ?, encryption = null WHERE account = ? AND jid = ?");
+//            try toConvert.forEach { (arg0) in
+//                let (account, jid, encryption) = arg0
+//                var options = ChatOptions();
+//                options.encryption = encryption;
+//                let data = try? JSONEncoder().encode(options);
+//                let dataStr = data != nil ? String(data: data!, encoding: .utf8)! : nil;
+//                _ = try updateStmt.update(dataStr, account, jid);
+//            }
+//        }
         
         
         let toRemove: [(String,String,Int32)] = try dbConnection.prepareStatement("SELECT sess.account as account, sess.name as name, sess.device_id as deviceId FROM omemo_sessions sess WHERE NOT EXISTS (select 1 FROM omemo_identities i WHERE i.account = sess.account and i.name = sess.name and i.device_id = sess.device_id)").query([:] as [String: Any?], map: { (cursor:DBCursor) -> (String, String, Int32)? in
@@ -103,7 +111,15 @@ public class DBSchemaManager {
     }
     
     fileprivate func loadSchemaFile(fileName: String) throws {
-        let resourcePath = Bundle.main.resourcePath! + fileName;
+        guard let bundle = Bundle.allFrameworks.first(where: { (bundle) -> Bool in
+            guard let resourcePath = bundle.resourcePath else {
+                return false;
+            }
+            return FileManager.default.fileExists(atPath: resourcePath.appending(fileName));
+        }) else {
+            return;
+        }
+        let resourcePath = bundle.resourcePath! + fileName;
         print("loading SQL from file", resourcePath);
         let dbSchema = try String(contentsOfFile: resourcePath, encoding: String.Encoding.utf8);
         print("read schema:", dbSchema);

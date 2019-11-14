@@ -20,6 +20,7 @@
 //
 
 import Foundation
+import Shared
 import TigaseSwift
 
 open class DBVCardsCache {

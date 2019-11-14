@@ -20,6 +20,7 @@
 //
 
 import Foundation
+import Shared
 import TigaseSwift
 
 public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>, RosterProvider {

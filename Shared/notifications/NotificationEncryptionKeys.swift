@@ -1,5 +1,5 @@
 //
-// OpenSSL_AES_GCM_Engine.swift
+// NotificationEncryptionKeys.swift
 //
 // Siskin IM
 // Copyright (C) 2019 "Tigase, Inc." <office@tigase.com>
@@ -18,15 +18,22 @@
 // along with this program. Look for COPYING file in the top folder.
 // If not, see https://www.gnu.org/licenses/.
 //
-import Foundation
-import TigaseSwiftOMEMO
-import Shared
 
-class OpenSSL_AES_GCM_Engine: Cipher.AES_GCM, AES_GCM_Engine {
-     
-    override init() {
-        super.init();
+import Foundation
+import TigaseSwift
+
+public class NotificationEncryptionKeys {
+    
+    private static let storage = UserDefaults(suiteName: "group.siskinim.notifications")!;
+    
+    public static func key(for account: BareJID) -> Data? {
+        storage.data(forKey: account.stringValue)
     }
     
+    public static func set(key: Data?, for account: BareJID) {
+        storage.setValue(key, forKey: account.stringValue);
+    }
 }
+
+
 
