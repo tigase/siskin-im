@@ -79,6 +79,8 @@ open class DBChatStore {
     static let CHAT_OPENED = Notification.Name("CHAT_OPENED");
     static let CHAT_CLOSED = Notification.Name("CHAT_CLOSED");
     static let CHAT_UPDATED = Notification.Name("CHAT_UPDATED");
+    static let CHAT_CREATED = Notification.Name("CHAT_CREATED");
+    static let CHAT_DESTROYED = Notification.Name("CHAT_DESTROYED");
 
     public static let instance = DBChatStore.init();
     
@@ -214,7 +216,7 @@ open class DBChatStore {
                 }
                 
                 NotificationCenter.default.post(name: DBChatStore.CHAT_OPENED, object: result);
-                
+                NotificationCenter.default.post(name: DBChatStore.CHAT_CREATED, object: result);
                 return result;
             }
             return dbChat as? T;
@@ -245,6 +247,7 @@ open class DBChatStore {
             }
 
             NotificationCenter.default.post(name: DBChatStore.CHAT_CLOSED, object: dbChat);
+            NotificationCenter.default.post(name: DBChatStore.CHAT_DESTROYED, object: dbChat);
             
             return true;
         }

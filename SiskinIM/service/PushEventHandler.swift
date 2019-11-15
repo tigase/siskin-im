@@ -30,6 +30,10 @@ open class PushEventHandler: XmppServiceEventHandler {
     
     let events: [Event] = [DiscoveryModule.AccountFeaturesReceivedEvent.TYPE];
     
+    init() {
+        NotificationCenter.default.addObserver(self, selector: #selector(chatDestroyed(_:)), name: DBChatStore.CHAT_DESTROYED, object: nil);
+    }
+    
     public func handle(event: Event) {
         switch event {
         case let e as DiscoveryModule.AccountFeaturesReceivedEvent:
@@ -80,6 +84,36 @@ open class PushEventHandler: XmppServiceEventHandler {
         }
     }
     
+    @objc func chatDestroyed(_ notification: Notification) {
+        guard let c = notification.object as? DBChatProtocol else {
+            return;
+        }
+        
+        switch c {
+        case let chat as DBChat:
+            // nothing to do for now...
+            break;
+        case let room as DBRoom:
+            guard room.options.notifications != .none else {
+                return;
+            }
+            self.updateAccountPushSettings(for: room.account);
+        default:
+            break;
+        }
+    }
     
+    func updateAccountPushSettings(for account: BareJID) {
+        guard AccountSettings.pushHash(account).int() != 0 else {
+            return;
+        }
+        if let client = XmppService.instance.getClient(for: account), client.state == .connected, let pushModule: SiskinPushNotificationsModule = client.modulesManager.getModule(SiskinPushNotificationsModule.ID), let pushSettings = pushModule.pushSettings {
+            pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
+                print("updating account push settings finished", result);
+            })
+        } else {
+            AccountSettings.pushHash(account).set(int: 0);
+        }
+    }
 }
 
