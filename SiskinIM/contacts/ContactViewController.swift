@@ -24,8 +24,6 @@ import TigaseSwift
 import TigaseSwiftOMEMO
 
 class ContactViewController: CustomTableViewController {
-
-    var xmppService: XmppService!;
     
     var account: BareJID!;
     var jid: BareJID!;
@@ -35,11 +33,6 @@ class ContactViewController: CustomTableViewController {
         }
     }
     
-    var showEncryption: Bool = false {
-        didSet {
-            self.reloadData();
-        }
-    }
     var encryption: ChatEncryption? {
         get {
             return chat?.options.encryption;
@@ -62,19 +55,18 @@ class ContactViewController: CustomTableViewController {
     fileprivate var sections: [Sections] = [.basic];
     
     override func viewDidLoad() {
-        xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
         super.viewDidLoad()
 
-        if self.chat == nil {
-            chat = DBChatStore.instance.getChat(for: account, with: jid) as? DBChat;
-        }
+//        if self.chat == nil {
+//            chat = DBChatStore.instance.getChat(for: account, with: jid) as? DBChat;
+//        }
         
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
-        vcard = xmppService.dbVCardsCache.getVCard(for: jid);
+        vcard = XmppService.instance.dbVCardsCache.getVCard(for: jid);
         if vcard == nil {
             refreshVCard();
         }
@@ -98,7 +90,7 @@ class ContactViewController: CustomTableViewController {
     
     func refreshVCard() {
         DispatchQueue.global(qos: .background).async() {
-            self.xmppService.refreshVCard(account: self.account, for: self.jid, onSuccess: { (vcard) in
+            XmppService.instance.refreshVCard(account: self.account, for: self.jid, onSuccess: { (vcard) in
                 DispatchQueue.main.async {
                     self.vcard = vcard;
                 }
@@ -110,7 +102,8 @@ class ContactViewController: CustomTableViewController {
     
     func reloadData() {
         var sections: [Sections] = [.basic];
-        if showEncryption {
+        if chat != nil {
+            sections.append(.settings);
             sections.append(.encryption);
         }
         if phones.count > 0 {
@@ -135,6 +128,8 @@ class ContactViewController: CustomTableViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection sectionNo: Int) -> Int {
         switch sections[sectionNo] {
         case .basic:
+            return 1;
+        case .settings:
             return 1;
         case .encryption:
             return omemoIdentities.count + 1;
@@ -172,6 +167,21 @@ class ContactViewController: CustomTableViewController {
             cell.vcard = vcard;
         
             return cell;
+        case .settings:
+            //if indexPath.row == 0 {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "BlockContactCell", for: indexPath);
+                let btn = UISwitch(frame: .zero);
+                if let client = XmppService.instance.getClient(for: account), let blockingModule: BlockingCommandModule = client.modulesManager.getModule(BlockingCommandModule.ID), blockingModule.isAvailable {
+                    btn.isOn = BlockedEventHandler.isBlocked(JID(jid), on: client);
+                    btn.isEnabled = client.state == .connected;
+                } else {
+                    btn.isOn = false;
+                    btn.isEnabled = false;
+                }
+                btn.addTarget(self, action: #selector(blockContactChanged), for: .valueChanged);
+                cell.accessoryView = btn;
+                return cell;
+            //}
         case .encryption:
             if indexPath.row == 0 {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "OMEMOEncryptionCell", for: indexPath);
@@ -290,6 +300,8 @@ class ContactViewController: CustomTableViewController {
         switch sections[indexPath.section] {
         case .basic:
             return;
+        case .settings:
+            return;
         case .encryption:
             if indexPath.row == 0 {
                 // handle change of encryption method!
@@ -352,6 +364,33 @@ class ContactViewController: CustomTableViewController {
             return "Work";
         }
     }
+    
+    @objc func blockContactChanged(_ sender: UISwitch) {
+        guard let client = XmppService.instance.getClient(for: account), let blockingModule: BlockingCommandModule = client.modulesManager.getModule(BlockingCommandModule.ID) else {
+            sender.isOn = !sender.isOn;
+            return;
+        }
+
+        if sender.isOn {
+            blockingModule.block(jids: [JID(jid!)], completionHandler: { [weak sender] result in
+                switch result {
+                case .failure(let _):
+                    sender?.isOn = false;
+                default:
+                    break;
+                }
+            })
+        } else {
+            blockingModule.unblock(jids: [JID(jid!)], completionHandler: { [weak sender] result in
+                switch result {
+                case .failure(let _):
+                    sender?.isOn = true;
+                default:
+                    break;
+                }
+            })
+        }
+    }
     /*
     // MARK: - Navigation
 
@@ -388,6 +427,7 @@ class ContactViewController: CustomTableViewController {
     
     enum Sections {
         case basic
+        case settings
         case encryption
         case phones
         case emails
@@ -397,6 +437,8 @@ class ContactViewController: CustomTableViewController {
             switch self {
             case .basic:
                 return "";
+            case .settings:
+                return "Settings";
             case .encryption:
                 return "Encryption";
             case .phones:
@@ -408,4 +450,5 @@ class ContactViewController: CustomTableViewController {
             }
         }
     }
+    
 }

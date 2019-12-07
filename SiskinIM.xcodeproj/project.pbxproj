@@ -142,6 +142,10 @@
 		FED353862270BFE600B69C53 /* TigaseSwiftOMEMO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FED353732270BBA500B69C53 /* TigaseSwiftOMEMO.framework */; };
 		FED353872270BFE600B69C53 /* TigaseSwiftOMEMO.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FED353732270BBA500B69C53 /* TigaseSwiftOMEMO.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FED353892270C1D000B69C53 /* DBOMEMOStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED353882270C1D000B69C53 /* DBOMEMOStore.swift */; };
+		FEDC678A238A9F16005C0FAB /* BlockedEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDC6789238A9F16005C0FAB /* BlockedEventHandler.swift */; };
+		FEDC678C238AFB9F005C0FAB /* Settings.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEDC678B238AFB9F005C0FAB /* Settings.storyboard */; };
+		FEDC678E238B03C1005C0FAB /* AppStoryboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDC678D238B03C1005C0FAB /* AppStoryboard.swift */; };
+		FEDC6790238B05E4005C0FAB /* BlockedContactsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDC678F238B05E4005C0FAB /* BlockedContactsController.swift */; };
 		FEDCBF671D9C3EE700AE9129 /* RosterProviderFlat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDCBF661D9C3EE700AE9129 /* RosterProviderFlat.swift */; };
 		FEDCBF691D9C53BA00AE9129 /* RosterProviderGrouped.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDCBF681D9C53BA00AE9129 /* RosterProviderGrouped.swift */; };
 		FEDE3B501F7162AA00075F6E /* CustomChatManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE3B4F1F7162AA00075F6E /* CustomChatManager.swift */; };
@@ -397,6 +401,10 @@
 		FED353732270BBA500B69C53 /* TigaseSwiftOMEMO.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TigaseSwiftOMEMO.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FED353822270BFD300B69C53 /* openssl.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = openssl.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FED353882270C1D000B69C53 /* DBOMEMOStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBOMEMOStore.swift; sourceTree = "<group>"; };
+		FEDC6789238A9F16005C0FAB /* BlockedEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedEventHandler.swift; sourceTree = "<group>"; };
+		FEDC678B238AFB9F005C0FAB /* Settings.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Settings.storyboard; sourceTree = "<group>"; };
+		FEDC678D238B03C1005C0FAB /* AppStoryboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoryboard.swift; sourceTree = "<group>"; };
+		FEDC678F238B05E4005C0FAB /* BlockedContactsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedContactsController.swift; sourceTree = "<group>"; };
 		FEDCBF661D9C3EE700AE9129 /* RosterProviderFlat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterProviderFlat.swift; sourceTree = "<group>"; };
 		FEDCBF681D9C53BA00AE9129 /* RosterProviderGrouped.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterProviderGrouped.swift; sourceTree = "<group>"; };
 		FEDE3B4F1F7162AA00075F6E /* CustomChatManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomChatManager.swift; sourceTree = "<group>"; };
@@ -580,6 +588,7 @@
 				FE2809822167CF1B002F5BD0 /* ServerFeaturesViewController.swift */,
 				FE719E7D2274D20D007CEEC9 /* OMEMOFingerprintsController.swift */,
 				FEFBEC5C233A7EAE00E5CCA5 /* AppearanceViewController.swift */,
+				FEDC678F238B05E4005C0FAB /* BlockedContactsController.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -625,6 +634,7 @@
 				FEF19F092347619D005CFE9A /* TasksQueue.swift */,
 				FE75A004237475CD001E78D9 /* MainNotificationManagerProvider.swift */,
 				FE75A0112376E73C001E78D9 /* SiskinPushNotificationsModuleProvider.swift */,
+				FEDC678D238B03C1005C0FAB /* AppStoryboard.swift */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -751,6 +761,7 @@
 				FE01ADA11E214CEA00FA7E65 /* xmpp */,
 				FE233CDA21EA03DD00099281 /* Info.storyboard */,
 				FE759FFA23742C48001E78D9 /* NotificationCenterDelegate.swift */,
+				FEDC678B238AFB9F005C0FAB /* Settings.storyboard */,
 			);
 			path = SiskinIM;
 			sourceTree = "<group>";
@@ -772,6 +783,7 @@
 				FEF19F112348A3B8005CFE9A /* AvatarEventHandler.swift */,
 				FEF19F132348B655005CFE9A /* DiscoEventHandler.swift */,
 				FE75A00E2375F324001E78D9 /* PushEventHandler.swift */,
+				FEDC6789238A9F16005C0FAB /* BlockedEventHandler.swift */,
 			);
 			path = service;
 			sourceTree = "<group>";
@@ -1011,6 +1023,7 @@
 				FE233CDB21EA03DD00099281 /* Info.storyboard in Resources */,
 				FE94E5311CCBA74F00FAE755 /* LaunchScreen.storyboard in Resources */,
 				FE8DD9C3221B118E0090F5AA /* Groupchat.storyboard in Resources */,
+				FEDC678C238AFB9F005C0FAB /* Settings.storyboard in Resources */,
 				FE94E52E1CCBA74F00FAE755 /* Assets.xcassets in Resources */,
 				FE4071E621E262D900F09B58 /* VoIP.storyboard in Resources */,
 				FE94E52C1CCBA74F00FAE755 /* Main.storyboard in Resources */,
@@ -1098,6 +1111,7 @@
 				FEF19F142348B655005CFE9A /* DiscoEventHandler.swift in Sources */,
 				FE1AC8F7216B8AB700D4CDAB /* NewFeaturesDetector.swift in Sources */,
 				FE719E762271B2BA007CEEC9 /* OpenSSL_AES_GCM_Engine.swift in Sources */,
+				FEDC678A238A9F16005C0FAB /* BlockedEventHandler.swift in Sources */,
 				FE4071E821E2653700F09B58 /* RoundButton.swift in Sources */,
 				FEAC717B1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift in Sources */,
 				FE7F9303200FD5AC004C6195 /* AccountManagerScramSaltedPasswordCache.swift in Sources */,
@@ -1108,11 +1122,13 @@
 				FE507A211CDB7B3B001A015C /* SettingsViewController.swift in Sources */,
 				FE507A191CDB7B3B001A015C /* DBChatHistoryStore.swift in Sources */,
 				FEA8D65D1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift in Sources */,
+				FEDC6790238B05E4005C0FAB /* BlockedContactsController.swift in Sources */,
 				FEB62C501DA80956001500D5 /* AvatarStore.swift in Sources */,
 				FE137A4821F6464D006B7F7C /* UIColor_mix.swift in Sources */,
 				FE507A1E1CDB7B3B001A015C /* RosterViewController.swift in Sources */,
 				FEDCBF691D9C53BA00AE9129 /* RosterProviderGrouped.swift in Sources */,
 				FEDE938C1D08AFE800CA60A9 /* VCardEditViewController.swift in Sources */,
+				FEDC678E238B03C1005C0FAB /* AppStoryboard.swift in Sources */,
 				FE36B3C821FA52E000D1F037 /* EmptyViewController.swift in Sources */,
 				FE507A161CDB7B3B001A015C /* ChatsListViewController.swift in Sources */,
 				FE8DD9C9221B29520090F5AA /* MucNewGroupchatController.swift in Sources */,

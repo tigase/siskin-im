@@ -96,8 +96,8 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
         let contactView = navigation.visibleViewController as! ContactViewController;
         contactView.account = account;
         contactView.jid = jid;
-        contactView.chat = self.chat as! DBChat;
-        contactView.showEncryption = true;
+        contactView.chat = self.chat as? DBChat;
+        //contactView.showEncryption = true;
         navigation.title = self.navigationItem.title;
         navigation.modalPresentationStyle = .formSheet;
         self.present(navigation, animated: true, completion: nil);

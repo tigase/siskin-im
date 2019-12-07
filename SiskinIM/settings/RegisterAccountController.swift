@@ -24,7 +24,7 @@ import UIKit
 import TigaseSwift
 
 class RegisterAccountController: DataFormController, UITextFieldDelegate {
-
+    
     @IBOutlet var nextButton: UIBarButtonItem!
     
     var domain: String? = nil;

@@ -194,7 +194,7 @@ class SettingsViewController: CustomTableViewController {
             } else {
                 // show edit account dialog
                 let account = accounts[indexPath.row];
-                let navigation = storyboard?.instantiateViewController(withIdentifier: "AccountSettingsNavigationController") as! UINavigationController;
+                let navigation = AppStoryboard.Main.instantiateViewController(withIdentifier: "AccountSettingsNavigationController") as! UINavigationController;
                 let accountSettingsController = navigation.visibleViewController! as! AccountSettingsViewController;
                 accountSettingsController.hidesBottomBarWhenPushed = true;
                 accountSettingsController.account = BareJID(account);
@@ -357,15 +357,15 @@ class SettingsViewController: CustomTableViewController {
     
     func showAddAccount(register: Bool) {
         // show add account dialog
-        let navigationController = storyboard!.instantiateViewController(withIdentifier: register ? "RegisterAccountController" : "AddAccountController") as! UINavigationController;
         if !register {
-            let addAccountController = navigationController.visibleViewController! as! AddAccountController;
+            let addAccountController = AddAccountController.instantiate(fromAppStoryboard: .Main);
             addAccountController.hidesBottomBarWhenPushed = true;
+            self.showDetailViewController(UINavigationController(rootViewController: addAccountController), sender: self);
         } else {
-            let registerAccountController = navigationController.visibleViewController! as! RegisterAccountController;
+            let registerAccountController = RegisterAccountController.instantiate(fromAppStoryboard: .Main);
             registerAccountController.hidesBottomBarWhenPushed = true;
+            self.showDetailViewController(UINavigationController(rootViewController: registerAccountController), sender: self);
         }
-        self.showDetailViewController(navigationController, sender: self);
     }
     
     fileprivate func getStatusIconForActionIcon(named: String, size: Int, withBorder: Bool) -> UIImage? {

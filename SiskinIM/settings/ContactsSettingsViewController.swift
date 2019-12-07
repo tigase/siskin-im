@@ -25,7 +25,7 @@ class ContactsSettingsViewController: CustomTableViewController {
     
     let tree: [[SettingsEnum]] = [
         [SettingsEnum.rosterType, SettingsEnum.rosterDisplayHiddenGroup],
-        [SettingsEnum.autoSubscribeOnAcceptedSubscriptionRequest],
+        [SettingsEnum.autoSubscribeOnAcceptedSubscriptionRequest, .blockedContacts],
         ];
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -72,6 +72,8 @@ class ContactsSettingsViewController: CustomTableViewController {
                 Settings.AutoSubscribeOnAcceptedSubscriptionRequest.setValue(switchView.isOn);
             }
             return cell;
+        case .blockedContacts:
+            return tableView.dequeueReusableCell(withIdentifier: "BlockedContactsTableViewCell", for: indexPath);
         }
     }
     
@@ -83,6 +85,7 @@ class ContactsSettingsViewController: CustomTableViewController {
         case rosterType = 0
         case rosterDisplayHiddenGroup = 1
         case autoSubscribeOnAcceptedSubscriptionRequest = 2
+        case blockedContacts = 3
     }
 }
 
