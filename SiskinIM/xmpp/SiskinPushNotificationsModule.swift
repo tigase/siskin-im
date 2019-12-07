@@ -121,8 +121,8 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
             let priority = self.isSupported(extension: TigasePushNotificationsModule.Priority.self);
             if priority {
                 extensions.append(TigasePushNotificationsModule.Priority());
-                if componentSupportsEncryption && self.isSupported(extension: TigasePushNotificationsModule.Encryption.self) {
-                    extensions.append(TigasePushNotificationsModule.Encryption(key: NotificationEncryptionKeys.key(for: account) ?? Cipher.AES_GCM.generateKey(ofSize: 128)!));
+                if componentSupportsEncryption && self.isSupported(extension: TigasePushNotificationsModule.Encryption.self) && self.isSupported(feature: TigasePushNotificationsModule.Encryption.AES_128_GCM) {
+                    extensions.append(TigasePushNotificationsModule.Encryption(algorithm: TigasePushNotificationsModule.Encryption.AES_128_GCM, key: NotificationEncryptionKeys.key(for: account) ?? Cipher.AES_GCM.generateKey(ofSize: 128)!));
                 }
             }
         }
