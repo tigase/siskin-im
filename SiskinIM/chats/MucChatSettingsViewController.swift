@@ -157,7 +157,7 @@ class MucChatSettingsViewController: CustomTableViewController, UIImagePickerCon
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true);
         
-        if indexPath.section == 0 && indexPath.row == 1 {
+        if indexPath.section == 2 && indexPath.row == 0 {
             let controller = TablePickerViewController();
             controller.items = [NotificationItem(type: .always), NotificationItem(type: .mention), NotificationItem(type: .none)];
             controller.selected = controller.items.firstIndex(where: { (item) -> Bool in
