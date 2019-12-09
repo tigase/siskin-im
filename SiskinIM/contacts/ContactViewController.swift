@@ -130,7 +130,7 @@ class ContactViewController: CustomTableViewController {
         case .basic:
             return 1;
         case .settings:
-            return 1;
+            return 2;
         case .encryption:
             return omemoIdentities.count + 1;
         case .phones:
@@ -168,7 +168,16 @@ class ContactViewController: CustomTableViewController {
         
             return cell;
         case .settings:
-            //if indexPath.row == 0 {
+            switch SettingsOptions(rawValue: indexPath.row)! {
+            case .mute:
+                let cell = tableView.dequeueReusableCell(withIdentifier: "MuteContactCell", for: indexPath);
+                let btn = UISwitch(frame: .zero);
+                btn.isOn = (chat?.options.notifications ?? .always == .none);
+                btn.isEnabled = chat != nil;
+                btn.addTarget(self, action: #selector(muteContactChanged), for: .valueChanged);
+                cell.accessoryView = btn;
+                return cell;
+            case .block:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "BlockContactCell", for: indexPath);
                 let btn = UISwitch(frame: .zero);
                 if let client = XmppService.instance.getClient(for: account), let blockingModule: BlockingCommandModule = client.modulesManager.getModule(BlockingCommandModule.ID), blockingModule.isAvailable {
@@ -181,7 +190,7 @@ class ContactViewController: CustomTableViewController {
                 btn.addTarget(self, action: #selector(blockContactChanged), for: .valueChanged);
                 cell.accessoryView = btn;
                 return cell;
-            //}
+            }
         case .encryption:
             if indexPath.row == 0 {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "OMEMOEncryptionCell", for: indexPath);
@@ -391,6 +400,28 @@ class ContactViewController: CustomTableViewController {
             })
         }
     }
+    
+    @objc func muteContactChanged(_ sender: UISwitch) {
+        guard let account = self.account else {
+            sender.isOn = !sender.isOn;
+            return;
+        }
+        chat?.modifyOptions({ (options) in
+            options.notifications = sender.isOn ? .none : .always;
+        }, completionHandler: {
+            if let client = XmppService.instance.getClient(for: account), let pushModule: SiskinPushNotificationsModule = client.modulesManager.getModule(SiskinPushNotificationsModule.ID), let pushSettings = pushModule.pushSettings {
+                pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
+                    switch result {
+                    case .success(_):
+                        break;
+                    case .failure(let err):
+                        AccountSettings.pushHash(account).set(int: 0);
+                        Dis
+                    }
+                });
+            }
+        });
+    }
     /*
     // MARK: - Navigation
 
@@ -449,6 +480,11 @@ class ContactViewController: CustomTableViewController {
                 return "Addresses";
             }
         }
+    }
+    
+    enum SettingsOptions: Int {
+        case mute = 0
+        case block = 1
     }
     
 }

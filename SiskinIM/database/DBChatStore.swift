@@ -579,13 +579,22 @@ public protocol  DBChatProtocol: ChatProtocol {
 //
 //}
 
+public enum ConversationNotification: String {
+    case none
+    case mention
+    case always
+}
+
 public protocol ChatOptionsProtocol {
+    
+    var notifications: ConversationNotification { get }
     
 }
 
 public struct ChatOptions: Codable, ChatOptionsProtocol {
     
     var encryption: ChatEncryption?;
+    public var notifications: ConversationNotification = .always;
     
     init() {}
 
@@ -594,6 +603,7 @@ public struct ChatOptions: Codable, ChatOptionsProtocol {
         if let val = try container.decodeIfPresent(String.self, forKey: .encryption) {
             encryption = ChatEncryption(rawValue: val);
         }
+        notifications = ConversationNotification(rawValue: try container.decodeIfPresent(String.self, forKey: .notifications) ?? "") ?? .always;
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -601,11 +611,16 @@ public struct ChatOptions: Codable, ChatOptionsProtocol {
         if encryption != nil {
             try container.encode(encryption!.rawValue, forKey: .encryption);
         }
+        if notifications != .always {
+            try container.encode(notifications.rawValue, forKey: .notifications);
+        }
     }
     
     enum CodingKeys: String, CodingKey {
         case encryption = "encrypt"
+        case notifications = "notifications";
     }
+
 }
 
 class DBChat: Chat, DBChatProtocol {

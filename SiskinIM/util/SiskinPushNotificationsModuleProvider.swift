@@ -26,8 +26,9 @@ class SiskinPushNotificationsModuleProvider: SiskinPushNotificationsModuleProvid
     
     func mutedChats(for account: BareJID) -> [BareJID] {
         return DBChatStore.instance.getChats(for: account).filter({ (chat) -> Bool in
-            let c = chat as? DBChat;
-            // TODO: add support for c.options.notifications!!
+            if let c = chat as? DBChat {
+                return c.options.notifications == .none;
+            }
             return false;
         }).map({ (chat) -> BareJID in
             return chat.jid.bareJid;

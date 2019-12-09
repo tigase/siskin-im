@@ -356,7 +356,7 @@ class MucChatSettingsViewController: CustomTableViewController, UIImagePickerCon
     
     class NotificationItem: TablePickerViewItemsProtocol {
         
-        let type: RoomNotifications;
+        let type: ConversationNotification;
         
         var description: String {
             get {
@@ -371,7 +371,7 @@ class MucChatSettingsViewController: CustomTableViewController, UIImagePickerCon
             }
         }
         
-        init(type: RoomNotifications) {
+        init(type: ConversationNotification) {
             self.type = type;
         }
         

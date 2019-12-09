@@ -72,13 +72,18 @@ class MainNotificationManagerProvider: NotificationManagerProvider {
                     completionHandler(body.contains(room.nickname));
                 }
             case let chat as DBChat:
-                if Settings.NotificationsFromUnknown.bool() {
-                    completionHandler(true);
-                } else {
-                    let rosterModule: RosterModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(RosterModule.ID);
-                    let known = rosterModule?.rosterStore.get(for: JID(sender)) != nil;
-                
-                    completionHandler(known)
+                switch chat.options.notifications {
+                case .none:
+                    completionHandler(false);
+                default:
+                    if Settings.NotificationsFromUnknown.bool() {
+                        completionHandler(true);
+                    } else {
+                        let rosterModule: RosterModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(RosterModule.ID);
+                        let known = rosterModule?.rosterStore.get(for: JID(sender)) != nil;
+                    
+                        completionHandler(known)
+                    }
                 }
             default:
                 print("should not happen!");

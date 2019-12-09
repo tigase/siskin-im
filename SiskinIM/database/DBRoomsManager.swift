@@ -85,7 +85,7 @@ open class DBRoomsManager: DefaultRoomsManager {
 
 public struct RoomOptions: Codable, ChatOptionsProtocol {
     
-    var notifications: RoomNotifications;
+    public var notifications: ConversationNotification;
     
     init() {
         notifications = .mention;
@@ -94,7 +94,7 @@ public struct RoomOptions: Codable, ChatOptionsProtocol {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self);
         if let val = try container.decodeIfPresent(String.self, forKey: .notifications) {
-            notifications = RoomNotifications(rawValue: val) ?? .mention;
+            notifications = ConversationNotification(rawValue: val) ?? .mention;
         } else {
             notifications = .mention;
         }
@@ -110,10 +110,4 @@ public struct RoomOptions: Codable, ChatOptionsProtocol {
     enum CodingKeys: String, CodingKey {
         case notifications = "notifications"
     }
-}
-
-enum RoomNotifications: String {
-    case none
-    case mention
-    case always
 }

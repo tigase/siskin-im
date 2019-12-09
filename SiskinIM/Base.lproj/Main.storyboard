@@ -1168,7 +1168,6 @@
         <!--Navigation Controller-->
         <scene sceneID="WuA-io-KdE">
             <objects>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="Cyv-te-ghn" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="QGt-BC-Efk" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="htm-Zf-FaY">
@@ -1180,6 +1179,7 @@
                         <segue destination="tcY-hw-Evf" kind="relationship" relationship="rootViewController" id="UqQ-Sj-6Dq"/>
                     </connections>
                 </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Cyv-te-ghn" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="4476" y="623"/>
         </scene>
@@ -2405,8 +2405,25 @@
                                     </subviews>
                                 </tableViewCellContentView>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="OMEMOEncryptionCell" textLabel="XZp-oZ-XpC" detailTextLabel="vIB-ar-uog" rowHeight="44" style="IBUITableViewCellStyleValue1" id="EPN-iV-X5r" customClass="OMEMOEncryptionSwitchTableViewCell" customModule="Siskin" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="MuteContactCell" textLabel="g8N-kr-fax" rowHeight="44" style="IBUITableViewCellStyleDefault" id="rXF-fn-cOY">
                                 <rect key="frame" x="0.0" y="324.5" width="414" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="rXF-fn-cOY" id="Cfg-a8-bA5">
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Mute contact" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="g8N-kr-fax">
+                                            <rect key="frame" x="20" y="0.0" width="374" height="44"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="OMEMOEncryptionCell" textLabel="XZp-oZ-XpC" detailTextLabel="vIB-ar-uog" rowHeight="44" style="IBUITableViewCellStyleValue1" id="EPN-iV-X5r" customClass="OMEMOEncryptionSwitchTableViewCell" customModule="Siskin" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="368.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="EPN-iV-X5r" id="cx2-fQ-N3b">
                                     <rect key="frame" x="0.0" y="0.0" width="383" height="44"/>
@@ -2430,7 +2447,7 @@
                                 </tableViewCellContentView>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="OMEMOIdentityCell" rowHeight="60" id="3q3-ov-q6z" customClass="OMEMOIdentityTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="368.5" width="414" height="60"/>
+                                <rect key="frame" x="0.0" y="412.5" width="414" height="60"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="3q3-ov-q6z" id="ArO-fK-TDf">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="60"/>
@@ -2698,7 +2715,6 @@
         <!--Navigation Controller-->
         <scene sceneID="rMj-nV-pAP">
             <objects>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="wxO-ej-8ew" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="tbl-ag-IFY" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="Vhl-hf-QEr">
@@ -2710,6 +2726,7 @@
                         <segue destination="nuh-LA-TKi" kind="relationship" relationship="rootViewController" id="yEd-2a-MNe"/>
                     </connections>
                 </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="wxO-ej-8ew" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2688.8000000000002" y="2345.577211394303"/>
         </scene>
