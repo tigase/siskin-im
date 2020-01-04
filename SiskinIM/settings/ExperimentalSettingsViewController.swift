@@ -28,7 +28,7 @@ class ExperimentalSettingsViewController: CustomTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 5;
+        return 4;
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -46,13 +46,6 @@ class ExperimentalSettingsViewController: CustomTableViewController {
             cell.switchView.isOn = Settings.enableBookmarksSync.getBool();
             cell.valueChangedListener = {(switchView: UISwitch) in
                 Settings.enableBookmarksSync.setValue(switchView.isOn);
-            }
-            return cell;
-        case .enableNewUI:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "EnableNewUITableViewCell", for: indexPath) as! SwitchTableViewCell;
-            cell.switchView.isOn = Settings.EnableNewUI.getBool();
-            cell.valueChangedListener = {(switchView: UISwitch) in
-                Settings.EnableNewUI.setValue(switchView.isOn);
             }
             return cell;
         case .enableMarkdown:
@@ -84,8 +77,7 @@ class ExperimentalSettingsViewController: CustomTableViewController {
     internal enum SettingsEnum: Int {
         case notificationsFromUnknown = 0
         case enableBookmarksSync = 1
-        case enableNewUI = 2
-        case enableMarkdown = 3
-        case showEmoticons = 4
+        case enableMarkdown = 2
+        case showEmoticons = 3
     }
 }

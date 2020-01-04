@@ -107,16 +107,16 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             return tableView.dequeueReusableCell(withIdentifier: "MucChatTableViewCellIncoming", for: indexPath);
         }
         
+        var continuation = false;
+        if (indexPath.row + 1) < dataSource.count {
+            if let prevItem = dataSource.getItem(at:  indexPath.row + 1) {
+                continuation = dbItem.isMergeable(with: prevItem);
+            }
+        }
+        
         switch dbItem {
         case let item as ChatMessage:
-            var continuation = false;
-            if Settings.EnableNewUI.getBool() && (indexPath.row + 1) < dataSource.count {
-                if let prevItem = dataSource.getItem(at:  indexPath.row + 1) {
-                    continuation = item.isMergeable(with: prevItem);
-                }
-            }
-                    
-            let id = Settings.EnableNewUI.getBool() ? (continuation ? "MucChatTableViewCellContinuation" : "MucChatTableViewCell") : (item.state.direction == .incoming ? "MucChatTableViewCellIncoming" : "MucChatTableViewCellOutgoing")
+            let id = continuation ? "MucChatTableViewMessageContinuationCell" : "MucChatTableViewMessageCell";
 
             let cell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
             cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
@@ -131,8 +131,33 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
                 }
             }
             cell.nicknameView?.text = item.authorNickname;
-            cell.set(message: item, downloader: downloadPreview(url:msgId:account:jid:));
+            cell.set(message: item);
             cell.backgroundColor = Appearance.current.systemBackground;
+            return cell;
+        case let item as ChatAttachment:
+            let id = continuation ? "MucChatTableViewAttachmentContinuationCell" : "MucChatTableViewAttachmentCell";
+            let cell: AttachmentChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! AttachmentChatTableViewCell;
+            cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+            if cell.avatarView != nil {
+                if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
+                    cell.avatarView?.set(name: item.authorNickname, avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
+                } else if let nickname = item.authorNickname, let photoHash = self.room?.presences[nickname]?.presence.vcardTempPhoto {
+                        cell.avatarView?.set(name: item.authorNickname, avatar: AvatarManager.instance.avatar(withHash: photoHash), orDefault: AvatarManager.instance.defaultAvatar);
+                } else {
+                    cell.avatarView?.set(name: item.authorNickname, avatar: nil, orDefault: AvatarManager.instance.defaultAvatar);
+                }
+            }
+            cell.nicknameView?.text = item.authorNickname;
+            cell.set(attachment: item);
+            cell.setNeedsUpdateConstraints();
+            cell.updateConstraintsIfNeeded();
+                
+            return cell;
+        case let item as ChatLinkPreview:
+            let id = "MucChatTableViewLinkPreviewCell";
+            let cell: LinkPreviewChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! LinkPreviewChatTableViewCell;
+            cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+            cell.set(linkPreview: item);
             return cell;
         case let item as SystemMessage:
             let cell: ChatTableViewSystemCell = tableView.dequeueReusableCell(withIdentifier: "MucChatTableViewSystemCell", for: indexPath) as! ChatTableViewSystemCell;
@@ -223,22 +248,21 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             return;
         }
         
-        self.sendMessage(body: text!, url: nil, completed: {() in
-            DispatchQueue.main.async {
-                self.messageText = nil;
-            }
-        });
+        self.room!.sendMessage(text, url: nil, additionalElements: []);
+        DispatchQueue.main.async {
+            self.messageText = nil;
+        }
     }
     
     @IBAction func shareClicked(_ sender: UIButton) {
         self.showPhotoSelector(sender);
     }
 
-    func sendMessage(body: String, url: String? = nil, preview: String? = nil, completed: (()->Void)?) {
-        self.room!.sendMessage(body, url: url, additionalElements: []);
-        completed?();
+    func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (() -> Void)?) {
+        self.room!.sendMessage(uploadedUrl, url: uploadedUrl, additionalElements: []);
+        completionHandler?();
     }
-
+    
     @objc func roomInfoClicked() {
         print("room info for", account, room?.roomJid, "clicked!");
         guard let settingsController = self.storyboard?.instantiateViewController(withIdentifier: "MucChatSettingsViewController") as? MucChatSettingsViewController else {

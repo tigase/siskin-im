@@ -80,17 +80,13 @@ class ChatsListViewController: CustomTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cellIdentifier = Settings.EnableNewUI.getBool() ? "ChatsListTableViewCellNew" : "ChatsListTableViewCell";
+        let cellIdentifier = "ChatsListTableViewCellNew";
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath as IndexPath) as! ChatsListTableViewCell;
         
         if let item = dataSource!.item(at: indexPath) {
             cell.nameLabel.textColor = Appearance.current.labelColor;
             cell.nameLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.nameLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.nameLabel.font.pointSize);
-//            if Settings.EnableNewUI.getBool() {
-                cell.lastMessageLabel.textColor = Appearance.current.labelColor;
-//            } else {
             cell.lastMessageLabel.textColor = Appearance.current.secondaryLabelColor;
-//            }
             if item.lastMessage != nil && Settings.EnableMarkdownFormatting.getBool() {
                 let msg = NSMutableAttributedString(string: item.lastMessage!);
                 Markdown.applyStyling(attributedString: msg, font: cell.lastMessageLabel.font, showEmoticons: Settings.ShowEmoticons.getBool())

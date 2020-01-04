@@ -40,11 +40,15 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
     
     override func viewWillAppear(_ animated: Bool) {
         bottomViewHeightConstraint?.isActive = false;
-        var items: [UIMenuItem] = UIMenuController.shared.menuItems ?? [];
-        items.append(UIMenuItem(title: "More..", action: #selector(ChatTableViewCell.actionMore(_:))));
-        UIMenuController.shared.menuItems = items;
+        if #available(iOS 13.0, *) {
+            
+        } else {
+            var items: [UIMenuItem] = UIMenuController.shared.menuItems ?? [];
+            items.append(UIMenuItem(title: "More..", action: #selector(ChatTableViewCell.actionMore(_:))));
+            UIMenuController.shared.menuItems = items;
         
-        customToolbar?.barStyle = Appearance.current.isDark ? .black : .default;
+            customToolbar?.barStyle = Appearance.current.isDark ? .black : .default;
+        }
         
         super.viewWillAppear(animated);
         NotificationCenter.default.addObserver(self, selector: #selector(showEditToolbar), name: NSNotification.Name("tableViewCellShowEditToolbar"), object: nil);
@@ -71,6 +75,8 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
             let timestampsSwitch = UIBarButtonItem(title: "Timestamps: \(self.withTimestamps ? "ON" : "OFF")", style: .plain, target: self, action: #selector(BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.switchWithTimestamps));
             self.timestampsSwitch = timestampsSwitch;
 
+            self.updateTimestampSwitch();
+            
             let items = [
                 timestampsSwitch,
                 UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
@@ -113,7 +119,18 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
     
     @objc func switchWithTimestamps() {
         withTimestamps = !withTimestamps;
-        timestampsSwitch?.title = "Timestamps: \(withTimestamps ? "ON" : "OFF")";
+        updateTimestampSwitch();
+        
+    }
+    
+    private func updateTimestampSwitch() {
+        if #available(iOS 13.0, *) {
+            timestampsSwitch?.image = UIImage(systemName: withTimestamps ? "clock.fill" : "clock");
+            timestampsSwitch?.title = nil;
+        } else {
+            timestampsSwitch?.title = "Timestamps: \(withTimestamps ? "ON" : "OFF")";
+            timestampsSwitch?.image = nil;
+        }
     }
     
     fileprivate func copyMessageInt(paths: [IndexPath]) {
@@ -132,17 +149,24 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
     }
     
     func tableView(_ tableView: UITableView, canPerformAction action: Selector, forRowAt indexPath: IndexPath, withSender sender: Any?) -> Bool {
+        if #available(iOS 13.0, *) {
+        } else {
         if action == #selector(UIResponderStandardEditActions.copy(_:)) {
             return true;
         }
         if customToolbar != nil && action == #selector(ChatTableViewCell.actionMore(_:)) {
             return true;
         }
+        }
         return false;
     }
     
     func tableView(_ tableView: UITableView, shouldShowMenuForRowAt indexPath: IndexPath) -> Bool {
-        return true;
+        if #available(iOS 13.0, *) {
+            return false;
+        } else {
+            return true;
+        }
     }
     
     func tableView(_ tableView: UITableView, performAction action: Selector, forRowAt indexPath: IndexPath, withSender sender: Any?) {
@@ -153,46 +177,22 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
     }
 
     func getTextOfSelectedRows(paths: [IndexPath], withTimestamps: Bool, handler: (([String]) -> Void)?) {
-        let items: [ChatMessage] = paths.map({ index in dataSource.getItem(at: index.row) }).map({ it -> ChatMessage? in
-            return it as? ChatMessage;
-        }).filter({ it -> Bool in it != nil }).map({ it -> ChatMessage in return it! }).sorted { (it1, it2) -> Bool in
+        let items: [ChatViewItemProtocol] = paths.map({ index in dataSource.getItem(at: index.row)! }).sorted { (it1, it2) -> Bool in
               it1.timestamp.compare(it2.timestamp) == .orderedAscending;
                 };
-    
-        guard items.count > 1 else {
-            let texts = items.map({ (it) -> String in
-                return it.message;
-            });
-            handler?(texts);
-            return;
-        }
-    
+        
         let withoutPrefix = Set(items.map({it in it.state.direction})).count == 1;
     
         let formatter = DateFormatter();
         formatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "dd.MM.yyyy jj:mm", options: 0, locale: NSLocale.current);
     
-        var direction: MessageDirection? = nil;
-        let rosterModule: RosterModule? = XmppService.instance.getClient(for: self.account)?.modulesManager.getModule(RosterModule.ID);
-        let rosterStore = rosterModule?.rosterStore;
-        let texts = items.map { (it) -> String in
-            if withoutPrefix {
-                if withTimestamps {
-                    return "[\(formatter.string(from: it.timestamp))] \(it.message)";
-                } else {
-                    return it.message;
-                }
-            } else {
-                let prefix = (direction == nil || it.state.direction != direction!) ?
-                    "\(it.state.direction == .incoming ? (it.authorNickname ?? rosterStore?.get(for: JID(it.jid))?.name ?? chat.jid.localPart ?? chat.jid.domain)  : "Me"):\n" : "";
-                direction = it.state.direction;
-                if withTimestamps {
-                    return "\(prefix)  [\(formatter.string(from: it.timestamp))] \(it.message ?? "")"
-                } else {
-                    return "\(prefix)  \(it.message ?? "")"
-                }
-            }
-        }
+        let texts = items.map { (it) -> String? in
+            return it.copyText(withTimestamp: withTimestamps, withSender: !withoutPrefix);
+        }.filter { (text) -> Bool in
+            return text != nil;
+        }.map { (text) -> String in
+            return text!;
+        };
             
         print("got texts", texts);
         handler?(texts);

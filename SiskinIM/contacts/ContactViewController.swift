@@ -104,6 +104,7 @@ class ContactViewController: CustomTableViewController {
         var sections: [Sections] = [.basic];
         if chat != nil {
             sections.append(.settings);
+            sections.append(.attachments);
             sections.append(.encryption);
         }
         if phones.count > 0 {
@@ -131,6 +132,8 @@ class ContactViewController: CustomTableViewController {
             return 1;
         case .settings:
             return 2;
+        case .attachments:
+            return 1;
         case .encryption:
             return omemoIdentities.count + 1;
         case .phones:
@@ -191,6 +194,9 @@ class ContactViewController: CustomTableViewController {
                 cell.accessoryView = btn;
                 return cell;
             }
+        case .attachments:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "AttachmentsCell", for: indexPath);
+            return cell;
         case .encryption:
             if indexPath.row == 0 {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "OMEMOEncryptionCell", for: indexPath);
@@ -311,6 +317,8 @@ class ContactViewController: CustomTableViewController {
             return;
         case .settings:
             return;
+        case .attachments:
+            return;
         case .encryption:
             if indexPath.row == 0 {
                 // handle change of encryption method!
@@ -361,6 +369,15 @@ class ContactViewController: CustomTableViewController {
             let query = parts.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!;
             if let url = URL(string: "http://maps.apple.com/?q=" + query) {
                 UIApplication.shared.open(url);
+            }
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "chatShowAttachments" {
+            if let attachmentsController = segue.destination as? ChatAttachmentsController {
+                attachmentsController.account = self.account;
+                attachmentsController.jid = self.jid;
             }
         }
     }
@@ -416,7 +433,6 @@ class ContactViewController: CustomTableViewController {
                         break;
                     case .failure(let err):
                         AccountSettings.pushHash(account).set(int: 0);
-                        Dis
                     }
                 });
             }
@@ -459,6 +475,7 @@ class ContactViewController: CustomTableViewController {
     enum Sections {
         case basic
         case settings
+        case attachments
         case encryption
         case phones
         case emails
@@ -470,6 +487,8 @@ class ContactViewController: CustomTableViewController {
                 return "";
             case .settings:
                 return "Settings";
+            case .attachments:
+                return "";
             case .encryption:
                 return "Encryption";
             case .phones:

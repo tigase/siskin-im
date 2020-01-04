@@ -23,186 +23,53 @@
 import UIKit
 import TigaseSwift
 
-class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegate {
+class ChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteractionDelegate {
 
-    @IBOutlet var avatarView: AvatarView?
-    @IBOutlet var nicknameView: UILabel?;
     @IBOutlet var messageTextView: UILabel!
-    @IBOutlet var messageFrameView: UIView?
-    @IBOutlet var timestampView: UILabel?
-    @IBOutlet var stateView: UILabel?;
-    
-    @IBOutlet var previewView: UIImageView?;
-    
-    fileprivate var previewUrl: URL?;
-    
+        
     fileprivate var messageLinkTapGestureRecognizer: UITapGestureRecognizer!;
-    fileprivate var previewViewTapGestureRecognizer: UITapGestureRecognizer?;
     
     fileprivate var originalTextColor: UIColor!;
     fileprivate var links: [Link] = [];
     
-    fileprivate static let todaysFormatter = ({()-> DateFormatter in
-        var f = DateFormatter();
-        f.dateStyle = .none;
-        f.timeStyle = .short;
-        return f;
-    })();
-    fileprivate static let defaultFormatter = ({()-> DateFormatter in
-        var f = DateFormatter();
-        f.dateFormat = DateFormatter.dateFormat(fromTemplate: "dd.MM, jj:mm", options: 0, locale: NSLocale.current);
-        //        f.timeStyle = .NoStyle;
-        return f;
-    })();
-    fileprivate static let fullFormatter = ({()-> DateFormatter in
-        var f = DateFormatter();
-        f.dateFormat = DateFormatter.dateFormat(fromTemplate: "dd.MM.yyyy, jj:mm", options: 0, locale: NSLocale.current);
-        //        f.timeStyle = .NoStyle;
-        return f;
-    })();
+    private var item: ChatMessage?;
     
-    fileprivate func formatTimestamp(_ ts: Date) -> String {
-        let flags: Set<Calendar.Component> = [.day, .year];
-        let components = Calendar.current.dateComponents(flags, from: ts, to: Date());
-        if (components.day! < 1) {
-            return ChatTableViewCell.todaysFormatter.string(from: ts);
+    override var backgroundColor: UIColor? {
+        didSet {
+            self.messageTextView.backgroundColor = self.backgroundColor;
         }
-        if (components.year! != 0) {
-            return ChatTableViewCell.fullFormatter.string(from: ts);
-        } else {
-            return ChatTableViewCell.defaultFormatter.string(from: ts);
-        }
-        
     }
     
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
-        if messageFrameView != nil {
-            originalTextColor = messageTextView.textColor;
-            //messageFrameView.backgroundColor = UIColor.li();
-            messageFrameView?.layer.masksToBounds = true;
-            messageFrameView?.layer.cornerRadius = 6;
-        } else {
-            originalTextColor = messageTextView.textColor;
-            if previewView != nil {
-                previewView?.layer.masksToBounds = true;
-                previewView?.layer.cornerRadius = 6;
-            }
-        }
-        if avatarView != nil {
-            avatarView!.layer.masksToBounds = true;
-            avatarView!.layer.cornerRadius = avatarView!.frame.height / 2;
-        }
+        originalTextColor = messageTextView.textColor;
         messageLinkTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(messageLinkTapGestureDidFire));
         messageLinkTapGestureRecognizer.numberOfTapsRequired = 1;
         messageLinkTapGestureRecognizer.cancelsTouchesInView = false;
         messageTextView.addGestureRecognizer(messageLinkTapGestureRecognizer);
-        if previewView != nil {
-            previewViewTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(previewTapGestureDidFire));
-            messageLinkTapGestureRecognizer.cancelsTouchesInView = false;
-            previewViewTapGestureRecognizer?.numberOfTapsRequired = 2;
-            previewView?.addGestureRecognizer(previewViewTapGestureRecognizer!);
-        }
-    }
-
-
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        if selected {
-            let colors = contentView.subviews.map({ it -> UIColor in it.backgroundColor ?? UIColor.clear });
-            super.setSelected(selected, animated: animated)
-            selectedBackgroundView = UIView();
-            contentView.subviews.enumerated().forEach { (offset, view) in
-                if view .responds(to: #selector(setHighlighted(_:animated:))) {
-                    view.setValue(false, forKey: "highlighted");
-                }
-                print("offset", offset, "view", view);
-                view.backgroundColor = colors[offset];
-            }
-        } else {
-            super.setSelected(selected, animated: animated);
-            selectedBackgroundView = nil;
-        }
-        // Configure the view for the selected state
-    }
-    
-    
-    func set(message item: ChatMessage, downloader: ((URL,Int,BareJID,BareJID)->Void)? = nil) {
-        var timestamp = formatTimestamp(item.timestamp);
-        switch item.encryption {
-        case .decrypted, .notForThisDevice, .decryptionFailed:
-            timestamp = "\u{1F512} \(timestamp)";
-        default:
-            break;
-        }
-        switch item.state {
-        case .incoming_error, .incoming_error_unread:
-            //elf.message.textColor = NSColor.systemRed;
-            self.stateView?.text = "\u{203c}";
-        case .outgoing_unsent:
-            //self.message.textColor = NSColor.secondaryLabelColor;
-            self.stateView?.text = "\u{1f4e4}";
-        case .outgoing_delivered:
-            //self.message.textColor = nil;
-            self.stateView?.text = "\u{2713}";
-        case .outgoing_error, .outgoing_error_unread:
-            //self.message.textColor = nil;
-            self.stateView?.text = "\u{203c}";
-        default:
-            //self.state?.stringValue = "";
-            self.stateView?.text = nil;//NSColor.textColor;
-        }
-        if stateView == nil {
-            if item.state.direction == .outgoing {
-                timestampView?.textColor = UIColor.lightGray;
-                if item.state.isError {
-                    timestampView?.textColor = UIColor.red;
-                    timestamp = "\(timestamp) Not delivered\u{203c}";
-                } else if item.state == .outgoing_delivered {
-                    timestamp = "\(timestamp) \u{2713}";
-                }
-            }
-        }
-        timestampView?.text = timestamp;
-        self.previewUrl = nil;
-        self.previewView?.image = nil;
         
-        if messageFrameView != nil {
-            self.messageFrameView?.backgroundColor = item.state.direction == .incoming ? Appearance.current.incomingBubbleColor() : Appearance.current.outgoingBubbleColor();
-            self.nicknameView?.textColor = Appearance.current.secondaryLabelColor;
-            self.messageTextView.textColor = self.originalTextColor;
-        } else {
-            self.nicknameView?.textColor = Appearance.current.labelColor;
-            self.messageTextView?.textColor = Appearance.current.secondaryLabelColor;
+        if #available(iOS 13.0, *) {
+            messageTextView.addInteraction(UIContextMenuInteraction(delegate: self));
         }
+    }
+    
+    func set(message item: ChatMessage) {
+        self.item = item;
+        super.set(item: item);
+        
+        self.messageTextView?.textColor = Appearance.current.secondaryLabelColor;
         
         self.links.removeAll();
             
-        var previewRange: NSRange? = nil;
-        var previewSourceUrl: URL? = nil;
         let attrText = NSMutableAttributedString(string: item.message);
             
-        var first = true;
         if let detect = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue | NSTextCheckingResult.CheckingType.date.rawValue) {
             let matches = detect.matches(in: item.message, options: .reportCompletion, range: NSMakeRange(0, item.message.count));
             for match in matches {
                 var url: URL? = nil;
                 if match.url != nil {
                     url = match.url;
-                    if first {
-                        first = false;
-                        if (item.preview?.hasPrefix("preview:image:") ?? true) {
-                            let previewKey = item.preview == nil ? nil : String(item.preview!.dropFirst(14));
-                            previewView?.image = ImageCache.shared.get(for: previewKey, ifMissing: {
-                                downloader?(url!, item.id, item.account, item.jid);
-                            })
-                            if previewView?.image != nil && previewKey != nil {
-                                previewUrl = ImageCache.shared.getURL(for: previewKey);
-                                previewRange = match.range;
-                                previewSourceUrl = url;
-                            }
-                        }
-                    }
                 }
                 if match.phoneNumber != nil {
                     url = URL(string: "tel:\(match.phoneNumber!.replacingOccurrences(of: " ", with: "-"))");
@@ -217,12 +84,9 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
                 }
                 if url != nil {
                     self.links.append(Link(url: url!, range: match.range));
-                    attrText.setAttributes([NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue, NSAttributedString.Key.foregroundColor: (Appearance.current.isDark && Settings.EnableNewUI.getBool()) ? UIColor.blue.adjust(brightness: 0.75) : UIColor.blue], range: match.range);
+                    attrText.setAttributes([NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue, NSAttributedString.Key.foregroundColor: (Appearance.current.isDark) ? UIColor.blue.adjust(brightness: 0.75) : UIColor.blue], range: match.range);
                 }
             }
-        }
-        if previewSourceUrl != nil && Settings.SimplifiedLinkToFileIfPreviewIsAvailable.getBool() {
-            attrText.mutableString.replaceCharacters(in: previewRange!, with: "Link to file");
         }
         if Settings.EnableMarkdownFormatting.getBool() {
             Markdown.applyStyling(attributedString: attrText, font: self.messageTextView.font, showEmoticons:Settings.ShowEmoticons.getBool());
@@ -234,37 +98,46 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
             }
             if item.state.direction == .incoming {
                 self.messageTextView.textColor = UIColor.red;
-            } else {
-                self.accessoryType = .detailButton;
-                self.tintColor = UIColor.red;
             }
         } else {
-            self.accessoryType = .none;
-            self.tintColor = self.messageTextView.tintColor;
             if item.encryption == .notForThisDevice || item.encryption == .decryptionFailed {
-                if let messageFrameView = self.messageFrameView {
-                    self.messageTextView.textColor = self.originalTextColor.mix(color: messageFrameView.backgroundColor!, ratio: 0.33);
-                } else {
-                    self.messageTextView.textColor = Appearance.current.labelColor;
-                }
+                self.messageTextView.textColor = Appearance.current.labelColor;
             }
         }
-        self.stateView?.textColor = self.messageTextView.textColor;
-        if messageFrameView != nil {
-            self.timestampView?.textColor = Appearance.current.labelColor;
-        } else {
-            self.timestampView?.textColor = self.messageTextView.textColor;
-        }
     }
     
-    @objc func actionMore(_ sender: UIMenuController) {
-        NotificationCenter.default.post(name: NSNotification.Name("tableViewCellShowEditToolbar"), object: self);
+    @available(iOS 13.0, *)
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+        var cfg = UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { suggestedActions -> UIMenu? in
+            return self.prepareContextMenu();
+        };
+        return cfg;
     }
     
-    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
-        return super.canPerformAction(action, withSender: sender) || action == #selector(actionMore(_:));
+    @available(iOS 13.0, *)
+    func prepareContextMenu() -> UIMenu {
+        let items = [
+            UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc"), handler: { action in
+                guard let text = self.item?.copyText(withTimestamp: Settings.CopyMessagesWithTimestamps.getBool(), withSender: false) else {
+                    return;
+                }
+                UIPasteboard.general.strings = [text];
+                UIPasteboard.general.string = text;
+            }),
+            UIAction(title: "Share..", image: UIImage(systemName: "square.and.arrow.up"), handler: { action in
+                guard let text = self.item?.copyText(withTimestamp: Settings.CopyMessagesWithTimestamps.getBool(), withSender: false) else {
+                    return;
+                }
+                let activityController = UIActivityViewController(activityItems: [text], applicationActivities: nil);
+                (UIApplication.shared.delegate as? AppDelegate)?.window?.rootViewController?.present(activityController, animated: true, completion: nil);
+            }),
+            UIAction(title: "More..", image: UIImage(systemName: "ellipsis"), handler: { action in
+                NotificationCenter.default.post(name: Notification.Name("tableViewCellShowEditToolbar"), object: self);
+            })
+        ];
+        return UIMenu(title: "", children: items);
     }
-    
+        
     @objc func messageLinkTapGestureDidFire(_ recognizer: UITapGestureRecognizer) {
         guard self.messageTextView.attributedText != nil else {
             return;
@@ -289,18 +162,7 @@ class ChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDelegat
             UIApplication.shared.open(url.url);
         }
     }
-    
-    @objc func previewTapGestureDidFire(_ recognizer: UITapGestureRecognizer) {
-        guard self.previewView != nil else {
-            return;
-        }
         
-        let documentController = UIDocumentInteractionController(url: previewUrl!);
-        documentController.delegate = self;
-        //documentController.presentPreview(animated: true);
-        documentController.presentOptionsMenu(from: CGRect.zero, in: self.previewView!, animated: true);
-    }
-    
     class Link {
         let url: URL;
         let range: NSRange;

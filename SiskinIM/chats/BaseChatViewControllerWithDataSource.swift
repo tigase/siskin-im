@@ -27,6 +27,8 @@ class BaseChatViewControllerWithDataSource: BaseChatViewController, ChatViewData
     
     let firstRowIndexPath = IndexPath(row: 0, section: 0);
     
+    private var loaded: Bool = false;
+    
     override func viewDidLoad() {
         super.viewDidLoad();
         dataSource.delegate = self;
@@ -36,10 +38,13 @@ class BaseChatViewControllerWithDataSource: BaseChatViewController, ChatViewData
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
      
-        self.dataSource.refreshData(unread: chat.unread) { (firstUnread) in
-            print("got first unread at:", firstUnread);
-            if self.tableView.numberOfRows(inSection: 0) > 0 {
-                self.tableView.scrollToRow(at: IndexPath(row: firstUnread ?? 0, section: 0), at: .none, animated: true);
+        if !loaded {
+            loaded = true;
+            self.dataSource.refreshData(unread: chat.unread) { (firstUnread) in
+                print("got first unread at:", firstUnread);
+                if self.tableView.numberOfRows(inSection: 0) > 0 {
+                    self.tableView.scrollToRow(at: IndexPath(row: firstUnread ?? 0, section: 0), at: .none, animated: true);
+                }
             }
         }
     }

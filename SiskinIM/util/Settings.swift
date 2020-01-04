@@ -38,18 +38,21 @@ public enum Settings: String {
     case RecentsMessageLinesNo
     case RecentsOrder
     case SharingViaHttpUpload
-    case MaxImagePreviewSize
+    //case MaxImagePreviewSize
+    case fileDownloadSizeLimit
     case MessageDeliveryReceiptsEnabled
-    case SimplifiedLinkToFileIfPreviewIsAvailable
+    //case SimplifiedLinkToFileIfPreviewIsAvailable
     case SendMessageOnReturn
     case CopyMessagesWithTimestamps
     case XmppPipelining
     case AppearanceTheme
     case enableBookmarksSync
     case messageEncryption
-    case EnableNewUI = "new-ui"
     case EnableMarkdownFormatting = "markdown"
     case ShowEmoticons
+    
+    @available(iOS 13.0, *)
+    case linkPreviews
     
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     
@@ -57,23 +60,24 @@ public enum Settings: String {
         return UserDefaults.standard;
     }
     
-    fileprivate static var sharedDefaults = UserDefaults(suiteName: "group.TigaseMessenger.Share");
+    public static let sharedDefaults = UserDefaults(suiteName: "group.TigaseMessenger.Share");
     
     public static func initialize() {
-        let defaults: [String: AnyObject] = [
-            "DeleteChatHistoryOnChatClose" : false as AnyObject,
-            "enableMessageCarbons" : true as AnyObject,
-            "RosterType" : "flat" as AnyObject,
-            "RosterItemsOrder" : RosterSortingOrder.alphabetical.rawValue as AnyObject,
-            "RosterAvailableOnly" : false as AnyObject,
-            "RosterDisplayHiddenGroup" : false as AnyObject,
-            "AutoSubscribeOnAcceptedSubscriptionRequest" : false as AnyObject,
-            "NotificationsFromUnknown" : true as AnyObject,
-            "RecentsMessageLinesNo" : 2 as AnyObject,
-            "RecentsOrder" : "byTime" as AnyObject,
-            "SendMessageOnReturn" : true as AnyObject,
-            "AppearanceTheme": "classic" as AnyObject,
-            "messageEncryption": "none" as AnyObject
+        let defaults: [String: Any] = [
+            "DeleteChatHistoryOnChatClose" : false,
+            "enableMessageCarbons" : true,
+            "RosterType" : "flat",
+            "RosterItemsOrder" : RosterSortingOrder.alphabetical.rawValue,
+            "RosterAvailableOnly" : false,
+            "RosterDisplayHiddenGroup" : false,
+            "AutoSubscribeOnAcceptedSubscriptionRequest" : false,
+            "NotificationsFromUnknown" : true,
+            "RecentsMessageLinesNo" : 2,
+            "RecentsOrder" : "byTime",
+            "SendMessageOnReturn" : true,
+            "AppearanceTheme": "classic",
+            "messageEncryption": "none",
+            "linkPreviews": true
         ];
         store.register(defaults: defaults);
         ["EnableMessageCarbons": Settings.enableMessageCarbons, "MessageEncryption": .messageEncryption, "EnableBookmarksSync": Settings.enableBookmarksSync].forEach { (oldKey, newKey) in
@@ -82,10 +86,39 @@ public enum Settings: String {
                 store.set(val, forKey: newKey.rawValue)
             }
         }
+        if store.object(forKey: "MaxImagePreviewSize") != nil {
+            let downloadLimit = store.integer(forKey: "MaxImagePreviewSize");
+            store.removeObject(forKey: "MaxImagePreviewSize");
+            Settings.fileDownloadSizeLimit.setValue(downloadLimit);
+        }
+        store.removeObject(forKey: "new-ui");
         store.dictionaryRepresentation().forEach { (k, v) in
             if let key = Settings(rawValue: k) {
                 if isShared(key: key) {
                     sharedDefaults!.set(v, forKey: key.rawValue);
+                }
+            }
+        }
+        DispatchQueue.global(qos: .background).async {
+            let removeOlder = Date().addingTimeInterval(7 * 24 * 60 * 60 * (-1.0));
+            for (k,v) in self.sharedDefaults!.dictionaryRepresentation() {
+                if k.starts(with: "upload-") {
+                    let hash = k.replacingOccurrences(of: "upload-", with: "");
+                    if let timestamp = (v as? [String: Any])?["timestamp"] as? Date {
+                        if timestamp < removeOlder {
+                            self.sharedDefaults?.removeObject(forKey: k);
+                            let localUploadDirUrl = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.siskinim.shared")!.appendingPathComponent("upload", isDirectory: true).appendingPathComponent(hash, isDirectory: false);
+                            if FileManager.default.fileExists(atPath: localUploadDirUrl.path) {
+                                try? FileManager.default.removeItem(at: localUploadDirUrl);
+                            }
+                        }
+                    } else {
+                        self.sharedDefaults?.removeObject(forKey: k);
+                        let localUploadDirUrl = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.siskinim.shared")!.appendingPathComponent("upload", isDirectory: true).appendingPathComponent(hash, isDirectory: false);
+                        if FileManager.default.fileExists(atPath: localUploadDirUrl.path) {
+                            try? FileManager.default.removeItem(at: localUploadDirUrl);
+                        }
+                    }
                 }
             }
         }
@@ -133,6 +166,10 @@ public enum Settings: String {
         return Settings.store.integer(forKey: self.rawValue);
     }
     
+    public func integer() -> Int {
+        return getInt();
+    }
+    
     fileprivate static func valueChanged(forKey key: Settings, oldValue: Any?, newValue: Any?) {
         var data: [AnyHashable:Any] = ["key": key.rawValue];
         if oldValue != nil {
@@ -148,7 +185,7 @@ public enum Settings: String {
     }
     
     fileprivate static func isShared(key: Settings) -> Bool {
-        return key == Settings.RosterDisplayHiddenGroup || key == Settings.SharingViaHttpUpload;
+        return key == Settings.RosterDisplayHiddenGroup || key == Settings.SharingViaHttpUpload || key == Settings.fileDownloadSizeLimit
     }
 }
 

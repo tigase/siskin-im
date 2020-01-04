@@ -97,6 +97,7 @@ class MucChatSettingsViewController: CustomTableViewController, UIImagePickerCon
         })
         dispatchGroup.enter();
         vcardTempModule.retrieveVCard(from: room.jid, onSuccess: { (vcard) in
+            XmppService.instance.dbVCardsCache.updateVCard(for: self.room.roomJid, on: self.account, vcard: vcard);
             DispatchQueue.main.async {
                 self.canEditVCard = true;
                 dispatchGroup.leave();
@@ -182,6 +183,15 @@ class MucChatSettingsViewController: CustomTableViewController, UIImagePickerCon
                 }
             }
             self.navigationController?.pushViewController(controller, animated: true);
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "chatShowAttachments" {
+            if let attachmentsController = segue.destination as? ChatAttachmentsController {
+                attachmentsController.account = self.account;
+                attachmentsController.jid = self.room.roomJid;
+            }
         }
     }
     

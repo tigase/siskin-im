@@ -23,11 +23,21 @@ import UIKit
 
 class ChatSettingsViewController: CustomTableViewController {
 
-    let tree: [[SettingsEnum]] = [
-        [SettingsEnum.recentsMessageLinesNo, SettingsEnum.recentsSortType],
-        [SettingsEnum.sendMessageOnReturn, SettingsEnum.deleteChatHistoryOnClose, SettingsEnum.enableMessageCarbons, SettingsEnum.messageDeliveryReceipts, SettingsEnum.messageEncryption],
-        [SettingsEnum.sharingViaHttpUpload, SettingsEnum.simplifiedLinkToHTTPFile, SettingsEnum.maxImagePreviewSize, SettingsEnum.clearImagePreviewCache],
-    ];
+    let tree: [[SettingsEnum]] = {
+        if #available(iOS 13.0, *) {
+            return [
+            [SettingsEnum.recentsMessageLinesNo, SettingsEnum.recentsSortType],
+            [SettingsEnum.sendMessageOnReturn, SettingsEnum.deleteChatHistoryOnClose, SettingsEnum.enableMessageCarbons, SettingsEnum.messageDeliveryReceipts, SettingsEnum.messageEncryption],
+            [SettingsEnum.sharingViaHttpUpload, SettingsEnum.linkPreviews, SettingsEnum.maxImagePreviewSize, SettingsEnum.clearDownloadStore],
+                ];
+        } else {
+            return [
+            [SettingsEnum.recentsMessageLinesNo, SettingsEnum.recentsSortType],
+            [SettingsEnum.sendMessageOnReturn, SettingsEnum.deleteChatHistoryOnClose, SettingsEnum.enableMessageCarbons, SettingsEnum.messageDeliveryReceipts, SettingsEnum.messageEncryption],
+            [SettingsEnum.sharingViaHttpUpload, SettingsEnum.maxImagePreviewSize, SettingsEnum.clearDownloadStore],
+                ];
+        }
+        }();
     
     override func numberOfSections(in tableView: UITableView) -> Int {
         return tree.count;
@@ -106,11 +116,11 @@ class ChatSettingsViewController: CustomTableViewController {
             return cell;
         case .maxImagePreviewSize:
             let cell = tableView.dequeueReusableCell(withIdentifier: "MaxImagePreviewSizeTableViewCell", for: indexPath);
-            (cell.contentView.subviews[1] as! UILabel).text = MaxImagePreviewSizeItem.description(of: Settings.MaxImagePreviewSize.getInt());
+            (cell.contentView.subviews[1] as! UILabel).text = AutoFileDownloadLimit.description(of: Settings.fileDownloadSizeLimit.getInt());
             cell.accessoryType = .disclosureIndicator;
             return cell;
-        case .clearImagePreviewCache:
-            return tableView.dequeueReusableCell(withIdentifier: "ClearImagePreviewTableViewCell", for: indexPath);
+        case .clearDownloadStore:
+            return tableView.dequeueReusableCell(withIdentifier: "ClearDownloadStoreTableViewCell", for: indexPath);
         case .messageDeliveryReceipts:
             let cell = tableView.dequeueReusableCell(withIdentifier: "MessageDeliveryReceiptsTableViewCell", for: indexPath) as! SwitchTableViewCell;
             cell.switchView.isOn = Settings.MessageDeliveryReceiptsEnabled.getBool();
@@ -118,12 +128,14 @@ class ChatSettingsViewController: CustomTableViewController {
                 Settings.MessageDeliveryReceiptsEnabled.setValue(switchView.isOn);
             };
             return cell;
-        case .simplifiedLinkToHTTPFile:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "SimplifiedLinkToFileTableViewCell", for: indexPath) as! SwitchTableViewCell;
-            cell.switchView.isOn = Settings.SimplifiedLinkToFileIfPreviewIsAvailable.getBool();
+        case .linkPreviews:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "LinkPreviewsTableViewCell", for: indexPath) as! SwitchTableViewCell;
+            if #available(iOS 13.0, *) {
+            cell.switchView.isOn = Settings.linkPreviews.getBool();
             cell.valueChangedListener = {(switchView: UISwitch) in
-                Settings.SimplifiedLinkToFileIfPreviewIsAvailable.setValue(switchView.isOn);
+                Settings.linkPreviews.setValue(switchView.isOn);
             };
+            }
             return cell;
         case .sendMessageOnReturn:
             let cell = tableView.dequeueReusableCell(withIdentifier: "SendMessageOnReturnTableViewCell", for: indexPath) as! SwitchTableViewCell;
@@ -162,34 +174,35 @@ class ChatSettingsViewController: CustomTableViewController {
         case .maxImagePreviewSize:
             let controller = TablePickerViewController(style: .grouped);
             let values: [Int] = [0, 1, 2, 4, 8, 10, 15, 30, 50, Int.max];
-            controller.selected = values.firstIndex(of: Settings.MaxImagePreviewSize.getInt() ) ?? 0;
+            controller.selected = values.firstIndex(of: Settings.fileDownloadSizeLimit.getInt() ) ?? 0;
             controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
-                return MaxImagePreviewSizeItem(value: it);
+                return AutoFileDownloadLimit(value: it);
             });
             //controller.selected = 1;
             controller.onSelectionChange = { (_item) -> Void in
-                let item = _item as! MaxImagePreviewSizeItem;
-                Settings.MaxImagePreviewSize.setValue(item.value);
+                let item = _item as! AutoFileDownloadLimit;
+                Settings.fileDownloadSizeLimit.setValue(item.value);
                 self.tableView.reloadData();
             };
             self.navigationController?.pushViewController(controller, animated: true);
-        case .clearImagePreviewCache:
-            let alert = UIAlertController(title: "Image cache", message: "We are using \(ImageCache.shared.diskCacheSize/(1024*1014)) MB of storage.", preferredStyle: .actionSheet);
+        case .clearDownloadStore:
+            let alert = UIAlertController(title: "Download storage", message: "We are using \(DownloadStore.instance.size/(1024*1014)) MB of storage.", preferredStyle: .actionSheet);
             alert.addAction(UIAlertAction(title: "Flush", style: .destructive, handler: {(action) in
                 DispatchQueue.global(qos: .background).async {
-                    ImageCache.shared.emptyDiskCache();
+                    DownloadStore.instance.clear();
                 }
             }));
             alert.addAction(UIAlertAction(title: "Older than 7 days", style: .destructive, handler: {(action) in
                 DispatchQueue.global(qos: .background).async {
-                    ImageCache.shared.emptyDiskCache(olderThan: Date().addingTimeInterval(7*24*60*60.0));
+                    DownloadStore.instance.clear(olderThan: Date().addingTimeInterval(7*24*60*60.0*(-1.0)));
                 }
             }));
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
             alert.popoverPresentationController?.sourceView = self.tableView;
             alert.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: indexPath);
-            
+
             self.present(alert, animated: true, completion: nil);
+            break;
         case .messageEncryption:
             let current = ChatEncryption(rawValue: Settings.messageEncryption.getString() ?? "") ?? .none;
             let controller = TablePickerViewController(style: .grouped);
@@ -218,14 +231,15 @@ class ChatSettingsViewController: CustomTableViewController {
         case recentsSortType = 3
         case sharingViaHttpUpload = 4
         case maxImagePreviewSize = 5;
-        case clearImagePreviewCache = 6;
+        case clearDownloadStore = 6;
         case messageDeliveryReceipts = 7;
-        case simplifiedLinkToHTTPFile = 8;
+        @available(iOS 13.0, *)
+        case linkPreviews = 8;
         case sendMessageOnReturn = 9;
         case messageEncryption = 10;
     }
     
-    internal class MaxImagePreviewSizeItem: TablePickerViewItemsProtocol {
+    internal class AutoFileDownloadLimit: TablePickerViewItemsProtocol {
         
         public static func description(of value: Int) -> String {
             if value == Int.max {
@@ -240,7 +254,7 @@ class ChatSettingsViewController: CustomTableViewController {
         
         init(value: Int) {
             self.value = value;
-            self.description = MaxImagePreviewSizeItem.description(of: value);
+            self.description = AutoFileDownloadLimit.description(of: value);
         }
         
     }

@@ -160,7 +160,6 @@ class SettingsViewController: CustomTableViewController {
                 return cell;
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "AboutSettingsViewCell", for: indexPath);
-                cell.accessoryType = .disclosureIndicator;
                 return cell;
             }
         }

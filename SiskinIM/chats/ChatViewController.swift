@@ -114,7 +114,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     }
     
     override func viewDidDisappear(_ animated: Bool) {
-        NotificationCenter.default.removeObserver(self);
+        //NotificationCenter.default.removeObserver(self);
         super.viewDidDisappear(animated);
     }
     
@@ -131,14 +131,17 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if dataSource.count == 0 {
-            let label = UILabel(frame: CGRect(x: 0, y:0, width: self.view.bounds.size.width, height: self.view.bounds.size.height));
-            label.text = "No messages available. Pull up to refresh message history.";
-            label.numberOfLines = 0;
-            label.textAlignment = .center;
-            label.transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0);
-            label.sizeToFit();
-            label.textColor = Appearance.current.labelColor;
-            self.tableView.backgroundView = label;
+            if self.tableView.backgroundView == nil {
+                let label = UILabel(frame: CGRect(x: 0, y:0, width: self.view.bounds.size.width, height: self.view.bounds.size.height));
+                label.text = "No messages available. Pull up to refresh message history.";
+                label.font = UIFont.systemFont(ofSize: UIFont.systemFontSize + 2, weight: .medium);
+                label.numberOfLines = 0;
+                label.textAlignment = .center;
+                label.transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0);
+                label.sizeToFit();
+                label.textColor = Appearance.current.secondaryLabelColor;
+                self.tableView.backgroundView = label;
+            }
         } else {
             self.tableView.backgroundView = nil;
         }
@@ -150,25 +153,44 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
             return tableView.dequeueReusableCell(withIdentifier: "ChatTableViewCellIncoming", for: indexPath);
         }
 
+        var continuation = false;
+        if (indexPath.row + 1) < dataSource.count {
+            if let prevItem = dataSource.getItem(at: indexPath.row + 1) {
+                continuation = dsItem.isMergeable(with: prevItem);
+            }
+        }
+        let incoming = dsItem.state.direction == .incoming;
+        
         switch dsItem {
         case let item as ChatMessage:
-            var continuation = false;
-            if Settings.EnableNewUI.getBool() && (indexPath.row + 1) < dataSource.count {
-                if let prevItem = dataSource.getItem(at: indexPath.row + 1) {
-                    continuation = item.isMergeable(with: prevItem);
-                }
-            }
-            let incoming = item.state.direction == .incoming;
-            let id = Settings.EnableNewUI.getBool() ? (continuation ? "ChatTableViewCellContinuation" : "ChatTableViewCell") : (incoming ? "ChatTableViewCellIncoming" : "ChatTableViewCellOutgoing");
+            let id = continuation ? "ChatTableViewMessageContinuationCell" : "ChatTableViewMessageCell";
             let cell: ChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
             cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
             let name = incoming ? self.titleView.name : "Me";
             cell.avatarView?.set(name: name, avatar: AvatarManager.instance.avatar(for: incoming ? jid : account, on: account), orDefault: AvatarManager.instance.defaultAvatar);
             cell.nicknameView?.text = name;
-            cell.set(message: item, downloader: self.downloadPreview(url:msgId:account:jid:));
-            cell.setNeedsUpdateConstraints();
-            cell.updateConstraintsIfNeeded();
+            cell.set(message: item);
+//            cell.setNeedsUpdateConstraints();
+//            cell.updateConstraintsIfNeeded();
             
+            return cell;
+        case let item as ChatAttachment:
+            let id = continuation ? "ChatTableViewAttachmentContinuationCell" : "ChatTableViewAttachmentCell" ;
+            let cell: AttachmentChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! AttachmentChatTableViewCell;
+            cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+            let name = incoming ? self.titleView.name : "Me";
+            cell.avatarView?.set(name: name, avatar: AvatarManager.instance.avatar(for: incoming ? jid : account, on: account), orDefault: AvatarManager.instance.defaultAvatar);
+            cell.nicknameView?.text = name;
+            cell.set(attachment: item);
+//            cell.setNeedsUpdateConstraints();
+//            cell.updateConstraintsIfNeeded();
+            
+            return cell;
+        case let item as ChatLinkPreview:
+            let id = "ChatTableViewLinkPreviewCell";
+            let cell: LinkPreviewChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! LinkPreviewChatTableViewCell;
+            cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+            cell.set(linkPreview: item);
             return cell;
         case let item as SystemMessage:
             let cell: ChatTableViewSystemCell = tableView.dequeueReusableCell(withIdentifier: "ChatTableViewSystemCell", for: indexPath) as! ChatTableViewSystemCell;
@@ -182,17 +204,27 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     
     func tableView(_ tableView: UITableView, accessoryButtonTappedForRowWith indexPath: IndexPath) {
         print("accessory button cliecked at", indexPath)
-        guard let item = dataSource.getItem(at: indexPath.row) as? ChatMessage else {
+        guard let item = dataSource.getItem(at: indexPath.row) as? ChatEntry, let chat = self.chat as? DBChat else {
             return;
         }
         
         DispatchQueue.main.async {
             let alert = UIAlertController(title: "Details", message: item.error ?? "Unknown error occurred", preferredStyle: .alert);
             alert.addAction(UIAlertAction(title: "Resend", style: .default, handler: {(action) in
-                print("resending message with body", item.message);
-                let url = item.message.starts(with: "http:") || item.message.starts(with: "https:") ? item.message : nil;
-                self.sendMessage(body: item.message, url: url, completed: nil);
-                DBChatHistoryStore.instance.removeItem(for: item.account, with: item.jid, itemId: item.id);
+                //print("resending message with body", item.message);
+                
+                switch item {
+                case let item as ChatMessage:
+                    MessageEventHandler.sendMessage(chat: chat, body: item.message, url: nil);
+                    DBChatHistoryStore.instance.removeItem(for: chat.account, with: chat.jid.bareJid, itemId: item.id);
+                case let item as ChatAttachment:
+                    let oldLocalFile = DownloadStore.instance.url(for: "\(item.id)");
+                    MessageEventHandler.sendAttachment(chat: chat, originalUrl: oldLocalFile, uploadedUrl: item.url, appendix: item.appendix, completionHandler: {
+                        DBChatHistoryStore.instance.removeItem(for:chat.account, with: chat.jid.bareJid, itemId: item.id);
+                    });
+                default:
+                    break;
+                }
             }));
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
             self.present(alert, animated: true, completion: nil);
@@ -365,16 +397,19 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
             return;
         }
         
-        sendMessage(body: text!, completed: {() in
-            DispatchQueue.main.async {
-                self.messageText = nil;
-            }
-        });
+        MessageEventHandler.sendMessage(chat: self.chat as! DBChat, body: text, url: nil);
+        DispatchQueue.main.async {
+            self.messageText = nil;
+        }
     }
     
-    func sendMessage(body: String, url: String? = nil, preview: String? = nil, completed: (()->Void)?) {
-        MessageEventHandler.sendMessage(chat: self.chat as! DBChat, body: body, url: url);
-        completed?();
+    
+    func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (() -> Void)?) {
+        guard let chat = self.chat as? DBChat else {
+            completionHandler?();
+            return;
+        }
+        MessageEventHandler.sendAttachment(chat: chat, originalUrl: originalUrl, uploadedUrl: uploadedUrl, appendix: appendix, completionHandler: completionHandler);
     }
         
 }

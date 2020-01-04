@@ -106,29 +106,60 @@ class ShareViewController: SLComposeServiceViewController {
     
     override func didSelectPost() {
         if let provider = (self.extensionContext!.inputItems.first as? NSExtensionItem)?.attachments?.first {
-            if provider.hasItemConformingToTypeIdentifier(kUTTypeURL as String) {
-                provider.loadItem(forTypeIdentifier: kUTTypeURL as String, options: nil, completionHandler: { (value, error) in
-                    self.shareText(url: value as! URL);
-                })
-            } else {
-                if let type = [kUTTypeFileURL, kUTTypeImage, kUTTypeMovie].filter({ (it) -> Bool in
-                    return provider.hasItemConformingToTypeIdentifier(it as String);
-                }).first {
-                    provider.loadItem(forTypeIdentifier: type as String, options: nil, completionHandler: { (item, error) in
-                        if let localUrl = item as? URL {
-                            let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, localUrl.pathExtension as CFString, nil)?.takeRetainedValue();
-                            self.upload(localUrl: localUrl, type: uti != nil ? (UTTypeCopyPreferredTagWithClass(uti!, kUTTagClassMIMEType)?.takeRetainedValue() as String?) : nil, handler: {(remoteUrl) in
-                                guard remoteUrl != nil else {
-                                    self.showAlert(title: "Failure", message: "Please try again later.");
-                                    return;
+            if provider.hasItemConformingToTypeIdentifier(kUTTypeFileURL as String) {
+                provider.loadItem(forTypeIdentifier: kUTTypeFileURL as String, options: nil, completionHandler: { (item, error) in
+                    if let localUrl = item as? URL {
+                        let uti = try? localUrl.resourceValues(forKeys: [.typeIdentifierKey]).typeIdentifier;
+                        let mimeType = uti != nil ? (UTTypeCopyPreferredTagWithClass(uti! as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as String?) : nil;
+                        let size = try? FileManager.default.attributesOfItem(atPath: localUrl.path)[FileAttributeKey.size] as? UInt64;
+                        self.upload(localUrl: localUrl, type: mimeType, handler: {(remoteUrl) in
+                            guard remoteUrl != nil else {
+                                self.showAlert(title: "Failure", message: "Please try again later.");
+                                return;
+                            }
+                            
+                            if self.sharedDefaults!.integer(forKey: "fileDownloadSizeLimit") > 0 {
+                                let hash = Digest.sha1.digest(toHex: remoteUrl!.absoluteString.data(using: .utf8)!)!;
+                            
+                                var params: [String: Any] = [
+                                    "jids": self.recipients.map({ $0.bareJid.stringValue }),
+                                    "name": localUrl.lastPathComponent,
+                                    "timestamp": Date()
+                                ];
+                                if mimeType != nil {
+                                    params["mimeType"] = mimeType;
                                 }
-                                self.shareText(url: remoteUrl!);
-                            });
-                        } else {
-                            self.showAlert(title: "Failure", message: "Please try again later.");
-                        }
-                    })
-                }
+                                if size != nil {
+                                    params["size"] = Int(size!);
+                                }
+                            
+                                let localUploadDirUrl = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.siskinim.shared")!.appendingPathComponent("upload", isDirectory: true);
+                                if !FileManager.default.fileExists(atPath: localUploadDirUrl.path) {
+                                    try? FileManager.default.createDirectory(at: localUploadDirUrl, withIntermediateDirectories: true, attributes: nil);
+                                }
+                                do {
+                                    try FileManager.default.copyItem(at: localUrl, to: localUploadDirUrl.appendingPathComponent(hash, isDirectory: false));
+                                    self.sharedDefaults!.set(params as Any?, forKey: "upload-\(hash)");
+                                } catch {
+                                    print("could not copy a file from:", localUrl, "to:", localUploadDirUrl)
+                                }
+                            }
+                            self.share(url: nil, uploadedFileURL: remoteUrl);
+                        });
+                    } else {
+                        self.showAlert(title: "Failure", message: "Please try again later.");
+                    }
+                })
+            } else if provider.hasItemConformingToTypeIdentifier(kUTTypeURL as String) {
+                provider.loadItem(forTypeIdentifier: kUTTypeURL as String, options: nil, completionHandler: { (value, error) in
+                    self.share(url: value as! URL, uploadedFileURL: nil);
+                })
+//            } else if provider.hasItemConformingToTypeIdentifier(kUTTypePlainText as String) {
+//                provider.loadItem(forTypeIdentifier: kUTTypePlainText as String, options: nil, completionHandler: { (item, error) in
+//                    self.share(text: item as! String);
+//                });
+//            } else {
+//                self.showAlert(title: "Failure", message: "Please try again later.");
             }
         }
     }
@@ -218,7 +249,7 @@ class ShareViewController: SLComposeServiceViewController {
         return nil;
     }
     
-    func upload(localUrl: URL, type: String?, handler: (URL?)->Void) {
+    func upload(localUrl: URL, type: String?, handler: @escaping (URL?)->Void) {
         let size = try! FileManager.default.attributesOfItem(atPath: localUrl.path)[FileAttributeKey.size] as! UInt64;
         print("trying to upload", localUrl, "size", size, "type", type as Any);
         if let httpModule: HttpFileUploadModule = self.xmppClient.modulesManager.getModule(HttpFileUploadModule.ID) {
@@ -254,7 +285,7 @@ class ShareViewController: SLComposeServiceViewController {
                             self.showAlert(title: "Upload failed", message: "Upload to HTTP server failed.");
                             return;
                         }
-                        self.shareText(url: slot.getUri);
+                        handler(slot.getUri);
                     }.resume();
                 }, onError: {(errorCondition, message) in
                     self.showAlert(title: "Upload failed", message: message ?? "Please try again later.");
@@ -271,23 +302,58 @@ class ShareViewController: SLComposeServiceViewController {
         }
     }
     
-    func shareText(url: URL) {
-        print("sharing", contentText as Any, url);
-        
+    func share(text: String? = nil, url: URL? = nil, uploadedFileURL: URL? = nil) {
         recipients.forEach { (recipient) in
-            let message = Message();
-            message.type = StanzaType.chat;
-            message.to = recipient;
-            message.body = contentText.isEmpty ? url.description : "\(contentText!) - \(url.description)";
-            message.oob = url.description;
-            xmppClient.context.writer?.write(message);
+            if !contentText.isEmpty || url != nil {
+                let message = Message();
+                message.type = StanzaType.chat;
+                message.to = recipient;
+                            
+                if let text = text {
+                    message.body = contentText.isEmpty ? text : "\(contentText!) - \(text)";
+                } else if let url = url {
+                    message.body = contentText.isEmpty ? url.description : "\(contentText!) - \(url.description)";
+                } else {
+                    message.body = contentText;
+                }
+                xmppClient.context.writer?.write(message);
+            }
+            
+            if let url = uploadedFileURL {
+                let message = Message();
+                message.type = .chat;
+                message.to = recipient;
+                message.oob = url.description;
+                xmppClient.context.writer?.write(message);
+            }
         }
         
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2, execute: {
             self.xmppClient.disconnect();
             self.extensionContext?.completeRequest(returningItems: nil, completionHandler: nil);
         });
+
     }
+    
+//    func shareText(url: URL?) {
+//        print("sharing", contentText as Any, url);
+//
+//        recipients.forEach { (recipient) in
+//            let message = Message();
+//            message.type = StanzaType.chat;
+//            message.to = recipient;
+//            if let url = url {
+//                message.body = contentText.isEmpty ? url.description : "\(contentText!) - \(url.description)";
+//                message.oob = url.description;
+//            }
+//            xmppClient.context.writer?.write(message);
+//        }
+//
+//        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2, execute: {
+//            self.xmppClient.disconnect();
+//            self.extensionContext?.completeRequest(returningItems: nil, completionHandler: nil);
+//        });
+//    }
     
     class ShareEventHandler: EventHandler {
         

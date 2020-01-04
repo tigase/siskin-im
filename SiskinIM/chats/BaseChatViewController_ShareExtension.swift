@@ -35,8 +35,9 @@ protocol BaseChatViewController_ShareImageExtension: class {
     var account: BareJID! { get }
     var jid: BareJID! { get }
     
+    func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (()->Void)?);
     
-    func sendMessage(body: String, url: String?, preview: String?, completed: (()->Void)?);
+//    func sendMessage(body: String, url: String?, preview: String?, completed: (()->Void)?);
     
     func present(_ controller: UIViewController, animated: Bool, completion: (()->Void)?);
 }
@@ -124,7 +125,7 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
         self.controller = controller;
     }
 
-    func share(filename: String, url: URL, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
+    func share(filename: String, url: URL, completionHandler: @escaping (UploadResult)->Void) {
         guard url.startAccessingSecurityScopedResource() else {
             completionHandler(.failure(.noAccessError));
             return;
@@ -135,11 +136,10 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
             return;
         }
         
-        var mimeType: String = "application/octet-stream";
+        var mimeType: String? = nil;
         
-        if let type = values.typeIdentifier, let mimeTypeRef = UTTypeCopyPreferredTagWithClass(type as CFString, kUTTagClassMIMEType) {
-            mimeType = mimeTypeRef.takeUnretainedValue() as String;
-            mimeTypeRef.release();
+        if let type = values.typeIdentifier {
+            mimeType = UTTypeCopyPreferredTagWithClass(type as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as String?;
         }
         
         guard let inputStream = InputStream(url: url) else {
@@ -147,11 +147,11 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
             completionHandler(.failure(.noAccessError));
             return;
         }
-        self.share(filename: filename, inputStream: inputStream, filesize: size, mimeType: mimeType, completionHandler: { result in
+        self.share(filename: filename, inputStream: inputStream, filesize: size, mimeType: mimeType ?? "application/octet-stream", completionHandler: { result in
             url.stopAccessingSecurityScopedResource();
             switch result {
             case .success(let getUri):
-                completionHandler(.success(getUri));
+                completionHandler(.success(url: getUri, filesize: size, mimeType: mimeType));
             case .failure(let error):
                 completionHandler(.failure(error));
             }
@@ -235,6 +235,12 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
             self.controller.progressBar.progress = 0;
         }
     }
+    
+    enum UploadResult {
+        case success(url: URL, filesize: Int, mimeType: String?)
+        case failure(ShareError)
+        
+    }
 }
 
 class BaseChatViewController_ShareFilePickerDelegate: BaseChatViewController_SharePickerDelegate, UIDocumentPickerDelegate {
@@ -249,9 +255,14 @@ class BaseChatViewController_ShareFilePickerDelegate: BaseChatViewController_Sha
             
         share(filename: url.lastPathComponent, url: url) { (result) in
             switch result {
-            case .success(let getUri):
-                print("file uploaded to:", getUri);
-                self.controller.sendMessage(body: getUri.absoluteString, url: getUri.absoluteString, preview: nil, completed: nil);
+            case .success(let uploadedUrl, let filesize, let mimetype):
+                print("file uploaded to:", uploadedUrl);
+                var appendix = ChatAttachmentAppendix()
+                appendix.filename = url.lastPathComponent;
+                appendix.filesize = filesize;
+                appendix.mimetype = mimetype;
+                appendix.state = .downloaded;
+                self.controller.sendAttachment(originalUrl: url, uploadedUrl: uploadedUrl.absoluteString, appendix: appendix, completionHandler: nil);
             case .failure(let error):
                 self.showAlert(shareError: error);
             }
@@ -288,9 +299,25 @@ class BaseChatViewController_ShareImagePickerDelegate: BaseChatViewController_Sh
                 switch result {
                 case .success(let getUri):
                     print("file uploaded to:", getUri);
-                    ImageCache.shared.set(image: photo) { (key) in
-                        self.controller.sendMessage(body: getUri.absoluteString, url: getUri.absoluteString, preview: "preview:image:\(key)", completed: nil);
+                    var appendix = ChatAttachmentAppendix()
+                    appendix.filename = "image.jpg";
+                    appendix.filesize = data!.count;
+                    appendix.mimetype = "image/jpeg";
+                    appendix.state = .downloaded;
+                    
+                    var url: URL? = FileManager.default.temporaryDirectory.appendingPathComponent("image.jpg", isDirectory: false);
+                    do {
+                        try data!.write(to: url!);
+                    } catch {
+                        url = nil;
                     }
+                    
+                    self.controller.sendAttachment(originalUrl: url, uploadedUrl: getUri.absoluteString, appendix: appendix, completionHandler: {
+                        // attachment was sent..
+                        if let url = url, FileManager.default.fileExists(atPath: url.path) {
+                            try? FileManager.default.removeItem(at: url);
+                        }
+                    })
                 case .failure(let error):
                     self.showAlert(shareError: error);
                 }

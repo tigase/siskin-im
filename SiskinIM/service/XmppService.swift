@@ -66,7 +66,6 @@ open class XmppService: Logger, EventHandler {
             }
             if applicationState != .active {
                 AvatarManager.instance.clearCache();
-                ImageCache.shared.clearInMemoryCache();
             }
         }
     }

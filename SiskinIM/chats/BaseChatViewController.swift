@@ -140,7 +140,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
     }
     
     override func viewDidDisappear(_ animated: Bool) {
-        NotificationCenter.default.removeObserver(self);
+        //NotificationCenter.default.removeObserver(self);
         super.viewDidDisappear(animated);
     }
     

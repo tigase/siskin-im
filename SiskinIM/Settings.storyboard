@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15702" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15510"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15704"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -290,15 +290,15 @@
                                     <segue destination="FGQ-GL-dYt" kind="showDetail" customClass="NavigationControllerWrappingSegue" customModule="Siskin" id="gsA-2D-Fg6"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="aboutSettingsViewCall" selectionStyle="default" indentationWidth="10" reuseIdentifier="AboutSettingsViewCell" id="00j-hl-4km" userLabel="AboutSettingsViewCall" customClass="CustomTableViewCell" customModule="Siskin" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="aboutSettingsViewCall" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="AboutSettingsViewCell" id="00j-hl-4km" userLabel="AboutSettingsViewCall" customClass="CustomTableViewCell" customModule="Siskin" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="407.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="00j-hl-4km" id="BKo-8a-1ti">
-                                    <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="383" height="44"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="About" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3vM-ad-4ap">
-                                            <rect key="frame" x="20" y="11" width="374" height="22"/>
+                                            <rect key="frame" x="20" y="11" width="355" height="22"/>
                                             <accessibility key="accessibilityConfiguration" identifier="accountName"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -313,6 +313,9 @@
                                     </constraints>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="aboutSettingsViewCall"/>
+                                <connections>
+                                    <segue destination="5B4-ae-wmU" kind="show" id="JiS-ax-O98"/>
+                                </connections>
                             </tableViewCell>
                         </prototypes>
                         <connections>
@@ -574,15 +577,15 @@
                                     <outlet property="switchView" destination="BwA-0i-nsF" id="p3D-DW-hiS"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="simplifiedLinkToFileTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="SimplifiedLinkToFileTableViewCell" id="CHa-Jc-woM" userLabel="SimplifiedLinkToFileTableViewCell" customClass="SwitchTableViewCell" customModule="Siskin" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="simplifiedLinkToFileTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="LinkPreviewsTableViewCell" id="CHa-Jc-woM" userLabel="SimplifiedLinkToFileTableViewCell" customClass="SwitchTableViewCell" customModule="Siskin" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="363.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="CHa-Jc-woM" id="hJd-r7-bvW">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Simplified link to HTTP file" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ybc-mt-hVG">
-                                            <rect key="frame" x="20" y="12" width="200.5" height="20.5"/>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Show link previews" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ybc-mt-hVG">
+                                            <rect key="frame" x="20" y="11.5" width="145.5" height="21"/>
                                             <accessibility key="accessibilityConfiguration" identifier="accountName"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -649,8 +652,8 @@
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Max image preview size" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hYx-To-bTs">
-                                            <rect key="frame" x="20" y="12" width="182" height="20.5"/>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Auto file download limit" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hYx-To-bTs">
+                                            <rect key="frame" x="20" y="12" width="177.5" height="20.5"/>
                                             <accessibility key="accessibilityConfiguration" identifier="accountName"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -676,14 +679,14 @@
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="maxImagePreviewSizeTableViewCell"/>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="clearImagePreviewTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ClearImagePreviewTableViewCell" id="BNU-sl-iSH" userLabel="ClearImagePreviewTableViewCell" customClass="CustomTableViewCell" customModule="Siskin" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="clearImagePreviewTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ClearDownloadStoreTableViewCell" id="BNU-sl-iSH" userLabel="ClearImagePreviewTableViewCell" customClass="CustomTableViewCell" customModule="Siskin" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="495.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="BNU-sl-iSH" id="Rhf-1K-n9A">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Clear cache" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sCy-8x-KOF">
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Clear download cache" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sCy-8x-KOF">
                                             <rect key="frame" x="20" y="11" width="374" height="22"/>
                                             <accessibility key="accessibilityConfiguration" identifier="accountName"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
@@ -1150,41 +1153,8 @@
                                     <outlet property="switchView" destination="PRY-Rw-kCQ" id="amr-y6-yCU"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="EnableNewUITableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="EnableNewUITableViewCell" id="wqW-gF-BK8" userLabel="EnableNewUITableViewCell" customClass="SwitchTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="143.5" width="414" height="44"/>
-                                <autoresizingMask key="autoresizingMask"/>
-                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="wqW-gF-BK8" id="M3O-dZ-rUE">
-                                    <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
-                                    <autoresizingMask key="autoresizingMask"/>
-                                    <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="New UI" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="n3F-rS-8OD">
-                                            <rect key="frame" x="20" y="11.5" width="55.5" height="21"/>
-                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                        <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xts-GH-wU0">
-                                            <rect key="frame" x="345" y="6.5" width="51" height="31"/>
-                                            <connections>
-                                                <action selector="valueChanged:" destination="wqW-gF-BK8" eventType="valueChanged" id="hXy-MR-STS"/>
-                                            </connections>
-                                        </switch>
-                                    </subviews>
-                                    <constraints>
-                                        <constraint firstItem="xts-GH-wU0" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="n3F-rS-8OD" secondAttribute="trailing" constant="8" id="28z-Gj-wRv"/>
-                                        <constraint firstItem="xts-GH-wU0" firstAttribute="centerY" secondItem="M3O-dZ-rUE" secondAttribute="centerY" id="93A-SF-YTj"/>
-                                        <constraint firstItem="n3F-rS-8OD" firstAttribute="centerY" secondItem="M3O-dZ-rUE" secondAttribute="centerY" id="XSg-3v-OkN"/>
-                                        <constraint firstAttribute="trailingMargin" secondItem="xts-GH-wU0" secondAttribute="trailing" id="hug-nf-sqx"/>
-                                        <constraint firstAttribute="leadingMargin" secondItem="n3F-rS-8OD" secondAttribute="leading" id="zCO-rb-jKX"/>
-                                    </constraints>
-                                </tableViewCellContentView>
-                                <connections>
-                                    <outlet property="switchView" destination="xts-GH-wU0" id="gvk-zA-qhx"/>
-                                </connections>
-                            </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="EnableMarkdownTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="EnableMarkdownTableViewCell" id="GN8-OH-Bie" userLabel="EnableMarkdownTableViewCell" customClass="SwitchTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="187.5" width="414" height="44"/>
+                                <rect key="frame" x="0.0" y="143.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="GN8-OH-Bie" id="vwH-M8-Zdt">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -1217,7 +1187,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="EnableEmoticonsTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="EnableEmoticonsTableViewCell" id="hfv-4K-f0U" userLabel="EnableEmoticonsTableViewCell" customClass="SwitchTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="231.5" width="414" height="44"/>
+                                <rect key="frame" x="0.0" y="187.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="hfv-4K-f0U" id="Zpe-wG-sQi">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -1259,6 +1229,16 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Tlr-f3-jiC" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1839" y="1742"/>
+        </scene>
+        <!--AboutController-->
+        <scene sceneID="5Mf-Za-3AY">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Info" referencedIdentifier="AboutController" id="5B4-ae-wmU" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="XxE-3L-zjI"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="f6S-Ox-AWU" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2050" y="2202"/>
         </scene>
     </scenes>
 </document>

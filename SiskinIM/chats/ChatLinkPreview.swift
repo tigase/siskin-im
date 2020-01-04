@@ -1,5 +1,5 @@
 //
-// ChatViewItemProtocol.swift
+// ChatLinkPreview.swift
 //
 // Siskin IM
 // Copyright (C) 2019 "Tigase, Inc." <office@tigase.com>
@@ -22,15 +22,16 @@
 import Foundation
 import TigaseSwift
 
-public protocol ChatViewItemProtocol: class {
-    var id: Int { get };
-    var account: BareJID { get }
-    var jid: BareJID { get }
-    var timestamp: Date { get };
-    var state: MessageState { get };
-    var encryption: MessageEncryption { get }
-    var encryptionFingerprint: String? { get };
+class ChatLinkPreview: ChatEntry {
     
-    func isMergeable(with item: ChatViewItemProtocol) -> Bool;
-    func copyText(withTimestamp: Bool, withSender: Bool) -> String?;
+    let url: String;
+    
+    init(id: Int, timestamp: Date, account: BareJID, jid: BareJID, state: MessageState, url: String, authorNickname: String?, authorJid: BareJID?, encryption: MessageEncryption, encryptionFingerprint: String?, error: String?) {
+        self.url = url;
+        super.init(id: id, timestamp: timestamp, account: account, jid: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error);
+    }
+    
+    override func copyText(withTimestamp: Bool, withSender: Bool) -> String? {
+        return nil;
+    }
 }

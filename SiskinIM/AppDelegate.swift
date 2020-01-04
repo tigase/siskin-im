@@ -49,6 +49,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
         try! DBConnection.migrateToGroupIfNeeded();
+        ImageCache.convertToAttachments();
         RTCInitFieldTrialDictionary([:]);
         RTCInitializeSSL();
         RTCSetupInternalTracer();
