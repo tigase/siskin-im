@@ -276,7 +276,7 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
         print("detected uti:", documentController.uti, "for:", documentController.url);
         if preview && documentController.presentPreview(animated: true) {
             self.documentController = documentController;
-        } else if documentController.presentOptionsMenu(from: CGRect.zero, in: self.customView, animated: true) {
+        } else if documentController.presentOptionsMenu(from: self.superview?.convert(self.frame, to: self.superview?.superview) ?? CGRect.zero, in: self.self, animated: true) {
             self.documentController = documentController;
         }
     }
@@ -390,6 +390,7 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
             
             fileViewConstraints = [
                 iconView.heightAnchor.constraint(equalToConstant: 30),
+                iconView.widthAnchor.constraint(equalTo: iconView.heightAnchor),
                 
                 iconView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 12),
                 iconView.topAnchor.constraint(equalTo: self.topAnchor, constant: 8),

@@ -125,12 +125,12 @@ class ChatAttachmentsController: UICollectionViewController, UICollectionViewDel
         }
         
         let p = gesture.location(in: self.collectionView);
-        if let indexPath = self.collectionView.indexPathForItem(at: p) {
+        if let indexPath = self.collectionView.indexPathForItem(at: p), let layoutAttributes = self.collectionView.layoutAttributesForItem(at: indexPath) {
             let item = self.items[indexPath.row];
             if let url = DownloadStore.instance.url(for: "\(item.id)") {
                 let documentController = UIDocumentInteractionController(url: url);
                 //documentController.delegate = self;
-                if documentController.presentOptionsMenu(from: CGRect.zero, in: self.collectionView, animated: true) {
+                if documentController.presentOptionsMenu(from: collectionView.convert(layoutAttributes.frame, to: collectionView.superview), in: self.collectionView, animated: true) {
                     self.documentController = documentController;
                 }
             }

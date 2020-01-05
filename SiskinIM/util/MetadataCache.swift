@@ -39,6 +39,14 @@ class MetadataCache {
         if !FileManager.default.fileExists(atPath: diskCacheUrl.path) {
             try! FileManager.default.createDirectory(at: diskCacheUrl, withIntermediateDirectories: true, attributes: nil);
         }
+        NotificationCenter.default.addObserver(self, selector: #selector(messageRemoved), name: DBChatHistoryStore.MESSAGE_REMOVED, object: nil);
+    }
+    
+    @objc func messageRemoved(_ notification: Notification) {
+        guard let item = notification.object as? DeletedMessage else {
+            return;
+        }
+        removeMetadata(for: "\(item.id)");
     }
 
     func store(_ value: LPLinkMetadata, for id: String) {
@@ -56,6 +64,10 @@ class MetadataCache {
         }
 
         return try! NSKeyedUnarchiver.unarchivedObject(ofClass: LPLinkMetadata.self, from: data);
+    }
+    
+    func removeMetadata(for id: String) {
+        try? FileManager.default.removeItem(at: diskCacheUrl.appendingPathComponent("\(id).metadata"));
     }
 
     func generateMetadata(for url: URL, withId id: String, completionHandler: @escaping (LPLinkMetadata?)->Void) {

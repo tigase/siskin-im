@@ -216,11 +216,11 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
                 switch item {
                 case let item as ChatMessage:
                     MessageEventHandler.sendMessage(chat: chat, body: item.message, url: nil);
-                    DBChatHistoryStore.instance.removeItem(for: chat.account, with: chat.jid.bareJid, itemId: item.id);
+                    DBChatHistoryStore.instance.remove(item: item);
                 case let item as ChatAttachment:
                     let oldLocalFile = DownloadStore.instance.url(for: "\(item.id)");
                     MessageEventHandler.sendAttachment(chat: chat, originalUrl: oldLocalFile, uploadedUrl: item.url, appendix: item.appendix, completionHandler: {
-                        DBChatHistoryStore.instance.removeItem(for:chat.account, with: chat.jid.bareJid, itemId: item.id);
+                        DBChatHistoryStore.instance.remove(item: item);
                     });
                 default:
                     break;

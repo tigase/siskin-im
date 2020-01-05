@@ -77,7 +77,7 @@ class ImageCache {
                     DBChatHistoryStore.instance.appendItem(for: item.account, with: item.jid, state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, type: .attachment, timestamp: item.timestamp, stanzaId: stanzaId, data: item.message, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, chatAttachmentAppendix: appendix, skipItemAlreadyExists: true, completionHandler: { newId in
                         DownloadStore.instance.store(url, filename: filename, with: "\(newId)");
                         if isAttachmentOnly {
-                            DBChatHistoryStore.instance.removeItem(for: item.account, with: item.jid, itemId: item.id);
+                            DBChatHistoryStore.instance.remove(item: item);
                         } else {
                             try! removePreviewStmt.update(item.id);
                         }
