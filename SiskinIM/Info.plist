@@ -52,6 +52,8 @@
 	<string>Uses camera to capture photo for avatar and for VoIP calls</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Uses microphone for VoIP calls</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Used to save attachements from conversations</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Used to select avatar</string>
 	<key>UIBackgroundModes</key>
@@ -82,10 +84,7 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Used to save attachements from conversations</string>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
