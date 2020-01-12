@@ -57,6 +57,7 @@ extension DBConnection {
     
     private static func initialize(dbPath: String) throws -> DBConnection {
         let conn = try DBConnection(dbPath: dbPath);
+        try? conn.execute("PRAGMA busy_timeout = 2")
         try DBSchemaManager(dbConnection: conn).upgradeSchema();
         return conn;
     }

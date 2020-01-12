@@ -131,17 +131,17 @@ open class DBRosterStore: RosterCacheProvider {
     }
     
     open func addItem(for sessionObject: SessionObject, item:RosterItem) -> RosterItem? {
-        return try! dispatcher.sync(flags: .barrier) {
+        return dispatcher.sync(flags: .barrier) {
             let params:[String:Any?] = [ "account": sessionObject.userBareJid, "jid": item.jid, "name": item.name, "subscription": String(item.subscription.rawValue), "timestamp": NSDate(), "ask": item.ask ];
             let dbItem = item as? DBRosterItem ?? DBRosterItem(rosterItem: item);
             if dbItem.id == nil {
                 // adding roster item to DB
-                dbItem.id = try insertItemStmt.insert(params);
+                dbItem.id = try! insertItemStmt.insert(params);
             } else {
                 // updating roster item in DB
-                _ = try updateItemStmt.update(params);
+                _ = try! updateItemStmt.update(params);
                 let itemGroupsDeleteParams:[String:Any?] = ["account": sessionObject.userBareJid, "jid": dbItem.jid];
-                _ = try deleteItemGroupsStmt.update(itemGroupsDeleteParams);
+                _ = try! deleteItemGroupsStmt.update(itemGroupsDeleteParams);
             }
             
             for group in dbItem.groups {
@@ -151,7 +151,7 @@ open class DBRosterStore: RosterCacheProvider {
                     groupId = try! insertGroupStmt.insert(gparams);
                 }
                 let igparams:[String:Any?] = ["item_id": dbItem.id, "group_id": groupId];
-                _ = try insertItemGroupStmt.insert(igparams);
+                _ = try! insertItemGroupStmt.insert(igparams);
             }
             return dbItem;
         }

@@ -43,17 +43,18 @@ class NotificationService: UNNotificationServiceExtension {
             bestAttemptContent.categoryIdentifier = "MESSAGE";
 
             if let account = BareJID(bestAttemptContent.userInfo["account"] as? String) {
+                DispatchQueue.main.async {
                 NotificationManager.instance.initialize(provider: ExtensionNotificationManagerProvider());
-                debug("push for account:", account);
+                    self.debug("push for account:", account);
                 if let encryped = bestAttemptContent.userInfo["encrypted"] as? String, let ivStr = bestAttemptContent.userInfo["iv"] as? String {
                     if let key = NotificationEncryptionKeys.key(for: account), let data = Data(base64Encoded: encryped), let iv = Data(base64Encoded: ivStr) {
-                        debug("got encrypted push with known key");
+                        self.debug("got encrypted push with known key");
                         let cipher = Cipher.AES_GCM();
                         var decoded = Data();
                         if cipher.decrypt(iv: iv, key: key, encoded: data, auth: nil, output: &decoded) {
-                            debug("got decrypted data:", String(data: decoded, encoding: .utf8));
+                            self.debug("got decrypted data:", String(data: decoded, encoding: .utf8));
                             if let payload = try? JSONDecoder().decode(Payload.self, from: decoded) {
-                                debug("decoded payload successfully!");
+                                self.debug("decoded payload successfully!");
                                 NotificationManager.instance.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: payload.sender.bareJid, type: payload.type, nickname: payload.nickname, body: payload.message, completionHandler: { content in
                                     DispatchQueue.main.async {
                                         contentHandler(content);
@@ -64,13 +65,16 @@ class NotificationService: UNNotificationServiceExtension {
                     }
                     contentHandler(bestAttemptContent)
                 } else {
-                    debug("got plain push with", bestAttemptContent.userInfo[AnyHashable("sender")] as? String, bestAttemptContent.userInfo[AnyHashable("body")] as? String, bestAttemptContent.userInfo[AnyHashable("unread-messages")] as? Int);
+                    self.debug("got plain push with", bestAttemptContent.userInfo[AnyHashable("sender")] as? String, bestAttemptContent.userInfo[AnyHashable("body")] as? String, bestAttemptContent.userInfo[AnyHashable("unread-messages")] as? Int);
                     NotificationManager.instance.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: JID(bestAttemptContent.userInfo[AnyHashable("sender")] as? String)?.bareJid, type: .unknown, nickname: bestAttemptContent.userInfo[AnyHashable("nickname")] as? String, body: bestAttemptContent.userInfo[AnyHashable("body")] as? String, completionHandler: { content in
                         DispatchQueue.main.async {
                             contentHandler(content);
                         }
                     });
                 }
+                }
+            } else {
+                contentHandler(bestAttemptContent);
             }
         }
     }

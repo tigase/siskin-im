@@ -25,24 +25,24 @@ import TigaseSwift
 import MobileCoreServices
 
 class ImageCache {
-    
+
     static func convertToAttachments() {
         // converting ImageCache!!!
         let diskCacheUrl = try! FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("images", isDirectory: true);
         guard FileManager.default.fileExists(atPath: diskCacheUrl.path) else {
             return;
         }
-        
+
         let previewsToConvert = try! DBConnection.main.prepareStatement("SELECT id FROM chat_history WHERE preview IS NOT NULL").query(map: { cursor -> Int in
             return cursor["id"]!;
         });
         let convertStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, account, jid, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, preview, stanza_id FROM chat_history WHERE id = ?");
         let removePreviewStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET preview = NULL WHERE id = ?");
-        
+
         let group = DispatchGroup();
         group.enter();
 
-        for id in previewsToConvert {
+        previewsToConvert.forEach { id in
             guard let (item, preview, stanzaId) = try! convertStmt.findFirst(id, map: { (cursor) -> (ChatMessage, String, String?)? in
                 let account: BareJID = cursor["account"]!;
                 let jid: BareJID = cursor["jid"]!;
@@ -54,7 +54,7 @@ class ImageCache {
             }) else {
                 return;
             }
-            
+
             if preview.hasPrefix("preview:image:"), item.error != nil {
                 let url = diskCacheUrl.appendingPathComponent(String(preview.dropFirst(14)));
                 if FileManager.default.fileExists(atPath: url.path) {
@@ -71,9 +71,9 @@ class ImageCache {
                         appendix.filesize = values.fileSize;
                     }
                     appendix.filename = filename;
-                    
+
                     let isAttachmentOnly = URL(string: item.message) != nil;
-                    
+
                     DBChatHistoryStore.instance.appendItem(for: item.account, with: item.jid, state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, type: .attachment, timestamp: item.timestamp, stanzaId: stanzaId, data: item.message, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, chatAttachmentAppendix: appendix, skipItemAlreadyExists: true, completionHandler: { newId in
                         DownloadStore.instance.store(url, filename: filename, with: "\(newId)");
                         if isAttachmentOnly {
@@ -94,7 +94,7 @@ class ImageCache {
         group.notify(queue: DispatchQueue.main, execute: {
             try? FileManager.default.removeItem(at: diskCacheUrl);
         })
-        
+
         group.leave();
 
     }

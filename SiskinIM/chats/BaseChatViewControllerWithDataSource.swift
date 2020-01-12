@@ -90,9 +90,9 @@ class BaseChatViewControllerWithDataSource: BaseChatViewController, ChatViewData
     }
     
     func markAsReadUpToNewestVisibleRow() {
-        if let visibleRows = tableView.indexPathsForVisibleRows {
+        if let visibleRows = tableView.indexPathsForVisibleRows, chat.unread > 0 {
             if let newestVisibleUnreadTimestamp = visibleRows.map({ index -> Date? in
-                guard let item = dataSource.getItem(at: index.row), item.state.isUnread else {
+                guard let item = dataSource.getItem(at: index.row) else {
                     return nil;
                 }
                 return item.timestamp;
