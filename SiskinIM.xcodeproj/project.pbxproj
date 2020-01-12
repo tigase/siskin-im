@@ -14,8 +14,6 @@
 		FE137A4A21F72AEA006B7F7C /* Appearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4921F72AEA006B7F7C /* Appearance.swift */; };
 		FE137A4C21F75660006B7F7C /* ChatBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4B21F75660006B7F7C /* ChatBottomView.swift */; };
 		FE137A4E21F8851D006B7F7C /* CustomTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4D21F8851D006B7F7C /* CustomTableViewController.swift */; };
-		FE1678F422FDDC1E0013B94A /* WebRTC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE1678F322FDDC1D0013B94A /* WebRTC.framework */; };
-		FE1678F522FDDC1E0013B94A /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE1678F322FDDC1D0013B94A /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE1AC8F7216B8AB700D4CDAB /* NewFeaturesDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */; };
 		FE1DCCA21EA52CE200850563 /* DataFormController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1DCCA11EA52CE200850563 /* DataFormController.swift */; };
 		FE233CD521E6846E00099281 /* CameraPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE233CD421E6846E00099281 /* CameraPreviewView.swift */; };
@@ -133,6 +131,8 @@
 		FEA8D6641F30F9260077C12F /* XmppService_VCardExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8D6631F30F9260077C12F /* XmppService_VCardExtension.swift */; };
 		FEAC71791CECE50400ABABEF /* MucChatOccupantsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */; };
 		FEAC717B1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */; };
+		FEB28A9023CB5AD600F876B7 /* WebRTC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEB28A8F23CB5AD600F876B7 /* WebRTC.framework */; };
+		FEB28A9123CB5ADD00F876B7 /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FEB28A8F23CB5AD600F876B7 /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FEB5EC9D1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift */; };
 		FEB62C501DA80956001500D5 /* AvatarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB62C4F1DA80956001500D5 /* AvatarStore.swift */; };
 		FEC514221CEA3D2F003AF765 /* DBRoomsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514211CEA3D2E003AF765 /* DBRoomsManager.swift */; };
@@ -243,11 +243,11 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				FEB28A9123CB5ADD00F876B7 /* WebRTC.framework in Embed Frameworks */,
 				FED353852270BFE600B69C53 /* openssl.framework in Embed Frameworks */,
 				FE759FCD2370B2A4001E78D9 /* Shared.framework in Embed Frameworks */,
 				FED353872270BFE600B69C53 /* TigaseSwiftOMEMO.framework in Embed Frameworks */,
 				FE80BDA81D928AD2001914B0 /* TigaseSwift.framework in Embed Frameworks */,
-				FE1678F522FDDC1E0013B94A /* WebRTC.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -262,7 +262,6 @@
 		FE137A4921F72AEA006B7F7C /* Appearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Appearance.swift; sourceTree = "<group>"; };
 		FE137A4B21F75660006B7F7C /* ChatBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatBottomView.swift; sourceTree = "<group>"; };
 		FE137A4D21F8851D006B7F7C /* CustomTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTableViewController.swift; sourceTree = "<group>"; };
-		FE1678F322FDDC1D0013B94A /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
 		FE168ACC1CCD197A003F8B26 /* db-schema-1.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-1.sql"; sourceTree = "<group>"; };
 		FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewFeaturesDetector.swift; sourceTree = "<group>"; };
 		FE1DCCA11EA52CE200850563 /* DataFormController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataFormController.swift; sourceTree = "<group>"; };
@@ -383,6 +382,7 @@
 		FEA8D6631F30F9260077C12F /* XmppService_VCardExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XmppService_VCardExtension.swift; sourceTree = "<group>"; };
 		FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatOccupantsTableViewController.swift; sourceTree = "<group>"; };
 		FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatOccupantsTableViewCell.swift; sourceTree = "<group>"; };
+		FEB28A8F23CB5AD600F876B7 /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
 		FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift; sourceTree = "<group>"; };
 		FEB62C4F1DA80956001500D5 /* AvatarStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarStore.swift; sourceTree = "<group>"; };
 		FEC514211CEA3D2E003AF765 /* DBRoomsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBRoomsManager.swift; sourceTree = "<group>"; };
@@ -472,8 +472,8 @@
 			files = (
 				FED353862270BFE600B69C53 /* TigaseSwiftOMEMO.framework in Frameworks */,
 				FE5079F01CD3CA91001A015C /* Security.framework in Frameworks */,
-				FE1678F422FDDC1E0013B94A /* WebRTC.framework in Frameworks */,
 				FE759FCC2370B2A4001E78D9 /* Shared.framework in Frameworks */,
+				FEB28A9023CB5AD600F876B7 /* WebRTC.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -725,7 +725,7 @@
 		FE94E5181CCBA74F00FAE755 = {
 			isa = PBXGroup;
 			children = (
-				FE1678F322FDDC1D0013B94A /* WebRTC.framework */,
+				FEB28A8F23CB5AD600F876B7 /* WebRTC.framework */,
 				FE759FA22370ACA4001E78D9 /* NotificationService */,
 				FE759FC62370B2A4001E78D9 /* Shared */,
 				FE60F29A1ED48B470030D411 /* Frameworks */,
