@@ -22,6 +22,7 @@
 import Foundation
 import MobileCoreServices
 import TigaseSwift
+import Shared
 
 class DownloadManager {
     
@@ -51,6 +52,13 @@ class DownloadManager {
     
     func download(item: ChatAttachment, maxSize: Int64) -> Bool {
         return dispatcher.sync {
+            guard var url = URL(string: item.url) else {
+                DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+                    appendix.state = .error;
+                });
+                return false;
+            }
+            
             guard !itemDownloadInProgress.contains(item.id) else {
                 return false;
             }
@@ -95,7 +103,15 @@ class DownloadManager {
                 }
             }
             
-            let url = URL(string: item.url)!;
+            var encryptionKey: String? = nil;
+            if url.scheme == "aesgcm", var components = URLComponents(url: url, resolvingAgainstBaseURL: true) {
+                encryptionKey = components.fragment;
+                components.scheme = "https";
+                components.fragment = nil;
+                if let tmpUrl = components.url {
+                    url = tmpUrl;
+                }
+            }
             
             let sessionConfig = URLSessionConfiguration.default;
             let session = URLSession(configuration: sessionConfig);
@@ -124,9 +140,37 @@ class DownloadManager {
                                         
                     DownloadManager.download(session: session, url: url, completionHandler: { result in
                         switch result {
-                        case .success(let localUrl, let filename):
+                        case .success(let downloadedUrl, let filename):
+                            var dataConsumer: Cipher.TempFileConsumer?;
+                            print("key:", encryptionKey, "stream:", InputStream(url: downloadedUrl), "test:", encryptionKey!.count % 2 == 0 && encryptionKey!.count > 64, "size:", try? downloadedUrl.resourceValues(forKeys: [.fileSizeKey]).fileSize);
+                            if let encryptionKey = encryptionKey, let inputStream = InputStream(url: downloadedUrl), encryptionKey.count % 2 == 0 && encryptionKey.count > 64, let size = try? downloadedUrl.resourceValues(forKeys: [.fileSizeKey]).fileSize {
+                                
+                                let fragmentData = encryptionKey.map { (c) -> UInt8 in
+                                    return UInt8(c.hexDigitValue ?? 0);
+                                };
+
+                                let ivLen = fragmentData.count - (32 * 2);
+                                var iv = Data();
+                                var key = Data();
+                                
+                                for i in 0..<(ivLen/2) {
+                                    iv.append(fragmentData[i*2]*16 + fragmentData[i*2+1]);
+                                }
+                                for i in (ivLen/2)..<(fragmentData.count/2) {
+                                    key.append(fragmentData[i*2]*16 + fragmentData[i*2+1]);
+                                }
+                                
+                                let dataProvider = Cipher.FileDataProvider(inputStream: inputStream, fileSize: size, hasAuthTag: true);
+                                dataConsumer = Cipher.TempFileConsumer();
+                                let aes = Cipher.AES_GCM();
+                                                                
+                                if !aes.decrypt(iv: iv, key: key, provider: dataProvider, consumer: dataConsumer!) {
+                                    dataConsumer = nil;
+                                }
+                                dataConsumer?.close();
+                            }
                             //let id = UUID().uuidString;
-                            DownloadStore.instance.store(localUrl, filename: filename, with: "\(item.id)");
+                            DownloadStore.instance.store(dataConsumer?.url ?? downloadedUrl, filename: filename, with: "\(item.id)");
                             DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
                                 appendix.state = .downloaded;
                             });

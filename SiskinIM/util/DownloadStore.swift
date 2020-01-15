@@ -111,8 +111,10 @@ class DownloadStore {
         guard FileManager.default.fileExists(atPath: fileDir.path) else {
             return;
         }
-        
         try? FileManager.default.removeItem(at: fileDir);
+        if #available(iOS 13.0, *) {
+            MetadataCache.instance.removeMetadata(for: id);
+        }
     }
     
 }

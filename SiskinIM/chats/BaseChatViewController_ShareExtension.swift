@@ -22,6 +22,7 @@
 import UIKit
 import MobileCoreServices
 import TigaseSwift
+import Shared
 
 protocol BaseChatViewController_ShareImageExtension: class {
     
@@ -31,6 +32,7 @@ protocol BaseChatViewController_ShareImageExtension: class {
     var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate? { get set }
     var filePickerDelegate: BaseChatViewController_ShareFilePickerDelegate? { get set }
     
+    var chat: DBChatProtocol! { get }
     var xmppService: XmppService! { get }
     var account: BareJID! { get }
     var jid: BareJID! { get }
@@ -142,22 +144,66 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
             mimeType = UTTypeCopyPreferredTagWithClass(type as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as String?;
         }
         
-        guard let inputStream = InputStream(url: url) else {
-            url.stopAccessingSecurityScopedResource();
-            completionHandler(.failure(.noAccessError));
-            return;
-        }
-        self.share(filename: filename, inputStream: inputStream, filesize: size, mimeType: mimeType ?? "application/octet-stream", completionHandler: { result in
-            url.stopAccessingSecurityScopedResource();
-            switch result {
-            case .success(let getUri):
-                completionHandler(.success(url: getUri, filesize: size, mimeType: mimeType));
-            case .failure(let error):
-                completionHandler(.failure(error));
+        let encrypted = ((self.controller.chat as? DBChat)?.options.encryption ?? .none) == .omemo;
+
+        if encrypted {
+            var iv = Data(count: 12);
+            iv.withUnsafeMutableBytes { (bytes) -> Void in
+                SecRandomCopyBytes(kSecRandomDefault, 12, bytes.baseAddress!);
             }
-        });
+
+            var key = Data(count: 32);
+            key.withUnsafeMutableBytes { (bytes) -> Void in
+                SecRandomCopyBytes(kSecRandomDefault, 32, bytes.baseAddress!);
+            }
+
+            let dataProvider = Cipher.FileDataProvider(inputStream: InputStream(url: url)!);
+            let dataConsumer = Cipher.TempFileConsumer()!;
+            
+            let cipher = Cipher.AES_GCM();
+            let tag = cipher.encrypt(iv: iv, key: key, provider: dataProvider, consumer: dataConsumer);
+            dataConsumer.consume(data: tag);
+            dataConsumer.close();
+            url.stopAccessingSecurityScopedResource();
+
+            guard let inputStream = InputStream(url: dataConsumer.url) else {
+                completionHandler(.failure(.noAccessError));
+                return;
+            }
+            self.share(filename: filename, inputStream: inputStream, filesize: dataConsumer.size, mimeType: mimeType ?? "application/octet-stream", completionHandler: { result in
+                // we cannot release dataConsumer before the file is uploaded!
+                var tmp = dataConsumer;
+                switch result {
+                case .success(let url):
+                    var parts = URLComponents(url: url, resolvingAgainstBaseURL: true)!;
+                    parts.scheme = "aesgcm";
+                    parts.fragment = (iv + key).map({ String(format: "%02x", $0) }).joined();
+                    let shareUrl = parts.url!;
+                    
+                    print("sending url:", shareUrl.absoluteString);
+                    completionHandler(.success(url: shareUrl, filesize: size, mimeType: mimeType));
+                case .failure(let error):
+                    completionHandler(.failure(error));
+                }
+            });
+        } else {
+            guard let inputStream = InputStream(url: url) else {
+                url.stopAccessingSecurityScopedResource();
+                completionHandler(.failure(.noAccessError));
+                return;
+            }
+            self.share(filename: filename, inputStream: inputStream, filesize: size, mimeType: mimeType ?? "application/octet-stream", completionHandler: { result in
+                url.stopAccessingSecurityScopedResource();
+                switch result {
+                case .success(let getUri):
+                    completionHandler(.success(url: getUri, filesize: size, mimeType: mimeType));
+                case .failure(let error):
+                    completionHandler(.failure(error));
+                }
+            });
+        }
     }
-    
+        
     func share(filename: String, inputStream: InputStream, filesize size: Int, mimeType: String, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
         if let client = self.controller.xmppService.getClient(forJid: self.controller.account) {
             let httpUploadModule: HttpFileUploadModule = client.modulesManager.getModule(HttpFileUploadModule.ID)!;
@@ -197,6 +243,7 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
                     let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: OperationQueue.main);
                     session.dataTask(with: request) { (data, response, error) in
                         guard error == nil && ((response as? HTTPURLResponse)?.statusCode ?? 500) == 201 else {
+                            print("error:", error, "response:", response)
                             completionHandler(.failure(.httpError));
                             return;
                         }
@@ -252,7 +299,7 @@ class BaseChatViewController_ShareFilePickerDelegate: BaseChatViewController_Sha
         print("url:", url);
         controller.dismiss(animated: true, completion: nil);
         self.controller.filePickerDelegate = nil;
-            
+                    
         share(filename: url.lastPathComponent, url: url) { (result) in
             switch result {
             case .success(let uploadedUrl, let filesize, let mimetype):
@@ -295,6 +342,63 @@ class BaseChatViewController_ShareImagePickerDelegate: BaseChatViewController_Sh
         let data = photo.jpegData(compressionQuality: 0.9);
         picker.dismiss(animated: true, completion: nil);
         if data != nil {
+            let encrypted = ((self.controller.chat as? DBChat)?.options.encryption ?? .none) == .omemo;
+
+            if encrypted {
+                var iv = Data(count: 12);
+                iv.withUnsafeMutableBytes { (bytes) -> Void in
+                    SecRandomCopyBytes(kSecRandomDefault, 12, bytes.baseAddress!);
+                }
+
+                var key = Data(count: 32);
+                key.withUnsafeMutableBytes { (bytes) -> Void in
+                    SecRandomCopyBytes(kSecRandomDefault, 32, bytes.baseAddress!);
+                }
+                
+                let dataProvider = Cipher.DataDataProvider(data: data!);
+                let dataConsumer = Cipher.TempFileConsumer()!;
+                
+                let cipher = Cipher.AES_GCM();
+                let tag = cipher.encrypt(iv: iv, key: key, provider: dataProvider, consumer: dataConsumer);
+                dataConsumer.consume(data: tag);
+                dataConsumer.close();
+                
+                self.share(filename: "image.jpg", inputStream: InputStream(url: dataConsumer.url)!, filesize: dataConsumer.size, mimeType: "image/jpeg") { (result) in
+                    // we cannot release dataConsumer before the file is uploaded!
+                    var tmp = dataConsumer;
+                    switch result {
+                    case .success(let getUri):
+                        print("file uploaded to:", getUri);
+                        var appendix = ChatAttachmentAppendix()
+                        appendix.filename = "image.jpg";
+                        appendix.filesize = data!.count;
+                        appendix.mimetype = "image/jpeg";
+                        appendix.state = .downloaded;
+                        
+                        var url: URL? = FileManager.default.temporaryDirectory.appendingPathComponent("image.jpg", isDirectory: false);
+                        do {
+                            try data!.write(to: url!);
+                        } catch {
+                            url = nil;
+                        }
+                        
+                        var parts = URLComponents(url: getUri, resolvingAgainstBaseURL: true)!;
+                        parts.scheme = "aesgcm";
+                        parts.fragment = (iv + key).map({ String(format: "%02x", $0) }).joined();
+                        let shareUrl = parts.url!;
+                        
+                        print("sending url:", shareUrl.absoluteString);
+                        self.controller.sendAttachment(originalUrl: url, uploadedUrl: shareUrl.absoluteString, appendix: appendix, completionHandler: {
+                            // attachment was sent..
+                            if let url = url, FileManager.default.fileExists(atPath: url.path) {
+                                try? FileManager.default.removeItem(at: url);
+                            }
+                        })
+                    case .failure(let error):
+                        self.showAlert(shareError: error);
+                    }
+                }
+            } else {
             self.share(filename: "image.jpg", inputStream: InputStream(data: data!), filesize: data!.count, mimeType: "image/jpeg") { (result) in
                 switch result {
                 case .success(let getUri):
@@ -321,6 +425,7 @@ class BaseChatViewController_ShareImagePickerDelegate: BaseChatViewController_Sh
                 case .failure(let error):
                     self.showAlert(shareError: error);
                 }
+            }
             }
         }
         controller.imagePickerDelegate = nil;
