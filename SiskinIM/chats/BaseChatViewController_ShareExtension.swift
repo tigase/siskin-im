@@ -309,7 +309,10 @@ class BaseChatViewController_ShareFilePickerDelegate: BaseChatViewController_Sha
                 appendix.filesize = filesize;
                 appendix.mimetype = mimetype;
                 appendix.state = .downloaded;
-                self.controller.sendAttachment(originalUrl: url, uploadedUrl: uploadedUrl.absoluteString, appendix: appendix, completionHandler: nil);
+                url.startAccessingSecurityScopedResource();
+                self.controller.sendAttachment(originalUrl: url, uploadedUrl: uploadedUrl.absoluteString, appendix: appendix, completionHandler: {
+                    url.stopAccessingSecurityScopedResource();
+                });
             case .failure(let error):
                 self.showAlert(shareError: error);
             }

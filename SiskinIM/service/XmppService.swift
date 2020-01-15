@@ -573,6 +573,8 @@ open class XmppService: Logger, EventHandler {
         client.sessionObject.setUserProperty(SoftwareVersionModule.NAME_KEY, value: Bundle.main.infoDictionary!["CFBundleName"] as! String);
         client.sessionObject.setUserProperty(SoftwareVersionModule.VERSION_KEY, value: Bundle.main.infoDictionary!["CFBundleVersion"] as! String);
         client.sessionObject.setUserProperty(SoftwareVersionModule.OS_KEY, value: UIDevice.current.systemName);
+        // need to establish connection in 1 sec.
+        client.sessionObject.setUserProperty(SocketConnector.CONNECTION_TIMEOUT, value: 15.0);
         
         if let pushModule: SiskinPushNotificationsModule = client.modulesManager.getModule(SiskinPushNotificationsModule.ID) {
             pushModule.pushSettings = account.pushSettings;

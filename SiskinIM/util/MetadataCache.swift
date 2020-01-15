@@ -63,7 +63,7 @@ class MetadataCache {
             return nil;
         }
 
-        return try! NSKeyedUnarchiver.unarchivedObject(ofClass: LPLinkMetadata.self, from: data);
+        return try? NSKeyedUnarchiver.unarchivedObject(ofClass: LPLinkMetadata.self, from: data);
     }
     
     func removeMetadata(for id: String) {

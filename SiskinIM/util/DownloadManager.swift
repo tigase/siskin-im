@@ -142,7 +142,6 @@ class DownloadManager {
                         switch result {
                         case .success(let downloadedUrl, let filename):
                             var dataConsumer: Cipher.TempFileConsumer?;
-                            print("key:", encryptionKey, "stream:", InputStream(url: downloadedUrl), "test:", encryptionKey!.count % 2 == 0 && encryptionKey!.count > 64, "size:", try? downloadedUrl.resourceValues(forKeys: [.fileSizeKey]).fileSize);
                             if let encryptionKey = encryptionKey, let inputStream = InputStream(url: downloadedUrl), encryptionKey.count % 2 == 0 && encryptionKey.count > 64, let size = try? downloadedUrl.resourceValues(forKeys: [.fileSizeKey]).fileSize {
                                 
                                 let fragmentData = encryptionKey.map { (c) -> UInt8 in
