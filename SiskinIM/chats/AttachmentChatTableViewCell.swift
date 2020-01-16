@@ -157,7 +157,7 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                 let sizeLimit = Settings.fileDownloadSizeLimit.integer();
                 if sizeLimit > 0 {
                     if let sessionObject = XmppService.instance.getClient(for: item.account)?.sessionObject, (RosterModule.getRosterStore(sessionObject).get(for: JID(item.jid))?.subscription ?? .none).isFrom || (DBChatStore.instance.getChat(for: item.account, with: item.jid) as? Room != nil) {
-                        DownloadManager.instance.download(item: item, maxSize: Int64(sizeLimit * 1024 * 1024));
+                        DownloadManager.instance.download(item: item, maxSize: sizeLimit >= Int.max ? Int64.max : Int64(sizeLimit * 1024 * 1024));
                         attachmentInfo.progress(show: true);
                         return;
                     }
