@@ -28,6 +28,12 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
     
     @IBOutlet var customView: UIView!;
     
+    override var backgroundColor: UIColor? {
+        didSet {
+            customView?.backgroundColor = backgroundColor;
+        }
+    }
+    
     fileprivate var tapGestureRecognizer: UITapGestureRecognizer?;
     fileprivate var longPressGestureRecognizer: UILongPressGestureRecognizer?;
     
@@ -75,7 +81,10 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
         self.item = item;
         
         super.set(item: item);
-                
+        
+        self.customView?.isOpaque = true;
+        self.customView?.backgroundColor = self.backgroundColor;
+        
         if let localUrl = DownloadStore.instance.url(for: "\(item.id)") {
             documentController = UIDocumentInteractionController(url: localUrl);
             if #available(iOS 13.0, *) {
@@ -121,8 +130,8 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                 }
             } else {
                 let attachmentInfo = (self.linkView as? AttachmentInfoView) ?? AttachmentInfoView(frame: .zero);
-                attachmentInfo.backgroundColor = self.backgroundColor;
-                attachmentInfo.isOpaque = true;
+                //attachmentInfo.backgroundColor = self.backgroundColor;
+                //attachmentInfo.isOpaque = true;
 
                 self.linkView = attachmentInfo;
 
@@ -139,8 +148,8 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
             documentController = nil;
 
             let attachmentInfo = (self.linkView as? AttachmentInfoView) ?? AttachmentInfoView(frame: .zero);
-            attachmentInfo.backgroundColor = self.backgroundColor;
-            attachmentInfo.isOpaque = true;
+            //attachmentInfo.backgroundColor = self.backgroundColor;
+            //attachmentInfo.isOpaque = true;
 
             //attachmentInfo.cellView = self;
             self.linkView = attachmentInfo;

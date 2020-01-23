@@ -173,7 +173,6 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         placeholderView?.isHidden = textView.hasText;
     }
     
-    
     @IBAction func tableViewClicked(_ sender: AnyObject) {
         messageField.resignFirstResponder();
     }
