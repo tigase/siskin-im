@@ -54,8 +54,10 @@ class InviteViewController: AbstractRosterViewController {
     }
     
     public override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let item = roster.item(at: indexPath);
 
+        guard let item = roster?.item(at: indexPath) else {
+            return;
+        }
         guard !tableView.allowsMultipleSelection else {
             selected.append(item.jid);
             return;
@@ -67,7 +69,9 @@ class InviteViewController: AbstractRosterViewController {
     }
  
     override func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        let item = roster.item(at: indexPath);
+        guard let item = roster?.item(at: indexPath) else {
+            return;
+        }
         selected = selected.filter({ (jid) -> Bool in
             return jid != item.jid;
         });

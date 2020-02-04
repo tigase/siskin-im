@@ -28,14 +28,14 @@ class AbstractRosterViewController: CustomTableViewController, UISearchResultsUp
     
     var searchController: UISearchController!;
     
-    var roster: RosterProvider! {
+    var roster: RosterProvider? {
         didSet {
-            if oldValue != nil {
-                NotificationCenter.default.removeObserver(oldValue!);
+            if let value = oldValue {
+                NotificationCenter.default.removeObserver(value);
             }
-            if roster != nil {
-                NotificationCenter.default.addObserver(roster!, selector: #selector(RosterProviderAbstractBase.contactPresenceChanged(_:)), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
-                NotificationCenter.default.addObserver(roster!, selector: #selector(RosterProviderAbstractBase.rosterItemUpdated(_:)), name: DBRosterStore.ITEM_UPDATED, object: nil);
+            if let roster = self.roster {
+                NotificationCenter.default.addObserver(roster, selector: #selector(RosterProviderAbstractBase.contactPresenceChanged(_:)), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
+                NotificationCenter.default.addObserver(roster, selector: #selector(RosterProviderAbstractBase.rosterItemUpdated(_:)), name: DBRosterStore.ITEM_UPDATED, object: nil);
             }
         }
     }

@@ -45,9 +45,10 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
     }
     
     override func initializeRosterProvider(availableOnly: Bool, sortOrder: RosterSortingOrder) {
-        super.initializeRosterProvider(availableOnly: Settings.RosterAvailableOnly.getBool(), sortOrder: RosterSortingOrder(rawValue: Settings.RosterItemsOrder.getString() ?? "") ?? .alphabetical);
+        let order = RosterSortingOrder(rawValue: Settings.RosterItemsOrder.getString() ?? "") ?? .alphabetical;
+        super.initializeRosterProvider(availableOnly: Settings.RosterAvailableOnly.getBool(), sortOrder: order);
         
-        switch roster.order {
+        switch order {
         case .alphabetical:
             searchController.searchBar.selectedScopeButtonIndex = 0;
         case .availability:
@@ -96,7 +97,9 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            let item = roster.item(at: indexPath);
+            guard let item = roster?.item(at: indexPath) else {
+                return;
+            }
             let account: BareJID = item.account;
             let jid: JID = item.jid;
             self.deleteItem(for: account, jid: jid);
@@ -104,26 +107,29 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
     }
     
     override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        guard let item = self.roster?.item(at: indexPath) else {
+            return nil;
+        }
         return [UITableViewRowAction(style: .destructive, title: "Delete", handler: {(action, path) in
             print("deleting record at", path);
-            let item = self.roster.item(at: indexPath);
             self.deleteItem(for: item.account, jid: item.jid);
         }),UITableViewRowAction(style: .normal, title: "Edit", handler: {(action, path) in
             print("editing record at ", path);
-            let item = self.roster.item(at: indexPath);
             self.openEditItem(for: item.account, jid: item.jid);
         })];
     }
     
     func searchBar(_ searchBar: UISearchBar, selectedScopeButtonIndexDidChange selectedScope: Int) {
-        roster.order = selectedScope == 0 ? .alphabetical : .availability
-        Settings.RosterItemsOrder.setValue(roster.order.rawValue);
+        let order: RosterSortingOrder = selectedScope == 0 ? .alphabetical : .availability;
+        roster?.order = order;
+        Settings.RosterItemsOrder.setValue(order.rawValue);
         tableView.reloadData();
     }
     
     @objc func availabilityFilterChanged(_ control: UISegmentedControl) {
-        roster.availableOnly = control.selectedSegmentIndex == 1;
-        Settings.RosterAvailableOnly.setValue(roster.availableOnly);
+        let availableOnly = control.selectedSegmentIndex == 1;
+        self.roster?.availableOnly = availableOnly;
+        Settings.RosterAvailableOnly.setValue(availableOnly);
         tableView.reloadData();
     }
     
@@ -142,7 +148,9 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
         if let indexPath = self.tableView.indexPathForRow(at: point) {
             print("long press detected at", indexPath);
 
-            let item = roster.item(at: indexPath);
+            guard let item = roster?.item(at: indexPath) else {
+                return;
+            }
             
             let alert = UIAlertController(title: item.displayName, message: "using \(item.account.stringValue)", preferredStyle: .actionSheet);
             alert.addAction(UIAlertAction(title: "Chat", style: .default, handler: { (action) in
