@@ -235,7 +235,8 @@ class ChatViewDataSource {
             DispatchQueue.main.async {
                 self.store = store;
                 self.delegate?.itemsRemoved(at: IndexSet([oldIdx]));
-                if oldIdx != 0 && self.store.count > 0 {
+                // should it be connected to the store?? it not to update something after the store ends...
+                if oldIdx != 0 && self.store.count > 0 && self.store.count > oldIdx {
                     self.delegate?.itemUpdated(indexPath: IndexPath(item: oldIdx, section: 0));
                 }
             }
