@@ -83,7 +83,7 @@ class ChatsListViewController: CustomTableViewController {
         let cellIdentifier = "ChatsListTableViewCellNew";
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath as IndexPath) as! ChatsListTableViewCell;
         
-        if let item = dataSource!.item(at: indexPath) {
+        if let item = dataSource?.item(at: indexPath) {
             cell.nameLabel.textColor = Appearance.current.labelColor;
             cell.nameLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.nameLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.nameLabel.font.pointSize);
             cell.lastMessageLabel.textColor = Appearance.current.secondaryLabelColor;

@@ -165,7 +165,11 @@ open class DBChatStore {
         self.updateChatNameStmt = try! self.dbConnection.prepareStatement(DBChatStore.UPDATE_CHAT_NAME);
         self.updateChatOptionsStmt = try! self.dbConnection.prepareStatement(DBChatStore.UPDATE_CHAT_OPTIONS);
         self.getReadTillStmt = try! DBConnection.main.prepareStatement("SELECT timestamp FROM chats_read WHERE account = :account AND jid = :jid");
-        self.updateReadTillStmt = try! DBConnection.main.prepareStatement("INSERT INTO chats_read (account, jid, timestamp) VALUES (:account, :jid, :before) ON CONFLICT(account, jid) DO UPDATE SET timestamp = max(timestamp, excluded.timestamp)");
+        if #available(iOS 12.0, *) {
+            self.updateReadTillStmt = try! DBConnection.main.prepareStatement("INSERT INTO chats_read (account, jid, timestamp) VALUES (:account, :jid, :before) ON CONFLICT(account, jid) DO UPDATE SET timestamp = max(timestamp, excluded.timestamp)");
+        } else {
+            self.updateReadTillStmt = try! DBConnection.main.prepareStatement("INSERT INTO chats_read (account, jid, timestamp) VALUES (:account, :jid, :before)");
+        }
         self.deleteReadTillStmt = try! DBConnection.main.prepareStatement("DELETE FROM chats_read WHERE account = :account AND jid = :jid");
         NotificationCenter.default.addObserver(self, selector: #selector(DBChatStore.accountRemoved), name: NSNotification.Name(rawValue: "accountRemoved"), object: nil);
     }
@@ -418,7 +422,15 @@ open class DBChatStore {
 
     func markAsRead(for account: BareJID, with jid: BareJID, before: Date, count: Int? = nil, completionHandler: (()->Void)? = nil) {
         dispatcher.async {
-            _ = try! self.updateReadTillStmt.insert(["account": account, "jid": jid, "before": before] as [String: Any?]);
+            var ts: Date = before;
+            if #available(iOS 12.0, *) {
+                // we do not have to use workaround..
+            } else {
+                // workaround for iOS 11
+                ts = max(self.getReadTill(for: account, with: jid), before);
+                try! self.deleteReadTillStmt.update(["account": account, "jid": jid] as [String: Any?]);
+            }
+            _ = try! self.updateReadTillStmt.insert(["account": account, "jid": jid, "before": ts] as [String: Any?]);
 
             if let chat = self.getChat(for: account, with: jid) {
                 let unread = chat.unread;
