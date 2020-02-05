@@ -49,7 +49,7 @@ class RosterItemEditViewController: CustomTableViewController, UIPickerViewDataS
         self.jidTextField.text = jid?.stringValue;
         self.accountTextField.text = account?.stringValue;
         self.sendPresenceUpdatesSwitch.isOn = true;
-        self.receivePresenceUpdatesSwitch.isOn = Settings.AutoSubscribeOnAcceptedSubscriptionRequest.getBool();
+        self.receivePresenceUpdatesSwitch.isOn = true;//Settings.AutoSubscribeOnAcceptedSubscriptionRequest.getBool();
         if account != nil && jid != nil {
             self.jidTextField.isEnabled = false;
             self.accountTextField.isEnabled = false;
@@ -63,7 +63,7 @@ class RosterItemEditViewController: CustomTableViewController, UIPickerViewDataS
                 }
             }
         } else {
-            if account == nil && AccountManager.getAccounts().count == 1 {
+            if account == nil && !AccountManager.getAccounts().isEmpty {
                 self.account = AccountManager.getAccounts().first;
                 self.accountTextField.text = account?.stringValue;
             }

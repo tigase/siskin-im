@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15702" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="vAU-gJ-Tx3">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="vAU-gJ-Tx3">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15704"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="collection view cell content view" minToolsVersion="11.0"/>
@@ -1109,6 +1109,36 @@
             </objects>
             <point key="canvasLocation" x="6039" y="1285"/>
         </scene>
+        <!--AccountQR Code Controller-->
+        <scene sceneID="2PP-z6-N40">
+            <objects>
+                <viewController id="qiN-MK-RbO" customClass="AccountQRCodeController" customModule="Siskin" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="dle-gz-oiv">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="DPU-6s-ZR3">
+                                <rect key="frame" x="0.0" y="88" width="414" height="774"/>
+                            </imageView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="DPU-6s-ZR3" firstAttribute="top" secondItem="mKP-T9-IYD" secondAttribute="top" id="84x-xB-beT"/>
+                            <constraint firstItem="mKP-T9-IYD" firstAttribute="trailing" secondItem="DPU-6s-ZR3" secondAttribute="trailing" id="8BW-pB-R0S"/>
+                            <constraint firstItem="DPU-6s-ZR3" firstAttribute="leading" secondItem="mKP-T9-IYD" secondAttribute="leading" id="FUq-mD-qG1"/>
+                            <constraint firstItem="mKP-T9-IYD" firstAttribute="bottom" secondItem="DPU-6s-ZR3" secondAttribute="bottom" id="mpM-Dn-1I6"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="mKP-T9-IYD"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="SSz-kl-k6Z"/>
+                    <connections>
+                        <outlet property="qrCodeView" destination="DPU-6s-ZR3" id="iZi-3P-RoU"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="1YT-rw-P3w" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3730" y="960"/>
+        </scene>
         <!--Navigation Controller-->
         <scene sceneID="WuA-io-KdE">
             <objects>
@@ -1132,7 +1162,7 @@
             <objects>
                 <tableViewController id="Qym-XP-eKn" customClass="AccountSettingsViewController" customModule="Siskin" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="Ddt-28-WHn">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="808"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                         <sections>
@@ -1495,8 +1525,14 @@
                             <outlet property="delegate" destination="Qym-XP-eKn" id="f9s-8N-k8S"/>
                         </connections>
                     </tableView>
-                    <extendedEdge key="edgesForExtendedLayout"/>
-                    <navigationItem key="navigationItem" title="Account settings" id="6n3-M1-SiH"/>
+                    <extendedEdge key="edgesForExtendedLayout" top="YES"/>
+                    <navigationItem key="navigationItem" title="Account settings" id="6n3-M1-SiH">
+                        <barButtonItem key="rightBarButtonItem" systemItem="action" id="zhI-p5-M2c">
+                            <connections>
+                                <segue destination="qiN-MK-RbO" kind="show" identifier="AccountQRCodeController" id="u8U-t7-Qrt"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="addressTextView" destination="cer-LH-2wC" id="XTR-ck-XzQ"/>
                         <outlet property="archivingEnabledSwitch" destination="mrI-c6-25s" id="2er-zz-bsT"/>
@@ -1513,7 +1549,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="NFv-VS-iwE" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4927" y="1350"/>
+            <point key="canvasLocation" x="4880" y="1626"/>
         </scene>
         <!--Contacts-->
         <scene sceneID="uRP-6G-Yz7">
@@ -1650,7 +1686,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Nzv-3Y-whq" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4164" y="1350"/>
+            <point key="canvasLocation" x="3717" y="1626"/>
         </scene>
         <!--Card Edit View Controller-->
         <scene sceneID="12a-gg-yJE">
@@ -2759,6 +2795,6 @@
         </namedColor>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="UqQ-Sj-6Dq"/>
+        <segue reference="5su-Sb-5lN"/>
     </inferredMetricsTieBreakers>
 </document>

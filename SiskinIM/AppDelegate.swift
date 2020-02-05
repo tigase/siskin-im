@@ -601,6 +601,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
         
+        init(jid: JID, action: Action?, dict: [String:String]?) {
+            self.jid = jid;
+            self.action = action;
+            self.dict = dict;
+        }
+        
+        func toURL() -> URL? {
+            var parts = URLComponents();
+            parts.scheme = "xmpp";
+            parts.path = jid.stringValue;
+            if action != nil {
+                parts.query = action!.rawValue + (dict?.map({ (k,v) -> String in ";\(k)=\(v)"}).joined() ?? "");
+            } else {
+                parts.query = dict?.map({ (k,v) -> String in ";\(k)=\(v)"}).joined();
+            }
+            return parts.url;
+        }
+        
         enum Action: String {
             case message
             case join

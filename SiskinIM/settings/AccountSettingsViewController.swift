@@ -187,6 +187,9 @@ class AccountSettingsViewController: CustomTableViewController {
             return;
         }
         switch segue.identifier! {
+        case "AccountQRCodeController":
+            let destination = segue.destination as! AccountQRCodeController;
+            destination.account = account;
         case "EditAccountSegue":
             let destination = segue.destination as! AddAccountController;
             destination.account = account.stringValue;
