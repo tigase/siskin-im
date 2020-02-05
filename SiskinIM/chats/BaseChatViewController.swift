@@ -102,8 +102,6 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil);
         
         if self.messageText?.isEmpty ?? true {
             self.xmppService.dbChatStore.getMessageDraft(account: account, jid: jid) { (text) in
@@ -113,6 +111,9 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
             }
         }
         updateAppearance();
+
+        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil);
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -133,6 +134,8 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
     }
     
     override func viewWillDisappear(_ animated: Bool) {
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil);
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil);
         super.viewWillDisappear(animated);
         if let account = self.account, let jid = self.jid {
             self.xmppService?.dbChatStore.updateMessageDraft(account: account, jid: jid, draft: messageText);
@@ -160,8 +163,8 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
                 if (oldHeight - newHeight) != 0 {
                     let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as! TimeInterval;
                     let curve = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as! UInt;
-                    bottomPanelBottomConstraint?.constant = newHeight;
                     UIView.animate(withDuration: duration, delay: 0.0, options: [UIView.AnimationOptions(rawValue: curve), UIView.AnimationOptions.layoutSubviews, UIView.AnimationOptions.beginFromCurrentState], animations: {
+                        self.bottomPanelBottomConstraint?.constant = newHeight;
                         self.view.layoutIfNeeded();
                         }, completion: nil);
                 }
