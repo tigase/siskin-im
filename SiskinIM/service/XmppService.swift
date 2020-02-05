@@ -321,6 +321,7 @@ open class XmppService: Logger, EventHandler {
                 }
                 
                 self.disconnect(client: client);
+                self.dnsSrvResolverCache.store(for: account.name.domain, result: nil);
             }
             return;
         }
@@ -636,6 +637,7 @@ open class XmppService: Logger, EventHandler {
         if let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) {
             ((messageModule.chatManager as! DefaultChatManager).chatStore as! DBChatStoreWrapper).deinitialize();
         }
+        AccountSettings.reconnectionLocation(account).set(string: nil);
         unregisterEventHandlers(client);
     }
             
