@@ -242,12 +242,24 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
                     request.addValue(mimeType, forHTTPHeaderField: "Content-Type");
                     let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: OperationQueue.main);
                     session.dataTask(with: request) { (data, response, error) in
-                        guard error == nil && ((response as? HTTPURLResponse)?.statusCode ?? 500) == 201 else {
+                        let code = (response as? HTTPURLResponse)?.statusCode ?? 500;
+                        guard error == nil && (code == 200 || code == 201) else {
                             print("error:", error, "response:", response)
                             completionHandler(.failure(.httpError));
                             return;
                         }
-                        completionHandler(.success(slot.getUri));
+                        if code == 200 {
+                            DispatchQueue.main.async {
+                                let alert = UIAlertController(title: "Warning", message: "File upload completed but it was not confirmed correctly by your server. Do you wish to proceed anyway?", preferredStyle: .alert);
+                                alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { action in
+                                    completionHandler(.success(slot.getUri));
+                                }))
+                                alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
+                                self.controller.present(alert, animated: true, completion: nil);
+                            }
+                        } else {
+                            completionHandler(.success(slot.getUri));
+                        }
                         }.resume();
                 }, onError: { (error, message) in
                     completionHandler(.failure(.unknownError));
