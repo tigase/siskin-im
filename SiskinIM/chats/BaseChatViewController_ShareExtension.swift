@@ -47,26 +47,38 @@ protocol BaseChatViewController_ShareImageExtension: class {
 extension BaseChatViewController_ShareImageExtension {
     
     func initSharing() {
-        shareButton.isEnabled = Settings.SharingViaHttpUpload.getBool();
+        shareButton.isEnabled = true;//Settings.SharingViaHttpUpload.getBool();
     }
     
     func showPhotoSelector(_ sender: UIView) {
-        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
-        if UIImagePickerController.isSourceTypeAvailable(.camera) {
-            alert.addAction(UIAlertAction(title: "Take photo", style: .default, handler: { (action) in
-                self.selectPhoto(.camera);
+        if !Settings.SharingViaHttpUpload.getBool() {
+            let alert = UIAlertController(title: nil, message: "When you share files, they are uploaded to HTTP server with unique URL. Anyone who knows the unique URL to the file is able to download it.\nDo you wish to proceed?", preferredStyle: .actionSheet);
+            alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
+                Settings.SharingViaHttpUpload.setValue(true);
+                self.showPhotoSelector(sender);
             }));
+            alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
+            alert.popoverPresentationController?.sourceView = sender;
+            alert.popoverPresentationController?.sourceRect = sender.bounds;
+            present(alert, animated: true, completion: nil);
+        } else {
+            let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
+            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                alert.addAction(UIAlertAction(title: "Take photo", style: .default, handler: { (action) in
+                    self.selectPhoto(.camera);
+                }));
+            }
+            alert.addAction(UIAlertAction(title: "Select photo", style: .default, handler: { (action) in
+                self.selectPhoto(.photoLibrary);
+            }));
+            alert.addAction(UIAlertAction(title: "Select file", style: .default, handler: { (action) in
+                self.selectFile();
+            }));
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+            alert.popoverPresentationController?.sourceView = sender;
+            alert.popoverPresentationController?.sourceRect = sender.bounds;
+            present(alert, animated: true, completion: nil);
         }
-        alert.addAction(UIAlertAction(title: "Select photo", style: .default, handler: { (action) in
-            self.selectPhoto(.photoLibrary);
-        }));
-        alert.addAction(UIAlertAction(title: "Select file", style: .default, handler: { (action) in
-            self.selectFile();
-        }));
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
-        alert.popoverPresentationController?.sourceView = sender;
-        alert.popoverPresentationController?.sourceRect = sender.bounds;
-        present(alert, animated: true, completion: nil);
     }
     
     func selectPhoto(_ source: UIImagePickerController.SourceType) {
