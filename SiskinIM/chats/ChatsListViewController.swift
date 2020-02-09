@@ -393,7 +393,7 @@ class ChatsListViewController: CustomTableViewController {
                 }
             }
         }
-        
+                
         func item(at indexPath: IndexPath) -> DBChatProtocol? {
             return self.store.item(at: indexPath.row);
         }
@@ -466,7 +466,8 @@ class ChatsListViewController: CustomTableViewController {
         private let applyActionsQueue = QueueDispatcher(label: "applyActionsQueue");
         
         private func applyActions() {
-            actionSemaphore.wait();
+            let semaphore = self.actionSemaphore;
+            semaphore.wait();
             let actions = dispatcher.sync { () -> [ChatsStoreQueueItem] in
                 let tmp = self.actionQueue;
                 self.actionQueue = [];
@@ -511,22 +512,28 @@ class ChatsListViewController: CustomTableViewController {
             let addActions = (addDBChatItems + addMappedAccountJidItems).filter({ item -> Bool in return store.add(for: item); });
             let addIndexes = store.indexes(for: addActions);
             
-            DispatchQueue.main.async {
-                self.store = store;
-                if let tableView = self.controller?.tableView {
-                    tableView.performBatchUpdates({
+            DispatchQueue.main.async { [weak self] in
+                if let that = self {
+                    that.store = store;
+                    if let tableView = that.controller?.tableView {
+                        tableView.performBatchUpdates({
 //                        tableView.deleteRows(at: (removeIndexes + refreshIndexes).map{ IndexPath(row: $0, section: 0)}, with: .fade);
-                        print("removing rows:", removeIndexes);
-                        tableView.deleteRows(at: removeIndexes.map{ IndexPath(row: $0, section: 0)}, with: .fade);
-                        print("adding rows:", addIndexes);
-                        tableView.insertRows(at: addIndexes.map { IndexPath(row: $0, section: 0)}, with: .fade);
-                    }, completion: { (result) in
-                        DispatchQueue.global().asyncAfter(deadline: .now() + 0.05) {
-                            self.actionSemaphore.signal();
-                        }
-                    })
+                            print("removing rows:", removeIndexes);
+                            tableView.deleteRows(at: removeIndexes.map{ IndexPath(row: $0, section: 0)}, with: .fade);
+                            print("adding rows:", addIndexes);
+                            tableView.insertRows(at: addIndexes.map { IndexPath(row: $0, section: 0)}, with: .fade);
+                        }, completion: { (result) in
+                            DispatchQueue.global().asyncAfter(deadline: .now() + 0.05) {
+                                semaphore.signal();
+                            }
+                        })
+                    } else {
+                        print("failed to access table view");
+                        semaphore.signal();
+                    }
                 } else {
-                    print("failed to access table view");
+                    semaphore.signal();
+                    // nothing to do...
                 }
             }
         }

@@ -62,9 +62,6 @@ class SetupViewController: UIViewController {
     @IBAction func createAccountBtnClicked(_ sender: AnyObject) {
         let addAccountController = RegisterAccountController.instantiate(fromAppStoryboard: .Main);
         addAccountController.hidesBottomBarWhenPushed = true;
-        addAccountController.onAccountAdded = {
-            (UIApplication.shared.delegate as? AppDelegate)?.hideSetupGuide()
-        }
         let navigationController = UINavigationController(rootViewController: addAccountController);
         navigationController.view.backgroundColor = UIColor.white;
         self.showDetailViewController(navigationController, sender: self);
@@ -73,9 +70,6 @@ class SetupViewController: UIViewController {
     @IBAction func existingAccountBtnClicked(_ sender: AnyObject) {
         let addAccountController = AddAccountController.instantiate(fromAppStoryboard: .Main);
         addAccountController.hidesBottomBarWhenPushed = true;
-        addAccountController.onAccountAdded = {
-            (UIApplication.shared.delegate as? AppDelegate)?.hideSetupGuide()
-        }
         let navigationController = UINavigationController(rootViewController: addAccountController);
         navigationController.view.backgroundColor = UIColor.white;
         self.showDetailViewController(navigationController, sender: self);

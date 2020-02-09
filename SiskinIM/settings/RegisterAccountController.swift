@@ -39,12 +39,23 @@ class RegisterAccountController: DataFormController, UITextFieldDelegate {
     
     var onAccountAdded: (() -> Void)?;
     
+    private var lockAccount: Bool = false;
     var account: BareJID? = nil;
     var password: String? = nil;
+    var preauth: String? = nil;
     
     override func viewDidLoad() {
         super.viewDidLoad();
         passwordSuggestNew = false;
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        if let account = self.account {
+            self.lockAccount = self.account?.localPart != nil;
+            DispatchQueue.main.async {
+                self.updateDomain(account.domain);
+            }
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -135,6 +146,7 @@ class RegisterAccountController: DataFormController, UITextFieldDelegate {
         if #available(iOS 11.0, *) {
             let fieldName = form!.visibleFieldNames[indexPath.row];
             if fieldName == "username", let c = cell as? TextSingleFieldCell {
+                c.uiTextField.isEnabled = !self.lockAccount;
                 c.uiTextField?.textContentType = .username;
             }
         }
@@ -181,7 +193,11 @@ class RegisterAccountController: DataFormController, UITextFieldDelegate {
             DispatchQueue.main.async {
                 self.nextButton.isEnabled = true;
                 self.hideIndicator();
+                if let accountField = form.getField(named: "username") as? TextSingleField, accountField.value?.isEmpty ?? true {
+                    accountField.value = self.account?.localPart;
+                }
                 self.form = form;
+                
                 self.tableView.insertSections(IndexSet(0..<1), with: .fade);
             }
         };
@@ -194,7 +210,7 @@ class RegisterAccountController: DataFormController, UITextFieldDelegate {
             }
         };
         let client: XMPPClient? = nil;
-        self.task = InBandRegistrationModule.AccountRegistrationTask(client: client, domainName: domain, onForm: onForm, onSuccess: onSuccess, onError: self.onRegistrationError, sslCertificateValidator: SslCertificateValidator.validateSslCertificate, onCertificateValidationError: self.onCertificateError);
+        self.task = InBandRegistrationModule.AccountRegistrationTask(client: client, domainName: domain, preauth: self.preauth, onForm: onForm, onSuccess: onSuccess, onError: self.onRegistrationError, sslCertificateValidator: SslCertificateValidator.validateSslCertificate, onCertificateValidationError: self.onCertificateError);
     }
     
     func onRegistrationError(errorCondition: ErrorCondition?, message: String?) {
@@ -263,7 +279,7 @@ class RegisterAccountController: DataFormController, UITextFieldDelegate {
         task?.cancel();
         task = nil;
 
-        if onAccountAdded != nil {
+        if self.view.window?.rootViewController is SetupViewController {
             navigationController?.dismiss(animated: true, completion: nil);
         } else {
             let newController = navigationController?.popViewController(animated: true);

@@ -75,6 +75,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.presenceAuthorizationRequest), name: XmppService.PRESENCE_AUTHORIZATION_REQUEST, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.mucRoomInvitationReceived), name: XmppService.MUC_ROOM_INVITATION, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.pushNotificationRegistrationFailed), name: Notification.Name("pushNotificationsRegistrationFailed"), object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.accountsChanged), name: AccountManager.ACCOUNT_CHANGED, object: nil);
         updateApplicationIconBadgeNumber(completionHandler: nil);
         
         if #available(iOS 13, *) {
@@ -108,6 +109,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //        }
 //
         return true
+    }
+    
+    @objc func accountsChanged(_ notification: Notification) {
+        DispatchQueue.main.async {
+            if let rootView = self.window?.rootViewController {
+                let normalMode: Bool = rootView is UISplitViewController;
+                let expNormalMode = !AccountManager.getAccounts().isEmpty;
+                if normalMode != expNormalMode {
+                    if expNormalMode {
+                        (UIApplication.shared.delegate as? AppDelegate)?.hideSetupGuide();
+                    } else {
+                        self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SetupViewController");
+                    }
+                }
+            }
+        }
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
@@ -227,7 +244,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
-    fileprivate func open(xmppUri: XmppUri, action: XmppUri.Action) {
+    fileprivate func open(xmppUri: XmppUri, action: XmppUri.Action, then: (()->Void)? = nil) {
         switch action {
         case .join:
             let navController = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "MucJoinNavigationController") as! UINavigationController;
@@ -281,6 +298,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 self.window?.rootViewController?.present(alert, animated: true, completion: nil);
             }
         case .roster:
+            if let dict = xmppUri.dict, let ibr = dict["ibr"], ibr == "y" {
+                guard !AccountManager.getAccounts().isEmpty else {
+                    self.open(xmppUri: XmppUri(jid: JID(xmppUri.jid.domain), action: .register, dict: dict), action: .register, then: {
+                        DispatchQueue.main.async {
+                            self.open(xmppUri: xmppUri, action: action);
+                        }
+                    });
+                    return;
+                }
+            }
             guard let navigationController = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: "RosterItemEditNavigationController") as? UINavigationController else {
                 return;
             }
@@ -292,7 +319,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 itemEditController?.jid = xmppUri.jid;
                 itemEditController?.jidTextField.text = xmppUri.jid.stringValue;
                 itemEditController?.nameTextField.text = xmppUri.dict?["name"];
+                itemEditController?.preauth = xmppUri.dict?["preauth"];
             });
+        case .register:
+            let alert = UIAlertController(title: "Registering account", message: xmppUri.jid.localPart == nil ? "Do you wish to register a new account at \(xmppUri.jid.domain!)?" : "Do you wish to register a new account \(xmppUri.jid.stringValue)?", preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { action in
+                let registerAccountController = RegisterAccountController.instantiate(fromAppStoryboard: .Main);
+                registerAccountController.hidesBottomBarWhenPushed = true;
+                registerAccountController.account = xmppUri.jid.bareJid;
+                registerAccountController.preauth = xmppUri.dict?["preauth"];
+                registerAccountController.onAccountAdded = then;
+                self.window?.rootViewController?.showDetailViewController(UINavigationController(rootViewController: registerAccountController), sender: self);
+            }));
+            alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
+            self.window?.rootViewController?.present(alert, animated: true, completion: nil);
         default:
             break;
         }
@@ -623,6 +663,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             case message
             case join
             case roster
+            case register
         }
     }
 

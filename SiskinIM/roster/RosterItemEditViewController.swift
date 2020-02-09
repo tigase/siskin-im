@@ -34,6 +34,7 @@ class RosterItemEditViewController: CustomTableViewController, UIPickerViewDataS
     
     var account:BareJID?;
     var jid:JID?;
+    var preauth: String?;
     
     override func viewDidLoad() {
         xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
@@ -181,7 +182,7 @@ class RosterItemEditViewController: CustomTableViewController, UIPickerViewDataS
             }
             DispatchQueue.main.async {
                 if self.receivePresenceUpdatesSwitch.isOn && !rosterItem.subscription.isTo {
-                    presenceModule.subscribe(to: self.jid!);
+                    presenceModule.subscribe(to: self.jid!, preauth: self.preauth);
                 }
                 if !self.receivePresenceUpdatesSwitch.isOn && rosterItem.subscription.isTo {
                     presenceModule.unsubscribe(from: self.jid!);

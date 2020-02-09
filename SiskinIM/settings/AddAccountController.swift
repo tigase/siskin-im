@@ -128,7 +128,7 @@ class AddAccountController: CustomTableViewController, UITextFieldDelegate {
     }
     
     func dismissView() {
-        let dismiss = onAccountAdded != nil;
+        let dismiss = self.view.window?.rootViewController is SetupViewController;
         onAccountAdded = nil;
         accountValidatorTask?.finish();
         accountValidatorTask = nil;
