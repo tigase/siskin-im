@@ -156,7 +156,7 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
             mimeType = UTTypeCopyPreferredTagWithClass(type as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as String?;
         }
         
-        let encrypted = ((self.controller.chat as? DBChat)?.options.encryption ?? .none) == .omemo;
+        let encrypted = ((self.controller.chat as? DBChat)?.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!) == .omemo;
 
         if encrypted {
             var iv = Data(count: 12);
@@ -369,7 +369,7 @@ class BaseChatViewController_ShareImagePickerDelegate: BaseChatViewController_Sh
         let data = photo.jpegData(compressionQuality: 0.9);
         picker.dismiss(animated: true, completion: nil);
         if data != nil {
-            let encrypted = ((self.controller.chat as? DBChat)?.options.encryption ?? .none) == .omemo;
+            let encrypted = ((self.controller.chat as? DBChat)?.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!) == .omemo;
 
             if encrypted {
                 var iv = Data(count: 12);
