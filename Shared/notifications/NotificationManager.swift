@@ -105,7 +105,7 @@ public class NotificationManager {
                     content.userInfo = ["account": account.stringValue, "sender": sender.stringValue, "uid": uid];
                 case .groupchat:
                     if let nickname = nickname {
-                        content.title = "\(nickname) mentioned you in \(name ?? sender.stringValue)";
+                        content.title = "\(nickname): \(name ?? sender.stringValue)";
                     } else {
                         content.title = "\(name ?? sender.stringValue)";
                     }
