@@ -48,9 +48,9 @@ open class XmppService: Logger, EventHandler {
     fileprivate var fetchStart = NSDate();
         
     #if targetEnvironment(simulator)
-    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler(), PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), PushEventHandler.instance, BlockedEventHandler.instance];
+    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), PushEventHandler.instance, BlockedEventHandler.instance];
     #else
-    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler(), PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), PushEventHandler.instance, JingleManager.instance, BlockedEventHandler.instance];
+    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), PushEventHandler.instance, JingleManager.instance, BlockedEventHandler.instance];
     #endif
     
     public let dbCapsCache: DBCapabilitiesCache;

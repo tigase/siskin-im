@@ -10,6 +10,7 @@
 		FE00157D2017617B00490340 /* StreamFeaturesCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE00157C2017617B00490340 /* StreamFeaturesCache.swift */; };
 		FE00157F2019090300490340 /* ExperimentalSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE00157E2019090300490340 /* ExperimentalSettingsViewController.swift */; };
 		FE01ADA91E224CF400FA7E65 /* SiskinPushNotificationsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE01ADA81E224CF400FA7E65 /* SiskinPushNotificationsModule.swift */; };
+		FE10BCF323FD4EF000E214F3 /* db-schema-10.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE10BCF223FD4EF000E214F3 /* db-schema-10.sql */; };
 		FE137A4821F6464D006B7F7C /* UIColor_mix.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4721F6464D006B7F7C /* UIColor_mix.swift */; };
 		FE137A4A21F72AEA006B7F7C /* Appearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4921F72AEA006B7F7C /* Appearance.swift */; };
 		FE137A4C21F75660006B7F7C /* ChatBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4B21F75660006B7F7C /* ChatBottomView.swift */; };
@@ -259,6 +260,7 @@
 		FE00157C2017617B00490340 /* StreamFeaturesCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamFeaturesCache.swift; sourceTree = "<group>"; };
 		FE00157E2019090300490340 /* ExperimentalSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperimentalSettingsViewController.swift; sourceTree = "<group>"; };
 		FE01ADA81E224CF400FA7E65 /* SiskinPushNotificationsModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SiskinPushNotificationsModule.swift; sourceTree = "<group>"; };
+		FE10BCF223FD4EF000E214F3 /* db-schema-10.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-10.sql"; sourceTree = "<group>"; };
 		FE137A4721F6464D006B7F7C /* UIColor_mix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor_mix.swift; sourceTree = "<group>"; };
 		FE137A4921F72AEA006B7F7C /* Appearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Appearance.swift; sourceTree = "<group>"; };
 		FE137A4B21F75660006B7F7C /* ChatBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatBottomView.swift; sourceTree = "<group>"; };
@@ -694,6 +696,7 @@
 				FE759FC82370B2A4001E78D9 /* Info.plist */,
 				FE759FF823742AC1001E78D9 /* NotificationCategory.swift */,
 				FECEF29723B7B838007EC323 /* db-schema-9.sql */,
+				FE10BCF223FD4EF000E214F3 /* db-schema-10.sql */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -1019,6 +1022,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FE10BCF323FD4EF000E214F3 /* db-schema-10.sql in Resources */,
 				FE759FF22371F21C001E78D9 /* db-schema-6.sql in Resources */,
 				FE759FEF2371F21C001E78D9 /* db-schema-3.sql in Resources */,
 				FE759FED2371F213001E78D9 /* db-schema-2.sql in Resources */,

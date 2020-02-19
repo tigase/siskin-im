@@ -28,6 +28,8 @@ class MucEventHandler: XmppServiceEventHandler {
     static let ROOM_STATUS_CHANGED = Notification.Name("roomStatusChanged");
     static let ROOM_NAME_CHANGED = Notification.Name("roomNameChanged");
     static let ROOM_OCCUPANTS_CHANGED = Notification.Name("roomOccupantsChanged");
+    
+    static let instance = MucEventHandler();
 
     let events: [Event] = [ SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE, MucModule.OccupantChangedNickEvent.TYPE, MucModule.OccupantChangedPresenceEvent.TYPE, MucModule.OccupantLeavedEvent.TYPE, MucModule.OccupantComesEvent.TYPE, MucModule.PresenceErrorEvent.TYPE, MucModule.InvitationReceivedEvent.TYPE, MucModule.InvitationDeclinedEvent.TYPE, PEPBookmarksModule.BookmarksChangedEvent.TYPE ];
     
@@ -217,6 +219,12 @@ class MucEventHandler: XmppServiceEventHandler {
         }
     }
     
+    open func sendPrivateMessage(room: DBRoom, recipientNickname: String, body: String) {
+        let message = room.createPrivateMessage(body, recipientNickname: recipientNickname);
+        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: .outgoing, authorNickname: room.nickname, recipientNickname: recipientNickname, type: .message, timestamp: Date(), stanzaId: message.id, data: body, encryption: .none, encryptionFingerprint: nil, chatAttachmentAppendix: nil, completionHandler: nil);
+        room.context.writer?.write(message);
+    }
+        
     fileprivate func updateRoomName(room: DBRoom) {
         guard let client = XmppService.instance.getClient(for: room.account), let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) else {
             return;

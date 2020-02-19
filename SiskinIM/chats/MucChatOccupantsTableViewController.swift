@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class MucChatOccupantsTableViewController: CustomTableViewController {
+class MucChatOccupantsTableViewController: CustomTableViewController {//}, UIContextMenuInteractionDelegate {
     
     var xmppService:XmppService!;
     
@@ -82,7 +82,7 @@ class MucChatOccupantsTableViewController: CustomTableViewController {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MucChatOccupantsTableViewCell", for: indexPath as IndexPath) as! MucChatOccupantsTableViewCell;
-
+        
         let occupant = participants[indexPath.row];
         cell.nicknameLabel.text = occupant.nickname;
         if let jid = occupant.jid {
@@ -111,6 +111,51 @@ class MucChatOccupantsTableViewController: CustomTableViewController {
             fn(occupant.nickname);
         }
         self.navigationController?.popViewController(animated: true);
+    }
+    
+    @available(iOS 13.0, *)
+    override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        guard room.state == .joined else {
+            return nil;
+        }
+        
+        let participant = self.participants[indexPath.row];
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
+            var actions: [UIAction] = [];
+            actions.append(UIAction(title: "Private message", handler: { action in
+                let alert = UIAlertController(title: "Send message", message: "Enter message to send to: \(participant.nickname)", preferredStyle: .alert);
+                alert.addTextField(configurationHandler: nil);
+                alert.addAction(UIAlertAction(title: "Send", style: .default, handler: { action in
+                    guard let text = alert.textFields?.first?.text else {
+                        return;
+                    }
+                    MucEventHandler.instance.sendPrivateMessage(room: self.room, recipientNickname: participant.nickname, body: text);
+                }));
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+                self.present(alert, animated: true, completion: nil);
+            }));
+            if let jid = participant.jid, self.room.presences[self.room.nickname]?.affiliation == MucAffiliation.admin {
+                actions.append(UIAction(title: "Ban user", handler: { action in
+                    guard let mucModule: MucModule = XmppService.instance.getClient(for: self.room.account)?.modulesManager.getModule(MucModule.ID) else {
+                        return;
+                    }
+                    let alert = UIAlertController(title: "Banning user", message: "Do you want to ban user \(participant.nickname)?", preferredStyle: .alert);
+                    alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { action in
+                        mucModule.setRoomAffiliations(to: self.room, changedAffiliations: [MucModule.RoomAffiliation(jid: jid, affiliation: .outcast)], completionHandler: { error in
+                            guard let err = error else {
+                                return;
+                            }
+                            let alert = UIAlertController(title: "Banning user \(participant.nickname) failed", message: "Server returned an error: \(err.rawValue)", preferredStyle: .alert);
+                            alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
+                            self.present(alert, animated: true, completion: nil);
+                        })
+                    }))
+                    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+                    self.present(alert, animated: true, completion: nil);
+                }));
+            }
+            return UIMenu(title: "", children: actions);
+        });
     }
 
     /*

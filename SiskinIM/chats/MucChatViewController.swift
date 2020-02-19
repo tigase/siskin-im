@@ -130,7 +130,17 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
                     cell.avatarView?.set(name: item.authorNickname, avatar: nil, orDefault: AvatarManager.instance.defaultAvatar);
                 }
             }
-            cell.nicknameView?.text = item.authorNickname;
+            let sender = item.authorNickname ?? "From \(item.jid.stringValue)";
+            if let author = item.authorNickname, let recipient = item.recipientNickname {
+                let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(author) " : "To \(recipient)  ");
+                let font = UIFont.italicSystemFont(ofSize: cell.nicknameView!.font!.pointSize - 2);
+                val.append(NSAttributedString(string: " (private message)", attributes: [.font: font, .foregroundColor: Appearance.current.secondaryLabelColor]));
+
+                cell.nicknameView?.attributedText = val;
+            } else {
+                cell.nicknameView?.text = sender;
+            }
+
             cell.set(message: item);
             cell.backgroundColor = Appearance.current.systemBackground;
             return cell;
@@ -147,7 +157,17 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
                     cell.avatarView?.set(name: item.authorNickname, avatar: nil, orDefault: AvatarManager.instance.defaultAvatar);
                 }
             }
-            cell.nicknameView?.text = item.authorNickname;
+            let sender = item.authorNickname ?? "From \(item.jid.stringValue)";
+            if let author = item.authorNickname, let recipient = item.recipientNickname {
+                let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(author) " : "To \(recipient)  ");
+                let font = UIFont.italicSystemFont(ofSize: cell.nicknameView!.font!.pointSize - 2);
+                val.append(NSAttributedString(string: " (private message)", attributes: [.font: font, .foregroundColor: Appearance.current.secondaryLabelColor]));
+
+                cell.nicknameView?.attributedText = val;
+            } else {
+                cell.nicknameView?.text = sender;
+            }
+
             cell.set(attachment: item);
             cell.setNeedsUpdateConstraints();
             cell.updateConstraintsIfNeeded();

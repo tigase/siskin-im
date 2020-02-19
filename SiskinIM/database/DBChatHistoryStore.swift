@@ -32,7 +32,7 @@ open class DBChatHistoryStore: Logger {
     public static let MESSAGE_REMOVED = Notification.Name("messageRemoved");
     
     fileprivate static let CHAT_GET_ID_WITH_ACCOUNT_PARTICIPANT_AND_STANZA_ID = "SELECT id FROM chat_history WHERE account = :account AND jid = :jid AND stanza_id = :stanzaId";
-    fileprivate static let CHAT_MSG_APPEND = "INSERT INTO chat_history (account, jid, author_jid, author_nickname, timestamp, item_type, data, stanza_id, state, encryption, fingerprint, appendix) VALUES (:account, :jid, :author_jid, :author_nickname, :timestamp, :item_type, :data, :stanza_id, :state, :encryption, :fingerprint, :appendix)";
+    fileprivate static let CHAT_MSG_APPEND = "INSERT INTO chat_history (account, jid, author_jid, author_nickname, recipient_nickname, timestamp, item_type, data, stanza_id, state, encryption, fingerprint, appendix) VALUES (:account, :jid, :author_jid, :author_nickname, :recipient_nickname, :timestamp, :item_type, :data, :stanza_id, :state, :encryption, :fingerprint, :appendix)";
     fileprivate static let CHAT_MSGS_COUNT = "SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid";
     fileprivate static let CHAT_MSGS_DELETE = "DELETE FROM chat_history WHERE account = :account AND jid = :jid";
     fileprivate static let CHAT_MSGS_MARK_AS_READ = "UPDATE chat_history SET state = case state when \(MessageState.incoming_error_unread.rawValue) then \(MessageState.incoming_error.rawValue) when \(MessageState.outgoing_error_unread.rawValue) then \(MessageState.outgoing_error.rawValue) else \(MessageState.incoming.rawValue) end WHERE account = :account AND jid = :jid AND state in (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))";
@@ -54,7 +54,7 @@ open class DBChatHistoryStore: Logger {
     fileprivate lazy var getMessagePositionStmtInverted: DBStatement! = try? self.dbConnection.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id <> :msgId AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))) AND timestamp > (SELECT timestamp FROM chat_history WHERE id = :msgId)");
     fileprivate lazy var markMessageAsErrorStmt: DBStatement! = try? self.dbConnection.prepareStatement("UPDATE chat_history SET state = :state, error = :error WHERE id = :id");
     fileprivate lazy var getMessageErrorDetails: DBStatement! = try? self.dbConnection.prepareStatement("SELECT error FROM chat_history WHERE id = ?");
-    fileprivate lazy var getChatMessageWithIdStmt: DBStatement! = try! self.dbConnection.prepareStatement("SELECT id, account, jid, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix FROM chat_history WHERE id = :id");
+    fileprivate lazy var getChatMessageWithIdStmt: DBStatement! = try! self.dbConnection.prepareStatement("SELECT id, account, jid, author_nickname, author_jid, recipient_nickname, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix FROM chat_history WHERE id = :id");
     fileprivate let getUnsentMessagesForAccountStmt: DBStatement;
     fileprivate let getChatMessagesStmt: DBStatement;
     fileprivate let getChatAttachmentsStmt: DBStatement;
@@ -71,14 +71,14 @@ open class DBChatHistoryStore: Logger {
         self.dispatcher = QueueDispatcher(label: "chat_history_store");
         self.dbConnection = dbConnection;
         self.getUnsentMessagesForAccountStmt = try! self.dbConnection.prepareStatement("SELECT ch.account as account, ch.jid as jid, ch.data as data, ch.stanza_id as stanza_id, ch.encryption as encryption FROM chat_history ch WHERE ch.account = :account AND ch.state = \(MessageState.outgoing_unsent.rawValue) ORDER BY timestamp ASC");
-        self.getChatMessagesStmt = try! dbConnection.prepareStatement("SELECT id, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix FROM chat_history WHERE account = :account AND jid = :jid AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))) ORDER BY timestamp DESC LIMIT :limit OFFSET :offset");
-        self.getChatAttachmentsStmt = try! dbConnection.prepareStatement("SELECT id, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix FROM chat_history WHERE account = :account AND jid = :jid AND item_type = \(ItemType.attachment.rawValue) ORDER BY timestamp DESC");
+        self.getChatMessagesStmt = try! dbConnection.prepareStatement("SELECT id, author_nickname, author_jid, recipient_nickname, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix FROM chat_history WHERE account = :account AND jid = :jid AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))) ORDER BY timestamp DESC LIMIT :limit OFFSET :offset");
+        self.getChatAttachmentsStmt = try! dbConnection.prepareStatement("SELECT id, author_nickname, author_jid, recipient_nickname, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix FROM chat_history WHERE account = :account AND jid = :jid AND item_type = \(ItemType.attachment.rawValue) ORDER BY timestamp DESC");
         self.updateItemStmt = try! dbConnection.prepareStatement("UPDATE chat_history SET appendix = :appendix WHERE id = :id")
         super.init();
         NotificationCenter.default.addObserver(self, selector: #selector(DBChatHistoryStore.accountRemoved), name: NSNotification.Name(rawValue: "accountRemoved"), object: nil);
     }
             
-    public func appendItem(for account: BareJID, with jid: BareJID, state inState: MessageState, authorNickname: String? = nil, authorJid: BareJID? = nil, type: ItemType = .message, timestamp inTimestamp: Date, stanzaId id: String?, data: String, chatState: ChatState? = nil, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, encryption: MessageEncryption, encryptionFingerprint: String?, chatAttachmentAppendix: ChatAttachmentAppendix? = nil, skipItemAlreadyExists: Bool = false, completionHandler: ((Int)->Void)?) {
+    public func appendItem(for account: BareJID, with jid: BareJID, state inState: MessageState, authorNickname: String? = nil, authorJid: BareJID? = nil, recipientNickname: String? = nil, type: ItemType = .message, timestamp inTimestamp: Date, stanzaId id: String?, data: String, chatState: ChatState? = nil, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, encryption: MessageEncryption, encryptionFingerprint: String?, chatAttachmentAppendix: ChatAttachmentAppendix? = nil, skipItemAlreadyExists: Bool = false, completionHandler: ((Int)->Void)?) {
         dispatcher.async {
             let timestamp = Date(timeIntervalSince1970: Double(Int64(inTimestamp.timeIntervalSince1970 * 1000)) / 1000);
             
@@ -99,7 +99,8 @@ open class DBChatHistoryStore: Logger {
                 }
             }
             
-            let params:[String:Any?] = ["account" : account, "jid" : jid, "timestamp": timestamp, "data": data, "item_type": type.rawValue, "state": state.rawValue, "stanza_id": id, "author_jid" : authorJid, "author_nickname": authorNickname, "encryption": encryption.rawValue, "fingerprint": encryptionFingerprint, "appendix": appendix]
+            let params:[String:Any?] = ["account" : account, "jid" : jid, "timestamp": timestamp, "data": data, "item_type": type.rawValue, "state": state.rawValue, "stanza_id": id, "author_jid" : authorJid, "author_nickname": authorNickname,
+                                        "recipient_nickname": recipientNickname, "encryption": encryption.rawValue, "fingerprint": encryptionFingerprint, "appendix": appendix]
             guard let msgId = try! self.appendMessageStmt.insert(params) else {
                 return;
             }
@@ -108,12 +109,12 @@ open class DBChatHistoryStore: Logger {
             var item: ChatViewItemProtocol?;
             switch type {
             case .message:
-                item = ChatMessage(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage);
+                item = ChatMessage(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage);
             case .attachment:
-                item = ChatAttachment(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: chatAttachmentAppendix ?? ChatAttachmentAppendix(), error: errorMessage);
+                item = ChatAttachment(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: chatAttachmentAppendix ?? ChatAttachmentAppendix(), error: errorMessage);
             case .linkPreview:
                 if #available(iOS 13.0, *), Settings.linkPreviews.bool() {
-                    item = ChatLinkPreview(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage);
+                    item = ChatLinkPreview(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage);
                 }
             }
             if item != nil {
@@ -412,6 +413,7 @@ open class DBChatHistoryStore: Logger {
         
         let authorNickname: String? = cursor["author_nickname"];
         let authorJid: BareJID? = cursor["author_jid"];
+        let recipientNickname: String? = cursor["recipient_nickname"];
         let encryption: MessageEncryption = MessageEncryption(rawValue: cursor["encryption"] ?? 0) ?? .none;
         let encryptionFingerprint: String? = cursor["fingerprint"];
         let error: String? = cursor["error"];
@@ -420,16 +422,16 @@ open class DBChatHistoryStore: Logger {
         case .message:
             let message: String = cursor["data"]!;
 
-            return ChatMessage(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, message: message, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error);
+            return ChatMessage(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, message: message, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error);
         case .attachment:
             let url: String = cursor["data"]!;
 
             let appendix = parseAttachmentAppendix(string: cursor["appendix"]);
             
-            return ChatAttachment(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, url: url, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: appendix, error: error);
+            return ChatAttachment(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, url: url, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: appendix, error: error);
         case .linkPreview:
             let url: String = cursor["data"]!;
-            return ChatLinkPreview(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, url: url, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error)
+            return ChatLinkPreview(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, url: url, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error)
         }
     }
     

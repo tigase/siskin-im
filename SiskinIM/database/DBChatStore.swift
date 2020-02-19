@@ -751,6 +751,12 @@ class DBRoom: Room, DBChatProtocol {
         }
         return true;
     }
+    
+    override func createPrivateMessage(_ body: String?, recipientNickname: String) -> Message {
+        let stanza = super.createPrivateMessage(body, recipientNickname: recipientNickname);
+        stanza.id = UUID().uuidString;
+        return stanza;
+    }
 }
 
 public enum ChatEncryption: String {
