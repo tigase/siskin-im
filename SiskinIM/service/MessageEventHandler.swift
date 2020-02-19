@@ -231,7 +231,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             
             var authorNickname: String? = nil;
             var recipientNickname: String? = nil;
-            if let room = DBChatStore.instance.getChat(for: account, with: from.bareJid) as? DBRoom {
+            if let room = DBChatStore.instance.getChat(for: account, with: jid) as? DBRoom {
                 if room.nickname == from.resource {
                     if state.isError {
                         state = .incoming_error;
