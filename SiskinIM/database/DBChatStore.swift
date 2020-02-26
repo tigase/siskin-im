@@ -223,11 +223,19 @@ open class DBChatStore {
                 NotificationCenter.default.post(name: DBChatStore.CHAT_CREATED, object: result);
                 return result;
             }
+            if chat is Room && !(dbChat is Room) {
+                if self.close(for: account, chat: dbChat, deleteChatHistoryOnClose: false) {
+                    return open(for: account, chat: chat);
+                }
+            }
             return dbChat as? T;
         }
     }
-    
     open func close(for account: BareJID, chat:ChatProtocol) -> Bool {
+        return close(for: account, chat: chat, deleteChatHistoryOnClose: Settings.DeleteChatHistoryOnChatClose.getBool());
+    }
+    
+    open func close(for account: BareJID, chat:ChatProtocol, deleteChatHistoryOnClose: Bool) -> Bool {
         guard let dbChat = chat as? DBChatProtocol else {
             return false;
         }
@@ -246,7 +254,7 @@ open class DBChatStore {
             if dbChat.unread > 0 {
                 DBChatHistoryStore.instance.markAsRead(for: account, with: dbChat.jid.bareJid, before: dbChat.timestamp);
             }
-            if Settings.DeleteChatHistoryOnChatClose.getBool() {
+            if deleteChatHistoryOnClose {
                 DBChatHistoryStore.instance.deleteMessages(for: account, with: chat.jid.bareJid);
             }
 

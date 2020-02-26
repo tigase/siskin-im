@@ -426,7 +426,7 @@ class ChatsListViewController: CustomTableViewController {
                 return;
             }
             
-            self.removeItem(for: opened.account, jid: opened.jid.bareJid);
+            self.removeItem(for: opened.account, jid: opened.jid.bareJid, force: true);
         }
         
         @objc func chatUpdated(_ notification: Notification) {
@@ -568,7 +568,7 @@ class ChatsListViewController: CustomTableViewController {
             dispatcher.async {
                 print("opened chat account =", opened.account, ", jid =", opened.jid)
                 if let idx = self.actionQueue.firstIndex(where: { (it) -> Bool in
-                    return it.equals(chat: opened);
+                    return it.equals(chat: opened) && ((!it.force) || it.action == .add);
                 }) {
                     let it = self.actionQueue[idx];
                     switch it.action {
@@ -593,10 +593,10 @@ class ChatsListViewController: CustomTableViewController {
             }
         }
         
-        func removeItem(for account: BareJID, jid: BareJID) {
+        func removeItem(for account: BareJID, jid: BareJID, force: Bool) {
             dispatcher.async {
                 if let idx = self.actionQueue.firstIndex(where: { (it) -> Bool in
-                    return it.equals(account: account, jid: jid);
+                    return it.equals(account: account, jid: jid) && ((!it.force) || it.action == .remove);
                 }) {
                     let it = self.actionQueue[idx];
                     switch it.action {
@@ -607,11 +607,11 @@ class ChatsListViewController: CustomTableViewController {
                         return;
                     case .refresh:
                         self.actionQueue.remove(at: idx);
-                        self.actionQueue.append(AccountJidQueueItem(action: .remove, account: account, jid: jid));
+                        self.actionQueue.append(AccountJidQueueItem(action: .remove, account: account, jid: jid, force: force));
                         return;
                     }
                 } else {
-                    self.actionQueue.append(AccountJidQueueItem(action: .remove, account: account, jid: jid));
+                    self.actionQueue.append(AccountJidQueueItem(action: .remove, account: account, jid: jid, force: force));
                 }
                 if self.actionQueue.count == 1{
                     self.applyActionsQueue.async {
@@ -630,6 +630,7 @@ class ChatsListViewController: CustomTableViewController {
         class ChatsStoreQueueItem: CustomStringConvertible {
             
             let action: Action;
+            let force: Bool;
             
             var description: String {
                 switch action {
@@ -642,8 +643,9 @@ class ChatsListViewController: CustomTableViewController {
                 }
             }
             
-            init(action: Action) {
+            init(action: Action, force: Bool = false) {
                 self.action = action;
+                self.force = force;
             }
             
             func equals(chat: DBChatProtocol) -> Bool {
@@ -688,10 +690,10 @@ class ChatsListViewController: CustomTableViewController {
                 return "(\(super.description), \(account.stringValue), \(jid))";
             }
             
-            init(action: Action, account: BareJID, jid: BareJID) {
+            init(action: Action, account: BareJID, jid: BareJID, force: Bool = false) {
                 self.account = account;
                 self.jid = jid;
-                super.init(action: action);
+                super.init(action: action, force: force);
             }
             
             override func equals(chat: DBChatProtocol) -> Bool {
