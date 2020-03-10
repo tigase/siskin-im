@@ -26,9 +26,9 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
 
     static let MENTION_OCCUPANT = Notification.Name("groupchatMentionOccupant");
     
-    var titleView: MucTitleView! {
+    var titleView: MucTitleView? {
         get {
-            return self.navigationItem.titleView as! MucTitleView;
+            return self.navigationItem.titleView as? MucTitleView;
         }
     }
     var room: DBRoom? {
@@ -59,9 +59,9 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         room = mucModule?.roomsManager.getRoom(for: jid) as? DBRoom;
         navigationItem.title = room?.name ?? jid.stringValue;
         
-        titleView.name = navigationItem.title;
+        titleView?.name = navigationItem.title;
         let recognizer = UITapGestureRecognizer(target: self, action: #selector(MucChatViewController.roomInfoClicked));
-        self.titleView.isUserInteractionEnabled = true;
+        self.titleView?.isUserInteractionEnabled = true;
         self.navigationController?.navigationBar.addGestureRecognizer(recognizer);
 
         tableView.dataSource = self;
@@ -245,9 +245,9 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
     fileprivate func updateTitleView() {
         let state = xmppService.getClient(forJid: self.account)?.state;
         DispatchQueue.main.async {
-            self.titleView.connected = state != nil && state == .connected;
-            self.titleView.nameView.textColor = Appearance.current.navigationBarTextColor;
-            self.titleView.statusView.textColor = Appearance.current.navigationBarTextColor;
+            self.titleView?.connected = state != nil && state == .connected;
+            self.titleView?.nameView.textColor = Appearance.current.navigationBarTextColor;
+            self.titleView?.statusView.textColor = Appearance.current.navigationBarTextColor;
         }
     }
     
@@ -312,8 +312,8 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
     }
 
     func refreshRoomInfo(_ room: DBRoom) {
-        titleView.state = room.state;
-        titleView.name = room.name ?? jid.stringValue;
+        titleView?.state = room.state;
+        titleView?.name = room.name ?? jid.stringValue;
     }
 
 }

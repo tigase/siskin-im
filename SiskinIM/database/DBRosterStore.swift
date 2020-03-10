@@ -111,7 +111,7 @@ open class DBRosterStore: RosterCacheProvider {
     fileprivate lazy var insertItemGroupStmt: DBStatement! = try? self.dbConnection.prepareStatement("INSERT INTO roster_items_groups (item_id, group_id) VALUES (:item_id, :group_id)");
     fileprivate lazy var updateItemStmt: DBStatement! = try? self.dbConnection.prepareStatement("UPDATE roster_items SET name = :name, subscription = :subscription, timestamp = :timestamp, ask = :ask WHERE account = :account AND jid = :jid");
     
-    fileprivate var dispatcher = QueueDispatcher(label: "db_roster_store_queue", attributes: .concurrent);
+    fileprivate var dispatcher = QueueDispatcher(label: "db_roster_store_queue");
     
     convenience init() {
         self.init(dbConnection: DBConnection.main);
@@ -131,7 +131,7 @@ open class DBRosterStore: RosterCacheProvider {
     }
     
     open func addItem(for sessionObject: SessionObject, item:RosterItem) -> RosterItem? {
-        return dispatcher.sync(flags: .barrier) {
+        return dispatcher.sync {
             let params:[String:Any?] = [ "account": sessionObject.userBareJid, "jid": item.jid, "name": item.name, "subscription": String(item.subscription.rawValue), "timestamp": NSDate(), "ask": item.ask ];
             let dbItem = item as? DBRosterItem ?? DBRosterItem(rosterItem: item);
             if dbItem.id == nil {
@@ -211,7 +211,7 @@ open class DBRosterStore: RosterCacheProvider {
     }
 
     fileprivate func deleteAllItems(for account: BareJID) {
-        dispatcher.sync(flags: .barrier) {
+        dispatcher.sync {
             do {
                 let params: [String:Any?] = ["account": account];
                 _ = try self.deleteItemsGroupsStmt.update(params);
