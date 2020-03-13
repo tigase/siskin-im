@@ -56,7 +56,6 @@ open class XmppService: Logger, EventHandler {
     public let dbCapsCache: DBCapabilitiesCache;
     public let dbChatStore: DBChatStore;
     public let dbChatHistoryStore: DBChatHistoryStore;
-    fileprivate let dbRosterStore: DBRosterStore;
     public let dbVCardsCache: DBVCardsCache;
     fileprivate let avatarStore: AvatarStore;
     open var applicationState: ApplicationState = .inactive {
@@ -104,8 +103,7 @@ open class XmppService: Logger, EventHandler {
         self.streamFeaturesCache = StreamFeaturesCache();
         self.dbCapsCache = DBCapabilitiesCache(dbConnection: dbConnection);
         self.dbChatStore = DBChatStore.instance;
-        self.dbChatHistoryStore = DBChatHistoryStore(dbConnection: dbConnection);
-        self.dbRosterStore = DBRosterStore(dbConnection: dbConnection);
+        self.dbChatHistoryStore = DBChatHistoryStore.instance;
         self.dbVCardsCache = DBVCardsCache(dbConnection: dbConnection);
         self.avatarStore = AvatarStore(dbConnection: dbConnection);
         self.reachability = Reachability();
@@ -662,17 +660,20 @@ open class XmppService: Logger, EventHandler {
             _ = client.modulesManager.register(PEPUserAvatarModule());
             _ = client.modulesManager.register(PEPBookmarksModule());
             let rosterModule =  client.modulesManager.register(RosterModule());
-            rosterModule.rosterStore = DBRosterStoreWrapper(sessionObject: client.sessionObject, store: dbRosterStore);
-            rosterModule.versionProvider = dbRosterStore;
+            let rosterStore = DBRosterStoreWrapper(sessionObject: client.sessionObject);
+            rosterStore.initialize();
+            rosterModule.rosterStore = rosterStore;
+            rosterModule.versionProvider = DBRosterStore.instance;
             _ = client.modulesManager.register(PresenceModule());
             let messageModule = client.modulesManager.register(MessageModule());
-            let chatManager = CustomChatManager(context: client.context, chatStore: DBChatStoreWrapper(sessionObject: client.sessionObject));
-            messageModule.chatManager = chatManager;
+            let chatStoreWrapper = DBChatStoreWrapper(sessionObject: client.context.sessionObject);
+            chatStoreWrapper.initialize();
+            messageModule.chatManager = DefaultChatManager(context: client.context, chatStore: chatStoreWrapper);
             _ = client.modulesManager.register(MessageCarbonsModule());
             _ = client.modulesManager.register(MessageArchiveManagementModule());
-            let mucModule = MucModule();
-            mucModule.roomsManager = DBRoomsManager(store: dbChatStore);
-            _ = client.modulesManager.register(mucModule);
+            let roomStore = DBRoomStore(sessionObject: client.context.sessionObject);
+            client.modulesManager.register(MucModule(roomsManager: DefaultRoomsManager(store: roomStore)));
+            roomStore.initialize();
             _ = client.modulesManager.register(AdHocCommandsModule());
             _ = client.modulesManager.register(SiskinPushNotificationsModule(defaultPushServiceJid: XmppService.pushServiceJid, provider: SiskinPushNotificationsModuleProvider()));
             _ = client.modulesManager.register(HttpFileUploadModule());

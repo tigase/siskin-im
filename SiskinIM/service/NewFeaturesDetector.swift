@@ -110,53 +110,58 @@ class NewFeaturesDetector: XmppServiceEventHandler {
                 return;
             }
             
-            mamModule.retrieveSettings(onSuccess: { (defValue, always, never) in
-                if defValue == .never {
-                    DispatchQueue.main.async {
-                        let controller = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(withIdentifier: "NewFeatureSuggestionView") as! NewFeatureSuggestionView;
-                        
-                        _ = controller.view;
-                        
-                        controller.titleField.text = "Message Archiving";
-                        controller.iconField.image = UIImage(named: "messageArchiving")
-                        controller.descriptionField.text = """
-                        Your server for account \(account) supports message archiving.
-                        
-                        When it is enabled your XMPP server will archive all messages which you exchange. This will allow any XMPP client which you use and which supports message archiving to query this archive and show you message history even if messages were sent using different XMPP client.
-                        """;
-                        controller.onSkip = {
-                            controller.dismiss(animated: true, completion: onNext);
-                        }
-                        controller.onEnable = { (handler) in
-                            mamModule.updateSettings(defaultValue: .always, always: always, never: never, onSuccess: { (defValue, always, never) in
-                                DispatchQueue.main.async {
-                                    handler();
-                                    self.askToEnableMessageSync(xmppService: xmppService, account: account, onNext: onNext, completionHandler: { subcontrollers in
-                                        guard let toShow = subcontrollers.first else {
-                                            controller.dismiss(animated: true, completion: onNext);
-                                            return;
+            mamModule.retrieveSettings(completionHandler: { result in
+                switch result {
+                case .success(let defValue, let always, let never):
+                    if defValue == .never {
+                        DispatchQueue.main.async {
+                            let controller = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(withIdentifier: "NewFeatureSuggestionView") as! NewFeatureSuggestionView;
+                            
+                            _ = controller.view;
+                            
+                            controller.titleField.text = "Message Archiving";
+                            controller.iconField.image = UIImage(named: "messageArchiving")
+                            controller.descriptionField.text = """
+                            Your server for account \(account) supports message archiving.
+                            
+                            When it is enabled your XMPP server will archive all messages which you exchange. This will allow any XMPP client which you use and which supports message archiving to query this archive and show you message history even if messages were sent using different XMPP client.
+                            """;
+                            controller.onSkip = {
+                                controller.dismiss(animated: true, completion: onNext);
+                            }
+                            controller.onEnable = { (handler) in
+                                mamModule.updateSettings(defaultValue: .always, always: always, never: never, completionHandler: { result in
+                                    switch result {
+                                    case .success(let defValue, let always, let never):
+                                        DispatchQueue.main.async {
+                                            handler();
+                                            self.askToEnableMessageSync(xmppService: xmppService, account: account, onNext: onNext, completionHandler: { subcontrollers in
+                                                guard let toShow = subcontrollers.first else {
+                                                    controller.dismiss(animated: true, completion: onNext);
+                                                    return;
+                                                }
+                                                controller.dismiss(animated: true, completion: {
+                                                    UIApplication.shared.keyWindow?.rootViewController?.present(toShow, animated: true, completion: nil);
+                                                })
+                                            });
                                         }
-                                        controller.dismiss(animated: true, completion: {
-                                            UIApplication.shared.keyWindow?.rootViewController?.present(toShow, animated: true, completion: nil);
-                                        })
-                                    });
-                                }
-                            }, onError: { (error, stanza) in
-                                DispatchQueue.main.async {
-                                    handler();
-                                    self.showError(title: "Message Archiving Error", message: "Server \(account.domain) returned an error on the request to enable archiving. You can try to enable this feature later on from the account settings.");
-                                }
-                            });
-                        };
-                        
-                        completionHandler([controller]);
+                                    case .failure(let errorCondition, let response):
+                                        DispatchQueue.main.async {
+                                            handler();
+                                            self.showError(title: "Message Archiving Error", message: "Server \(account.domain) returned an error on the request to enable archiving. You can try to enable this feature later on from the account settings.");
+                                        }
+                                    }
+                                });
+                            };
+                            
+                            completionHandler([controller]);
+                        }
+                    } else {
+                        self.askToEnableMessageSync(xmppService: xmppService, account: account, onNext: onNext, completionHandler: completionHandler);
                     }
-                } else {
-                    self.askToEnableMessageSync(xmppService: xmppService, account: account, onNext: onNext, completionHandler: completionHandler);
+                case .failure(let errorCondition, let response):
+                    completionHandler([]);
                 }
-            }, onError: { (error, stanza) in
-                print("received an error:", error as Any, "- ignoring");
-                completionHandler([])
             });
 
         }
@@ -186,7 +191,7 @@ Have it enabled will keep synchronized copy of your messages exchanged using \(a
                     AccountSettings.messageSyncPeriod(account).set(double: 24 * 7);
                     AccountSettings.messageSyncAuto(account).set(bool: true);
                     
-                    MessageEventHandler.syncMessages(for: account);
+                    MessageEventHandler.syncMessages(for: account, since: Date().addingTimeInterval(-1 * 24 * 7 * 60 * 60));
                     
                     controller.dismiss(animated: true, completion: onNext);
                 }

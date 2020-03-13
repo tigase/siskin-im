@@ -86,15 +86,43 @@ class ChatsListViewController: CustomTableViewController {
         if let item = dataSource?.item(at: indexPath) {
             cell.nameLabel.textColor = Appearance.current.labelColor;
             cell.nameLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.nameLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.nameLabel.font.pointSize);
-            cell.lastMessageLabel.textColor = Appearance.current.secondaryLabelColor;
-            if item.lastMessage != nil && Settings.EnableMarkdownFormatting.getBool() {
-                let msg = NSMutableAttributedString(string: item.lastMessage!);
-                Markdown.applyStyling(attributedString: msg, font: cell.lastMessageLabel.font, showEmoticons: Settings.ShowEmoticons.getBool())
-                let text = NSMutableAttributedString(string: item.unread > 0 ? "" : "\u{2713}");
-                text.append(msg);
-                cell.lastMessageLabel.attributedText = text;
+            cell.lastMessageLabel.textColor = item.unread > 0 ? Appearance.current.labelColor : Appearance.current.secondaryLabelColor;
+            if let lastActivity = item.lastActivity {
+                switch lastActivity {
+                case .message(let lastMessage, let sender):
+                    let font = item.unread > 0 ? UIFont(descriptor: cell.lastMessageLabel.font.fontDescriptor.withSymbolicTraits([.traitBold])!, size: cell.lastMessageLabel.font.fontDescriptor.pointSize) : cell.lastMessageLabel.font!;
+                    let msg = NSMutableAttributedString(string: lastMessage);
+                    Markdown.applyStyling(attributedString: msg, font: font, showEmoticons: Settings.ShowEmoticons.bool());
+                    if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                        prefix.append(msg);
+                        cell.lastMessageLabel.attributedText = prefix;
+                    } else {
+                        cell.lastMessageLabel.attributedText = msg;
+                    }
+                case .attachment(let url, let sender):
+                    if let fieldfont = cell.lastMessageLabel.font {
+                        let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: fieldfont.fontDescriptor.pointSize);
+                        let msg = NSAttributedString(string: "📎 Attachment", attributes: [.font:  font, .foregroundColor: cell.lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
+
+                        if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                            prefix.append(msg);
+                            cell.lastMessageLabel.attributedText = prefix;
+                        } else {
+                            cell.lastMessageLabel.attributedText = msg;
+                        }
+                    } else {
+                        let msg = NSAttributedString(string: "📎 Attachment", attributes: [.foregroundColor: cell.lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
+                            
+                        if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                            prefix.append(msg);
+                            cell.lastMessageLabel.attributedText = prefix;
+                        } else {
+                            cell.lastMessageLabel.attributedText = msg;
+                        }
+                    }
+                }
             } else {
-                cell.lastMessageLabel.text = item.lastMessage == nil ? nil : ((item.unread > 0 ? "" : "\u{2713}") + item.lastMessage!);
+                cell.lastMessageLabel.text = nil;
             }
             cell.lastMessageLabel.numberOfLines = Settings.RecentsMessageLinesNo.getInt();
             //        cell.lastMessageLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.lastMessageLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize);

@@ -31,7 +31,7 @@ open class PushEventHandler: XmppServiceEventHandler {
     let events: [Event] = [DiscoveryModule.AccountFeaturesReceivedEvent.TYPE];
     
     init() {
-        NotificationCenter.default.addObserver(self, selector: #selector(chatDestroyed(_:)), name: DBChatStore.CHAT_DESTROYED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(chatDestroyed(_:)), name: DBChatStore.CHAT_CLOSED, object: nil);
     }
     
     public func handle(event: Event) {

@@ -137,10 +137,12 @@
 		FEB28A9123CB5ADD00F876B7 /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FEB28A8F23CB5AD600F876B7 /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FEB5EC9D1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift */; };
 		FEB62C501DA80956001500D5 /* AvatarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB62C4F1DA80956001500D5 /* AvatarStore.swift */; };
-		FEC514221CEA3D2F003AF765 /* DBRoomsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514211CEA3D2E003AF765 /* DBRoomsManager.swift */; };
 		FEC514241CEB2FF7003AF765 /* MucJoinViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514231CEB2FF7003AF765 /* MucJoinViewController.swift */; };
 		FEC514261CEB74F8003AF765 /* BaseChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514251CEB74F8003AF765 /* BaseChatViewController.swift */; };
 		FEC514281CEB82E9003AF765 /* MucChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514271CEB82E9003AF765 /* MucChatViewController.swift */; };
+		FEC79193241AAF55007BE572 /* DBRoomStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC79192241AAF55007BE572 /* DBRoomStore.swift */; };
+		FEC79195241ABEF4007BE572 /* MessageState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC79194241ABEF4007BE572 /* MessageState.swift */; };
+		FEC79199241BE89E007BE572 /* db-schema-11.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEC79198241BE89E007BE572 /* db-schema-11.sql */; };
 		FECEF28C23B79151007EC323 /* ChatEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECEF28B23B79151007EC323 /* ChatEntry.swift */; };
 		FECEF28E23B7919E007EC323 /* ChatMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECEF28D23B7919E007EC323 /* ChatMessage.swift */; };
 		FECEF29023B7926E007EC323 /* ChatAttachment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECEF28F23B7926E007EC323 /* ChatAttachment.swift */; };
@@ -160,7 +162,6 @@
 		FEDC6790238B05E4005C0FAB /* BlockedContactsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDC678F238B05E4005C0FAB /* BlockedContactsController.swift */; };
 		FEDCBF671D9C3EE700AE9129 /* RosterProviderFlat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDCBF661D9C3EE700AE9129 /* RosterProviderFlat.swift */; };
 		FEDCBF691D9C53BA00AE9129 /* RosterProviderGrouped.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDCBF681D9C53BA00AE9129 /* RosterProviderGrouped.swift */; };
-		FEDE3B501F7162AA00075F6E /* CustomChatManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE3B4F1F7162AA00075F6E /* CustomChatManager.swift */; };
 		FEDE93871D07564F00CA60A9 /* SwitchTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE93861D07564F00CA60A9 /* SwitchTableViewCell.swift */; };
 		FEDE93891D081C3D00CA60A9 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE93881D081C3D00CA60A9 /* Settings.swift */; };
 		FEDE938C1D08AFE800CA60A9 /* VCardEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE938B1D08AFE800CA60A9 /* VCardEditViewController.swift */; };
@@ -389,10 +390,12 @@
 		FEB28A8F23CB5AD600F876B7 /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
 		FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift; sourceTree = "<group>"; };
 		FEB62C4F1DA80956001500D5 /* AvatarStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarStore.swift; sourceTree = "<group>"; };
-		FEC514211CEA3D2E003AF765 /* DBRoomsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBRoomsManager.swift; sourceTree = "<group>"; };
 		FEC514231CEB2FF7003AF765 /* MucJoinViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucJoinViewController.swift; sourceTree = "<group>"; };
 		FEC514251CEB74F8003AF765 /* BaseChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewController.swift; sourceTree = "<group>"; };
 		FEC514271CEB82E9003AF765 /* MucChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatViewController.swift; sourceTree = "<group>"; };
+		FEC79192241AAF55007BE572 /* DBRoomStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBRoomStore.swift; sourceTree = "<group>"; };
+		FEC79194241ABEF4007BE572 /* MessageState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageState.swift; sourceTree = "<group>"; };
+		FEC79198241BE89E007BE572 /* db-schema-11.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-11.sql"; sourceTree = "<group>"; };
 		FECEF28B23B79151007EC323 /* ChatEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatEntry.swift; sourceTree = "<group>"; };
 		FECEF28D23B7919E007EC323 /* ChatMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessage.swift; sourceTree = "<group>"; };
 		FECEF28F23B7926E007EC323 /* ChatAttachment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAttachment.swift; sourceTree = "<group>"; };
@@ -411,7 +414,6 @@
 		FEDC678F238B05E4005C0FAB /* BlockedContactsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedContactsController.swift; sourceTree = "<group>"; };
 		FEDCBF661D9C3EE700AE9129 /* RosterProviderFlat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterProviderFlat.swift; sourceTree = "<group>"; };
 		FEDCBF681D9C53BA00AE9129 /* RosterProviderGrouped.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterProviderGrouped.swift; sourceTree = "<group>"; };
-		FEDE3B4F1F7162AA00075F6E /* CustomChatManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomChatManager.swift; sourceTree = "<group>"; };
 		FEDE93861D07564F00CA60A9 /* SwitchTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwitchTableViewCell.swift; sourceTree = "<group>"; };
 		FEDE93881D081C3D00CA60A9 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		FEDE938B1D08AFE800CA60A9 /* VCardEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VCardEditViewController.swift; sourceTree = "<group>"; };
@@ -561,9 +563,10 @@
 				FE507A041CDB7B3B001A015C /* DBChatStore.swift */,
 				FE507A061CDB7B3B001A015C /* DBRosterStore.swift */,
 				FE3024311CE2036A00466497 /* DBVCardsCache.swift */,
-				FEC514211CEA3D2E003AF765 /* DBRoomsManager.swift */,
 				FE7F645A1D281B1C00B9DF56 /* DBCapabilitiesCache.swift */,
 				FED353882270C1D000B69C53 /* DBOMEMOStore.swift */,
+				FEC79192241AAF55007BE572 /* DBRoomStore.swift */,
+				FEC79194241ABEF4007BE572 /* MessageState.swift */,
 			);
 			path = database;
 			sourceTree = "<group>";
@@ -697,6 +700,7 @@
 				FE759FF823742AC1001E78D9 /* NotificationCategory.swift */,
 				FECEF29723B7B838007EC323 /* db-schema-9.sql */,
 				FE10BCF223FD4EF000E214F3 /* db-schema-10.sql */,
+				FEC79198241BE89E007BE572 /* db-schema-11.sql */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -790,7 +794,6 @@
 			children = (
 				FEA8D6611F30F54B0077C12F /* XmppService.swift */,
 				FEA8D6631F30F9260077C12F /* XmppService_VCardExtension.swift */,
-				FEDE3B4F1F7162AA00075F6E /* CustomChatManager.swift */,
 				FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */,
 				FE00157C2017617B00490340 /* StreamFeaturesCache.swift */,
 				FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */,
@@ -1025,6 +1028,7 @@
 				FE10BCF323FD4EF000E214F3 /* db-schema-10.sql in Resources */,
 				FE759FF22371F21C001E78D9 /* db-schema-6.sql in Resources */,
 				FE759FEF2371F21C001E78D9 /* db-schema-3.sql in Resources */,
+				FEC79199241BE89E007BE572 /* db-schema-11.sql in Resources */,
 				FE759FED2371F213001E78D9 /* db-schema-2.sql in Resources */,
 				FECEF29823B7B838007EC323 /* db-schema-9.sql in Resources */,
 				FE759FF02371F21C001E78D9 /* db-schema-4.sql in Resources */,
@@ -1189,7 +1193,6 @@
 				FE4071E421E2605900F09B58 /* VideoCallController.swift in Sources */,
 				FE9E13731F260B33005C0EE5 /* StepperTableViewCell.swift in Sources */,
 				FE6545601E9E7B85006A14AC /* RegisterAccountController.swift in Sources */,
-				FEC514221CEA3D2F003AF765 /* DBRoomsManager.swift in Sources */,
 				FE43EB571F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift in Sources */,
 				FE507A181CDB7B3B001A015C /* ChatViewController.swift in Sources */,
 				FE137A4E21F8851D006B7F7C /* CustomTableViewController.swift in Sources */,
@@ -1216,10 +1219,10 @@
 				FE80BDAB1D953FC4001914B0 /* SetupViewController.swift in Sources */,
 				FEE097621F1FCE1800B1CEAB /* TablePicketViewController.swift in Sources */,
 				FEDE93941D0AC01200CA60A9 /* VCardEditEmailTableViewCell.swift in Sources */,
-				FEDE3B501F7162AA00075F6E /* CustomChatManager.swift in Sources */,
 				FEDE939B1D0C38B000CA60A9 /* ContactFormTableViewCell.swift in Sources */,
 				FEDE93991D0C207100CA60A9 /* ContactBasicTableViewCell.swift in Sources */,
 				FE507A251CDB7B3B001A015C /* AccountManager.swift in Sources */,
+				FEC79195241ABEF4007BE572 /* MessageState.swift in Sources */,
 				FE719E7C22730DC3007CEEC9 /* OMEMOIdentityTableViewCell.swift in Sources */,
 				FEDE93901D09BB8300CA60A9 /* VCardEditPhoneTableViewCell.swift in Sources */,
 				FE507A221CDB7B3B001A015C /* AvatarStatusView.swift in Sources */,
@@ -1244,6 +1247,7 @@
 				FE3024321CE2036A00466497 /* DBVCardsCache.swift in Sources */,
 				FE74D510234A4E1F001A925B /* ChatTableViewSystemCell.swift in Sources */,
 				FE507A241CDB7B3B001A015C /* GlobalSplitViewController.swift in Sources */,
+				FEC79193241AAF55007BE572 /* DBRoomStore.swift in Sources */,
 				FE233CD521E6846E00099281 /* CameraPreviewView.swift in Sources */,
 				FEF19F0E23479F4C005CFE9A /* ChatViewDataSource.swift in Sources */,
 				FE507A261CDB7B3B001A015C /* AvatarManager.swift in Sources */,

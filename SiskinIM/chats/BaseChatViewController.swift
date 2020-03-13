@@ -104,7 +104,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         super.viewWillAppear(animated);
         
         if self.messageText?.isEmpty ?? true {
-            self.xmppService.dbChatStore.getMessageDraft(account: account, jid: jid) { (text) in
+            self.xmppService.dbChatStore.messageDraft(for: account, with: jid) { (text) in
                 DispatchQueue.main.async {
                     self.messageText = text;
                 }
@@ -138,7 +138,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil);
         super.viewWillDisappear(animated);
         if let account = self.account, let jid = self.jid {
-            self.xmppService?.dbChatStore.updateMessageDraft(account: account, jid: jid, draft: messageText);
+            self.xmppService?.dbChatStore.storeMessage(draft: messageText, for: account, with: jid);
         }
     }
     

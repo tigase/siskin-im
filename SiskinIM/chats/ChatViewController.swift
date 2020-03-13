@@ -370,19 +370,22 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
             return;
         }
         
-        mamModule.queryItems(with: JID(jid), start: start, queryId: "sync-2", rsm: rsmQuery ?? RSM.Query(lastItems: 100), onSuccess: {(queryid,complete,rsmResponse) in
-            self.log("received items from archive", queryid, complete, rsmResponse);
-            if rsmResponse != nil && rsmResponse!.index != 0 && rsmResponse?.first != nil {
-                self.syncHistory(start: start, rsm: rsmResponse?.previous(100));
-            } else {
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
+        mamModule.queryItems(with: JID(jid), start: start, queryId: "sync-2", rsm: rsmQuery ?? RSM.Query(lastItems: 100), completionHandler: { result in
+            switch result {
+            case .success(let queryId, let complete, let rsmResponse):
+                self.log("received items from archive", queryId, complete, rsmResponse);
+                if rsmResponse != nil && rsmResponse!.index != 0 && rsmResponse?.first != nil {
+                    self.syncHistory(start: start, rsm: rsmResponse?.previous(100));
+                } else {
+                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
+                        self.refreshControl.endRefreshing();
+                    }
+                }
+            case .failure(let errorCondition, let response):
+                self.log("failed to retrieve items from archive", errorCondition, response);
+                DispatchQueue.main.async {
                     self.refreshControl.endRefreshing();
                 }
-            }
-        }, onError: {(error,stanza) in
-            self.log("failed to retrieve items from archive", error, stanza);
-            DispatchQueue.main.async {
-                self.refreshControl.endRefreshing();
             }
         });
     }

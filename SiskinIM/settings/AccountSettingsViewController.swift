@@ -151,18 +151,20 @@ class AccountSettingsViewController: CustomTableViewController {
         archivingEnabledSwitch.isEnabled = false;
         
         if (client?.state ?? SocketConnector.State.disconnected == SocketConnector.State.connected), let mamModule: MessageArchiveManagementModule = client?.modulesManager.getModule(MessageArchiveManagementModule.ID) {
-            mamModule.retrieveSettings(onSuccess: { (
-                defValue, always, never) in
-                DispatchQueue.main.async {
-                    self.archivingEnabledSwitch.isEnabled = true;
-                    self.archivingEnabledSwitch.isOn = defValue == MessageArchiveManagementModule.DefaultValue.always;
-                    self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
-                }
-            }, onError: { (error, stanza) in
-                DispatchQueue.main.async {
-                    self.archivingEnabledSwitch.isOn = false;
-                    self.archivingEnabledSwitch.isEnabled = false;
-                    self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
+            mamModule.retrieveSettings(completionHandler: { result in
+                switch result {
+                case .success(let defValue, let always, let never):
+                    DispatchQueue.main.async {
+                        self.archivingEnabledSwitch.isEnabled = true;
+                        self.archivingEnabledSwitch.isOn = defValue == MessageArchiveManagementModule.DefaultValue.always;
+                        self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
+                    }
+                case .failure(let errorCondition, let response):
+                    DispatchQueue.main.async {
+                        self.archivingEnabledSwitch.isOn = false;
+                        self.archivingEnabledSwitch.isEnabled = false;
+                        self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
+                    }
                 }
             })
         }
@@ -318,22 +320,28 @@ class AccountSettingsViewController: CustomTableViewController {
         let client = XmppService.instance.getClient(forJid: account);
         if let mamModule: MessageArchiveManagementModule = client?.modulesManager.getModule(MessageArchiveManagementModule.ID) {
             let defValue = archivingEnabledSwitch.isOn ? MessageArchiveManagementModule.DefaultValue.always : MessageArchiveManagementModule.DefaultValue.never;
-            mamModule.retrieveSettings(onSuccess: { (oldDefValue, always, never) in
-                mamModule.updateSettings(defaultValue: defValue, always: always, never: never, onSuccess: { (newDefValue, always1, never1)->Void in
+            mamModule.retrieveSettings(completionHandler: { result in
+                switch result {
+                case .success(let oldDefValue, let always, let never):
+                    mamModule.updateSettings(defaultValue: defValue, always: always, never: never, completionHandler: { result in
+                        switch result {
+                        case .success(let newDefValue, let always, let never):
+                            DispatchQueue.main.async {
+                                self.archivingEnabledSwitch.isOn = newDefValue == MessageArchiveManagementModule.DefaultValue.always;
+                                self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
+                            }
+                        case .failure(let errorCondition, let response):
+                            DispatchQueue.main.async {
+                                self.archivingEnabledSwitch.isOn = oldDefValue == MessageArchiveManagementModule.DefaultValue.always;
+                                self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
+                            }
+                        }
+                    });
+                case .failure(let errorCondition, let response):
                     DispatchQueue.main.async {
-                        self.archivingEnabledSwitch.isOn = newDefValue == MessageArchiveManagementModule.DefaultValue.always;
+                        self.archivingEnabledSwitch.isOn = !self.archivingEnabledSwitch.isOn;
                         self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
                     }
-                }, onError: {(error,stanza)->Void in
-                    DispatchQueue.main.async {
-                        self.archivingEnabledSwitch.isOn = oldDefValue == MessageArchiveManagementModule.DefaultValue.always;
-                        self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
-                    }
-                });
-            }, onError: {(error, stanza)->Void in
-                DispatchQueue.main.async {
-                    self.archivingEnabledSwitch.isOn = !self.archivingEnabledSwitch.isOn;
-                    self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
                 }
             });
         }

@@ -24,47 +24,51 @@ import Shared
 import TigaseSwift
 
 open class DBChatStoreWrapper: ChatStore {
+            
+    public let dispatcher: QueueDispatcher
     
-    fileprivate let store: DBChatStore;
+    public func chat(with jid: BareJID, filter: @escaping (Chat) -> Bool) -> Chat? {
+        return store.getChat(for: sessionObject.userBareJid!, with: jid) as? Chat;
+    }
+    
     fileprivate let sessionObject: SessionObject;
+    fileprivate let store = DBChatStore.instance;
     
-    open var count:Int {
+    open var count: Int {
         return store.count(for: sessionObject.userBareJid!);
     }
     
-    open var items:[ChatProtocol] {
-        return store.getChats(for: sessionObject.userBareJid!);
+    open var chats: [Chat] {
+        return store.getChats(for: sessionObject.userBareJid!).filter({ $0 is Chat }).map({ $0 as! Chat });
     }
     
-    public let dispatcher: QueueDispatcher;
-        
-    public init(sessionObject:SessionObject) {
+    public init(sessionObject: SessionObject) {
         self.sessionObject = sessionObject;
-        self.store = DBChatStore.instance;
         self.dispatcher = store.dispatcher;
     }
-        
-    open func getChat<T>(with jid: BareJID, filter: @escaping (T) -> Bool) -> T? where T: ChatProtocol {
-        return store.getChat(for: sessionObject.userBareJid!, with: jid) as? T;
+    
+    deinit {
+        self.store.unloadChats(for: self.sessionObject.userBareJid!);
     }
     
-    open func getAllChats<T>() -> [T] where T :  ChatProtocol {
-        return items as! [T];
-    }
-    
-    open func isFor(jid: BareJID) -> Bool {
+    public func isFor(jid: BareJID) -> Bool {
         return store.getChat(for: sessionObject.userBareJid!, with: jid) != nil;
     }
     
-    open func open<T: AnyObject>(chat:ChatProtocol) -> T? {
-        return store.open(for: sessionObject.userBareJid!, chat: chat);
+    public func createChat(jid: JID, thread: String?) -> Result<Chat, ErrorCondition> {
+        switch store.createChat(for: sessionObject.userBareJid!, jid: jid, thread: thread) {
+        case .success(let chat):
+            return .success(chat as Chat);
+        case .failure(let error):
+            return .failure(error)
+        }
     }
     
-    open func close(chat:ChatProtocol) -> Bool {
+    public func close(chat: Chat) -> Bool {
         return store.close(for: sessionObject.userBareJid!, chat: chat);
     }
- 
-    open func initialize() {
+    
+    public func initialize() {
         store.loadChats(for: sessionObject.userBareJid!, context: sessionObject.context);
     }
     
@@ -75,48 +79,42 @@ open class DBChatStoreWrapper: ChatStore {
 
 open class DBChatStore {
     
-    static let UNREAD_MESSAGES_COUNT_CHANGED = Notification.Name("UNREAD_NOTIFICATIONS_COUNT_CHANGED");
+    static let instance: DBChatStore = DBChatStore.init();
+    
     static let CHAT_OPENED = Notification.Name("CHAT_OPENED");
     static let CHAT_CLOSED = Notification.Name("CHAT_CLOSED");
     static let CHAT_UPDATED = Notification.Name("CHAT_UPDATED");
-    static let CHAT_CREATED = Notification.Name("CHAT_CREATED");
-    static let CHAT_DESTROYED = Notification.Name("CHAT_DESTROYED");
-
-    public static let instance = DBChatStore.init();
     
-    fileprivate static let CHATS_GET = "SELECT id, type, thread_id, resource, nickname, password, timestamp, options FROM chats WHERE account = :account AND jid = :jid";
-    fileprivate static let CHATS_LIST = "SELECT c.id, c.type, c.jid, c.name, c.nickname, c.password, c.timestamp as creation_timestamp, cr.timestamp as read_till, last.timestamp as timestamp, last1.data, last1.encryption as lastEncryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread, c.options FROM chats c LEFT JOIN chats_read cr on c.account = cr.account AND c.jid = cr.jid LEFT JOIN (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account GROUP BY ch.account, ch.jid) last ON c.jid = last.jid AND c.account = last.account LEFT JOIN chat_history last1 ON last1.account = c.account AND last1.jid = c.jid AND last1.timestamp = last.timestamp WHERE c.account = :account";
-    fileprivate static let CHAT_IS = "SELECT count(id) as count FROM chats WHERE account = :account AND jid = :jid";
-    fileprivate static let CHAT_OPEN = "INSERT INTO chats (account, jid, timestamp, type, resource, thread_id) VALUES (:account, :jid, :timestamp, :type, :resource, :thread)";
-    fileprivate static let ROOM_OPEN = "INSERT INTO chats (account, jid, timestamp, type, nickname, password) VALUES (:account, :jid, :timestamp, :type, :nickname, :password)";
-    fileprivate static let CHAT_CLOSE = "DELETE FROM chats WHERE id = :id";
-    fileprivate static let CHATS_COUNT = "SELECT count(id) as count FROM chats WHERE account = :account";
-    fileprivate static let GET_LAST_MESSAGE = "SELECT last.timestamp as timestamp, last1.data, last1.encryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread FROM (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.jid = :jid GROUP BY ch.account, ch.jid) last LEFT JOIN chat_history last1 ON last1.account = last.account AND last1.jid = last.jid AND last1.timestamp = last.timestamp";
-    fileprivate static let GET_LAST_MESSAGE_TIMESTAMP_FOR_ACCOUNT = "SELECT max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND (ch.state % 2) = 0";
-    fileprivate static let UPDATE_CHAT_NAME = "UPDATE chats SET name = ? WHERE account = ? AND jid = ?";
+    static let UNREAD_MESSAGES_COUNT_CHANGED = Notification.Name("UNREAD_NOTIFICATIONS_COUNT_CHANGED");
+    
+    fileprivate static let OPEN_CHAT = "INSERT INTO chats (account, jid, timestamp, type) VALUES (:account, :jid, :timestamp, :type)";
+    fileprivate static let OPEN_ROOM = "INSERT INTO chats (account, jid, timestamp, type, nickname, password) VALUES (:account, :jid, :timestamp, :type, :nickname, :password)";
+    fileprivate static let OPEN_CHANNEL = "INSERT INTO chats (account, jid, timestamp, type, options) VALUES (:account, :jid, :timestamp, :type, :options)";
+    fileprivate static let CLOSE_CHAT = "DELETE FROM chats WHERE id = :id";
+    fileprivate static let LOAD_CHATS = "SELECT c.id, c.type, c.jid, c.name, c.nickname, c.password, c.timestamp as creation_timestamp, last.timestamp as timestamp, last1.item_type, last1.data, last1.encryption as lastEncryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue)) AND ch2.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))) as unread, c.options, last1.author_nickname FROM chats c LEFT JOIN (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) GROUP BY ch.account, ch.jid) last ON c.jid = last.jid AND c.account = last.account LEFT JOIN chat_history last1 ON last1.account = c.account AND last1.jid = c.jid AND last1.timestamp = last.timestamp AND last1.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) WHERE c.account = :account";
+    fileprivate static let GET_LAST_MESSAGE = "SELECT last.timestamp as timestamp, last1.item_type, last1.data, last1.encryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread, last1.author_nickname FROM (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.jid = :jid AND ch.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) GROUP BY ch.account, ch.jid) last LEFT JOIN chat_history last1 ON last1.account = last.account AND last1.jid = last.jid AND last1.timestamp = last.timestamp AND last1.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))";
+    fileprivate static let GET_LAST_MESSAGE_TIMESTAMP_FOR_ACCOUNT = "SELECT max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.state <> \(MessageState.outgoing_unsent.rawValue)";
+    fileprivate static let UPDATE_CHAT_NAME = "UPDATE chats SET name = :name WHERE account = :account AND jid = :jid";
     fileprivate static let UPDATE_CHAT_OPTIONS = "UPDATE chats SET options = ? WHERE account = ? AND jid = ?";
-    
-    fileprivate let dbConnection:DBConnection;
-    
-    fileprivate let getStmt: DBStatement;
-    fileprivate let getAllStmt: DBStatement;
-    fileprivate let isForStmt: DBStatement;
+    fileprivate static let CHANGE_CHAT_ENCRYPTION = "UPDATE chats SET encryption = :encryption WHERE account = :account AND jid = :jid";
+    fileprivate static let UPDATE_MESSAGE_DRAFT = "UPDATE chats SET message_draft = ? WHERE account = ? AND jid = ? AND IFNULL(message_draft, '') <> IFNULL(?, '')";
+    fileprivate static let GET_MESSAGE_DRAFT = "SELECT message_draft FROM chats WHERE account = ? AND jid = ?";
+    public let dispatcher: QueueDispatcher;
+
+    fileprivate let closeChatStmt: DBStatement;
     fileprivate let openChatStmt: DBStatement;
     fileprivate let openRoomStmt: DBStatement;
+    fileprivate let openChannelStmt: DBStatement;
     fileprivate let getLastMessageStmt: DBStatement;
     fileprivate let getLastMessageTimestampForAccountStmt: DBStatement;
-    fileprivate let closeChatStmt: DBStatement;
-    fileprivate let countStmt: DBStatement;
     fileprivate let updateChatOptionsStmt: DBStatement;
     fileprivate let updateChatNameStmt: DBStatement;
-    
-    
+    fileprivate let changeChatEncryptionStmt: DBStatement;
     fileprivate let updateMessageDraftStmt: DBStatement;
     fileprivate let getMessageDraftStmt: DBStatement;
-    
-    fileprivate var accountChats = [BareJID: AccountChats]();
-    
-    fileprivate var deleteReadTillStmt: DBStatement;
+
+
+    private var accountChats = [BareJID: AccountChats]();
     
     var unreadChats: Int {
         if unreadMessagesCount > 0 {
@@ -127,12 +125,8 @@ open class DBChatStore {
             return 0;
         }
     }
-    fileprivate(set) var unreadMessagesCount = 0 {
-        willSet {
-            if newValue < 0 {
-                print("setting to ", newValue);
-            }
-        }
+    
+    fileprivate(set) var unreadMessagesCount: Int = 0 {
         didSet {
             let value = self.unreadMessagesCount;
             DispatchQueue.main.async {
@@ -140,47 +134,30 @@ open class DBChatStore {
             }
         }
     }
-    
-    public let dispatcher: QueueDispatcher;
-    
-    public convenience init() {
-        self.init(dbConnection: DBConnection.main, dispatcher: QueueDispatcher(label: "chat_store"));
-    }
-    
-    public init(dbConnection:DBConnection, dispatcher: QueueDispatcher? = nil) {
-        self.dbConnection = dbConnection;
-        self.dispatcher = dispatcher ?? QueueDispatcher(label: "db_chat_store_queue", attributes: DispatchQueue.Attributes.concurrent);
 
-        self.getStmt = try! self.dbConnection.prepareStatement(DBChatStore.CHATS_GET);
-        self.getAllStmt = try! self.dbConnection.prepareStatement(DBChatStore.CHATS_LIST);
-        self.isForStmt = try! self.dbConnection.prepareStatement(DBChatStore.CHAT_IS);
-        self.openChatStmt = try! self.dbConnection.prepareStatement(DBChatStore.CHAT_OPEN);
-        self.openRoomStmt = try! self.dbConnection.prepareStatement(DBChatStore.ROOM_OPEN);
-        self.closeChatStmt = try! self.dbConnection.prepareStatement(DBChatStore.CHAT_CLOSE);
-        self.countStmt = try! self.dbConnection.prepareStatement(DBChatStore.CHATS_COUNT);
-        self.getMessageDraftStmt = try! dbConnection.prepareStatement("SELECT message_draft FROM chats WHERE account = ? AND jid = ?");
-        self.updateMessageDraftStmt = try! dbConnection.prepareStatement("UPDATE chats SET message_draft = ? WHERE account = ? AND jid = ? AND IFNULL(message_draft, '') <> IFNULL(?, '')");
+    public init() {
+        self.dispatcher = QueueDispatcher(label: "db_chat_store");
+        
+        openChatStmt = try! DBConnection.main.prepareStatement(DBChatStore.OPEN_CHAT);
+        openRoomStmt = try! DBConnection.main.prepareStatement(DBChatStore.OPEN_ROOM);
+        openChannelStmt = try! DBConnection.main.prepareStatement(DBChatStore.OPEN_CHANNEL);
+        closeChatStmt = try! DBConnection.main.prepareStatement(DBChatStore.CLOSE_CHAT);
         getLastMessageStmt = try! DBConnection.main.prepareStatement(DBChatStore.GET_LAST_MESSAGE);
         getLastMessageTimestampForAccountStmt = try! DBConnection.main.prepareStatement(DBChatStore.GET_LAST_MESSAGE_TIMESTAMP_FOR_ACCOUNT);
-        self.updateChatNameStmt = try! self.dbConnection.prepareStatement(DBChatStore.UPDATE_CHAT_NAME);
-        self.updateChatOptionsStmt = try! self.dbConnection.prepareStatement(DBChatStore.UPDATE_CHAT_OPTIONS);
-        self.getReadTillStmt = try! DBConnection.main.prepareStatement("SELECT timestamp FROM chats_read WHERE account = :account AND jid = :jid");
-        if #available(iOS 12.0, *) {
-            self.updateReadTillStmt = try! DBConnection.main.prepareStatement("INSERT INTO chats_read (account, jid, timestamp) VALUES (:account, :jid, :before) ON CONFLICT(account, jid) DO UPDATE SET timestamp = max(timestamp, excluded.timestamp)");
-        } else {
-            self.updateReadTillStmt = try! DBConnection.main.prepareStatement("INSERT INTO chats_read (account, jid, timestamp) VALUES (:account, :jid, :before)");
-        }
-        self.deleteReadTillStmt = try! DBConnection.main.prepareStatement("DELETE FROM chats_read WHERE account = :account AND jid = :jid");
-        NotificationCenter.default.addObserver(self, selector: #selector(DBChatStore.accountRemoved), name: NSNotification.Name(rawValue: "accountRemoved"), object: nil);
+        updateChatNameStmt = try! DBConnection.main.prepareStatement(DBChatStore.UPDATE_CHAT_NAME);
+        updateChatOptionsStmt = try! DBConnection.main.prepareStatement(DBChatStore.UPDATE_CHAT_OPTIONS);
+        changeChatEncryptionStmt = try! DBConnection.main.prepareStatement(DBChatStore.CHANGE_CHAT_ENCRYPTION);
+        updateMessageDraftStmt = try! DBConnection.main.prepareStatement(DBChatStore.UPDATE_MESSAGE_DRAFT);
+        getMessageDraftStmt = try! DBConnection.main.prepareStatement(DBChatStore.GET_MESSAGE_DRAFT);
     }
-    
-    open func count(for account: BareJID) -> Int {
+ 
+    func count(for account: BareJID) -> Int {
         return dispatcher.sync {
             return self.accountChats[account]?.count ?? 0;
         }
     }
     
-    open func getChats() -> [DBChatProtocol] {
+    func getChats() -> [DBChatProtocol] {
         return dispatcher.sync {
             var items: [DBChatProtocol] = [];
             self.accountChats.values.forEach({ (accountChats) in
@@ -190,13 +167,13 @@ open class DBChatStore {
         }
     }
     
-    open func getChats(for account: BareJID) -> [DBChatProtocol] {
+    func getChats(for account: BareJID) -> [DBChatProtocol] {
         return mapChats(for: account, map: { (chats) in
             return chats?.items ?? [];
         });
     }
     
-    func mapChats<T>(for account: BareJID, map: (AccountChats?)->T) -> T {
+    private func mapChats<T>(for account: BareJID, map: (AccountChats?)->T) -> T {
         return dispatcher.sync {
             return map(accountChats[account]);
         }
@@ -204,38 +181,96 @@ open class DBChatStore {
     
     func getChat(for account: BareJID, with jid: BareJID) -> DBChatProtocol? {
         return dispatcher.sync {
-            return accountChats[account]?.get(with: jid);
+            if let accountChats = self.accountChats[account] {
+                return accountChats.get(with: jid);
+            }
+            return nil;
+        }
+    }
+    
+    func createChannel(for account: BareJID, channelJid: BareJID, participantId: String, nick: String?, state: Channel.State) -> Result<DBChannel, ErrorCondition> {
+        return dispatcher.sync {
+            let accountChats = self.accountChats[account]!;
+            guard let dbChat = accountChats.get(with: channelJid) else {
+                let options = ChannelOptions(participantId: participantId, nick: nick, state: state);
+                guard let data = try? JSONEncoder().encode(options), let dataStr = String(data: data, encoding: .utf8) else {
+                    return .failure(.bad_request);
+                }
+                
+                let params: [String: Any?] = [ "account": account, "jid": channelJid, "timestamp": Date(), "type": 2, "options": dataStr];
+                let id = try! self.openChannelStmt.insert(params);
+                let channel = DBChannel(id: id!, account: account, jid: channelJid, timestamp: Date(), lastActivity: getLastActivity(for: account, jid: channelJid), unread: 0, options: options);
+
+                if let result = accountChats.open(chat: channel) as? DBChannel {
+                    NotificationCenter.default.post(name: DBChatStore.CHAT_OPENED, object: result);
+                    return .success(result);
+                } else {
+                    return .failure(.conflict);
+                }
+            }
+            guard let channel = dbChat as? DBChannel else {
+                return .failure(.conflict);
+            }
+            return .success(channel);
+        }
+
+    }
+    
+    func createChat(for account: BareJID, jid: JID, thread: String?) -> Result<DBChat, ErrorCondition> {
+        return dispatcher.sync {
+            let accountChats = self.accountChats[account]!;
+            guard let dbChat = accountChats.get(with: jid.bareJid) else {
+                let params: [String: Any?] = [ "account": account, "jid": jid.bareJid, "timestamp": Date(), "type": 0];
+                let id = try! self.openChatStmt.insert(params);
+                let chat = DBChat(id: id!, account: account, jid: jid.bareJid, timestamp: Date(), lastActivity: getLastActivity(for: account, jid: jid.bareJid), unread: 0, options: ChatOptions());
+
+                if let result = accountChats.open(chat: chat) as? DBChat {
+                    NotificationCenter.default.post(name: DBChatStore.CHAT_OPENED, object: result);
+                    return .success(result);
+                } else {
+                    return .failure(.conflict);
+                }
+            }
+            guard let chat = dbChat as? DBChat else {
+                return .failure(.conflict);
+            }
+            return .success(chat);
+        }
+    }
+    
+    func createRoom(for account: BareJID, context: Context, roomJid: BareJID, nickname: String, password: String?) -> Result<DBRoom, ErrorCondition> {
+        return dispatcher.sync {
+            let accountChats = self.accountChats[account]!;
+            guard let dbChat = accountChats.get(with: roomJid) else {
+                let params: [String: Any?] = [ "account": account, "jid": roomJid, "timestamp": Date(), "type": 1, "nickname": nickname, "password": password];
+                let id = try! self.openRoomStmt.insert(params);
+                let room = DBRoom(id: id!, context: context, account: account, roomJid: roomJid, name: nil, nickname: nickname, password: password, timestamp: Date(), lastActivity: getLastActivity(for: account, jid: roomJid), unread: 0, options: RoomOptions());
+
+                if let result = accountChats.open(chat: room) as? DBRoom {
+                    NotificationCenter.default.post(name: DBChatStore.CHAT_OPENED, object: result);
+                    return .success(result);
+                } else {
+                    return .failure(.conflict);
+                }
+            }
+            guard let room = dbChat as? DBRoom else {
+                return .failure(.conflict);
+            }
+            return .success(room);
         }
     }
         
-    open func open<T>(for account: BareJID, chat: ChatProtocol) -> T? {
-        return dispatcher.sync {
-            let accountChats = self.accountChats[account]!;
-            guard let dbChat = accountChats.get(with: chat.jid.bareJid) else {
-                guard let dbChat = createChat(account: account, chat: chat) else {
-                    return nil;
-                }
-                guard let result = accountChats.open(chat: dbChat) as? T else {
-                    return nil;
-                }
-                
-                NotificationCenter.default.post(name: DBChatStore.CHAT_OPENED, object: result);
-                NotificationCenter.default.post(name: DBChatStore.CHAT_CREATED, object: result);
-                return result;
-            }
-            if chat is Room && !(dbChat is Room) {
-                if self.close(for: account, chat: dbChat, deleteChatHistoryOnClose: false) {
-                    return open(for: account, chat: chat);
-                }
-            }
-            return dbChat as? T;
+    func isMuted(chat conv: DBChatProtocol) -> Bool {
+        if let chat = conv as? DBChat {
+            return chat.options.notifications == .none;
         }
-    }
-    open func close(for account: BareJID, chat:ChatProtocol) -> Bool {
-        return close(for: account, chat: chat, deleteChatHistoryOnClose: Settings.DeleteChatHistoryOnChatClose.getBool());
+        if let room = conv as? DBRoom {
+            return room.options.notifications == .none;
+        }
+        return false;
     }
     
-    open func close(for account: BareJID, chat:ChatProtocol, deleteChatHistoryOnClose: Bool) -> Bool {
+    func close(for account: BareJID, chat: ChatProtocol) -> Bool {
         guard let dbChat = chat as? DBChatProtocol else {
             return false;
         }
@@ -248,135 +283,224 @@ open class DBChatStore {
             guard accountChats.close(chat: dbChat) else {
                 return false;
             }
-            
+
             destroyChat(account: account, chat: dbChat);
 
-            if dbChat.unread > 0 {
-                DBChatHistoryStore.instance.markAsRead(for: account, with: dbChat.jid.bareJid, before: dbChat.timestamp);
+            if dbChat.unread > 0 && !self.isMuted(chat: dbChat) {
+                self.unreadMessagesCount = self.unreadMessagesCount - dbChat.unread;
+                
+                DBChatHistoryStore.instance.markAsRead(for: account, with: dbChat.jid.bareJid, before: Date().addingTimeInterval(60));
             }
-            if deleteChatHistoryOnClose {
-                DBChatHistoryStore.instance.deleteMessages(for: account, with: chat.jid.bareJid);
-            }
-
-            NotificationCenter.default.post(name: DBChatStore.CHAT_CLOSED, object: dbChat);
-            NotificationCenter.default.post(name: DBChatStore.CHAT_DESTROYED, object: dbChat);
+            
+            NotificationCenter.default.post(name: DBChatStore.CHAT_CLOSED, object: dbChat
+                );
             
             return true;
         }
     }
-
     
-    fileprivate func createChat(account: BareJID, chat: ChatProtocol) -> DBChatProtocol? {
-        guard chat as? DBChatProtocol == nil else {
-            return chat as? DBChatProtocol;
-        }
-        switch chat {
-        case let c as Chat:
-            let params:[String:Any?] = [ "account" : account, "jid" : c.jid.bareJid, "timestamp": NSDate(), "type" : 0, "resource" : c.jid.resource, "thread" : c.thread ];
-            let id = try! self.openChatStmt.insert(params);
-            return DBChat(id: id!, account: account, jid: c.jid.bareJid, timestamp: Date(), readTill: getReadTill(for: account, with: c.jid.bareJid), lastMessage: getLastMessage(for: account, jid: c.jid.bareJid), unread: 0);
-        case let r as Room:
-            let params:[String:Any?] = [ "account" : account, "jid" : r.jid.bareJid, "timestamp": NSDate(), "type" : 1, "nickname" : r.nickname, "password" : r.password ];
-            let id = try! self.openRoomStmt.insert(params);
-            return DBRoom(id: id!, context: r.context, account: account, roomJid: r.roomJid, roomName: nil, nickname: r.nickname, password: r.password, timestamp: Date(), readTill: getReadTill(for: account, with: r.jid.bareJid), lastMessage: getLastMessage(for: account, jid: r.jid.bareJid), unread: 0);
-        default:
-            return nil;
+    func closeAll(for account: BareJID) {
+        dispatcher.async {
+            let items = self.getChats(for: account)
+            items.forEach { chat in
+                _ = self.close(for: account, chat: chat);
+            }
         }
     }
     
-    fileprivate func destroyChat(account: BareJID, chat: DBChatProtocol) {
-        let params: [String: Any?] = ["id": chat.id];
-        _ = try! self.closeChatStmt.update(params);
-        _ = try! self.deleteReadTillStmt.update(["account": account, "jid": chat.jid.bareJid] as [String: Any?]);
-    }
-    
-    var getReadTillStmt: DBStatement;
-    
-    fileprivate func getReadTill(for account: BareJID, with jid: BareJID) -> Date {
+    func lastMessageTimestamp(for account: BareJID) -> Date {
         return dispatcher.sync {
-            let params: [String: Any?] = ["account": account, "jid": jid];
-            return try! self.getReadTillStmt.queryFirstMatching(params, forEachRowUntil: { (cursor) -> Date? in
+            return try! self.getLastMessageTimestampForAccountStmt.findFirst(["account": account] as [String: Any?], map: { (cursor) -> Date? in
                 return cursor["timestamp"];
-            }) ?? Date.distantPast;
+            }) ?? Date(timeIntervalSince1970: 0);
         }
     }
-
-    fileprivate func getLastMessage(for account: BareJID, jid: BareJID) -> String? {
-        return dispatcher.sync {
-            let params: [String: Any?] = ["account": account, "jid": jid];
-            return try! self.getLastMessageStmt.queryFirstMatching(params) { cursor in
-                let encryption = MessageEncryption(rawValue: cursor["encryption"] ?? 0) ?? .none;
-                switch encryption {
-                case .decrypted, .none:
-                    return cursor["data"];
-                default:
-                    return encryption.message();
+    
+    func process(chatState remoteChatState: ChatState, for account: BareJID, with jid: BareJID) {
+        dispatcher.async {
+            if let chat = self.getChat(for: account, with: jid) {
+                (chat as? DBChat)?.update(remoteChatState: remoteChatState);
+                NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
+            }
+        }
+    }
+    
+    func newMessage(for account: BareJID, with jid: BareJID, timestamp: Date, itemType: ItemType?, message: String?, state: MessageState, remoteChatState: ChatState? = nil, senderNickname: String? = nil, completionHandler: @escaping ()->Void) {
+        dispatcher.async {
+            if let chat = self.getChat(for: account, with: jid) {
+                let lastActivity = LastChatActivity.from(itemType: itemType, data: message, sender: senderNickname);
+                if chat.updateLastActivity(lastActivity, timestamp: timestamp, isUnread: state.isUnread) {
+                    if state.isUnread && !self.isMuted(chat: chat) {
+                        self.unreadMessagesCount = self.unreadMessagesCount + 1;
+                    }
+                    if remoteChatState != nil {
+                        (chat as? DBChat)?.update(remoteChatState: remoteChatState);
+                    } else {
+                        if (chat as? DBChat)?.remoteChatState == .composing {
+                            (chat as? DBChat)?.update(remoteChatState: .active);
+                        }
+                    }
+                    NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
+                }
+            }
+            completionHandler();
+        }
+    }
+    
+    func markAsRead(for account: BareJID, with jid: BareJID, count: Int? = nil, completionHandler: (()->Void)? = nil) {
+        dispatcher.async {
+            if let chat = self.getChat(for: account, with: jid) {
+                let unread = chat.unread;
+                if chat.markAsRead(count: count ?? unread) {
+                    if !self.isMuted(chat: chat) {
+                        self.unreadMessagesCount = self.unreadMessagesCount - (count ?? unread);
+                    }
+                    NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
+                }
+            }
+            completionHandler?();
+        }
+    }
+    
+    func updateChatName(for account: BareJID, with jid: BareJID, name: String?) {
+        dispatcher.async {
+            if let chat = self.getChat(for: account, with: jid) {
+                if let room = chat as? DBRoom, room.name != name {
+                    room.name = name;
+                    if try! self.updateChatNameStmt.update(["account": account, "jid": jid, "name": name] as [String: Any?]) > 0 {
+                        NotificationCenter.default.post(name: MucEventHandler.ROOM_NAME_CHANGED, object: chat);
+                    }
                 }
             }
         }
     }
-//    open func close(withId id: Int) -> Bool {
-//        let params:[String:Any?] = [ "id" : id ];
-//        return dispatcher.sync(flags: .barrier) {
-//            return try! closeChatStmt.update(params) > 0;
+    
+//    func changeChatEncryption(for account: BareJID, with jid: BareJID, to encryption: ChatEncryption?, completionHandler: @escaping ()->Void) {
+//        dispatcher.async {
+//            if let c = self.getChat(for: account, with: jid) {
+//                if let chat = c as? DBChat {
+//                    chat.encryption = encryption;
+//                }
+//                if try! self.changeChatEncryptionStmt.update(["account": account, "jid": jid, "encryption": encryption?.rawValue] as [String: Any?]) > 0 {
+//                    // encryption was changed, do we need to do anything else?
+//                    completionHandler();
+//                }
+//            }
 //        }
 //    }
     
-    @objc open func accountRemoved(_ notification: NSNotification) {
-        if let data = notification.userInfo {
-            let account = BareJID(data["account"] as! String);
-            self.unloadChats(for: account)
-            _ = try! dbConnection.prepareStatement("DELETE FROM chats WHERE account = ?").update(account);
+    func resetChatStates(for account: BareJID) {
+        dispatcher.async {
+            self.getChats(for: account).forEach { chat in
+                (chat as? DBChat)?.update(remoteChatState: nil);
+                (chat as? DBChat)?.localChatState = .active;
+            }
+        }
+    }
+        
+    func messageDraft(for account: BareJID, with jid: BareJID, completionHandler: @escaping (String?)->Void) {
+        dispatcher.async {
+            let text = try! self.getMessageDraftStmt.queryFirstMatching(account, jid, forEachRowUntil: { (cursor) -> String? in
+                return cursor["message_draft"];
+            })
+            completionHandler(text);
         }
     }
     
-    open func loadChats(for account: BareJID, context: Context) {
-        let params:[String:Any?] = [ "account" : account ];
+    func storeMessage(draft: String?, for account: BareJID, with jid: BareJID) {
+        dispatcher.async {
+            _ = try! self.updateMessageDraftStmt.update(draft, account, jid, draft);
+        }
+    }
+        
+    private func destroyChat(account: BareJID, chat: DBChatProtocol) {
+        let params: [String: Any?] = ["id": chat.id];
+        _ = try! self.closeChatStmt.update(params);
+    }
+    
+    private func getLastActivity(for account: BareJID, jid: BareJID) -> LastChatActivity? {
+        return dispatcher.sync {
+            let params: [String: Any?] = ["account": account, "jid": jid];
+            return try! self.getLastMessageStmt.queryFirstMatching(params) { cursor in
+                let encryption = MessageEncryption(rawValue: cursor["encryption"] ?? 0) ?? .none;
+                let authorNickname: String? = cursor["author_nickname"];
+                switch encryption {
+                case .decrypted, .none:
+                    if let itemType: Int = cursor["item_type"] {
+                        return LastChatActivity.from(itemType: ItemType(rawValue: itemType), data: cursor["data"], sender: authorNickname);
+                    } else {
+                        return nil;
+                    }
+                default:
+                    if let message = encryption.message() {
+                        return .message(message, sender: nil);
+                    } else {
+                        return nil;
+                    }
+                }
+            }
+        }
+    }
+    
+    func loadChats(for account: BareJID, context: Context) {
         dispatcher.async {
             guard self.accountChats[account] == nil else {
                 return;
             }
-            let chats = try! self.getAllStmt.query(params) { (cursor) -> DBChatProtocol? in
+            
+            let stmt = try! DBConnection.main.prepareStatement(DBChatStore.LOAD_CHATS);
+            let chats = try! stmt.query(["account": account]) { cursor -> DBChatProtocol? in
                 let id: Int = cursor["id"]!;
-                let type:Int = cursor["type"]!;
+                let type: Int = cursor["type"]!;
                 let jid: BareJID = cursor["jid"]!;
                 let creationTimestamp: Date = cursor["creation_timestamp"]!;
                 let lastMessageTimestamp: Date = cursor["timestamp"]!;
                 let lastMessageEncryption = MessageEncryption(rawValue: cursor["lastEncryption"] ?? 0) ?? .none;
-                let lastMessage: String? = lastMessageEncryption.message() ?? cursor["data"];
-                let readTill: Date = cursor["read_till"] ?? Date.distantPast;
+                var lastActivity: LastChatActivity?;
+                if let itemType: Int = cursor["item_type"] {
+                    lastActivity = LastChatActivity.from(itemType: ItemType(rawValue: itemType), data: lastMessageEncryption.message() ?? cursor["data"], sender: cursor["author_nickname"]);
+                }
                 let unread: Int = cursor["unread"]!;
+                let optionsStr: String? = cursor["options"];
                 
                 let timestamp = creationTimestamp.compare(lastMessageTimestamp) == .orderedAscending ? lastMessageTimestamp : creationTimestamp;
-
-
+                
                 switch type {
                 case 1:
                     let nickname: String = cursor["nickname"]!;
                     let password: String? = cursor["password"];
                     let name: String? = cursor["name"];
-                    let room = DBRoom(id: id, context: context, account: account, roomJid: jid, roomName: name, nickname: nickname, password: password, timestamp: timestamp, readTill: readTill, lastMessage: lastMessage, unread: unread);
-                    if lastMessage != nil {
+            
+                    var options: RoomOptions? = nil;
+                    if optionsStr != nil, let data = optionsStr!.data(using: .utf8) {
+                        options = try? JSONDecoder().decode(RoomOptions.self, from: data);
+                    }
+                    let room = DBRoom(id: id, context: context, account: account, roomJid: jid, name: name, nickname: nickname, password: password, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options ?? RoomOptions());
+                    if lastActivity != nil {
                         room.lastMessageDate = timestamp;
                     }
-                    
-                    if let dataStr: String = cursor["options"], let data = dataStr.data(using: .utf8), let options = try? JSONDecoder().decode(RoomOptions.self, from: data) {
-                        room.options = options;
-                    }
                     return room;
-                default:
-                    let c = DBChat(id: id, account: account, jid: jid, timestamp: timestamp, readTill: readTill, lastMessage: lastMessage, unread: unread);
-                    if let dataStr: String = cursor["options"], let data = dataStr.data(using: .utf8), let options = try? JSONDecoder().decode(ChatOptions.self, from: data) {
-                        c.options = options;
+                case 2:
+                    guard optionsStr != nil, let data = optionsStr!.data(using: .utf8), let options = try? JSONDecoder().decode(ChannelOptions.self, from: data) else {
+                        return nil;
                     }
-                    return c;
+                    return DBChannel(id: id, account: account, jid: jid, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options);
+                default:
+                    var options: ChatOptions? = nil;
+                    if optionsStr != nil, let data = optionsStr!.data(using: .utf8) {
+                        options = try? JSONDecoder().decode(ChatOptions.self, from: data);
+                    }
+                    return DBChat(id: id, account: account, jid: jid, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options ?? ChatOptions());
                 }
             }
             let accountChats = AccountChats(items: chats);
             self.accountChats[account] = accountChats;
+            
             var unread = 0;
             chats.forEach { item in
-                unread = unread + item.unread;
+                if !self.isMuted(chat: item) {
+                    unread = unread + item.unread;
+                }
                 NotificationCenter.default.post(name: DBChatStore.CHAT_OPENED, object: item);
             }
             if unread > 0 {
@@ -393,74 +517,13 @@ open class DBChatStore {
             
             var unread = 0;
             accountChats.items.forEach { item in
-                unread = unread + item.unread;
+                if !self.isMuted(chat: item) {
+                    unread = unread + item.unread;
+                }
                 NotificationCenter.default.post(name: DBChatStore.CHAT_CLOSED, object: item);
             }
             if unread > 0 {
                 self.unreadMessagesCount = self.unreadMessagesCount - unread;
-            }
-        }
-    }
-        
-    func lastMessageTimestamp(for account: BareJID) -> Date {
-        return dispatcher.sync {
-            return try! self.getLastMessageTimestampForAccountStmt.findFirst(["account": account] as [String: Any?], map: { (cursor) -> Date? in
-                return cursor["timestamp"];
-            }) ?? Date(timeIntervalSince1970: 0);
-        }
-    }
-    
-    open func newMessage(for account: BareJID, with jid: BareJID, timestamp: Date, message: String?, state: MessageState, remoteChatState: ChatState? = nil, completionHandler: @escaping ()->Void) {
-        dispatcher.async {
-            if let chat = self.getChat(for: account, with: jid) {
-                if chat.updateLastMessage(message, timestamp: timestamp, isUnread: state.isUnread) {
-                    if state.isUnread /*&& !self.isMuted(chat: chat)*/ {
-                        self.unreadMessagesCount = self.unreadMessagesCount + 1;
-                    }
-                    NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
-                } else {
-                    print("not updated chat for", account, jid, message, timestamp, chat.timestamp, chat.lastMessage);
-                }
-            }
-            completionHandler();
-        }
-    }
-    
-    let updateReadTillStmt: DBStatement;
-
-    func markAsRead(for account: BareJID, with jid: BareJID, before: Date, count: Int? = nil, completionHandler: (()->Void)? = nil) {
-        dispatcher.async {
-            var ts: Date = before;
-            if #available(iOS 12.0, *) {
-                // we do not have to use workaround..
-            } else {
-                // workaround for iOS 11
-                ts = max(self.getReadTill(for: account, with: jid), before);
-                try! self.deleteReadTillStmt.update(["account": account, "jid": jid] as [String: Any?]);
-            }
-            _ = try! self.updateReadTillStmt.insert(["account": account, "jid": jid, "before": ts] as [String: Any?]);
-
-            if let chat = self.getChat(for: account, with: jid) {
-                let unread = chat.unread;
-                if chat.markAsRead(before: before, count: count ?? unread) {
-                    //if !self.isMuted(chat: chat) {
-                        self.unreadMessagesCount = self.unreadMessagesCount - (count ?? unread);
-                    //}
-                    NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
-                }
-                completionHandler?();
-            }
-        }
-    }
-    
-    open func updateChatName(for account: BareJID, with jid: BareJID, name: String?) {
-        dispatcher.async {
-            _ = try? self.updateChatNameStmt.update(name, account, jid);
-            if let r = self.getChat(for: account, with: jid) as? DBRoom {
-                r.name = name;
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: r, userInfo: nil);
-                }
             }
         }
     }
@@ -473,6 +536,13 @@ open class DBChatStore {
                 let dataStr = data != nil ? String(data: data!, encoding: .utf8)! : nil;
                 _ = try? self.updateChatOptionsStmt.update(dataStr, account, jid);
                 if let c = self.getChat(for: account, with: jid) as? DBRoom {
+                    if c.unread > 0 {
+                        if c.options.notifications == .none && options.notifications != .none {
+                            self.unreadMessagesCount = self.unreadMessagesCount + c.unread;
+                        } else if c.options.notifications != .none && options.notifications == .none {
+                            self.unreadMessagesCount = self.unreadMessagesCount - c.unread;
+                        }
+                    }
                     c.options = options;
                     DispatchQueue.main.async {
                         NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: c, userInfo: nil);
@@ -484,9 +554,35 @@ open class DBChatStore {
                 let dataStr = data != nil ? String(data: data!, encoding: .utf8)! : nil;
                 _ = try? self.updateChatOptionsStmt.update(dataStr, account, jid);
                 if let c = self.getChat(for: account, with: jid) as? DBChat {
+                    if c.unread > 0 {
+                        if c.options.notifications == .none && options.notifications != .none {
+                            self.unreadMessagesCount = self.unreadMessagesCount + c.unread;
+                        } else if c.options.notifications != .none && options.notifications == .none {
+                            self.unreadMessagesCount = self.unreadMessagesCount - c.unread;
+                        }
+                    }
                     c.options = options;
                     DispatchQueue.main.async {
                         NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: c, userInfo: nil);
+                    }
+                }
+                completionHandler?();
+            case let options as ChannelOptions:
+                if let data = try? JSONEncoder().encode(options), let dataStr = String(data: data, encoding: .utf8) {
+                    _ = try? self.updateChatOptionsStmt.update(dataStr, account, jid);
+                    if let c = self.getChat(for: account, with: jid)  as? DBChannel {
+                        if c.unread > 0 {
+                            if c.options.notifications == .none && options.notifications != .none {
+                                self.unreadMessagesCount = self.unreadMessagesCount + c.unread;
+                            } else if c.options.notifications != .none && options.notifications == .none {
+                                self.unreadMessagesCount = self.unreadMessagesCount - c.unread;
+                            }
+                        }
+                        c.options = options;
+                        c.nickname = options.nick;
+                        DispatchQueue.main.async {
+                            NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: c, userInfo: nil);
+                        }
                     }
                 }
                 completionHandler?();
@@ -497,107 +593,313 @@ open class DBChatStore {
         }
     }
     
-    open func updateMessageDraft(account: BareJID, jid: BareJID, draft: String?) {
-        updateMessageDraftStmt.dispatcher.async {
-            _ = try? self.updateMessageDraftStmt.update(draft, account, jid, draft);
-        }
+}
+
+fileprivate class AccountChats {
+    
+    private var chats = [BareJID: DBChatProtocol]();
+    
+    private let queue = DispatchQueue(label: "accountChats");
+    
+    var count: Int {
+        return self.queue.sync(execute: {
+            return self.chats.count;
+        })
     }
     
-    open func getMessageDraft(account: BareJID, jid: BareJID, onResult: @escaping (String?)->Void) {
-        getMessageDraftStmt.dispatcher.async {
-            let text: String? = try! self.getMessageDraftStmt.queryFirstMatching(account, jid) { (cursor) -> String? in
-                return cursor["message_draft"];
-            }
-            onResult(text);
-        }
-    }
-    
-    fileprivate func getContext(_ sessionObject: SessionObject) -> Context? {
-        return sessionObject.context;
-    }
-    
-    class AccountChats {
-        
-        fileprivate var chats = [BareJID: DBChatProtocol]();
-        
-        var count: Int {
-            return chats.count;
-        }
-        
-        var items: [DBChatProtocol] {
-            return chats.values.map({ (chat) -> DBChatProtocol in
+    var items: [DBChatProtocol] {
+        return self.queue.sync(execute: {
+            return self.chats.values.map({ (chat) -> DBChatProtocol in
                 return chat;
             });
+        });
+    }
+    
+    init(items: [DBChatProtocol]) {
+        items.forEach { item in
+            self.chats[item.jid.bareJid] = item;
         }
-        
-        init(items: [DBChatProtocol]) {
-            items.forEach { item in
-                self.chats[item.jid.bareJid] = item;
-            }
-        }
-        
-        func open(chat: DBChatProtocol) -> DBChatProtocol {
-            guard let existingChat = chats[chat.jid.bareJid] else {
-                chats[chat.jid.bareJid] = chat;
+    }
+    
+    func open(chat: DBChatProtocol) -> DBChatProtocol {
+        return self.queue.sync(execute: {
+            guard let existingChat = self.chats[chat.jid.bareJid] else {
+                self.chats[chat.jid.bareJid] = chat;
                 return chat;
             }
             return existingChat;
-        }
-        
-        func close(chat: DBChatProtocol) -> Bool {
-            return chats.removeValue(forKey: chat.jid.bareJid) != nil;
-        }
-        
-        func isFor(jid: BareJID) -> Bool {
-            return chats[jid] != nil;
-        }
-        
-        func get(with jid: BareJID) -> DBChatProtocol? {
-            return chats[jid];
-        }
-        
-//        func lastMessageTimestamp() -> Date {
-//            var timestamp = Date(timeIntervalSince1970: 0);
-//            chats.values.forEach { (chat) in
-//                guard chat.lastMessage != nil else {
-//                    return;
-//                }
-//                timestamp = max(timestamp, chat.timestamp);
-//            }
-//            return timestamp;
-//        }
+        });
+    }
+    
+    func close(chat: DBChatProtocol) -> Bool {
+        return self.queue.sync(execute: {
+            return self.chats.removeValue(forKey: chat.jid.bareJid) != nil;
+        });
+    }
+    
+    func isFor(jid: BareJID) -> Bool {
+        return self.queue.sync(execute: {
+            return self.chats[jid] != nil;
+        });
+    }
+    
+    func get(with jid: BareJID) -> DBChatProtocol? {
+        return self.queue.sync(execute: {
+            return self.chats[jid];
+        });
+    }
+    
+    func lastMessageTimestamp() -> Date {
+        return self.queue.sync(execute: {
+            var timestamp = Date(timeIntervalSince1970: 0);
+            self.chats.values.forEach { (chat) in
+                guard chat.lastActivity != nil else {
+                    return;
+                }
+                timestamp = max(timestamp, chat.timestamp);
+            }
+            return timestamp;
+        });
     }
 }
 
-public protocol  DBChatProtocol: ChatProtocol {
-    
-    var id: Int { get };
-    var account: BareJID { get }
-    var readTill: Date { get }
-    var unread: Int { get }
-    var timestamp: Date { get }
-    var lastMessage: String? { get }
-    
-    func markAsRead(before: Date, count: Int) -> Bool;
 
-    func updateLastMessage(_ message: String?, timestamp: Date, isUnread: Bool) -> Bool
+class DBChat: Chat, DBChatProtocol {
+    
+    let id: Int;
+    let account: BareJID;
+    var timestamp: Date;
+    var lastActivity: LastChatActivity?;
+    var unread: Int;
+    fileprivate(set) var options: ChatOptions = ChatOptions();
+    
+    fileprivate var localChatState: ChatState = .active;
+    private(set) var remoteChatState: ChatState? = nil;
+    
+    override var jid: JID {
+        get {
+            return super.jid;
+        }
+        set {
+            super.jid = newValue.withoutResource;
+        }
+    }
+    
+    init(id: Int, account: BareJID, jid: BareJID, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: ChatOptions) {
+        self.id = id;
+        self.account = account;
+        self.timestamp = timestamp;
+        self.lastActivity = lastActivity;
+        self.unread = unread;
+        self.options = options;
+        super.init(jid: JID(jid), thread: nil);
+    }
+ 
+    func updateLastActivity(_ lastActivity: LastChatActivity?, timestamp: Date, isUnread: Bool) -> Bool {
+        if isUnread {
+            unread = unread + 1;
+        }
+        guard self.lastActivity == nil || self.timestamp.compare(timestamp) == .orderedAscending else {
+            return isUnread;
+        }
+        if lastActivity != nil {
+            self.lastActivity = lastActivity;
+            self.timestamp = timestamp;
+        }
+        return true;
+    }
+    
+    func markAsRead(count: Int) -> Bool {
+        guard unread > 0 else {
+            return false;
+        }
+        unread = max(unread - count, 0);
+        return true
+    }
+    
+    func modifyOptions(_ fn: @escaping (inout ChatOptions) -> Void, completionHandler: (() -> Void)?) {
+        DispatchQueue.main.async {
+            var options = self.options;
+            fn(&options);
+            DBChatStore.instance.updateOptions(for: self.account, jid: self.jid.bareJid, options: options, completionHandler: completionHandler);
+        }
+    }
+    
+    func changeChatState(state: ChatState) -> Message? {
+        guard localChatState != state else {
+            return nil;
+        }
+        self.localChatState = state;
+        if (remoteChatState != nil) {
+            let msg = Message();
+            msg.to = jid;
+            msg.type = StanzaType.chat;
+            msg.chatState = state;
+            return msg;
+        }
+        return nil;
+    }
+    
+    private var remoteChatStateTimer: Foundation.Timer?;
+    
+    func update(remoteChatState state: ChatState?) {
+        if let oldState = remoteChatState, oldState == .composing {
+            remoteChatStateTimer?.invalidate();
+            remoteChatStateTimer = nil;
+        }
+        self.remoteChatState = state;
+        
+        if state == .composing {
+            DispatchQueue.main.async {
+                self.remoteChatStateTimer = Foundation.Timer.scheduledTimer(withTimeInterval: 60.0, repeats: false, block: { [weak self] timer in
+                guard let that = self else {
+                    return;
+                }
+                if that.remoteChatState == .composing {
+                    that.remoteChatState = .active;
+                    that.remoteChatStateTimer = nil;
+                    NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: that);
+                }
+            });
+            }
+        }
+    }
+    
+    override func createMessage(_ body: String, type: StanzaType = .chat, subject: String? = nil, additionalElements: [Element]? = nil) -> Message {
+        let stanza = super.createMessage(body, type: type, subject: subject, additionalElements: additionalElements);
+        stanza.id = UUID().uuidString;
+        self.localChatState = .active;
+        stanza.chatState = ChatState.active;
+        return stanza;
+    }
     
 }
 
-//extension ChatProtocol {
-//
-//    var id:Int? {
-//        switch self {
-//        case let c as DBChat:
-//            return c.id;
-//        case let r as DBRoom:
-//            return r.id;
-//        default:
-//            return nil;
-//        }
-//    }
-//
-//}
+class DBRoom: Room, DBChatProtocol {
+ 
+    let id: Int;
+    let account: BareJID;
+    var timestamp: Date;
+    var lastActivity: LastChatActivity?;
+    var subject: String? = nil;
+    var unread: Int;
+    var name: String? = nil;
+    fileprivate(set) var options: RoomOptions = RoomOptions();
+
+    init(id: Int, context: Context, account: BareJID, roomJid: BareJID, name: String?, nickname: String, password: String?, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: RoomOptions) {
+        self.id = id;
+        self.account = account;
+        self.timestamp = timestamp;
+        self.lastActivity = lastActivity;
+        self.unread = unread;
+        self.name = name;
+        self.options = options;
+        super.init(context: context, roomJid: roomJid, nickname: nickname);
+        setPassword(password);
+    }
+    
+    fileprivate func setPassword(_ pass: String?) {
+        self.password = pass;
+    }
+    
+    func updateRoom(name: String?) {
+        self.name = name;
+    }
+    
+    func updateLastActivity(_ lastActivity: LastChatActivity?, timestamp: Date, isUnread: Bool) -> Bool {
+        if isUnread {
+            unread = unread + 1;
+        }
+        guard self.lastActivity == nil || self.timestamp.compare(timestamp) == .orderedAscending else {
+            return isUnread;
+        }
+        
+        if lastActivity != nil {
+            self.lastActivity = lastActivity;
+            self.timestamp = timestamp;
+        }
+        
+        return true;
+    }
+    
+    func markAsRead(count: Int) -> Bool {
+        guard unread > 0 else {
+            return false;
+        }
+        unread = max(unread - count, 0);
+        return true
+    }
+
+    func modifyOptions(_ fn: @escaping (inout RoomOptions) -> Void, completionHandler: (() -> Void)?) {
+        DispatchQueue.main.async {
+            var options = self.options;
+            fn(&options);
+            DBChatStore.instance.updateOptions(for: self.account, jid: self.jid.bareJid, options: options, completionHandler: completionHandler);
+        }
+    }
+
+    override func createPrivateMessage(_ body: String?, recipientNickname: String) -> Message {
+        let stanza = super.createPrivateMessage(body, recipientNickname: recipientNickname);
+        let id = UUID().uuidString;
+        stanza.id = id;
+        stanza.originId = id;
+        return stanza;
+    }
+}
+
+class DBChannel: Channel, DBChatProtocol {
+    
+    let id: Int
+    let account: BareJID
+    var timestamp: Date
+    var lastActivity: LastChatActivity?
+    var unread: Int
+    var name: String? {
+        return options.name;
+    }
+    var description: String? {
+        return options.description;
+    }
+    var options: ChannelOptions;
+    
+    init(id: Int, account: BareJID, jid: BareJID, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: ChannelOptions) {
+        self.id = id;
+        self.account = account;
+        self.unread = unread;
+        self.lastActivity = lastActivity;
+        self.timestamp = timestamp;
+        self.options = options;
+        
+        super.init(channelJid: jid, participantId: options.participantId, nickname: options.nick, state: options.state);
+        self.lastMessageDate = lastActivity != nil ? timestamp : nil;
+    }
+    
+    func markAsRead(count: Int) -> Bool {
+        guard unread > 0 else {
+            return false;
+        }
+        unread = max(unread - count, 0);
+        return true
+    }
+    
+    func updateLastActivity(_ lastActivity: LastChatActivity?, timestamp: Date, isUnread: Bool) -> Bool {
+        if isUnread {
+            unread = unread + 1;
+        }
+        guard self.lastActivity == nil || self.timestamp.compare(timestamp) == .orderedAscending else {
+            return isUnread;
+        }
+        
+        if lastActivity != nil {
+            self.lastActivity = lastActivity;
+            self.timestamp = timestamp;
+            self.lastMessageDate = timestamp;
+        }
+        
+        return true;
+    }
+    
+}
 
 public enum ConversationNotification: String {
     case none
@@ -611,13 +913,36 @@ public protocol ChatOptionsProtocol {
     
 }
 
+public struct RoomOptions: Codable, ChatOptionsProtocol {
+    
+    public var notifications: ConversationNotification = .mention;
+    
+    init() {}
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self);
+        notifications = ConversationNotification(rawValue: try container.decodeIfPresent(String.self, forKey: .notifications) ?? "") ?? .mention;
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self);
+        if notifications != .mention {
+            try container.encode(notifications.rawValue, forKey: .notifications);
+        }
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case notifications = "notifications";
+    }
+}
+
 public struct ChatOptions: Codable, ChatOptionsProtocol {
     
     var encryption: ChatEncryption?;
     public var notifications: ConversationNotification = .always;
     
     init() {}
-
+    
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self);
         if let val = try container.decodeIfPresent(String.self, forKey: .encryption) {
@@ -640,130 +965,83 @@ public struct ChatOptions: Codable, ChatOptionsProtocol {
         case encryption = "encrypt"
         case notifications = "notifications";
     }
+}
+
+public struct ChannelOptions: Codable, ChatOptionsProtocol {
+    
+    var participantId: String;
+    var nick: String?;
+    var name: String?;
+    var description: String?;
+    var state: Channel.State;
+    public var notifications: ConversationNotification = .always;
+    
+    public init(participantId: String, nick: String?, state: Channel.State) {
+        self.participantId = participantId;
+        self.nick = nick;
+        self.state = state;
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self);
+        participantId = try container.decode(String.self, forKey: .participantId);
+        state = try container.decodeIfPresent(Int.self, forKey: .state).map({ Channel.State(rawValue: $0) ?? .joined }) ?? .joined;
+        nick = try container.decodeIfPresent(String.self, forKey: .nick);
+        name = try container.decodeIfPresent(String.self, forKey: .name);
+        description = try container.decodeIfPresent(String.self, forKey: .description);
+        notifications = ConversationNotification(rawValue: try container.decodeIfPresent(String.self, forKey: .notifications) ?? "") ?? .always;
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self);
+        try container.encode(participantId, forKey: .participantId);
+        try container.encode(state.rawValue, forKey: .state);
+        try container.encodeIfPresent(nick, forKey: .nick);
+        try container.encodeIfPresent(name, forKey: .name);
+        try container.encodeIfPresent(description, forKey: .description);
+        if notifications != .always {
+            try container.encode(notifications.rawValue, forKey: .notifications);
+        }
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case participantId = "participantId"
+        case nick = "nick";
+        case state = "state"
+        case notifications = "notifications";
+        case name = "name";
+        case description = "desc";
+    }
+}
+
+protocol DBChatProtocol: ChatProtocol {
+    var id: Int { get };
+    var account: BareJID { get }
+    var timestamp: Date { get };
+    var lastActivity: LastChatActivity? { get };
+    var unread: Int { get }
+    
+    func markAsRead(count: Int) -> Bool;
+    func updateLastActivity(_ lastActivity: LastChatActivity?, timestamp: Date, isUnread: Bool) -> Bool;
 
 }
 
-class DBChat: Chat, DBChatProtocol {
-
-    let id: Int;
-    let account: BareJID;
-    var timestamp: Date;
-    var readTill: Date;
-    var lastMessage: String? = nil;
-    var unread: Int;
-    fileprivate(set) var options: ChatOptions = ChatOptions();
+enum LastChatActivity {
+    case message(String, sender: String?)
+    case attachment(String, sender: String?)
     
-    override var jid: JID {
-        get {
-            return super.jid;
+    static func from(itemType: ItemType?, data: String?, sender: String?) -> LastChatActivity? {
+        guard itemType != nil else {
+            return nil;
         }
-        set {
-            super.jid = newValue.withoutResource;
+        switch itemType! {
+        case .message:
+            return data == nil ? nil : .message(data!, sender: sender);
+        case .attachment:
+            return data == nil ? nil : .attachment(data!, sender: sender);
+        case .linkPreview:
+            return nil;
         }
-    }
-    
-    init(id: Int, account: BareJID, jid: BareJID, timestamp: Date, readTill: Date, lastMessage: String?, unread: Int) {
-        self.id = id;
-        self.account = account;
-        self.timestamp = timestamp;
-        self.lastMessage = lastMessage;
-        self.unread = unread;
-        self.readTill = readTill;
-        super.init(jid: JID(jid), thread: nil);
-    }
- 
-    func markAsRead(before: Date, count: Int) -> Bool {
-        self.readTill = before;
-        guard unread > 0 else {
-            return false;
-        }
-        unread = max(unread - count, 0);
-        return true
-    }
-
-    func modifyOptions(_ fn: @escaping (inout ChatOptions)->Void, completionHandler: (()->Void)? = nil) {
-        DispatchQueue.main.async {
-            var options = self.options;
-            fn(&options);
-            DBChatStore.instance.updateOptions(for: self.account, jid: self.jid.bareJid, options: options, completionHandler: completionHandler);
-        }
-    }
-    
-    func updateLastMessage(_ message: String?, timestamp: Date, isUnread: Bool) -> Bool {
-        if isUnread {
-            unread = unread + 1;
-        }
-        guard self.lastMessage == nil || self.timestamp.compare(timestamp) == .orderedAscending else {
-            return isUnread;
-        }
-        if message != nil {
-            self.lastMessage = message;
-            self.timestamp = timestamp;
-        }
-        return true;
-    }
-
-}
-
-class DBRoom: Room, DBChatProtocol {
-    
-    let id: Int;
-    let account: BareJID;
-    var timestamp: Date;
-    var lastMessage: String? = nil;
-    var subject: String?;
-    var readTill: Date;
-    var unread: Int;
-    var name: String? = nil;
-    fileprivate(set) var options: RoomOptions = RoomOptions();
-    
-    init(id: Int, context: Context, account: BareJID, roomJid: BareJID, roomName: String?, nickname: String, password: String?, timestamp: Date, readTill: Date, lastMessage: String?, unread: Int) {
-        self.id = id;
-        self.account = account;
-        self.timestamp = timestamp;
-        self.lastMessage = lastMessage;
-        self.name = roomName;
-        self.readTill = readTill;
-        self.unread = unread;
-        super.init(context: context, roomJid: roomJid, nickname: nickname);
-        self.password = password;
-    }
-    
-    func markAsRead(before: Date, count: Int) -> Bool {
-        self.readTill = before;
-        guard unread > 0 else {
-            return false;
-        }
-        unread = max(unread - count, 0);
-        return true
-    }
-
-    func modifyOptions(_ fn: @escaping (inout RoomOptions)->Void, completionHandler: (()->Void)? = nil) {
-        DispatchQueue.main.async {
-            var options = self.options;
-            fn(&options);
-            DBChatStore.instance.updateOptions(for: self.account, jid: self.roomJid, options: options, completionHandler: completionHandler);
-        }
-    }
-    
-    func updateLastMessage(_ message: String?, timestamp: Date, isUnread: Bool) -> Bool {
-        if isUnread {
-            unread = unread + 1;
-        }
-        guard self.lastMessage == nil || self.timestamp.compare(timestamp) == .orderedAscending else {
-            return isUnread;
-        }
-        if message != nil {
-            self.lastMessage = message;
-            self.timestamp = timestamp;
-        }
-        return true;
-    }
-    
-    override func createPrivateMessage(_ body: String?, recipientNickname: String) -> Message {
-        let stanza = super.createPrivateMessage(body, recipientNickname: recipientNickname);
-        stanza.id = UUID().uuidString;
-        return stanza;
     }
 }
 

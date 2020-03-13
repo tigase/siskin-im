@@ -169,7 +169,7 @@ class MucChatSettingsViewController: CustomTableViewController, UIImagePickerCon
                 
                 self.room.modifyOptions({ (options) in
                     options.notifications = (item as! NotificationItem).type;
-                })
+                }, completionHandler: nil);
                 let account = self.room.account;
                 if let pushModule: SiskinPushNotificationsModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), let pushSettings = pushModule.pushSettings {
                     pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
