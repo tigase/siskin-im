@@ -67,7 +67,6 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
         
         if #available(iOS 13.0, *) {
             customView.addInteraction(UIContextMenuInteraction(delegate: self));
-            customView.overrideUserInterfaceStyle = Appearance.current!.isDark ? .dark : .light;
         } else {
             longPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressGestureDidFire));
             longPressGestureRecognizer?.cancelsTouchesInView = true;
@@ -103,7 +102,6 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                 }
                 
                 let linkView = /*(self.linkView as? LPLinkView) ??*/ LPLinkView(metadata: metadata!);
-                linkView.overrideUserInterfaceStyle = Appearance.current.isDark ? .dark :.light;
                 linkView.setContentHuggingPriority(.defaultHigh, for: .vertical);
                 linkView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
                 linkView.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal);
@@ -376,14 +374,12 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
 
             filename = UILabel(frame: .zero);
             filename.font = UIFont.systemFont(ofSize: UIFont.systemFontSize - 1, weight: .semibold);
-            filename.textColor = Appearance.current.labelColor;
             filename.translatesAutoresizingMaskIntoConstraints = false;
             filename.setContentHuggingPriority(.defaultHigh, for: .horizontal);
             filename.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal);
             
             details = UILabel(frame: .zero);
             details.font = UIFont.systemFont(ofSize: UIFont.systemFontSize - 2, weight: .regular);
-            details.textColor = Appearance.current.secondaryLabelColor;
             details.translatesAutoresizingMaskIntoConstraints = false;
             details.setContentHuggingPriority(.defaultHigh, for: .horizontal)
             details.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal);
@@ -446,7 +442,11 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
         override func draw(_ rect: CGRect) {
             let path = UIBezierPath(roundedRect: rect, cornerRadius: 10);
             path.addClip();
-            Appearance.current.secondarySystemBackground.setFill();
+            if #available(iOS 13.0, *) {
+                UIColor.secondarySystemBackground.setFill();
+            } else {
+                UIColor.lightGray.withAlphaComponent(0.5).setFill();
+            }
             path.fill();
             
             super.draw(rect);
@@ -505,7 +505,6 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
             if show {
                 let view = UIActivityIndicatorView(style: .gray);
                 view.translatesAutoresizingMaskIntoConstraints = false;
-                view.color = Appearance.current.tintColor;
                 self.addSubview(view);
                 NSLayoutConstraint.activate([
                     view.leadingAnchor.constraint(greaterThanOrEqualTo: filename.trailingAnchor, constant: 8),

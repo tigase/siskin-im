@@ -23,7 +23,7 @@ import UIKit
 import TigaseSwift
 import TigaseSwiftOMEMO
 
-class OMEMOFingerprintsController: CustomTableViewController {
+class OMEMOFingerprintsController: UITableViewController {
     
     var account: BareJID!;
     var localIdentity: Identity?;

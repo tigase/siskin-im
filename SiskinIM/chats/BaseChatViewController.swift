@@ -23,75 +23,77 @@ import UIKit
 import UserNotifications
 import TigaseSwift
 
-class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewDelegate {
+class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewDelegate, ChatViewInputBarDelegate {
 
     @IBOutlet var tableView: UITableView!
-    @IBOutlet fileprivate var messageField: UITextView!
-    @IBOutlet var sendButton: UIButton!
-    @IBOutlet var bottomPanel: UIView!;
-    @IBOutlet var bottomView: UIView!
-    @IBOutlet var placeholderView: UILabel!;
-    
-    var bottomPanelBottomConstraint: NSLayoutConstraint?;
-    
+        
     @IBInspectable var animateScrollToBottom: Bool = true;
     
-    @IBOutlet var messageFieldTrailingConstraint: NSLayoutConstraint!
-    @IBOutlet var sendButtonWidthConstraint: NSLayoutConstraint!
+    var sendMessageButton: UIButton?;
     
     var chat: DBChatProtocol!;
-    
-    var xmppService:XmppService!;
-    
+        
     var account:BareJID!;
     var jid:BareJID!;
     
     var messageText: String? {
         get {
-            return messageField.text;
+            return chatViewInputBar.text;
         }
         set {
-            messageField.text = newValue;
-            placeholderView?.isHidden = messageField.hasText;
+            chatViewInputBar.text = newValue;
         }
     }
         
+    let chatViewInputBar = ChatViewInputBar();
+    
     override func viewDidLoad() {
-        xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
         super.viewDidLoad()
-        if #available(iOS 13.0, *) {
-            overrideUserInterfaceStyle = .light
-        };
-        placeholderView?.text = "from \(account.stringValue)...";
+        chatViewInputBar.placeholder = "from \(account.stringValue)...";
 
         navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem;
         navigationItem.leftItemsSupplementBackButton = true;
-        
-        messageField.layer.masksToBounds = true;
-        messageField.delegate = self;
-        messageField.isScrollEnabled = false;
-        if Settings.SendMessageOnReturn.getBool() {
-            messageField.returnKeyType = .send;
-            sendButtonWidthConstraint.isActive = false;
-        } else {
-            messageField.returnKeyType = .default;
-            messageFieldTrailingConstraint.isActive = false;
-        }
-        
+                
         tableView.rowHeight = UITableView.automaticDimension;
         tableView.estimatedRowHeight = 160.0;
         tableView.separatorStyle = .none;
+        print("tableView.constraints:", self.view.constraints)
+        if let bottomTableViewConstraint = self.view.constraints.first(where: { $0.firstAnchor == tableView.bottomAnchor || $0.secondAnchor == tableView.bottomAnchor }) {
+            bottomTableViewConstraint.isActive = false;
+            self.view.removeConstraint(bottomTableViewConstraint);
+        }
         
-        placeholderView?.isHidden = false;
+        self.view.addSubview(chatViewInputBar);
+        NSLayoutConstraint.activate([
+            chatViewInputBar.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+            chatViewInputBar.topAnchor.constraint(equalTo: tableView.bottomAnchor),
+            chatViewInputBar.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            chatViewInputBar.trailingAnchor.constraint(equalTo: self.view.trailingAnchor)
+        ]);
         
-//        bottomView.layer.borderColor = UIColor.lightGray.cgColor;
-//        bottomView.layer.borderWidth = 0.5;
-        bottomView.preservesSuperviewLayoutMargins = true;
-        bottomPanelBottomConstraint = view.layoutMarginsGuide.bottomAnchor.constraint(equalTo: bottomPanel.bottomAnchor, constant: 0);
-//        bottomViewBottomConstraint = view.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor, constant: 0);
-        bottomPanelBottomConstraint?.isActive = true;
-        NotificationCenter.default.addObserver(self, selector: #selector(appearanceChanged), name: Appearance.CHANGED, object: nil);
-        updateAppearance();
+        chatViewInputBar.setNeedsLayout();
+                
+        chatViewInputBar.delegate = self;
+        
+        let sendMessageButton = UIButton(type: .custom);
+        if #available(iOS 13.0, *) {
+            sendMessageButton.setImage(UIImage(systemName: "paperplane.fill"), for: .normal);
+        } else {
+            NSLayoutConstraint.activate([
+                sendMessageButton.widthAnchor.constraint(equalTo: sendMessageButton.heightAnchor),
+                sendMessageButton.heightAnchor.constraint(equalToConstant: 24)
+            ]);
+            sendMessageButton.setImage(UIImage(named: "send"), for: .normal);
+        }
+        sendMessageButton.addTarget(self, action: #selector(sendMessageClicked(_:)), for: .touchUpInside);
+        sendMessageButton.contentMode = .scaleToFill;
+        sendMessageButton.tintColor = UIColor(named: "tintColor");
+
+        self.sendMessageButton = sendMessageButton;
+        chatViewInputBar.addBottomButton(sendMessageButton);
+        
+        setColors();
+        NotificationCenter.default.addObserver(self, selector: #selector(chatClosed(_:)), name: DBChatStore.CHAT_CLOSED, object: chat);
     }
 
     override func didReceiveMemoryWarning() {
@@ -104,23 +106,52 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         super.viewWillAppear(animated);
         
         if self.messageText?.isEmpty ?? true {
-            self.xmppService.dbChatStore.messageDraft(for: account, with: jid) { (text) in
+            XmppService.instance.dbChatStore.messageDraft(for: account, with: jid) { (text) in
                 DispatchQueue.main.async {
                     self.messageText = text;
                 }
             }
         }
-        updateAppearance();
-
+//        chatViewInputBar.becomeFirstResponder();
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil);
+        
+        animate();
+        
+    }
+    
+    @objc func chatClosed(_ notification: Notification) {
+        DispatchQueue.main.async {
+            if self.navigationController?.viewControllers.count == 1 {
+                self.showDetailViewController(UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "emptyDetailViewController"), sender: self);
+            } else {
+                self.dismiss(animated: true, completion: nil);
+            }
+        }
+    }
+    
+    private func animate() {
+        guard let coordinator = self.transitionCoordinator else {
+            return;
+        }
+        coordinator.animate(alongsideTransition: { [weak self] context in
+            self?.setColors();
+        }, completion: nil);
+    }
+    
+    private func setColors() {
+        if #available(iOS 13.0, *) {
+            navigationController?.navigationBar.barTintColor = UIColor.systemBackground;
+        } else {
+            navigationController?.navigationBar.barTintColor = UIColor.white;
+        }
+        navigationController?.navigationBar.tintColor = UIColor(named: "tintColor");
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated);
         let accountStr = account.stringValue.lowercased();
         let jidStr = jid.stringValue.lowercased();
-        self.tableView.backgroundColor = Appearance.current.systemBackground;
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
             var toRemove = [String]();
             for notification in notifications {
@@ -131,6 +162,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
             UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
 //            self.xmppService.dbChatHistoryStore.markAsRead(for: self.account, with: self.jid);
         }
+        print("size:", chatViewInputBar.intrinsicContentSize, chatViewInputBar.frame.size);
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -138,7 +170,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil);
         super.viewWillDisappear(animated);
         if let account = self.account, let jid = self.jid {
-            self.xmppService?.dbChatStore.storeMessage(draft: messageText, for: account, with: jid);
+            XmppService.instance.dbChatStore.storeMessage(draft: messageText, for: account, with: jid);
         }
     }
     
@@ -148,89 +180,219 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
     }
     
     @objc func keyboardWillShow(_ notification: NSNotification) {
-        keyboardAnimateHideShow(notification, hide: false);
-    }
-    
-    @objc func keyboardWillHide(_ notification: NSNotification) {
-        keyboardAnimateHideShow(notification, hide: true);
-    }
-    
-    func keyboardAnimateHideShow(_ notification: NSNotification, hide: Bool) {
         if let userInfo = notification.userInfo {
-            if let keyboardSize = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
-                let oldHeight = bottomPanelBottomConstraint?.constant ?? CGFloat(0);
-                let newHeight = hide ? 0 : (keyboardSize.height - self.view.layoutMargins.bottom);
-                if (oldHeight - newHeight) != 0 {
-                    let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as! TimeInterval;
-                    let curve = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as! UInt;
-                    UIView.animate(withDuration: duration, delay: 0.0, options: [UIView.AnimationOptions(rawValue: curve), UIView.AnimationOptions.layoutSubviews, UIView.AnimationOptions.beginFromCurrentState], animations: {
-                        self.bottomPanelBottomConstraint?.constant = newHeight;
-                        self.view.layoutIfNeeded();
-                        }, completion: nil);
+            if let endRect = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
+                guard endRect.height != 0 && endRect.size.width != 0 else {
+                    return;
                 }
+                let window: UIView? = self.view.window;
+                let keyboard = self.view.convert(endRect, from: window);
+                let height = self.view.frame.size.height;
+                let hasExternal = (keyboard.origin.y + keyboard.size.height) > height;
+                
+                let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as! TimeInterval;
+                let curve = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as! UInt;
+                UIView.animate(withDuration: duration, delay: 0.0, options: [UIView.AnimationOptions(rawValue: curve), UIView.AnimationOptions.beginFromCurrentState], animations: {
+                    if !hasExternal {
+                        self.keyboardHeight = endRect.origin.y == 0 ? endRect.size.width : endRect.size.height;
+                    } else {
+                        self.keyboardHeight = height - keyboard.origin.y;
+                    }
+                    }, completion: nil);
             }
         }
     }
-
-    func textViewDidChange(_ textView: UITextView) {
-        placeholderView?.isHidden = textView.hasText;
+    
+    @objc func keyboardWillHide(_ notification: NSNotification) {
+        let curve = notification.userInfo![UIResponder.keyboardAnimationCurveUserInfoKey] as! UInt;
+        UIView.animate(withDuration: notification.userInfo![UIResponder.keyboardAnimationDurationUserInfoKey] as! TimeInterval, delay: 0.0, options: [UIView.AnimationOptions(rawValue: curve), UIView.AnimationOptions.beginFromCurrentState], animations: {
+            self.keyboardHeight = 0;
+            }, completion: nil);
+    }
+    
+    var keyboardHeight: CGFloat = 0 {
+        didSet {
+            self.view.constraints.first(where: { $0.firstAnchor == self.view.bottomAnchor || $0.secondAnchor == self.view.bottomAnchor })?.constant = keyboardHeight * -1;
+        }
     }
     
     @IBAction func tableViewClicked(_ sender: AnyObject) {
-        messageField.resignFirstResponder();
+        self.chatViewInputBar.resignFirstResponder();
+    }
+        
+    
+    func sendMessage() {
     }
     
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        cell.backgroundColor = Appearance.current.systemBackground;
+    @objc func sendMessageClicked(_ sender: Any) {
+        self.sendMessage();
     }
     
+}
+
+class ChatViewInputBar: UIView, UITextViewDelegate {
+    
+    public let blurView: UIVisualEffectView = {
+        var blurEffect = UIBlurEffect(style: .prominent);
+        if #available(iOS 13.0, *) {
+            blurEffect = UIBlurEffect(style: .systemMaterial);
+        }
+        let view = UIVisualEffectView(effect: blurEffect);
+        view.translatesAutoresizingMaskIntoConstraints = false;
+        return view;
+    }();
+    
+    public let bottomStackView: UIStackView = {
+        let view = UIStackView();
+        view.translatesAutoresizingMaskIntoConstraints = false;
+        view.axis = .horizontal;
+        view.alignment = .trailing;
+        view.semanticContentAttribute = .forceRightToLeft;
+        //        view.distribution = .fillEqually;
+        view.spacing = 15;
+        view.setContentHuggingPriority(.defaultHigh, for: .horizontal);
+        view.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
+        return view;
+    }();
+    
+    public let inputTextView: UITextView = {
+        let view = UITextView();
+        view.isOpaque = false;
+        view.backgroundColor = UIColor.clear;
+        view.translatesAutoresizingMaskIntoConstraints = false;
+        view.layer.masksToBounds = true;
+//        view.delegate = self;
+        view.isScrollEnabled = false;
+        view.font = UIFont.systemFont(ofSize: UIFont.systemFontSize);
+        if Settings.SendMessageOnReturn.getBool() {
+            view.returnKeyType = .send;
+        } else {
+            view.returnKeyType = .default;
+        }
+        view.setContentHuggingPriority(.defaultHigh, for: .horizontal);
+        view.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
+        return view;
+    }()
+    
+    public let placeholderLabel: UILabel = {
+        let view = UILabel();
+        view.numberOfLines = 0;
+        if #available(iOS 13.0, *) {
+            view.textColor = UIColor.label.withAlphaComponent(0.4);
+        } else {
+            view.textColor = UIColor.darkGray;
+        }
+        view.font = UIFont.systemFont(ofSize: UIFont.systemFontSize);
+        view.text = "Enter message...";
+        view.backgroundColor = .clear;
+        view.translatesAutoresizingMaskIntoConstraints = false;
+        return view;
+    }();
+    
+    var placeholder: String? {
+        get {
+            return placeholderLabel.text;
+        }
+        set {
+            placeholderLabel.text = newValue;
+        }
+    }
+    
+    var text: String? {
+        get {
+            return inputTextView.text;
+        }
+        set {
+            inputTextView.text = newValue ?? "";
+            placeholderLabel.isHidden = !inputTextView.text.isEmpty;
+        }
+    }
+    
+    weak var delegate: ChatViewInputBarDelegate?;
+    
+    convenience init() {
+        self.init(frame: CGRect(origin: .zero, size: CGSize(width: 100, height: 30)));
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame);
+        self.setup()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder);
+        setup();
+    }
+        
+    func setup() {
+        translatesAutoresizingMaskIntoConstraints = false;
+        isOpaque = false;
+        setContentHuggingPriority(.defaultHigh, for: .horizontal);
+        setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
+        addSubview(blurView);
+        addSubview(inputTextView);
+        addSubview(bottomStackView);
+        NSLayoutConstraint.activate([
+            blurView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            blurView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            blurView.topAnchor.constraint(equalTo: self.topAnchor),
+            blurView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+            
+            inputTextView.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor, constant: 6),
+            inputTextView.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -6),
+            inputTextView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
+            inputTextView.bottomAnchor.constraint(equalTo: bottomStackView.topAnchor),
+            bottomStackView.leadingAnchor.constraint(greaterThanOrEqualTo: safeAreaLayoutGuide.leadingAnchor, constant: 10),
+            bottomStackView.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -10),
+            bottomStackView.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor, constant: -4)
+        ]);
+        inputTextView.addSubview(placeholderLabel);
+        NSLayoutConstraint.activate([
+            inputTextView.leadingAnchor.constraint(equalTo: placeholderLabel.leadingAnchor, constant: -4),
+            inputTextView.trailingAnchor.constraint(equalTo: placeholderLabel.trailingAnchor, constant: 4),
+            inputTextView.centerYAnchor.constraint(equalTo: placeholderLabel.centerYAnchor),
+            inputTextView.topAnchor.constraint(equalTo: placeholderLabel.topAnchor),
+            inputTextView.bottomAnchor.constraint(equalTo: placeholderLabel.bottomAnchor)
+        ]);
+        inputTextView.delegate = self;
+    }
+    
+    override func layoutIfNeeded() {
+        super.layoutIfNeeded();
+        inputTextView.layoutIfNeeded();
+    }
+    
+    override func resignFirstResponder() -> Bool {
+        let val = super.resignFirstResponder();
+        return val || inputTextView.resignFirstResponder();
+    }
+    
+    func textViewDidChange(_ textView: UITextView) {
+        placeholderLabel.isHidden = textView.hasText;
+    }
+        
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         if text == "\n" {
             print("enter detected");
-            if messageField.returnKeyType == .send {
-                sendMessage();
+            if inputTextView.returnKeyType == .send {
+                delegate?.sendMessage();
                 return false;
             }
         }
         return true;
     }
-    
+        
     func textViewDidEndEditing(_ textView: UITextView) {
         textView.resignFirstResponder();
     }
-    
-    func sendMessage() {
+
+    func addBottomButton(_ button: UIButton) {
+        bottomStackView.addArrangedSubview(button);
     }
+}
+
+protocol ChatViewInputBarDelegate: class {
     
-    @objc func appearanceChanged(_ notification: Notification) {
-        self.updateAppearance();
-    }
+    func sendMessage();
     
-    func updateAppearance() {
-        self.messageField.keyboardAppearance = Appearance.current.isDark ? .dark : .default;
-        self.messageField.backgroundColor = Appearance.current.systemBackground;
-        self.messageField.textColor = Appearance.current.labelColor;
-        self.messageField.layer.borderColor = Appearance.current.textFieldBorderColor.cgColor;
-        self.messageField.layer.borderWidth = 0.5;
-        self.messageField.layer.cornerRadius = 5.0;
-        
-        self.bottomView.tintColor = Appearance.current.bottomBarTintColor;
-        self.bottomView.backgroundColor = Appearance.current.bottomBarBackgroundColor;
-        
-        self.view.tintColor = Appearance.current.tintColor;
-        self.tableView.backgroundColor = Appearance.current.systemBackground;
-        self.tableView.separatorColor = Appearance.current.secondarySystemBackground;
-        
-        if let navController = self.navigationController {
-            navController.navigationBar.barStyle = Appearance.current.navigationBarStyle;
-            navController.navigationBar.tintColor = Appearance.current.navigationBarTintColor;
-            navController.navigationBar.barTintColor = Appearance.current.controlBackgroundColor;
-            navController.navigationBar.setNeedsLayout();
-            navController.navigationBar.layoutIfNeeded();
-            navController.navigationBar.setNeedsDisplay();
-        }
-        DispatchQueue.main.async {
-            self.tableView.reloadData();
-        }
-    }
 }

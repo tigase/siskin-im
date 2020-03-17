@@ -26,62 +26,114 @@ import Shared
 
 protocol BaseChatViewController_ShareImageExtension: class {
     
-    var progressBar: UIProgressView! { get set }
-    var shareButton: UIButton! { get set }
+    var chatViewInputBar: ChatViewInputBar { get }
+    
+    var progressBar: UIProgressView? { get set }
     
     var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate? { get set }
     var filePickerDelegate: BaseChatViewController_ShareFilePickerDelegate? { get set }
     
     var chat: DBChatProtocol! { get }
-    var xmppService: XmppService! { get }
     var account: BareJID! { get }
     var jid: BareJID! { get }
     
     func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (()->Void)?);
-    
-//    func sendMessage(body: String, url: String?, preview: String?, completed: (()->Void)?);
-    
+        
     func present(_ controller: UIViewController, animated: Bool, completion: (()->Void)?);
+        
 }
 
-extension BaseChatViewController_ShareImageExtension {
-    
-    func initSharing() {
-        shareButton.isEnabled = true;//Settings.SharingViaHttpUpload.getBool();
-    }
-    
-    func showPhotoSelector(_ sender: UIView) {
-        if !Settings.SharingViaHttpUpload.getBool() {
-            let alert = UIAlertController(title: nil, message: "When you share files, they are uploaded to HTTP server with unique URL. Anyone who knows the unique URL to the file is able to download it.\nDo you wish to proceed?", preferredStyle: .actionSheet);
-            alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
-                Settings.SharingViaHttpUpload.setValue(true);
-                self.showPhotoSelector(sender);
-            }));
-            alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
-            alert.popoverPresentationController?.sourceView = sender;
-            alert.popoverPresentationController?.sourceRect = sender.bounds;
-            present(alert, animated: true, completion: nil);
-        } else {
-            let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
-            if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                alert.addAction(UIAlertAction(title: "Take photo", style: .default, handler: { (action) in
-                    self.selectPhoto(.camera);
-                }));
+extension ChatViewInputBar {
+    class ShareButton: UIButton {
+        
+        weak var delegate: BaseChatViewController_ShareImageExtension?;
+                
+        init(delegate: BaseChatViewController_ShareImageExtension) {
+            self.delegate = delegate;
+            super.init(frame: .zero);
+            setup();
+        }
+        
+        required init?(coder: NSCoder) {
+            super.init(coder: coder);
+            setup();
+        }
+        
+        @objc func execute(_ sender: Any) {
+        }
+        
+        func setup() {
+            self.tintColor = UIColor(named: "tintColor");
+            self.addTarget(self, action: #selector(execute(_:)), for: .touchUpInside);
+            self.contentMode = .scaleToFill;
+            if #available(iOS 13.0, *) {
+            } else {
+                self.widthAnchor.constraint(equalTo: heightAnchor).isActive = true;
+                self.heightAnchor.constraint(equalToConstant: 24).isActive = true;
             }
-            alert.addAction(UIAlertAction(title: "Select photo", style: .default, handler: { (action) in
-                self.selectPhoto(.photoLibrary);
-            }));
-            alert.addAction(UIAlertAction(title: "Select file", style: .default, handler: { (action) in
-                self.selectFile();
-            }));
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
-            alert.popoverPresentationController?.sourceView = sender;
-            alert.popoverPresentationController?.sourceRect = sender.bounds;
-            present(alert, animated: true, completion: nil);
         }
     }
     
+    class ShareFileButton: ShareButton {
+        
+        override func execute(_ sender: Any) {
+            delegate?.selectFile();
+        }
+        
+        override func setup() {
+            super.setup();
+            if #available(iOS 13.0, *) {
+                let image = UIImage(systemName: "arrow.up.doc");
+                setImage(image, for: .normal);
+            } else {
+                setImage(UIImage(named: "arrow.up.doc"), for: .normal);
+            }
+        }
+    }
+    
+    class ShareImageButton: ShareButton {
+        
+        override func execute(_ sender: Any) {
+            delegate?.selectPhoto(.photoLibrary)
+        }
+        
+        override func setup() {
+            super.setup();
+            if #available(iOS 13.0, *) {
+                let image = UIImage(systemName: "photo");
+                setImage(image, for: .normal);
+            } else {
+                setImage(UIImage(named: "photo"), for: .normal);
+            }
+        }
+    }
+    
+    class ShareCameraImageButton: ShareButton {
+        
+        override func execute(_ sender: Any) {
+            delegate?.selectPhoto(.camera)
+        }
+        
+        override func setup() {
+            super.setup();
+            if #available(iOS 13.0, *) {
+                let image = UIImage(systemName: "camera");
+                setImage(image, for: .normal);
+            } else {
+                setImage(UIImage(named: "camera"), for: .normal);
+            }
+        }
+    }
+
+}
+
+
+extension BaseChatViewController_ShareImageExtension {
+            
     func selectPhoto(_ source: UIImagePickerController.SourceType) {
+        guard checkIfEnabledOrAsk(completionHandler: { [weak self] in self?.selectPhoto(source); }) else {
+            return;
+        }
         let picker = UIImagePickerController();
         self.imagePickerDelegate = BaseChatViewController_ShareImagePickerDelegate(self);
         picker.delegate = self.imagePickerDelegate;
@@ -89,8 +141,11 @@ extension BaseChatViewController_ShareImageExtension {
         picker.sourceType = source;
         present(picker, animated: true, completion: nil);
     }
-
+    
     func selectFile() {
+        guard checkIfEnabledOrAsk(completionHandler: { [weak self] in self?.selectFile(); }) else {
+            return;
+        }
         let picker = UIDocumentPickerViewController(documentTypes: [String(kUTTypeData)], in: .open);
         self.filePickerDelegate = BaseChatViewController_ShareFilePickerDelegate(self);
         picker.delegate = self.filePickerDelegate;
@@ -98,6 +153,29 @@ extension BaseChatViewController_ShareImageExtension {
         self.present(picker, animated: true, completion: nil);
     }
     
+    private func checkIfEnabledOrAsk(completionHandler: @escaping ()->Void) -> Bool {
+        guard Settings.SharingViaHttpUpload.getBool() else {
+            let alert = UIAlertController(title: "Question", message: "When you share files, they are uploaded to HTTP server with unique URL. Anyone who knows the unique URL to the file is able to download it.\nDo you wish to proceed?", preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
+                Settings.SharingViaHttpUpload.setValue(true);
+                completionHandler();
+            }));
+            alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
+            present(alert, animated: true, completion: nil);
+
+            return false;
+        }
+        return true;
+    }
+    
+    func initializeSharing() {
+        self.chatViewInputBar.addBottomButton(ChatViewInputBar.ShareFileButton(delegate: self));
+        self.chatViewInputBar.addBottomButton(ChatViewInputBar.ShareImageButton(delegate: self));
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            self.chatViewInputBar.addBottomButton(ChatViewInputBar.ShareCameraImageButton(delegate: self));
+        }
+    }
+        
 }
 
 enum ShareError: Error {
@@ -217,7 +295,7 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
     }
         
     func share(filename: String, inputStream: InputStream, filesize size: Int, mimeType: String, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
-        if let client = self.controller.xmppService.getClient(forJid: self.controller.account) {
+        if let client = XmppService.instance.getClient(forJid: self.controller.account) {
             let httpUploadModule: HttpFileUploadModule = client.modulesManager.getModule(HttpFileUploadModule.ID)!;
             httpUploadModule.findHttpUploadComponent(onSuccess: { (results) in
                 var compJid: JID? = nil;
@@ -242,7 +320,7 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
             
                 httpUploadModule.requestUploadSlot(componentJid: compJid!, filename: filename, size: size, contentType: mimeType, onSuccess: { (slot) in
                     DispatchQueue.main.async {
-                        self.controller.progressBar.isHidden = false;
+                        self.controller.progressBar?.isHidden = false;
                     }
                     var request = URLRequest(url: slot.putUri);
                     slot.putHeaders.forEach({ (k,v) in
@@ -292,7 +370,7 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
     
     func showAlert(title: String, message: String) {
         DispatchQueue.main.async {
-            self.controller.progressBar.isHidden = false;
+            self.controller.progressBar?.isHidden = false;
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert);
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
             self.controller.present(alert, animated: true, completion: nil);
@@ -300,10 +378,10 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
     }
     
     func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
-        self.controller.progressBar.progress = Float(totalBytesSent) / Float(totalBytesExpectedToSend);
-        if self.controller.progressBar.progress == 1.0 {
-            self.controller.progressBar.isHidden = true;
-            self.controller.progressBar.progress = 0;
+        self.controller.progressBar?.progress = Float(totalBytesSent) / Float(totalBytesExpectedToSend);
+        if self.controller.progressBar?.progress == 1.0 {
+            self.controller.progressBar?.isHidden = true;
+            self.controller.progressBar?.progress = 0;
         }
     }
     

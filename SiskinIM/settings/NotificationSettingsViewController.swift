@@ -21,7 +21,7 @@
 
 import UIKit
 
-class NotificationSettingsViewController: CustomTableViewController {
+class NotificationSettingsViewController: UITableViewController {
     
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1;

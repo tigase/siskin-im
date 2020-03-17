@@ -27,6 +27,7 @@ enum AppStoryboard: String {
     case Groupchat = "Groupchat"
     case Info = "Info"
     case Settings = "Settings"
+    case Account = "Account"
     
     var instance: UIStoryboard {
         return UIStoryboard(name: self.rawValue, bundle: Bundle.main);

@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class MucNewGroupchatController: CustomTableViewController, UIPickerViewDataSource, UIPickerViewDelegate, UITextFieldDelegate {
+class MucNewGroupchatController: UITableViewController, UIPickerViewDataSource, UIPickerViewDelegate, UITextFieldDelegate {
     
     var xmppService: XmppService!;
     var accountPicker: UIPickerView! = UIPickerView();

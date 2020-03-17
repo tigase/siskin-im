@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class MainTabBarController: CustomTabBarController {
+class MainTabBarController: CustomTabBarController, UITabBarControllerDelegate {
     
     public static let RECENTS_TAB = 0;
     public static let ROSTER_TAB = 1;
@@ -31,7 +31,9 @@ class MainTabBarController: CustomTabBarController {
     override func viewDidLoad() {
         super.viewDidLoad();
         
-        NotificationCenter.default.addObserver(self, selector: #selector(updateMoreBadge), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil);
+        self.delegate = self;
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(updateMoreBadge), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil);        
     }
     
     @objc func updateMoreBadge(notification: Notification) {
@@ -48,4 +50,16 @@ class MainTabBarController: CustomTabBarController {
             }
         }
     }
+    
+    func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
+        guard viewController.restorationIdentifier == "SettingsNavigationControllerDummy" else {
+            return true;
+        }
+        DispatchQueue.main.async {
+            let controller = UIStoryboard(name: "Settings", bundle: nil).instantiateViewController(withIdentifier: "SettingsNavigationController")
+            self.present(controller, animated: true, completion: nil);
+        }
+        return false;
+    }
+        
 }

@@ -56,6 +56,7 @@ class AvatarView: UIImageView {
     fileprivate(set) var initials: String?;
     
     func set(name: String?, avatar: UIImage?, orDefault defAvatar: UIImage) {
+        self.name = name;
         if avatar != nil {
             self.image = avatar;
         } else if self.name != nil {
@@ -86,7 +87,8 @@ class AvatarView: UIImageView {
         let path = CGPath(ellipseIn: self.bounds, transform: nil);
         ctx.addPath(path);
         
-        ctx.setFillColor((Appearance.current.isDark ? UIColor.white : UIColor.darkGray).withAlphaComponent(0.3).cgColor);
+        
+        ctx.setFillColor(UIColor.systemGray.cgColor);
         ctx.fill(CGRect(x: 0, y: 0, width: size.width, height: size.height));
         
         let textAttr: [NSAttributedString.Key: Any] = [.foregroundColor: UIColor.white.withAlphaComponent(0.9), .font: UIFont.systemFont(ofSize: size.width * 0.4, weight: .medium)];

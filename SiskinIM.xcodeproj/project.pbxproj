@@ -12,9 +12,7 @@
 		FE01ADA91E224CF400FA7E65 /* SiskinPushNotificationsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE01ADA81E224CF400FA7E65 /* SiskinPushNotificationsModule.swift */; };
 		FE10BCF323FD4EF000E214F3 /* db-schema-10.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE10BCF223FD4EF000E214F3 /* db-schema-10.sql */; };
 		FE137A4821F6464D006B7F7C /* UIColor_mix.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4721F6464D006B7F7C /* UIColor_mix.swift */; };
-		FE137A4A21F72AEA006B7F7C /* Appearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4921F72AEA006B7F7C /* Appearance.swift */; };
 		FE137A4C21F75660006B7F7C /* ChatBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4B21F75660006B7F7C /* ChatBottomView.swift */; };
-		FE137A4E21F8851D006B7F7C /* CustomTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4D21F8851D006B7F7C /* CustomTableViewController.swift */; };
 		FE17808D23EB4C7F00A1EA76 /* AccountQRCodeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE17808C23EB4C7F00A1EA76 /* AccountQRCodeController.swift */; };
 		FE1AC8F7216B8AB700D4CDAB /* NewFeaturesDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */; };
 		FE1DCCA21EA52CE200850563 /* DataFormController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1DCCA11EA52CE200850563 /* DataFormController.swift */; };
@@ -28,7 +26,6 @@
 		FE31291A22240BEB00A92863 /* PEPBookmarksModule_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31291922240BEB00A92863 /* PEPBookmarksModule_extension.swift */; };
 		FE31291C222C0D1500A92863 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31291B222C0D1500A92863 /* AvatarView.swift */; };
 		FE31DDE4201261A200C2AB1D /* DNSSrvDiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */; };
-		FE36B3C621F8E87700D1F037 /* CustomTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE36B3C521F8E87700D1F037 /* CustomTableViewCell.swift */; };
 		FE36B3C821FA52E000D1F037 /* EmptyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */; };
 		FE3A45CF1CE49D3300C36264 /* RosterItemEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */; };
 		FE3DCCEE1FE18334008B6C8B /* CertificateErrorAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3DCCED1FE18334008B6C8B /* CertificateErrorAlert.swift */; };
@@ -37,7 +34,6 @@
 		FE4071E821E2653700F09B58 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4071E721E2653700F09B58 /* RoundButton.swift */; };
 		FE43E43823BF3DE80079BD9B /* ChatAttachementsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE43E43723BF3DE80079BD9B /* ChatAttachementsController.swift */; };
 		FE43EB551F3CC55900A4CAAD /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE43EB541F3CC55900A4CAAD /* ImageCache.swift */; };
-		FE43EB571F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE43EB561F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift */; };
 		FE4DDF561F39E0B500A4CE5A /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4DDF551F39E0B500A4CE5A /* ShareViewController.swift */; };
 		FE4DDF591F39E0B500A4CE5A /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE4DDF571F39E0B500A4CE5A /* MainInterface.storyboard */; };
 		FE4DDF5D1F39E0B500A4CE5A /* Siskin IM - Share.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = FE4DDF531F39E0B500A4CE5A /* Siskin IM - Share.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -63,6 +59,7 @@
 		FE507A241CDB7B3B001A015C /* GlobalSplitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A111CDB7B3B001A015C /* GlobalSplitViewController.swift */; };
 		FE507A251CDB7B3B001A015C /* AccountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A131CDB7B3B001A015C /* AccountManager.swift */; };
 		FE507A261CDB7B3B001A015C /* AvatarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A141CDB7B3B001A015C /* AvatarManager.swift */; };
+		FE5146EF2420B900004923A3 /* Account.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE5146EE2420B900004923A3 /* Account.storyboard */; };
 		FE5628911F3621DB00452C73 /* BaseChatViewController_ShareExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5628901F3621DB00452C73 /* BaseChatViewController_ShareExtension.swift */; };
 		FE6545601E9E7B85006A14AC /* RegisterAccountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE65455F1E9E7B85006A14AC /* RegisterAccountController.swift */; };
 		FE6545621E9E7FDE006A14AC /* AccountDomainTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6545611E9E7FDE006A14AC /* AccountDomainTableViewCell.swift */; };
@@ -186,7 +183,6 @@
 		FEF19F162348E781005CFE9A /* BaseChatViewControllerWithDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF19F152348E781005CFE9A /* BaseChatViewControllerWithDataSource.swift */; };
 		FEF80DB21CDBBBFE005645A7 /* AccountSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF80DB11CDBBBFE005645A7 /* AccountSettingsViewController.swift */; };
 		FEFB63AD1F31E4EE00EFB3E7 /* MainTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEFB63AC1F31E4EE00EFB3E7 /* MainTabBarController.swift */; };
-		FEFBEC5D233A7EAE00E5CCA5 /* AppearanceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEFBEC5C233A7EAE00E5CCA5 /* AppearanceViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -263,9 +259,7 @@
 		FE01ADA81E224CF400FA7E65 /* SiskinPushNotificationsModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SiskinPushNotificationsModule.swift; sourceTree = "<group>"; };
 		FE10BCF223FD4EF000E214F3 /* db-schema-10.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-10.sql"; sourceTree = "<group>"; };
 		FE137A4721F6464D006B7F7C /* UIColor_mix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor_mix.swift; sourceTree = "<group>"; };
-		FE137A4921F72AEA006B7F7C /* Appearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Appearance.swift; sourceTree = "<group>"; };
 		FE137A4B21F75660006B7F7C /* ChatBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatBottomView.swift; sourceTree = "<group>"; };
-		FE137A4D21F8851D006B7F7C /* CustomTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTableViewController.swift; sourceTree = "<group>"; };
 		FE168ACC1CCD197A003F8B26 /* db-schema-1.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-1.sql"; sourceTree = "<group>"; };
 		FE17808C23EB4C7F00A1EA76 /* AccountQRCodeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountQRCodeController.swift; sourceTree = "<group>"; };
 		FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewFeaturesDetector.swift; sourceTree = "<group>"; };
@@ -282,7 +276,6 @@
 		FE31291922240BEB00A92863 /* PEPBookmarksModule_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PEPBookmarksModule_extension.swift; sourceTree = "<group>"; };
 		FE31291B222C0D1500A92863 /* AvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
 		FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSSrvDiskCache.swift; sourceTree = "<group>"; };
-		FE36B3C521F8E87700D1F037 /* CustomTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTableViewCell.swift; sourceTree = "<group>"; };
 		FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyViewController.swift; sourceTree = "<group>"; };
 		FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterItemEditViewController.swift; sourceTree = "<group>"; };
 		FE3DCCED1FE18334008B6C8B /* CertificateErrorAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificateErrorAlert.swift; sourceTree = "<group>"; };
@@ -291,7 +284,6 @@
 		FE4071E721E2653700F09B58 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		FE43E43723BF3DE80079BD9B /* ChatAttachementsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAttachementsController.swift; sourceTree = "<group>"; };
 		FE43EB541F3CC55900A4CAAD /* ImageCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
-		FE43EB561F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewController_PreviewExtension.swift; sourceTree = "<group>"; };
 		FE4496C31F87911C009F649C /* db-schema-3.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-3.sql"; sourceTree = "<group>"; };
 		FE4DDF531F39E0B500A4CE5A /* Siskin IM - Share.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Siskin IM - Share.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE4DDF551F39E0B500A4CE5A /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
@@ -321,6 +313,7 @@
 		FE507A111CDB7B3B001A015C /* GlobalSplitViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GlobalSplitViewController.swift; sourceTree = "<group>"; };
 		FE507A131CDB7B3B001A015C /* AccountManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountManager.swift; sourceTree = "<group>"; };
 		FE507A141CDB7B3B001A015C /* AvatarManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarManager.swift; sourceTree = "<group>"; };
+		FE5146EE2420B900004923A3 /* Account.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Account.storyboard; sourceTree = "<group>"; };
 		FE5628901F3621DB00452C73 /* BaseChatViewController_ShareExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewController_ShareExtension.swift; sourceTree = "<group>"; };
 		FE60F29B1ED48B470030D411 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
 		FE65455F1E9E7B85006A14AC /* RegisterAccountController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegisterAccountController.swift; sourceTree = "<group>"; };
@@ -440,7 +433,6 @@
 		FEF19F152348E781005CFE9A /* BaseChatViewControllerWithDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseChatViewControllerWithDataSource.swift; sourceTree = "<group>"; };
 		FEF80DB11CDBBBFE005645A7 /* AccountSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountSettingsViewController.swift; sourceTree = "<group>"; };
 		FEFB63AC1F31E4EE00EFB3E7 /* MainTabBarController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainTabBarController.swift; sourceTree = "<group>"; };
-		FEFBEC5C233A7EAE00E5CCA5 /* AppearanceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -534,7 +526,6 @@
 				FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */,
 				FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */,
 				FE5628901F3621DB00452C73 /* BaseChatViewController_ShareExtension.swift */,
-				FE43EB561F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift */,
 				FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift */,
 				FE8DD9C4221B153A0090F5AA /* InviteViewController.swift */,
 				FE8DD9C8221B29520090F5AA /* MucNewGroupchatController.swift */,
@@ -603,7 +594,6 @@
 				FE2809802167CE18002F5BD0 /* server_features_list.xml */,
 				FE2809822167CF1B002F5BD0 /* ServerFeaturesViewController.swift */,
 				FE719E7D2274D20D007CEEC9 /* OMEMOFingerprintsController.swift */,
-				FEFBEC5C233A7EAE00E5CCA5 /* AppearanceViewController.swift */,
 				FEDC678F238B05E4005C0FAB /* BlockedContactsController.swift */,
 				FE17808C23EB4C7F00A1EA76 /* AccountQRCodeController.swift */,
 			);
@@ -625,10 +615,7 @@
 				FE3DCCED1FE18334008B6C8B /* CertificateErrorAlert.swift */,
 				FE4071E721E2653700F09B58 /* RoundButton.swift */,
 				FE233CDC21EA062E00099281 /* AboutController.swift */,
-				FE137A4921F72AEA006B7F7C /* Appearance.swift */,
 				FE137A4B21F75660006B7F7C /* ChatBottomView.swift */,
-				FE137A4D21F8851D006B7F7C /* CustomTableViewController.swift */,
-				FE36B3C521F8E87700D1F037 /* CustomTableViewCell.swift */,
 				FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */,
 				FE31291B222C0D1500A92863 /* AvatarView.swift */,
 				FE65D62722E9F8EB0065DEA5 /* Markdown.swift */,
@@ -785,6 +772,7 @@
 				FE233CDA21EA03DD00099281 /* Info.storyboard */,
 				FE759FFA23742C48001E78D9 /* NotificationCenterDelegate.swift */,
 				FEDC678B238AFB9F005C0FAB /* Settings.storyboard */,
+				FE5146EE2420B900004923A3 /* Account.storyboard */,
 			);
 			path = SiskinIM;
 			sourceTree = "<group>";
@@ -1050,6 +1038,7 @@
 				FE94E52E1CCBA74F00FAE755 /* Assets.xcassets in Resources */,
 				FE4071E621E262D900F09B58 /* VoIP.storyboard in Resources */,
 				FE94E52C1CCBA74F00FAE755 /* Main.storyboard in Resources */,
+				FE5146EF2420B900004923A3 /* Account.storyboard in Resources */,
 				FE2809812167CE18002F5BD0 /* server_features_list.xml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1174,7 +1163,6 @@
 				FEE9608A22F191980009B191 /* MucChatSettingsViewController.swift in Sources */,
 				FE9E136F1F26049A005C0EE5 /* NotificationSettingsViewController.swift in Sources */,
 				FEA8D6641F30F9260077C12F /* XmppService_VCardExtension.swift in Sources */,
-				FE36B3C621F8E87700D1F037 /* CustomTableViewCell.swift in Sources */,
 				FE31291C222C0D1500A92863 /* AvatarView.swift in Sources */,
 				FE719E7E2274D20D007CEEC9 /* OMEMOFingerprintsController.swift in Sources */,
 				FE759FFC23742CE5001E78D9 /* NotificationCenterDelegate.swift in Sources */,
@@ -1193,9 +1181,7 @@
 				FE4071E421E2605900F09B58 /* VideoCallController.swift in Sources */,
 				FE9E13731F260B33005C0EE5 /* StepperTableViewCell.swift in Sources */,
 				FE6545601E9E7B85006A14AC /* RegisterAccountController.swift in Sources */,
-				FE43EB571F3DBAAE00A4CAAD /* BaseChatViewController_PreviewExtension.swift in Sources */,
 				FE507A181CDB7B3B001A015C /* ChatViewController.swift in Sources */,
-				FE137A4E21F8851D006B7F7C /* CustomTableViewController.swift in Sources */,
 				FEFB63AD1F31E4EE00EFB3E7 /* MainTabBarController.swift in Sources */,
 				FE65D62822E9F8EB0065DEA5 /* Markdown.swift in Sources */,
 				FEC514241CEB2FF7003AF765 /* MucJoinViewController.swift in Sources */,
@@ -1206,7 +1192,6 @@
 				FE9EA16B23BF9DB2008C401A /* ChatAttachementsCellView.swift in Sources */,
 				FEF19F102348A046005CFE9A /* PresenceRosterEventHandler.swift in Sources */,
 				FE94E5251CCBA74F00FAE755 /* AppDelegate.swift in Sources */,
-				FE137A4A21F72AEA006B7F7C /* Appearance.swift in Sources */,
 				FEF80DB21CDBBBFE005645A7 /* AccountSettingsViewController.swift in Sources */,
 				FE6545621E9E7FDE006A14AC /* AccountDomainTableViewCell.swift in Sources */,
 				FE507A231CDB7B3B001A015C /* CustomTabBarController.swift in Sources */,
@@ -1243,7 +1228,6 @@
 				FE2809832167CF1B002F5BD0 /* ServerFeaturesViewController.swift in Sources */,
 				FEC514281CEB82E9003AF765 /* MucChatViewController.swift in Sources */,
 				FE719E7A227307D0007CEEC9 /* OMEMOEncryptionSwitchTableViewCell.swift in Sources */,
-				FEFBEC5D233A7EAE00E5CCA5 /* AppearanceViewController.swift in Sources */,
 				FE3024321CE2036A00466497 /* DBVCardsCache.swift in Sources */,
 				FE74D510234A4E1F001A925B /* ChatTableViewSystemCell.swift in Sources */,
 				FE507A241CDB7B3B001A015C /* GlobalSplitViewController.swift in Sources */,

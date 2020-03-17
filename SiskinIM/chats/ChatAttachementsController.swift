@@ -20,8 +20,6 @@ class ChatAttachmentsController: UICollectionViewController, UICollectionViewDel
     
     override func viewDidLoad() {
         super.viewDidLoad();
-        NotificationCenter.default.addObserver(self, selector: #selector(appearanceChanged), name: Appearance.CHANGED, object: nil);
-        updateAppearance();
         if #available(iOS 13.0, *) {
         } else {
             self.view.addGestureRecognizer(UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(gesture:))));
@@ -31,7 +29,6 @@ class ChatAttachmentsController: UICollectionViewController, UICollectionViewDel
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        self.updateAppearance();
         if let account = self.account, let jid = self.jid, !loaded {
             self.loaded = true;
             DBChatHistoryStore.instance.loadAttachments(for: account, with: jid, completionHandler: { attachments in
@@ -58,7 +55,6 @@ class ChatAttachmentsController: UICollectionViewController, UICollectionViewDel
                 label.numberOfLines = 0;
                 label.textAlignment = .center;
                 label.sizeToFit();
-                label.textColor = Appearance.current.secondaryLabelColor;
                 self.collectionView.backgroundView = label;
             }
         } else {
@@ -76,28 +72,6 @@ class ChatAttachmentsController: UICollectionViewController, UICollectionViewDel
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let width = (self.view.bounds.width - 2 * 2.0) / 3.0;
         return CGSize(width: width, height: width);
-    }
-    
-    @objc func appearanceChanged(_ notification: Notification) {
-        self.updateAppearance();
-    }
-    
-    func updateAppearance() {
-        if #available(iOS 13.0, *) {
-            overrideUserInterfaceStyle = Appearance.current.isDark ? .dark : .light;
-        };
-        self.view.tintColor = Appearance.current.tintColor;
-        
-        self.collectionView.backgroundColor = Appearance.current.systemBackground;
-
-        if let navController = self.navigationController {
-            navController.navigationBar.barStyle = Appearance.current.navigationBarStyle;
-            navController.navigationBar.tintColor = Appearance.current.navigationBarTintColor;
-            navController.navigationBar.barTintColor = Appearance.current.controlBackgroundColor;
-            navController.navigationBar.setNeedsLayout();
-            navController.navigationBar.layoutIfNeeded();
-            navController.navigationBar.setNeedsDisplay();
-        }
     }
 
     @objc func messageUpdated(_ notification: Notification) {

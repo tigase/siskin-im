@@ -333,16 +333,6 @@ class NewFeatureSuggestionView: UIViewController {
  
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        self.view.backgroundColor = Appearance.current.systemBackground;
-        
-        let textColor = Appearance.current.labelColor.mix(color: Appearance.current.tintColor, ratio: 0.66);
-        
-        self.titleField.textColor = textColor;
-        self.iconField.tintColor = textColor;
-        self.descriptionField.textColor = textColor;
-        self.enableButton.tintColor = Appearance.current.tintColor;
-        self.cancelButton.tintColor = Appearance.current.tintColor;
-        self.progressIndicator.tintColor = Appearance.current.tintColor;
     }
     
     @IBAction func enableClicked(_ sender: UIButton) {

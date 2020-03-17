@@ -57,9 +57,7 @@ class ChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteractionDelegate
     func set(message item: ChatMessage) {
         self.item = item;
         super.set(item: item);
-        
-        self.messageTextView?.textColor = Appearance.current.secondaryLabelColor;
-        
+                
         self.links.removeAll();
             
         let attrText = NSMutableAttributedString(string: item.message);
@@ -84,7 +82,8 @@ class ChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteractionDelegate
                 }
                 if url != nil {
                     self.links.append(Link(url: url!, range: match.range));
-                    attrText.setAttributes([NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue, NSAttributedString.Key.foregroundColor: (Appearance.current.isDark) ? UIColor.blue.adjust(brightness: 0.75) : UIColor.blue], range: match.range);
+                    
+                    attrText.setAttributes([NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue, NSAttributedString.Key.foregroundColor: self.linkColor()], range: match.range);
                 }
             }
         }
@@ -101,8 +100,16 @@ class ChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteractionDelegate
             }
         } else {
             if item.encryption == .notForThisDevice || item.encryption == .decryptionFailed {
-                self.messageTextView.textColor = Appearance.current.labelColor;
+                self.messageTextView.textColor = self.originalTextColor;
             }
+        }
+    }
+    
+    func linkColor() -> UIColor {
+        if #available(iOS 13.0, *) {
+            return UIColor.systemBlue;
+        } else {
+            return UIColor.blue;
         }
     }
     

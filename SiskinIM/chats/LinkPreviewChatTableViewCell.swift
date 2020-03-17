@@ -65,8 +65,6 @@ class LinkPreviewChatTableViewCell: BaseChatTableViewCell {
             
             let linkView = self.linkView as! LPLinkView;
             linkView.metadata = metadata!;
-            linkView.overrideUserInterfaceStyle = Appearance.current.isDark ? .dark : .light;
-
 
             if isNew {
                 MetadataCache.instance.generateMetadata(for: url, withId: "\(item.id)", completionHandler: { [weak linkView] meta1 in

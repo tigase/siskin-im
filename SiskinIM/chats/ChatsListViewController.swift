@@ -24,7 +24,7 @@ import UIKit
 import UserNotifications
 import TigaseSwift
 
-class ChatsListViewController: CustomTableViewController {
+class ChatsListViewController: UITableViewController {
     var xmppService:XmppService!;
     
     @IBOutlet var addMucButton: UIBarButtonItem!
@@ -42,14 +42,30 @@ class ChatsListViewController: CustomTableViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(ChatsListViewController.unreadCountChanged), name: DBChatStore.UNREAD_MESSAGES_COUNT_CHANGED, object: nil);
 //        NotificationCenter.default.addObserver(self, selector: #selector(appMovedToBackground), name: UIApplication.didEnterBackgroundNotification, object: nil);
         self.updateBadge();
+        setColors();
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        self.navigationController?.navigationBar.backgroundColor = Appearance.current.controlBackgroundColor;
+        //self.navigationController?.navigationBar.backgroundColor = Appearance.current.controlBackgroundColor;
 //        if dataSource == nil {
 //            dataSource = ChatsDataSource(controller: self);
 //        }
         super.viewWillAppear(animated);
+        animate();
+    }
+
+    private func animate() {
+        guard let coordinator = self.transitionCoordinator else {
+            return;
+        }
+        coordinator.animate(alongsideTransition: { [weak self] context in
+            self?.setColors();
+        }, completion: nil);
+    }
+    
+    private func setColors() {
+        navigationController?.navigationBar.barTintColor = UIColor(named: "chatslistBackground");
+        navigationController?.navigationBar.tintColor = UIColor.white;
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -84,9 +100,9 @@ class ChatsListViewController: CustomTableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath as IndexPath) as! ChatsListTableViewCell;
         
         if let item = dataSource?.item(at: indexPath) {
-            cell.nameLabel.textColor = Appearance.current.labelColor;
+//            cell.nameLabel.textColor = Appearance.current.labelColor;
             cell.nameLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.nameLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.nameLabel.font.pointSize);
-            cell.lastMessageLabel.textColor = item.unread > 0 ? Appearance.current.labelColor : Appearance.current.secondaryLabelColor;
+//            cell.lastMessageLabel.textColor = item.unread > 0 ? Appearance.current.labelColor : Appearance.current.secondaryLabelColor;
             if let lastActivity = item.lastActivity {
                 switch lastActivity {
                 case .message(let lastMessage, let sender):
@@ -130,7 +146,7 @@ class ChatsListViewController: CustomTableViewController {
             
             let formattedTS = self.formatTimestamp(item.timestamp);
             cell.timestampLabel.text = formattedTS;
-            cell.timestampLabel.textColor = Appearance.current.secondaryLabelColor;
+//            cell.timestampLabel.textColor = Appearance.current.secondaryLabelColor;
             
             let xmppClient = self.xmppService.getClient(forJid: item.account);
             switch item {
@@ -155,7 +171,6 @@ class ChatsListViewController: CustomTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        cell.backgroundColor = Appearance.current.systemBackground;
         if let accountCell = cell as? ChatsListTableViewCell {
             accountCell.avatarStatusView.updateCornerRadius();
         }

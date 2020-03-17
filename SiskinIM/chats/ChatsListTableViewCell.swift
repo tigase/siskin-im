@@ -22,11 +22,15 @@
 
 import UIKit
 
-class ChatsListTableViewCell: CustomTableViewCell {
+class ChatsListTableViewCell: UITableViewCell {
 
     // MARK: Properties
     @IBOutlet var nameLabel: UILabel!
-    @IBOutlet var avatarStatusView: AvatarStatusView!
+    @IBOutlet var avatarStatusView: AvatarStatusView! {
+        didSet {
+            avatarStatusView?.backgroundColor = UIColor(named: "chatslistBackground");
+        }
+    }
     @IBOutlet var lastMessageLabel: UILabel!
     @IBOutlet var timestampLabel: UILabel!
     
@@ -35,8 +39,8 @@ class ChatsListTableViewCell: CustomTableViewCell {
             return super.backgroundColor;
         }
         set {
-            super.backgroundColor = newValue;
-            avatarStatusView?.backgroundColor = newValue;
+            //super.backgroundColor = UIColor(named: "chatslistBackground");
+            avatarStatusView?.backgroundColor = UIColor(named: "chatslistBackground");
         }
     }    
 

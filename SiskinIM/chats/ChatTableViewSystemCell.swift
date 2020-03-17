@@ -30,7 +30,6 @@ class ChatTableViewSystemCell: UITableViewCell {
         switch item.kind {
         case .unreadMessages:
             messageView.text = "Unread messages"
-            messageView.textColor = Appearance.current.secondaryLabelColor;
         }
     }
 }

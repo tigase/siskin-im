@@ -22,7 +22,7 @@
 
 import UIKit
 
-class RosterItemTableViewCell: CustomTableViewCell {
+class RosterItemTableViewCell: UITableViewCell {
 
     override var backgroundColor: UIColor? {
         get {
@@ -34,13 +34,44 @@ class RosterItemTableViewCell: CustomTableViewCell {
         }
     }
     
-    @IBOutlet var avatarStatusView: AvatarStatusView!
+    @IBOutlet var avatarStatusView: AvatarStatusView! {
+        didSet {
+            self.avatarStatusView?.backgroundColor = self.backgroundColor;
+        }
+    }
     @IBOutlet var nameLabel: UILabel!
     @IBOutlet var statusLabel: UILabel!
+    
+    private var originalBackgroundColor: UIColor?;
     
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
     }
-
+    
+//    override var isHighlighted: Bool {
+//        didSet {
+//            avatarStatusView?.backgroundColor = isHighlighted ? UIColor(named: "tintColor") :  self.backgroundColor;
+//        }
+//    }
+    
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        if originalBackgroundColor == nil {
+            originalBackgroundColor = self.backgroundColor;
+            if originalBackgroundColor == nil {
+                if #available(iOS 13.0, *) {
+                    self.backgroundColor = UIColor.systemBackground;
+                } else {
+                    self.backgroundColor = UIColor.white;
+                }
+            }
+        }
+        if animated {
+            UIView.animate(withDuration: 0.2) {
+                self.backgroundColor = selected ? UIColor.lightGray : self.originalBackgroundColor;
+            }
+        } else {
+            self.backgroundColor = selected ? UIColor.lightGray : originalBackgroundColor;
+        }
+    }
 }

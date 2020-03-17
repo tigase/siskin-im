@@ -21,7 +21,7 @@
 
 import UIKit
 
-class OMEMOEncryptionSwitchTableViewCell: CustomTableViewCell {
+class OMEMOEncryptionSwitchTableViewCell: UITableViewCell {
     
     @IBOutlet var titleLabel: UILabel!
     

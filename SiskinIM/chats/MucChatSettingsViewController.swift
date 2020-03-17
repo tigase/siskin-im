@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class MucChatSettingsViewController: CustomTableViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class MucChatSettingsViewController: UITableViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     @IBOutlet var roomNameField: UILabel!;
     @IBOutlet var roomAvatarView: AvatarView!
@@ -38,7 +38,6 @@ class MucChatSettingsViewController: CustomTableViewController, UIImagePickerCon
     private var canEditVCard: Bool = false;
     
     override func viewWillAppear(_ animated: Bool) {
-        view.backgroundColor = Appearance.current.secondarySystemBackground;
         roomNameField.text = room.name ?? "";
         roomAvatarView.layer.cornerRadius = roomAvatarView.frame.width / 2;
         roomAvatarView.layer.masksToBounds = true;

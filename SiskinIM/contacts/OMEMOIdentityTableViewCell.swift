@@ -21,7 +21,7 @@
 
 import UIKit
 
-class OMEMOIdentityTableViewCell: CustomTableViewCell {
+class OMEMOIdentityTableViewCell: UITableViewCell {
     
     @IBOutlet var identityLabel: UILabel!
     

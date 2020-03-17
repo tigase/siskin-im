@@ -23,7 +23,7 @@ import UIKit
 import TigaseSwift
 import TigaseSwiftOMEMO
 
-class ContactViewController: CustomTableViewController {
+class ContactViewController: UITableViewController {
     
     var account: BareJID!;
     var jid: BareJID!;
@@ -290,17 +290,6 @@ class ContactViewController: CustomTableViewController {
 //            let cell = tableView.dequeueReusableCell(withIdentifier: "ContactFormCell", for: indexPath as IndexPath) as! ContactFormTableViewCell;
 //            return cell;
         }
-    }
-    
-    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        cell.tintColor = Appearance.current.tintColor;
-        cell.backgroundColor = Appearance.current.systemBackground;
-        cell.subviews.first?.subviews.forEach({ (view) in
-            (view as? UILabel)?.textColor = Appearance.current.tintColor;
-            if let textField = view as? UITextField, textField.inputView != nil {
-                textField.textColor = Appearance.current.tintColor;
-            }
-        })
     }
 
     override func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {

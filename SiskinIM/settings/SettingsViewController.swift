@@ -23,7 +23,7 @@
 import UIKit
 import TigaseSwift
 
-class SettingsViewController: CustomTableViewController {
+class SettingsViewController: UITableViewController {
    
     var statusNames = [
         "chat" : "Chat",
@@ -75,7 +75,7 @@ class SettingsViewController: CustomTableViewController {
         case 1:
             return 2;
         case 2:
-            return 6;
+            return SettingsGroup.groups.count;
         default:
             return 0;
         }
@@ -138,27 +138,35 @@ class SettingsViewController: CustomTableViewController {
                 return cell;
             }
         } else {
-            if indexPath.row == 0 {
+            switch SettingsGroup.groups[indexPath.row] {
+            case .appearance:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "AppearanceViewCell", for: indexPath);
+                if #available(iOS 13.0, *) {
+                    if let style = self.view.window?.overrideUserInterfaceStyle {
+                        cell.detailTextLabel?.text = AppearanceItem.description(of: style);
+                    } else {
+                        cell.detailTextLabel?.text = AppearanceItem.description(of: .unspecified);
+                    }
+                }
                 cell.accessoryType = .disclosureIndicator;
                 return cell;
-            } else if indexPath.row == 1 {
+            case .chat:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "ChatSettingsViewCell", for: indexPath);
                 cell.accessoryType = .disclosureIndicator;
                 return cell;
-            } else if indexPath.row == 2 {
+            case .contacts:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "ContactsSettingsViewCell", for: indexPath);
                 cell.accessoryType = .disclosureIndicator;
                 return cell;
-            } else if indexPath.row == 3 {
+            case .notifications:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationSettingsViewCell", for: indexPath);
                 cell.accessoryType = .disclosureIndicator;
                 return cell;
-            } else if indexPath.row == 4 {
+            case .experimental:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "ExperimentalSettingsViewCell", for: indexPath);
                 cell.accessoryType = .disclosureIndicator;
                 return cell;
-            } else {
+            case .about:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "AboutSettingsViewCell", for: indexPath);
                 return cell;
             }
@@ -166,7 +174,6 @@ class SettingsViewController: CustomTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        super.tableView(tableView, willDisplay: cell, forRowAt: indexPath);
         if let accountCell = cell as? AccountTableViewCell {
             accountCell.avatarStatusView.updateCornerRadius();
         }
@@ -193,11 +200,10 @@ class SettingsViewController: CustomTableViewController {
             } else {
                 // show edit account dialog
                 let account = accounts[indexPath.row];
-                let navigation = AppStoryboard.Main.instantiateViewController(withIdentifier: "AccountSettingsNavigationController") as! UINavigationController;
-                let accountSettingsController = navigation.visibleViewController! as! AccountSettingsViewController;
+                let accountSettingsController = AccountSettingsViewController.instantiate(fromAppStoryboard: .Account);
                 accountSettingsController.hidesBottomBarWhenPushed = true;
                 accountSettingsController.account = BareJID(account);
-                self.showDetailViewController(navigation, sender: self);
+                self.navigationController?.pushViewController(accountSettingsController, animated: true);
             }
         } else if indexPath.section == 1 {
             if indexPath.row == 0 {
@@ -233,7 +239,61 @@ class SettingsViewController: CustomTableViewController {
                 }));
                 self.present(alert, animated: true, completion: nil);
             }
+        } else if indexPath.section == 2 {
+            switch SettingsGroup.groups[indexPath.row] {
+            case .appearance:
+                if #available(iOS 13.0, *) {
+                let controller = TablePickerViewController(style: .grouped);
+                let values: [UIUserInterfaceStyle] = [.unspecified, .light, .dark];
+                controller.selected = values.firstIndex(of: self.view.window?.overrideUserInterfaceStyle ?? .unspecified) ?? 0;
+                controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
+                    return AppearanceItem(value: it);
+                });
+                controller.onSelectionChange = { (_item) -> Void in
+                    let item = _item as! AppearanceItem;
+                    for window in UIApplication.shared.windows {
+                        window.overrideUserInterfaceStyle = item.value;
+                    }
+                    switch item.value {
+                    case .dark:
+                        Settings.appearance.setValue("dark")
+                    case .light:
+                        Settings.appearance.setValue("light")
+                    case .unspecified:
+                        Settings.appearance.setValue("auto")
+                    }
+                    self.tableView.reloadData();
+                };
+                self.navigationController?.pushViewController(controller, animated: true);
+                }
+            default:
+                break;
+            }
         }
+    }
+    
+    @available(iOS 13.0, *)
+    class AppearanceItem: TablePickerViewItemsProtocol {
+    
+    public static func description(of value: UIUserInterfaceStyle) -> String {
+        switch value {
+        case .unspecified:
+            return "Auto";
+        case .light:
+            return "Light";
+        case .dark:
+            return "Dark";
+        }
+    }
+    
+    let description: String;
+    let value: UIUserInterfaceStyle;
+    
+    init(value: UIUserInterfaceStyle) {
+        self.value = value;
+        self.description = AppearanceItem.description(of: value);
+    }
+        
     }
     
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
@@ -357,13 +417,13 @@ class SettingsViewController: CustomTableViewController {
     func showAddAccount(register: Bool) {
         // show add account dialog
         if !register {
-            let addAccountController = AddAccountController.instantiate(fromAppStoryboard: .Main);
+            let addAccountController = AddAccountController.instantiate(fromAppStoryboard: .Account);
             addAccountController.hidesBottomBarWhenPushed = true;
-            self.showDetailViewController(UINavigationController(rootViewController: addAccountController), sender: self);
+            self.navigationController?.pushViewController(addAccountController, animated: true);
         } else {
-            let registerAccountController = RegisterAccountController.instantiate(fromAppStoryboard: .Main);
+            let registerAccountController = RegisterAccountController.instantiate(fromAppStoryboard: .Account);
             registerAccountController.hidesBottomBarWhenPushed = true;
-            self.showDetailViewController(UINavigationController(rootViewController: registerAccountController), sender: self);
+            self.navigationController?.pushViewController(registerAccountController, animated: true);
         }
     }
     
@@ -407,5 +467,25 @@ class SettingsViewController: CustomTableViewController {
         UIGraphicsEndImageContext();
         return image.withRenderingMode(.alwaysOriginal);
     }
-
+ 
+    @IBAction func closeClicked(_ sender: Any) {
+        self.dismiss(animated: true, completion: nil);
+    }
+    
+    enum SettingsGroup {
+        case appearance
+        case chat
+        case contacts
+        case notifications
+        case experimental
+        case about
+        
+        static let groups: [SettingsGroup] = {
+            if #available(iOS 13.0, *) {
+                return [.appearance, .chat, .contacts, .notifications, .experimental, .about]
+            } else {
+                return [.chat, .contacts, .notifications, .experimental, .about]
+            }
+        }()
+    }
 }

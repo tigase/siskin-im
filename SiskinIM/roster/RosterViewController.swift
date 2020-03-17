@@ -25,23 +25,95 @@ import TigaseSwift
 
 class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDelegate {
 
+    var availabilityFilterSelector: UISegmentedControl?;
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         searchController.searchBar.delegate = self;
         searchController.searchBar.scopeButtonTitles = ["By name", "By status"];
         
         // Do any additional setup after loading the view, typically from a nib.
-        let lpgr = UILongPressGestureRecognizer(target: self, action: #selector(RosterViewController.handleLongPress));
-        lpgr.minimumPressDuration = 1.0;
-        lpgr.delegate = self;
-        tableView.addGestureRecognizer(lpgr);
+        if #available(iOS 13.0, *) {            
+        } else {
+            let lpgr = UILongPressGestureRecognizer(target: self, action: #selector(RosterViewController.handleLongPress));
+            lpgr.minimumPressDuration = 1.0;
+            lpgr.delegate = self;
+            tableView.addGestureRecognizer(lpgr);
+        }
 
         navigationItem.leftBarButtonItem = self.editButtonItem
-        let availabilityFilterSelector = UISegmentedControl(items: ["All", "Available"]);
+        availabilityFilterSelector = UISegmentedControl(items: ["All", "Available"]);
         navigationItem.titleView = availabilityFilterSelector;
-        availabilityFilterSelector.selectedSegmentIndex = Settings.RosterAvailableOnly.getBool() ? 1 : 0;
-        availabilityFilterSelector.addTarget(self, action: #selector(RosterViewController.availabilityFilterChanged), for: .valueChanged);
+        availabilityFilterSelector?.selectedSegmentIndex = Settings.RosterAvailableOnly.getBool() ? 1 : 0;
+        availabilityFilterSelector?.addTarget(self, action: #selector(RosterViewController.availabilityFilterChanged), for: .valueChanged);
         
+        setColors();
+        updateNavBarColors();
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(settingsChanged(_:)), name: Settings.SETTINGS_CHANGED, object: nil);
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated);
+        animate();
+    }
+    
+    private func animate() {
+        guard let coordinator = self.transitionCoordinator else {
+            return;
+        }
+        coordinator.animate(alongsideTransition: { [weak self] context in
+            self?.setColors();
+        }, completion: nil);
+    }
+    
+    private func setColors() {
+//        navigationController?.navigationBar.barStyle = .black;
+//        navigationController?.navigationBar.isTranslucent = true;
+        searchController.searchBar.barStyle = .black;
+        searchController.searchBar.tintColor = UIColor.white;
+        navigationController?.navigationBar.barTintColor = UIColor(named: "chatslistBackground")?.withAlphaComponent(0.2);
+        navigationController?.navigationBar.tintColor = UIColor.white;
+        if #available(iOS 13.0, *) {
+//            (navigationItem.titleView as? UISegmentedControl)?.selectedSegmentTintColor =
+        } else {
+        }
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection);
+        updateNavBarColors();
+    }
+    
+    func updateNavBarColors() {
+        if #available(iOS 13.0, *) {
+            if self.traitCollection.userInterfaceStyle == .dark {
+                availabilityFilterSelector?.setTitleTextAttributes([NSAttributedString.Key.foregroundColor : UIColor.white], for: .selected);
+                availabilityFilterSelector?.setTitleTextAttributes([NSAttributedString.Key.foregroundColor : UIColor.white], for: .normal);
+                searchController.searchBar.setScopeBarButtonTitleTextAttributes([NSAttributedString.Key.foregroundColor : UIColor.white], for: .selected)
+                searchController.searchBar.setScopeBarButtonTitleTextAttributes([NSAttributedString.Key.foregroundColor : UIColor.white], for: .normal);
+            } else {
+                availabilityFilterSelector?.setTitleTextAttributes([NSAttributedString.Key.foregroundColor : UIColor(named: "chatslistBackground")!], for: .selected);
+                availabilityFilterSelector?.setTitleTextAttributes([NSAttributedString.Key.foregroundColor : UIColor.white], for: .normal);
+                searchController.searchBar.setScopeBarButtonTitleTextAttributes([NSAttributedString.Key.foregroundColor : UIColor(named: "chatslistBackground")!], for: .selected)
+                searchController.searchBar.setScopeBarButtonTitleTextAttributes([NSAttributedString.Key.foregroundColor : UIColor.white], for: .normal);
+            }
+            searchController.searchBar.searchTextField.textColor = UIColor.white;
+            searchController.searchBar.searchTextField.backgroundColor = (self.traitCollection.userInterfaceStyle != .dark ? UIColor.black : UIColor.white).withAlphaComponent(0.2);
+            DispatchQueue.main.async {
+                self.availabilityFilterSelector?.selectedSegmentIndex = Settings.RosterAvailableOnly.getBool() ? 1 : 0;
+            }
+        }
+    }
+    
+    @objc func settingsChanged(_ notification: Notification) {
+        guard let setting = Settings(rawValue: (notification.userInfo?["key"] as? String) ?? ""), setting == Settings.RosterType else {
+            return;
+        }
+        DispatchQueue.main.async {
+            self.initializeRosterProvider(availableOnly: (self.availabilityFilterSelector?.selectedSegmentIndex ?? 0) == 1, sortOrder: self.searchController.searchBar.selectedScopeButtonIndex == 0 ? .alphabetical : .availability);
+            self.tableView.reloadData();
+        }
     }
     
     override func initializeRosterProvider(availableOnly: Bool, sortOrder: RosterSortingOrder) {
@@ -62,11 +134,8 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
         
         if let item = roster?.item(at: indexPath) {
             cell.nameLabel.text = item.displayName;
-            cell.nameLabel.textColor = Appearance.current.labelColor;
-            cell.statusLabel.textColor = Appearance.current.secondaryLabelColor;
             cell.statusLabel.text = item.presence?.status ?? item.jid.stringValue;
             cell.avatarStatusView.setStatus(item.presence?.show);
-            cell.avatarStatusView.backgroundColor = Appearance.current.systemBackground;
             cell.avatarStatusView.set(name: item.displayName, avatar: AvatarManager.instance.avatar(for: item.jid.bareJid, on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
         }
         
@@ -77,7 +146,10 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
         guard let item = roster?.item(at: indexPath) else {
             return;
         }
+        createChat(for: item);
+    }
 
+    private func createChat(for item: RosterProviderItem) {
         let xmppClient = XmppService.instance.getClient(forJid: item.account);
         let messageModule:MessageModule? = xmppClient?.modulesManager.getModule(MessageModule.ID);
         
@@ -183,6 +255,55 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
         }
     }
     
+    @available(iOS 13.0, *)
+    override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        guard let item = roster?.item(at: indexPath) else {
+            return nil;
+        }
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { suggestedActions -> UIMenu? in
+            return self.prepareContextMenu(item: item);
+        };
+    }
+    
+//    @available(iOS 13.0, *)
+//    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+//        var cfg = UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { suggestedActions -> UIMenu? in
+//            return self.prepareContextMenu();
+//        };
+//        return cfg;
+//    }
+    
+    @available(iOS 13.0, *)
+    func prepareContextMenu(item: RosterProviderItem) -> UIMenu {
+        var items = [
+            UIAction(title: "Chat", image: UIImage(systemName: "message"), handler: { action in
+                self.createChat(for: item);
+            })
+        ];
+        #if targetEnvironment(simulator)
+        #else
+        let jingleSupport = JingleManager.instance.support(for: item.jid, on: item.account);
+        if jingleSupport.contains(.audio) && jingleSupport.contains(.video) {
+            items.append(UIAction(title: "Video call", image: UIImage(systemName: "video"), handler: { (action) in
+                VideoCallController.call(jid: item.jid.bareJid, from: item.account, withAudio: true, withVideo: true, sender: self);
+            }));
+        }
+        if jingleSupport.contains(.audio) {
+            items.append(UIAction(title: "Audio call", image: UIImage(systemName: "phone"), handler: { (action) in
+                VideoCallController.call(jid: item.jid.bareJid, from: item.account, withAudio: true, withVideo: false, sender: self);
+            }));
+        }
+        #endif
+        items.append(contentsOf: [
+            UIAction(title: "Edit", image: UIImage(systemName: "pencil"), handler: {(action) in
+                self.openEditItem(for: item.account, jid: item.jid);
+            }),
+            UIAction(title: "Info", image: UIImage(systemName: "info.circle"), handler: { action in
+                self.showItemInfo(for: item.account, jid: item.jid);
+            })
+        ]);
+        return UIMenu(title: "", children: items);
+    }
     
     @IBAction func addBtnClicked(_ sender: UIBarButtonItem) {
         self.openEditItem(for: nil, jid: nil);

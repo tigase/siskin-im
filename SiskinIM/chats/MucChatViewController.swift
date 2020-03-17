@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar, UITableViewDataSource, BaseChatViewController_ShareImageExtension, BaseChatViewController_PreviewExtension {
+class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar, UITableViewDataSource, BaseChatViewController_ShareImageExtension {
 
     static let MENTION_OCCUPANT = Notification.Name("groupchatMentionOccupant");
     
@@ -42,21 +42,20 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
 
     let log: Logger = Logger();
 
-    @IBOutlet var shareButton: UIButton!;
-    @IBOutlet var progressBar: UIProgressView!;
+    @IBOutlet var progressBar: UIProgressView?;
     var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
     var filePickerDelegate: BaseChatViewController_ShareFilePickerDelegate?;
 
     override func viewDidLoad() {
-        super.viewDidLoad()
         
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
-        let mucModule: MucModule? = xmppService.getClient(forJid: account)?.modulesManager?.getModule(MucModule.ID);
+        let mucModule: MucModule? = XmppService.instance.getClient(forJid: account)?.modulesManager?.getModule(MucModule.ID);
         room = mucModule?.roomsManager.getRoom(for: jid) as? DBRoom;
+        super.viewDidLoad()
         navigationItem.title = room?.name ?? jid.stringValue;
         
         titleView?.name = navigationItem.title;
@@ -67,7 +66,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         tableView.dataSource = self;
         tableView.delegate = self;
         
-        initSharing();
+        initializeSharing();
         
         NotificationCenter.default.addObserver(self, selector: #selector(MucChatViewController.roomStatusChanged), name: MucEventHandler.ROOM_NAME_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(MucChatViewController.roomStatusChanged), name: MucEventHandler.ROOM_STATUS_CHANGED, object: nil);
@@ -134,7 +133,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             if let author = item.authorNickname, let recipient = item.recipientNickname {
                 let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(author) " : "To \(recipient)  ");
                 let font = UIFont.italicSystemFont(ofSize: cell.nicknameView!.font!.pointSize - 2);
-                val.append(NSAttributedString(string: " (private message)", attributes: [.font: font, .foregroundColor: Appearance.current.secondaryLabelColor]));
+                val.append(NSAttributedString(string: " (private message)", attributes: [.font: font, .foregroundColor: UIColor(named: "chatMessageText")]));
 
                 cell.nicknameView?.attributedText = val;
             } else {
@@ -142,7 +141,6 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             }
 
             cell.set(message: item);
-            cell.backgroundColor = Appearance.current.systemBackground;
             return cell;
         case let item as ChatAttachment:
             let id = continuation ? "MucChatTableViewAttachmentContinuationCell" : "MucChatTableViewAttachmentCell";
@@ -161,7 +159,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             if let author = item.authorNickname, let recipient = item.recipientNickname {
                 let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(author) " : "To \(recipient)  ");
                 let font = UIFont.italicSystemFont(ofSize: cell.nicknameView!.font!.pointSize - 2);
-                val.append(NSAttributedString(string: " (private message)", attributes: [.font: font, .foregroundColor: Appearance.current.secondaryLabelColor]));
+                val.append(NSAttributedString(string: " (private message)", attributes: [.font: font, .foregroundColor: UIColor(named: "chatMessageText")]));
 
                 cell.nicknameView?.attributedText = val;
             } else {
@@ -243,11 +241,9 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
     }
 
     fileprivate func updateTitleView() {
-        let state = xmppService.getClient(forJid: self.account)?.state;
+        let state = XmppService.instance.getClient(forJid: self.account)?.state;
         DispatchQueue.main.async {
             self.titleView?.connected = state != nil && state == .connected;
-            self.titleView?.nameView.textColor = Appearance.current.navigationBarTextColor;
-            self.titleView?.statusView.textColor = Appearance.current.navigationBarTextColor;
         }
     }
     
@@ -274,10 +270,6 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         }
     }
     
-    @IBAction func shareClicked(_ sender: UIButton) {
-        self.showPhotoSelector(sender);
-    }
-
     func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (() -> Void)?) {
         self.room!.sendMessage(uploadedUrl, url: uploadedUrl, additionalElements: []);
         completionHandler?();

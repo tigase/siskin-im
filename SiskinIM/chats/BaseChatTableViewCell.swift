@@ -51,6 +51,8 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
     @IBOutlet var timestampView: UILabel?
     @IBOutlet var stateView: UILabel?;
                     
+    var originalTimestampColor: UIColor!;
+    
     func formatTimestamp(_ ts: Date) -> String {
         let flags: Set<Calendar.Component> = [.day, .year];
         let components = Calendar.current.dateComponents(flags, from: ts, to: Date());
@@ -72,6 +74,7 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
             avatarView!.layer.masksToBounds = true;
             avatarView!.layer.cornerRadius = avatarView!.frame.height / 2;
         }
+        originalTimestampColor = timestampView?.textColor;
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
@@ -104,24 +107,19 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
         }
         switch item.state {
         case .incoming_error, .incoming_error_unread:
-            //elf.message.textColor = NSColor.systemRed;
             self.stateView?.text = "\u{203c}";
         case .outgoing_unsent:
-            //self.message.textColor = NSColor.secondaryLabelColor;
             self.stateView?.text = "\u{1f4e4}";
         case .outgoing_delivered:
-            //self.message.textColor = nil;
             self.stateView?.text = "\u{2713}";
         case .outgoing_error, .outgoing_error_unread:
-            //self.message.textColor = nil;
             self.stateView?.text = "\u{203c}";
         default:
-            //self.state?.stringValue = "";
             self.stateView?.text = nil;//NSColor.textColor;
         }
         if stateView == nil {
             if item.state.direction == .outgoing {
-                timestampView?.textColor = UIColor.lightGray;
+                timestampView?.textColor = originalTimestampColor;
                 if item.state.isError {
                     timestampView?.textColor = UIColor.red;
                     timestamp = "\(timestamp) Not delivered\u{203c}";
@@ -131,9 +129,7 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
             }
         }
         timestampView?.text = timestamp;
-        
-        self.nicknameView?.textColor = Appearance.current.labelColor;
-        
+                
         if item.state.isError {
             if item.state.direction == .outgoing {
                 self.accessoryType = .detailButton;
@@ -144,8 +140,8 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
             self.tintColor = stateView?.tintColor;
         }
         
-        self.stateView?.textColor = item.state.isError && item.state.direction == .incoming ? UIColor.red : Appearance.current.labelColor;
-        self.timestampView?.textColor = item.state.isError && item.state.direction == .incoming ? UIColor.red : Appearance.current.labelColor;
+        self.stateView?.textColor = item.state.isError && item.state.direction == .incoming ? UIColor.red : originalTimestampColor;
+        self.timestampView?.textColor = item.state.isError && item.state.direction == .incoming ? UIColor.red : originalTimestampColor;
     }
     
     @objc func actionMore(_ sender: UIMenuController) {

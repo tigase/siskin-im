@@ -53,6 +53,7 @@ public enum Settings: String {
     
     @available(iOS 13.0, *)
     case linkPreviews
+    case appearance
     
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     
@@ -75,9 +76,9 @@ public enum Settings: String {
             "RecentsMessageLinesNo" : 2,
             "RecentsOrder" : "byTime",
             "SendMessageOnReturn" : true,
-            "AppearanceTheme": "classic",
             "messageEncryption": "none",
-            "linkPreviews": true
+            "linkPreviews": true,
+            "appearance": "auto"
         ];
         store.register(defaults: defaults);
         ["EnableMessageCarbons": Settings.enableMessageCarbons, "MessageEncryption": .messageEncryption, "EnableBookmarksSync": Settings.enableBookmarksSync].forEach { (oldKey, newKey) in
@@ -92,6 +93,20 @@ public enum Settings: String {
             Settings.fileDownloadSizeLimit.setValue(downloadLimit);
         }
         store.removeObject(forKey: "new-ui");
+        if let val = store.object(forKey: "AppearanceTheme") as? String {
+            store.removeObject(forKey: "AppearanceTheme");
+            let parts = val.split(separator: "-");
+            if parts.count > 1 {
+                switch parts[1] {
+                case "light":
+                    store.set("light", forKey: Settings.appearance.rawValue);
+                case "dark":
+                    store.set("dark", forKey: Settings.appearance.rawValue);
+                default:
+                    break;
+                }
+            }
+        }
         store.dictionaryRepresentation().forEach { (k, v) in
             if let key = Settings(rawValue: k) {
                 if isShared(key: key) {

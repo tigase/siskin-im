@@ -52,14 +52,21 @@ class InviteViewController: AbstractRosterViewController {
             onNext(selected);
         }
     }
-    
+        
     public override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 
         guard let item = roster?.item(at: indexPath) else {
             return;
         }
         guard !tableView.allowsMultipleSelection else {
-            selected.append(item.jid);
+            if selected.contains(item.jid) {
+                selected = selected.filter({ (jid) -> Bool in
+                    return jid != item.jid;
+                });
+                tableView.deselectRow(at: indexPath, animated: true);
+            } else {
+                selected.append(item.jid);
+            }
             return;
         }
 

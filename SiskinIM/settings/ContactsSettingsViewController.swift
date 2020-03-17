@@ -21,7 +21,7 @@
 
 import UIKit
 
-class ContactsSettingsViewController: CustomTableViewController {
+class ContactsSettingsViewController: UITableViewController {
     
     let tree: [[SettingsEnum]] = [
         [SettingsEnum.rosterType, SettingsEnum.rosterDisplayHiddenGroup],

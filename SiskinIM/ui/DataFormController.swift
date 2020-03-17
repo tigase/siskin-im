@@ -23,7 +23,7 @@ import UIKit
 import TigaseSwift
 
 
-class DataFormController: CustomTableViewController {
+class DataFormController: UITableViewController {
     
     var form: JabberDataElement?;
     
@@ -112,7 +112,6 @@ class DataFormController: CustomTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        super.tableView(tableView, willDisplay: cell, forRowAt: indexPath);
         if errors.firstIndex(where: { (idx)->Bool in
             return idx.row == indexPath.row && idx.section == indexPath.section
         }) != nil {
@@ -567,7 +566,7 @@ class DataFormController: CustomTableViewController {
         }
     }
     
-    class ListSelectorController: CustomTableViewController {
+    class ListSelectorController: UITableViewController {
         
         var field: ListField! {
             didSet {
@@ -598,7 +597,6 @@ class DataFormController: CustomTableViewController {
         }
         
         override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-            super.tableView(tableView, willDisplay: cell, forRowAt: indexPath);
             let option = options[indexPath.row];
             if let multiList: ListMultiField = field as? ListMultiField {
                 let values = multiList.value;

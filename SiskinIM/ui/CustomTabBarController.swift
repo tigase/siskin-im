@@ -24,32 +24,17 @@ import UIKit
 
 class CustomTabBarController: UITabBarController {
  
-    override var preferredStatusBarStyle: UIStatusBarStyle {
-        return Appearance.current.isDark ? .lightContent : .default;
-    }
-    
     override func viewDidLoad() {
-        for childController in self.children {
-            if childController is UINavigationController {
-                childController.view.backgroundColor = Appearance.current.systemBackground;
-            }
-        }
-        NotificationCenter.default.addObserver(self, selector: #selector(appearanceChanged), name: Appearance.CHANGED, object: nil);
+        self.tabBar.unselectedItemTintColor = self.tabBar.barStyle == .black ? nil : UIColor.lightGray.lighter(ratio: 0.1);
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection);
         if #available(iOS 13.0, *) {
             if previousTraitCollection?.hasDifferentColorAppearance(comparedTo: traitCollection) ?? false {
-                Appearance.sync();
+                self.tabBar.unselectedItemTintColor = self.tabBar.barStyle == .black ? nil : UIColor.lightGray;
             }
         }
     }
-    
-    @objc func appearanceChanged(_ notification: Notification) {
-        self.tabBar.barTintColor = Appearance.current.bottomBarBackgroundColor;
-        self.tabBar.tintColor = Appearance.current.bottomBarTintColor;
-        self.setNeedsStatusBarAppearanceUpdate();
-    }
-    
+        
 }

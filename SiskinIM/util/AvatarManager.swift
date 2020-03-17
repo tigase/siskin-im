@@ -36,11 +36,10 @@ open class AvatarManager {
     private var cache: [BareJID: AccountAvatarHashes] = [:];
 
     public init(store: AvatarStore) {
-        defaultAvatar = UIImage(named: Appearance.current.isDark ? "defaultAvatarDark" : "defaultAvatarLight")!;
-        defaultGroupchatAvatar = UIImage(named: Appearance.current.isDark ? "defaultGroupchatAvatarDark" : "defaultGroupchatAvatarLight")!;
+        defaultAvatar = UIImage(named: "defaultAvatar")!;
+        defaultGroupchatAvatar = UIImage(named: "defaultGroupchatAvatar")!;
         self.store = store;
         NotificationCenter.default.addObserver(self, selector: #selector(AvatarManager.vcardUpdated), name: DBVCardsCache.VCARD_UPDATED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(appearanceChanged), name: Appearance.CHANGED, object: nil);
     }
     
     open func avatar(for jid: BareJID, on account: BareJID) -> UIImage? {
@@ -112,11 +111,6 @@ open class AvatarManager {
                 self.updateAvatar(hash: hash, forType: .vcardTemp, forJid: vcardItem.jid, on: vcardItem.account);
             }
         }
-    }
-
-    @objc func appearanceChanged(_ notification: Notification) {
-        self.defaultAvatar = UIImage(named: Appearance.current.isDark ? "defaultAvatarDark" : "defaultAvatarLight")!;
-        self.defaultGroupchatAvatar = UIImage(named: Appearance.current.isDark ? "defaultGroupchatAvatarDark" : "defaultGroupchatAvatarLight")!;
     }
     
     func retrievePepUserAvatar(for jid: BareJID, on account: BareJID, hash: String) {

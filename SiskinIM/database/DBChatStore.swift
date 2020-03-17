@@ -292,8 +292,7 @@ open class DBChatStore {
                 DBChatHistoryStore.instance.markAsRead(for: account, with: dbChat.jid.bareJid, before: Date().addingTimeInterval(60));
             }
             
-            NotificationCenter.default.post(name: DBChatStore.CHAT_CLOSED, object: dbChat
-                );
+            NotificationCenter.default.post(name: DBChatStore.CHAT_CLOSED, object: dbChat);
             
             return true;
         }

@@ -24,10 +24,6 @@ import TigaseSwift
 
 class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatViewControllerWithDataSource {
 
-    @IBOutlet var customToolbar: UIToolbar?;
-    @IBOutlet var customToolbarHeightConstraint: NSLayoutConstraint?;
-    @IBOutlet var bottomViewHeightConstraint: NSLayoutConstraint?;
-
     fileprivate weak var timestampsSwitch: UIBarButtonItem? = nil;
     fileprivate var withTimestamps: Bool {
         get {
@@ -39,15 +35,12 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
     };
     
     override func viewWillAppear(_ animated: Bool) {
-        bottomViewHeightConstraint?.isActive = false;
         if #available(iOS 13.0, *) {
             
         } else {
             var items: [UIMenuItem] = UIMenuController.shared.menuItems ?? [];
             items.append(UIMenuItem(title: "More..", action: #selector(ChatTableViewCell.actionMore(_:))));
             UIMenuController.shared.menuItems = items;
-        
-            customToolbar?.barStyle = Appearance.current.isDark ? .black : .default;
         }
         
         super.viewWillAppear(animated);
@@ -64,7 +57,11 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         guard let cell = notification.object as? UITableViewCell else {
             return;
         }
-        let selected = tableView?.indexPath(for: cell);
+
+        DispatchQueue.main.async {
+        self.view.endEditing(true);
+            DispatchQueue.main.async {
+            let selected = self.tableView?.indexPath(for: cell);
         UIView.animate(withDuration: 0.3) {
             self.tableView?.isEditing = true;
             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.3) {
@@ -72,32 +69,30 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
             }
             
             self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.editCancelClicked));
+            
             let timestampsSwitch = UIBarButtonItem(title: "Timestamps: \(self.withTimestamps ? "ON" : "OFF")", style: .plain, target: self, action: #selector(BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.switchWithTimestamps));
             self.timestampsSwitch = timestampsSwitch;
 
             self.updateTimestampSwitch();
-            
+            self.navigationController?.toolbar.tintColor = UIColor(named: "tintColor");
+            print("navigationController:", self.navigationController as Any)
             let items = [
                 timestampsSwitch,
                 UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
                 UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.shareSelectedMessages))
 //                UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
             ];
-            self.customToolbar?.items = items;
-            self.customToolbar?.isHidden = false;
-            self.customToolbarHeightConstraint?.isActive = false;
-            self.bottomViewHeightConstraint?.isActive = true;
-            self.bottomPanel.isHidden = true;
+            
+            self.navigationController?.setToolbarHidden(false, animated: true);
+            self.setToolbarItems(items, animated: true);
+        }
+        }
         }
     }
     
     func hideEditToolbar() {
         UIView.animate(withDuration: 0.3) {
-            self.customToolbar?.isHidden = true;
-            self.bottomViewHeightConstraint?.isActive = false;
-            self.customToolbarHeightConstraint?.isActive = true;
-            self.bottomPanel.isHidden = false;
-            self.customToolbar?.items = nil;
+            self.navigationController?.setToolbarHidden(true, animated: true);
             self.navigationItem.rightBarButtonItem = nil;
             self.tableView?.isEditing = false;
         }
@@ -154,9 +149,9 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         if action == #selector(UIResponderStandardEditActions.copy(_:)) {
             return true;
         }
-        if customToolbar != nil && action == #selector(ChatTableViewCell.actionMore(_:)) {
-            return true;
-        }
+//        if customToolbar != nil && action == #selector(ChatTableViewCell.actionMore(_:)) {
+//            return true;
+//        }
         }
         return false;
     }

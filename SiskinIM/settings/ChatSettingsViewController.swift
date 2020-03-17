@@ -21,7 +21,7 @@
 
 import UIKit
 
-class ChatSettingsViewController: CustomTableViewController {
+class ChatSettingsViewController: UITableViewController {
 
     let tree: [[SettingsEnum]] = {
         if #available(iOS 13.0, *) {

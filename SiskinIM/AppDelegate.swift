@@ -56,7 +56,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Log.initialize();
         Settings.initialize();
         AccountSettings.initialize();
-        Appearance.sync();
+        if #available(iOS 13.0, *) {
+            switch Settings.appearance.string()! {
+            case "light":
+                for window in application.windows {
+                    window.overrideUserInterfaceStyle = .light;
+                }
+            case "dark":
+                for window in application.windows {
+                    window.overrideUserInterfaceStyle = .dark;
+                }
+            default:
+                break;
+            }
+        }
+        UINavigationBar.appearance().tintColor = UIColor(named: "tintColor");
         NotificationManager.instance.initialize(provider: MainNotificationManagerProvider());
         xmppService.initialize();
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
@@ -164,9 +178,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func applicationWillEnterForeground(_ application: UIApplication) {
-        if #available(iOS 13.0, *) {
-            Appearance.sync();
-        }
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
             let toDiscard = notifications.filter({(notification) in
@@ -324,7 +335,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         case .register:
             let alert = UIAlertController(title: "Registering account", message: xmppUri.jid.localPart == nil ? "Do you wish to register a new account at \(xmppUri.jid.domain!)?" : "Do you wish to register a new account \(xmppUri.jid.stringValue)?", preferredStyle: .alert);
             alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { action in
-                let registerAccountController = RegisterAccountController.instantiate(fromAppStoryboard: .Main);
+                let registerAccountController = RegisterAccountController.instantiate(fromAppStoryboard: .Account);
                 registerAccountController.hidesBottomBarWhenPushed = true;
                 registerAccountController.account = xmppUri.jid.bareJid;
                 registerAccountController.preauth = xmppUri.dict?["preauth"];

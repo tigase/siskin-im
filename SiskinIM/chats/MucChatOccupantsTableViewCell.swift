@@ -21,7 +21,7 @@
 
 import UIKit
 
-class MucChatOccupantsTableViewCell: CustomTableViewCell {
+class MucChatOccupantsTableViewCell: UITableViewCell {
 
 
     @IBOutlet var avatarStatusView: AvatarStatusView!

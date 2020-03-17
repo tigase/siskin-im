@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class AccountSettingsViewController: CustomTableViewController {
+class AccountSettingsViewController: UITableViewController {
     
     var account: BareJID!;
     

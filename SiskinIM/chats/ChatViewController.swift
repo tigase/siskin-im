@@ -25,7 +25,7 @@ import Shared
 import TigaseSwift
 import TigaseSwiftOMEMO
 
-class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar, UITableViewDataSource, BaseChatViewController_ShareImageExtension, BaseChatViewController_PreviewExtension {
+class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar, UITableViewDataSource, BaseChatViewController_ShareImageExtension {
 
     var titleView: ChatTitleView! {
         get {
@@ -34,44 +34,23 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     }
     
     let log: Logger = Logger();
-    
-    //var dataSource: ChatViewDataSource = ChatViewDataSource();
-    
+        
     var refreshControl: UIRefreshControl!;
     
-    @IBOutlet var shareButton: UIButton!;
-    @IBOutlet var progressBar: UIProgressView!;
+    @IBOutlet var progressBar: UIProgressView?;
     var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
     var filePickerDelegate: BaseChatViewController_ShareFilePickerDelegate?;
     
     fileprivate static let loadChatInfo: DBStatement = try! DBConnection.main.prepareStatement("SELECT r.name FROM roster_items r WHERE r.account = :account AND r.jid = :jid");
     
     override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        let messageModule: MessageModule? = xmppService.getClient(forJid: account)?.modulesManager.getModule(MessageModule.ID);
+        let messageModule: MessageModule? = XmppService.instance.getClient(forJid: account)?.modulesManager.getModule(MessageModule.ID);
         self.chat = messageModule?.chatManager.getChat(with: JID(self.jid), thread: nil) as? DBChat;
         
+        super.viewDidLoad()
+
         tableView.dataSource = self;
         tableView.delegate = self;
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-        
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
-        
-//        let navBarHeight = self.navigationController!.navigationBar.frame.size.height;
-//        let width = CGFloat(220);
-
-//        titleView = ChatTitleView(width: width, height: navBarHeight);
-//        titleView.name = navigationItem.title;
-        
-//        let buddyBtn = UIButton(type: .system);
-//        buddyBtn.frame = CGRect(x: 0, y: 0, width: width, height: navBarHeight);
-//        buddyBtn.addSubview(titleView);
-        
-//        buddyBtn.addTarget(self, action: #selector(ChatViewController.showBuddyInfo), for: .touchDown);
-        //self.navigationItem.titleView = buddyBtn;
         
         let recognizer = UITapGestureRecognizer(target: self, action: #selector(ChatViewController.showBuddyInfo));
         self.titleView.isUserInteractionEnabled = true;
@@ -80,7 +59,8 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
         self.refreshControl = UIRefreshControl();
         self.refreshControl?.addTarget(self, action: #selector(ChatViewController.refreshChatHistory), for: UIControl.Event.valueChanged);
         self.tableView.addSubview(refreshControl);
-        initSharing();
+        
+        initializeSharing();
         
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(accountStateChanged), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil);
@@ -90,7 +70,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
 
     }
     
-    @objc func showBuddyInfo() {//_ button: UIButton) {
+    @objc func showBuddyInfo(_ button: Any) {
         print("open buddy info!");
         let navigation = storyboard?.instantiateViewController(withIdentifier: "ContactViewNavigationController") as! UINavigationController;
         let contactView = navigation.visibleViewController as! ContactViewController;
@@ -109,7 +89,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
         
         self.updateTitleView();
         
-        let presenceModule: PresenceModule? = xmppService.getClient(forJid: account)?.modulesManager.getModule(PresenceModule.ID);
+        let presenceModule: PresenceModule? = XmppService.instance.getClient(forJid: account)?.modulesManager.getModule(PresenceModule.ID);
         titleView.status = presenceModule?.presenceStore.getBestPresence(for: jid);
     }
     
@@ -139,7 +119,6 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
                 label.textAlignment = .center;
                 label.transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0);
                 label.sizeToFit();
-                label.textColor = Appearance.current.secondaryLabelColor;
                 self.tableView.backgroundView = label;
             }
         } else {
@@ -230,11 +209,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
             self.present(alert, animated: true, completion: nil);
         }
     }
-    
-    @IBAction func shareClicked(_ sender: UIButton) {
-        self.showPhotoSelector(sender);
-    }
-            
+                
     @objc func avatarChanged(_ notification: NSNotification) {
         guard ((notification.userInfo?["jid"] as? BareJID) == jid) else {
             return;
@@ -302,7 +277,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     }
     
     fileprivate func updateTitleView() {
-        let state = xmppService.getClient(forJid: self.account)?.state;
+        let state = XmppService.instance.getClient(forJid: self.account)?.state;
 
         titleView.reload(for: self.account, with: self.jid);
 
@@ -365,7 +340,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     }
     
     func syncHistory(start: Date, rsm rsmQuery: RSM.Query? = nil) {
-        guard let mamModule: MessageArchiveManagementModule = self.xmppService.getClient(forJid: self.account)?.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
+        guard let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(forJid: self.account)?.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
             self.refreshControl.endRefreshing();
             return;
         }
@@ -517,10 +492,7 @@ class ChatTitleView: UIView {
                 case .none:
                     self.statusView.text = "\u{26A0} Not connected!";
                 }
-            }
-            self.nameView.textColor = Appearance.current.navigationBarTextColor;
-            self.statusView.textColor = Appearance.current.navigationBarTextColor;
-            
+            }            
         }
     }
 }

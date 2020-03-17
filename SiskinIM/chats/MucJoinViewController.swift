@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class MucJoinViewController: CustomTableViewController, UIPickerViewDataSource, UIPickerViewDelegate {
+class MucJoinViewController: UITableViewController, UIPickerViewDataSource, UIPickerViewDelegate {
 
     var xmppService:XmppService!;
     
