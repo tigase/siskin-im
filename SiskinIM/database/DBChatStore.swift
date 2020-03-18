@@ -622,8 +622,10 @@ fileprivate class AccountChats {
     
     func open(chat: DBChatProtocol) -> DBChatProtocol {
         return self.queue.sync(execute: {
-            guard let existingChat = self.chats[chat.jid.bareJid] else {
-                self.chats[chat.jid.bareJid] = chat;
+            var chats = self.chats;
+            guard let existingChat = chats[chat.jid.bareJid] else {
+                chats[chat.jid.bareJid] = chat;
+                self.chats = chats;
                 return chat;
             }
             return existingChat;
@@ -632,7 +634,11 @@ fileprivate class AccountChats {
     
     func close(chat: DBChatProtocol) -> Bool {
         return self.queue.sync(execute: {
-            return self.chats.removeValue(forKey: chat.jid.bareJid) != nil;
+            var chats = self.chats;
+            defer {
+                self.chats = chats;
+            }
+            return chats.removeValue(forKey: chat.jid.bareJid) != nil;
         });
     }
     
@@ -644,7 +650,8 @@ fileprivate class AccountChats {
     
     func get(with jid: BareJID) -> DBChatProtocol? {
         return self.queue.sync(execute: {
-            return self.chats[jid];
+            let chats = self.chats;
+            return chats[jid];
         });
     }
     

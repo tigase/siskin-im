@@ -384,36 +384,44 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         guard let account = acc, let jid = j else {
             return false;
         }
+        
+        guard let baseChatController = AppDelegate.getChatController(visible: true) else {
+            return false;
+        }
+        
+        print("comparing", baseChatController.account.stringValue, account, baseChatController.jid.stringValue, jid);
+        return (baseChatController.account == BareJID(account)) && (baseChatController.jid == BareJID(jid));
+    }
+    
+    static func getChatController(visible: Bool) -> BaseChatViewController? {
         var topController = UIApplication.shared.keyWindow?.rootViewController;
         while (topController?.presentedViewController != nil) {
             topController = topController?.presentedViewController;
         }
         guard let splitViewController = topController as? UISplitViewController else {
-            return false;
+            return nil;
         }
         
         guard let selectedTabController = splitViewController.viewControllers.map({(controller) in controller as? UITabBarController }).filter({ (controller) -> Bool in
             controller != nil
         }).map({(controller) in controller! }).first?.selectedViewController else {
-            return false;
+            return nil;
         }
         
-        var baseChatController: BaseChatViewController? = nil;
         if let navigationController = selectedTabController as? UINavigationController {
-            if let presented = navigationController.viewControllers.last {
-                print("presented", presented);
-                baseChatController = presented as? BaseChatViewController;
+            if visible {
+                return navigationController.viewControllers.last as? BaseChatViewController;
+            } else {
+                for controller in navigationController.viewControllers.reversed() {
+                    if let baseChatViewController = controller as? BaseChatViewController {
+                        return baseChatViewController;
+                    }
+                }
+                return nil;
             }
         } else {
-            baseChatController = selectedTabController as? BaseChatViewController;
+            return selectedTabController as? BaseChatViewController;
         }
-        
-        guard baseChatController != nil else {
-            return false;
-        }
-        
-        print("comparing", baseChatController!.account.stringValue, account, baseChatController!.jid.stringValue, jid);
-        return (baseChatController!.account == BareJID(account)) && (baseChatController!.jid == BareJID(jid));
     }
     
     func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {

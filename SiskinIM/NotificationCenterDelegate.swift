@@ -225,32 +225,58 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
                 completionHandler();
             }
         } else {
-            var topController = UIApplication.shared.keyWindow?.rootViewController;
-            while (topController?.presentedViewController != nil) {
+            openChatView(on: accountJid, with: senderJid, completionHandler: completionHandler);
+        }
+    }
+    
+    private func openChatView(on account: BareJID, with jid: BareJID, completionHandler: @escaping ()->Void) {
+        var topController = UIApplication.shared.keyWindow?.rootViewController;
+        while (topController?.presentedViewController != nil) {
+            if #available(iOS 13.0, *) {
+                print("topController:", topController, "presentedViewController:", topController?.presentedViewController, "presentation:", topController?.presentedViewController?.modalPresentationStyle.rawValue, topController?.presentedViewController?.isModalInPresentation);
+            }
+            if #available(iOS 13.0, *), let tmp = topController?.presentedViewController, tmp.modalPresentationStyle != .none {
+                tmp.dismiss(animated: true, completion: {
+                    self.openChatView(on: account, with: jid, completionHandler: completionHandler);
+                });
+                return;
+            } else {
                 topController = topController?.presentedViewController;
             }
+        }
         
-            if topController != nil {
-                guard let chat = DBChatStore.instance.getChat(for: accountJid, with: senderJid) else {
-                    completionHandler();
-                    return;
-                }
-                
-                let controller = chat is DBRoom ? UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "RoomViewNavigationController") : topController!.storyboard?.instantiateViewController(withIdentifier: "ChatViewNavigationController");
-                let navigationController = controller as? UINavigationController;
-                let destination = navigationController?.visibleViewController ?? controller;
-            
-                if let baseChatViewController = destination as? BaseChatViewController {
-                    baseChatViewController.account = accountJid;
-                    baseChatViewController.jid = senderJid;
-                }
-                destination?.hidesBottomBarWhenPushed = true;
-            
-                topController!.showDetailViewController(controller!, sender: self);
-            } else {
-                print("No top controller!");
+        if topController != nil {
+            guard let chat = DBChatStore.instance.getChat(for: account, with: jid) else {
+                completionHandler();
+                return;
             }
-            completionHandler();
+            
+            let controller = chat is DBRoom ? UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "RoomViewNavigationController") : UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ChatViewNavigationController");
+            let navigationController = controller as? UINavigationController;
+            let destination = navigationController?.visibleViewController ?? controller;
+            
+            if let baseChatViewController = destination as? BaseChatViewController {
+                baseChatViewController.account = account;
+                baseChatViewController.jid = jid;
+            }
+            destination.hidesBottomBarWhenPushed = true;
+            
+            if let chatController = AppDelegate.getChatController(visible: false), let navController = chatController.parent as? UINavigationController {
+                navController.pushViewController(destination, animated: true);
+                var viewControllers = navController.viewControllers;
+                var i = 0;
+                while viewControllers[i] != chatController {
+                    i = i + 1;
+                }
+                while viewControllers[i] != destination {
+                    viewControllers.remove(at: i);
+                }
+                navController.viewControllers = viewControllers;
+            } else {
+                topController!.showDetailViewController(controller, sender: self);
+            }
+        } else {
+            print("No top controller!");
         }
     }
     
