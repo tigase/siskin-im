@@ -537,14 +537,20 @@ open class DBChatStore {
         }
         
         func open(chat: DBChatProtocol) -> DBChatProtocol {
+            var chats = self.chats;
             guard let existingChat = chats[chat.jid.bareJid] else {
                 chats[chat.jid.bareJid] = chat;
+                self.chats = chats;
                 return chat;
             }
             return existingChat;
         }
         
         func close(chat: DBChatProtocol) -> Bool {
+            var chats = self.chats;
+            defer {
+                self.chats = chats;
+            }
             return chats.removeValue(forKey: chat.jid.bareJid) != nil;
         }
         
@@ -553,6 +559,7 @@ open class DBChatStore {
         }
         
         func get(with jid: BareJID) -> DBChatProtocol? {
+            let chats = self.chats;
             return chats[jid];
         }
         
