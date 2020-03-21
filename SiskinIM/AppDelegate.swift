@@ -351,7 +351,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     @available(iOS 13, *)
     func scheduleAppRefresh() {
-        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: backgroundRefreshTaskIdentifier);
         let request = BGAppRefreshTaskRequest(identifier: backgroundRefreshTaskIdentifier);
         request.earliestBeginDate = Date(timeIntervalSinceNow: 3500);
         
