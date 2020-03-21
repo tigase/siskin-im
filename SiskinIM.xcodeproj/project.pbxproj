@@ -519,23 +519,14 @@
 			path = "SiskinIM - Share";
 			sourceTree = "<group>";
 		};
-		FE5079FD1CDB7B3B001A015C /* chats */ = {
+		FE5079FD1CDB7B3B001A015C /* chat */ = {
 			isa = PBXGroup;
 			children = (
-				FE5079FE1CDB7B3B001A015C /* ChatsListTableViewCell.swift */,
-				FE5079FF1CDB7B3B001A015C /* ChatsListViewController.swift */,
 				FE507A001CDB7B3B001A015C /* ChatTableViewCell.swift */,
 				FE507A011CDB7B3B001A015C /* ChatViewController.swift */,
-				FEC514231CEB2FF7003AF765 /* MucJoinViewController.swift */,
 				FEC514251CEB74F8003AF765 /* BaseChatViewController.swift */,
-				FEC514271CEB82E9003AF765 /* MucChatViewController.swift */,
-				FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */,
-				FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */,
 				FE5628901F3621DB00452C73 /* BaseChatViewController_ShareExtension.swift */,
 				FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift */,
-				FE8DD9C4221B153A0090F5AA /* InviteViewController.swift */,
-				FE8DD9C8221B29520090F5AA /* MucNewGroupchatController.swift */,
-				FEE9608922F191980009B191 /* MucChatSettingsViewController.swift */,
 				FEF19F07234751FF005CFE9A /* ChatViewItemProtocol.swift */,
 				FEF19F0D23479F4C005CFE9A /* ChatViewDataSource.swift */,
 				FEF19F152348E781005CFE9A /* BaseChatViewControllerWithDataSource.swift */,
@@ -551,7 +542,7 @@
 				FE9EA16A23BF9DB2008C401A /* ChatAttachementsCellView.swift */,
 				FEE49DCD2424C1F800900BBB /* ConversationLogController.swift */,
 			);
-			path = chats;
+			path = chat;
 			sourceTree = "<group>";
 		};
 		FE507A021CDB7B3B001A015C /* database */ = {
@@ -758,6 +749,9 @@
 		FE94E5231CCBA74F00FAE755 /* SiskinIM */ = {
 			isa = PBXGroup;
 			children = (
+				FEE49DD3242687D800900BBB /* chats */,
+				FEE49DD22426879500900BBB /* channel */,
+				FEE49DD12426879400900BBB /* groupchat */,
 				FE4071E221E2603400F09B58 /* voip */,
 				FE86C4481F7BFF93009E3CB8 /* SiskinIM-Bridging-Header.h */,
 				FE94E5241CCBA74F00FAE755 /* AppDelegate.swift */,
@@ -767,7 +761,7 @@
 				FE94E52A1CCBA74F00FAE755 /* Main.storyboard */,
 				FE4071E521E262D900F09B58 /* VoIP.storyboard */,
 				FE8DD9C2221B118E0090F5AA /* Groupchat.storyboard */,
-				FE5079FD1CDB7B3B001A015C /* chats */,
+				FE5079FD1CDB7B3B001A015C /* chat */,
 				FEDE93951D0C200C00CA60A9 /* contacts */,
 				FE507A021CDB7B3B001A015C /* database */,
 				FE507A071CDB7B3B001A015C /* roster */,
@@ -830,6 +824,36 @@
 				FE719E7B22730DC3007CEEC9 /* OMEMOIdentityTableViewCell.swift */,
 			);
 			path = contacts;
+			sourceTree = "<group>";
+		};
+		FEE49DD12426879400900BBB /* groupchat */ = {
+			isa = PBXGroup;
+			children = (
+				FEC514231CEB2FF7003AF765 /* MucJoinViewController.swift */,
+				FEC514271CEB82E9003AF765 /* MucChatViewController.swift */,
+				FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */,
+				FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */,
+				FE8DD9C4221B153A0090F5AA /* InviteViewController.swift */,
+				FE8DD9C8221B29520090F5AA /* MucNewGroupchatController.swift */,
+				FEE9608922F191980009B191 /* MucChatSettingsViewController.swift */,
+			);
+			path = groupchat;
+			sourceTree = "<group>";
+		};
+		FEE49DD22426879500900BBB /* channel */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = channel;
+			sourceTree = "<group>";
+		};
+		FEE49DD3242687D800900BBB /* chats */ = {
+			isa = PBXGroup;
+			children = (
+				FE5079FE1CDB7B3B001A015C /* ChatsListTableViewCell.swift */,
+				FE5079FF1CDB7B3B001A015C /* ChatsListViewController.swift */,
+			);
+			path = chats;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
