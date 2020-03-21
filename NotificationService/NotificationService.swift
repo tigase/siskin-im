@@ -19,6 +19,7 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 
+import BackgroundTasks
 import UserNotifications
 import Shared
 import TigaseSwift
@@ -77,6 +78,17 @@ class NotificationService: UNNotificationServiceExtension {
                 contentHandler(bestAttemptContent);
             }
         }
+        if #available(iOS 13.0, *) {
+            let taskRequest = BGAppRefreshTaskRequest(identifier: "org.tigase.messenger.mobile.refresh");
+            taskRequest.earliestBeginDate = nil
+            do {
+                debug("scheduling background app refresh")
+                BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: "org.tigase.messenger.mobile.refresh")
+                try BGTaskScheduler.shared.submit(taskRequest);
+            } catch {
+                debug("Could not schedule app refresh: \(error)")
+            }
+        }
     }
     
 //    func updateNotification(content: UNMutableNotificationContent, account: BareJID, unread: Int, sender: JID, type kind: Payload.Kind, nickname: String?, body: String) {
@@ -120,6 +132,14 @@ class NotificationService: UNNotificationServiceExtension {
 
 }
 
+extension DBConnection {
+    static func main<T>(execute: @escaping (DBConnection) throws ->T) throws -> T {
+        let dbURL = mainDbURL();
+        let connection = try DBConnection.init(dbPath: dbURL.path);
+        return try execute(connection);
+    }
+}
+
 class ExtensionNotificationManagerProvider: NotificationManagerProvider {
     
     static let GET_NAME_QUERY = "select name, 0 as type from roster_items where account = :account and jid = :jid union select name, 1 as type from chats where account = :account and jid = :jid order by type";
@@ -127,28 +147,33 @@ class ExtensionNotificationManagerProvider: NotificationManagerProvider {
     static let GET_UNREAD_CHATS = "select c.account, c.jid from chats c inner join chat_history ch where ch.account = c.account and ch.jid = c.jid and ch.state in (2,6,7) group by c.account, c.jid";
     
     func getChatNameAndType(for account: BareJID, with jid: BareJID, completionHandler: @escaping (String?, Payload.Kind) -> Void) {
-        let tmp = try! DBConnection.main.prepareStatement(ExtensionNotificationManagerProvider.GET_NAME_QUERY).findFirst(["account": account, "jid": jid] as [String: Any?], map: { (cursor) -> (String?, Int)? in
+        let tmp = try? DBConnection.main(execute: { conn in
+            return try conn.prepareStatement(ExtensionNotificationManagerProvider.GET_NAME_QUERY).findFirst(["account": account, "jid": jid] as [String: Any?], map: { (cursor) -> (String?, Int)? in
                     return (cursor["name"], cursor["type"]!);
                 });
+        });
         completionHandler(tmp?.0, tmp?.1 == 1 ? .groupchat : .chat);
     }
     
     func countBadge(withThreadId: String?, completionHandler: @escaping (Int) -> Void) {
         NotificationManager.unreadChatsThreadIds { (result) in
             var unreadChats = result;
-            
-            try! DBConnection.main.prepareStatement(ExtensionNotificationManagerProvider.GET_UNREAD_CHATS).query(forEach: { cursor in
-                if let account: BareJID = cursor["account"], let jid: BareJID = cursor["jid"] {
-                    unreadChats.insert("account=\(account.stringValue)|sender=\(jid.stringValue)");
-                }
-            })
-            
+
+            try? DBConnection.main(execute: { conn in
+                try conn.prepareStatement(ExtensionNotificationManagerProvider.GET_UNREAD_CHATS).query(forEach: { cursor in
+                    if let account: BareJID = cursor["account"], let jid: BareJID = cursor["jid"] {
+                        unreadChats.insert("account=\(account.stringValue)|sender=\(jid.stringValue)");
+                    }
+                })
+            });
+
             if let threadId = withThreadId {
                 unreadChats.insert(threadId);
             }
-            
+
             completionHandler(unreadChats.count);
         }
+        completionHandler(-1);
     }
     
     func shouldShowNotification(account: BareJID, sender: BareJID?, body: String?, completionHandler: @escaping (Bool)->Void) {
