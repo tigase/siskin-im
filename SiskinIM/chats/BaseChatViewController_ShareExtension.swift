@@ -176,6 +176,25 @@ extension BaseChatViewController_ShareImageExtension {
         }
     }
         
+    func showProgressBar() {
+        if self.progressBar == nil {
+            let progressBar = UIProgressView(progressViewStyle: .bar);
+            progressBar.translatesAutoresizingMaskIntoConstraints = false;
+            self.progressBar = progressBar;
+            self.chatViewInputBar.addSubview(progressBar);
+            NSLayoutConstraint.activate([
+                self.chatViewInputBar.topAnchor.constraint(equalTo: progressBar.topAnchor),
+                self.chatViewInputBar.leadingAnchor.constraint(equalTo: progressBar.leadingAnchor),
+                self.chatViewInputBar.trailingAnchor.constraint(equalTo: progressBar.trailingAnchor),
+                self.chatViewInputBar.bottomAnchor.constraint(greaterThanOrEqualTo: progressBar.bottomAnchor)
+            ]);
+        }
+        self.progressBar?.isHidden = false;
+    }
+
+    func hideProgressBar() {
+        self.progressBar?.isHidden = true;
+    }
 }
 
 enum ShareError: Error {
@@ -293,7 +312,7 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
             });
         }
     }
-        
+            
     func share(filename: String, inputStream: InputStream, filesize size: Int, mimeType: String, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
         if let client = XmppService.instance.getClient(forJid: self.controller.account) {
             let httpUploadModule: HttpFileUploadModule = client.modulesManager.getModule(HttpFileUploadModule.ID)!;
@@ -320,7 +339,7 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
             
                 httpUploadModule.requestUploadSlot(componentJid: compJid!, filename: filename, size: size, contentType: mimeType, onSuccess: { (slot) in
                     DispatchQueue.main.async {
-                        self.controller.progressBar?.isHidden = false;
+                        self.controller.showProgressBar();
                     }
                     var request = URLRequest(url: slot.putUri);
                     slot.putHeaders.forEach({ (k,v) in
@@ -370,7 +389,7 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
     
     func showAlert(title: String, message: String) {
         DispatchQueue.main.async {
-            self.controller.progressBar?.isHidden = false;
+            self.controller.hideProgressBar();
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert);
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
             self.controller.present(alert, animated: true, completion: nil);
@@ -380,7 +399,7 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
     func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
         self.controller.progressBar?.progress = Float(totalBytesSent) / Float(totalBytesExpectedToSend);
         if self.controller.progressBar?.progress == 1.0 {
-            self.controller.progressBar?.isHidden = true;
+            self.controller.hideProgressBar();
             self.controller.progressBar?.progress = 0;
         }
     }

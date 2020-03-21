@@ -170,6 +170,9 @@
 		FEDE93991D0C207100CA60A9 /* ContactBasicTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE93981D0C207100CA60A9 /* ContactBasicTableViewCell.swift */; };
 		FEDE939B1D0C38B000CA60A9 /* ContactFormTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE939A1D0C38B000CA60A9 /* ContactFormTableViewCell.swift */; };
 		FEE097621F1FCE1800B1CEAB /* TablePicketViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE097611F1FCE1800B1CEAB /* TablePicketViewController.swift */; };
+		FEE49DCC2424C03200900BBB /* Conversation.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEE49DCB2424C03200900BBB /* Conversation.storyboard */; };
+		FEE49DCE2424C1F800900BBB /* ConversationLogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE49DCD2424C1F800900BBB /* ConversationLogController.swift */; };
+		FEE49DD02426485500900BBB /* DBConnection_main.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE49DCF2426485500900BBB /* DBConnection_main.swift */; };
 		FEE9608A22F191980009B191 /* MucChatSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE9608922F191980009B191 /* MucChatSettingsViewController.swift */; };
 		FEF19F0223473B9E005CFE9A /* XmppServiceEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF19F0123473B9E005CFE9A /* XmppServiceEventHandler.swift */; };
 		FEF19F0423473C06005CFE9A /* MessageEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF19F0323473C06005CFE9A /* MessageEventHandler.swift */; };
@@ -418,6 +421,9 @@
 		FEDE93981D0C207100CA60A9 /* ContactBasicTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactBasicTableViewCell.swift; sourceTree = "<group>"; };
 		FEDE939A1D0C38B000CA60A9 /* ContactFormTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactFormTableViewCell.swift; sourceTree = "<group>"; };
 		FEE097611F1FCE1800B1CEAB /* TablePicketViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TablePicketViewController.swift; sourceTree = "<group>"; };
+		FEE49DCB2424C03200900BBB /* Conversation.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Conversation.storyboard; sourceTree = "<group>"; };
+		FEE49DCD2424C1F800900BBB /* ConversationLogController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationLogController.swift; sourceTree = "<group>"; };
+		FEE49DCF2426485500900BBB /* DBConnection_main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBConnection_main.swift; sourceTree = "<group>"; };
 		FEE9608922F191980009B191 /* MucChatSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MucChatSettingsViewController.swift; sourceTree = "<group>"; };
 		FEE9608B22F2F8950009B191 /* db-schema-6.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-6.sql"; sourceTree = "<group>"; };
 		FEF19F0123473B9E005CFE9A /* XmppServiceEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XmppServiceEventHandler.swift; sourceTree = "<group>"; };
@@ -543,6 +549,7 @@
 				FE7D293523BB5E0A001A877D /* LinkPreviewChatTableViewCell.swift */,
 				FE43E43723BF3DE80079BD9B /* ChatAttachementsController.swift */,
 				FE9EA16A23BF9DB2008C401A /* ChatAttachementsCellView.swift */,
+				FEE49DCD2424C1F800900BBB /* ConversationLogController.swift */,
 			);
 			path = chats;
 			sourceTree = "<group>";
@@ -558,6 +565,7 @@
 				FED353882270C1D000B69C53 /* DBOMEMOStore.swift */,
 				FEC79192241AAF55007BE572 /* DBRoomStore.swift */,
 				FEC79194241ABEF4007BE572 /* MessageState.swift */,
+				FEE49DCF2426485500900BBB /* DBConnection_main.swift */,
 			);
 			path = database;
 			sourceTree = "<group>";
@@ -773,6 +781,7 @@
 				FE759FFA23742C48001E78D9 /* NotificationCenterDelegate.swift */,
 				FEDC678B238AFB9F005C0FAB /* Settings.storyboard */,
 				FE5146EE2420B900004923A3 /* Account.storyboard */,
+				FEE49DCB2424C03200900BBB /* Conversation.storyboard */,
 			);
 			path = SiskinIM;
 			sourceTree = "<group>";
@@ -1038,6 +1047,7 @@
 				FE94E52E1CCBA74F00FAE755 /* Assets.xcassets in Resources */,
 				FE4071E621E262D900F09B58 /* VoIP.storyboard in Resources */,
 				FE94E52C1CCBA74F00FAE755 /* Main.storyboard in Resources */,
+				FEE49DCC2424C03200900BBB /* Conversation.storyboard in Resources */,
 				FE5146EF2420B900004923A3 /* Account.storyboard in Resources */,
 				FE2809812167CE18002F5BD0 /* server_features_list.xml in Resources */,
 			);
@@ -1119,7 +1129,9 @@
 				FEAC71791CECE50400ABABEF /* MucChatOccupantsTableViewController.swift in Sources */,
 				FEF19F162348E781005CFE9A /* BaseChatViewControllerWithDataSource.swift in Sources */,
 				FEF19F0223473B9E005CFE9A /* XmppServiceEventHandler.swift in Sources */,
+				FEE49DD02426485500900BBB /* DBConnection_main.swift in Sources */,
 				FEDE93971D0C202600CA60A9 /* ContactViewController.swift in Sources */,
+				FEE49DCE2424C1F800900BBB /* ConversationLogController.swift in Sources */,
 				FEF19F142348B655005CFE9A /* DiscoEventHandler.swift in Sources */,
 				FE1AC8F7216B8AB700D4CDAB /* NewFeaturesDetector.swift in Sources */,
 				FE17808D23EB4C7F00A1EA76 /* AccountQRCodeController.swift in Sources */,

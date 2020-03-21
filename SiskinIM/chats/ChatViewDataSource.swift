@@ -24,8 +24,6 @@ import TigaseSwift
 
 protocol ChatViewDataSourceDelegate: class {
     
-    var account: BareJID! { get }
-    var jid: BareJID! { get }
     var chat: DBChatProtocol! { get }
     
     func itemAdded(at: IndexSet, shouldScroll: Bool);
@@ -35,6 +33,18 @@ protocol ChatViewDataSourceDelegate: class {
     func itemsRemoved(at: IndexSet);
     
     func itemsReloaded();
+}
+
+extension ChatViewDataSourceDelegate {
+    
+    var account: BareJID {
+        return chat.account;
+    }
+    
+    var jid: BareJID {
+        return chat.jid.bareJid;
+    }
+    
 }
 
 

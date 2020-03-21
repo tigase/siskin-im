@@ -25,7 +25,7 @@ import Shared
 import TigaseSwift
 import TigaseSwiftOMEMO
 
-class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar, UITableViewDataSource, BaseChatViewController_ShareImageExtension {
+class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar, BaseChatViewController_ShareImageExtension {
 
     var titleView: ChatTitleView! {
         get {
@@ -34,32 +34,35 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     }
     
     let log: Logger = Logger();
-        
-    var refreshControl: UIRefreshControl!;
-    
-    @IBOutlet var progressBar: UIProgressView?;
+            
+    var progressBar: UIProgressView?;
     var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
     var filePickerDelegate: BaseChatViewController_ShareFilePickerDelegate?;
     
-    fileprivate static let loadChatInfo: DBStatement = try! DBConnection.main.prepareStatement("SELECT r.name FROM roster_items r WHERE r.account = :account AND r.jid = :jid");
+    override var conversationLogController: ConversationLogController? {
+        didSet {
+            if let controller = conversationLogController {
+                let refreshControl = UIRefreshControl();
+                refreshControl.addTarget(self, action: #selector(ChatViewController.refreshChatHistory), for: UIControl.Event.valueChanged);
+                self.conversationLogController?.refreshControl = refreshControl;
+            }
+        }
+    }
     
+    override func conversationTableViewDelegate() -> UITableViewDelegate? {
+        return self;
+    }
+        
     override func viewDidLoad() {
         let messageModule: MessageModule? = XmppService.instance.getClient(forJid: account)?.modulesManager.getModule(MessageModule.ID);
         self.chat = messageModule?.chatManager.getChat(with: JID(self.jid), thread: nil) as? DBChat;
         
         super.viewDidLoad()
-
-        tableView.dataSource = self;
-        tableView.delegate = self;
         
         let recognizer = UITapGestureRecognizer(target: self, action: #selector(ChatViewController.showBuddyInfo));
         self.titleView.isUserInteractionEnabled = true;
         self.navigationController?.navigationBar.addGestureRecognizer(recognizer);
 
-        self.refreshControl = UIRefreshControl();
-        self.refreshControl?.addTarget(self, action: #selector(ChatViewController.refreshChatHistory), for: UIControl.Event.valueChanged);
-        self.tableView.addSubview(refreshControl);
-        
         initializeSharing();
         
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
@@ -102,16 +105,11 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
-    // MARK: - Table view data source
-    
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return 1;
-    }
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if dataSource.count == 0 {
-            if self.tableView.backgroundView == nil {
+        
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        let count = super.tableView(tableView, numberOfRowsInSection: section);
+        if count == 0 {
+            if self.conversationLogController!.tableView.backgroundView == nil {
                 let label = UILabel(frame: CGRect(x: 0, y:0, width: self.view.bounds.size.width, height: self.view.bounds.size.height));
                 label.text = "No messages available. Pull up to refresh message history.";
                 label.font = UIFont.systemFont(ofSize: UIFont.systemFontSize + 2, weight: .medium);
@@ -119,15 +117,15 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
                 label.textAlignment = .center;
                 label.transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0);
                 label.sizeToFit();
-                self.tableView.backgroundView = label;
+                self.conversationLogController!.tableView.backgroundView = label;
             }
         } else {
-            self.tableView.backgroundView = nil;
+            self.conversationLogController!.tableView.backgroundView = nil;
         }
-        return dataSource.count;
+        return count;
     }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let dsItem = dataSource.getItem(at: indexPath.row) else {
             return tableView.dequeueReusableCell(withIdentifier: "ChatTableViewCellIncoming", for: indexPath);
         }
@@ -215,9 +213,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
             return;
         }
         DispatchQueue.main.async {
-            if let indexPaths = self.tableView.indexPathsForVisibleRows {
-                self.tableView.reloadRows(at: indexPaths, with: .none);
-            }
+            self.conversationLogController?.reloadVisibleItems();
         }
     }
     
@@ -331,7 +327,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     @objc func refreshChatHistory() {
         let syncPeriod = AccountSettings.messageSyncPeriod(account).getDouble();
         guard syncPeriod != 0 else {
-            self.refreshControl.endRefreshing();
+            self.conversationLogController?.refreshControl?.endRefreshing();
             return;
         }
 
@@ -341,7 +337,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     
     func syncHistory(start: Date, rsm rsmQuery: RSM.Query? = nil) {
         guard let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(forJid: self.account)?.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
-            self.refreshControl.endRefreshing();
+            self.conversationLogController?.refreshControl?.endRefreshing();
             return;
         }
         
@@ -353,13 +349,13 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
                     self.syncHistory(start: start, rsm: rsmResponse?.previous(100));
                 } else {
                     DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
-                        self.refreshControl.endRefreshing();
+                        self.conversationLogController?.refreshControl?.endRefreshing();
                     }
                 }
             case .failure(let errorCondition, let response):
                 self.log("failed to retrieve items from archive", errorCondition, response);
                 DispatchQueue.main.async {
-                    self.refreshControl.endRefreshing();
+                    self.conversationLogController?.refreshControl?.endRefreshing();
                 }
             }
         });
@@ -444,12 +440,11 @@ class ChatTitleView: UIView {
     
     
     func reload(for account: BareJID, with jid: BareJID) {
-        let params:[String:Any?] = ["account" : account, "jid" : jid];
-        let name = try! ChatViewController.loadChatInfo.findFirst(params) { (cursor) -> (String)? in
-            return cursor["name"] ?? jid.stringValue;
-            } ?? jid.stringValue;
-        
-        self.name = name;
+        if let rosterModule: RosterModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(RosterModule.ID) {
+            self.name = rosterModule.rosterStore.get(for: JID(jid))?.name ?? jid.stringValue;
+        } else {
+            self.name = jid.stringValue;
+        }
         self.encryption = (DBChatStore.instance.getChat(for: account, with: jid) as? DBChat)?.options.encryption;
     }
     

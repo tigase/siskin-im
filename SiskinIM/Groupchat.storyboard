@@ -4,7 +4,6 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
-        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -17,242 +16,25 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="623"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView contentMode="scaleToFill" alwaysBounceVertical="YES" keyboardDismissMode="interactive" dataMode="prototypes" style="plain" separatorStyle="default" allowsSelection="NO" allowsSelectionDuringEditing="YES" allowsMultipleSelectionDuringEditing="YES" rowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="5el-fR-NA6">
+                            <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sgc-HQ-Zz2">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="574"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <gestureRecognizers/>
-                                <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="MucChatTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="MucChatTableViewMessageCell" rowHeight="44" id="Bao-z7-vK8" customClass="ChatTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="28" width="375" height="44"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="Bao-z7-vK8" id="FaA-wG-hX8">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Temporary label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tX3-Qg-Trf">
-                                                    <rect key="frame" x="279.5" y="6" width="89.5" height="15"/>
-                                                    <fontDescription key="fontDescription" type="system" weight="light" pointSize="12"/>
-                                                    <color key="textColor" name="chatMessageText"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="lsv-vn-uow" customClass="AvatarView" customModule="Siskin" customModuleProvider="target">
-                                                    <rect key="frame" x="6" y="5" width="30" height="30"/>
-                                                    <constraints>
-                                                        <constraint firstAttribute="width" constant="30" id="0hN-gE-SZR"/>
-                                                        <constraint firstAttribute="height" constant="30" id="KtH-CC-WE1"/>
-                                                    </constraints>
-                                                </imageView>
-                                                <label contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Incoming message" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rfj-q1-YJd">
-                                                    <rect key="frame" x="44" y="23" width="325" height="17"/>
-                                                    <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                    <color key="textColor" name="chatMessageText"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" highlighted="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YMW-VZ-mYs" userLabel="Nickname">
-                                                    <rect key="frame" x="44" y="5" width="38" height="16"/>
-                                                    <fontDescription key="fontDescription" type="system" weight="medium" pointSize="15"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                            </subviews>
-                                            <constraints>
-                                                <constraint firstItem="rfj-q1-YJd" firstAttribute="leading" secondItem="YMW-VZ-mYs" secondAttribute="leading" id="3vj-UW-OH0"/>
-                                                <constraint firstItem="YMW-VZ-mYs" firstAttribute="leading" secondItem="lsv-vn-uow" secondAttribute="trailing" constant="8" id="B8Y-9k-Bch"/>
-                                                <constraint firstItem="tX3-Qg-Trf" firstAttribute="top" secondItem="FaA-wG-hX8" secondAttribute="top" constant="6" id="GgD-fE-wn4"/>
-                                                <constraint firstItem="lsv-vn-uow" firstAttribute="leading" secondItem="FaA-wG-hX8" secondAttribute="leading" constant="6" id="Gj1-dl-ZmK"/>
-                                                <constraint firstItem="rfj-q1-YJd" firstAttribute="trailing" secondItem="tX3-Qg-Trf" secondAttribute="trailing" id="Gwl-2a-LuM"/>
-                                                <constraint firstAttribute="trailing" secondItem="tX3-Qg-Trf" secondAttribute="trailing" constant="6" id="LJb-6w-qRi"/>
-                                                <constraint firstItem="tX3-Qg-Trf" firstAttribute="bottom" secondItem="YMW-VZ-mYs" secondAttribute="bottom" id="cWJ-4y-avo"/>
-                                                <constraint firstItem="YMW-VZ-mYs" firstAttribute="top" secondItem="lsv-vn-uow" secondAttribute="top" id="fiK-5j-FMH"/>
-                                                <constraint firstItem="rfj-q1-YJd" firstAttribute="top" secondItem="YMW-VZ-mYs" secondAttribute="bottom" constant="2" id="qRR-Mg-4sD"/>
-                                                <constraint firstItem="tX3-Qg-Trf" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="YMW-VZ-mYs" secondAttribute="trailing" constant="10" id="uzn-XZ-lAs"/>
-                                                <constraint firstItem="lsv-vn-uow" firstAttribute="top" secondItem="FaA-wG-hX8" secondAttribute="top" constant="5" id="waw-TD-b4j"/>
-                                                <constraint firstAttribute="bottom" secondItem="rfj-q1-YJd" secondAttribute="bottom" constant="4" id="yq4-ky-nVW"/>
-                                            </constraints>
-                                        </tableViewCellContentView>
-                                        <connections>
-                                            <outlet property="avatarView" destination="lsv-vn-uow" id="EMf-xg-3on"/>
-                                            <outlet property="messageTextView" destination="rfj-q1-YJd" id="IJP-SR-LHq"/>
-                                            <outlet property="nicknameView" destination="YMW-VZ-mYs" id="rZH-gq-k4Q"/>
-                                            <outlet property="timestampView" destination="tX3-Qg-Trf" id="dd8-gu-hig"/>
-                                        </connections>
-                                    </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="MucChatTableViewCellContinuation" selectionStyle="default" indentationWidth="10" reuseIdentifier="MucChatTableViewMessageContinuationCell" rowHeight="44" id="dYP-lW-wpx" customClass="ChatTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="72" width="375" height="44"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="dYP-lW-wpx" id="fko-5f-K5r">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <subviews>
-                                                <label contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Incoming message" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dEP-he-X8w">
-                                                    <rect key="frame" x="44" y="2" width="325" height="38"/>
-                                                    <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                    <color key="textColor" name="chatMessageText"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                            </subviews>
-                                            <constraints>
-                                                <constraint firstItem="dEP-he-X8w" firstAttribute="leading" secondItem="fko-5f-K5r" secondAttribute="leading" constant="44" id="I07-rN-ZmV"/>
-                                                <constraint firstItem="dEP-he-X8w" firstAttribute="top" secondItem="fko-5f-K5r" secondAttribute="top" constant="2" id="LwM-oa-9I1"/>
-                                                <constraint firstAttribute="trailing" secondItem="dEP-he-X8w" secondAttribute="trailing" constant="6" id="M7N-f1-L3t"/>
-                                                <constraint firstAttribute="bottom" secondItem="dEP-he-X8w" secondAttribute="bottom" constant="4" id="aBo-in-eY5"/>
-                                            </constraints>
-                                        </tableViewCellContentView>
-                                        <connections>
-                                            <outlet property="messageTextView" destination="dEP-he-X8w" id="17V-GJ-gQW"/>
-                                        </connections>
-                                    </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="MucChatTableViewSystemCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="MucChatTableViewSystemCell" rowHeight="33" id="gr6-vB-GaQ" customClass="ChatTableViewSystemCell" customModule="Siskin" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="116" width="375" height="33"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="gr6-vB-GaQ" id="OfY-hw-4nf">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="33"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Nuv-6c-iva">
-                                                    <rect key="frame" x="30" y="10" width="315" height="17"/>
-                                                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
-                                                    <color key="textColor" name="chatMessageText"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                            </subviews>
-                                            <constraints>
-                                                <constraint firstAttribute="trailing" secondItem="Nuv-6c-iva" secondAttribute="trailing" constant="30" id="I84-Vh-u9u"/>
-                                                <constraint firstItem="Nuv-6c-iva" firstAttribute="leading" secondItem="OfY-hw-4nf" secondAttribute="leading" constant="30" id="RdT-a0-1o6"/>
-                                                <constraint firstAttribute="bottom" secondItem="Nuv-6c-iva" secondAttribute="bottom" constant="6" id="Y2Q-sc-3im"/>
-                                                <constraint firstItem="Nuv-6c-iva" firstAttribute="top" secondItem="OfY-hw-4nf" secondAttribute="top" constant="10" id="e3H-Ec-PW4"/>
-                                            </constraints>
-                                        </tableViewCellContentView>
-                                        <connections>
-                                            <outlet property="messageView" destination="Nuv-6c-iva" id="s97-uf-THh"/>
-                                        </connections>
-                                    </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="MucChatTableViewAttachmentContinuationCell" rowHeight="71" id="ahp-Qx-MWp" customClass="AttachmentChatTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="149" width="375" height="71"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="ahp-Qx-MWp" id="ac1-gM-yBJ">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="71"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="P3i-AC-xFL">
-                                                    <rect key="frame" x="355" y="55" width="14" height="12"/>
-                                                    <constraints>
-                                                        <constraint firstAttribute="width" constant="14" id="Y14-G0-nu5"/>
-                                                    </constraints>
-                                                    <fontDescription key="fontDescription" type="system" weight="light" pointSize="10"/>
-                                                    <color key="textColor" name="chatMessageText"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <view opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kTe-6g-st2">
-                                                    <rect key="frame" x="44" y="2" width="309" height="65"/>
-                                                </view>
-                                            </subviews>
-                                            <constraints>
-                                                <constraint firstItem="P3i-AC-xFL" firstAttribute="leading" secondItem="kTe-6g-st2" secondAttribute="trailing" constant="2" id="Cr4-sc-TUi"/>
-                                                <constraint firstItem="kTe-6g-st2" firstAttribute="leading" secondItem="ac1-gM-yBJ" secondAttribute="leading" constant="44" id="VKP-mp-BKj"/>
-                                                <constraint firstItem="P3i-AC-xFL" firstAttribute="bottom" secondItem="kTe-6g-st2" secondAttribute="bottom" id="bIX-4Y-R93"/>
-                                                <constraint firstAttribute="bottom" secondItem="kTe-6g-st2" secondAttribute="bottom" constant="4" id="lWa-cb-8fb"/>
-                                                <constraint firstItem="kTe-6g-st2" firstAttribute="top" secondItem="ac1-gM-yBJ" secondAttribute="top" constant="2" id="xjq-ms-Yzm"/>
-                                                <constraint firstAttribute="trailing" secondItem="P3i-AC-xFL" secondAttribute="trailing" constant="6" id="xmU-ks-Mes"/>
-                                            </constraints>
-                                        </tableViewCellContentView>
-                                        <connections>
-                                            <outlet property="customView" destination="kTe-6g-st2" id="qJW-9m-d9Q"/>
-                                            <outlet property="stateView" destination="P3i-AC-xFL" id="7uz-GN-cdl"/>
-                                        </connections>
-                                    </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="MucChatTableViewLinkPreviewCell" rowHeight="71" id="xgr-md-2Kg" customClass="LinkPreviewChatTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="220" width="375" height="71"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="xgr-md-2Kg" id="y2W-Ns-4xi">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="71"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                        </tableViewCellContentView>
-                                    </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="MucChatTableViewAttachmentCell" rowHeight="71" id="hUG-WT-xM9" customClass="AttachmentChatTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="291" width="375" height="71"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="hUG-WT-xM9" id="jHQ-bY-717">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="71"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <subviews>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="GPo-sU-r92" customClass="AvatarView" customModule="Siskin" customModuleProvider="target">
-                                                    <rect key="frame" x="6" y="5" width="30" height="30"/>
-                                                    <constraints>
-                                                        <constraint firstAttribute="width" constant="30" id="7tH-nB-acb"/>
-                                                        <constraint firstAttribute="height" constant="30" id="BHn-yR-3Q2"/>
-                                                    </constraints>
-                                                </imageView>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uvx-Hg-CEC">
-                                                    <rect key="frame" x="44" y="5" width="38" height="18"/>
-                                                    <fontDescription key="fontDescription" type="system" weight="medium" pointSize="15"/>
-                                                    <nil key="textColor"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="600" text="Temporary label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Pks-KM-kQr">
-                                                    <rect key="frame" x="279" y="6" width="90" height="17"/>
-                                                    <fontDescription key="fontDescription" type="system" weight="light" pointSize="12"/>
-                                                    <color key="textColor" name="chatMessageText"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oxt-Kq-u6J">
-                                                    <rect key="frame" x="355" y="55" width="14" height="12"/>
-                                                    <constraints>
-                                                        <constraint firstAttribute="width" constant="14" id="kYu-n7-bfd"/>
-                                                    </constraints>
-                                                    <fontDescription key="fontDescription" type="system" weight="light" pointSize="10"/>
-                                                    <color key="textColor" name="chatMessageText"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <view opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KOz-ZW-EtH">
-                                                    <rect key="frame" x="44" y="25" width="309" height="42"/>
-                                                </view>
-                                            </subviews>
-                                            <constraints>
-                                                <constraint firstItem="Pks-KM-kQr" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="uvx-Hg-CEC" secondAttribute="trailing" constant="10" id="4NB-YE-zBd"/>
-                                                <constraint firstItem="oxt-Kq-u6J" firstAttribute="leading" secondItem="KOz-ZW-EtH" secondAttribute="trailing" constant="2" id="6KF-mg-jgP"/>
-                                                <constraint firstAttribute="trailing" secondItem="Pks-KM-kQr" secondAttribute="trailing" constant="6" id="9Nn-fo-XE3"/>
-                                                <constraint firstItem="uvx-Hg-CEC" firstAttribute="leading" secondItem="GPo-sU-r92" secondAttribute="trailing" constant="8" id="CqX-6J-WJk"/>
-                                                <constraint firstAttribute="trailing" secondItem="oxt-Kq-u6J" secondAttribute="trailing" constant="6" id="Dlc-7d-qh5"/>
-                                                <constraint firstAttribute="bottom" secondItem="KOz-ZW-EtH" secondAttribute="bottom" constant="4" id="F4d-Bp-nov"/>
-                                                <constraint firstItem="KOz-ZW-EtH" firstAttribute="top" secondItem="uvx-Hg-CEC" secondAttribute="bottom" constant="2" id="Jxa-dM-39g"/>
-                                                <constraint firstItem="GPo-sU-r92" firstAttribute="leading" secondItem="jHQ-bY-717" secondAttribute="leading" constant="6" id="SDt-uy-3SS"/>
-                                                <constraint firstItem="Pks-KM-kQr" firstAttribute="top" secondItem="jHQ-bY-717" secondAttribute="top" constant="6" id="VGN-f5-Pvm"/>
-                                                <constraint firstItem="oxt-Kq-u6J" firstAttribute="top" relation="greaterThanOrEqual" secondItem="uvx-Hg-CEC" secondAttribute="bottom" constant="2" id="a86-y0-420"/>
-                                                <constraint firstItem="GPo-sU-r92" firstAttribute="top" secondItem="jHQ-bY-717" secondAttribute="top" constant="5" id="eJr-oL-kBd"/>
-                                                <constraint firstItem="Pks-KM-kQr" firstAttribute="bottom" secondItem="uvx-Hg-CEC" secondAttribute="bottom" id="ged-sv-Op8"/>
-                                                <constraint firstItem="uvx-Hg-CEC" firstAttribute="top" secondItem="GPo-sU-r92" secondAttribute="top" id="kUu-mp-gzq"/>
-                                                <constraint firstItem="KOz-ZW-EtH" firstAttribute="leading" secondItem="uvx-Hg-CEC" secondAttribute="leading" id="qLQ-to-YAY"/>
-                                                <constraint firstItem="oxt-Kq-u6J" firstAttribute="bottom" secondItem="KOz-ZW-EtH" secondAttribute="bottom" id="uip-GL-yQT"/>
-                                            </constraints>
-                                        </tableViewCellContentView>
-                                        <connections>
-                                            <outlet property="avatarView" destination="GPo-sU-r92" id="kXQ-Pa-1rN"/>
-                                            <outlet property="customView" destination="KOz-ZW-EtH" id="GoL-hp-Al8"/>
-                                            <outlet property="nicknameView" destination="uvx-Hg-CEC" id="m3g-WQ-xJ7"/>
-                                            <outlet property="stateView" destination="oxt-Kq-u6J" id="vTW-DK-wco"/>
-                                            <outlet property="timestampView" destination="Pks-KM-kQr" id="7CX-qx-dTy"/>
-                                        </connections>
-                                    </tableViewCell>
-                                </prototypes>
                                 <connections>
-                                    <outletCollection property="gestureRecognizers" destination="Z94-Hf-jAY" appends="YES" id="0jw-xb-dCn"/>
+                                    <segue destination="leg-mN-YAd" kind="embed" id="FoG-5E-8zb"/>
                                 </connections>
-                            </tableView>
+                            </containerView>
                         </subviews>
                         <constraints>
-                            <constraint firstItem="5el-fR-NA6" firstAttribute="leading" secondItem="7WM-tQ-tL0" secondAttribute="leading" id="9vE-pi-9Iw"/>
-                            <constraint firstItem="7WM-tQ-tL0" firstAttribute="trailing" secondItem="5el-fR-NA6" secondAttribute="trailing" id="H8M-zz-YAs"/>
-                            <constraint firstItem="5el-fR-NA6" firstAttribute="top" secondItem="7WM-tQ-tL0" secondAttribute="top" id="cYu-h2-cus"/>
-                            <constraint firstItem="7WM-tQ-tL0" firstAttribute="bottom" secondItem="5el-fR-NA6" secondAttribute="bottom" id="ltg-hv-1Fp"/>
+                            <constraint firstItem="7WM-tQ-tL0" firstAttribute="trailing" secondItem="sgc-HQ-Zz2" secondAttribute="trailing" id="5zj-hd-0Be"/>
+                            <constraint firstItem="7WM-tQ-tL0" firstAttribute="bottom" secondItem="sgc-HQ-Zz2" secondAttribute="bottom" id="9vQ-SR-CUT"/>
+                            <constraint firstItem="sgc-HQ-Zz2" firstAttribute="top" secondItem="7WM-tQ-tL0" secondAttribute="top" id="KqV-2L-2ED"/>
+                            <constraint firstItem="sgc-HQ-Zz2" firstAttribute="leading" secondItem="7WM-tQ-tL0" secondAttribute="leading" id="VxO-NM-7eE"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="7WM-tQ-tL0"/>
                     </view>
                     <navigationItem key="navigationItem" id="jz1-lz-vTl">
                         <nil key="title"/>
                         <view key="titleView" contentMode="scaleToFill" id="Ht8-Rt-tH2" customClass="MucTitleView" customModule="Siskin" customModuleProvider="target">
-                            <rect key="frame" x="37" y="2" width="255" height="40"/>
+                            <rect key="frame" x="60" y="2" width="255" height="40"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="750" verticalHuggingPriority="251" text="Room name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="az1-E9-Dy7">
@@ -301,7 +83,7 @@
                     </navigationItem>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
-                        <outlet property="tableView" destination="5el-fR-NA6" id="hbY-sl-q9Q"/>
+                        <outlet property="containerView" destination="sgc-HQ-Zz2" id="4MZ-gD-QS6"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="GhF-oL-IbC" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1027,13 +809,18 @@
             </objects>
             <point key="canvasLocation" x="6677.6000000000004" y="-614.84257871064472"/>
         </scene>
+        <!--ConversationLogController-->
+        <scene sceneID="vZA-SB-m2U">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Conversation" referencedIdentifier="ConversationLogController" id="leg-mN-YAd" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="RdR-fu-61U" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4403" y="374"/>
+        </scene>
     </scenes>
     <resources>
         <image name="defaultGroupchatAvatarDark" width="100" height="100"/>
         <image name="first" width="30" height="30"/>
         <image name="participants" width="25" height="25"/>
-        <namedColor name="chatMessageText">
-            <color white="0.14999999999999999" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </namedColor>
     </resources>
 </document>

@@ -361,8 +361,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
+    var backgroundFetchInProgress = false;
+    
     @available(iOS 13, *)
     func handleAppRefresh(task: BGAppRefreshTask) {
+        guard DispatchQueue.main.sync(execute: {
+            if self.backgroundFetchInProgress {
+                return false;
+            }
+            backgroundFetchInProgress = true;
+            return true;
+        }) else {
+            task.setTaskCompleted(success: true);
+            return;
+        }
         self.scheduleAppRefresh();
         let fetchStart = Date();
         print("starting fetching", fetchStart);
@@ -370,11 +382,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let fetchEnd = Date();
             let time = fetchEnd.timeIntervalSince(fetchStart);
             print(Date(), "fetched date in \(time) seconds with result = \(result)");
+            self.backgroundFetchInProgress = false;
             task.setTaskCompleted(success: result != .failed);
         });
         
         task.expirationHandler = {
             print("task expiration reached, start", Date());
+            DispatchQueue.main.sync {
+                self.backgroundFetchInProgress = false;
+            }
             self.xmppService.performFetchExpired();
             print("task expiration reached, end", Date());
         }

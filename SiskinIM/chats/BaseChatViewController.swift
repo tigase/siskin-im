@@ -23,15 +23,25 @@ import UIKit
 import UserNotifications
 import TigaseSwift
 
-class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewDelegate, ChatViewInputBarDelegate {
+class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInputBarDelegate {
 
-    @IBOutlet var tableView: UITableView!
-        
+    @IBOutlet var containerView: UIView!;
+    
+    var conversationLogController: ConversationLogController? {
+        didSet {
+            self.conversationLogController?.chat = self.chat;
+        }
+    }
+    
     @IBInspectable var animateScrollToBottom: Bool = true;
     
     var sendMessageButton: UIButton?;
     
-    var chat: DBChatProtocol!;
+    var chat: DBChatProtocol! {
+        didSet {
+            conversationLogController?.chat = chat;
+        }
+    }
         
     var account:BareJID!;
     var jid:BareJID!;
@@ -47,30 +57,32 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         
     let chatViewInputBar = ChatViewInputBar();
     
+    func conversationTableViewDelegate() -> UITableViewDelegate? {
+        return nil;
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         chatViewInputBar.placeholder = "from \(account.stringValue)...";
 
         navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem;
         navigationItem.leftItemsSupplementBackButton = true;
-                
-        tableView.rowHeight = UITableView.automaticDimension;
-        tableView.estimatedRowHeight = 160.0;
-        tableView.separatorStyle = .none;
+
+        self.view.addSubview(chatViewInputBar);
+
         print("tableView.constraints:", self.view.constraints)
-        if let bottomTableViewConstraint = self.view.constraints.first(where: { $0.firstAnchor == tableView.bottomAnchor || $0.secondAnchor == tableView.bottomAnchor }) {
+        if let bottomTableViewConstraint = self.view.constraints.first(where: { $0.firstAnchor == containerView.bottomAnchor || $0.secondAnchor == containerView.bottomAnchor }) {
             bottomTableViewConstraint.isActive = false;
             self.view.removeConstraint(bottomTableViewConstraint);
         }
         
-        self.view.addSubview(chatViewInputBar);
         NSLayoutConstraint.activate([
             chatViewInputBar.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
-            chatViewInputBar.topAnchor.constraint(equalTo: tableView.bottomAnchor),
+            chatViewInputBar.topAnchor.constraint(equalTo: containerView.bottomAnchor),
             chatViewInputBar.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
             chatViewInputBar.trailingAnchor.constraint(equalTo: self.view.trailingAnchor)
         ]);
-        
+
         chatViewInputBar.setNeedsLayout();
                 
         chatViewInputBar.delegate = self;
@@ -102,6 +114,12 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         // Dispose of any resources that can be recreated.
     }
    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let destination = segue.destination as? ConversationLogController {
+            self.conversationLogController = destination;
+        }
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
         
@@ -164,7 +182,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, UITableViewD
         }
         print("size:", chatViewInputBar.intrinsicContentSize, chatViewInputBar.frame.size);
     }
-    
+        
     override func viewWillDisappear(_ animated: Bool) {
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil);
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil);

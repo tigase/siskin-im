@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar, UITableViewDataSource, BaseChatViewController_ShareImageExtension {
+class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar, BaseChatViewController_ShareImageExtension {
 
     static let MENTION_OCCUPANT = Notification.Name("groupchatMentionOccupant");
     
@@ -42,7 +42,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
 
     let log: Logger = Logger();
 
-    @IBOutlet var progressBar: UIProgressView?;
+    var progressBar: UIProgressView?;
     var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
     var filePickerDelegate: BaseChatViewController_ShareFilePickerDelegate?;
 
@@ -62,9 +62,6 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         let recognizer = UITapGestureRecognizer(target: self, action: #selector(MucChatViewController.roomInfoClicked));
         self.titleView?.isUserInteractionEnabled = true;
         self.navigationController?.navigationBar.addGestureRecognizer(recognizer);
-
-        tableView.dataSource = self;
-        tableView.delegate = self;
         
         initializeSharing();
         
@@ -91,19 +88,9 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         // Dispose of any resources that can be recreated.
     }
 
-    // MARK: - Table view data source
-
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return 1;
-    }
-
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return dataSource.count;
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let dbItem = dataSource.getItem(at: indexPath.row) else {
-            return tableView.dequeueReusableCell(withIdentifier: "MucChatTableViewCellIncoming", for: indexPath);
+            return tableView.dequeueReusableCell(withIdentifier: "ChatTableViewMessageCell", for: indexPath);
         }
         
         var continuation = false;
@@ -115,7 +102,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         
         switch dbItem {
         case let item as ChatMessage:
-            let id = continuation ? "MucChatTableViewMessageContinuationCell" : "MucChatTableViewMessageCell";
+            let id = continuation ? "ChatTableViewMessageContinuationCell" : "ChatTableViewMessageCell";
 
             let cell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
             cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
@@ -143,7 +130,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             cell.set(message: item);
             return cell;
         case let item as ChatAttachment:
-            let id = continuation ? "MucChatTableViewAttachmentContinuationCell" : "MucChatTableViewAttachmentCell";
+            let id = continuation ? "ChatTableViewAttachmentContinuationCell" : "ChatTableViewAttachmentCell";
             let cell: AttachmentChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! AttachmentChatTableViewCell;
             cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
             if cell.avatarView != nil {
@@ -172,18 +159,18 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
                 
             return cell;
         case let item as ChatLinkPreview:
-            let id = "MucChatTableViewLinkPreviewCell";
+            let id = "ChatTableViewLinkPreviewCell";
             let cell: LinkPreviewChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! LinkPreviewChatTableViewCell;
             cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
             cell.set(linkPreview: item);
             return cell;
         case let item as SystemMessage:
-            let cell: ChatTableViewSystemCell = tableView.dequeueReusableCell(withIdentifier: "MucChatTableViewSystemCell", for: indexPath) as! ChatTableViewSystemCell;
+            let cell: ChatTableViewSystemCell = tableView.dequeueReusableCell(withIdentifier: "ChatTableViewSystemCell", for: indexPath) as! ChatTableViewSystemCell;
             cell.set(item: item);
             cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
             return cell;
         default:
-            return tableView.dequeueReusableCell(withIdentifier: "MucChatTableViewCellIncoming", for: indexPath);
+            return tableView.dequeueReusableCell(withIdentifier: "ChatTableViewMessageCell", for: indexPath);
         }
 
     }
@@ -217,6 +204,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
                 }
             }
         }
+        super.prepare(for: segue, sender: sender);
     }
 
     @objc func avatarChanged(_ notification: NSNotification) {
@@ -225,9 +213,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             return;
         }
         DispatchQueue.main.async {
-            if let indexPaths = self.tableView.indexPathsForVisibleRows {
-                self.tableView.reloadRows(at: indexPaths, with: .none);
-            }
+            self.conversationLogController?.reloadVisibleItems();
         }
     }
 

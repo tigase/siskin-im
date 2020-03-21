@@ -22,17 +22,9 @@
 import UIKit
 import TigaseSwift
 
-class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatViewControllerWithDataSource {
+class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatViewControllerWithDataSource, UITableViewDelegate {
 
     fileprivate weak var timestampsSwitch: UIBarButtonItem? = nil;
-    fileprivate var withTimestamps: Bool {
-        get {
-            return Settings.CopyMessagesWithTimestamps.getBool();
-        }
-        set {
-            Settings.CopyMessagesWithTimestamps.setValue(newValue);
-        }
-    };
     
     override func viewWillAppear(_ animated: Bool) {
         if #available(iOS 13.0, *) {
@@ -44,7 +36,6 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         }
         
         super.viewWillAppear(animated);
-        NotificationCenter.default.addObserver(self, selector: #selector(showEditToolbar), name: NSNotification.Name("tableViewCellShowEditToolbar"), object: nil);
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -53,94 +44,9 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         super.viewDidDisappear(animated);
     }
     
-    @objc func showEditToolbar(_ notification: Notification) {
-        guard let cell = notification.object as? UITableViewCell else {
-            return;
-        }
-
-        DispatchQueue.main.async {
-        self.view.endEditing(true);
-            DispatchQueue.main.async {
-            let selected = self.tableView?.indexPath(for: cell);
-        UIView.animate(withDuration: 0.3) {
-            self.tableView?.isEditing = true;
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.3) {
-                self.tableView?.selectRow(at: selected, animated: false, scrollPosition: .none);
-            }
-            
-            self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.editCancelClicked));
-            
-            let timestampsSwitch = UIBarButtonItem(title: "Timestamps: \(self.withTimestamps ? "ON" : "OFF")", style: .plain, target: self, action: #selector(BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.switchWithTimestamps));
-            self.timestampsSwitch = timestampsSwitch;
-
-            self.updateTimestampSwitch();
-            self.navigationController?.toolbar.tintColor = UIColor(named: "tintColor");
-            print("navigationController:", self.navigationController as Any)
-            let items = [
-                timestampsSwitch,
-                UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
-                UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.shareSelectedMessages))
-//                UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-            ];
-            
-            self.navigationController?.setToolbarHidden(false, animated: true);
-            self.setToolbarItems(items, animated: true);
-        }
-        }
-        }
-    }
-    
-    func hideEditToolbar() {
-        UIView.animate(withDuration: 0.3) {
-            self.navigationController?.setToolbarHidden(true, animated: true);
-            self.navigationItem.rightBarButtonItem = nil;
-            self.tableView?.isEditing = false;
-        }
-    }
-    
-    @objc func editCancelClicked() {
-        hideEditToolbar();
-    }
-    
-    func copySelectedMessages() {
-        copyMessageInt(paths: tableView.indexPathsForSelectedRows ?? []);
-        hideEditToolbar();
-    }
-
-    @objc func shareSelectedMessages() {
-        shareMessageInt(paths: tableView.indexPathsForSelectedRows ?? []);
-        hideEditToolbar();
-    }
-    
-    @objc func switchWithTimestamps() {
-        withTimestamps = !withTimestamps;
-        updateTimestampSwitch();
-        
-    }
-    
-    private func updateTimestampSwitch() {
-        if #available(iOS 13.0, *) {
-            timestampsSwitch?.image = UIImage(systemName: withTimestamps ? "clock.fill" : "clock");
-            timestampsSwitch?.title = nil;
-        } else {
-            timestampsSwitch?.title = "Timestamps: \(withTimestamps ? "ON" : "OFF")";
-            timestampsSwitch?.image = nil;
-        }
-    }
-    
-    fileprivate func copyMessageInt(paths: [IndexPath]) {
-        getTextOfSelectedRows(paths: paths, withTimestamps: false) { (texts) in
-            UIPasteboard.general.strings = texts;
-            UIPasteboard.general.string = texts.joined(separator: "\n");
-        };
-    }
-    
-    fileprivate func shareMessageInt(paths: [IndexPath]) {
-        getTextOfSelectedRows(paths: paths, withTimestamps: withTimestamps) { (texts) in
-            let text = texts.joined(separator: "\n");
-            let activityController = UIActivityViewController(activityItems: [text], applicationActivities: nil);
-            self.navigationController?.present(activityController, animated: true, completion: nil);
-        }
+    override func initialize(tableView: UITableView) {
+        super.initialize(tableView: tableView);
+        tableView.delegate = self;
     }
     
     func tableView(_ tableView: UITableView, canPerformAction action: Selector, forRowAt indexPath: IndexPath, withSender sender: Any?) -> Bool {
@@ -166,30 +72,9 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
     
     func tableView(_ tableView: UITableView, performAction action: Selector, forRowAt indexPath: IndexPath, withSender sender: Any?) {
         if action == #selector(UIResponderStandardEditActions.copy(_:)) {
-            copyMessageInt(paths: [indexPath]);
+            conversationLogController?.copyMessageInt(paths: [indexPath]);
         }
-        hideEditToolbar();
+        conversationLogController?.hideEditToolbar();
     }
 
-    func getTextOfSelectedRows(paths: [IndexPath], withTimestamps: Bool, handler: (([String]) -> Void)?) {
-        let items: [ChatViewItemProtocol] = paths.map({ index in dataSource.getItem(at: index.row)! }).sorted { (it1, it2) -> Bool in
-              it1.timestamp.compare(it2.timestamp) == .orderedAscending;
-                };
-        
-        let withoutPrefix = Set(items.map({it in it.state.direction})).count == 1;
-    
-        let formatter = DateFormatter();
-        formatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "dd.MM.yyyy jj:mm", options: 0, locale: NSLocale.current);
-    
-        let texts = items.map { (it) -> String? in
-            return it.copyText(withTimestamp: withTimestamps, withSender: !withoutPrefix);
-        }.filter { (text) -> Bool in
-            return text != nil;
-        }.map { (text) -> String in
-            return text!;
-        };
-            
-        print("got texts", texts);
-        handler?(texts);
-    }
 }
