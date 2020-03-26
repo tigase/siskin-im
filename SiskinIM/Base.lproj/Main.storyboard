@@ -156,11 +156,11 @@
             <objects>
                 <viewController storyboardIdentifier="ChatViewController" title="Chat" id="WP2-Cp-7ZE" customClass="ChatViewController" customModule="Siskin" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" opaque="NO" contentMode="scaleToFill" id="MXY-a0-pWq">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="808"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gYg-Wz-iZc">
-                                <rect key="frame" x="0.0" y="88" width="600" height="496"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="725"/>
                                 <connections>
                                     <segue destination="GGV-aa-8IC" kind="embed" id="585-T5-dGR"/>
                                 </connections>
@@ -178,7 +178,7 @@
                         <nil key="title"/>
                         <barButtonItem key="backBarButtonItem" title="Back" id="Dx3-QU-3cN"/>
                         <view key="titleView" contentMode="scaleToFill" id="fc4-l0-VbW" customClass="ChatTitleView" customModule="Siskin" customModuleProvider="target">
-                            <rect key="frame" x="100" y="2" width="400" height="40"/>
+                            <rect key="frame" x="12" y="2" width="390" height="40"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="750" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Jane Done" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UWL-vQ-lxc">
@@ -221,8 +221,6 @@
                         </view>
                     </navigationItem>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
-                    <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
-                    <size key="freeformSize" width="600" height="667"/>
                     <connections>
                         <outlet property="containerView" destination="gYg-Wz-iZc" id="bHR-j9-Idy"/>
                     </connections>
@@ -490,12 +488,15 @@
             <objects>
                 <navigationController storyboardIdentifier="ChatViewNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="XmR-SP-8PN" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="ZXL-ae-Ls9">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" id="ZXL-ae-Ls9">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="tintColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
+                    <toolbar key="toolbar" opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="wd7-5o-jHv">
+                        <autoresizingMask key="autoresizingMask"/>
+                    </toolbar>
                     <connections>
                         <segue destination="WP2-Cp-7ZE" kind="relationship" relationship="rootViewController" id="FOd-6e-W8S"/>
                     </connections>

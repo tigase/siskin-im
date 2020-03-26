@@ -42,7 +42,7 @@ public class ChatAttachment: ChatEntry {
     }
 }
 
-public struct ChatAttachmentAppendix: Codable {
+public struct ChatAttachmentAppendix: AppendixProtocol {
     
     var state: State = .new;
     var filesize: Int? = nil;
@@ -73,7 +73,7 @@ public struct ChatAttachmentAppendix: Codable {
             try container.encode(filename, forKey: .filename);
         }
     }
-    
+        
     enum CodingKeys: String, CodingKey {
         case state = "state"
         case filesize = "size"

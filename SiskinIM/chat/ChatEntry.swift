@@ -29,7 +29,6 @@ public class ChatEntry: ChatViewItemProtocol {
         formatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "dd.MM.yyyy jj:mm", options: 0, locale: NSLocale.current);
         return formatter;
     }();
-
     
     public let id: Int;
     public let timestamp: Date;

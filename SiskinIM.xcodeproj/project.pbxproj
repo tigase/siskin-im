@@ -16,6 +16,11 @@
 		FE17808D23EB4C7F00A1EA76 /* AccountQRCodeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE17808C23EB4C7F00A1EA76 /* AccountQRCodeController.swift */; };
 		FE1AC8F7216B8AB700D4CDAB /* NewFeaturesDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */; };
 		FE1DCCA21EA52CE200850563 /* DataFormController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1DCCA11EA52CE200850563 /* DataFormController.swift */; };
+		FE2332DB242B9C2300008ED4 /* ChannelInviteController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2332DA242B9C2300008ED4 /* ChannelInviteController.swift */; };
+		FE2332DD242CB01600008ED4 /* ChatInvitation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2332DC242CB01600008ED4 /* ChatInvitation.swift */; };
+		FE2332DF242CB02700008ED4 /* AppendixProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2332DE242CB02700008ED4 /* AppendixProtocol.swift */; };
+		FE2332E1242CCDB400008ED4 /* InvitationChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2332E0242CCDB400008ED4 /* InvitationChatTableViewCell.swift */; };
+		FE2332E3242CE8D600008ED4 /* ChannelBlockedUsersController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2332E2242CE8D600008ED4 /* ChannelBlockedUsersController.swift */; };
 		FE233CD521E6846E00099281 /* CameraPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE233CD421E6846E00099281 /* CameraPreviewView.swift */; };
 		FE233CDB21EA03DD00099281 /* Info.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE233CDA21EA03DD00099281 /* Info.storyboard */; };
 		FE233CDD21EA062E00099281 /* AboutController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE233CDC21EA062E00099281 /* AboutController.swift */; };
@@ -29,6 +34,18 @@
 		FE36B3C821FA52E000D1F037 /* EmptyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */; };
 		FE3A45CF1CE49D3300C36264 /* RosterItemEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */; };
 		FE3DCCEE1FE18334008B6C8B /* CertificateErrorAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3DCCED1FE18334008B6C8B /* CertificateErrorAlert.swift */; };
+		FE3E387A242765E800D3A8E8 /* MixEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E3879242765E700D3A8E8 /* MixEventHandler.swift */; };
+		FE3E387C242766A900D3A8E8 /* DBChannelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E387B242766A900D3A8E8 /* DBChannelStore.swift */; };
+		FE3E387E2427A09A00D3A8E8 /* ChannelSelectToJoinViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E387D2427A09A00D3A8E8 /* ChannelSelectToJoinViewController.swift */; };
+		FE3E38802427B8A900D3A8E8 /* ChannelsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E387F2427B8A900D3A8E8 /* ChannelsHelper.swift */; };
+		FE3E38822427BF8600D3A8E8 /* ChannelSelectAccountAndComponentController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E38812427BF8600D3A8E8 /* ChannelSelectAccountAndComponentController.swift */; };
+		FE3E38842427E34300D3A8E8 /* ChannelJoinViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E38832427E34300D3A8E8 /* ChannelJoinViewController.swift */; };
+		FE3E38862428C21100D3A8E8 /* OSLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E38852428C21100D3A8E8 /* OSLog.swift */; };
+		FE3E38882428D9DB00D3A8E8 /* ChannelCreateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E38872428D9DB00D3A8E8 /* ChannelCreateViewController.swift */; };
+		FE3E388A2429364E00D3A8E8 /* UIImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E38892429364D00D3A8E8 /* UIImage.swift */; };
+		FE3E388C2429FAC500D3A8E8 /* ChannelSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E388B2429FAC500D3A8E8 /* ChannelSettingsViewController.swift */; };
+		FE3E388E242A251E00D3A8E8 /* ChannelEditInfoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E388D242A251E00D3A8E8 /* ChannelEditInfoController.swift */; };
+		FE3E3890242A98C000D3A8E8 /* ChannelParticipantsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E388F242A98C000D3A8E8 /* ChannelParticipantsController.swift */; };
 		FE4071E421E2605900F09B58 /* VideoCallController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4071E321E2605900F09B58 /* VideoCallController.swift */; };
 		FE4071E621E262D900F09B58 /* VoIP.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE4071E521E262D900F09B58 /* VoIP.storyboard */; };
 		FE4071E821E2653700F09B58 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4071E721E2653700F09B58 /* RoundButton.swift */; };
@@ -173,6 +190,8 @@
 		FEE49DCC2424C03200900BBB /* Conversation.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEE49DCB2424C03200900BBB /* Conversation.storyboard */; };
 		FEE49DCE2424C1F800900BBB /* ConversationLogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE49DCD2424C1F800900BBB /* ConversationLogController.swift */; };
 		FEE49DD02426485500900BBB /* DBConnection_main.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE49DCF2426485500900BBB /* DBConnection_main.swift */; };
+		FEE49DD52426886500900BBB /* MIX.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEE49DD42426886500900BBB /* MIX.storyboard */; };
+		FEE49DD7242688E100900BBB /* ChannelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE49DD6242688E100900BBB /* ChannelViewController.swift */; };
 		FEE9608A22F191980009B191 /* MucChatSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE9608922F191980009B191 /* MucChatSettingsViewController.swift */; };
 		FEF19F0223473B9E005CFE9A /* XmppServiceEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF19F0123473B9E005CFE9A /* XmppServiceEventHandler.swift */; };
 		FEF19F0423473C06005CFE9A /* MessageEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF19F0323473C06005CFE9A /* MessageEventHandler.swift */; };
@@ -267,6 +286,11 @@
 		FE17808C23EB4C7F00A1EA76 /* AccountQRCodeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountQRCodeController.swift; sourceTree = "<group>"; };
 		FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewFeaturesDetector.swift; sourceTree = "<group>"; };
 		FE1DCCA11EA52CE200850563 /* DataFormController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataFormController.swift; sourceTree = "<group>"; };
+		FE2332DA242B9C2300008ED4 /* ChannelInviteController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelInviteController.swift; sourceTree = "<group>"; };
+		FE2332DC242CB01600008ED4 /* ChatInvitation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatInvitation.swift; sourceTree = "<group>"; };
+		FE2332DE242CB02700008ED4 /* AppendixProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppendixProtocol.swift; sourceTree = "<group>"; };
+		FE2332E0242CCDB400008ED4 /* InvitationChatTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationChatTableViewCell.swift; sourceTree = "<group>"; };
+		FE2332E2242CE8D600008ED4 /* ChannelBlockedUsersController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelBlockedUsersController.swift; sourceTree = "<group>"; };
 		FE233CD421E6846E00099281 /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewView.swift; sourceTree = "<group>"; };
 		FE233CDA21EA03DD00099281 /* Info.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Info.storyboard; sourceTree = "<group>"; };
 		FE233CDC21EA062E00099281 /* AboutController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutController.swift; sourceTree = "<group>"; };
@@ -282,6 +306,18 @@
 		FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyViewController.swift; sourceTree = "<group>"; };
 		FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterItemEditViewController.swift; sourceTree = "<group>"; };
 		FE3DCCED1FE18334008B6C8B /* CertificateErrorAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificateErrorAlert.swift; sourceTree = "<group>"; };
+		FE3E3879242765E700D3A8E8 /* MixEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MixEventHandler.swift; sourceTree = "<group>"; };
+		FE3E387B242766A900D3A8E8 /* DBChannelStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBChannelStore.swift; sourceTree = "<group>"; };
+		FE3E387D2427A09A00D3A8E8 /* ChannelSelectToJoinViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelSelectToJoinViewController.swift; sourceTree = "<group>"; };
+		FE3E387F2427B8A900D3A8E8 /* ChannelsHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsHelper.swift; sourceTree = "<group>"; };
+		FE3E38812427BF8600D3A8E8 /* ChannelSelectAccountAndComponentController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelSelectAccountAndComponentController.swift; sourceTree = "<group>"; };
+		FE3E38832427E34300D3A8E8 /* ChannelJoinViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelJoinViewController.swift; sourceTree = "<group>"; };
+		FE3E38852428C21100D3A8E8 /* OSLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSLog.swift; sourceTree = "<group>"; };
+		FE3E38872428D9DB00D3A8E8 /* ChannelCreateViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelCreateViewController.swift; sourceTree = "<group>"; };
+		FE3E38892429364D00D3A8E8 /* UIImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImage.swift; sourceTree = "<group>"; };
+		FE3E388B2429FAC500D3A8E8 /* ChannelSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelSettingsViewController.swift; sourceTree = "<group>"; };
+		FE3E388D242A251E00D3A8E8 /* ChannelEditInfoController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelEditInfoController.swift; sourceTree = "<group>"; };
+		FE3E388F242A98C000D3A8E8 /* ChannelParticipantsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelParticipantsController.swift; sourceTree = "<group>"; };
 		FE4071E321E2605900F09B58 /* VideoCallController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCallController.swift; sourceTree = "<group>"; };
 		FE4071E521E262D900F09B58 /* VoIP.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = VoIP.storyboard; sourceTree = "<group>"; };
 		FE4071E721E2653700F09B58 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
@@ -424,6 +460,8 @@
 		FEE49DCB2424C03200900BBB /* Conversation.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Conversation.storyboard; sourceTree = "<group>"; };
 		FEE49DCD2424C1F800900BBB /* ConversationLogController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationLogController.swift; sourceTree = "<group>"; };
 		FEE49DCF2426485500900BBB /* DBConnection_main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBConnection_main.swift; sourceTree = "<group>"; };
+		FEE49DD42426886500900BBB /* MIX.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MIX.storyboard; sourceTree = "<group>"; };
+		FEE49DD6242688E100900BBB /* ChannelViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelViewController.swift; sourceTree = "<group>"; };
 		FEE9608922F191980009B191 /* MucChatSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MucChatSettingsViewController.swift; sourceTree = "<group>"; };
 		FEE9608B22F2F8950009B191 /* db-schema-6.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-6.sql"; sourceTree = "<group>"; };
 		FEF19F0123473B9E005CFE9A /* XmppServiceEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XmppServiceEventHandler.swift; sourceTree = "<group>"; };
@@ -541,6 +579,9 @@
 				FE43E43723BF3DE80079BD9B /* ChatAttachementsController.swift */,
 				FE9EA16A23BF9DB2008C401A /* ChatAttachementsCellView.swift */,
 				FEE49DCD2424C1F800900BBB /* ConversationLogController.swift */,
+				FE2332DC242CB01600008ED4 /* ChatInvitation.swift */,
+				FE2332DE242CB02700008ED4 /* AppendixProtocol.swift */,
+				FE2332E0242CCDB400008ED4 /* InvitationChatTableViewCell.swift */,
 			);
 			path = chat;
 			sourceTree = "<group>";
@@ -557,6 +598,7 @@
 				FEC79192241AAF55007BE572 /* DBRoomStore.swift */,
 				FEC79194241ABEF4007BE572 /* MessageState.swift */,
 				FEE49DCF2426485500900BBB /* DBConnection_main.swift */,
+				FE3E387B242766A900D3A8E8 /* DBChannelStore.swift */,
 			);
 			path = database;
 			sourceTree = "<group>";
@@ -618,6 +660,7 @@
 				FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */,
 				FE31291B222C0D1500A92863 /* AvatarView.swift */,
 				FE65D62722E9F8EB0065DEA5 /* Markdown.swift */,
+				FE3E38892429364D00D3A8E8 /* UIImage.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -641,6 +684,7 @@
 				FECEF29323B7933A007EC323 /* MetadataCache.swift */,
 				FECEF29523B7B076007EC323 /* DownloadStore.swift */,
 				FE7D293323B919FF001A877D /* DownloadManager.swift */,
+				FE3E38852428C21100D3A8E8 /* OSLog.swift */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -776,6 +820,7 @@
 				FEDC678B238AFB9F005C0FAB /* Settings.storyboard */,
 				FE5146EE2420B900004923A3 /* Account.storyboard */,
 				FEE49DCB2424C03200900BBB /* Conversation.storyboard */,
+				FEE49DD42426886500900BBB /* MIX.storyboard */,
 			);
 			path = SiskinIM;
 			sourceTree = "<group>";
@@ -797,6 +842,7 @@
 				FEF19F132348B655005CFE9A /* DiscoEventHandler.swift */,
 				FE75A00E2375F324001E78D9 /* PushEventHandler.swift */,
 				FEDC6789238A9F16005C0FAB /* BlockedEventHandler.swift */,
+				FE3E3879242765E700D3A8E8 /* MixEventHandler.swift */,
 			);
 			path = service;
 			sourceTree = "<group>";
@@ -843,6 +889,17 @@
 		FEE49DD22426879500900BBB /* channel */ = {
 			isa = PBXGroup;
 			children = (
+				FEE49DD6242688E100900BBB /* ChannelViewController.swift */,
+				FE3E387D2427A09A00D3A8E8 /* ChannelSelectToJoinViewController.swift */,
+				FE3E387F2427B8A900D3A8E8 /* ChannelsHelper.swift */,
+				FE3E38812427BF8600D3A8E8 /* ChannelSelectAccountAndComponentController.swift */,
+				FE3E38832427E34300D3A8E8 /* ChannelJoinViewController.swift */,
+				FE3E38872428D9DB00D3A8E8 /* ChannelCreateViewController.swift */,
+				FE3E388B2429FAC500D3A8E8 /* ChannelSettingsViewController.swift */,
+				FE3E388D242A251E00D3A8E8 /* ChannelEditInfoController.swift */,
+				FE3E388F242A98C000D3A8E8 /* ChannelParticipantsController.swift */,
+				FE2332DA242B9C2300008ED4 /* ChannelInviteController.swift */,
+				FE2332E2242CE8D600008ED4 /* ChannelBlockedUsersController.swift */,
 			);
 			path = channel;
 			sourceTree = "<group>";
@@ -1073,6 +1130,7 @@
 				FE94E52C1CCBA74F00FAE755 /* Main.storyboard in Resources */,
 				FEE49DCC2424C03200900BBB /* Conversation.storyboard in Resources */,
 				FE5146EF2420B900004923A3 /* Account.storyboard in Resources */,
+				FEE49DD52426886500900BBB /* MIX.storyboard in Resources */,
 				FE2809812167CE18002F5BD0 /* server_features_list.xml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1151,6 +1209,7 @@
 			files = (
 				FEDE93921D09E74100CA60A9 /* VCardEditAddressTableViewCell.swift in Sources */,
 				FEAC71791CECE50400ABABEF /* MucChatOccupantsTableViewController.swift in Sources */,
+				FE3E387E2427A09A00D3A8E8 /* ChannelSelectToJoinViewController.swift in Sources */,
 				FEF19F162348E781005CFE9A /* BaseChatViewControllerWithDataSource.swift in Sources */,
 				FEF19F0223473B9E005CFE9A /* XmppServiceEventHandler.swift in Sources */,
 				FEE49DD02426485500900BBB /* DBConnection_main.swift in Sources */,
@@ -1167,23 +1226,30 @@
 				FE9625A01D9AE7CB00D07118 /* RosterProvider.swift in Sources */,
 				FEF19F0423473C06005CFE9A /* MessageEventHandler.swift in Sources */,
 				FE137A4C21F75660006B7F7C /* ChatBottomView.swift in Sources */,
+				FE3E38802427B8A900D3A8E8 /* ChannelsHelper.swift in Sources */,
 				FE3A45CF1CE49D3300C36264 /* RosterItemEditViewController.swift in Sources */,
+				FEE49DD7242688E100900BBB /* ChannelViewController.swift in Sources */,
 				FE507A211CDB7B3B001A015C /* SettingsViewController.swift in Sources */,
 				FE507A191CDB7B3B001A015C /* DBChatHistoryStore.swift in Sources */,
 				FEA8D65D1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift in Sources */,
 				FEDC6790238B05E4005C0FAB /* BlockedContactsController.swift in Sources */,
+				FE2332E1242CCDB400008ED4 /* InvitationChatTableViewCell.swift in Sources */,
+				FE3E38862428C21100D3A8E8 /* OSLog.swift in Sources */,
 				FECEF29423B7933A007EC323 /* MetadataCache.swift in Sources */,
 				FEB62C501DA80956001500D5 /* AvatarStore.swift in Sources */,
 				FE7D293423B919FF001A877D /* DownloadManager.swift in Sources */,
 				FE137A4821F6464D006B7F7C /* UIColor_mix.swift in Sources */,
 				FE507A1E1CDB7B3B001A015C /* RosterViewController.swift in Sources */,
+				FE2332DF242CB02700008ED4 /* AppendixProtocol.swift in Sources */,
 				FEDCBF691D9C53BA00AE9129 /* RosterProviderGrouped.swift in Sources */,
 				FEDE938C1D08AFE800CA60A9 /* VCardEditViewController.swift in Sources */,
 				FEDC678E238B03C1005C0FAB /* AppStoryboard.swift in Sources */,
 				FE36B3C821FA52E000D1F037 /* EmptyViewController.swift in Sources */,
 				FE507A161CDB7B3B001A015C /* ChatsListViewController.swift in Sources */,
 				FE8DD9C9221B29520090F5AA /* MucNewGroupchatController.swift in Sources */,
+				FE3E38842427E34300D3A8E8 /* ChannelJoinViewController.swift in Sources */,
 				FE75A0122376E73C001E78D9 /* SiskinPushNotificationsModuleProvider.swift in Sources */,
+				FE3E3890242A98C000D3A8E8 /* ChannelParticipantsController.swift in Sources */,
 				FE01ADA91E224CF400FA7E65 /* SiskinPushNotificationsModule.swift in Sources */,
 				FE507A1F1CDB7B3B001A015C /* AccountTableViewCell.swift in Sources */,
 				FEF19F122348A3B8005CFE9A /* AvatarEventHandler.swift in Sources */,
@@ -1197,18 +1263,22 @@
 				FE8DD9C5221B153A0090F5AA /* InviteViewController.swift in Sources */,
 				FEB5EC9D1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift in Sources */,
 				FEE9608A22F191980009B191 /* MucChatSettingsViewController.swift in Sources */,
+				FE3E38822427BF8600D3A8E8 /* ChannelSelectAccountAndComponentController.swift in Sources */,
 				FE9E136F1F26049A005C0EE5 /* NotificationSettingsViewController.swift in Sources */,
 				FEA8D6641F30F9260077C12F /* XmppService_VCardExtension.swift in Sources */,
 				FE31291C222C0D1500A92863 /* AvatarView.swift in Sources */,
 				FE719E7E2274D20D007CEEC9 /* OMEMOFingerprintsController.swift in Sources */,
 				FE759FFC23742CE5001E78D9 /* NotificationCenterDelegate.swift in Sources */,
+				FE3E388A2429364E00D3A8E8 /* UIImage.swift in Sources */,
 				FEF19F0C23476466005CFE9A /* MucEventHandler.swift in Sources */,
 				FE1DCCA21EA52CE200850563 /* DataFormController.swift in Sources */,
 				FE7D293623BB5E0A001A877D /* LinkPreviewChatTableViewCell.swift in Sources */,
 				FE6545641E9E8B67006A14AC /* ServerSelectorTableViewCell.swift in Sources */,
+				FE3E387C242766A900D3A8E8 /* DBChannelStore.swift in Sources */,
 				FE31291A22240BEB00A92863 /* PEPBookmarksModule_extension.swift in Sources */,
 				FECEF28E23B7919E007EC323 /* ChatMessage.swift in Sources */,
 				FE00157F2019090300490340 /* ExperimentalSettingsViewController.swift in Sources */,
+				FE2332E3242CE8D600008ED4 /* ChannelBlockedUsersController.swift in Sources */,
 				FE75A006237475E2001E78D9 /* MainNotificationManagerProvider.swift in Sources */,
 				FEDE93871D07564F00CA60A9 /* SwitchTableViewCell.swift in Sources */,
 				FE507A171CDB7B3B001A015C /* ChatTableViewCell.swift in Sources */,
@@ -1222,6 +1292,7 @@
 				FE65D62822E9F8EB0065DEA5 /* Markdown.swift in Sources */,
 				FEC514241CEB2FF7003AF765 /* MucJoinViewController.swift in Sources */,
 				FE507A201CDB7B3B001A015C /* AddAccountController.swift in Sources */,
+				FE2332DB242B9C2300008ED4 /* ChannelInviteController.swift in Sources */,
 				FE507A151CDB7B3B001A015C /* ChatsListTableViewCell.swift in Sources */,
 				FE43EB551F3CC55900A4CAAD /* ImageCache.swift in Sources */,
 				FE507A1C1CDB7B3B001A015C /* DBRosterStore.swift in Sources */,
@@ -1248,17 +1319,22 @@
 				FEDE93901D09BB8300CA60A9 /* VCardEditPhoneTableViewCell.swift in Sources */,
 				FE507A221CDB7B3B001A015C /* AvatarStatusView.swift in Sources */,
 				FE719E782271B439007CEEC9 /* MessageEncryption.swift in Sources */,
+				FE3E38882428D9DB00D3A8E8 /* ChannelCreateViewController.swift in Sources */,
 				FE3DCCEE1FE18334008B6C8B /* CertificateErrorAlert.swift in Sources */,
 				FE75A0102375F338001E78D9 /* PushEventHandler.swift in Sources */,
 				FEDCBF671D9C3EE700AE9129 /* RosterProviderFlat.swift in Sources */,
 				FE9E136D1F25F5F7005C0EE5 /* ChatSettingsViewController.swift in Sources */,
+				FE3E387A242765E800D3A8E8 /* MixEventHandler.swift in Sources */,
 				FECEF29623B7B076007EC323 /* DownloadStore.swift in Sources */,
 				FEF19F08234751FF005CFE9A /* ChatViewItemProtocol.swift in Sources */,
 				FECEF28C23B79151007EC323 /* ChatEntry.swift in Sources */,
 				FECEF29223B792C6007EC323 /* ChatLinkPreview.swift in Sources */,
 				FE9E13711F2606E9005C0EE5 /* ContactsSettingsViewController.swift in Sources */,
+				FE3E388C2429FAC500D3A8E8 /* ChannelSettingsViewController.swift in Sources */,
 				FE00157D2017617B00490340 /* StreamFeaturesCache.swift in Sources */,
+				FE2332DD242CB01600008ED4 /* ChatInvitation.swift in Sources */,
 				FEDE938E1D09BB6200CA60A9 /* VCardEditBasicTableViewCell.swift in Sources */,
+				FE3E388E242A251E00D3A8E8 /* ChannelEditInfoController.swift in Sources */,
 				FEC514261CEB74F8003AF765 /* BaseChatViewController.swift in Sources */,
 				FE507A1D1CDB7B3B001A015C /* RosterItemTableViewCell.swift in Sources */,
 				FE2809832167CF1B002F5BD0 /* ServerFeaturesViewController.swift in Sources */,

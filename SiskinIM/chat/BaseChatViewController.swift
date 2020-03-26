@@ -140,8 +140,12 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     
     @objc func chatClosed(_ notification: Notification) {
         DispatchQueue.main.async {
-            if self.navigationController?.viewControllers.count == 1 {
-                self.showDetailViewController(UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "emptyDetailViewController"), sender: self);
+            if let navigationController = self.navigationController {
+                if navigationController.viewControllers.count == 1 {
+                    self.showDetailViewController(UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "emptyDetailViewController"), sender: self);
+                } else {
+                    navigationController.popToRootViewController(animated: true);
+                }
             } else {
                 self.dismiss(animated: true, completion: nil);
             }

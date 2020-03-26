@@ -157,14 +157,34 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
             return;
         }
         
-        _ = messageModule!.chatManager!.getChatOrCreate(with: item.jid, thread: nil);
+        let chat = DBChatStore.instance.getChat(for: item.account, with: item.jid.bareJid) ?? (messageModule!.chatManager!.getChatOrCreate(with: item.jid, thread: nil) as! DBChat);
         
-        let destination = self.storyboard!.instantiateViewController(withIdentifier: "ChatViewNavigationController") as! UINavigationController;
-        let chatController = destination.children[0] as! ChatViewController;
-        chatController.hidesBottomBarWhenPushed = true;
-        chatController.account = item.account;
-        chatController.jid = item.jid.bareJid;
-        self.showDetailViewController(destination, sender: self);
+        switch chat {
+        case is DBChat:
+            let destination = self.storyboard!.instantiateViewController(withIdentifier: "ChatViewNavigationController") as! UINavigationController;
+            let chatController = destination.children[0] as! ChatViewController;
+            chatController.hidesBottomBarWhenPushed = true;
+            chatController.account = item.account;
+            chatController.jid = item.jid.bareJid;
+            self.showDetailViewController(destination, sender: self);
+        case is DBRoom:
+            let destination = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "RoomViewNavigationController") as! UINavigationController;
+            let chatController = destination.children[0] as! MucChatViewController;
+            chatController.hidesBottomBarWhenPushed = true;
+            chatController.account = item.account;
+            chatController.jid = item.jid.bareJid;
+            self.showDetailViewController(destination, sender: self);
+        case is DBChannel:
+            let destination = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelViewNavigationController") as! UINavigationController;
+            let chatController = destination.children[0] as! ChannelViewController;
+            chatController.hidesBottomBarWhenPushed = true;
+            chatController.account = item.account;
+            chatController.jid = item.jid.bareJid;
+            self.showDetailViewController(destination, sender: self);
+        default:
+            break;
+        }
+        
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {

@@ -115,6 +115,27 @@ class ChatsListViewController: UITableViewController {
                     } else {
                         cell.lastMessageLabel.attributedText = msg;
                     }
+                case .invitation(let message, let sender):
+                    if let fieldfont = cell.lastMessageLabel.font {
+                        let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: fieldfont.fontDescriptor.pointSize);
+                        let msg = NSAttributedString(string: "📨 Invitation", attributes: [.font:  font, .foregroundColor: cell.lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
+
+                        if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                            prefix.append(msg);
+                            cell.lastMessageLabel.attributedText = prefix;
+                        } else {
+                            cell.lastMessageLabel.attributedText = msg;
+                        }
+                    } else {
+                        let msg = NSAttributedString(string: "📨 Invitation", attributes: [.foregroundColor: cell.lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
+                            
+                        if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                            prefix.append(msg);
+                            cell.lastMessageLabel.attributedText = prefix;
+                        } else {
+                            cell.lastMessageLabel.attributedText = msg;
+                        }
+                    }
                 case .attachment(let url, let sender):
                     if let fieldfont = cell.lastMessageLabel.font {
                         let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: fieldfont.fontDescriptor.pointSize);
@@ -154,6 +175,10 @@ class ChatsListViewController: UITableViewController {
                 cell.avatarStatusView.set(name: nil, avatar: AvatarManager.instance.avatar(for: room.roomJid, on: room.account), orDefault: AvatarManager.instance.defaultGroupchatAvatar);
                 cell.avatarStatusView.setStatus(room.state == .joined ? Presence.Show.online : nil);
                 cell.nameLabel.text = room.name ?? item.jid.stringValue;
+            case let channel as DBChannel:
+                cell.avatarStatusView.set(name: nil, avatar: AvatarManager.instance.avatar(for: channel.channelJid, on: channel.account), orDefault: AvatarManager.instance.defaultGroupchatAvatar);
+                cell.nameLabel.text = channel.name ?? item.jid.localPart ?? item.jid.stringValue;
+                cell.avatarStatusView.setStatus(channel.state == .joined ? Presence.Show.online : nil)
             default:
                 let rosterModule: RosterModule? = xmppClient?.modulesManager.getModule(RosterModule.ID);
                 let rosterItem = rosterModule?.rosterStore.get(for: item.jid);
@@ -200,12 +225,12 @@ class ChatsListViewController: UITableViewController {
                     if room.presences[room.nickname]?.affiliation == .owner {
                         let alert = UIAlertController(title: "Delete group chat?", message: "You are leaving the group chat \((room as? DBRoom)?.name ?? room.roomJid.stringValue)", preferredStyle: .actionSheet);
                         alert.addAction(UIAlertAction(title: "Leave chat", style: .default, handler: { (action) in
-                            PEPBookmarksModule.remove(xmppService: self.xmppService, from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false));
+                            PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false));
                             mucModule?.leave(room: room);
                             self.discardNotifications(for: item);
                         }))
                         alert.addAction(UIAlertAction(title: "Delete chat", style: .destructive, handler: { (action) in
-                            PEPBookmarksModule.remove(xmppService: self.xmppService, from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false));
+                            PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false));
                                 mucModule?.destroy(room: room);
                                 self.discardNotifications(for: item);
                         
@@ -214,7 +239,7 @@ class ChatsListViewController: UITableViewController {
                         alert.popoverPresentationController?.sourceRect = tableView.rectForRow(at: indexPath);
                         self.present(alert, animated: true, completion: nil);
                     } else {
-                        PEPBookmarksModule.remove(xmppService: xmppService, from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false));
+                        PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false));
                         mucModule?.leave(room: room);
 
                         room.checkTigasePushNotificationRegistrationStatus { (result) in
@@ -244,6 +269,17 @@ class ChatsListViewController: UITableViewController {
                     let messageModule: MessageModule? = xmppClient?.modulesManager.getModule(MessageModule.ID);
                     _ = messageModule?.chatManager.close(chat: chat);
                     discardNotifications = true;
+                case let channel as DBChannel:
+                    if let mixModule: MixModule = xmppClient?.modulesManager.getModule(MixModule.ID) {
+                        mixModule.leave(channel: channel, completionHandler: { result in
+                            switch result {
+                            case .success(_):
+                                self.discardNotifications(for: item);
+                            case .failure(_,_):
+                                break;
+                            }
+                        });
+                    }
                 default:
                     break;
                 }
@@ -280,6 +316,9 @@ class ChatsListViewController: UITableViewController {
         case let room as DBRoom:
             identifier = "RoomViewNavigationController";
             controller = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: identifier);
+        case let channel as DBChannel:
+            identifier = "ChannelViewNavigationController";
+            controller = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: identifier);
         default:
             identifier = "ChatViewNavigationController";
             controller = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: identifier);
@@ -306,30 +345,21 @@ class ChatsListViewController: UITableViewController {
         controller.popoverPresentationController?.barButtonItem = sender;
         
         controller.addAction(UIAlertAction(title: "New private group chat", style: .default, handler: { action in
-            let newGroupchat = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "MucNewGroupchatController") as! MucNewGroupchatController;
-            newGroupchat.groupchatType = .privateGroupchat;
-            newGroupchat.xmppService = self.xmppService;
-            newGroupchat.hidesBottomBarWhenPushed = true;
-//            self.showDetailViewController(newGroupchat, sender: self);
-            let navController = UINavigationController(rootViewController: newGroupchat);
-            navController.modalPresentationStyle = .formSheet;
-            self.present(navController, animated: true, completion: nil);
+            let navigation = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelCreateNavigationViewController") as! UINavigationController;
+            (navigation.visibleViewController as? ChannelCreateViewController)?.kind = .adhoc;
+            navigation.modalPresentationStyle = .formSheet;
+            self.present(navigation, animated: true, completion: nil);
         }));
         controller.addAction(UIAlertAction(title: "New public group chat", style: .default, handler: { action in
-            let newGroupchat = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "MucNewGroupchatController") as! MucNewGroupchatController;
-            newGroupchat.groupchatType = .publicGroupchat;
-            newGroupchat.xmppService = self.xmppService;
-            newGroupchat.hidesBottomBarWhenPushed = true;
-            let navController = UINavigationController(rootViewController: newGroupchat);
-            navController.modalPresentationStyle = .formSheet;
-            self.present(navController, animated: true, completion: nil);
+            let navigation = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelCreateNavigationViewController") as! UINavigationController;
+            (navigation.visibleViewController as? ChannelCreateViewController)?.kind = .stable;
+            navigation.modalPresentationStyle = .formSheet;
+            self.present(navigation, animated: true, completion: nil);
         }));
         
         controller.addAction(UIAlertAction(title: "Join group chat", style: .default, handler: { action in
-            let navigation = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "MucJoinNavigationController") as! UINavigationController;
+            let navigation = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelJoinNavigationViewController") as! UINavigationController;
             navigation.modalPresentationStyle = .formSheet;
-//            navigation.visibleViewController?.hidesBottomBarWhenPushed = true;
-//            self.showDetailViewController(navigation, sender: self);
             self.present(navigation, animated: true, completion: nil);
         }));
         
@@ -622,8 +652,11 @@ class ChatsListViewController: UITableViewController {
                         self.actionQueue.append(DBChatQueueItem(action: .refresh, chat: opened));
                         return;
                     case .refresh:
-                        // this should not happen
-                        return;
+                        if it is AccountJidQueueItem {
+                            self.actionQueue[idx] = DBChatQueueItem(action: .refresh, chat: opened);
+                        } else {
+                            return;
+                        }
                     }
                 } else {
                     self.actionQueue.append(DBChatQueueItem(action: .add, chat: opened));

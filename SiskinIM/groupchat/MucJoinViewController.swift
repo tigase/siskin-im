@@ -114,7 +114,7 @@ class MucJoinViewController: UITableViewController, UIPickerViewDataSource, UIPi
                     print("automatically enabled push for:", room.roomJid, "result:", result);
                 })
             });
-            PEPBookmarksModule.updateOrAdd(xmppService: xmppService, for: accountJid, bookmark: Bookmarks.Conference(name: room, jid: JID(BareJID(localPart: room, domain: server)), autojoin: true, nick: nickname, password: password));
+            PEPBookmarksModule.updateOrAdd(for: accountJid, bookmark: Bookmarks.Conference(name: room, jid: JID(BareJID(localPart: room, domain: server)), autojoin: true, nick: nickname, password: password));
             dismissView();
         } else {
             var alert: UIAlertController? = nil;

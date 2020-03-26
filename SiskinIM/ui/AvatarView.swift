@@ -36,6 +36,12 @@ class AvatarView: UIImageView {
             self.setNeedsDisplay();
         }
     }
+    
+    override var frame: CGRect {
+        didSet {
+            self.layer.cornerRadius = min(frame.width, frame.height) / 2;
+        }
+    }
 //    override var image: UIImage? {
 //        get {
 //            return super.image;
@@ -101,4 +107,5 @@ class AvatarView: UIImageView {
         
         return image;
     }
+    
 }

@@ -175,7 +175,7 @@ public class RosterProviderAbstract<Item: RosterProviderItem>: RosterProviderAbs
     }
     
     func loadItems() -> [Item] {
-        return try! self.dbConnection.prepareStatement("SELECT id, account, jid, name FROM roster_items")
+        return try! self.dbConnection.prepareStatement("SELECT id, account, jid, name FROM roster_items WHERE annotations = '[]'")
             .query() { (it) in self.processDBloadQueryResult(it: it) };
     }
     

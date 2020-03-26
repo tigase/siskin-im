@@ -227,7 +227,7 @@ class MucNewGroupchatController: UITableViewController, UIPickerViewDataSource, 
                             participants.forEach({ (participant) in
                                 mucModule.invite(to: room, invitee: participant, reason: "You are invied to join conversation \(roomName) at \(room.roomJid)");
                             })
-                            PEPBookmarksModule.updateOrAdd(xmppService: xmppService, for: accountJid, bookmark: Bookmarks.Conference(name: roomName, jid: room.jid, autojoin: true, nick: roomNickname, password: nil));
+                            PEPBookmarksModule.updateOrAdd(for: accountJid, bookmark: Bookmarks.Conference(name: roomName, jid: room.jid, autojoin: true, nick: roomNickname, password: nil));
                         }, onError: nil);
                     }, onError: nil);
                 }, onJoined: { room in
@@ -268,7 +268,7 @@ class MucNewGroupchatController: UITableViewController, UIPickerViewDataSource, 
                     }
                     mucModule.setRoomConfiguration(roomJid: room.jid, configuration: config, onSuccess: {
                         print("unlocked room", room.jid);
-                        PEPBookmarksModule.updateOrAdd(xmppService: self.xmppService, for: accountJid, bookmark:  Bookmarks.Conference(name: roomName, jid: room.jid, autojoin: true, nick: roomNickname, password: nil));
+                        PEPBookmarksModule.updateOrAdd(for: accountJid, bookmark:  Bookmarks.Conference(name: roomName, jid: room.jid, autojoin: true, nick: roomNickname, password: nil));
                     }, onError: nil);
                 }, onError: nil);
             }, onJoined: { room in

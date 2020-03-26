@@ -48,9 +48,9 @@ open class XmppService: Logger, EventHandler {
     fileprivate var fetchStart = NSDate();
         
     #if targetEnvironment(simulator)
-    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), PushEventHandler.instance, BlockedEventHandler.instance];
+    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), PushEventHandler.instance, BlockedEventHandler.instance, MixEventHandler.instance];
     #else
-    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), PushEventHandler.instance, JingleManager.instance, BlockedEventHandler.instance];
+    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), PushEventHandler.instance, JingleManager.instance, BlockedEventHandler.instance, MixEventHandler.instance];
     #endif
     
     public let dbCapsCache: DBCapabilitiesCache;
@@ -104,7 +104,7 @@ open class XmppService: Logger, EventHandler {
         self.dbCapsCache = DBCapabilitiesCache(dbConnection: dbConnection);
         self.dbChatStore = DBChatStore.instance;
         self.dbChatHistoryStore = DBChatHistoryStore.instance;
-        self.dbVCardsCache = DBVCardsCache(dbConnection: dbConnection);
+        self.dbVCardsCache = DBVCardsCache.instance;
         self.avatarStore = AvatarStore(dbConnection: dbConnection);
         self.reachability = Reachability();
         self.networkAvailable = false;
@@ -635,6 +635,12 @@ open class XmppService: Logger, EventHandler {
         if let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) {
             ((messageModule.chatManager as! DefaultChatManager).chatStore as! DBChatStoreWrapper).deinitialize();
         }
+        if let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) {
+            ((mucModule.roomsManager as! DefaultRoomsManager).store as! DBRoomStore).deinitialize();
+        }
+        if let mixModule: MixModule = client.modulesManager.getModule(MixModule.ID) {
+            ((mixModule.channelManager as! DefaultChannelManager).store as! DBChannelStore).deinitialize();
+        }
         AccountSettings.reconnectionLocation(account).set(string: nil);
         unregisterEventHandlers(client);
     }
@@ -672,8 +678,11 @@ open class XmppService: Logger, EventHandler {
             _ = client.modulesManager.register(MessageCarbonsModule());
             _ = client.modulesManager.register(MessageArchiveManagementModule());
             let roomStore = DBRoomStore(sessionObject: client.context.sessionObject);
-            client.modulesManager.register(MucModule(roomsManager: DefaultRoomsManager(store: roomStore)));
+            _ = client.modulesManager.register(MucModule(roomsManager: DefaultRoomsManager(store: roomStore)));
             roomStore.initialize();
+            let channelStore = DBChannelStore(sessionObject: client.context.sessionObject);
+            _ = client.modulesManager.register(MixModule(channelManager: DefaultChannelManager(context: client.context, store: channelStore)));
+            channelStore.initialize();
             _ = client.modulesManager.register(AdHocCommandsModule());
             _ = client.modulesManager.register(SiskinPushNotificationsModule(defaultPushServiceJid: XmppService.pushServiceJid, provider: SiskinPushNotificationsModuleProvider()));
             _ = client.modulesManager.register(HttpFileUploadModule());

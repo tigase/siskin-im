@@ -22,6 +22,7 @@
 import UIKit
 import Shared
 import TigaseSwift
+import os
 
 open class DBChatStoreWrapper: ChatStore {
             
@@ -200,17 +201,21 @@ open class DBChatStore {
                 let params: [String: Any?] = [ "account": account, "jid": channelJid, "timestamp": Date(), "type": 2, "options": dataStr];
                 let id = try! self.openChannelStmt.insert(params);
                 let channel = DBChannel(id: id!, account: account, jid: channelJid, timestamp: Date(), lastActivity: getLastActivity(for: account, jid: channelJid), unread: 0, options: options);
-
+                
                 if let result = accountChats.open(chat: channel) as? DBChannel {
+                    os_log("created channel instance for %s@%s at %s@%s", log: OSLog.chatStore, type: .debug, channelJid.localPart ?? "", channelJid.domain, account.localPart ?? "", account.domain);
                     NotificationCenter.default.post(name: DBChatStore.CHAT_OPENED, object: result);
                     return .success(result);
                 } else {
+                    os_log("channel instance creation for %s@%s at %s@%s failed!", log: OSLog.chatStore, type: .debug, channelJid.localPart ?? "", channelJid.domain, account.localPart ?? "", account.domain);
                     return .failure(.conflict);
                 }
             }
             guard let channel = dbChat as? DBChannel else {
+                os_log( "channel instance for %s at %s@%s exists but it is not a DBChannel!", log: OSLog.chatStore, type: .debug, channelJid.localPart ?? "", channelJid.domain, account.localPart ?? "", account.domain);
                 return .failure(.conflict);
             }
+            os_log("channel instance creation for %s@%s at %s@%s skipped, already exists!", log: .chatStore, type: .debug, channelJid.localPart ?? "", channelJid.domain, account.localPart ?? "", account.domain);
             return .success(channel);
         }
 
@@ -905,6 +910,14 @@ class DBChannel: Channel, DBChatProtocol {
         return true;
     }
     
+    func modifyOptions(_ fn: @escaping (inout ChannelOptions) -> Void, completionHandler: (() -> Void)?) {
+        DispatchQueue.main.async {
+            var options = self.options;
+            fn(&options);
+            DBChatStore.instance.updateOptions(for: self.account, jid: self.jid.bareJid, options: options, completionHandler: completionHandler);
+        }
+    }
+    
 }
 
 public enum ConversationNotification: String {
@@ -1035,6 +1048,7 @@ protocol DBChatProtocol: ChatProtocol {
 enum LastChatActivity {
     case message(String, sender: String?)
     case attachment(String, sender: String?)
+    case invitation(String, sender: String?)
     
     static func from(itemType: ItemType?, data: String?, sender: String?) -> LastChatActivity? {
         guard itemType != nil else {
@@ -1043,6 +1057,8 @@ enum LastChatActivity {
         switch itemType! {
         case .message:
             return data == nil ? nil : .message(data!, sender: sender);
+        case .invitation:
+            return data == nil ? nil : .invitation(data!, sender: sender);
         case .attachment:
             return data == nil ? nil : .attachment(data!, sender: sender);
         case .linkPreview:

@@ -174,6 +174,15 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
             cell.set(item: item);
             cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
             return cell;
+        case let item as ChatInvitation:
+            let id = "ChatTableViewInvitationCell";
+            let cell: InvitationChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! InvitationChatTableViewCell;
+            cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+            let name = incoming ? self.titleView.name : "Me";
+            cell.avatarView?.set(name: name, avatar: AvatarManager.instance.avatar(for: incoming ? jid : account, on: account), orDefault: AvatarManager.instance.defaultAvatar);
+            cell.nicknameView?.text = name;
+            cell.set(invitation: item);
+            return cell;
         default:
             return tableView.dequeueReusableCell(withIdentifier: "ChatTableViewCellIncoming", for: indexPath);
         }
