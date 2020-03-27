@@ -66,7 +66,7 @@ class NotificationService: UNNotificationServiceExtension {
                     }
                     contentHandler(bestAttemptContent)
                 } else {
-                    self.debug("got plain push with", bestAttemptContent.userInfo[AnyHashable("sender")] as? String, bestAttemptContent.userInfo[AnyHashable("body")] as? String, bestAttemptContent.userInfo[AnyHashable("unread-messages")] as? Int);
+                    self.debug("got plain push with", bestAttemptContent.userInfo[AnyHashable("sender")] as? String, bestAttemptContent.userInfo[AnyHashable("body")] as? String, bestAttemptContent.userInfo[AnyHashable("unread-messages")] as? Int, bestAttemptContent.userInfo[AnyHashable("nickname")] as? String);
                     NotificationManager.instance.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: JID(bestAttemptContent.userInfo[AnyHashable("sender")] as? String)?.bareJid, type: .unknown, nickname: bestAttemptContent.userInfo[AnyHashable("nickname")] as? String, body: bestAttemptContent.userInfo[AnyHashable("body")] as? String, completionHandler: { content in
                         DispatchQueue.main.async {
                             contentHandler(content);
@@ -142,7 +142,7 @@ extension DBConnection {
 
 class ExtensionNotificationManagerProvider: NotificationManagerProvider {
     
-    static let GET_NAME_QUERY = "select name, 0 as type from roster_items where account = :account and jid = :jid union select name, 1 as type from chats where account = :account and jid = :jid order by type";
+    static let GET_NAME_QUERY = "select name, 0 as type from roster_items where account = :account and jid = :jid union select name, 1 as type from chats where account = :account and jid = :jid and type > 0 order by type desc";
 
     static let GET_UNREAD_CHATS = "select c.account, c.jid from chats c inner join chat_history ch where ch.account = c.account and ch.jid = c.jid and ch.state in (2,6,7) group by c.account, c.jid";
     
@@ -152,7 +152,7 @@ class ExtensionNotificationManagerProvider: NotificationManagerProvider {
                     return (cursor["name"], cursor["type"]!);
                 });
         });
-        completionHandler(tmp?.0, tmp?.1 == 1 ? .groupchat : .chat);
+        completionHandler(tmp?.0, tmp?.1 == 0 ? .chat : .groupchat);
     }
     
     func countBadge(withThreadId: String?, completionHandler: @escaping (Int) -> Void) {

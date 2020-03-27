@@ -26,14 +26,22 @@ import Shared
 class MainNotificationManagerProvider: NotificationManagerProvider {
     
     func getChatNameAndType(for account: BareJID, with jid: BareJID, completionHandler: @escaping (String?, Payload.Kind) -> Void) {
-        if let room = DBChatStore.instance.getChat(for: account, with: jid) as? DBRoom {
-            completionHandler(room.name, .groupchat);
-        } else {
-            let client = XmppService.instance.getClient(for: account);
-            let rosterModule: RosterModule? = client?.modulesManager.getModule(RosterModule.ID);
-            let item = rosterModule?.rosterStore.get(for: JID(jid))
-            completionHandler(item?.name, .chat);
+        if let item = DBChatStore.instance.getChat(for: account, with: jid) {
+            switch item {
+            case let room as DBRoom:
+                completionHandler(room.name, .groupchat);
+                return;
+            case let channel as DBChannel:
+                completionHandler(channel.name, .groupchat);
+                return;
+            default:
+                break;
+            }
         }
+        let client = XmppService.instance.getClient(for: account);
+        let rosterModule: RosterModule? = client?.modulesManager.getModule(RosterModule.ID);
+        let item = rosterModule?.rosterStore.get(for: JID(jid));
+        completionHandler(item?.name, .chat);
     }
     
     func countBadge(withThreadId: String?, completionHandler: @escaping (Int) -> Void) {
@@ -83,6 +91,19 @@ class MainNotificationManagerProvider: NotificationManagerProvider {
                         let known = rosterModule?.rosterStore.get(for: JID(sender)) != nil;
                     
                         completionHandler(known)
+                    }
+                }
+            case let channel as DBChannel:
+                switch channel.options.notifications {
+                case .none:
+                    completionHandler(false);
+                case .always:
+                    completionHandler(true);
+                case .mention:
+                    if let nickname = channel.nickname {
+                        completionHandler(body.contains(nickname));
+                    } else {
+                        completionHandler(false);
                     }
                 }
             default:

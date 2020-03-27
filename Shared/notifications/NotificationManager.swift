@@ -22,6 +22,7 @@
 import Foundation
 import TigaseSwift
 import UserNotifications
+import os
 
 public class NotificationManager {
     
@@ -98,18 +99,18 @@ public class NotificationManager {
             let uid = generateMessageUID(account: account, sender: sender, body: body)!;
             content.threadIdentifier = "account=\(account.stringValue)|sender=\(sender.stringValue)";
             self.provider.getChatNameAndType(for: account, with: sender, completionHandler: { (name, type) in
+                os_log("%{public}@", log: OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SiskinPush"), "Found: name: \(name ?? ""), type: \(type.rawValue)");
                 switch type {
                 case .chat:
                     content.title = name ?? sender.stringValue;
                     content.body = body;
                     content.userInfo = ["account": account.stringValue, "sender": sender.stringValue, "uid": uid];
                 case .groupchat:
-                    if let nickname = nickname {
-                        content.title = "\(nickname): \(name ?? sender.stringValue)";
-                    } else {
-                        content.title = "\(name ?? sender.stringValue)";
-                    }
+                    content.title = "\(name ?? sender.stringValue)";
                     content.body = body;
+                    if let nickname = nickname {
+                        content.subtitle = nickname;
+                    }
                     content.userInfo = ["account": account.stringValue, "sender": sender.stringValue, "uid": uid];
                 default:
                     break;

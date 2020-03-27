@@ -324,11 +324,15 @@ public class DBChatHistoryStore {
         }
         if linkPreviewAction != .none && type == .message, #available(iOS 13.0, *) {
             // if we may have previews, we should add them here..
+            // how about using separate queue just to improve processing of data..
+            DispatchQueue.global(qos: .background).async {
             if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue) {
                 let matches = detector.matches(in: data, range: NSMakeRange(0, data.utf16.count));
                 matches.forEach { match in
                     if let url = match.url, let scheme = url.scheme, ["https", "http"].contains(scheme) {
-                        DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, type: .linkPreview, timestamp: timestamp, stanzaId: nil, serverMsgId: nil, remoteMsgId: nil, data: url.absoluteString, encryption: .none, encryptionFingerprint: nil, linkPreviewAction: .none, completionHandler: nil);
+                        if (data as NSString).range(of: "http", options: .caseInsensitive, range: match.range).location == match.range.location {
+                            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, type: .linkPreview, timestamp: timestamp, stanzaId: nil, serverMsgId: nil, remoteMsgId: nil, data: url.absoluteString, encryption: .none, encryptionFingerprint: nil, linkPreviewAction: .none, completionHandler: nil);
+                        }
                     }
                     if let address = match.components {
                         let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
@@ -336,6 +340,7 @@ public class DBChatHistoryStore {
                         DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, type: .linkPreview, timestamp: timestamp, stanzaId: nil, serverMsgId: nil, remoteMsgId: nil, data: mapUrl.absoluteString, encryption: .none, encryptionFingerprint: nil, linkPreviewAction: .none, completionHandler: nil);
                     }
                 }
+            }
             }
         }
     }

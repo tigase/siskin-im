@@ -246,14 +246,13 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         }
         
         if topController != nil {
-            guard let chat = DBChatStore.instance.getChat(for: account, with: jid) else {
+            guard let chat = DBChatStore.instance.getChat(for: account, with: jid), let controller = viewController(for: chat) else {
                 completionHandler();
                 return;
             }
             
-            let controller = chat is DBRoom ? UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "RoomViewNavigationController") : UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ChatViewNavigationController");
-            let navigationController = controller as? UINavigationController;
-            let destination = navigationController?.visibleViewController ?? controller;
+            let navigationController = controller;
+            let destination = navigationController.visibleViewController ?? controller;
             
             if let baseChatViewController = destination as? BaseChatViewController {
                 baseChatViewController.account = account;
@@ -277,6 +276,19 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
             }
         } else {
             print("No top controller!");
+        }
+    }
+    
+    private func viewController(for item: DBChatProtocol) -> UINavigationController? {
+        switch item {
+        case is DBRoom:
+            return UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "RoomViewNavigationController") as? UINavigationController;
+        case is DBChat:
+            return UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ChatViewNavigationController") as? UINavigationController;
+        case is DBChannel:
+            return UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelViewNavigationController") as? UINavigationController;
+        default:
+            return nil;
         }
     }
     
