@@ -122,20 +122,21 @@ class ChannelSettingsViewController: UITableViewController {
             controller.onSelectionChange = { item in
                 self.notificationsField.text = item.description;
                 
+                let account = self.channel.account;
                 self.channel.modifyOptions({ (options) in
                     options.notifications = (item as! NotificationItem).type;
-                }, completionHandler: nil);
-                let account = self.channel.account;
-                if let pushModule: SiskinPushNotificationsModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), let pushSettings = pushModule.pushSettings {
-                    pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
-                        switch result {
-                        case .success(_):
-                            break;
-                        case .failure(let err):
-                            AccountSettings.pushHash(account).set(int: 0);
-                        }
-                    });
-                }
+                }, completionHandler: {
+                    if let pushModule: SiskinPushNotificationsModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), let pushSettings = pushModule.pushSettings {
+                        pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
+                            switch result {
+                            case .success(_):
+                                break;
+                            case .failure(let err):
+                                AccountSettings.pushHash(account).set(int: 0);
+                            }
+                        });
+                    }
+                });
             }
             self.navigationController?.pushViewController(controller, animated: true);
         }
