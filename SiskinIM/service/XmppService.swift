@@ -370,9 +370,10 @@ open class XmppService: Logger, EventHandler {
     }
     
     func forEachClient(_ task: @escaping (XMPPClient)->Void) {
-        dispatcher.async {
-            self.clients.values.forEach(task);
+        let clients = dispatcher.sync {
+            return Array(self.clients.values);
         }
+        clients.forEach(task);
     }
     
     open func backgroundTaskFinished() {
