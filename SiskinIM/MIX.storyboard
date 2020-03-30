@@ -85,7 +85,7 @@
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="containerView" destination="DLI-2v-dJu" id="kan-1D-3Jw"/>
-                        <segue destination="LfZ-I7-lik" kind="show" identifier="ChannelSettingsShow" id="OfB-oE-ClH"/>
+                        <segue destination="LfZ-I7-lik" kind="presentation" identifier="ChannelSettingsShow" id="OfB-oE-ClH"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jwD-Ny-Nzj" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -579,7 +579,7 @@
         <!--Navigation Controller-->
         <scene sceneID="J3A-hL-Z5h">
             <objects>
-                <navigationController storyboardIdentifier="ChannelViewNavigationController" automaticallyAdjustsScrollViewInsets="NO" toolbarHidden="NO" id="EAr-AQ-rGS" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="ChannelViewNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="EAr-AQ-rGS" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" id="YwZ-A5-gds">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
@@ -587,7 +587,6 @@
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <toolbar key="toolbar" opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="uWI-xW-lrx">
-                        <rect key="frame" x="0.0" y="813" width="414" height="49"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </toolbar>
                     <connections>
@@ -603,7 +602,7 @@
             <objects>
                 <tableViewController storyboardIdentifier="ChannelSettingsViewController" title="Channel details" id="ke4-WK-unt" customClass="ChannelSettingsViewController" customModule="Siskin" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="d4J-Su-YNt">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                         <sections>
@@ -754,7 +753,7 @@
             <objects>
                 <tableViewController id="7V1-nF-5rg" customClass="ChannelEditInfoController" customModule="Siskin" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="M11-SP-8us">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                         <sections>
@@ -864,7 +863,7 @@
                     <toolbarItems/>
                     <navigationItem key="navigationItem" id="RPa-eU-1oF"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="IWz-xC-seN">
-                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="56"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>

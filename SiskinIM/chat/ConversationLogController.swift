@@ -135,6 +135,7 @@ class ConversationLogController: UIViewController, ChatViewDataSourceDelegate {
         }
     }
         
+    private var tempRightBarButtonItem: UIBarButtonItem?;
 }
 
 extension ConversationLogController {
@@ -166,14 +167,21 @@ extension ConversationLogController {
         };
     }
     
-    private func shareMessageInt(paths: [IndexPath]) {
+    func shareMessageInt(paths: [IndexPath]) {
         getTextOfSelectedRows(paths: paths, withTimestamps: withTimestamps) { (texts) in
             let text = texts.joined(separator: "\n");
             let activityController = UIActivityViewController(activityItems: [text], applicationActivities: nil);
-            self.navigationController?.present(activityController, animated: true, completion: nil);
+            let visible = self.tableView.indexPathsForVisibleRows ?? [];
+            if let firstVisible = visible.first(where:{ (indexPath) -> Bool in
+                return paths.contains(indexPath);
+                }) ?? visible.first {
+                activityController.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: firstVisible);
+                activityController.popoverPresentationController?.sourceView = self.tableView.cellForRow(at: firstVisible);
+                self.navigationController?.present(activityController, animated: true, completion: nil);
+            }
         }
     }
-
+    
     @objc func showEditToolbar(_ notification: Notification) {
         guard let cell = notification.object as? UITableViewCell else {
             return;
@@ -189,10 +197,11 @@ extension ConversationLogController {
                         self.tableView?.selectRow(at: selected, animated: false, scrollPosition: .none);
                     }
                 
-                    self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(ConversationLogController.editCancelClicked));
+                    self.tempRightBarButtonItem = self.conversationLogDelegate?.navigationItem.rightBarButtonItem;
+                    self.conversationLogDelegate?.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(ConversationLogController.editCancelClicked));
                 
                     let timestampsSwitch = TimestampsBarButtonItem();
-                    self.navigationController?.toolbar.tintColor = UIColor(named: "tintColor");
+                    self.conversationLogDelegate?.navigationController?.toolbar.tintColor = UIColor(named: "tintColor");
                     print("navigationController:", self.navigationController as Any)
                     let items = [
                         timestampsSwitch,
@@ -201,8 +210,8 @@ extension ConversationLogController {
                         //                UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
                     ];
                 
-                    self.navigationController?.setToolbarHidden(false, animated: true);
-                    self.setToolbarItems(items, animated: true);
+                    self.conversationLogDelegate?.navigationController?.setToolbarHidden(false, animated: true);
+                    self.conversationLogDelegate?.setToolbarItems(items, animated: true);
                 }
             }
         }
@@ -210,8 +219,9 @@ extension ConversationLogController {
         
     func hideEditToolbar() {
         UIView.animate(withDuration: 0.3) {
-            self.navigationController?.setToolbarHidden(true, animated: true);
-            self.navigationItem.rightBarButtonItem = nil;
+            self.conversationLogDelegate?.navigationController?.setToolbarHidden(true, animated: true);
+            self.conversationLogDelegate?.setToolbarItems(nil, animated: true);
+            self.conversationLogDelegate?.navigationItem.rightBarButtonItem = self.tempRightBarButtonItem;
             self.tableView?.isEditing = false;
         }
     }
@@ -279,7 +289,12 @@ extension ConversationLogController {
 }
 
 protocol ConversationLogDelegate: class {
+ 
+    var navigationItem: UINavigationItem { get }
+    var navigationController: UINavigationController? { get }
     
     func initialize(tableView: UITableView);
     
+    func setToolbarItems(_ toolbarItems: [UIBarButtonItem]?,
+                         animated: Bool);
 }

@@ -41,7 +41,11 @@ class VCardEditBasicTableViewCell: UITableViewCell, UITextFieldDelegate {
             if let photo = vcard.photos.first {
                 xmppService.dbVCardsCache.fetchPhoto(photo: photo) { (photoData) in
                     DispatchQueue.main.async {
-                        self.photoView.image = ((photoData != nil) ? UIImage(data: photoData!) : nil) ?? self.avatarManager.defaultAvatar;
+                        if let photoData = photoData, let image = UIImage(data: photoData) {
+                            self.photoView.image = image;
+                        } else {
+                            self.photoView.image = AvatarManager.instance.defaultAvatar;
+                        }
                     }
                 }
             }

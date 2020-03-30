@@ -23,7 +23,7 @@
 import UIKit
 import TigaseSwift
 
-class ChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteractionDelegate {
+class ChatTableViewCell: BaseChatTableViewCell {
 
     @IBOutlet var messageTextView: UILabel!
         
@@ -31,8 +31,6 @@ class ChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteractionDelegate
     
     fileprivate var originalTextColor: UIColor!;
     fileprivate var links: [Link] = [];
-    
-    private var item: ChatMessage?;
     
     override var backgroundColor: UIColor? {
         didSet {
@@ -48,14 +46,9 @@ class ChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteractionDelegate
         messageLinkTapGestureRecognizer.numberOfTapsRequired = 1;
         messageLinkTapGestureRecognizer.cancelsTouchesInView = false;
         messageTextView.addGestureRecognizer(messageLinkTapGestureRecognizer);
-        
-        if #available(iOS 13.0, *) {
-            messageTextView.addInteraction(UIContextMenuInteraction(delegate: self));
-        }
     }
     
     func set(message item: ChatMessage) {
-        self.item = item;
         super.set(item: item);
                 
         self.links.removeAll();
@@ -111,38 +104,6 @@ class ChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteractionDelegate
         } else {
             return UIColor.blue;
         }
-    }
-    
-    @available(iOS 13.0, *)
-    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
-        var cfg = UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { suggestedActions -> UIMenu? in
-            return self.prepareContextMenu();
-        };
-        return cfg;
-    }
-    
-    @available(iOS 13.0, *)
-    func prepareContextMenu() -> UIMenu {
-        let items = [
-            UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc"), handler: { action in
-                guard let text = self.item?.copyText(withTimestamp: Settings.CopyMessagesWithTimestamps.getBool(), withSender: false) else {
-                    return;
-                }
-                UIPasteboard.general.strings = [text];
-                UIPasteboard.general.string = text;
-            }),
-            UIAction(title: "Share..", image: UIImage(systemName: "square.and.arrow.up"), handler: { action in
-                guard let text = self.item?.copyText(withTimestamp: Settings.CopyMessagesWithTimestamps.getBool(), withSender: false) else {
-                    return;
-                }
-                let activityController = UIActivityViewController(activityItems: [text], applicationActivities: nil);
-                (UIApplication.shared.delegate as? AppDelegate)?.window?.rootViewController?.present(activityController, animated: true, completion: nil);
-            }),
-            UIAction(title: "More..", image: UIImage(systemName: "ellipsis"), handler: { action in
-                NotificationCenter.default.post(name: Notification.Name("tableViewCellShowEditToolbar"), object: self);
-            })
-        ];
-        return UIMenu(title: "", children: items);
     }
         
     @objc func messageLinkTapGestureDidFire(_ recognizer: UITapGestureRecognizer) {

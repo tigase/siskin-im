@@ -234,6 +234,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     
     var keyboardHeight: CGFloat = 0 {
         didSet {
+            print("setting keyboard height:", keyboardHeight);
             self.view.constraints.first(where: { $0.firstAnchor == self.view.bottomAnchor || $0.secondAnchor == self.view.bottomAnchor })?.constant = keyboardHeight * -1;
         }
     }

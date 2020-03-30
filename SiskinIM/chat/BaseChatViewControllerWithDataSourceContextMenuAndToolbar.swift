@@ -77,4 +77,58 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         conversationLogController?.hideEditToolbar();
     }
 
+    @available(iOS 13.0, *)
+    func tableView(_ tableView: UITableView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+        guard let indexPath = configuration.identifier as? IndexPath else {
+            return nil;
+        }
+        let cell = self.tableView(tableView, cellForRowAt: indexPath);
+        let parameters = UIPreviewParameters();
+        let rect = self.conversationLogController!.tableView.rectForRow(at: indexPath);
+        let center = CGPoint(x: rect.midX, y: rect.midY);
+        let target = UIPreviewTarget(container: self.conversationLogController!.tableView, center: center, transform: CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0));
+        
+        return UITargetedPreview(view: cell, parameters: parameters, target: target);
+    }
+    
+    @available(iOS 13.0, *)
+    func tableView(_ tableView: UITableView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+        guard let indexPath = configuration.identifier as? IndexPath else {
+            return nil;
+        }
+        let cell = self.tableView(tableView, cellForRowAt: indexPath);
+        let parameters = UIPreviewParameters();
+        let rect = self.conversationLogController!.tableView.rectForRow(at: indexPath);
+        let center = CGPoint(x: rect.midX, y: rect.midY);
+        let target = UIPreviewTarget(container: self.conversationLogController!.tableView, center: center, transform: .identity);
+        
+        return UITargetedPreview(view: cell, parameters: parameters, target: target);
+    }
+    
+    @available(iOS 13.0, *)
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        var cfg = UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: nil) { suggestedActions -> UIMenu? in
+            return self.prepareContextMenu(for: indexPath);
+        };
+        return cfg;
+    }
+    
+    @available(iOS 13.0, *)
+    func prepareContextMenu(for indexPath: IndexPath) -> UIMenu? {
+        let items = [
+            UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc"), handler: { action in
+                self.conversationLogController?.copyMessageInt(paths: [indexPath]);
+            }),
+            UIAction(title: "Share..", image: UIImage(systemName: "square.and.arrow.up"), handler: { action in
+                self.conversationLogController?.shareMessageInt(paths: [indexPath]);
+            }),
+            UIAction(title: "More..", image: UIImage(systemName: "ellipsis"), handler: { action in
+                guard let cell = self.conversationLogController?.tableView.cellForRow(at: indexPath) else {
+                    return;
+                }
+                NotificationCenter.default.post(name: Notification.Name("tableViewCellShowEditToolbar"), object: cell);
+            })
+        ];
+        return UIMenu(title: "", children: items);
+    }
 }

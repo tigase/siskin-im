@@ -418,13 +418,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return nil;
         }
         
-        guard let selectedTabController = splitViewController.viewControllers.map({(controller) in controller as? UITabBarController }).filter({ (controller) -> Bool in
-            controller != nil
-        }).map({(controller) in controller! }).first?.selectedViewController else {
+        guard let navigationController = navigationController(fromSplitViewController: splitViewController) else {
             return nil;
         }
         
-        if let navigationController = selectedTabController as? UINavigationController {
             if visible {
                 return navigationController.viewControllers.last as? BaseChatViewController;
             } else {
@@ -435,8 +432,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 }
                 return nil;
             }
+//        } else {
+//            return selectedTabController as? BaseChatViewController;
+//        }
+    }
+    
+    private static func navigationController(fromSplitViewController splitViewController: UISplitViewController) -> UINavigationController? {
+        if splitViewController.isCollapsed {
+            return splitViewController.viewControllers.first(where: { $0 is UITabBarController }).map({ $0 as! UITabBarController })?.selectedViewController as? UINavigationController;
         } else {
-            return selectedTabController as? BaseChatViewController;
+            return splitViewController.viewControllers.first(where: { !($0 is UITabBarController) }) as? UINavigationController;
         }
     }
     
