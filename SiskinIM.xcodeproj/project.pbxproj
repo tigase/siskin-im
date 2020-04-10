@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -97,7 +97,6 @@
 		FE759FD72370B359001E78D9 /* openssl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FED353822270BFD300B69C53 /* openssl.framework */; };
 		FE759FDB2370B384001E78D9 /* Cipher+AES.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE759FDA2370B384001E78D9 /* Cipher+AES.swift */; };
 		FE759FDE2371989B001E78D9 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FE759FDD2371988B001E78D9 /* libsqlite3.tbd */; };
-		FE759FDF23719A5C001E78D9 /* TigaseSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE80BDA71D928AD2001914B0 /* TigaseSwift.framework */; };
 		FE759FE22371C83D001E78D9 /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE759FC52370B2A4001E78D9 /* Shared.framework */; };
 		FE759FE82371C972001E78D9 /* libxml2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FE759FE72371C966001E78D9 /* libxml2.tbd */; };
 		FE759FE92371DDD1001E78D9 /* DBManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A051CDB7B3B001A015C /* DBManager.swift */; };
@@ -122,7 +121,6 @@
 		FE7D293623BB5E0A001A877D /* LinkPreviewChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7D293523BB5E0A001A877D /* LinkPreviewChatTableViewCell.swift */; };
 		FE7F645B1D281B1C00B9DF56 /* DBCapabilitiesCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7F645A1D281B1C00B9DF56 /* DBCapabilitiesCache.swift */; };
 		FE7F9303200FD5AC004C6195 /* AccountManagerScramSaltedPasswordCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7F9302200FD5AC004C6195 /* AccountManagerScramSaltedPasswordCache.swift */; };
-		FE80BDA81D928AD2001914B0 /* TigaseSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE80BDA71D928AD2001914B0 /* TigaseSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE80BDAB1D953FC4001914B0 /* SetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE80BDAA1D953FC4001914B0 /* SetupViewController.swift */; };
 		FE8DD9C3221B118E0090F5AA /* Groupchat.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE8DD9C2221B118E0090F5AA /* Groupchat.storyboard */; };
 		FE8DD9C5221B153A0090F5AA /* InviteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8DD9C4221B153A0090F5AA /* InviteViewController.swift */; };
@@ -139,7 +137,6 @@
 		FE9E13731F260B33005C0EE5 /* StepperTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E13721F260B33005C0EE5 /* StepperTableViewCell.swift */; };
 		FE9EA16B23BF9DB2008C401A /* ChatAttachementsCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9EA16A23BF9DB2008C401A /* ChatAttachementsCellView.swift */; };
 		FEA308D01F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA308CF1F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift */; };
-		FEA370BE1F3F3F8B0050CBAC /* TigaseSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE80BDA71D928AD2001914B0 /* TigaseSwift.framework */; };
 		FEA7BF5B21E50C5800D9E36C /* JingleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA7BF5A21E50C5800D9E36C /* JingleManager.swift */; };
 		FEA7BF5D21E50CAB00D9E36C /* JingleManager_Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA7BF5C21E50CAB00D9E36C /* JingleManager_Session.swift */; };
 		FEA8D65D1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8D65C1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift */; };
@@ -157,6 +154,7 @@
 		FEC79193241AAF55007BE572 /* DBRoomStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC79192241AAF55007BE572 /* DBRoomStore.swift */; };
 		FEC79195241ABEF4007BE572 /* MessageState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC79194241ABEF4007BE572 /* MessageState.swift */; };
 		FEC79199241BE89E007BE572 /* db-schema-11.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEC79198241BE89E007BE572 /* db-schema-11.sql */; };
+		FEC9B1162440E7B500A484EE /* TigaseSwiftOMEMO in Frameworks */ = {isa = PBXBuildFile; productRef = FEC9B1152440E7B500A484EE /* TigaseSwiftOMEMO */; };
 		FECEF28C23B79151007EC323 /* ChatEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECEF28B23B79151007EC323 /* ChatEntry.swift */; };
 		FECEF28E23B7919E007EC323 /* ChatMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECEF28D23B7919E007EC323 /* ChatMessage.swift */; };
 		FECEF29023B7926E007EC323 /* ChatAttachment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECEF28F23B7926E007EC323 /* ChatAttachment.swift */; };
@@ -167,8 +165,6 @@
 		FECEF29B23B7BC02007EC323 /* BaseChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECEF29923B7BBD3007EC323 /* BaseChatTableViewCell.swift */; };
 		FECEF29E23B7C390007EC323 /* AttachmentChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECEF29C23B7C36F007EC323 /* AttachmentChatTableViewCell.swift */; };
 		FED353852270BFE600B69C53 /* openssl.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FED353822270BFD300B69C53 /* openssl.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		FED353862270BFE600B69C53 /* TigaseSwiftOMEMO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FED353732270BBA500B69C53 /* TigaseSwiftOMEMO.framework */; };
-		FED353872270BFE600B69C53 /* TigaseSwiftOMEMO.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FED353732270BBA500B69C53 /* TigaseSwiftOMEMO.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FED353892270C1D000B69C53 /* DBOMEMOStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED353882270C1D000B69C53 /* DBOMEMOStore.swift */; };
 		FEDC678A238A9F16005C0FAB /* BlockedEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDC6789238A9F16005C0FAB /* BlockedEventHandler.swift */; };
 		FEDC678C238AFB9F005C0FAB /* Settings.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEDC678B238AFB9F005C0FAB /* Settings.storyboard */; };
@@ -267,8 +263,6 @@
 				FEB28A9123CB5ADD00F876B7 /* WebRTC.framework in Embed Frameworks */,
 				FED353852270BFE600B69C53 /* openssl.framework in Embed Frameworks */,
 				FE759FCD2370B2A4001E78D9 /* Shared.framework in Embed Frameworks */,
-				FED353872270BFE600B69C53 /* TigaseSwiftOMEMO.framework in Embed Frameworks */,
-				FE80BDA81D928AD2001914B0 /* TigaseSwift.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -389,7 +383,6 @@
 		FE7D293523BB5E0A001A877D /* LinkPreviewChatTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkPreviewChatTableViewCell.swift; sourceTree = "<group>"; };
 		FE7F645A1D281B1C00B9DF56 /* DBCapabilitiesCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBCapabilitiesCache.swift; sourceTree = "<group>"; };
 		FE7F9302200FD5AC004C6195 /* AccountManagerScramSaltedPasswordCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountManagerScramSaltedPasswordCache.swift; sourceTree = "<group>"; };
-		FE80BDA71D928AD2001914B0 /* TigaseSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TigaseSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE80BDA91D92974C001914B0 /* SiskinIM.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SiskinIM.entitlements; sourceTree = "<group>"; };
 		FE80BDAA1D953FC4001914B0 /* SetupViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SetupViewController.swift; sourceTree = "<group>"; };
 		FE86C4481F7BFF93009E3CB8 /* SiskinIM-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SiskinIM-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -484,7 +477,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FEA370BE1F3F3F8B0050CBAC /* TigaseSwift.framework in Frameworks */,
 				FE759FE22371C83D001E78D9 /* Shared.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -504,7 +496,7 @@
 				FE759FDE2371989B001E78D9 /* libsqlite3.tbd in Frameworks */,
 				FE759FE82371C972001E78D9 /* libxml2.tbd in Frameworks */,
 				FE759FD72370B359001E78D9 /* openssl.framework in Frameworks */,
-				FE759FDF23719A5C001E78D9 /* TigaseSwift.framework in Frameworks */,
+				FEC9B1162440E7B500A484EE /* TigaseSwiftOMEMO in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -512,7 +504,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FED353862270BFE600B69C53 /* TigaseSwiftOMEMO.framework in Frameworks */,
 				FE5079F01CD3CA91001A015C /* Security.framework in Frameworks */,
 				FE759FCC2370B2A4001E78D9 /* Shared.framework in Frameworks */,
 				FEB28A9023CB5AD600F876B7 /* WebRTC.framework in Frameworks */,
@@ -775,7 +766,6 @@
 				FE94E5231CCBA74F00FAE755 /* SiskinIM */,
 				FE4DDF541F39E0B500A4CE5A /* SiskinIM - Share */,
 				FE80BDA91D92974C001914B0 /* SiskinIM.entitlements */,
-				FE80BDA71D928AD2001914B0 /* TigaseSwift.framework */,
 			);
 			sourceTree = "<group>";
 		};
@@ -977,6 +967,9 @@
 			dependencies = (
 			);
 			name = Shared;
+			packageProductDependencies = (
+				FEC9B1152440E7B500A484EE /* TigaseSwiftOMEMO */,
+			);
 			productName = Shared;
 			productReference = FE759FC52370B2A4001E78D9 /* Shared.framework */;
 			productType = "com.apple.product-type.framework";
@@ -1001,6 +994,8 @@
 				FE759FCB2370B2A4001E78D9 /* PBXTargetDependency */,
 			);
 			name = "Siskin IM";
+			packageProductDependencies = (
+			);
 			productName = SiskinIM;
 			productReference = FE94E5211CCBA74F00FAE755 /* Siskin.app */;
 			productType = "com.apple.product-type.application";
@@ -1070,6 +1065,9 @@
 				Base,
 			);
 			mainGroup = FE94E5181CCBA74F00FAE755;
+			packageReferences = (
+				FEC9B1122440E79D00A484EE /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */,
+			);
 			productRefGroup = FE94E5221CCBA74F00FAE755 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -1427,7 +1425,11 @@
 				);
 				INFOPLIST_FILE = "SiskinIM - Share/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
 				MARKETING_VERSION = 6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.tigase.messenger.mobile.Tigase-Messenger---Share";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1454,7 +1456,11 @@
 				);
 				INFOPLIST_FILE = "SiskinIM - Share/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
 				MARKETING_VERSION = 6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.tigase.messenger.mobile.Tigase-Messenger---Share";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1484,7 +1490,11 @@
 				);
 				INFOPLIST_FILE = NotificationService/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
 				MARKETING_VERSION = 6.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -1518,7 +1528,11 @@
 				);
 				INFOPLIST_FILE = NotificationService/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
 				MARKETING_VERSION = 6.0;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.mobile.NotificationService;
@@ -1556,7 +1570,11 @@
 				INFOPLIST_FILE = Shared/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.mobile.Shared;
@@ -1599,7 +1617,11 @@
 				INFOPLIST_FILE = Shared/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.mobile.Shared;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -1719,8 +1741,9 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OBJC_BRIDGING_HEADER = "SiskinIM/SiskinIM-Bridging-Header.h";
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
 				VALIDATE_PRODUCT = YES;
@@ -1750,7 +1773,10 @@
 				);
 				INFOPLIST_FILE = SiskinIM/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				MARKETING_VERSION = 6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.mobile;
 				PRODUCT_NAME = Siskin;
@@ -1783,7 +1809,10 @@
 				);
 				INFOPLIST_FILE = SiskinIM/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				MARKETING_VERSION = 6.0;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.mobile;
@@ -1844,6 +1873,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		FEC9B1122440E79D00A484EE /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tigase/tigase-swift-omemo/";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		FEC9B1152440E7B500A484EE /* TigaseSwiftOMEMO */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FEC9B1122440E79D00A484EE /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */;
+			productName = TigaseSwiftOMEMO;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = FE94E5191CCBA74F00FAE755 /* Project object */;
 }
