@@ -240,7 +240,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     }
     
     @IBAction func tableViewClicked(_ sender: AnyObject) {
-        self.chatViewInputBar.resignFirstResponder();
+        _ = self.chatViewInputBar.resignFirstResponder();
     }
         
     

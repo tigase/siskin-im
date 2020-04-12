@@ -28,7 +28,6 @@ import TigaseSwiftOMEMO
 public class DBChatHistoryStore {
 
     static let MESSAGE_NEW = Notification.Name("messageAdded");
-    // TODO: it looks like it is not working as expected. We should remove this notification in the future
     static let MESSAGES_MARKED_AS_READ = Notification.Name("messagesMarkedAsRead");
     static let MESSAGE_UPDATED = Notification.Name("messageUpdated");
     static let MESSAGE_REMOVED = Notification.Name("messageRemoved");
@@ -129,7 +128,7 @@ public class DBChatHistoryStore {
                             _ = try! removePreviewStmt.update(item.id);
                         })
                     
-                        for (url, previewId) in previews {
+                        for (url, _) in previews {
                             group.enter();
                             DBChatHistoryStore.instance.appendItem(for: item.account, with: item.jid, state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: nil, participantId: nil, type: .linkPreview, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, linkPreviewAction: .none, completionHandler: { newId in
                                     group.leave();
@@ -240,7 +239,7 @@ public class DBChatHistoryStore {
                 return;
             }
 
-            if let id = self.findItemId(for: account, with: jid, serverMsgId: serverMsgId, originId: originId, timestamp: timestamp, direction: state.direction, itemType: itemType, stanzaId: message.id, authorNickname: authorNickname, data: body) {
+            if self.findItemId(for: account, with: jid, serverMsgId: serverMsgId, originId: originId, timestamp: timestamp, direction: state.direction, itemType: itemType, stanzaId: message.id, authorNickname: authorNickname, data: body) != nil {
                 // this message was already added to the store..
                 // should this be here...?
                 if let chatState = message.chatState {
@@ -508,7 +507,7 @@ public class DBChatHistoryStore {
             updateFn(&item.appendix);
             if let data = try? JSONEncoder().encode(item.appendix), let dataStr = String(data: data, encoding: .utf8) {
                 params["appendix"] = dataStr;
-                try! self.updateItemStmt.update(params)
+                _ = try! self.updateItemStmt.update(params)
             }
             DispatchQueue.main.async {
                 NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_UPDATED, object: item);
@@ -529,7 +528,7 @@ public class DBChatHistoryStore {
             updateFn(&item.appendix);
             if let data = try? JSONEncoder().encode(item.appendix), let dataStr = String(data: data, encoding: .utf8) {
                 params["appendix"] = dataStr;
-                try! self.updateItemStmt.update(params)
+                _ = try! self.updateItemStmt.update(params)
             }
             DispatchQueue.main.async {
                 NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_UPDATED, object: item);

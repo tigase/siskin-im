@@ -29,7 +29,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
 
     var titleView: ChatTitleView! {
         get {
-            return self.navigationItem.titleView as! ChatTitleView;
+            return (self.navigationItem.titleView as! ChatTitleView);
         }
     }
     
@@ -41,7 +41,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     
     override var conversationLogController: ConversationLogController? {
         didSet {
-            if let controller = conversationLogController {
+            if conversationLogController != nil {
                 let refreshControl = UIRefreshControl();
                 refreshControl.addTarget(self, action: #selector(ChatViewController.refreshChatHistory), for: UIControl.Event.valueChanged);
                 self.conversationLogController?.refreshControl = refreshControl;

@@ -153,13 +153,13 @@ class AccountSettingsViewController: UITableViewController {
         if (client?.state ?? SocketConnector.State.disconnected == SocketConnector.State.connected), let mamModule: MessageArchiveManagementModule = client?.modulesManager.getModule(MessageArchiveManagementModule.ID) {
             mamModule.retrieveSettings(completionHandler: { result in
                 switch result {
-                case .success(let defValue, let always, let never):
+                case .success(let defValue, _, _):
                     DispatchQueue.main.async {
                         self.archivingEnabledSwitch.isEnabled = true;
                         self.archivingEnabledSwitch.isOn = defValue == MessageArchiveManagementModule.DefaultValue.always;
                         self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
                     }
-                case .failure(let errorCondition, let response):
+                case .failure(_, _):
                     DispatchQueue.main.async {
                         self.archivingEnabledSwitch.isOn = false;
                         self.archivingEnabledSwitch.isEnabled = false;
@@ -300,7 +300,7 @@ class AccountSettingsViewController: UITableViewController {
                         self.present(alert, animated: true, completion: nil);
                     }
                 }
-            case .failure(let errorCondition):
+            case .failure(_):
                 DispatchQueue.main.async {
                     self.pushNotificationsForAwaySwitch.isOn = !self.pushNotificationsForAwaySwitch.isOn;
                     AccountSettings.PushNotificationsForAway(self.account).set(bool: self.pushNotificationsForAwaySwitch.isOn);
@@ -325,19 +325,19 @@ class AccountSettingsViewController: UITableViewController {
                 case .success(let oldDefValue, let always, let never):
                     mamModule.updateSettings(defaultValue: defValue, always: always, never: never, completionHandler: { result in
                         switch result {
-                        case .success(let newDefValue, let always, let never):
+                        case .success(let newDefValue, _, _):
                             DispatchQueue.main.async {
                                 self.archivingEnabledSwitch.isOn = newDefValue == MessageArchiveManagementModule.DefaultValue.always;
                                 self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
                             }
-                        case .failure(let errorCondition, let response):
+                        case .failure(_, _):
                             DispatchQueue.main.async {
                                 self.archivingEnabledSwitch.isOn = oldDefValue == MessageArchiveManagementModule.DefaultValue.always;
                                 self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
                             }
                         }
                     });
-                case .failure(let errorCondition, let response):
+                case .failure(_, _):
                     DispatchQueue.main.async {
                         self.archivingEnabledSwitch.isOn = !self.archivingEnabledSwitch.isOn;
                         self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;

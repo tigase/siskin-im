@@ -152,7 +152,7 @@ class ShareViewController: SLComposeServiceViewController {
                 })
             } else if provider.hasItemConformingToTypeIdentifier(kUTTypeURL as String) {
                 provider.loadItem(forTypeIdentifier: kUTTypeURL as String, options: nil, completionHandler: { (value, error) in
-                    self.share(url: value as! URL, uploadedFileURL: nil);
+                    self.share(url: (value as! URL), uploadedFileURL: nil);
                 })
 //            } else if provider.hasItemConformingToTypeIdentifier(kUTTypePlainText as String) {
 //                provider.loadItem(forTypeIdentifier: kUTTypePlainText as String, options: nil, completionHandler: { (item, error) in

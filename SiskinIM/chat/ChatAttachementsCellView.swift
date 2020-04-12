@@ -117,7 +117,7 @@ class ChatAttachmentsCellView: UICollectionViewCell, UIDocumentInteractionContro
         let documentController = UIDocumentInteractionController(url: url);
         documentController.delegate = self;
         documentController.name = url.lastPathComponent;
-        print("detected uti:", documentController.uti, "for:", documentController.url);
+        print("detected uti:", documentController.uti as Any, "for:", documentController.url as Any);
         if preview && documentController.presentPreview(animated: true) {
             self.documentController = documentController;
         } else if documentController.presentOptionsMenu(from: self.superview?.convert(self.frame, to: self.superview?.superview) ?? CGRect.zero, in: self, animated: true) {

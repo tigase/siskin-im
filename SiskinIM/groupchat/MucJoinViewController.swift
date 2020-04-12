@@ -102,11 +102,11 @@ class MucJoinViewController: UITableViewController, UIPickerViewDataSource, UIPi
                             regModule.submitRegistrationForm(to: room.jid, form: form, onSuccess: {
                                 print("nickname registered!");
                             }, onError: { (err, msg) in
-                                print("got error:", err, msg);
+                                print("got error:", err as Any, msg as Any);
                             })
                         }
                     }, onError: { (err, msg) in
-                        print("got error:", err, msg);
+                        print("got error:", err as Any, msg as Any);
                     })
                 }
             }, onJoined: { room in
@@ -124,7 +124,7 @@ class MucJoinViewController: UITableViewController, UIPickerViewDataSource, UIPi
                 alert?.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(alertAction) in
                     if let account = AccountManager.getAccount(for: accountJid) {
                         account.active = true;
-                        AccountManager.save(account: account);
+                        _ = AccountManager.save(account: account);
                     }
                 }));
             } else if client?.state != .connected {

@@ -65,13 +65,13 @@ class ChannelJoinViewController: UITableViewController {
                 operationStarted(message: "Checking...");
                 discoModule.getInfo(for: JID(channelJid!), node: nil, completionHandler: { result in
                     switch result {
-                    case .success(let node, let identities, let features):
+                    case .success(_, _, let features):
                         DispatchQueue.main.async {
                             self.passwordRequired = features.contains("muc_passwordprotected");
                             self.tableView.reloadData();
                             self.operationEnded();
                         }
-                    case .failure(let errorCondition, let response):
+                    case .failure(_, _):
                         DispatchQueue.main.async {
                             self.operationEnded();
                         }
@@ -210,7 +210,6 @@ class ChannelJoinViewController: UITableViewController {
                     }
                 })
                 break;
-            break;
         case .muc:
             guard let client = XmppService.instance.getClient(for: account), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) else {
                 return;
@@ -269,7 +268,7 @@ class ChannelJoinViewController: UITableViewController {
              self.operationStarted(message: "Joining...");
              mixModule.join(channel: channelJid, withNick: nick, invitation: mixInvitation, completionHandler: { result in
                  switch result {
-                 case .success(let response):
+                 case .success(_):
                      // we have joined, so all what we need to do is close this window
                      DispatchQueue.main.async {
                          self.operationEnded();

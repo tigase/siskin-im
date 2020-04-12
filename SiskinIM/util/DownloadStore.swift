@@ -33,7 +33,7 @@ class DownloadStore {
     
     //let cache = NSCache<NSString, NSImage>();
     var size: Int {
-        guard let enumerator: FileManager.DirectoryEnumerator = try? FileManager.default.enumerator(at: diskCacheUrl, includingPropertiesForKeys: [.totalFileAllocatedSizeKey, .isRegularFileKey]) else {
+        guard let enumerator: FileManager.DirectoryEnumerator = FileManager.default.enumerator(at: diskCacheUrl, includingPropertiesForKeys: [.totalFileAllocatedSizeKey, .isRegularFileKey]) else {
             return 0;
         }
 

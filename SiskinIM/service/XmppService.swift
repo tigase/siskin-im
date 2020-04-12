@@ -166,7 +166,7 @@ open class XmppService: Logger, EventHandler {
             if let account = AccountManager.getAccount(for: e.sessionObject.userBareJid!) {
                 account.active = false;
                 account.serverCertificate = certInfo;
-                AccountManager.save(account: account);
+                _ = AccountManager.save(account: account);
             }
             
             var info = certInfo;
@@ -206,10 +206,10 @@ open class XmppService: Logger, EventHandler {
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
             let account = e.sessionObject.userBareJid!;
 
-            let client = getClient(forJid: e.sessionObject.userBareJid!);
+            let client = getClient(forJid: account);
             client?.sessionObject.setProperty(XmppService.CONNECTION_RETRY_NO_KEY, value: nil);
             DispatchQueue.global(qos: .default).async {
-                NotificationCenter.default.post(name: XmppService.ACCOUNT_STATE_CHANGED, object: self, userInfo: ["account":e.sessionObject.userBareJid!.stringValue]);
+                NotificationCenter.default.post(name: XmppService.ACCOUNT_STATE_CHANGED, object: self, userInfo: ["account": account.stringValue]);
             }
             if let c = client {
                 let end = Date().timeIntervalSinceReferenceDate
@@ -229,7 +229,7 @@ open class XmppService: Logger, EventHandler {
             if e.error != SaslError.aborted && e.error != SaslError.temporary_auth_failure {
                 if let account = AccountManager.getAccount(for: e.sessionObject.userBareJid!) {
                     account.active = false;
-                    AccountManager.save(account: account);
+                    _ = AccountManager.save(account: account);
                 }
                 var info: [String: AnyObject] = [:];
                 info["account"] = e.sessionObject.userBareJid!.stringValue as NSString;
@@ -328,7 +328,7 @@ open class XmppService: Logger, EventHandler {
             if let client = self.clients[account.name] {
                 self.disconnect(client: client);
             } else if let client = self.initializeClient(jid: account.name) {
-                self.register(client: client, for: account.name);
+                _ = self.register(client: client, for: account.name);
                 self.connect(client: client);
             }
         }
@@ -356,14 +356,6 @@ open class XmppService: Logger, EventHandler {
             }
         case .StatusMessage, .StatusType:
             sendAutoPresence();
-        case .DeviceToken:
-            let newDeviceId = notification.userInfo?["newValue"] as? String;
-            // FIXME: do something about it? is it needed?
-//            forEachClient { (client) in
-//                if let pushModule: TigasePushNotificationsModule = client.modulesManager.getModule(PushNotificationsModule.ID) {
-//                    pushModule.deviceId = newDeviceId;
-//                }
-//            }
         default:
             break;
         }
@@ -466,7 +458,7 @@ open class XmppService: Logger, EventHandler {
     }
     
     open func performFetchExpired() {
-        guard applicationState == .inactive, let fetchGroup = self.fetchGroup else {
+        guard applicationState == .inactive, self.fetchGroup != nil else {
             return;
         }
         
@@ -637,7 +629,7 @@ open class XmppService: Logger, EventHandler {
             ((messageModule.chatManager as! DefaultChatManager).chatStore as! DBChatStoreWrapper).deinitialize();
         }
         if let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) {
-            ((mucModule.roomsManager as! DefaultRoomsManager).store as! DBRoomStore).deinitialize();
+            (mucModule.roomsManager.store as! DBRoomStore).deinitialize();
         }
         if let mixModule: MixModule = client.modulesManager.getModule(MixModule.ID) {
             ((mixModule.channelManager as! DefaultChannelManager).store as! DBChannelStore).deinitialize();

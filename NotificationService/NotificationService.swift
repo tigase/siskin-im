@@ -53,7 +53,7 @@ class NotificationService: UNNotificationServiceExtension {
                         let cipher = Cipher.AES_GCM();
                         var decoded = Data();
                         if cipher.decrypt(iv: iv, key: key, encoded: data, auth: nil, output: &decoded) {
-                            self.debug("got decrypted data:", String(data: decoded, encoding: .utf8));
+                            self.debug("got decrypted data:", String(data: decoded, encoding: .utf8) as Any);
                             if let payload = try? JSONDecoder().decode(Payload.self, from: decoded) {
                                 self.debug("decoded payload successfully!");
                                 NotificationManager.instance.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: payload.sender.bareJid, type: payload.type, nickname: payload.nickname, body: payload.message, completionHandler: { content in
@@ -66,7 +66,7 @@ class NotificationService: UNNotificationServiceExtension {
                     }
                     contentHandler(bestAttemptContent)
                 } else {
-                    self.debug("got plain push with", bestAttemptContent.userInfo[AnyHashable("sender")] as? String, bestAttemptContent.userInfo[AnyHashable("body")] as? String, bestAttemptContent.userInfo[AnyHashable("unread-messages")] as? Int, bestAttemptContent.userInfo[AnyHashable("nickname")] as? String);
+                    self.debug("got plain push with", bestAttemptContent.userInfo[AnyHashable("sender")] as? String as Any, bestAttemptContent.userInfo[AnyHashable("body")] as? String as Any, bestAttemptContent.userInfo[AnyHashable("unread-messages")] as? Int as Any, bestAttemptContent.userInfo[AnyHashable("nickname")] as? String as Any);
                     NotificationManager.instance.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: JID(bestAttemptContent.userInfo[AnyHashable("sender")] as? String)?.bareJid, type: .unknown, nickname: bestAttemptContent.userInfo[AnyHashable("nickname")] as? String, body: bestAttemptContent.userInfo[AnyHashable("body")] as? String, completionHandler: { content in
                         DispatchQueue.main.async {
                             contentHandler(content);

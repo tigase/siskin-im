@@ -107,10 +107,9 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
     
     @available(iOS 13.0, *)
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        var cfg = UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: nil) { suggestedActions -> UIMenu? in
+        return UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: nil) { suggestedActions -> UIMenu? in
             return self.prepareContextMenu(for: indexPath);
         };
-        return cfg;
     }
     
     @available(iOS 13.0, *)

@@ -75,20 +75,20 @@ class ImageCache {
                     let isAttachmentOnly = URL(string: item.message) != nil;
 
                     DBChatHistoryStore.instance.appendItem(for: item.account, with: item.jid, state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: item.recipientNickname, participantId: nil, type: .attachment, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: item.message, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, appendix: appendix, linkPreviewAction: .none, completionHandler: { newId in
-                        DownloadStore.instance.store(url, filename: filename, with: "\(newId)");
+                        _ = DownloadStore.instance.store(url, filename: filename, with: "\(newId)");
                         if isAttachmentOnly {
                             DBChatHistoryStore.instance.remove(item: item);
                         } else {
-                            try! removePreviewStmt.update(item.id);
+                            _ = try! removePreviewStmt.update(item.id);
                         }
                         try? FileManager.default.removeItem(at: url);
                         group.leave();
                     });
                 } else {
-                    try! removePreviewStmt.update(item.id);
+                    _ = try! removePreviewStmt.update(item.id);
                 }
             } else {
-                try! removePreviewStmt.update(item.id);
+                _ = try! removePreviewStmt.update(item.id);
             }
         }
         group.notify(queue: DispatchQueue.main, execute: {

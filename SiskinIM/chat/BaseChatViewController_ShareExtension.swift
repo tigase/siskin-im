@@ -258,12 +258,12 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
         if encrypted {
             var iv = Data(count: 12);
             iv.withUnsafeMutableBytes { (bytes) -> Void in
-                SecRandomCopyBytes(kSecRandomDefault, 12, bytes.baseAddress!);
+                _ = SecRandomCopyBytes(kSecRandomDefault, 12, bytes.baseAddress!);
             }
 
             var key = Data(count: 32);
             key.withUnsafeMutableBytes { (bytes) -> Void in
-                SecRandomCopyBytes(kSecRandomDefault, 32, bytes.baseAddress!);
+                _ = SecRandomCopyBytes(kSecRandomDefault, 32, bytes.baseAddress!);
             }
 
             let dataProvider = Cipher.FileDataProvider(inputStream: InputStream(url: url)!);
@@ -271,7 +271,7 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
             
             let cipher = Cipher.AES_GCM();
             let tag = cipher.encrypt(iv: iv, key: key, provider: dataProvider, consumer: dataConsumer);
-            dataConsumer.consume(data: tag);
+            _ = dataConsumer.consume(data: tag);
             dataConsumer.close();
             url.stopAccessingSecurityScopedResource();
 
@@ -353,7 +353,7 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
                     session.dataTask(with: request) { (data, response, error) in
                         let code = (response as? HTTPURLResponse)?.statusCode ?? 500;
                         guard error == nil && (code == 200 || code == 201) else {
-                            print("error:", error, "response:", response)
+                            print("error:", error as Any, "response:", response as Any)
                             completionHandler(.failure(.httpError));
                             return;
                         }
@@ -430,7 +430,7 @@ class BaseChatViewController_ShareFilePickerDelegate: BaseChatViewController_Sha
                 appendix.filesize = filesize;
                 appendix.mimetype = mimetype;
                 appendix.state = .downloaded;
-                url.startAccessingSecurityScopedResource();
+                _ = url.startAccessingSecurityScopedResource();
                 self.controller.sendAttachment(originalUrl: url, uploadedUrl: uploadedUrl.absoluteString, appendix: appendix, completionHandler: {
                     url.stopAccessingSecurityScopedResource();
                 });
@@ -460,7 +460,6 @@ class BaseChatViewController_ShareImagePickerDelegate: BaseChatViewController_Sh
             return;
         }
         print("photo", photo.size, "originalImage", info[UIImagePickerController.InfoKey.originalImage] as Any);
-        let imageName = "image.jpg";
         
         // saving photo
         let data = photo.jpegData(compressionQuality: 0.9);
@@ -471,12 +470,12 @@ class BaseChatViewController_ShareImagePickerDelegate: BaseChatViewController_Sh
             if encrypted {
                 var iv = Data(count: 12);
                 iv.withUnsafeMutableBytes { (bytes) -> Void in
-                    SecRandomCopyBytes(kSecRandomDefault, 12, bytes.baseAddress!);
+                    _ = SecRandomCopyBytes(kSecRandomDefault, 12, bytes.baseAddress!);
                 }
 
                 var key = Data(count: 32);
                 key.withUnsafeMutableBytes { (bytes) -> Void in
-                    SecRandomCopyBytes(kSecRandomDefault, 32, bytes.baseAddress!);
+                    _ = SecRandomCopyBytes(kSecRandomDefault, 32, bytes.baseAddress!);
                 }
                 
                 let dataProvider = Cipher.DataDataProvider(data: data!);
@@ -484,7 +483,7 @@ class BaseChatViewController_ShareImagePickerDelegate: BaseChatViewController_Sh
                 
                 let cipher = Cipher.AES_GCM();
                 let tag = cipher.encrypt(iv: iv, key: key, provider: dataProvider, consumer: dataConsumer);
-                dataConsumer.consume(data: tag);
+                _ = dataConsumer.consume(data: tag);
                 dataConsumer.close();
                 
                 self.share(filename: "image.jpg", inputStream: InputStream(url: dataConsumer.url)!, filesize: dataConsumer.size, mimeType: "image/jpeg") { (result) in

@@ -116,7 +116,7 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
                     self?.infoData = info;
                     self?.nameField.text = info.name;
                     self?.descriptionField.text = info.description;
-                case .failure(let err):
+                case .failure(_):
                     self?.dismiss(animated: true, completion: nil);
                     break;
                 }

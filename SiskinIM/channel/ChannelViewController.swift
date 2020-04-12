@@ -161,7 +161,6 @@ class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
     }
 
     @objc func avatarChanged(_ notification: Notification) {
-        // TODO: adjust this to make it work properly with MUC
         guard ((notification.userInfo?["jid"] as? BareJID) == jid) else {
             return;
         }

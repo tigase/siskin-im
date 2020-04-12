@@ -232,9 +232,6 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
     private func openChatView(on account: BareJID, with jid: BareJID, completionHandler: @escaping ()->Void) {
         var topController = UIApplication.shared.keyWindow?.rootViewController;
         while (topController?.presentedViewController != nil) {
-            if #available(iOS 13.0, *) {
-                print("topController:", topController, "presentedViewController:", topController?.presentedViewController, "presentation:", topController?.presentedViewController?.modalPresentationStyle.rawValue, topController?.presentedViewController?.isModalInPresentation);
-            }
             if #available(iOS 13.0, *), let tmp = topController?.presentedViewController, tmp.modalPresentationStyle != .none {
                 tmp.dismiss(animated: true, completion: {
                     self.openChatView(on: account, with: jid, completionHandler: completionHandler);

@@ -105,7 +105,7 @@ extension Cipher {
                         }
                         return buffer.subdata(in: 0..<wrote);
                     }
-                    consumer.consume(data: result);
+                    _ = consumer.consume(data: result);
                 case .ended:
                     buffer.withUnsafeMutableBytes { (outbuf) -> Void in
                         var outbufLen: Int32 = 0;
@@ -187,7 +187,7 @@ extension Cipher {
                         }
                         return buffer.subdata(in: 0..<wrote);
                     }
-                    consumer.consume(data: result);
+                    _ = consumer.consume(data: result);
                 case .ended:
                     if var auth = (provider as? CipherDataProviderWithAuth)?.authTag() {
                         auth.withUnsafeMutableBytes({ [count = auth.count] (bytes: UnsafeMutableRawBufferPointer) -> Void in

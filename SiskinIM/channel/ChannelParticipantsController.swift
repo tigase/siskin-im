@@ -47,7 +47,7 @@ class ChannelParticipantsController: UITableViewController {
                                 that.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "folder"), style: .plain, target: that, action: #selector(that.manageBlocked(_:)));
                             }
                         }
-                    case .failure(let error):
+                    case .failure(_):
                         break;
                     }
                     self?.operationEnded();

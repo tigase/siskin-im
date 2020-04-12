@@ -40,7 +40,7 @@ class ChannelBlockedUsersController: UITableViewController {
                     switch result {
                     case .success(let blocked):
                         self?.jids = blocked.sorted();
-                    case .failure(let errorCondition):
+                    case .failure(_):
                         break;
                     }
                 }
@@ -75,7 +75,7 @@ class ChannelBlockedUsersController: UITableViewController {
                             switch result {
                             case .success(_):
                                 self?.jids = self?.jids.filter { $0 != jid } ?? [];
-                            case .failure(let error):
+                            case .failure(_):
                                 break;
                             }
                             self?.operationEnded();

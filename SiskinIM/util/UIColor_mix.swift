@@ -124,8 +124,6 @@ extension UIColor {
         }
         
         let saturation = maxColor == 0 ? 0 : (delta / maxColor);
-        let oldBrightness = maxColor;
-//        print("hue:", hue/360, "saturation:", saturation, ", brightness:", brightness, oldBrightness, ", alpha:", a);
         return UIColor(hue: hue/360, saturation: saturation, brightness: brightness, alpha: a);
     }
     

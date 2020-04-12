@@ -67,8 +67,8 @@ class LinkPreviewChatTableViewCell: BaseChatTableViewCell {
             linkView.metadata = metadata!;
 
             if isNew {
-                MetadataCache.instance.generateMetadata(for: url, withId: "\(item.id)", completionHandler: { [weak linkView] meta1 in
-                    guard let meta = meta1 else {
+                MetadataCache.instance.generateMetadata(for: url, withId: "\(item.id)", completionHandler: { meta1 in
+                    guard meta1 != nil else {
                         return;
                     }
                     DBChatHistoryStore.instance.itemUpdated(withId: item.id, for: item.account, with: item.jid);

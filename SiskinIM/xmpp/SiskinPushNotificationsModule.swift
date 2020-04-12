@@ -91,7 +91,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
             switch result {
             case .success(let jid):
                 self.registerDeviceAndEnable(deviceId: deviceId, pushServiceJid: jid, completionHandler: completionHandler);
-            case .failure(let error):
+            case .failure(_):
                 self.registerDeviceAndEnable(deviceId: deviceId, pushServiceJid: self.defaultPushServiceJid, completionHandler: completionHandler);
             }
         }
@@ -188,7 +188,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
                 if let config = AccountManager.getAccount(for: accountJid) {
                     config.pushSettings = settings;
                     config.pushNotifications = true;
-                    AccountManager.save(account: config);
+                    _ = AccountManager.save(account: config);
                 }
                 completionHandler(.success(settings));
             case .failure(let err):
@@ -231,7 +231,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
                 if let config = AccountManager.getAccount(for: accountJid) {
                     config.pushSettings = nil;
                     config.pushNotifications = false;
-                    AccountManager.save(account: config);
+                    _ = AccountManager.save(account: config);
                 }
                 completionHandler(total);
             }

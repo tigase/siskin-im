@@ -115,7 +115,7 @@ class ChatsListViewController: UITableViewController {
                     } else {
                         cell.lastMessageLabel.attributedText = msg;
                     }
-                case .invitation(let message, let sender):
+                case .invitation(_, let sender):
                     if let fieldfont = cell.lastMessageLabel.font {
                         let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: fieldfont.fontDescriptor.pointSize);
                         let msg = NSAttributedString(string: "📨 Invitation", attributes: [.font:  font, .foregroundColor: cell.lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
@@ -136,7 +136,7 @@ class ChatsListViewController: UITableViewController {
                             cell.lastMessageLabel.attributedText = msg;
                         }
                     }
-                case .attachment(let url, let sender):
+                case .attachment(_, let sender):
                     if let fieldfont = cell.lastMessageLabel.font {
                         let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: fieldfont.fontDescriptor.pointSize);
                         let msg = NSAttributedString(string: "📎 Attachment", attributes: [.font:  font, .foregroundColor: cell.lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
@@ -223,7 +223,7 @@ class ChatsListViewController: UITableViewController {
                     let mucModule: MucModule? = xmppClient?.modulesManager.getModule(MucModule.ID);
                     
                     if room.presences[room.nickname]?.affiliation == .owner {
-                        let alert = UIAlertController(title: "Delete group chat?", message: "You are leaving the group chat \((room as? DBRoom)?.name ?? room.roomJid.stringValue)", preferredStyle: .actionSheet);
+                        let alert = UIAlertController(title: "Delete group chat?", message: "You are leaving the group chat \(room.name ?? room.roomJid.stringValue)", preferredStyle: .actionSheet);
                         alert.addAction(UIAlertAction(title: "Leave chat", style: .default, handler: { (action) in
                             PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: room.jid, autojoin: false));
                             mucModule?.leave(room: room);
@@ -252,7 +252,7 @@ class ChatsListViewController: UITableViewController {
                                 }
                                 room.registerForTigasePushNotification(false, completionHandler: { (regResult) in
                                     DispatchQueue.main.async {
-                                        let alert = UIAlertController(title: "Push notifications", message: "You've left there room \((room as? DBRoom)?.name ?? room.roomJid.stringValue) and push notifications for this room were disabled!\nYou may need to reenable them on other devices.", preferredStyle: .actionSheet);
+                                        let alert = UIAlertController(title: "Push notifications", message: "You've left there room \(room.name ?? room.roomJid.stringValue) and push notifications for this room were disabled!\nYou may need to reenable them on other devices.", preferredStyle: .actionSheet);
                                         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
                                         alert.popoverPresentationController?.sourceView = self.view;
                                         alert.popoverPresentationController?.sourceRect = tableView.rectForRow(at: indexPath);
@@ -265,7 +265,6 @@ class ChatsListViewController: UITableViewController {
                         discardNotifications = true;
                     }
                 case let chat as DBChat:
-                    let thread: String? = nil;
                     let messageModule: MessageModule? = xmppClient?.modulesManager.getModule(MessageModule.ID);
                     _ = messageModule?.chatManager.close(chat: chat);
                     discardNotifications = true;
@@ -313,10 +312,10 @@ class ChatsListViewController: UITableViewController {
         var identifier: String!;
         var controller: UIViewController? = nil;
         switch item {
-        case let room as DBRoom:
+        case is DBRoom:
             identifier = "RoomViewNavigationController";
             controller = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: identifier);
-        case let channel as DBChannel:
+        case is DBChannel:
             identifier = "ChannelViewNavigationController";
             controller = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: identifier);
         default:

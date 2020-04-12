@@ -226,7 +226,7 @@ class ContactViewController: UITableViewController {
                 cell.trustSwitch.isOn = identity.status.trust == .trusted || identity.status.trust == .undecided;
                 let account = self.account!;
                 cell.valueChangedListener = { (sender) in
-                    DBOMEMOStore.instance.setStatus(identity.status.toTrust(sender.isOn ? .trusted : .compromised), forIdentity: identity.address, andAccount: account);
+                    _ = DBOMEMOStore.instance.setStatus(identity.status.toTrust(sender.isOn ? .trusted : .compromised), forIdentity: identity.address, andAccount: account);
                 }
                 return cell;
             }
@@ -389,7 +389,7 @@ class ContactViewController: UITableViewController {
         if sender.isOn {
             blockingModule.block(jids: [JID(jid!)], completionHandler: { [weak sender] result in
                 switch result {
-                case .failure(let _):
+                case .failure(_):
                     sender?.isOn = false;
                 default:
                     break;
@@ -398,7 +398,7 @@ class ContactViewController: UITableViewController {
         } else {
             blockingModule.unblock(jids: [JID(jid!)], completionHandler: { [weak sender] result in
                 switch result {
-                case .failure(let _):
+                case .failure(_):
                     sender?.isOn = true;
                 default:
                     break;
@@ -420,7 +420,7 @@ class ContactViewController: UITableViewController {
                     switch result {
                     case .success(_):
                         break;
-                    case .failure(let err):
+                    case .failure(_):
                         AccountSettings.pushHash(account).set(int: 0);
                     }
                 });

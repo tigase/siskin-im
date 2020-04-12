@@ -42,11 +42,11 @@ class MessageEventHandler: XmppServiceEventHandler {
         var encryptionErrorBody: String?;
         if let omemoModule: OMEMOModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(OMEMOModule.ID) {
             switch omemoModule.decode(message: message) {
-            case .successMessage(let decodedMessage, let keyFingerprint):
+            case .successMessage(_, let keyFingerprint):
                 encryption = .decrypted;
                 fingerprint = keyFingerprint
                 break;
-            case .successTransportKey(let key, let iv):
+            case .successTransportKey(_, _):
                 print("got transport key with key and iv!");
             case .failure(let error):
                 switch error {
@@ -79,7 +79,7 @@ class MessageEventHandler: XmppServiceEventHandler {
     func handle(event: Event) {
         switch event {
         case let e as MessageModule.MessageReceivedEvent:
-            guard let from = e.message.from, let account = e.sessionObject.userBareJid else {
+            guard e.message.from != nil, let account = e.sessionObject.userBareJid else {
                 return;
             }
 
@@ -115,13 +115,13 @@ class MessageEventHandler: XmppServiceEventHandler {
             }
             mcModule.enable();
         case let e as MessageCarbonsModule.CarbonReceivedEvent:
-            guard let account = e.sessionObject.userBareJid, let from = e.message.from, let to = e.message.to else {
+            guard let account = e.sessionObject.userBareJid, e.message.from != nil, e.message.to != nil else {
                 return;
             }
             
             DBChatHistoryStore.instance.append(for: account, message: e.message, source: .carbons(action: e.action));
         case let e as MessageArchiveManagementModule.ArchivedMessageReceivedEvent:
-            guard let account = e.sessionObject.userBareJid, let from = e.message.from, let to = e.message.to else {
+            guard let account = e.sessionObject.userBareJid, e.message.from != nil, e.message.to != nil else {
                 return;
             }
             
@@ -235,8 +235,6 @@ class MessageEventHandler: XmppServiceEventHandler {
 
         fileprivate static func sendEncryptedMessage(_ message: Message, from account: BareJID, completionHandler resultHandler: @escaping (Result<Void,Error>)->Void) {
 
-            let msg = message.body!;
-
             guard let omemoModule: OMEMOModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(OMEMOModule.ID) else {
                 DBChatHistoryStore.instance.updateItemState(for: account, with: message.to!.bareJid, stanzaId: message.id!, from: .outgoing_unsent, to: .outgoing_error);
                 resultHandler(.failure(ErrorCondition.unexpected_request));
@@ -248,15 +246,11 @@ class MessageEventHandler: XmppServiceEventHandler {
                 return;
             }
 
-            let jid = message.to!.bareJid;
-            let stanzaId = message.id!;
-
             let completionHandler: ((EncryptionResult<Message, SignalError>)->Void)? = { (result) in
                 switch result {
                 case .failure(let error):
-                    // FIXME: add support for error handling!!
                     resultHandler(.failure(error));
-                case .successMessage(let encryptedMessage, let fingerprint):
+                case .successMessage(let encryptedMessage, _):
                     guard let client = XmppService.instance.getClient(for: account) else {
                         resultHandler(.failure(ErrorCondition.gone));
                         return;
@@ -277,7 +271,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                 switch DBChatStore.instance.createChat(for: account, jid: JID(jid), thread: nil) {
                 case .success(let dbChat):
                     chat = dbChat;
-                case .failure(let error):
+                case .failure(_):
                     chat = nil;
                 }
             }
@@ -366,7 +360,7 @@ class MessageEventHandler: XmppServiceEventHandler {
         let queryId = UUID().uuidString;
         mamModule.queryItems(start: since, queryId: queryId, rsm: rsmQuery ?? RSM.Query(max: 200), completionHandler: { (result) in
             switch result {
-            case .success(let queryId, let completed, let rsmResponse):
+            case .success(_, _, let rsmResponse):
                 if rsmResponse != nil && rsmResponse!.index != 0 && rsmResponse?.first != nil {
                     DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
                         self.syncMessages(for: account, since: since, rsmQuery: rsmResponse?.next(200));

@@ -62,7 +62,7 @@ class ConversationLogController: UIViewController, ChatViewDataSourceDelegate {
         if !loaded {
             loaded = true;
             self.dataSource.refreshData(unread: chat.unread) { (firstUnread) in
-                print("got first unread at:", firstUnread);
+                print("got first unread at:", firstUnread as Any);
                 if self.tableView.numberOfRows(inSection: 0) > 0 {
                     self.tableView.scrollToRow(at: IndexPath(row: firstUnread ?? 0, section: 0), at: .none, animated: true);
                 }

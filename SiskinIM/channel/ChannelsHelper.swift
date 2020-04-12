@@ -35,11 +35,11 @@ class ChannelsHelper {
             group.enter();
             discoModule.getItems(for: component.jid, completionHandler: { result in
                  switch result {
-                 case .success(let node, let items):
+                 case .success(_, let items):
                      DispatchQueue.main.async {
                         allItems.append(contentsOf: items);
                      }
-                 case .failure(let errorCondition, let response):
+                 case .failure(_, _):
                      break;
                  }
                  group.leave();
@@ -67,10 +67,10 @@ class ChannelsHelper {
                     components.append(component);
                 }
                 group.leave();
-            case .failure(let error):
+            case .failure(_):
                 discoModule.getItems(for: domainJid, completionHandler: { result in
                     switch result {
-                    case .success(let node, let items):
+                    case .success(_, let items):
                         // we need to do disco on all components to find out local mix/muc component..
                         // maybe this should be done once for all "views"?
                         for item in items {
@@ -81,13 +81,13 @@ class ChannelsHelper {
                                     DispatchQueue.main.async {
                                         components.append(component);
                                     }
-                                case .failure(let error):
+                                case .failure(_):
                                     break;
                                 }
                                 group.leave();
                             });
                         }
-                    case .failure(let errorCondition, let response):
+                    case .failure(_, _):
                         break;
                     }
                     group.leave();
@@ -103,13 +103,13 @@ class ChannelsHelper {
     static func retrieveComponent(from jid: JID, name: String?, discoModule: DiscoveryModule, completionHandler: @escaping (Result<Component,ErrorCondition>)->Void) {
         discoModule.getInfo(for: jid, completionHandler: { result in
             switch result {
-            case .success(let node, let identities, let features):
+            case .success(_, let identities, let features):
                 guard let component = Component(jid: jid, name: name, identities: identities, features: features) else {
                     completionHandler(.failure(.item_not_found));
                     return;
                 }
                 completionHandler(.success(component));
-            case .failure(let errorCondition, let response):
+            case .failure(let errorCondition, _):
                 completionHandler(.failure(errorCondition));
             }
         })

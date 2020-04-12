@@ -164,7 +164,7 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                 let sizeLimit = Settings.fileDownloadSizeLimit.integer();
                 if sizeLimit > 0 {
                     if let sessionObject = XmppService.instance.getClient(for: item.account)?.sessionObject, (RosterModule.getRosterStore(sessionObject).get(for: JID(item.jid))?.subscription ?? .none).isFrom || (DBChatStore.instance.getChat(for: item.account, with: item.jid) as? Room != nil) {
-                        DownloadManager.instance.download(item: item, maxSize: sizeLimit >= Int.max ? Int64.max : Int64(sizeLimit * 1024 * 1024));
+                        _ = DownloadManager.instance.download(item: item, maxSize: sizeLimit >= Int.max ? Int64.max : Int64(sizeLimit * 1024 * 1024));
                         attachmentInfo.progress(show: true);
                         return;
                     }
@@ -178,10 +178,9 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
     
     @available(iOS 13.0, *)
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
-        var cfg = UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { suggestedActions -> UIMenu? in
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { suggestedActions -> UIMenu? in
             return self.prepareContextMenu();
         };
-        return cfg;
     }
     
     @available(iOS 13.0, *)
@@ -280,7 +279,7 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
         print("opening a file:", url, "exists:", FileManager.default.fileExists(atPath: url.path));// "tmp:", tmpUrl);
         let documentController = UIDocumentInteractionController(url: url);
         documentController.delegate = self;
-        print("detected uti:", documentController.uti, "for:", documentController.url);
+        print("detected uti:", documentController.uti as Any, "for:", documentController.url as Any);
         if preview && documentController.presentPreview(animated: true) {
             self.documentController = documentController;
         } else if documentController.presentOptionsMenu(from: self.superview?.convert(self.frame, to: self.superview?.superview) ?? CGRect.zero, in: self.self, animated: true) {
@@ -289,7 +288,7 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
     }
     
     func download(for item: ChatAttachment) {
-        DownloadManager.instance.download(item: item, maxSize: Int64.max);
+        _ = DownloadManager.instance.download(item: item, maxSize: Int64.max);
         (self.linkView as? AttachmentInfoView)?.progress(show: true);
     }
     
@@ -589,7 +588,7 @@ extension UIImage {
             controller.uti = "public.data";
         }
         let icons = controller.icons;
-        print("got:", icons.last, "for:", url.absoluteString);
+        print("got:", icons.last as Any, "for:", url.absoluteString);
         return icons.last;
     }
 
@@ -600,7 +599,7 @@ extension UIImage {
             controller.uti = "public.data";
         }
         let icons = controller.icons;
-        print("got:", icons.last, "for:", utiString);
+        print("got:", icons.last as Any, "for:", utiString);
         return icons.last;
     }
     

@@ -132,7 +132,7 @@ class NewFeaturesDetector: XmppServiceEventHandler {
                             controller.onEnable = { (handler) in
                                 mamModule.updateSettings(defaultValue: .always, always: always, never: never, completionHandler: { result in
                                     switch result {
-                                    case .success(let defValue, let always, let never):
+                                    case .success(_, _, _):
                                         DispatchQueue.main.async {
                                             handler();
                                             self.askToEnableMessageSync(xmppService: xmppService, account: account, onNext: onNext, completionHandler: { subcontrollers in
@@ -145,7 +145,7 @@ class NewFeaturesDetector: XmppServiceEventHandler {
                                                 })
                                             });
                                         }
-                                    case .failure(let errorCondition, let response):
+                                    case .failure(_, _):
                                         DispatchQueue.main.async {
                                             handler();
                                             self.showError(title: "Message Archiving Error", message: "Server \(account.domain) returned an error on the request to enable archiving. You can try to enable this feature later on from the account settings.");
@@ -159,7 +159,7 @@ class NewFeaturesDetector: XmppServiceEventHandler {
                     } else {
                         self.askToEnableMessageSync(xmppService: xmppService, account: account, onNext: onNext, completionHandler: completionHandler);
                     }
-                case .failure(let errorCondition, let response):
+                case .failure(_, _):
                     completionHandler([]);
                 }
             });
@@ -215,7 +215,7 @@ Have it enabled will keep synchronized copy of your messages exchanged using \(a
                 return;
             }
             
-            guard let pushModule: SiskinPushNotificationsModule = xmppService.getClient(forJid: account)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), PushEventHandler.instance.deviceId != nil else {
+            guard let _: SiskinPushNotificationsModule = xmppService.getClient(forJid: account)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), PushEventHandler.instance.deviceId != nil else {
                 completionHandler([]);
                 return;
             }
@@ -258,20 +258,13 @@ With this feature enabled Tigase iOS Messenger can be automatically notified abo
             
             
             pushModule.registerDeviceAndEnable(deviceId: deviceId) { (result) in
-                // FIXME: handle this somehow??
                 switch result {
                 case .success(_):
                     DispatchQueue.main.async {
                         operationFinished();
-//                        if let config = AccountManager.getAccount(for: accountJid) {
-//                            config.pushServiceNode = pushModule.pushServiceNode
-//                            config.pushServiceJid = jid;
-//                            config.pushNotifications = true;
-//                            AccountManager.save(account: config);
-//                        }
                         completionHandler();
                     }
-                case .failure(let errorCondition):
+                case .failure(_):
                     DispatchQueue.main.async {
                         operationFinished();
                         self.showError(title: "Push Notifications Error", message: "Server \(accountJid.domain) returned an error on the request to enable push notifications. You can try to enable this feature later on from the account settings.");

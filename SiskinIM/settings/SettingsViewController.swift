@@ -261,6 +261,8 @@ class SettingsViewController: UITableViewController {
                         Settings.appearance.setValue("light")
                     case .unspecified:
                         Settings.appearance.setValue("auto")
+                    default:
+                        Settings.appearance.setValue("auto")
                     }
                     self.tableView.reloadData();
                 };
@@ -283,6 +285,8 @@ class SettingsViewController: UITableViewController {
             return "Light";
         case .dark:
             return "Dark";
+        default:
+            return "Auto";
         }
     }
     
@@ -321,7 +325,7 @@ class SettingsViewController: UITableViewController {
                                 let regModule = client.modulesManager.register(InBandRegistrationModule());
                                 regModule.unregister({ (stanza) in
                                     DispatchQueue.main.async() {
-                                        AccountManager.deleteAccount(for: account);
+                                        _ = AccountManager.deleteAccount(for: account);
                                         self.tableView.reloadData();
                                     }
                                 })
@@ -334,7 +338,7 @@ class SettingsViewController: UITableViewController {
                             }
                         } else {
                             DispatchQueue.main.async {
-                                AccountManager.deleteAccount(for: account);
+                                _ = AccountManager.deleteAccount(for: account);
                                 self.tableView.reloadData();
                             }
                         }

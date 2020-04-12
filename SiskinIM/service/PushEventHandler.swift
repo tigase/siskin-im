@@ -59,7 +59,7 @@ open class PushEventHandler: XmppServiceEventHandler {
                             pushModule.registerDeviceAndEnable(deviceId: deviceId, completionHandler: { result2 in
                                 print("reregistration:", result2);
                             });
-                        case .failure(let err):
+                        case .failure(_):
                             // we need to try again later
                             break;
                         }
@@ -76,7 +76,7 @@ open class PushEventHandler: XmppServiceEventHandler {
                 })
             }
         } else {
-            if let pushSettings = pushModule.pushSettings, (!hasPush) || (!pushModule.shouldEnable) {
+            if pushModule.pushSettings != nil, (!hasPush) || (!pushModule.shouldEnable) {
                 pushModule.unregisterDeviceAndDisable(completionHandler: { result in
                     print("automatic deregistration:", result);
                 })
@@ -90,7 +90,7 @@ open class PushEventHandler: XmppServiceEventHandler {
         }
         
         switch c {
-        case let chat as DBChat:
+        case is DBChat:
             // nothing to do for now...
             break;
         case let room as DBRoom:
@@ -98,6 +98,11 @@ open class PushEventHandler: XmppServiceEventHandler {
                 return;
             }
             self.updateAccountPushSettings(for: room.account);
+        case let channel as DBChannel:
+            guard channel.options.notifications != .none else {
+                return;
+            }
+            self.updateAccountPushSettings(for: channel.account);
         default:
             break;
         }

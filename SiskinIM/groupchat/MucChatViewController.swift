@@ -120,7 +120,11 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             if let author = item.authorNickname, let recipient = item.recipientNickname {
                 let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(author) " : "To \(recipient)  ");
                 let font = UIFont.italicSystemFont(ofSize: cell.nicknameView!.font!.pointSize - 2);
-                val.append(NSAttributedString(string: " (private message)", attributes: [.font: font, .foregroundColor: UIColor(named: "chatMessageText")]));
+                var attrs: [NSAttributedString.Key : Any] = [.font: font];
+                if let color = UIColor(named: "chatMessageText") {
+                    attrs[.foregroundColor] = color;
+                }
+                val.append(NSAttributedString(string: " (private message)", attributes: attrs));
 
                 cell.nicknameView?.attributedText = val;
             } else {
@@ -146,7 +150,11 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             if let author = item.authorNickname, let recipient = item.recipientNickname {
                 let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(author) " : "To \(recipient)  ");
                 let font = UIFont.italicSystemFont(ofSize: cell.nicknameView!.font!.pointSize - 2);
-                val.append(NSAttributedString(string: " (private message)", attributes: [.font: font, .foregroundColor: UIColor(named: "chatMessageText")]));
+                var attrs: [NSAttributedString.Key : Any] = [.font: font];
+                if let color = UIColor(named: "chatMessageText") {
+                    attrs[.foregroundColor] = color;
+                }
+                val.append(NSAttributedString(string: " (private message)", attributes: attrs));
 
                 cell.nicknameView?.attributedText = val;
             } else {
@@ -186,7 +194,11 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             if let author = item.authorNickname, let recipient = item.recipientNickname {
                 let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(author) " : "To \(recipient)  ");
                 let font = UIFont.italicSystemFont(ofSize: cell.nicknameView!.font!.pointSize - 2);
-                val.append(NSAttributedString(string: " (private message)", attributes: [.font: font, .foregroundColor: UIColor(named: "chatMessageText")]));
+                var attrs: [NSAttributedString.Key : Any] = [.font: font];
+                if let color = UIColor(named: "chatMessageText") {
+                    attrs[.foregroundColor] = color;
+                }
+                val.append(NSAttributedString(string: " (private message)", attributes: attrs));
 
                 cell.nicknameView?.attributedText = val;
             } else {
@@ -287,12 +299,12 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
     }
     
     @objc func roomInfoClicked() {
-        print("room info for", account, room?.roomJid, "clicked!");
+        print("room info for", account as Any, room?.roomJid as Any, "clicked!");
         guard let settingsController = self.storyboard?.instantiateViewController(withIdentifier: "MucChatSettingsViewController") as? MucChatSettingsViewController else {
             return;
         }
         settingsController.account = self.account;
-        settingsController.room = self.room as? DBRoom;
+        settingsController.room = self.room;
         
         let navigation = UINavigationController(rootViewController: settingsController);
         navigation.title = self.title;

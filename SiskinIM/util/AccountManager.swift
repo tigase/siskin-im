@@ -102,6 +102,7 @@ open class AccountManager {
         return String(data: data, encoding: .utf8);
     }
     
+    @discardableResult
     static func save(account: Account, withPassword: String? = nil) -> Bool {
         var query = AccountManager.getAccountQuery(account.name.stringValue);
         query.removeValue(forKey: String(kSecMatchLimit));
@@ -159,7 +160,7 @@ open class AccountManager {
     }
     
     fileprivate static func getAccountQuery(_ name:String, withData:CFString = kSecReturnAttributes) -> [String: Any] {
-        return [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitOne, String(withData) : kCFBooleanTrue, String(kSecAttrService) : "xmpp" as NSObject, String(kSecAttrAccount) : name as NSObject ];
+        return [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitOne, String(withData) : kCFBooleanTrue!, String(kSecAttrService) : "xmpp" as NSObject, String(kSecAttrAccount) : name as NSObject ];
     }
     
     open class Account {

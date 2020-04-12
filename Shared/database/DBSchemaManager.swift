@@ -20,7 +20,6 @@
 //
 
 import Foundation
-import Shared
 import TigaseSwift
 
 public class DBSchemaManager {
@@ -102,7 +101,7 @@ public class DBSchemaManager {
         
         try toRemove.forEach { tuple in
             let (account, name, device) = tuple;
-            try dbConnection.prepareStatement("DELETE FROM omemo_sessions WHERE account = :account AND name = :name AND device_id = :deviceId").update(["account": account, "name": name, "deviceId": device] as [String: Any?]);
+            _ = try dbConnection.prepareStatement("DELETE FROM omemo_sessions WHERE account = :account AND name = :name AND device_id = :deviceId").update(["account": account, "name": name, "deviceId": device] as [String: Any?]);
         }
     }
     

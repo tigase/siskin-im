@@ -231,7 +231,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         guard let xmppUri = XmppUri(url: url) else {
             return false;
         }
-        print("got xmpp url with jid:", xmppUri.jid, "action:", xmppUri.action, "params:", xmppUri.dict);
+        print("got xmpp url with jid:", xmppUri.jid, "action:", xmppUri.action as Any, "params:", xmppUri.dict as Any);
 
         if let action = xmppUri.action {
             self.open(xmppUri: xmppUri, action: action);
@@ -344,8 +344,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }));
             alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
             self.window?.rootViewController?.present(alert, animated: true, completion: nil);
-        default:
-            break;
         }
     }
     

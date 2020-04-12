@@ -145,47 +145,6 @@ class DataFormController: UITableViewController {
         return errors.isEmpty;
     }
     
-    func fillWithTestForm() {
-        // For testing only!
-        let form = JabberDataElement(type: .form);
-        form.addField(TextSingleField(name: "username"));
-        form.addField(TextPrivateField(name: "password"));
-        form.addField(TextSingleField(name: "email"));
-        form.addField(BooleanField(name: "policy", label: "Accept policy", value: true));
-        form.addField(FixedField(name: "fixed 1", value: "Some random text to display which may be very long... and even longer..."));
-        let hidden = HiddenField(name: "hidden-1");
-        hidden.value = "some-value";
-        form.addField(hidden);
-        let singleList = ListSingleField(name: "role");
-        singleList.options = [
-            ListFieldOption(value: "admin", label: "Admin"),
-            ListFieldOption(value: "user")
-        ];
-        singleList.value = "user";
-        form.addField(singleList);
-        let multiList = ListMultiField(name: "roles");
-        multiList.options = [
-            ListFieldOption(value: "admin", label: "Admin"),
-            ListFieldOption(value: "user")
-        ];
-        multiList.value = ["user"];
-        form.addField(multiList);
-        let textMulti = TextMultiField(name: "description");
-        textMulti.value = [ "First line", "Second line", "Third line" ];
-        form.addField(textMulti);
-        
-        let jidSingle = JidSingleField(name: "buddy");
-        jidSingle.value = JID("someone@example.com");
-        form.addField(jidSingle);
-        
-        let jidMulti = JidMultiField(name: "spammers");
-        jidMulti.value = [ JID("spammer1@example.com")!, JID("spammer2@example.com")! ];
-        form.addField(jidMulti);
-        
-        self.form = form;
-        tableView.reloadData();
-    }
-    
     class TextSingleFieldCell: AbstractTextSingleFieldCell {
         
         override var field: Field? {
