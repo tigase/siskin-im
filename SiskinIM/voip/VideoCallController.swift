@@ -188,6 +188,7 @@ public class VideoCallController: UIViewController {
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
         self.orientationChanged();
+        NotificationCenter.default.addObserver(self, selector: #selector(audioRouteChanged), name: AVAudioSession.routeChangeNotification, object: nil)
     }
 
     public override func viewWillDisappear(_ animated: Bool) {
@@ -208,6 +209,23 @@ public class VideoCallController: UIViewController {
         }
     }
     
+    @objc func audioRouteChanged(_ notification: Notification) {
+        guard let value = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt, let reason = AVAudioSession.RouteChangeReason(rawValue: value) else {
+            return;
+        }
+        switch reason {
+        case .categoryChange:
+            guard !AVAudioSession.sharedInstance().categoryOptions.contains(.defaultToSpeaker) else {
+                return;
+            }
+            var options = AVAudioSession.sharedInstance().categoryOptions;
+            options.update(with: .defaultToSpeaker);
+            try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, options: options);
+//            try? AVAudioSession.sharedInstance().overrideOutputAudioPort(.speaker);
+        default:
+            break;
+        }
+    }
     
     @objc func orientationChanged() {
         switch UIDevice.current.orientation {
