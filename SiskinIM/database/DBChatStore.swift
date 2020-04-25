@@ -656,7 +656,8 @@ fileprivate class AccountChats {
     func get(with jid: BareJID) -> DBChatProtocol? {
         return self.queue.sync(execute: {
             let chats = self.chats;
-            return chats[jid];
+            let chat = chats[jid];
+            return chat;
         });
     }
     

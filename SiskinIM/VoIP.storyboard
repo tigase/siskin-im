@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
-    <device id="retina4_7" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -13,19 +11,19 @@
         <!--Video Call Controller-->
         <scene sceneID="F1u-Sh-GDH">
             <objects>
-                <viewController storyboardIdentifier="VideoCallController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="sh6-q3-LhK" customClass="VideoCallController" customModule="Tigase_iOS_Messenger" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="VideoCallController" modalPresentationStyle="fullScreen" useStoryboardIdentifierAsRestorationIdentifier="YES" id="sh6-q3-LhK" customClass="VideoCallController" customModule="Siskin" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Y9t-qn-5HE" customClass="RTCMTLVideoView">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Calling John Doe..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i9e-aU-c5F">
-                                <rect key="frame" x="16" y="20" width="343" height="21"/>
+                                <rect key="frame" x="16" y="0.0" width="343" height="21"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageSizeForAccessibilityContentSizeCategory="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JSs-fW-wDJ" customClass="RoundButton" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
-                                <rect key="frame" x="157.5" y="587" width="60" height="60"/>
+                            <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageSizeForAccessibilityContentSizeCategory="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JSs-fW-wDJ" customClass="RoundButton" customModule="Siskin" customModuleProvider="target">
+                                <rect key="frame" x="157.5" y="27" width="60" height="60"/>
                                 <color key="backgroundColor" name="systemRedColor" catalog="System" colorSpace="catalog"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="JSs-fW-wDJ" secondAttribute="height" multiplier="1:1" id="izj-ML-5HF"/>
@@ -38,11 +36,11 @@
                                     <action selector="disconnectClicked:" destination="sh6-q3-LhK" eventType="touchUpInside" id="CwP-y4-9QG"/>
                                 </connections>
                             </button>
-                            <view contentMode="scaleAspectFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TkT-yH-yAj" customClass="CameraPreviewView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
+                            <view contentMode="scaleAspectFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TkT-yH-yAj" customClass="CameraPreviewView" customModule="Siskin" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="471.5" width="110" height="195.5"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DHt-FL-iNf" customClass="RoundButton" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
-                                        <rect key="frame" x="32.5" y="150.5" width="45" height="45"/>
+                                    <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DHt-FL-iNf" customClass="RoundButton" customModule="Siskin" customModuleProvider="target">
+                                        <rect key="frame" x="40" y="150.5" width="30" height="45"/>
                                         <color key="tintColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                         <state key="normal" image="switchCamera"/>
                                         <connections>
@@ -55,8 +53,8 @@
                                     <constraint firstAttribute="width" constant="110" id="ssD-dy-SIb"/>
                                 </constraints>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nxo-vV-t7I" customClass="RoundButton" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
-                                <rect key="frame" x="270" y="587" width="60" height="60"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nxo-vV-t7I" customClass="RoundButton" customModule="Siskin" customModuleProvider="target">
+                                <rect key="frame" x="270" y="27" width="60" height="60"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="nxo-vV-t7I" secondAttribute="height" multiplier="1:1" id="bSj-t1-0y3"/>
@@ -69,8 +67,8 @@
                                     <action selector="mute:" destination="sh6-q3-LhK" eventType="touchUpInside" id="UDP-Lg-cgw"/>
                                 </connections>
                             </button>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="defaultAvatarDark" translatesAutoresizingMaskIntoConstraints="NO" id="clf-Xd-Ao5" customClass="AvatarView" customModule="Tigase_iOS_Messenger" customModuleProvider="target">
-                                <rect key="frame" x="-46" y="7" width="467" height="467"/>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="defaultAvatarDark" translatesAutoresizingMaskIntoConstraints="NO" id="clf-Xd-Ao5" customClass="AvatarView" customModule="Siskin" customModuleProvider="target">
+                                <rect key="frame" x="150" y="0.0" width="75" height="75"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="clf-Xd-Ao5" secondAttribute="height" multiplier="1:1" id="hzm-ak-F2Y"/>
                                 </constraints>
@@ -111,8 +109,8 @@
     </scenes>
     <resources>
         <image name="defaultAvatarDark" width="75" height="75"/>
-        <image name="endCall" width="45" height="45"/>
-        <image name="mute" width="45" height="45"/>
-        <image name="switchCamera" width="45" height="45"/>
+        <image name="endCall" width="30" height="30"/>
+        <image name="mute" width="30" height="30"/>
+        <image name="switchCamera" width="30" height="30"/>
     </resources>
 </document>

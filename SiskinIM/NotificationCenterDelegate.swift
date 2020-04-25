@@ -311,14 +311,15 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
             case .denied, .restricted:
                 break;
             default:
-                alert.addAction(UIAlertAction(title: "Video call", style: .default, handler: { action in
-                    // accept video
-                    VideoCallController.accept(session: session, sdpOffer: sdp, withAudio: true, withVideo: true, sender: topController!);
-                }))
+                break;
+//                alert.addAction(UIAlertAction(title: "Video call", style: .default, handler: { action in
+//                    // accept video
+//                    VideoCallController.accept(session: session, sdpOffer: sdp, withAudio: true, withVideo: true, sender: topController!);
+//                }))
             }
-            alert.addAction(UIAlertAction(title: "Audio call", style: .default, handler: { action in
-                VideoCallController.accept(session: session, sdpOffer: sdp, withAudio: true, withVideo: false, sender: topController!);
-            }));
+//            alert.addAction(UIAlertAction(title: "Audio call", style: .default, handler: { action in
+//                VideoCallController.accept(session: session, sdpOffer: sdp, withAudio: true, withVideo: false, sender: topController!);
+//            }));
             alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: { action in
                 _ = session.decline();
             }));
