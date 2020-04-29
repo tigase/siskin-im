@@ -80,6 +80,7 @@ class CallManager: NSObject, CXProviderDelegate {
         
         currentCall = call;
         self.session = JingleManager.instance.session(forCall: call);
+        self.session?.delegate = self;
         call.webrtcSid = String(UInt64.random(in: UInt64.min...UInt64.max));
         
         guard AVCaptureDevice.authorizationStatus(for: .audio) == .authorized else {
@@ -127,6 +128,44 @@ class CallManager: NSObject, CXProviderDelegate {
             completionHandler(.failure(error));
         });
         
+    }
+    
+    func acceptedOutgoingCall(_ call: Call, by jid: JID, completionHandler: @escaping (Result<Void,ErrorCondition>)->Void) {
+        guard let currentCall = self.currentCall, call.account == currentCall.account && call.jid == currentCall.jid && call.sid == currentCall.sid else {
+            completionHandler(.failure(.item_not_found));
+            return;
+        }
+        
+        changeCallState(.connecting);
+        generateLocalDescription(completionHandler: { result in
+            switch result {
+            case .success(let sdp):
+                let session = JingleManager.instance.open(for: call.account, with: jid, sid: nil, role: .initiator);
+                session.delegate = self;
+                if session.initiate(sid: call.sid, contents: sdp.contents, bundle: sdp.bundle) {
+                    self.session = session;
+                } else {
+                    _ = session.terminate();
+                }
+                completionHandler(.success(Void()));
+            case .failure(let err):
+                completionHandler(.failure(err));
+            }
+        })
+    }
+    
+    func declinedOutgoingCall(_ call: Call) {
+        guard let currentCall = self.currentCall, call.account == currentCall.account && call.jid == currentCall.jid && call.sid == currentCall.sid else {
+            return;
+        }
+        endCall(currentCall);
+    }
+    
+    func terminateCall(for account: BareJID, with jid: BareJID) {
+        guard let currentCall = self.currentCall, account == currentCall.account && jid == currentCall.jid else {
+            return;
+        }
+        endCall(currentCall);
     }
     
     private(set) var localVideoSource: RTCVideoSource?;
@@ -213,24 +252,72 @@ class CallManager: NSObject, CXProviderDelegate {
             return;
         }
         
-        guard let presences = presenceModule.presenceStore.getPresences(for: call.jid)?.keys, !presences.isEmpty else {
+        guard let presences = presenceModule.presenceStore.getPresences(for: call.jid)?.values, !presences.isEmpty else {
             provider.reportCall(with: call.uuid, endedAt: Date(), reason: .failed);
             completionHandler(.failure(ErrorCondition.internal_server_error));
             return;
         }
        
+        var withJingle: [JID] = [];
+        var withJMI: [JID] = [];
         for presence in presences {
-            let session = JingleManager.instance.open(for: call.account, with: JID(call.jid, resource: presence), sid: nil, role: .initiator);
-            session.delegate = self;
-            if session.initiate(sid: call.sid, contents: sdp.contents, bundle: sdp.bundle) {
-                self.establishingSessions.append(session);
-            } else {
-                _ = session.terminate();
+            if let jid = presence.from, let capsNode = presence.capsNode {
+                if let features = DBCapabilitiesCache.instance.getFeatures(for: capsNode) {
+                    if features.contains(JingleModule.XMLNS) && features.contains(Jingle.Transport.ICEUDPTransport.XMLNS) && features.contains("urn:xmpp:jingle:apps:rtp:audio") {
+                        withJingle.append(jid);
+                        if features.contains(JingleModule.MESSAGE_INITIATION_XMLNS) {
+                            withJMI.append(jid);
+                        }
+                    }
+                }
             }
-            if establishingSessions.isEmpty {
-                provider.reportCall(with: call.uuid, endedAt: Date(), reason: .failed);
-                completionHandler(.failure(ErrorCondition.internal_server_error));
-            }
+        }
+        guard !withJingle.isEmpty else {
+            completionHandler(.failure(ErrorCondition.item_not_found));
+            return;
+        }
+                
+        if withJMI.count == withJingle.count {
+            let jingleModule: JingleModule = XmppService.instance.getClient(for: call.account)!.modulesManager.getModule(JingleModule.ID)!;
+            jingleModule.sendMessageInitiation(action: .propose(id: call.sid, descriptions: call.media.map({ Jingle.MessageInitiationAction.Description(xmlns: "urn:xmpp:jingle:apps:rtp:1", media: $0.rawValue)})), to: JID(call.jid));
+        } else {
+            // we need to establish multiple 1-1 sessions...
+            self.generateLocalDescription(completionHandler: { result in
+                switch result {
+                case .failure(_):
+                    self.reset();
+                case .success(let sdp):
+                    for jid in withJingle {
+                        let session = JingleManager.instance.open(for: call.account, with: jid, sid: nil, role: .initiator);
+                        session.delegate = self;
+                        if session.initiate(sid: call.sid, contents: sdp.contents, bundle: sdp.bundle) {
+                            self.establishingSessions.append(session);
+                        } else {
+                            _ = session.terminate();
+                        }
+                    }
+                }
+            })
+        }
+    }
+    
+    private func generateLocalDescription(completionHandler: @escaping (Result<SDP,ErrorCondition>)->Void) {
+        if let peerConnection = self.currentConnection {
+            peerConnection.offer(for: VideoCallController.defaultCallConstraints, completionHandler: { (description, error) in
+                guard let desc = description, let (sdp, sid) = SDP.parse(sdpString: desc.sdp, creator: .initiator) else {
+                    completionHandler(.failure(.internal_server_error));
+                    return;
+                }
+                peerConnection.setLocalDescription(RTCSessionDescription(type: desc.type, sdp: sdp.toString(withSid: self.currentCall!.webrtcSid!)), completionHandler: { error in
+                    guard error == nil else {
+                        completionHandler(.failure(.internal_server_error));
+                        return;
+                    }
+                    completionHandler(.success(sdp));
+                })
+            })
+        } else {
+            completionHandler(.failure(.item_not_found));
         }
     }
     

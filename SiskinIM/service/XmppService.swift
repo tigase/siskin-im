@@ -101,7 +101,7 @@ open class XmppService: Logger, EventHandler {
         self.dnsSrvResolverCache = DNSSrvResolverWithCache.InMemoryCache(store: DNSSrvDiskCache(cacheDirectoryName: "dns-cache"));
         self.dnsSrvResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: self.dnsSrvResolverCache);
         self.streamFeaturesCache = StreamFeaturesCache();
-        self.dbCapsCache = DBCapabilitiesCache(dbConnection: dbConnection);
+        self.dbCapsCache = DBCapabilitiesCache.instance;
         self.dbChatStore = DBChatStore.instance;
         self.dbChatHistoryStore = DBChatHistoryStore.instance;
         self.dbVCardsCache = DBVCardsCache.instance;

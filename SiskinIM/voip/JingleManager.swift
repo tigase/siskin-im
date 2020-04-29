@@ -108,6 +108,9 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                     toClose.forEach({ (session) in
                         self.close(session: session);
                     })
+                    if let presenceModule: PresenceModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(PresenceModule.ID), !presenceModule.presenceStore.isAvailable(jid: from.bareJid) {
+                        CallManager.instance.terminateCall(for: e.sessionObject.userBareJid!, with: from.bareJid);
+                    }
                 }
             case let e as JingleModule.JingleMessageInitiationEvent:
                 switch e.action! {
@@ -134,12 +137,26 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                 case .retract(let id):
                     self.sessionTerminated(account: e.sessionObject.userBareJid!, with: e.jid, sid: id);
                 case .accept(let id):
-                    self.sessionTerminated(account: e.sessionObject.userBareJid!, with: e.jid, sid: id);
+                    let account = e.sessionObject.userBareJid!;
+                    self.sessionTerminated(account: account, sid: id);
                 case .reject(let id):
-                    self.sessionTerminated(account: e.sessionObject.userBareJid!, with: e.jid, sid: id);
+                    let account = e.sessionObject.userBareJid!;
+                    if account != e.jid.bareJid {
+                        let call = Call(account: e.sessionObject.userBareJid!, with: e.jid.bareJid, sid: id, direction: .incoming, media: []);
+                        CallManager.instance.declinedOutgoingCall(call);
+                    }
+                    self.sessionTerminated(account: account, sid: id);
                 case .proceed(let id):
-                    // TODO: not implemented yet!
-                    self.sessionTerminated(account: e.sessionObject.userBareJid!, with: e.jid, sid: id);
+                    let call = Call(account: e.sessionObject.userBareJid!, with: e.jid.bareJid, sid: id, direction: .incoming, media: []);
+                    CallManager.instance.acceptedOutgoingCall(call, by: e.jid, completionHandler: { result in
+                        switch result {
+                        case .success(_):
+                            break;
+                        case .failure(_):
+                            self.sessionTerminated(account: e.sessionObject.userBareJid!, with: e.jid, sid: id);
+                            break;
+                        }
+                    });
                 default:
                     break;
                 }
@@ -236,6 +253,17 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
     
     fileprivate func sessionTerminated(event e: JingleModule.JingleEvent) {
         sessionTerminated(account: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid);
+    }
+
+    private func sessionTerminated(account: BareJID, sid: String) {
+        let toTerminate = dispatcher.sync(execute: {
+            return connections.filter({(sess) -> Bool in
+                return sess.account == account && sess.sid == sid;
+            });
+        });
+        for session in toTerminate {
+            _ = session.terminate();
+        }
     }
 
     private func sessionTerminated(account: BareJID, with jid: JID, sid: String) {
