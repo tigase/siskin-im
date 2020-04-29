@@ -484,6 +484,15 @@ class Call: Equatable {
             }
             return Media(rawValue: v);
         }
+        
+        var avmedia: AVMediaType {
+            switch self {
+            case .audio:
+                return .audio
+            case .video:
+                return .video;
+            }
+        }
     }
 
     enum Direction {

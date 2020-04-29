@@ -325,11 +325,11 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     #if targetEnvironment(simulator)
     #else
     @objc func audioCall() {
-        VideoCallController.call(jid: self.jid, from: self.account, withAudio: true, withVideo: false, sender: self);
+        VideoCallController.call(jid: self.jid, from: self.account, media: [.audio], sender: self);
     }
     
     @objc func videoCall() {
-        VideoCallController.call(jid: self.jid, from: self.account, withAudio: true, withVideo: true, sender: self);
+        VideoCallController.call(jid: self.jid, from: self.account, media: [.audio, .video], sender: self);
     }
     #endif
     

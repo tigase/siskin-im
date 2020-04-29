@@ -65,23 +65,82 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
         self.updateAvatarVisibility();
     }
     
+    static func checkMediaAvailability(forCall call: Call, completionHandler: @escaping (Result<Void,Error>)->Void) {
+        var errors: Bool = false;
+        let group = DispatchGroup();
+        group.enter();
+        for media in call.media {
+            group.enter();
+            self.checkAccesssPermission(media: media, completionHandler: { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(_):
+                        break;
+                    case .failure(_):
+                        errors = true;
+                    }
+                    group.leave();
+                }
+            })
+        }
+        group.leave();
+        group.notify(queue: DispatchQueue.main, execute: {
+            completionHandler(errors ? .failure(ErrorCondition.forbidden) : .success(Void()));
+        })
+    }
+
+    static func checkAccesssPermission(media: Call.Media, completionHandler: @escaping(Result<Void,Error>)->Void) {
+        switch AVCaptureDevice.authorizationStatus(for: media.avmedia) {
+        case .authorized:
+            completionHandler(.success(Void()));
+        case .denied, .restricted:
+            completionHandler(.failure(ErrorCondition.forbidden));
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: media.avmedia, completionHandler: { result in
+                completionHandler(result ? .success(Void()) : .failure(ErrorCondition.forbidden));
+            })
+        default:
+            completionHandler(.failure(ErrorCondition.forbidden));
+        }
+    }
     
-    static func call(jid: BareJID, from account: BareJID, withAudio: Bool, withVideo: Bool, sender: UIViewController) {
-        
-        var media: [Call.Media] = [];
-        if withAudio {
-            media.append(.audio);
-        }
-        if withVideo {
-            media.append(.video);
-        }
-        
-        // we do not have SID yet, what to do now??
-        let call = Call(account: account, with: jid, sid: UUID().uuidString, direction: .outgoing, media: media);
-        
-        CallManager.instance.reportOutgoingCall(call, completionHandler: { _ in
-            
+    static func call(jid: BareJID, from account: BareJID, media: [Call.Media], sender: UIViewController) {
+        call(jid: jid, from: account, media: media, completionHandler: { result in
+            switch result {
+            case .success(_):
+                break;
+            case .failure(let err):
+                var message = "It was not possible to establish call";
+                if let e = err as? ErrorCondition {
+                    switch e {
+                    case .forbidden:
+                        message = "It was not possible to access camera or microphone. Please check privacy settings";
+                    default:
+                        break;
+                    }
+                }
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Call failed", message: message, preferredStyle: .alert);
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                    sender.present(alert, animated: true, completion: nil);
+                }
+            }
         });
+    }
+    
+    static func call(jid: BareJID, from account: BareJID, media: [Call.Media], completionHandler: @escaping (Result<Void,Error>)->Void) {
+        
+        let call = Call(account: account, with: jid, sid: UUID().uuidString, direction: .outgoing, media: media);
+            
+        checkMediaAvailability(forCall: call, completionHandler: { result in
+            switch result {
+            case .success(_):
+                CallManager.instance.reportOutgoingCall(call, completionHandler: completionHandler);
+            case .failure(let err):
+                completionHandler(.failure(err));
+            }
+
+        })
     }
     
     static let peerConnectionFactory = { ()->RTCPeerConnectionFactory in

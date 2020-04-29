@@ -253,12 +253,12 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
             let jingleSupport = JingleManager.instance.support(for: item.jid, on: item.account);
             if jingleSupport.contains(.audio) && jingleSupport.contains(.video) {
                 alert.addAction(UIAlertAction(title: "Video call", style: .default, handler: { (action) in
-                    VideoCallController.call(jid: item.jid.bareJid, from: item.account, withAudio: true, withVideo: true, sender: self);
+                    VideoCallController.call(jid: item.jid.bareJid, from: item.account, media: [.audio, .video], sender: self);
                 }));
             }
             if jingleSupport.contains(.audio) {
                 alert.addAction(UIAlertAction(title: "Audio call", style: .default, handler: { (action) in
-                    VideoCallController.call(jid: item.jid.bareJid, from: item.account, withAudio: true, withVideo: false, sender: self);
+                    VideoCallController.call(jid: item.jid.bareJid, from: item.account, media: [.audio], sender: self);
                 }));
             }
             #endif
@@ -305,12 +305,12 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
         let jingleSupport = JingleManager.instance.support(for: item.jid, on: item.account);
         if jingleSupport.contains(.audio) && jingleSupport.contains(.video) {
             items.append(UIAction(title: "Video call", image: UIImage(systemName: "video"), handler: { (action) in
-                VideoCallController.call(jid: item.jid.bareJid, from: item.account, withAudio: true, withVideo: true, sender: self);
+                VideoCallController.call(jid: item.jid.bareJid, from: item.account, media: [.audio, .video], sender: self);
             }));
         }
         if jingleSupport.contains(.audio) {
             items.append(UIAction(title: "Audio call", image: UIImage(systemName: "phone"), handler: { (action) in
-                VideoCallController.call(jid: item.jid.bareJid, from: item.account, withAudio: true, withVideo: false, sender: self);
+                VideoCallController.call(jid: item.jid.bareJid, from: item.account, media: [.audio, .video], sender: self);
             }));
         }
         #endif
