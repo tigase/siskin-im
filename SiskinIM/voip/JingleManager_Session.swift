@@ -27,21 +27,15 @@ import WebRTC
 #else
 extension JingleManager {
 
-    class Session: NSObject, JingleSession {
-        
-        fileprivate(set) weak var client: XMPPClient?;
-        fileprivate(set) var state: State = .created {
+    class Session: JingleSession {
+                
+        fileprivate(set) var state: JingleSessionState = .created {
             didSet {
                 print("RTPSession:", self, "state:", state);
             }
         }
         
-        fileprivate var jingleModule: JingleModule? {
-            guard let client = self.client, client.state == .connected else {
-                return nil;
-            }
-            return client.modulesManager.getModule(JingleModule.ID);
-        }
+        fileprivate weak var jingleModule: JingleModule?;
         
         let account: BareJID;
         let jid: JID;
@@ -53,70 +47,89 @@ extension JingleManager {
         
         var remoteCandidates: [[String]] = [];
         
-        required init(account: BareJID, jid: JID, sid: String? = nil, role: Jingle.Content.Creator) {
-            self.account = account;
-            self.client = XmppService.instance.getClient(forJid: account);
+        private(set) var initiationType: JingleSessionInitiationType;
+        
+        required init(sessionObject: SessionObject, jid: JID, sid: String, role: Jingle.Content.Creator, initiationType: JingleSessionInitiationType) {
+            self.account = sessionObject.userBareJid!;
+            self.jingleModule = sessionObject.context.modulesManager.getModule(JingleModule.ID);
             self.jid = jid;
-            self.sid = sid ?? "";
+            self.sid = sid;
             self.role = role;
-            self.state = sid == nil ? .created : .negotiating;
+            self.initiationType = initiationType;
         }
         
-        func initiate(sid: String, contents: [Jingle.Content], bundle: [String]?) -> Bool {
-            self.sid = sid;
-            guard let client = self.client, let accountJid = ResourceBinderModule.getBindedJid(client.sessionObject), let jingleModule = self.jingleModule else {
-                return false;
+        func initiate(contents: [Jingle.Content], bundle: [String]?, completionHandler: ((Result<Void,ErrorCondition>)->Void)?) {
+            guard let jingleModule = self.jingleModule else {
+                self.terminate(reason: .failedApplication);
+                completionHandler?(.failure(.unexpected_request));
+                return;
             }
             
-            self.state = .negotiating;
-            jingleModule.initiateSession(to: jid, sid: sid, initiator: accountJid, contents: contents, bundle: bundle) { (error) in
-                if (error != nil) {
-                    self.onError(error!);
+            self.state = .initiating;
+            jingleModule.initiateSession(to: jid, sid: sid, contents: contents, bundle: bundle, completionHandler: { result in
+                switch result {
+                case .success(_):
+                    break;
+                case .failure(_):
+                    self.terminate();
                 }
-            }
-            return true;
+                completionHandler?(result);
+            });
         }
         
-        func initiate(sid: String) {
-            self.sid = sid;
+        func initiate(descriptions: [Jingle.MessageInitiationAction.Description], completionHandler: ((Result<Void,ErrorCondition>)->Void)?) {
+            guard let jingleModule = self.jingleModule else {
+                self.terminate(reason: .failedApplication);
+                completionHandler?(.failure(.unexpected_request));
+                return;
+            }
+            jingleModule.sendMessageInitiation(action: .propose(id: self.sid, descriptions: descriptions), to: self.jid);
+            completionHandler?(.success(Void()));
         }
         
         func initiated(remoteDescription: SDP) {
-            self.state = .negotiating;
+            self.state = .initiating;
             self.remoteDescription = remoteDescription;
         }
         
-        func accept(contents: [Jingle.Content], bundle: [String]?) -> Bool {
-            guard let client = self.client, let accountJid = ResourceBinderModule.getBindedJid(client.sessionObject), let jingleModule: JingleModule = self.jingleModule else {
-                return false;
-            }
-            
-            jingleModule.acceptSession(with: jid, sid: sid, initiator: role == .initiator ? accountJid : jid, contents: contents, bundle: bundle) { (error) in
-                if (error != nil) {
-                    self.onError(error!);
-                } else {
-                    //                    self.state = .connecting;
+        func accept() {
+            state = .accepted;
+            if let remoteDescription = self.remoteDescription {
+                delegate?.session(self, setRemoteDescription: remoteDescription);
+            } else {
+                if let jingleModule = self.jingleModule {
+                    jingleModule.sendMessageInitiation(action: .proceed(id: self.sid), to: self.jid);
                 }
             }
-            
-            return true;
+        }
+        
+        func accept(contents: [Jingle.Content], bundle: [String]?, completionHandler: ((Result<Void,ErrorCondition>)->Void)?) {
+            guard let jingleModule = self.jingleModule else {
+                self.terminate(reason: .failedApplication);
+                completionHandler?(.failure(.unexpected_request));
+                return;
+            }
+
+            jingleModule.acceptSession(with: jid, sid: sid, contents: contents, bundle: bundle) { (result) in
+                switch result {
+                case .success(_):
+                    self.state = .accepted;
+                case .failure(_):
+                    self.terminate();
+                    break;
+                }
+                completionHandler?(result);
+            }
         }
         
         func accepted(sdpAnswer: SDP) {
-            self.state = .connecting;
+            self.state = .accepted;
             remoteDescription = sdpAnswer;
             delegate?.session(self, setRemoteDescription: sdpAnswer);
         }
         
-        func decline() -> Bool {
-            self.state = .disconnected;
-            guard let jingleModule = self.jingleModule else {
-                return false;
-            }
-            
-            jingleModule.declineSession(with: jid, sid: sid);
-            self.delegate?.sessionTerminated(session: self);
-            return true;
+        func decline() {
+            return self.terminate(reason: .decline);
         }
         
         func transportInfo(contentName: String, creator: Jingle.Content.Creator, transport: JingleTransport) -> Bool {
@@ -128,16 +141,21 @@ extension JingleManager {
             return true;
         }
         
-        func terminate() -> Bool {
-            guard let jingleModule: JingleModule = self.jingleModule else {
-                return false;
+        func terminate(reason: JingleSessionTerminateReason) {
+            guard state != .terminated else {
+                return;
             }
-            
-            jingleModule.terminateSession(with: jid, sid: sid);
+            self.state = .terminated;
+            if let jingleModule: JingleModule = self.jingleModule {
+                if initiationType == .iq || state == .accepted {
+                    jingleModule.terminateSession(with: jid, sid: sid, reason: reason);
+                } else {
+                    jingleModule.sendMessageInitiation(action: .reject(id: sid), to: jid);
+                }
+            }
             
             self.delegate?.sessionTerminated(session: self);
             JingleManager.instance.close(session: self);
-            return true;
         }
         
         func addCandidate(_ candidate: Jingle.Transport.ICEUDPTransport.Candidate, for contentName: String) {
@@ -210,13 +228,6 @@ extension JingleManager {
             }
         }
                 
-        enum State {
-            case created
-            case negotiating
-            case connecting
-            case connected
-            case disconnected
-        }
     }
     
 }

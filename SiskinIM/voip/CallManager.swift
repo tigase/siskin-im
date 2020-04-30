@@ -140,13 +140,11 @@ class CallManager: NSObject, CXProviderDelegate {
         generateLocalDescription(completionHandler: { result in
             switch result {
             case .success(let sdp):
-                let session = JingleManager.instance.open(for: call.account, with: jid, sid: nil, role: .initiator);
-                session.delegate = self;
-                if session.initiate(sid: call.sid, contents: sdp.contents, bundle: sdp.bundle) {
-                    self.session = session;
-                } else {
-                    _ = session.terminate();
+                guard let session = self.session else {
+                    completionHandler(.failure(.item_not_found));
+                    return
                 }
+                session.initiate(contents: sdp.contents, bundle: sdp.bundle, completionHandler: nil);
                 completionHandler(.success(Void()));
             case .failure(let err):
                 completionHandler(.failure(err));
@@ -278,8 +276,9 @@ class CallManager: NSObject, CXProviderDelegate {
         }
                 
         if withJMI.count == withJingle.count {
-            let jingleModule: JingleModule = XmppService.instance.getClient(for: call.account)!.modulesManager.getModule(JingleModule.ID)!;
-            jingleModule.sendMessageInitiation(action: .propose(id: call.sid, descriptions: call.media.map({ Jingle.MessageInitiationAction.Description(xmlns: "urn:xmpp:jingle:apps:rtp:1", media: $0.rawValue)})), to: JID(call.jid));
+            let session = JingleManager.instance.open(for: client.sessionObject, with: JID(call.jid), sid: call.sid, role: .initiator, initiationType: .message);
+            session.delegate = self;
+            session.initiate(descriptions: call.media.map({ Jingle.MessageInitiationAction.Description(xmlns: "urn:xmpp:jingle:apps:rtp:1", media: $0.rawValue) }), completionHandler: nil);
         } else {
             // we need to establish multiple 1-1 sessions...
             self.generateLocalDescription(completionHandler: { result in
@@ -288,13 +287,10 @@ class CallManager: NSObject, CXProviderDelegate {
                     self.reset();
                 case .success(let sdp):
                     for jid in withJingle {
-                        let session = JingleManager.instance.open(for: call.account, with: jid, sid: nil, role: .initiator);
+                        let session = JingleManager.instance.open(for: client.sessionObject, with: jid, sid: call.sid, role: .initiator, initiationType: .iq);
                         session.delegate = self;
-                        if session.initiate(sid: call.sid, contents: sdp.contents, bundle: sdp.bundle) {
-                            self.establishingSessions.append(session);
-                        } else {
-                            _ = session.terminate();
-                        }
+                        self.establishingSessions.append(session);
+                        session.initiate(contents: sdp.contents, bundle: sdp.bundle, completionHandler: nil);
                     }
                 }
             })
@@ -389,23 +385,8 @@ class CallManager: NSObject, CXProviderDelegate {
                 
                 session.delegate = self;
 
-                if let remoteDescription = session.remoteDescription {
-                    if let peerConnection = self.currentConnection {
-                        self.setRemoteDescription(remoteDescription, call: call, peerConnection: peerConnection, session: session, completionHandler: { result in
-                            switch result {
-                            case .success(_):
-                                action.fulfill();
-                            case .failure(_):
-                                action.fail();
-                            }
-                        });
-                    }
-                } else {
-                    if let jingleModule: JingleModule = session.client?.modulesManager.getModule(JingleModule.ID) {
-                        jingleModule.sendMessageInitiation(action: .proceed(id: session.sid), to: session.jid);
-                    }
-                    action.fulfill();
-                }
+                action.fulfill();
+                session.accept();
             case .failure(_):
                 action.fail();
             }
@@ -517,7 +498,7 @@ class CallManager: NSObject, CXProviderDelegate {
                             } else {
                                 print("sending answer to remote client");
                                 let (sdp, sid) = SDP.parse(sdpString: sdpAnswer!.sdp, creator: .responder)!;
-                                _ = session.accept(contents: sdp.contents, bundle: sdp.bundle)
+                                _ = session.accept(contents: sdp.contents, bundle: sdp.bundle, completionHandler: nil)
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
                                     self.sendLocalCandidates();
                                 })
@@ -702,11 +683,11 @@ extension CallManager: JingleSessionDelegate {
             }
             
             for sess in self.establishingSessions {
-                if sess != session {
-                    _ = sess.terminate();
-                } else {
+                if sess.account == session.account && sess.jid == session.jid && sess.sid == session.sid {
                     self.session = sess;
                     self.sendLocalCandidates();
+                } else {
+                    _ = sess.terminate();
                 }
             }
             self.establishingSessions.removeAll();
@@ -732,7 +713,7 @@ extension CallManager: JingleSessionDelegate {
             }
             
             if call.direction == .outgoing {
-                if let idx = self.establishingSessions.firstIndex(of: session) {
+                if let idx = self.establishingSessions.firstIndex(where: { $0.account == session.account && $0.jid == session.jid && $0.sid == session.sid }) {
                     self.establishingSessions.remove(at: idx);
                 }
                 if self.establishingSessions.isEmpty {
