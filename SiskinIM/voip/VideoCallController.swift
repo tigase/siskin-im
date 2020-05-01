@@ -61,8 +61,10 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
     }
     
     func callStateChanged(_ sender: CallManager) {
-        self.updateTitleLabel();
-        self.updateAvatarVisibility();
+        DispatchQueue.main.async {
+            self.updateTitleLabel();
+            self.updateAvatarVisibility();
+        }
     }
     
     static func checkMediaAvailability(forCall call: Call, completionHandler: @escaping (Result<Void,Error>)->Void) {

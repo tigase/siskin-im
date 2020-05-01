@@ -47,7 +47,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
     func session(for account: BareJID, with jid: JID, sid: String?) -> Session? {
         return dispatcher.sync {
             return connections.first(where: {(sess) -> Bool in
-                return (sid == nil || sess.sid == sid) && sess.account == account && sess.jid == jid;
+                return sess.account == account && (sid == nil || sess.sid == sid) && (sess.jid == jid || (sess.jid.resource == nil && sess.jid.bareJid == jid.bareJid));
             });
         }
     }
@@ -68,7 +68,6 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                 return nil;
             }
             let session =  self.connections.remove(at: idx);
-            _ = session.terminate();
             return session;
         }
     }
@@ -137,6 +136,10 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                     }
                     self.sessionTerminated(account: account, sid: id);
                 case .proceed(let id):
+                    guard let session = self.session(for: e.sessionObject.userBareJid!, with: e.jid, sid: id) else {
+                        return;
+                    }
+                    session.accepted(by: e.jid);
                     let call = Call(account: e.sessionObject.userBareJid!, with: e.jid.bareJid, sid: id, direction: .incoming, media: []);
                     CallManager.instance.acceptedOutgoingCall(call, by: e.jid, completionHandler: { result in
                         switch result {
@@ -252,7 +255,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
             });
         });
         for session in toTerminate {
-            _ = session.terminate();
+            session.terminated();
         }
     }
 
@@ -260,7 +263,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
         guard let session = session(for: account, with: jid, sid: sid) else {
             return;
         }
-        _ = session.terminate();
+        session.terminated();
     }
     
 

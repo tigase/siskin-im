@@ -137,6 +137,7 @@ class CallManager: NSObject, CXProviderDelegate {
         }
         
         changeCallState(.connecting);
+        self.session = JingleManager.instance.session(forCall: currentCall);
         generateLocalDescription(completionHandler: { result in
             switch result {
             case .success(let sdp):
@@ -685,10 +686,12 @@ extension CallManager: JingleSessionDelegate {
             for sess in self.establishingSessions {
                 if sess.account == session.account && sess.jid == session.jid && sess.sid == session.sid {
                     self.session = sess;
-                    self.sendLocalCandidates();
                 } else {
                     _ = sess.terminate();
                 }
+            }
+            if call.direction == .outgoing {
+                self.sendLocalCandidates();
             }
             self.establishingSessions.removeAll();
             
