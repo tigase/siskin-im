@@ -245,7 +245,7 @@ class AccountSettingsViewController: UITableViewController {
         }
         // let's check if push notifications component is accessible
         if let pushModule: SiskinPushNotificationsModule = XmppService.instance.getClient(forJid: accountJid)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), let deviceId = PushEventHandler.instance.deviceId {
-            pushModule.registerDeviceAndEnable(deviceId: deviceId, completionHandler: { result in
+            pushModule.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: PushEventHandler.instance.pushkitDeviceId, completionHandler: { result in
                 switch result {
                 case .success(_):
                     break;

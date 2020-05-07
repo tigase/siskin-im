@@ -154,6 +154,7 @@ public class Payload: Decodable {
     public var type: Kind;
     public var nickname: String?;
     public var message: String?;
+    public var sid: String?;
     
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self);
@@ -162,6 +163,7 @@ public class Payload: Decodable {
         type = Kind(rawValue: (try container.decodeIfPresent(String.self, forKey: .type)) ?? Kind.unknown.rawValue)!;
         nickname = try container.decodeIfPresent(String.self, forKey: .nickname);
         message = try container.decodeIfPresent(String.self, forKey: .message);
+        sid = try container.decodeIfPresent(String.self, forKey: .sid)
         // -- and so on...
     }
     
@@ -169,6 +171,7 @@ public class Payload: Decodable {
         case unknown
         case groupchat
         case chat
+        case call
     }
     
     public enum CodingKeys: String, CodingKey {
@@ -177,5 +180,6 @@ public class Payload: Decodable {
         case type
         case nickname
         case message
+        case sid
     }
 }

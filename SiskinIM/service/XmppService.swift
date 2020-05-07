@@ -68,6 +68,13 @@ open class XmppService: Logger, EventHandler {
             }
         }
     }
+    open var onCall: Bool = false {
+        didSet {
+            if oldValue != onCall {
+                applicationStateChanged();
+            }
+        }
+    }
     
     fileprivate let reachability: Reachability;
 
@@ -278,7 +285,7 @@ open class XmppService: Logger, EventHandler {
                 }
             }
         }
-        if applicationState == .active {
+        if applicationState == .active || onCall {
             connectClients();
             forEachClient { client in
                 client.sessionObject.setProperty(XmppService.CONNECTION_RETRY_NO_KEY, value: nil);

@@ -21,12 +21,16 @@
 
 import UIKit
 import CallKit
+import PushKit
 import WebRTC
 import TigaseSwift
+import Shared
 
 class CallManager: NSObject, CXProviderDelegate {
     
     static let instance = CallManager();
+    
+    private let pushRegistry: PKPushRegistry;
     
     private let provider: CXProvider;
     private let callController: CXCallController;
@@ -55,7 +59,15 @@ class CallManager: NSObject, CXProviderDelegate {
     
     private override init() {
         let config = CXProviderConfiguration(localizedName: "SiskinIM");
-        config.iconTemplateImageData = UIImage(named:"appLogo")!.pngData();
+        if #available(iOS 13.0, *) {
+            if let image = UIImage(systemName: "message.fill") {
+                config.iconTemplateImageData = image.pngData();
+            }
+        } else {
+            if let image = UIImage(named: "message.fill") {
+                config.iconTemplateImageData = image.pngData();
+            }
+        }
         config.includesCallsInRecents = false;
         config.supportsVideo = true;
         config.maximumCallsPerCallGroup = 1;
@@ -63,8 +75,12 @@ class CallManager: NSObject, CXProviderDelegate {
 
         provider = CXProvider(configuration: config);
         callController = CXCallController();
+        pushRegistry = PKPushRegistry(queue: nil);
         super.init();
         provider.setDelegate(self, queue: nil);
+        
+        pushRegistry.delegate = self;
+        pushRegistry.desiredPushTypes = [.voIP];
     }
     
     private func changeCallState(_ state: Call.State) {
@@ -74,6 +90,9 @@ class CallManager: NSObject, CXProviderDelegate {
     
     func reportIncomingCall(_ call: Call, completionHandler: @escaping(Result<Void,Error>)->Void) {
         guard self.currentCall == nil else {
+            if let curCall = self.currentCall, curCall.account == call.account && curCall.sid == call.sid && curCall.jid == call.jid {
+                return;
+            }
             completionHandler(.failure(ErrorCondition.conflict));
             return;
         }
@@ -82,11 +101,6 @@ class CallManager: NSObject, CXProviderDelegate {
         self.session = JingleManager.instance.session(forCall: call);
         self.session?.delegate = self;
         call.webrtcSid = String(UInt64.random(in: UInt64.min...UInt64.max));
-        
-        guard AVCaptureDevice.authorizationStatus(for: .audio) == .authorized else {
-            completionHandler(.failure(ErrorCondition.not_authorized));
-            return;
-        }
         
         let update = CXCallUpdate();
         update.remoteHandle = CXHandle(type: .generic, value: call.jid.stringValue);
@@ -97,6 +111,11 @@ class CallManager: NSObject, CXProviderDelegate {
         
         provider.reportNewIncomingCall(with: call.uuid, update: update, completion: { err in
             guard let error = err else {
+                guard AVCaptureDevice.authorizationStatus(for: .audio) == .authorized else {
+                    completionHandler(.failure(ErrorCondition.not_authorized));
+                    return;
+                }
+                XmppService.instance.onCall = true;
                 self.changeCallState(.ringing);
                 completionHandler(.success(Void()));
                 return;
@@ -195,6 +214,8 @@ class CallManager: NSObject, CXProviderDelegate {
             }
             self.establishingSessions.removeAll();
         }
+        XmppService.instance.onCall = false;
+        (UIApplication.shared.delegate as? AppDelegate)?.initiateBackgroundTask();
     }
     
     func providerDidReset(_ provider: CXProvider) {
@@ -369,6 +390,21 @@ class CallManager: NSObject, CXProviderDelegate {
         
         self.changeCallState(.connecting)
         
+        // here we should wait till XMPPClient is connected..
+        
+        DispatchQueue.main.async {
+            self.accountConnected = { account in
+                guard call.account == account, XmppService.instance.getClient(for: account)?.state ?? .disconnected == .connected else {
+                    return;
+                }
+                self.accountConnected = nil;
+                
+                self.showCallController();
+                action.fulfill();
+                session.accept();
+            }
+        }
+        
         initiateWebRTC(for: call, completionHandler: { result in
             switch result {
             case .success(_):
@@ -382,16 +418,22 @@ class CallManager: NSObject, CXProviderDelegate {
                     fatalError(error.localizedDescription)
                 }
                 
-                self.showCallController();
                 
                 session.delegate = self;
 
-                action.fulfill();
-                session.accept();
+                self.connectionEstablished(for: call.account);
             case .failure(_):
                 action.fail();
             }
         })
+    }
+    
+    private var accountConnected: ((BareJID)->Void)?;
+    
+    func connectionEstablished(for account: BareJID) {
+        DispatchQueue.main.async {
+            self.accountConnected?(account);
+        }
     }
     
     func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
@@ -459,11 +501,27 @@ class CallManager: NSObject, CXProviderDelegate {
             self.changeCallState(.ended)
         }
         
-        let endCallAction = CXEndCallAction(call: call.uuid);
+        let endCallAction = CXEndCallAction(call: c.uuid);
         let transaction = CXTransaction(action: endCallAction);
         callController.request(transaction) { error in
             if let error = error {
                 fatalError(error.localizedDescription)
+            }
+        }
+    }
+    
+    func endCall(on account: BareJID?, sid: String?, completionHandler: @escaping ()->Void) {
+        if let call = self.currentCall, call.account == account && call.sid == sid {
+            let endCallAction = CXEndCallAction(call: call.uuid);
+            let transaction = CXTransaction(action: endCallAction);
+            callController.request(transaction) { error in
+                completionHandler();
+            }
+        } else {
+            let endCallAction = CXEndCallAction(call: UUID());
+            let transaction = CXTransaction(action: endCallAction);
+            callController.request(transaction) { error in
+                completionHandler();
             }
         }
     }
@@ -518,7 +576,7 @@ class CallManager: NSObject, CXProviderDelegate {
 
 class Call: Equatable {
     static func == (lhs: Call, rhs: Call) -> Bool {
-        return lhs.account == rhs.account && lhs.jid == rhs.jid && lhs.uuid == rhs.uuid;
+        return lhs.account == rhs.account && lhs.jid == rhs.jid && lhs.sid == rhs.sid;
     }
     
     
@@ -739,3 +797,96 @@ extension CallManager: JingleSessionDelegate {
     
     
 }
+
+extension CallManager: PKPushRegistryDelegate {
+    
+    func pushRegistry(_ registry: PKPushRegistry, didUpdate pushCredentials: PKPushCredentials, for type: PKPushType) {
+        let tokenString = pushCredentials.token.map { String(format: "%02.2hhx", $0) }.joined();
+        print("PKPush TOKEN:", tokenString)
+        PushEventHandler.instance.pushkitDeviceId = tokenString;
+    }
+    
+    func pushRegistry(_ registry: PKPushRegistry, didReceiveIncomingPushWith payload: PKPushPayload, for type: PKPushType, completion: @escaping () -> Void) {
+        // need to redesign that.. it is impossible to cancel a call via pushkit..
+        if let account = BareJID(payload.dictionaryPayload["account"] as? String) {
+            print("voip push for account:", account);
+            if let encryped = payload.dictionaryPayload["encrypted"] as? String, let ivStr = payload.dictionaryPayload["iv"] as? String {
+                if let key = NotificationEncryptionKeys.key(for: account), let data = Data(base64Encoded: encryped), let iv = Data(base64Encoded: ivStr) {
+                    print("got encrypted voip push with known key");
+                    let cipher = Cipher.AES_GCM();
+                    var decoded = Data();
+                    if cipher.decrypt(iv: iv, key: key, encoded: data, auth: nil, output: &decoded) {
+                        print("got decrypted voip data:", String(data: decoded, encoding: .utf8) as Any);
+                        if let payload = try? JSONDecoder().decode(VoIPPayload.self, from: decoded) {
+                            print("decoded voip payload successfully!");
+                            if let sender = payload.sender, let media = payload.media, let client = XmppService.instance.getClient(for: BareJID(account)) {
+                                let call = Call(account: BareJID(account), with: sender.bareJid, sid: payload.sid, direction: .incoming, media: media);
+                                let session = JingleManager.instance.open(for: client.sessionObject, with: sender, sid: payload.sid, role: .responder, initiationType: .message);
+                                self.reportIncomingCall(call, completionHandler: { result in
+                                    switch result {
+                                    case .success(_):
+                                        break;
+                                    case .failure(_):
+                                        _ = session.decline();
+                                    }
+                                    completion();
+                                })
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        let uuid = UUID();
+        let update = CXCallUpdate();
+        update.remoteHandle = CXHandle(type: .generic, value: "Unknown");
+        provider.reportNewIncomingCall(with: uuid, update: update, completion: { error in
+            if error == nil {
+                self.provider.reportCall(with: uuid, endedAt: Date(), reason: .failed);
+            }
+            completion();
+        })
+//
+//
+//                contentHandler(bestAttemptContent)
+//        if let account = payload.dictionaryPayload["account"] as? String, let sid = payload.dictionaryPayload["sid"] as? String {
+//            if let sender = payload.dictionaryPayload["jid"] as? String, let media = payload.dictionaryPayload["media"] as? [String] {
+//                let call = Call(account: BareJID(account), with: BareJID(sender), sid: sid, direction: .incoming, media: media.map({ Call.Media.init(rawValue: $0)! }));
+//                self.reportIncomingCall(call, completionHandler: { _ in
+//                    completion();
+//                })
+//            } else {
+//                self.endCall(on: BareJID(account), sid: sid);
+//                completion();
+//            }
+//        } else {
+//            self.endCall(on: nil, sid: nil);
+//            completion();
+//        }
+    }
+            
+            
+    class VoIPPayload: Decodable {
+        public var sid: String;
+        public var sender: JID?;
+        public var media: [Call.Media]?;
+        
+        required public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self);
+            sid = try container.decode(String.self, forKey: .sid)
+            sender = try container.decodeIfPresent(JID.self, forKey: .sender);
+            let media = try container.decodeIfPresent([String].self, forKey: .media);
+            self.media = media?.map({ Call.Media.init(rawValue: $0)! });
+            // -- and so on...
+        }
+        
+        public enum CodingKeys: String, CodingKey {
+            case sid
+            case sender
+            case media
+        }
+    }
+}
+

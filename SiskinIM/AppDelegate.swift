@@ -82,6 +82,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         ];
         UNUserNotificationCenter.current().setNotificationCategories(Set(categories));
         application.registerForRemoteNotifications();
+        _ = CallManager.instance;
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.unreadMessagesCountChanged), name: DBChatStore.UNREAD_MESSAGES_COUNT_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.serverCertificateError), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
@@ -154,6 +155,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
         xmppService.applicationState = .inactive;
 
+        initiateBackgroundTask();
+    }
+    
+    func initiateBackgroundTask() {
+        guard xmppService.applicationState == .inactive else {
+            return;
+        }
+        let application = UIApplication.shared;
         backgroundTaskId = application.beginBackgroundTask {
             print("keep online on away background task expired", self.backgroundTaskId);
             self.applicationKeepOnlineOnAwayFinished(application);
@@ -199,7 +208,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             self.updateApplicationIconBadgeNumber(completionHandler: nil);
         }
     }
-
+    
     func applicationDidBecomeActive(_ application: UIApplication) {
         if #available(iOS 13, *) {
             BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: backgroundRefreshTaskIdentifier);
@@ -495,6 +504,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 }
             } else if body != nil {
                 NotificationManager.instance.notifyNewMessage(account: account.bareJid, sender: sender?.bareJid, type: .unknown, nickname: userInfo[AnyHashable("nickname")] as? String, body: body!);
+            } else {
+                if let encryped = userInfo["encrypted"] as? String, let ivStr = userInfo["iv"] as? String, let key = NotificationEncryptionKeys.key(for: account.bareJid), let data = Data(base64Encoded: encryped), let iv = Data(base64Encoded: ivStr) {
+                    print("got encrypted push with known key");
+                    let cipher = Cipher.AES_GCM();
+                    var decoded = Data();
+                    if cipher.decrypt(iv: iv, key: key, encoded: data, auth: nil, output: &decoded) {
+                        print("got decrypted data:", String(data: decoded, encoding: .utf8) as Any);
+                        if let payload = try? JSONDecoder().decode(Payload.self, from: decoded) {
+                            print("decoded payload successfully!");
+                            if let sid = payload.sid {
+                                guard CallManager.instance.currentCall?.state ?? .ringing == .ringing else {
+                                    return;
+                                }
+                                CallManager.instance.endCall(on: account.bareJid, sid: sid, completionHandler: {
+                                    print("ended call");
+                                    completionHandler(.newData);
+                                })
+                                return;
+                            }
+                        }
+                        
+                    }
+                }
             }
         }
         

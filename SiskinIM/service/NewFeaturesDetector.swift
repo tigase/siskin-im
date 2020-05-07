@@ -257,7 +257,7 @@ With this feature enabled Tigase iOS Messenger can be automatically notified abo
             }
             
             
-            pushModule.registerDeviceAndEnable(deviceId: deviceId) { (result) in
+            pushModule.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: PushEventHandler.instance.pushkitDeviceId) { (result) in
                 switch result {
                 case .success(_):
                     DispatchQueue.main.async {

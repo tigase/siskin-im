@@ -34,7 +34,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
         return RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(),
                                         decoderFactory: RTCDefaultVideoDecoderFactory());
     }();
-    let events: [Event] = [JingleModule.JingleEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, JingleModule.JingleMessageInitiationEvent.TYPE];
+    let events: [Event] = [JingleModule.JingleEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, JingleModule.JingleMessageInitiationEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE];
     
     fileprivate var connections: [Session] = [];
     
@@ -111,6 +111,9 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                     guard self.session(for: e.sessionObject.userBareJid!, with: e.jid, sid: id) == nil else {
                         return;
                     }
+                    if let pushModule: SiskinPushNotificationsModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), pushModule.isEnabled && pushModule.isSupported(extension: TigasePushNotificationsModule.Jingle.self) {
+                        return;
+                    }
                     let session = self.open(for: e.sessionObject, with: e.jid, sid: id, role: .responder, initiationType: .message);
                         
                     let media = descriptions.map({ Call.Media.from(string: $0.media) }).filter({ $0 != nil }).map({ $0! });
@@ -153,7 +156,8 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                 default:
                     break;
                 }
-
+            case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
+                CallManager.instance.connectionEstablished(for: e.sessionObject.userBareJid!);
             default:
                 break;
             }

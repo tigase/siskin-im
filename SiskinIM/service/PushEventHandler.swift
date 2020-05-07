@@ -27,6 +27,7 @@ open class PushEventHandler: XmppServiceEventHandler {
     public static let instance = PushEventHandler();
 
     var deviceId: String?;
+    var pushkitDeviceId: String?;
     
     let events: [Event] = [DiscoveryModule.AccountFeaturesReceivedEvent.TYPE];
     
@@ -49,14 +50,17 @@ open class PushEventHandler: XmppServiceEventHandler {
         }
         
         let hasPush = features.contains(SiskinPushNotificationsModule.PUSH_NOTIFICATIONS_XMLNS);
+        let hasPushJingle = features.contains(TigasePushNotificationsModule.Jingle.XMLNS);
+        
+        let pushkitDeviceId = hasPushJingle ? self.pushkitDeviceId : nil;
         
         if hasPush && pushModule.shouldEnable {
             if let pushSettings = pushModule.pushSettings {
-                if pushSettings.deviceId != deviceId {
+                if pushSettings.deviceId != deviceId || pushSettings.pushkitDeviceId != pushkitDeviceId {
                     pushModule.unregisterDeviceAndDisable(completionHandler: { result in
                         switch result {
                         case .success(_):
-                            pushModule.registerDeviceAndEnable(deviceId: deviceId, completionHandler: { result2 in
+                            pushModule.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, completionHandler: { result2 in
                                 print("reregistration:", result2);
                             });
                         case .failure(_):
@@ -71,7 +75,7 @@ open class PushEventHandler: XmppServiceEventHandler {
                     })
                 }
             } else {
-                pushModule.registerDeviceAndEnable(deviceId: deviceId, completionHandler: { result in
+                pushModule.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, completionHandler: { result in
                     print("automatic registration:", result);
                 })
             }
