@@ -138,6 +138,8 @@
 		FE9E13711F2606E9005C0EE5 /* ContactsSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E13701F2606E9005C0EE5 /* ContactsSettingsViewController.swift */; };
 		FE9E13731F260B33005C0EE5 /* StepperTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E13721F260B33005C0EE5 /* StepperTableViewCell.swift */; };
 		FE9EA16B23BF9DB2008C401A /* ChatAttachementsCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9EA16A23BF9DB2008C401A /* ChatAttachementsCellView.swift */; };
+		FEA303AB24694447004A3B3E /* VCardAvatarEditCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA303AA24694447004A3B3E /* VCardAvatarEditCell.swift */; };
+		FEA303AD24696604004A3B3E /* VCardTextEditCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA303AC24696604004A3B3E /* VCardTextEditCell.swift */; };
 		FEA308D01F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA308CF1F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift */; };
 		FEA7BF5B21E50C5800D9E36C /* JingleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA7BF5A21E50C5800D9E36C /* JingleManager.swift */; };
 		FEA7BF5D21E50CAB00D9E36C /* JingleManager_Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA7BF5C21E50CAB00D9E36C /* JingleManager_Session.swift */; };
@@ -177,7 +179,6 @@
 		FEDE93871D07564F00CA60A9 /* SwitchTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE93861D07564F00CA60A9 /* SwitchTableViewCell.swift */; };
 		FEDE93891D081C3D00CA60A9 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE93881D081C3D00CA60A9 /* Settings.swift */; };
 		FEDE938C1D08AFE800CA60A9 /* VCardEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE938B1D08AFE800CA60A9 /* VCardEditViewController.swift */; };
-		FEDE938E1D09BB6200CA60A9 /* VCardEditBasicTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE938D1D09BB6200CA60A9 /* VCardEditBasicTableViewCell.swift */; };
 		FEDE93901D09BB8300CA60A9 /* VCardEditPhoneTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE938F1D09BB8300CA60A9 /* VCardEditPhoneTableViewCell.swift */; };
 		FEDE93921D09E74100CA60A9 /* VCardEditAddressTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE93911D09E74100CA60A9 /* VCardEditAddressTableViewCell.swift */; };
 		FEDE93941D0AC01200CA60A9 /* VCardEditEmailTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE93931D0AC01200CA60A9 /* VCardEditEmailTableViewCell.swift */; };
@@ -408,6 +409,8 @@
 		FE9E13701F2606E9005C0EE5 /* ContactsSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactsSettingsViewController.swift; sourceTree = "<group>"; };
 		FE9E13721F260B33005C0EE5 /* StepperTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StepperTableViewCell.swift; sourceTree = "<group>"; };
 		FE9EA16A23BF9DB2008C401A /* ChatAttachementsCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAttachementsCellView.swift; sourceTree = "<group>"; };
+		FEA303AA24694447004A3B3E /* VCardAvatarEditCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCardAvatarEditCell.swift; sourceTree = "<group>"; };
+		FEA303AC24696604004A3B3E /* VCardTextEditCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCardTextEditCell.swift; sourceTree = "<group>"; };
 		FEA308CF1F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavigationControllerWrappingSegue.swift; sourceTree = "<group>"; };
 		FEA7BF5A21E50C5800D9E36C /* JingleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager.swift; sourceTree = "<group>"; };
 		FEA7BF5C21E50CAB00D9E36C /* JingleManager_Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager_Session.swift; sourceTree = "<group>"; };
@@ -446,7 +449,6 @@
 		FEDE93861D07564F00CA60A9 /* SwitchTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwitchTableViewCell.swift; sourceTree = "<group>"; };
 		FEDE93881D081C3D00CA60A9 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		FEDE938B1D08AFE800CA60A9 /* VCardEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VCardEditViewController.swift; sourceTree = "<group>"; };
-		FEDE938D1D09BB6200CA60A9 /* VCardEditBasicTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VCardEditBasicTableViewCell.swift; sourceTree = "<group>"; };
 		FEDE938F1D09BB8300CA60A9 /* VCardEditPhoneTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VCardEditPhoneTableViewCell.swift; sourceTree = "<group>"; };
 		FEDE93911D09E74100CA60A9 /* VCardEditAddressTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VCardEditAddressTableViewCell.swift; sourceTree = "<group>"; };
 		FEDE93931D0AC01200CA60A9 /* VCardEditEmailTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VCardEditEmailTableViewCell.swift; sourceTree = "<group>"; };
@@ -847,11 +849,12 @@
 			isa = PBXGroup;
 			children = (
 				FEDE938B1D08AFE800CA60A9 /* VCardEditViewController.swift */,
-				FEDE938D1D09BB6200CA60A9 /* VCardEditBasicTableViewCell.swift */,
 				FEDE938F1D09BB8300CA60A9 /* VCardEditPhoneTableViewCell.swift */,
 				FEDE93911D09E74100CA60A9 /* VCardEditAddressTableViewCell.swift */,
 				FEDE93931D0AC01200CA60A9 /* VCardEditEmailTableViewCell.swift */,
 				FEA8D65C1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift */,
+				FEA303AA24694447004A3B3E /* VCardAvatarEditCell.swift */,
+				FEA303AC24696604004A3B3E /* VCardTextEditCell.swift */,
 			);
 			path = vcard;
 			sourceTree = "<group>";
@@ -1248,6 +1251,7 @@
 				FEDCBF691D9C53BA00AE9129 /* RosterProviderGrouped.swift in Sources */,
 				FEDE938C1D08AFE800CA60A9 /* VCardEditViewController.swift in Sources */,
 				FEDC678E238B03C1005C0FAB /* AppStoryboard.swift in Sources */,
+				FEA303AD24696604004A3B3E /* VCardTextEditCell.swift in Sources */,
 				FE36B3C821FA52E000D1F037 /* EmptyViewController.swift in Sources */,
 				FE507A161CDB7B3B001A015C /* ChatsListViewController.swift in Sources */,
 				FE8DD9C9221B29520090F5AA /* MucNewGroupchatController.swift in Sources */,
@@ -1305,6 +1309,7 @@
 				FEF19F102348A046005CFE9A /* PresenceRosterEventHandler.swift in Sources */,
 				FE94E5251CCBA74F00FAE755 /* AppDelegate.swift in Sources */,
 				FEF80DB21CDBBBFE005645A7 /* AccountSettingsViewController.swift in Sources */,
+				FEA303AB24694447004A3B3E /* VCardAvatarEditCell.swift in Sources */,
 				FE6545621E9E7FDE006A14AC /* AccountDomainTableViewCell.swift in Sources */,
 				FE507A231CDB7B3B001A015C /* CustomTabBarController.swift in Sources */,
 				FEA8D6621F30F54B0077C12F /* XmppService.swift in Sources */,
@@ -1339,7 +1344,6 @@
 				FE3E388C2429FAC500D3A8E8 /* ChannelSettingsViewController.swift in Sources */,
 				FE00157D2017617B00490340 /* StreamFeaturesCache.swift in Sources */,
 				FE2332DD242CB01600008ED4 /* ChatInvitation.swift in Sources */,
-				FEDE938E1D09BB6200CA60A9 /* VCardEditBasicTableViewCell.swift in Sources */,
 				FE3E388E242A251E00D3A8E8 /* ChannelEditInfoController.swift in Sources */,
 				FEC514261CEB74F8003AF765 /* BaseChatViewController.swift in Sources */,
 				FE507A1D1CDB7B3B001A015C /* RosterItemTableViewCell.swift in Sources */,

@@ -33,6 +33,13 @@ class VCardEntryTypeAwareTableViewCell: UITableViewCell, UIPickerViewDelegate, U
         typePicker.dataSource = self;
         typePicker.delegate = self;
         typeView.inputView = typePicker;
+        if #available(iOS 13.0, *) {
+            let btn = UIButton(type: .detailDisclosure);
+            btn.isEnabled = false;
+            btn.setImage(UIImage(systemName: "chevron.right"), for: .normal);
+            typeView.rightView = btn;
+            typeView.rightViewMode = .always;
+        }
     }
     
     override func setSelected(_ selected: Bool, animated: Bool) {
