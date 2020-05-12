@@ -27,6 +27,19 @@ import CallKit
 
 public class VideoCallController: UIViewController, CallManagerDelegate {
 
+    #if targetEnvironment(simulator)
+    func callDidStart(_ sender: CallManager) {
+    }
+    func callDidEnd(_ sender: CallManager) {
+    }
+    func callManager(_ sender: CallManager, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack) {
+    }
+    func callManager(_ sender: CallManager, didReceiveLocalVideoCapturer localCapturer: RTCCameraVideoCapturer) {
+    }
+    func callStateChanged(_ sender: CallManager) {
+    }
+    #else
+
     func callDidStart(_ sender: CallManager) {
         DispatchQueue.main.async {
             self.call = sender.currentCall;
@@ -144,15 +157,7 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
 
         })
     }
-    
-    static let peerConnectionFactory = { ()->RTCPeerConnectionFactory in
-        RTCPeerConnectionFactory.initialize();
-        let factory = RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(), decoderFactory: RTCDefaultVideoDecoderFactory());
-        return factory;
-    }();
 
-    #if targetEnvironment(simulator)
-    #else
     fileprivate let hasMetal = MTLCreateSystemDefaultDevice() != nil;
     
     @IBOutlet var titleLabel: UILabel!;
@@ -303,7 +308,12 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
             self.titleLabel.text = "Call ended";
         }
     }
+    #endif
     
+    static var peerConnectionFactory: RTCPeerConnectionFactory {
+        return JingleManager.instance.connectionFactory;
+    }
+
     static let defaultCallConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil);
     
     static func initiatePeerConnection(withDelegate delegate: RTCPeerConnectionDelegate) -> RTCPeerConnection {
@@ -317,5 +327,4 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
         return JingleManager.instance.connectionFactory.peerConnection(with: configuration, constraints: defaultCallConstraints, delegate: delegate);
     }
 
-    #endif
 }

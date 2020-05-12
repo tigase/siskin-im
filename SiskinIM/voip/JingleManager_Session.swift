@@ -23,8 +23,6 @@ import Foundation
 import TigaseSwift
 import WebRTC
 
-#if targetEnvironment(simulator)
-#else
 extension JingleManager {
 
     class Session: JingleSession {
@@ -184,6 +182,10 @@ extension JingleManager {
             receivedRemoteCandidates();
         }
         
+        #if targetEnvironment(simulator)
+        private func receivedRemoteCandidates() {
+        }
+        #else
         private func receivedRemoteCandidates() {
             guard let delegate = self.delegate, self.remoteDescription != nil else {
                 return;
@@ -213,6 +215,7 @@ extension JingleManager {
             }
             remoteCandidates.removeAll();
         }
+        #endif
                 
         fileprivate func onError(_ errorCondition: ErrorCondition) {
             
@@ -250,7 +253,6 @@ extension JingleManager {
     }
     
 }
-#endif
 
 protocol JingleSessionDelegate: class {
     
