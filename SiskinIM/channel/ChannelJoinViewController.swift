@@ -218,7 +218,7 @@ class ChannelJoinViewController: UITableViewController {
             _ = mucModule.join(roomName: roomName, mucServer: channelJid.domain, nickname: nick, ifCreated: { room in
                 mucModule.getRoomConfiguration(roomJid: room.jid, onSuccess: { (config) in
                     if let roomNameField: TextSingleField = config.getField(named: "muc#roomconfig_roomname") {
-                        roomNameField.value = roomName;
+                        roomNameField.value = name;
                     }
                     if let membersOnlyField: BooleanField = config.getField(named: "muc#roomconfig_membersonly") {
                         membersOnlyField.value = invitationOnly;
