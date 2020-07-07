@@ -260,14 +260,17 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
             if let chatController = AppDelegate.getChatController(visible: false), let navController = chatController.parent as? UINavigationController {
                 navController.pushViewController(destination, animated: true);
                 var viewControllers = navController.viewControllers;
-                var i = 0;
-                while viewControllers[i] != chatController {
-                    i = i + 1;
+                if !viewControllers.isEmpty {
+                    var i = 0;
+                    while viewControllers[i] != chatController {
+                        i = i + 1;
+                    }
+                    while (!viewControllers.isEmpty) && viewControllers[i] != destination {
+                        viewControllers.remove(at: i);
+                        i = i - 1;
+                    }
+                    navController.viewControllers = viewControllers;
                 }
-                while viewControllers[i] != destination {
-                    viewControllers.remove(at: i);
-                }
-                navController.viewControllers = viewControllers;
             } else {
                 topController!.showDetailViewController(controller, sender: self);
             }

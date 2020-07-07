@@ -23,7 +23,7 @@ import Foundation
 import UIKit
 import TigaseSwift
 
-class RegisterAccountController: DataFormController, UITextFieldDelegate {
+class RegisterAccountController: DataFormController {
     
     @IBOutlet var nextButton: UIBarButtonItem!
     
@@ -56,6 +56,7 @@ class RegisterAccountController: DataFormController, UITextFieldDelegate {
                 self.updateDomain(account.domain);
             }
         }
+        super.viewWillAppear(animated);
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -189,28 +190,33 @@ class RegisterAccountController: DataFormController, UITextFieldDelegate {
     }
     
     func retrieveRegistrationForm(domain: String) {
-        let onForm = {(form: JabberDataElement, task: InBandRegistrationModule.AccountRegistrationTask)->Void in
+        let onForm = {(form: JabberDataElement, bob: [BobData], task: InBandRegistrationModule.AccountRegistrationTask)->Void in
             DispatchQueue.main.async {
                 self.nextButton.isEnabled = true;
                 self.hideIndicator();
                 if let accountField = form.getField(named: "username") as? TextSingleField, accountField.value?.isEmpty ?? true {
                     accountField.value = self.account?.localPart;
                 }
+                self.bob = bob;
                 self.form = form;
                 
-                self.tableView.insertSections(IndexSet(0..<1), with: .fade);
-            }
-        };
-        let onSuccess = {()->Void in
-            print("account registered!");
-            let certData: SslCertificateInfo? = self.task?.getAcceptedCertificate();
-            DispatchQueue.main.async {
-                self.saveAccount(acceptedCertificate: certData);
-                self.dismissView();
+                self.tableView.insertSections(IndexSet(0..<(form.visibleFieldNames.count + 1)), with: .fade);
             }
         };
         let client: XMPPClient? = nil;
-        self.task = InBandRegistrationModule.AccountRegistrationTask(client: client, domainName: domain, preauth: self.preauth, onForm: onForm, onSuccess: onSuccess, onError: self.onRegistrationError, sslCertificateValidator: SslCertificateValidator.validateSslCertificate, onCertificateValidationError: self.onCertificateError);
+        self.task = InBandRegistrationModule.AccountRegistrationTask(client: client, domainName: domain, preauth: self.preauth, onForm: onForm, sslCertificateValidator: SslCertificateValidator.validateSslCertificate, onCertificateValidationError: self.onCertificateError, completionHandler: { result in
+            switch result {
+            case .success:
+                print("account registered!");
+                let certData: SslCertificateInfo? = self.task?.getAcceptedCertificate();
+                DispatchQueue.main.async {
+                    self.saveAccount(acceptedCertificate: certData);
+                    self.dismissView();
+                }
+            case .failure(let errorCondition, let errorText):
+                self.onRegistrationError(errorCondition: errorCondition, message: errorText);
+            }
+        });
     }
     
     func onRegistrationError(errorCondition: ErrorCondition?, message: String?) {
