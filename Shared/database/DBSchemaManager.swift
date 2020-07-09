@@ -24,7 +24,7 @@ import TigaseSwift
 
 public class DBSchemaManager {
     
-    static let CURRENT_VERSION = 11;
+    static let CURRENT_VERSION = 12;
     
     fileprivate let dbConnection: DBConnection;
     

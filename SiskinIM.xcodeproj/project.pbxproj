@@ -35,6 +35,7 @@
 		FE31DDE4201261A200C2AB1D /* DNSSrvDiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */; };
 		FE36B3C821FA52E000D1F037 /* EmptyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */; };
 		FE3A45CF1CE49D3300C36264 /* RosterItemEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */; };
+		FE3BA0C024B61583000C80D4 /* db-schema-12.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE3BA0BF24B61583000C80D4 /* db-schema-12.sql */; };
 		FE3DCCEE1FE18334008B6C8B /* CertificateErrorAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3DCCED1FE18334008B6C8B /* CertificateErrorAlert.swift */; };
 		FE3E387A242765E800D3A8E8 /* MixEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E3879242765E700D3A8E8 /* MixEventHandler.swift */; };
 		FE3E387C242766A900D3A8E8 /* DBChannelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E387B242766A900D3A8E8 /* DBChannelStore.swift */; };
@@ -304,6 +305,7 @@
 		FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSSrvDiskCache.swift; sourceTree = "<group>"; };
 		FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyViewController.swift; sourceTree = "<group>"; };
 		FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterItemEditViewController.swift; sourceTree = "<group>"; };
+		FE3BA0BF24B61583000C80D4 /* db-schema-12.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-12.sql"; sourceTree = "<group>"; };
 		FE3DCCED1FE18334008B6C8B /* CertificateErrorAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificateErrorAlert.swift; sourceTree = "<group>"; };
 		FE3E3879242765E700D3A8E8 /* MixEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MixEventHandler.swift; sourceTree = "<group>"; };
 		FE3E387B242766A900D3A8E8 /* DBChannelStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBChannelStore.swift; sourceTree = "<group>"; };
@@ -730,6 +732,7 @@
 				FECEF29723B7B838007EC323 /* db-schema-9.sql */,
 				FE10BCF223FD4EF000E214F3 /* db-schema-10.sql */,
 				FEC79198241BE89E007BE572 /* db-schema-11.sql */,
+				FE3BA0BF24B61583000C80D4 /* db-schema-12.sql */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -1116,6 +1119,7 @@
 				FEC79199241BE89E007BE572 /* db-schema-11.sql in Resources */,
 				FE759FED2371F213001E78D9 /* db-schema-2.sql in Resources */,
 				FECEF29823B7B838007EC323 /* db-schema-9.sql in Resources */,
+				FE3BA0C024B61583000C80D4 /* db-schema-12.sql in Resources */,
 				FE759FF02371F21C001E78D9 /* db-schema-4.sql in Resources */,
 				FE759FF32371F21C001E78D9 /* db-schema-7.sql in Resources */,
 				FE759FF12371F21C001E78D9 /* db-schema-5.sql in Resources */,

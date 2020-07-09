@@ -105,7 +105,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             let id = continuation ? "ChatTableViewMessageContinuationCell" : "ChatTableViewMessageCell";
 
             let cell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
-            cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+            cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
             //        cell.nicknameLabel?.text = item.nickname;
             if cell.avatarView != nil {
                 if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
@@ -136,7 +136,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         case let item as ChatAttachment:
             let id = continuation ? "ChatTableViewAttachmentContinuationCell" : "ChatTableViewAttachmentCell";
             let cell: AttachmentChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! AttachmentChatTableViewCell;
-            cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+            cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
             if cell.avatarView != nil {
                 if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
                     cell.avatarView?.set(name: item.authorNickname, avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
@@ -169,18 +169,18 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         case let item as ChatLinkPreview:
             let id = "ChatTableViewLinkPreviewCell";
             let cell: LinkPreviewChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! LinkPreviewChatTableViewCell;
-            cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+            cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
             cell.set(linkPreview: item);
             return cell;
         case let item as SystemMessage:
             let cell: ChatTableViewSystemCell = tableView.dequeueReusableCell(withIdentifier: "ChatTableViewSystemCell", for: indexPath) as! ChatTableViewSystemCell;
             cell.set(item: item);
-            cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+            cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
             return cell;
         case let item as ChatInvitation:
             let id = "ChatTableViewInvitationCell";
             let cell: InvitationChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! InvitationChatTableViewCell;
-            cell.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+            cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
             if cell.avatarView != nil {
                 if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
                     cell.avatarView?.set(name: item.authorNickname, avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
@@ -287,7 +287,9 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             return;
         }
         
-        self.room!.sendMessage(text, url: nil, additionalElements: []);
+        let msg = self.room!.createMessage(text);
+        msg.lastMessageCorrectionId = self.correctedMessageOriginId;
+        XmppService.instance.getClient(for: account)?.context.writer?.write(msg);
         DispatchQueue.main.async {
             self.messageText = nil;
         }

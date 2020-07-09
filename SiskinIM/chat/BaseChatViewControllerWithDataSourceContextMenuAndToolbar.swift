@@ -76,58 +76,54 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         }
         conversationLogController?.hideEditToolbar();
     }
-
-    @available(iOS 13.0, *)
-    func tableView(_ tableView: UITableView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
-        guard let indexPath = configuration.identifier as? IndexPath else {
-            return nil;
-        }
-        let cell = self.tableView(tableView, cellForRowAt: indexPath);
-        let parameters = UIPreviewParameters();
-        let rect = self.conversationLogController!.tableView.rectForRow(at: indexPath);
-        let center = CGPoint(x: rect.midX, y: rect.midY);
-        let target = UIPreviewTarget(container: self.conversationLogController!.tableView, center: center, transform: CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0));
-        
-        return UITargetedPreview(view: cell, parameters: parameters, target: target);
-    }
-    
-    @available(iOS 13.0, *)
-    func tableView(_ tableView: UITableView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
-        guard let indexPath = configuration.identifier as? IndexPath else {
-            return nil;
-        }
-        let cell = self.tableView(tableView, cellForRowAt: indexPath);
-        let parameters = UIPreviewParameters();
-        let rect = self.conversationLogController!.tableView.rectForRow(at: indexPath);
-        let center = CGPoint(x: rect.midX, y: rect.midY);
-        let target = UIPreviewTarget(container: self.conversationLogController!.tableView, center: center, transform: .identity);
-        
-        return UITargetedPreview(view: cell, parameters: parameters, target: target);
-    }
     
     @available(iOS 13.0, *)
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        return UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: nil) { suggestedActions -> UIMenu? in
+        return UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: {
+            let cell = self.tableView(tableView, cellForRowAt: indexPath);
+            cell.contentView.transform = .identity;
+            let view = UIViewController();
+            let size = self.conversationLogController!.tableView.rectForRow(at: indexPath).size;
+            print("cell:", (cell as? ChatTableViewCell)?.messageTextView.text);
+            view.view = cell.contentView;
+            view.preferredContentSize = size;
+            print("view size:", view.preferredContentSize)
+            return view;
+        }) { suggestedActions -> UIMenu? in
             return self.prepareContextMenu(for: indexPath);
         };
     }
     
     @available(iOS 13.0, *)
     func prepareContextMenu(for indexPath: IndexPath) -> UIMenu? {
-        let items = [
+        var items = [
             UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc"), handler: { action in
                 self.conversationLogController?.copyMessageInt(paths: [indexPath]);
             }),
             UIAction(title: "Share..", image: UIImage(systemName: "square.and.arrow.up"), handler: { action in
                 self.conversationLogController?.shareMessageInt(paths: [indexPath]);
-            }),
-            UIAction(title: "More..", image: UIImage(systemName: "ellipsis"), handler: { action in
-                guard let cell = self.conversationLogController?.tableView.cellForRow(at: indexPath) else {
-                    return;
-                }
-                NotificationCenter.default.post(name: Notification.Name("tableViewCellShowEditToolbar"), object: cell);
             })
         ];
+        if let dataSource = self.conversationLogController?.dataSource, let item = dataSource.getItem(at: indexPath.row), item.state.direction == .outgoing {
+            let row = indexPath.row;
+            if let messageItem = item as? ChatMessage, !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0 is ChatMessage }, in: 0..<row) {
+                items.append(UIAction(title: "Correct..", image: UIImage(systemName: "pencil.and.ellipsis.rectangle"), handler: { action in
+                    DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
+                        DispatchQueue.main.async {
+                            self?.startMessageCorrection(message: messageItem.message, originId: originId)
+                        }
+                    });
+                }));
+            }
+        }
+        items.append(contentsOf: [
+            UIAction(title: "More..", image: UIImage(systemName: "ellipsis"), handler: { action in
+                           guard let cell = self.conversationLogController?.tableView.cellForRow(at: indexPath) else {
+                               return;
+                           }
+                           NotificationCenter.default.post(name: Notification.Name("tableViewCellShowEditToolbar"), object: cell);
+            })
+        ])
         return UIMenu(title: "", children: items);
     }
 }

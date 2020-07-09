@@ -46,12 +46,17 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     var account:BareJID!;
     var jid:BareJID!;
     
+    private(set) var correctedMessageOriginId: String?;
+    
     var messageText: String? {
         get {
             return chatViewInputBar.text;
         }
         set {
             chatViewInputBar.text = newValue;
+            if newValue == nil {
+                self.correctedMessageOriginId = nil;
+            }
         }
     }
         
@@ -243,8 +248,16 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
         _ = self.chatViewInputBar.resignFirstResponder();
     }
         
+    func startMessageCorrection(message: String, originId: String) {
+        self.messageText = message;
+        self.correctedMessageOriginId = originId;
+    }
     
     func sendMessage() {
+    }
+    
+    func messageTextCleared() {
+        self.correctedMessageOriginId = nil;
     }
     
     @objc func sendMessageClicked(_ sender: Any) {
@@ -402,6 +415,9 @@ class ChatViewInputBar: UIView, UITextViewDelegate {
                 return false;
             }
         }
+        if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            delegate?.messageTextCleared();
+        }
         return true;
     }
         
@@ -417,5 +433,7 @@ class ChatViewInputBar: UIView, UITextViewDelegate {
 protocol ChatViewInputBarDelegate: class {
     
     func sendMessage();
+    
+    func messageTextCleared();
     
 }

@@ -333,8 +333,9 @@ open class DBChatStore {
         dispatcher.async {
             if let chat = self.getChat(for: account, with: jid) {
                 let lastActivity = LastChatActivity.from(itemType: itemType, data: message, sender: senderNickname);
-                if chat.updateLastActivity(lastActivity, timestamp: timestamp, isUnread: state.isUnread) {
-                    if state.isUnread && !self.isMuted(chat: chat) {
+                let unread = lastActivity != nil && state.isUnread;
+                if chat.updateLastActivity(lastActivity, timestamp: timestamp, isUnread: unread) {
+                    if unread && !self.isMuted(chat: chat) {
                         self.unreadMessagesCount = self.unreadMessagesCount + 1;
                     }
                     if remoteChatState != nil {
@@ -711,7 +712,7 @@ class DBChat: Chat, DBChatProtocol {
         if isUnread {
             unread = unread + 1;
         }
-        guard self.lastActivity == nil || self.timestamp.compare(timestamp) == .orderedAscending else {
+        guard self.lastActivity == nil || self.timestamp.compare(timestamp) != .orderedDescending else {
             return isUnread;
         }
         if lastActivity != nil {
@@ -822,7 +823,7 @@ class DBRoom: Room, DBChatProtocol {
         if isUnread {
             unread = unread + 1;
         }
-        guard self.lastActivity == nil || self.timestamp.compare(timestamp) == .orderedAscending else {
+        guard self.lastActivity == nil || self.timestamp.compare(timestamp) != .orderedDescending else {
             return isUnread;
         }
         
@@ -850,6 +851,14 @@ class DBRoom: Room, DBChatProtocol {
         }
     }
 
+    override func createMessage(_ body: String?) -> Message {
+        let message = super.createMessage(body);
+        if message.id == nil {
+            message.id = UUID().uuidString;
+        }
+        return message;
+    }
+    
     override func createPrivateMessage(_ body: String?, recipientNickname: String) -> Message {
         let stanza = super.createPrivateMessage(body, recipientNickname: recipientNickname);
         let id = UUID().uuidString;
@@ -898,7 +907,7 @@ class DBChannel: Channel, DBChatProtocol {
         if isUnread {
             unread = unread + 1;
         }
-        guard self.lastActivity == nil || self.timestamp.compare(timestamp) == .orderedAscending else {
+        guard self.lastActivity == nil || self.timestamp.compare(timestamp) != .orderedDescending else {
             return isUnread;
         }
         

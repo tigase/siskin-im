@@ -33,12 +33,12 @@ class LinkPreviewChatTableViewCell: BaseChatTableViewCell {
                 value.removeFromSuperview();
             }
             if let value = linkView {
-                self.addSubview(value);
+                self.contentView.addSubview(value);
                 NSLayoutConstraint.activate([
-                    value.topAnchor.constraint(equalTo: self.topAnchor, constant: 2),
-                    value.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -4),
-                    value.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 44),
-                    value.trailingAnchor.constraint(lessThanOrEqualTo: self.trailingAnchor, constant: -22)
+                    value.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 2),
+                    value.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -4),
+                    value.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 44),
+                    value.trailingAnchor.constraint(lessThanOrEqualTo: self.contentView.trailingAnchor, constant: -22)
                 ]);
             }
         }

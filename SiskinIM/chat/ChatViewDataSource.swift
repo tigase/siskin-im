@@ -253,6 +253,15 @@ class ChatViewDataSource {
         }
     }
     
+    func isAnyMatching(_ fn: (ChatViewItemProtocol)->Bool, in range: Range<Int>) -> Bool {
+        for i in range {
+            if let item = store.item(at: i), fn(item) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     func refreshDataNoReload() {
         queue.async {
             let store = DispatchQueue.main.sync { return self.store; };
