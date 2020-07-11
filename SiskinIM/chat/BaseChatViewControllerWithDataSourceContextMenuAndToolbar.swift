@@ -26,6 +26,8 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
 
     fileprivate weak var timestampsSwitch: UIBarButtonItem? = nil;
     
+    var contextActions: [ContextAction] = [.copy, .share, .correct, .retract, .more];
+    
     override func viewWillAppear(_ animated: Bool) {
         if #available(iOS 13.0, *) {
             
@@ -96,34 +98,117 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
     
     @available(iOS 13.0, *)
     func prepareContextMenu(for indexPath: IndexPath) -> UIMenu? {
-        var items = [
-            UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc"), handler: { action in
-                self.conversationLogController?.copyMessageInt(paths: [indexPath]);
-            }),
-            UIAction(title: "Share..", image: UIImage(systemName: "square.and.arrow.up"), handler: { action in
-                self.conversationLogController?.shareMessageInt(paths: [indexPath]);
-            })
-        ];
-        if let dataSource = self.conversationLogController?.dataSource, let item = dataSource.getItem(at: indexPath.row), item.state.direction == .outgoing {
-            let row = indexPath.row;
-            if let messageItem = item as? ChatMessage, !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0 is ChatMessage }, in: 0..<row) {
-                items.append(UIAction(title: "Correct..", image: UIImage(systemName: "pencil.and.ellipsis.rectangle"), handler: { action in
-                    DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
-                        DispatchQueue.main.async {
-                            self?.startMessageCorrection(message: messageItem.message, originId: originId)
-                        }
-                    });
-                }));
+        guard let item = self.conversationLogController?.dataSource.getItem(at: indexPath.row) as? ChatEntry else {
+            return nil;
+        }
+        
+        let actions = self.contextActions.filter({ self.canExecuteContext(action: $0, forItem: item, at: indexPath) });
+        let items: [UIMenuElement] = actions.map({ action -> UIMenuElement in
+            if action.isDesctructive {
+                return UIMenu(title: action.title, image: action.image, options: .destructive, children: [
+                    UIAction(title: "No", handler: { _ in }),
+                    UIAction(title: "Yes", attributes: .destructive, handler: { _ in
+                        self.executeContext(action: action, forItem: item, at: indexPath);
+                    })
+                ]);
+            } else {
+                return UIAction(title: action.title, image: action.image, handler: { _ in
+                    self.executeContext(action: action, forItem: item, at: indexPath);
+                })
+            }
+        })
+        
+        return UIMenu(title: "", children: items);
+    }
+    
+    public func executeContext(action: ContextAction, forItem item: ChatEntry, at indexPath: IndexPath) {
+        switch action {
+        case .copy:
+            self.conversationLogController?.copyMessageInt(paths: [indexPath]);
+        case .share:
+            self.conversationLogController?.shareMessageInt(paths: [indexPath]);
+        case .correct:
+            DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
+                DispatchQueue.main.async {
+                    self?.startMessageCorrection(message: (item as! ChatMessage).message, originId: originId)
+                }
+            });
+        case .retract:
+            // that is per-chat-type sepecific
+            break;
+        case .more:
+            guard let cell = self.conversationLogController?.tableView.cellForRow(at: indexPath) else {
+                return;
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                NotificationCenter.default.post(name: Notification.Name("tableViewCellShowEditToolbar"), object: cell);
             }
         }
-        items.append(contentsOf: [
-            UIAction(title: "More..", image: UIImage(systemName: "ellipsis"), handler: { action in
-                           guard let cell = self.conversationLogController?.tableView.cellForRow(at: indexPath) else {
-                               return;
-                           }
-                           NotificationCenter.default.post(name: Notification.Name("tableViewCellShowEditToolbar"), object: cell);
-            })
-        ])
-        return UIMenu(title: "", children: items);
+    }
+    
+    public func canExecuteContext(action: ContextAction, forItem item: ChatEntry, at indexPath: IndexPath) -> Bool {
+        switch action {
+        case .copy:
+            return true;
+        case .share:
+            return true;
+        case .correct:
+            return item.state.direction == .outgoing && item is ChatMessage && !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0 is ChatMessage }, in: 0..<indexPath.row);
+        case .retract:
+            return false;
+        case .more:
+            return true;
+        }
+        return false;
+    }
+    
+    public enum ContextAction {
+        case copy
+        case share
+        case correct
+        case retract
+        case more
+        
+        var title: String {
+            switch self {
+            case .copy:
+                return "Copy";
+            case .share:
+                return "Share..";
+            case .correct:
+                return "Correct..";
+            case .retract:
+                return "Retract";
+            case .more:
+                return "More..";
+            }
+        }
+        
+        var image: UIImage? {
+            guard #available(iOS 13.0, *) else {
+                return  nil;
+            }
+            switch self {
+            case .copy:
+                return UIImage(systemName: "doc.on.doc");
+            case .share:
+                return UIImage(systemName: "square.and.arrow.up");
+            case .correct:
+                return UIImage(systemName: "pencil.and.ellipsis.rectangle");
+            case .retract:
+                return UIImage(systemName: "trash");
+            case .more:
+                return UIImage(systemName: "ellipsis");
+            }
+        }
+        
+        var isDesctructive: Bool {
+            switch self {
+            case .retract:
+                return true;
+            default:
+                return false;
+            }
+        }
     }
 }

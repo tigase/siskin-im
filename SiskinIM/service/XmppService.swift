@@ -696,7 +696,7 @@ open class XmppService: Logger, EventHandler {
             jingleModule.register(description: Jingle.RTP.Description.self, features: ["urn:xmpp:jingle:apps:rtp:1", "urn:xmpp:jingle:apps:rtp:audio", "urn:xmpp:jingle:apps:rtp:video"]);
             #endif
             _ = client.modulesManager.register(InBandRegistrationModule());
-            let capsModule = client.modulesManager.register(CapabilitiesModule());
+            let capsModule = client.modulesManager.register(CapabilitiesModule(additionalFeatures: [.lastMessageCorrection, .messageRetraction]));
             capsModule.cache = dbCapsCache;
             ScramMechanism.setSaltedPasswordCache(AccountManager.saltedPasswordCache, sessionObject: client.sessionObject);
             

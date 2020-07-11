@@ -52,7 +52,7 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
     @IBOutlet var stateView: UILabel?;
                     
     var originalTimestampColor: UIColor!;
-    
+        
     func formatTimestamp(_ ts: Date) -> String {
         let flags: Set<Calendar.Component> = [.day, .year];
         let components = Calendar.current.dateComponents(flags, from: ts, to: Date());
@@ -152,4 +152,17 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
         return super.canPerformAction(action, withSender: sender) || action == #selector(actionMore(_:));
     }
     
+    override func didTransition(to state: UITableViewCell.StateMask) {
+        super.didTransition(to: state);
+        UIView.setAnimationsEnabled(false);
+        if state.contains(.showingEditControl) {
+            for view in self.subviews {
+                if view != self.contentView {
+                    view.transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0);
+                }
+            }
+        }
+        UIView.setAnimationsEnabled(true);
+    }
+        
 }

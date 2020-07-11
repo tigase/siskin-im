@@ -216,7 +216,38 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
             self.present(alert, animated: true, completion: nil);
         }
     }
-                
+     
+    override func canExecuteContext(action: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.ContextAction, forItem item: ChatEntry, at indexPath: IndexPath) -> Bool {
+        switch action {
+        case .retract:
+            return XmppService.instance.getClient(for: item.account)?.state ?? .disconnected == .connected;
+        default:
+            return super.canExecuteContext(action: action, forItem: item, at: indexPath);
+        }
+    }
+    
+    override func executeContext(action: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.ContextAction, forItem item: ChatEntry, at indexPath: IndexPath) {
+        switch action {
+        case .retract:
+            guard let chat = self.chat as? Chat else {
+                return;
+            }
+            
+            DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
+                let message = chat.createMessageRetraction(forMessageWithId: originId);
+                message.id = UUID().uuidString;
+                message.originId = message.id;
+                guard let client = XmppService.instance.getClient(for: item.account), client.state == .connected else {
+                    return;
+                }
+                client.context.writer?.write(message);
+                DBChatHistoryStore.instance.retractMessage(for: item.account, with: item.jid, stanzaId: originId, authorNickname: item.authorNickname, participantId: item.participantId, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
+            })
+        default:
+            super.executeContext(action: action, forItem: item, at: indexPath);
+        }
+    }
+    
     @objc func avatarChanged(_ notification: NSNotification) {
         guard ((notification.userInfo?["jid"] as? BareJID) == jid) else {
             return;

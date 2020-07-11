@@ -212,6 +212,36 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
 
     }
 
+    override func canExecuteContext(action: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.ContextAction, forItem item: ChatEntry, at indexPath: IndexPath) -> Bool {
+        switch action {
+        case .retract:
+            return XmppService.instance.getClient(for: item.account)?.state ?? .disconnected == .connected && (self.chat as? Room)?.state ?? .not_joined == .joined;
+        default:
+            return super.canExecuteContext(action: action, forItem: item, at: indexPath);
+        }
+    }
+    
+    override func executeContext(action: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.ContextAction, forItem item: ChatEntry, at indexPath: IndexPath) {
+        switch action {
+        case .retract:
+            guard let room = self.chat as? Room else {
+                return;
+            }
+            
+            DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
+                let message = room.createMessageRetraction(forMessageWithId: originId);
+                message.id = UUID().uuidString;
+                message.originId = message.id;
+                guard let client = XmppService.instance.getClient(for: item.account), client.state == .connected, room.state == .joined else {
+                    return;
+                }
+                client.context.writer?.write(message);
+                DBChatHistoryStore.instance.retractMessage(for: item.account, with: item.jid, stanzaId: originId, authorNickname: item.authorNickname, participantId: item.participantId, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
+            })
+        default:
+            super.executeContext(action: action, forItem: item, at: indexPath);
+        }
+    }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showOccupants" {

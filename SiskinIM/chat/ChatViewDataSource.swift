@@ -246,8 +246,8 @@ class ChatViewDataSource {
                 self.store = store;
                 self.delegate?.itemsRemoved(at: IndexSet([oldIdx]));
                 // should it be connected to the store?? it not to update something after the store ends...
-                if oldIdx != 0 && self.store.count > 0 && self.store.count > oldIdx {
-                    self.delegate?.itemUpdated(indexPath: IndexPath(item: oldIdx, section: 0));
+                if oldIdx > 0 && self.store.count > 0 && self.store.count > oldIdx {
+                    self.delegate?.itemUpdated(indexPath: IndexPath(item: oldIdx - 1, section: 0));
                 }
             }
         }

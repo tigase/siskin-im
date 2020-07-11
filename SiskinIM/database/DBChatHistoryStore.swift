@@ -65,6 +65,8 @@ public class DBChatHistoryStore {
     fileprivate let removeItemStmt: DBStatement = try! DBConnection.main.prepareStatement("DELETE FROM chat_history WHERE id = :id");
 
     private let correctLastMessageStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET data = :data, state = :state, correction_stanza_id = :correction_stanza_id, correction_timestamp = :correction_timestamp, remote_msg_id = :remote_msg_id, server_msg_id = COALESCE(:server_msg_id, server_msg_id) WHERE id = :id AND (correction_stanza_id IS NULL OR correction_stanza_id <> :correction_stanza_id) AND (correction_timestamp IS NULL OR correction_timestamp < :correction_timestamp)");
+    
+    private let retractMessageStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET item_type = :item_type, correction_stanza_id = :correction_stanza_id, correction_timestamp = :correction_timestamp, remote_msg_id = :remote_msg_id, server_msg_id = COALESCE(:server_msg_id, server_msg_id) WHERE id = :id AND (correction_stanza_id IS NULL OR correction_stanza_id <> :correction_stanza_id) AND (correction_timestamp IS NULL OR correction_timestamp < :correction_timestamp)");
 
     fileprivate let dispatcher: QueueDispatcher;
     
@@ -175,23 +177,6 @@ public class DBChatHistoryStore {
         
         let (decryptedBody, encryption, fingerprint) = MessageEventHandler.prepareBody(message: message, forAccount: account);
         let mixInvitation = message.mixInvitation;
-        guard let body = decryptedBody ?? (mixInvitation != nil ? "Invitation" : nil) else {
-            // only if carbon!!
-            switch source {
-            case .carbons(let action):
-                if action == .received {
-                    if (message.type ?? .normal) != .error, let chatState = message.chatState, message.delay == nil {
-                        DBChatHistoryStore.instance.process(chatState: chatState, for: account, with: jid);
-                    }
-                }
-            default:
-                if (message.type ?? .normal) != .error, let chatState = message.chatState, message.delay == nil {
-                    DBChatHistoryStore.instance.process(chatState: chatState, for: account, with: jid);
-                }
-                break;
-            }
-            return;
-        }
         
         var itemType = MessageEventHandler.itemType(fromMessage: message);
         let stanzaId = message.originId ?? message.id;
@@ -229,14 +214,44 @@ public class DBChatHistoryStore {
             appendix = ChatInvitationAppendix(mixInvitation: mixInvitation);
         }
         
+        let timestamp = Date(timeIntervalSince1970: Double(Int64((inTimestamp ?? Date()).timeIntervalSince1970 * 1000)) / 1000);
+
+        guard let body = decryptedBody ?? (mixInvitation != nil ? "Invitation" : nil) else {
+            if let retractedId = message.messageRetractionId, let originId = stanzaId {
+                dispatcher.async {
+                    self.retractMessageSync(for: account, with: jid, stanzaId: retractedId, authorNickname: authorNickname, participantId: participantId, retractionStanzaId: originId, retractionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
+                }
+                return;
+            }
+            // only if carbon!!
+            switch source {
+            case .carbons(let action):
+                if action == .received {
+                    if (message.type ?? .normal) != .error, let chatState = message.chatState, message.delay == nil {
+                        DBChatHistoryStore.instance.process(chatState: chatState, for: account, with: jid);
+                    }
+                }
+            default:
+                if (message.type ?? .normal) != .error, let chatState = message.chatState, message.delay == nil {
+                    DBChatHistoryStore.instance.process(chatState: chatState, for: account, with: jid);
+                }
+                break;
+            }
+            return;
+        }
+        
         dispatcher.async {
-            let timestamp = Date(timeIntervalSince1970: Double(Int64((inTimestamp ?? Date()).timeIntervalSince1970 * 1000)) / 1000);
 
             guard !state.isError || stanzaId == nil || !self.processOutgoingError(for: account, with: jid, stanzaId: stanzaId!, errorCondition: message.errorCondition, errorMessage: message.errorText) else {
                 return;
             }
+            
+            if let retractedId = message.messageRetractionId, let originId = stanzaId {
+                self.retractMessageSync(for: account, with: jid, stanzaId: retractedId, authorNickname: authorNickname, participantId: participantId, retractionStanzaId: originId, retractionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
+                return;
+            }
 
-              if let originId = stanzaId, let correctedMessageId = message.lastMessageCorrectionId, self.correctMessageSync(for: account, with: jid, stanzaId: correctedMessageId, authorNickname: authorNickname, participantId: participantId, data: body, correctionStanzaId: originId, correctionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, newState: state) {
+            if let originId = stanzaId, let correctedMessageId = message.lastMessageCorrectionId, self.correctMessageSync(for: account, with: jid, stanzaId: correctedMessageId, authorNickname: authorNickname, participantId: participantId, data: body, correctionStanzaId: originId, correctionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, newState: state) {
                 // this message was already added to the store..
                 // should this be here...?
                 if let chatState = message.chatState {
@@ -301,6 +316,9 @@ public class DBChatHistoryStore {
                 if #available(iOS 13.0, *), Settings.linkPreviews.bool() {
                     item = ChatLinkPreview(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage);
                 }
+            case .messageRetracted, .attachmentRetracted:
+                // nothing to do, as we do not want notifications for that (at least for now and no item of that type would be created in here!
+                break;
             }
             if item != nil {
                 DBChatStore.instance.newMessage(for: account, with: jid, timestamp: timestamp, itemType: type, message: encryption.message() ?? data, state: state, remoteChatState: state.direction == .incoming ? chatState : nil, senderNickname: authorNickname) {
@@ -363,6 +381,49 @@ public class DBChatHistoryStore {
         }
     }
 
+    public func retractMessage(for account: BareJID, with jid: BareJID, stanzaId: String, authorNickname: String?, participantId: String?, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) {
+        dispatcher.async {
+            _ = self.retractMessageSync(for: account, with: jid, stanzaId: stanzaId, authorNickname: authorNickname, participantId: participantId, retractionStanzaId: retractionStanzaId, retractionTimestamp: retractionTimestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
+        }
+    }
+
+    private func retractMessageSync(for account: BareJID, with jid: BareJID, stanzaId: String, authorNickname: String?, participantId: String?, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) -> Bool {
+        if let itemId = self.findItemId(for: account, with: jid, originId: stanzaId, authorNickname: authorNickname, participantId: participantId) {
+            if let oldItem: ChatViewItemProtocol = try! self.getChatMessageWithIdStmt.findFirst(["id": itemId] as [String: Any?], map: {
+                return self.itemFrom(cursor: $0, for: account, with: jid)
+            }) {
+                var itemType: ItemType = .messageRetracted;
+                if oldItem is ChatAttachment {
+                    itemType = .attachmentRetracted;
+                }
+                let params: [String: Any?] = ["id": itemId, "item_type": itemType.rawValue, "correction_stanza_id": retractionStanzaId, "remote_msg_id": remoteMsgId, "server_msg_id": serverMsgId, "correction_timestamp": retractionTimestamp];
+                let updated = try! self.retractMessageStmt.update(params);
+                if updated > 0 {
+                    // what should be sent to "newMessage" how to reatract message from there??
+                    let activity: LastChatActivity = DBChatStore.instance.getLastActivity(for: account, jid: jid) ?? .message("", sender: nil);
+                    DBChatStore.instance.newMessage(for: account, with: jid, timestamp: oldItem.timestamp, lastActivity: activity, state: oldItem.state.direction == .incoming ? .incoming : .outgoing, completionHandler: {
+                        print("chat store state updated with message retraction");
+                    })
+                    if oldItem.state.isUnread {
+                        DBChatStore.instance.markAsRead(for: account, with: jid, count: 1);
+                    }
+
+                    self.itemRemoved(withId: itemId, for: account, with: jid);
+                    self.previewGenerationDispatcher.async(flags: .barrier, execute: {
+                        self.dispatcher.sync {
+                            print("removing previews for master id:", itemId);
+                            self.removePreviews(idOfRelatedToItem: itemId);
+                        }
+                    })
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+    
     private func generatePreviews(forItem masterId: Int, account: BareJID, jid: BareJID, state: MessageState) {
         if #available(iOS 13.0, *) {
             let params: [String: Any?] = ["id": masterId];
@@ -777,6 +838,9 @@ public class DBChatHistoryStore {
         case .linkPreview:
             let url: String = cursor["data"]!;
             return ChatLinkPreview(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, url: url, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error)
+        case .messageRetracted, .attachmentRetracted:
+            // nothing in here, as were are removing retracted messages from the UI
+            return nil;
         }
 
     }
@@ -798,6 +862,8 @@ public enum ItemType: Int {
     case linkPreview = 2
     // with that in place we can have separate metadata kept "per" message as it is only one, so message id can be id of associated metadata..
     case invitation = 3
+    case messageRetracted = 4
+    case attachmentRetracted = 5;
 }
 
 class DeletedMessage: ChatViewItemProtocol {

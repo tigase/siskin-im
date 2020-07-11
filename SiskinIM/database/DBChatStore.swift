@@ -330,9 +330,14 @@ open class DBChatStore {
     }
     
     func newMessage(for account: BareJID, with jid: BareJID, timestamp: Date, itemType: ItemType?, message: String?, state: MessageState, remoteChatState: ChatState? = nil, senderNickname: String? = nil, completionHandler: @escaping ()->Void) {
+        let lastActivity = LastChatActivity.from(itemType: itemType, data: message, sender: senderNickname);
+        newMessage(for: account, with: jid, timestamp: timestamp, lastActivity: lastActivity, state: state, remoteChatState: remoteChatState, completionHandler: completionHandler);
+    }
+
+    func newMessage(for account: BareJID, with jid: BareJID, timestamp: Date, lastActivity: LastChatActivity?, state: MessageState, remoteChatState: ChatState? = nil, completionHandler: @escaping ()->Void) {
+
         dispatcher.async {
             if let chat = self.getChat(for: account, with: jid) {
-                let lastActivity = LastChatActivity.from(itemType: itemType, data: message, sender: senderNickname);
                 let unread = lastActivity != nil && state.isUnread;
                 if chat.updateLastActivity(lastActivity, timestamp: timestamp, isUnread: unread) {
                     if unread && !self.isMuted(chat: chat) {
@@ -423,7 +428,7 @@ open class DBChatStore {
         _ = try! self.closeChatStmt.update(params);
     }
     
-    private func getLastActivity(for account: BareJID, jid: BareJID) -> LastChatActivity? {
+    public func getLastActivity(for account: BareJID, jid: BareJID) -> LastChatActivity? {
         return dispatcher.sync {
             let params: [String: Any?] = ["account": account, "jid": jid];
             return try! self.getLastMessageStmt.queryFirstMatching(params) { cursor in
@@ -1055,7 +1060,7 @@ protocol DBChatProtocol: ChatProtocol {
 
 }
 
-enum LastChatActivity {
+public enum LastChatActivity {
     case message(String, sender: String?)
     case attachment(String, sender: String?)
     case invitation(String, sender: String?)
@@ -1072,6 +1077,9 @@ enum LastChatActivity {
         case .attachment:
             return data == nil ? nil : .attachment(data!, sender: sender);
         case .linkPreview:
+            return nil;
+        case .messageRetracted, .attachmentRetracted:
+            // TODO: Should we notify user that last message was retracted??
             return nil;
         }
     }
