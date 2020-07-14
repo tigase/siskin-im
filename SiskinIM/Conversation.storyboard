@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
@@ -49,14 +49,11 @@
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <label contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Incoming message" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uez-US-TCv">
+                                        <view clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="AqL-I7-erw" customClass="MessageTextView" customModule="Siskin" customModuleProvider="target">
                                             <rect key="frame" x="44" y="2" width="348" height="38"/>
                                             <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                            <color key="textColor" name="chatMessageText"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1gF-9W-YJd">
+                                        </view>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1gF-9W-YJd">
                                             <rect key="frame" x="394" y="28" width="14" height="12"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" constant="14" id="bqt-0a-Ght"/>
@@ -67,17 +64,16 @@
                                         </label>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstAttribute="bottom" secondItem="uez-US-TCv" secondAttribute="bottom" constant="4" id="65O-la-WsI"/>
-                                        <constraint firstItem="uez-US-TCv" firstAttribute="leading" secondItem="NEY-YF-0Rw" secondAttribute="leading" constant="44" id="Nja-o2-kpV"/>
-                                        <constraint firstItem="1gF-9W-YJd" firstAttribute="leading" secondItem="uez-US-TCv" secondAttribute="trailing" constant="2" id="RXm-x8-7pD"/>
+                                        <constraint firstItem="1gF-9W-YJd" firstAttribute="leading" secondItem="AqL-I7-erw" secondAttribute="trailing" constant="2" id="8bE-QK-7vb"/>
+                                        <constraint firstItem="AqL-I7-erw" firstAttribute="top" secondItem="NEY-YF-0Rw" secondAttribute="top" constant="2" id="LjP-Jb-Hw0"/>
                                         <constraint firstItem="1gF-9W-YJd" firstAttribute="top" relation="greaterThanOrEqual" secondItem="NEY-YF-0Rw" secondAttribute="top" constant="2" id="f41-5i-3wm"/>
-                                        <constraint firstItem="1gF-9W-YJd" firstAttribute="bottom" secondItem="uez-US-TCv" secondAttribute="bottom" id="mKu-Le-B0s"/>
                                         <constraint firstAttribute="trailing" secondItem="1gF-9W-YJd" secondAttribute="trailing" constant="6" id="rdt-CK-01v"/>
-                                        <constraint firstItem="uez-US-TCv" firstAttribute="top" secondItem="NEY-YF-0Rw" secondAttribute="top" constant="2" id="uhH-Wv-YN7"/>
+                                        <constraint firstAttribute="bottom" secondItem="AqL-I7-erw" secondAttribute="bottom" constant="4" id="svR-3U-q3I"/>
+                                        <constraint firstItem="AqL-I7-erw" firstAttribute="leading" secondItem="NEY-YF-0Rw" secondAttribute="leading" constant="44" id="wGa-nE-82A"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <connections>
-                                    <outlet property="messageTextView" destination="uez-US-TCv" id="15B-vK-EiF"/>
+                                    <outlet property="messageTextView" destination="AqL-I7-erw" id="PEk-RX-RNg"/>
                                     <outlet property="stateView" destination="1gF-9W-YJd" id="Ch2-7Z-Gle"/>
                                 </connections>
                             </tableViewCell>
@@ -137,20 +133,17 @@
                                                 <constraint firstAttribute="height" constant="30" id="jRB-Nc-VeO"/>
                                             </constraints>
                                         </imageView>
-                                        <label contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Incoming message" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FTl-Tb-r7b">
-                                            <rect key="frame" x="44" y="23" width="348" height="17"/>
+                                        <view clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="FFH-LU-Clu" customClass="MessageTextView" customModule="Siskin" customModuleProvider="target">
+                                            <rect key="frame" x="44" y="24" width="348" height="16"/>
                                             <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                            <color key="textColor" name="chatMessageText"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
+                                        </view>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zix-O9-jze">
-                                            <rect key="frame" x="44" y="5" width="36" height="16"/>
+                                            <rect key="frame" x="44" y="5" width="36" height="17"/>
                                             <fontDescription key="fontDescription" type="system" weight="medium" pointSize="14"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="600" text="Temporary label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kCs-nM-AcB">
-                                            <rect key="frame" x="318" y="6" width="90" height="15"/>
+                                            <rect key="frame" x="318" y="6" width="90" height="16"/>
                                             <fontDescription key="fontDescription" type="system" weight="light" pointSize="12"/>
                                             <color key="textColor" name="chatMessageText"/>
                                             <nil key="highlightedColor"/>
@@ -166,26 +159,26 @@
                                         </label>
                                     </subviews>
                                     <constraints>
+                                        <constraint firstItem="FFH-LU-Clu" firstAttribute="bottom" secondItem="gwl-mz-S3w" secondAttribute="bottom" id="1dT-Rb-hUN"/>
+                                        <constraint firstAttribute="bottom" secondItem="FFH-LU-Clu" secondAttribute="bottom" constant="4" id="5YW-Of-kxh"/>
                                         <constraint firstAttribute="trailing" secondItem="kCs-nM-AcB" secondAttribute="trailing" constant="6" id="9SM-C4-9se"/>
-                                        <constraint firstItem="FTl-Tb-r7b" firstAttribute="top" secondItem="zix-O9-jze" secondAttribute="bottom" constant="2" id="AhJ-tv-4EF"/>
-                                        <constraint firstItem="gwl-mz-S3w" firstAttribute="leading" secondItem="FTl-Tb-r7b" secondAttribute="trailing" constant="2" id="DX0-1B-qh3"/>
                                         <constraint firstItem="kCs-nM-AcB" firstAttribute="top" secondItem="2iM-vb-6En" secondAttribute="top" constant="6" id="F6G-xk-aOZ"/>
-                                        <constraint firstItem="gwl-mz-S3w" firstAttribute="bottom" secondItem="FTl-Tb-r7b" secondAttribute="bottom" id="LyJ-MA-fJ8"/>
                                         <constraint firstItem="gwl-mz-S3w" firstAttribute="top" relation="greaterThanOrEqual" secondItem="zix-O9-jze" secondAttribute="bottom" constant="2" id="NFB-SZ-XeE"/>
                                         <constraint firstItem="kCs-nM-AcB" firstAttribute="bottom" secondItem="zix-O9-jze" secondAttribute="bottom" id="PWw-TO-l6x"/>
                                         <constraint firstAttribute="trailing" secondItem="gwl-mz-S3w" secondAttribute="trailing" constant="6" id="Z14-Wa-BL6"/>
-                                        <constraint firstItem="FTl-Tb-r7b" firstAttribute="leading" secondItem="zix-O9-jze" secondAttribute="leading" id="Zhf-xL-hXW"/>
                                         <constraint firstItem="iZr-SY-wSI" firstAttribute="leading" secondItem="2iM-vb-6En" secondAttribute="leading" constant="6" id="cyx-kZ-Onf"/>
-                                        <constraint firstAttribute="bottom" secondItem="FTl-Tb-r7b" secondAttribute="bottom" constant="4" id="eOa-5W-Fhu"/>
                                         <constraint firstItem="iZr-SY-wSI" firstAttribute="top" secondItem="2iM-vb-6En" secondAttribute="top" constant="5" id="fOA-C2-8cn"/>
                                         <constraint firstItem="zix-O9-jze" firstAttribute="leading" secondItem="iZr-SY-wSI" secondAttribute="trailing" constant="8" id="fOt-pb-bmu"/>
+                                        <constraint firstItem="FFH-LU-Clu" firstAttribute="leading" secondItem="zix-O9-jze" secondAttribute="leading" id="kT9-LP-1uM"/>
                                         <constraint firstItem="kCs-nM-AcB" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="zix-O9-jze" secondAttribute="trailing" constant="10" id="kdz-Ce-D38"/>
                                         <constraint firstItem="zix-O9-jze" firstAttribute="top" secondItem="iZr-SY-wSI" secondAttribute="top" id="klA-1r-Yws"/>
+                                        <constraint firstItem="gwl-mz-S3w" firstAttribute="leading" secondItem="FFH-LU-Clu" secondAttribute="trailing" constant="2" id="pIs-CA-AUO"/>
+                                        <constraint firstItem="FFH-LU-Clu" firstAttribute="top" secondItem="zix-O9-jze" secondAttribute="bottom" constant="2" id="vxj-Ky-BWb"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <connections>
                                     <outlet property="avatarView" destination="iZr-SY-wSI" id="w0h-ck-m2n"/>
-                                    <outlet property="messageTextView" destination="FTl-Tb-r7b" id="ycS-3F-Ytw"/>
+                                    <outlet property="messageTextView" destination="FFH-LU-Clu" id="wab-B6-mY8"/>
                                     <outlet property="nicknameView" destination="zix-O9-jze" id="2Ry-zs-byz"/>
                                     <outlet property="stateView" destination="gwl-mz-S3w" id="mfY-BX-oR9"/>
                                     <outlet property="timestampView" destination="kCs-nM-AcB" id="C2v-i5-irl"/>

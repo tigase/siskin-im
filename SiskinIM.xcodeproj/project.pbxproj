@@ -204,6 +204,7 @@
 		FEF19F142348B655005CFE9A /* DiscoEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF19F132348B655005CFE9A /* DiscoEventHandler.swift */; };
 		FEF19F162348E781005CFE9A /* BaseChatViewControllerWithDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF19F152348E781005CFE9A /* BaseChatViewControllerWithDataSource.swift */; };
 		FEF80DB21CDBBBFE005645A7 /* AccountSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF80DB11CDBBBFE005645A7 /* AccountSettingsViewController.swift */; };
+		FEF8255524BA0AFE00820108 /* MessageTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF8255424BA0AFE00820108 /* MessageTextView.swift */; };
 		FEFB63AD1F31E4EE00EFB3E7 /* MainTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEFB63AC1F31E4EE00EFB3E7 /* MainTabBarController.swift */; };
 /* End PBXBuildFile section */
 
@@ -477,6 +478,7 @@
 		FEF19F132348B655005CFE9A /* DiscoEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoEventHandler.swift; sourceTree = "<group>"; };
 		FEF19F152348E781005CFE9A /* BaseChatViewControllerWithDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseChatViewControllerWithDataSource.swift; sourceTree = "<group>"; };
 		FEF80DB11CDBBBFE005645A7 /* AccountSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountSettingsViewController.swift; sourceTree = "<group>"; };
+		FEF8255424BA0AFE00820108 /* MessageTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageTextView.swift; sourceTree = "<group>"; };
 		FEFB63AC1F31E4EE00EFB3E7 /* MainTabBarController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainTabBarController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -662,6 +664,7 @@
 				FE31291B222C0D1500A92863 /* AvatarView.swift */,
 				FE65D62722E9F8EB0065DEA5 /* Markdown.swift */,
 				FE3E38892429364D00D3A8E8 /* UIImage.swift */,
+				FEF8255424BA0AFE00820108 /* MessageTextView.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -1325,6 +1328,7 @@
 				FE80BDAB1D953FC4001914B0 /* SetupViewController.swift in Sources */,
 				FEE097621F1FCE1800B1CEAB /* TablePicketViewController.swift in Sources */,
 				FEDE93941D0AC01200CA60A9 /* VCardEditEmailTableViewCell.swift in Sources */,
+				FEF8255524BA0AFE00820108 /* MessageTextView.swift in Sources */,
 				FEDE939B1D0C38B000CA60A9 /* ContactFormTableViewCell.swift in Sources */,
 				FEDE93991D0C207100CA60A9 /* ContactBasicTableViewCell.swift in Sources */,
 				FE507A251CDB7B3B001A015C /* AccountManager.swift in Sources */,

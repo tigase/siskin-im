@@ -25,8 +25,17 @@ class Markdown {
     
     static let quoteParagraphStyle: NSParagraphStyle = {
         var paragraphStyle = NSMutableParagraphStyle();
-        paragraphStyle.headIndent = 20;
-        paragraphStyle.firstLineHeadIndent = 8;
+        paragraphStyle.headIndent = 16;
+        paragraphStyle.firstLineHeadIndent = 4;
+        paragraphStyle.alignment = .natural;
+        return paragraphStyle;
+    }();
+    
+    static let codeParagraphStyle: NSParagraphStyle = {
+        var paragraphStyle = NSMutableParagraphStyle();
+        paragraphStyle.headIndent = 10;
+        paragraphStyle.tailIndent = -10;
+        paragraphStyle.firstLineHeadIndent = 10;
         paragraphStyle.alignment = .natural;
         return paragraphStyle;
     }();
@@ -47,12 +56,16 @@ class Markdown {
     }
     
     static func code(font currentFont: UIFont) -> UIFont {
-        var traits = currentFont.fontDescriptor.symbolicTraits;
-        traits.remove(.traitItalic);
-        traits.remove(.traitBold);
-        traits.remove(.traitCondensed);
-//        traits.insert(.traitMonoSpace);
-        return UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body).withSymbolicTraits(traits)!, size: currentFont.fontDescriptor.pointSize);
+        if #available(iOS 13.0, *) {
+            return UIFont.monospacedSystemFont(ofSize: currentFont.fontDescriptor.pointSize, weight: .regular);
+        } else {
+            var traits = currentFont.fontDescriptor.symbolicTraits;
+            traits.remove(.traitItalic);
+            traits.remove(.traitBold);
+            traits.remove(.traitCondensed);
+            //        traits.insert(.traitMonoSpace);
+            return UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body).withSymbolicTraits(traits)!, size: currentFont.fontDescriptor.pointSize);
+        }
     }
     
     static func applyStyling(attributedString msg: NSMutableAttributedString, font defFont: UIFont, showEmoticons: Bool) {
@@ -63,23 +76,35 @@ class Markdown {
         var boldStart: String.Index? = nil;
         var italicStart: String.Index? = nil;
         var underlineStart: String.Index? = nil;
-        var codeStart: String.Index? = nil;
+        //        var codeStart: String.Index? = nil;
+        //        var codeCount: Int = 0;
         var quoteStart: String.Index? = nil;
+        var quoteLevel = 0;
         var idx = message.startIndex;
         
         var canStart = true;
         
         var wordIdx: String.Index? = showEmoticons ? message.startIndex : nil;
         
+        msg.removeAttribute(.paragraphStyle, range: NSRange(location: 0, length: msg.length));
+        msg.addAttribute(.font, value: defFont, range: NSRange(location: 0, length: msg.length));
+        
         while idx != message.endIndex {
             let c = message[idx];
             switch c {
             case ">":
-                let bidx = idx == message.startIndex ? nil : message.index(before: idx);
-                let aidx = message.index(after: idx);
-                if aidx != message.endIndex && (bidx == nil || message[bidx!] == "\n") && message[aidx] == " " {
-                    msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(idx...aidx, in: message));
-                    quoteStart = idx;
+                if quoteStart == nil && idx == message.startIndex || message[message.index(before: idx)] == "\n" {
+                    let start = idx;
+                    while idx != message.endIndex, message[idx] == ">" {
+                        idx = message.index(after: idx);
+                    }
+                    if idx != message.endIndex && message[idx] == " " {
+                        quoteStart = start;
+                        quoteLevel = message.distance(from: start, to: idx)
+                        msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(start..<idx, in: message));
+                    } else {
+                        idx = message.index(before: idx);
+                    }
                 }
             case "*":
                 let nidx = message.index(after: idx);
@@ -134,29 +159,58 @@ class Markdown {
                 }
                 canStart = true;
             case "`":
-                if codeStart == nil {
-                    if canStart {
-                        codeStart = idx;
-                        wordIdx = nil;
-                    }
-                } else {
-                    msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(codeStart!...codeStart!, in: message));
-                    msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(idx...idx, in: message));
+//                if codeStart == nil {
+                if canStart {
+                    let codeStart = idx;
+                    let isBlock = message.startIndex == idx || (message[message.index(before: idx)] == "\n") || (message.distance(from: message.startIndex, to: idx) > 3 && message[message.index(idx, offsetBy: -1)] == " " && message[message.index(idx, offsetBy: -2)] == ">" && (message.startIndex == message.index(idx, offsetBy: -3) || message[message.index(idx, offsetBy: -3)] == "\n"));
+                    wordIdx = nil;
+                    while idx != message.endIndex, message[idx] == "`" {
+                         idx = message.index(after: idx);
+                     }
+                     let codeCount = message.distance(from: codeStart, to: idx);
+                     print("code tag count = ", codeCount);
+
+                     var count = 0;
+                     while idx != message.endIndex {
+                         if message[idx] == "`" {
+                             count = count + 1;
+                             if count == codeCount {
+                                 let tmp = message.index(after: idx);
+                                 if tmp == message.endIndex || [" ", "\n"].contains(message[tmp]) {
+                                     break;
+                                 }
+                             }
+                         } else {
+                             count = 0;
+                         }
+                         idx = message.index(after: idx);
+                     }
+                     if codeCount != count {
+                         idx = message.index(before: idx);
+                     } else {
+                         msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(codeStart...message.index(codeStart, offsetBy: codeCount-1), in: message));
+                         msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(message.index(idx, offsetBy: codeCount * -1)...idx, in: message));
+
+
+                        let codeFont = Markdown.code(font: defFont);
+                        msg.addAttribute(.font, value: codeFont, range: NSRange(codeStart...idx, in: message));
                     
-                    let codeFont = Markdown.code(font: defFont);
-                    msg.addAttribute(.font, value: codeFont, range: NSRange(codeStart!...idx, in: message));
-                    
-                    if message.distance(from: codeStart!, to: idx) > 1 {
-                        let clearRange = NSRange(message.index(after: codeStart!)...message.index(before: idx), in: message);
-                        msg.removeAttribute(.foregroundColor, range: clearRange);
-                        msg.removeAttribute(.underlineStyle, range: clearRange);
-                    }
-                    
-                    codeStart = nil;
-                    if idx == message.endIndex {
-                        wordIdx = message.endIndex;
-                    } else {
-                        wordIdx = message.index(after: idx);
+                        if isBlock {
+                            msg.addAttribute(.paragraphStyle, value: codeParagraphStyle, range: NSRange(codeStart...idx, in: message));
+                        }
+
+                        if message.distance(from: codeStart, to: idx) > 1 {
+                            let clearRange = NSRange(message.index(codeStart, offsetBy: codeCount)...message.index(idx, offsetBy: codeCount * -1), in: message);
+                            msg.removeAttribute(.foregroundColor, range: clearRange);
+                            msg.removeAttribute(.underlineStyle, range: clearRange);
+                            //msg.addAttribute(.foregroundColor, value: textColor ?? NSColor.textColor, range: clearRange);
+                        }
+
+                        if idx == message.endIndex {
+                            wordIdx = message.endIndex;
+                        } else {
+                            wordIdx = message.index(after: idx);
+                        }
                     }
                 }
                 canStart = true;
@@ -173,12 +227,10 @@ class Markdown {
                             idx = message.index(after: message.index(message.startIndex, offsetBy: distance));
                         }
                     }
-                    if codeStart == nil {
-                        if idx != message.endIndex {
-                            wordIdx = message.index(after: idx);
-                        } else {
-                            wordIdx = message.endIndex;
-                        }
+                    if idx != message.endIndex {
+                        wordIdx = message.index(after: idx);
+                    } else {
+                        wordIdx = message.endIndex;
                     }
                 }
                 if "\n" == c {

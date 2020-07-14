@@ -25,7 +25,7 @@ import TigaseSwift
 
 class ChatTableViewCell: BaseChatTableViewCell {
 
-    @IBOutlet var messageTextView: UILabel!
+    @IBOutlet var messageTextView: MessageTextView!
         
     fileprivate var messageLinkTapGestureRecognizer: UITapGestureRecognizer!;
     
@@ -81,7 +81,7 @@ class ChatTableViewCell: BaseChatTableViewCell {
             }
         }
         if Settings.EnableMarkdownFormatting.getBool() {
-            Markdown.applyStyling(attributedString: attrText, font: self.messageTextView.font, showEmoticons:Settings.ShowEmoticons.getBool());
+            Markdown.applyStyling(attributedString: attrText, font: UIFont.systemFont(ofSize: self.messageTextView.fontSize), showEmoticons:Settings.ShowEmoticons.getBool());
         }
         self.messageTextView.attributedText = attrText;
         if item.state.isError {
@@ -111,24 +111,24 @@ class ChatTableViewCell: BaseChatTableViewCell {
             return;
         }
         
-        let point = recognizer.location(in: self.messageTextView);
-        let layoutManager = NSLayoutManager();
-        let attrText = self.messageTextView.attributedText!.mutableCopy() as! NSMutableAttributedString;
-        attrText.addAttribute(NSAttributedString.Key.font, value: self.messageTextView.font as Any, range: NSRange(location: 0, length: attrText.length));
-        let textStorage = NSTextStorage(attributedString: attrText);
-        let textContainer = NSTextContainer(size: self.messageTextView.bounds.size);
-        textContainer.maximumNumberOfLines = self.messageTextView.numberOfLines;
-        layoutManager.usesFontLeading = true;
-        textContainer.lineFragmentPadding = 0;
-        textContainer.lineBreakMode = self.messageTextView.lineBreakMode;
-        layoutManager.addTextContainer(textContainer);
-        textStorage.addLayoutManager(layoutManager);
-        
-        let idx = layoutManager.characterIndex(for: point, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil);
-        if let url = links.first(where: { link -> Bool in link.contains(idx: idx)}) {
-//        if let url = attrText.attribute(NSAttributedString.Key.link, at: idx, effectiveRange: nil) as? NSURL {
-            UIApplication.shared.open(url.url);
-        }
+//        let point = recognizer.location(in: self.messageTextView);
+//        let layoutManager = NSLayoutManager();
+//        let attrText = self.messageTextView.attributedText!.mutableCopy() as! NSMutableAttributedString;
+//        attrText.addAttribute(NSAttributedString.Key.font, value: self.messageTextView.font!, range: NSRange(location: 0, length: attrText.length));
+//        let textStorage = NSTextStorage(attributedString: attrText);
+//        let textContainer = NSTextContainer(size: self.messageTextView.bounds.size);
+////        textContainer.maximumNumberOfLines = self.messageTextView.numberOfLines;
+//        layoutManager.usesFontLeading = true;
+//        textContainer.lineFragmentPadding = 0;
+////        textContainer.lineBreakMode = self.messageTextView.lineBreakMode;
+//        layoutManager.addTextContainer(textContainer);
+//        textStorage.addLayoutManager(layoutManager);
+//        
+//        let idx = layoutManager.characterIndex(for: point, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil);
+//        if let url = links.first(where: { link -> Bool in link.contains(idx: idx)}) {
+////        if let url = attrText.attribute(NSAttributedString.Key.link, at: idx, effectiveRange: nil) as? NSURL {
+//            UIApplication.shared.open(url.url);
+//        }
     }
         
     class Link {

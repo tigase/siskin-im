@@ -266,7 +266,9 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     
 }
 
-class ChatViewInputBar: UIView, UITextViewDelegate {
+class ChatViewInputBar: UIView, UITextViewDelegate, NSTextStorageDelegate {
+    
+    @IBInspectable public var fontSize: CGFloat = 14.0;
     
     public let blurView: UIVisualEffectView = {
         var blurEffect = UIBlurEffect(style: .prominent);
@@ -292,7 +294,17 @@ class ChatViewInputBar: UIView, UITextViewDelegate {
     }();
     
     public let inputTextView: UITextView = {
-        let view = UITextView();
+        let layoutManager = MessageTextView.CustomLayoutManager();
+        let textContainer = NSTextContainer(size: CGSize(width: 0, height: CGFloat.greatestFiniteMagnitude));
+        textContainer.widthTracksTextView = true;
+        let textStorage = NSTextStorage();
+        textStorage.addLayoutManager(layoutManager);
+        layoutManager.addTextContainer(textContainer);
+        
+        let view = UITextView(frame: .zero, textContainer: textContainer);
+        if #available(iOS 13.0, *) {
+            view.usesStandardTextScaling = false;
+        }
         view.isOpaque = false;
         view.backgroundColor = UIColor.clear;
         view.translatesAutoresizingMaskIntoConstraints = false;
@@ -361,6 +373,7 @@ class ChatViewInputBar: UIView, UITextViewDelegate {
     }
         
     func setup() {
+        inputTextView.textStorage.delegate = self;
         translatesAutoresizingMaskIntoConstraints = false;
         isOpaque = false;
         setContentHuggingPriority(.defaultHigh, for: .horizontal);
@@ -427,6 +440,21 @@ class ChatViewInputBar: UIView, UITextViewDelegate {
 
     func addBottomButton(_ button: UIButton) {
         bottomStackView.addArrangedSubview(button);
+    }
+    
+    func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorage.EditActions, range editedRange: NSRange, changeInLength delta: Int) {
+        let fullRange = NSRange(0..<textStorage.length);
+        textStorage.fixAttributes(in: fullRange);
+        //textStorage.setAttributes([.font: self.font!], range: fullRange);
+        if #available(iOS 13.0, *) {
+            textStorage.addAttributes([.foregroundColor: UIColor.label], range: fullRange);
+        } else {
+            textStorage.addAttributes([.foregroundColor: UIColor.black], range: fullRange);
+        }
+        
+        if Settings.EnableMarkdownFormatting.bool() {
+            Markdown.applyStyling(attributedString: textStorage, font: UIFont.systemFont(ofSize: fontSize), showEmoticons: false);
+        }
     }
 }
 

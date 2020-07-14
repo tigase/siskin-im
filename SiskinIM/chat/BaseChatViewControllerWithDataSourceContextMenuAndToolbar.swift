@@ -26,7 +26,7 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
 
     fileprivate weak var timestampsSwitch: UIBarButtonItem? = nil;
     
-    var contextActions: [ContextAction] = [.copy, .share, .correct, .retract, .more];
+    var contextActions: [ContextAction] = [.copy, .reply, .share, .correct, .retract, .more];
     
     override func viewWillAppear(_ animated: Bool) {
         if #available(iOS 13.0, *) {
@@ -125,6 +125,23 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         switch action {
         case .copy:
             self.conversationLogController?.copyMessageInt(paths: [indexPath]);
+        case .reply:
+            // something to do..
+            self.conversationLogController?.getTextOfSelectedRows(paths: [indexPath], withTimestamps: false, handler: { [weak self] texts in
+                let text: String = texts.flatMap { $0.split(separator: "\n")}.map {
+                    if $0.starts(with: ">") {
+                        return ">\($0)";
+                    } else {
+                        return "> \($0)"
+                    }
+                }.joined(separator: "\n");
+                
+                if let current = self?.messageText, !current.isEmpty {
+                    self?.messageText = "\(current)\n\(text)\n";
+                } else {
+                    self?.messageText = "\(text)\n";
+                }
+            })
         case .share:
             self.conversationLogController?.shareMessageInt(paths: [indexPath]);
         case .correct:
@@ -150,6 +167,8 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         switch action {
         case .copy:
             return true;
+        case .reply:
+            return true;
         case .share:
             return true;
         case .correct:
@@ -164,6 +183,7 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
     
     public enum ContextAction {
         case copy
+        case reply
         case share
         case correct
         case retract
@@ -173,6 +193,8 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
             switch self {
             case .copy:
                 return "Copy";
+            case .reply:
+                return "Reply..";
             case .share:
                 return "Share..";
             case .correct:
@@ -191,6 +213,8 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
             switch self {
             case .copy:
                 return UIImage(systemName: "doc.on.doc");
+            case .reply:
+                return UIImage(systemName: "arrowshape.turn.up.left");
             case .share:
                 return UIImage(systemName: "square.and.arrow.up");
             case .correct:
