@@ -27,7 +27,6 @@ class NewFeaturesDetector: XmppServiceEventHandler {
     let events: [Event] = [DiscoveryModule.AccountFeaturesReceivedEvent.TYPE];
     
     let suggestions: [NewFeaturesDetectorSuggestion] = [MAMSuggestion(), PushSuggestion()];
-    weak var xmppService: XmppService?;
     
     fileprivate var allControllers: [NewFeatureSuggestionView] = [];
     fileprivate var inProgress: Bool = false;
@@ -57,7 +56,7 @@ class NewFeaturesDetector: XmppServiceEventHandler {
     func handle(event: Event) {
         switch event {
         case let e as DiscoveryModule.AccountFeaturesReceivedEvent:
-            guard let account = e.sessionObject.userBareJid, let xmppService = self.xmppService else {
+            guard let account = e.sessionObject.userBareJid else {
                 return;
             }
             guard DispatchQueue.main.sync(execute: { return UIApplication.shared.applicationState == .active }) else {
@@ -70,7 +69,7 @@ class NewFeaturesDetector: XmppServiceEventHandler {
             };
             
             suggestions.forEach { suggestion in
-                suggestion.handle(xmppService: xmppService, account: account, newServerFeatures: newFeatures, onNext: self.showNext, completionHandler: self.completionHandler);
+                suggestion.handle(account: account, newServerFeatures: newFeatures, onNext: self.showNext, completionHandler: self.completionHandler);
             }
             
             let newKnownFeatures = e.features.filter { feature -> Bool in
@@ -95,17 +94,17 @@ class NewFeaturesDetector: XmppServiceEventHandler {
             return self.feature == feature;
         }
 
-        func handle(xmppService: XmppService, account: BareJID, newServerFeatures features: [String], onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
+        func handle(account: BareJID, newServerFeatures features: [String], onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
             guard features.contains(feature) else {
                 completionHandler([]);
                 return;
             }
             
-            askToEnableMAM(xmppService: xmppService, account: account, onNext: onNext, completionHandler: completionHandler);
+            askToEnableMAM(account: account, onNext: onNext, completionHandler: completionHandler);
         }
      
-        fileprivate func askToEnableMAM(xmppService: XmppService, account: BareJID, onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
-            guard let mamModule: MessageArchiveManagementModule = xmppService.getClient(forJid: account)?.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
+        fileprivate func askToEnableMAM(account: BareJID, onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
+            guard let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(forJid: account)?.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
                 completionHandler([]);
                 return;
             }
@@ -135,7 +134,7 @@ class NewFeaturesDetector: XmppServiceEventHandler {
                                     case .success(_, _, _):
                                         DispatchQueue.main.async {
                                             handler();
-                                            self.askToEnableMessageSync(xmppService: xmppService, account: account, onNext: onNext, completionHandler: { subcontrollers in
+                                            self.askToEnableMessageSync(account: account, onNext: onNext, completionHandler: { subcontrollers in
                                                 guard let toShow = subcontrollers.first else {
                                                     controller.dismiss(animated: true, completion: onNext);
                                                     return;
@@ -157,7 +156,7 @@ class NewFeaturesDetector: XmppServiceEventHandler {
                             completionHandler([controller]);
                         }
                     } else {
-                        self.askToEnableMessageSync(xmppService: xmppService, account: account, onNext: onNext, completionHandler: completionHandler);
+                        self.askToEnableMessageSync(account: account, onNext: onNext, completionHandler: completionHandler);
                     }
                 case .failure(_, _):
                     completionHandler([]);
@@ -166,7 +165,7 @@ class NewFeaturesDetector: XmppServiceEventHandler {
 
         }
         
-        fileprivate func askToEnableMessageSync(xmppService: XmppService, account: BareJID, onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
+        fileprivate func askToEnableMessageSync(account: BareJID, onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
             guard !AccountSettings.messageSyncAuto(account).getBool() else {
                 completionHandler([]);
                 return;
@@ -209,13 +208,13 @@ Have it enabled will keep synchronized copy of your messages exchanged using \(a
             return self.feature == feature;
         }
         
-        func handle(xmppService: XmppService, account: BareJID, newServerFeatures features: [String], onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
+        func handle(account: BareJID, newServerFeatures features: [String], onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
             guard features.contains(feature) else {
                 completionHandler([]);
                 return;
             }
             
-            guard let _: SiskinPushNotificationsModule = xmppService.getClient(forJid: account)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), PushEventHandler.instance.deviceId != nil else {
+            guard let _: SiskinPushNotificationsModule = XmppService.instance.getClient(forJid: account)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), PushEventHandler.instance.deviceId != nil else {
                 completionHandler([]);
                 return;
             }
@@ -241,7 +240,7 @@ With this feature enabled Tigase iOS Messenger can be automatically notified abo
                     controller.dismiss(animated: true, completion: onNext);
                 }
                 controller.onEnable = { (handler) in
-                    self.enablePush(xmppService: xmppService, account: account, operationFinished: handler, completionHandler: {
+                    self.enablePush(account: account, operationFinished: handler, completionHandler: {
                         controller.dismiss(animated: true, completion: onNext);
                     });
                 };
@@ -250,8 +249,8 @@ With this feature enabled Tigase iOS Messenger can be automatically notified abo
             }
         }
         
-        func enablePush(xmppService: XmppService, account accountJid: BareJID, operationFinished: @escaping ()->Void, completionHandler: @escaping ()->Void) {
-            guard let pushModule: SiskinPushNotificationsModule = xmppService.getClient(forJid: accountJid)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), let deviceId = PushEventHandler.instance.deviceId else {
+        func enablePush(account accountJid: BareJID, operationFinished: @escaping ()->Void, completionHandler: @escaping ()->Void) {
+            guard let pushModule: SiskinPushNotificationsModule = XmppService.instance.getClient(forJid: accountJid)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), let deviceId = PushEventHandler.instance.deviceId else {
                 completionHandler();
                 return;
             }
@@ -278,7 +277,7 @@ With this feature enabled Tigase iOS Messenger can be automatically notified abo
 
 protocol NewFeaturesDetectorSuggestion: class {
     
-    func handle(xmppService: XmppService, account: BareJID, newServerFeatures features: [String], onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void);
+    func handle(account: BareJID, newServerFeatures features: [String], onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void);
     
     func isCapable(_ feature: String) -> Bool;
     
