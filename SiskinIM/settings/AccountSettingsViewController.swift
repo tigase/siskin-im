@@ -125,6 +125,9 @@ class AccountSettingsViewController: UITableViewController {
             };
             self.navigationController?.pushViewController(controller, animated: true);
         }
+        if indexPath.section == 5 && indexPath.row == 0 {
+            self.deleteAccount();
+        }
     }
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -399,6 +402,109 @@ class AccountSettingsViewController: UITableViewController {
         }
     }
     
+    func deleteAccount() {
+        guard let account = self.account, let config = AccountManager.getAccount(for: account) else {
+            return;
+        }
+        
+        let removeAccount: (BareJID, Bool)->Void = { account, fromServer in
+            if fromServer {
+                if let client = XmppService.instance.getClient(forJid: BareJID(account)), client.state == .connected {
+                    let regModule = client.modulesManager.register(InBandRegistrationModule());
+                    regModule.unregister({ (stanza) in
+                        DispatchQueue.main.async() {
+                            _ = AccountManager.deleteAccount(for: account);
+                            self.navigationController?.popViewController(animated: true);
+                        }
+                    })
+                } else {
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(title: "Account removal", message: "Could not delete account as it was not possible to connect to the XMPP server. Please try again later.", preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                            self.tableView.reloadData();
+                        }));
+                        self.present(alert, animated: true, completion: nil);
+                    }
+                }
+            } else {
+                DispatchQueue.main.async {
+                    _ = AccountManager.deleteAccount(for: account);
+                    self.navigationController?.popViewController(animated: true);
+                }
+            }
+        };
+        
+        self.askAboutAccountRemoval(account: account, atRow: IndexPath(row: 0, section: 5), completionHandler: { result in
+            switch result {
+            case .success(let removeFromServer):
+                if let pushSettings = config.pushSettings {
+                    if let client = XmppService.instance.getClient(forJid: BareJID(account)), client.state == .connected, let pushModule: SiskinPushNotificationsModule = client.modulesManager.getModule(SiskinPushNotificationsModule.ID) {
+                        pushModule.unregisterDeviceAndDisable(completionHandler: { result in
+                            switch result {
+                            case .success(_):
+                                // now remove the account...
+                                removeAccount(account, removeFromServer)
+                                break;
+                            case .failure(_):
+                                PushEventHandler.unregisterDevice(from: pushSettings.jid.bareJid, account: account, deviceId: pushSettings.deviceId, completionHandler: { result in
+                                    config.pushSettings = nil;
+                                    AccountManager.save(account: config);
+                                    DispatchQueue.main.async {
+                                        switch result {
+                                        case .success(_):
+                                            removeAccount(account, removeFromServer);
+                                        case .failure(let _):
+                                            let alert = UIAlertController(title: "Account removal", message: "Push notifications are enabled for \(account). They need to be disabled before account can be removed and it is not possible to at this time. Please try again later.", preferredStyle: .alert);
+                                            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                                            self.present(alert, animated: true, completion: nil);
+                                        }
+                                    }
+                                })
+                            }
+                        });
+                    } else {
+                        PushEventHandler.unregisterDevice(from: pushSettings.jid.bareJid, account: account, deviceId: pushSettings.deviceId, completionHandler: { result in
+                            DispatchQueue.main.async {
+                                switch result {
+                                case .success(_):
+                                    config.pushSettings = nil;
+                                    AccountManager.save(account: config);
+                                    removeAccount(account, removeFromServer);
+                                case .failure(let _):
+                                    let alert = UIAlertController(title: "Account removal", message: "Push notifications are enabled for \(account). They need to be disabled before account can be removed and it is not possible to at this time. Please try again later.", preferredStyle: .alert);
+                                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                                    self.present(alert, animated: true, completion: nil);
+                                }
+                            }
+                        })
+                    }
+                } else {
+                    removeAccount(account, removeFromServer);
+                }
+            case .failure(_):
+                break;
+            }
+        })
+    }
+        
+    func askAboutAccountRemoval(account: BareJID, atRow indexPath: IndexPath, completionHandler: @escaping (Result<Bool, Error>)->Void) {
+        let client = XmppService.instance.getClient(forJid: BareJID(account))
+        let alert = UIAlertController(title: "Account removal", message: client != nil ? "Should account be removed from server as well?" : "Remove account from application?", preferredStyle: .actionSheet);
+        if client?.state == .connected {
+            alert.addAction(UIAlertAction(title: "Remove from server", style: .destructive, handler: { (action) in
+                completionHandler(.success(true));
+            }));
+        }
+        alert.addAction(UIAlertAction(title: "Remove from application", style: .default, handler: { (action) in
+            completionHandler(.success(false));
+        }));
+        alert.addAction(UIAlertAction(title: "Cancel", style: .default, handler: nil));
+        alert.popoverPresentationController?.sourceView = self.tableView;
+        alert.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: indexPath);
+
+        self.present(alert, animated: true, completion: nil);
+    }
+
     class SyncTimeItem: TablePickerViewItemsProtocol {
         
         public static func descriptionFromHours(hours: Double) -> String {

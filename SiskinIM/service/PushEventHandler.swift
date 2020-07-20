@@ -24,6 +24,38 @@ import TigaseSwift
 
 open class PushEventHandler: XmppServiceEventHandler {
     
+    public static func unregisterDevice(from pushServiceJid: BareJID, account: BareJID, deviceId: String, completionHandler: @escaping (Result<Void,ErrorCondition>)->Void) {
+        guard let url = URL(string: "https://\(pushServiceJid.stringValue)/unregister-device/\(pushServiceJid.stringValue)") else {
+            completionHandler(.failure(.service_unavailable));
+            return;
+        }
+        var request = URLRequest(url: url);
+        request.httpMethod = "POST";
+        guard let payload = try? JSONEncoder().encode(UnregisterDeviceRequestPayload(account: account, provider: "tigase:messenger:apns:1", deviceToken: deviceId)) else {
+            completionHandler(.failure(.internal_server_error));
+            return;
+        }
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type");
+        request.httpBody = payload;
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard error == nil else {
+                completionHandler(.failure(.service_unavailable));
+                return;
+            }
+            guard let data = data, let payload = try? JSONDecoder().decode(UnregisterDeviceResponsePayload.self, from: data) else {
+                completionHandler(.failure(.internal_server_error));
+                return;
+            }
+            if payload.success {
+                completionHandler(.success(Void()));
+            } else {
+                completionHandler(.failure(.not_acceptable));
+            }
+        }
+        task.resume();
+    }
+    
     public static let instance = PushEventHandler();
 
     var deviceId: String?;
@@ -122,6 +154,31 @@ open class PushEventHandler: XmppServiceEventHandler {
             })
         } else {
             AccountSettings.pushHash(account).set(int: 0);
+        }
+    }
+    
+    public struct UnregisterDeviceRequestPayload: Encodable {
+        var account: BareJID;
+        var provider: String;
+        var deviceToken: String;
+        
+        enum CodingKeys: String, CodingKey {
+            case account
+            case provider
+            case deviceToken = "device-token"
+        }
+    }
+    
+    public struct UnregisterDeviceResponsePayload: Decodable {
+        var success: Bool;
+        
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self);
+            success = try "success" == container.decode(String.self, forKey: .result);
+        }
+        
+        enum CodingKeys: String, CodingKey {
+            case result = "result";
         }
     }
 }
