@@ -153,6 +153,8 @@
 		FEB28A9123CB5ADD00F876B7 /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FEB28A8F23CB5AD600F876B7 /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FEB5EC9D1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift */; };
 		FEB62C501DA80956001500D5 /* AvatarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB62C4F1DA80956001500D5 /* AvatarStore.swift */; };
+		FEBC12F224C70DE000689475 /* db-schema-13.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEBC12F124C70DE000689475 /* db-schema-13.sql */; };
+		FEBC12F524C70E7F00689475 /* DBChatHistorySyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEBC12F324C70E2900689475 /* DBChatHistorySyncStore.swift */; };
 		FEC514241CEB2FF7003AF765 /* MucJoinViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514231CEB2FF7003AF765 /* MucJoinViewController.swift */; };
 		FEC514261CEB74F8003AF765 /* BaseChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514251CEB74F8003AF765 /* BaseChatViewController.swift */; };
 		FEC514281CEB82E9003AF765 /* MucChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514271CEB82E9003AF765 /* MucChatViewController.swift */; };
@@ -425,6 +427,8 @@
 		FEB28A8F23CB5AD600F876B7 /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
 		FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift; sourceTree = "<group>"; };
 		FEB62C4F1DA80956001500D5 /* AvatarStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarStore.swift; sourceTree = "<group>"; };
+		FEBC12F124C70DE000689475 /* db-schema-13.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-13.sql"; sourceTree = "<group>"; };
+		FEBC12F324C70E2900689475 /* DBChatHistorySyncStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBChatHistorySyncStore.swift; sourceTree = "<group>"; };
 		FEC514231CEB2FF7003AF765 /* MucJoinViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucJoinViewController.swift; sourceTree = "<group>"; };
 		FEC514251CEB74F8003AF765 /* BaseChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewController.swift; sourceTree = "<group>"; };
 		FEC514271CEB82E9003AF765 /* MucChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatViewController.swift; sourceTree = "<group>"; };
@@ -602,6 +606,7 @@
 				FEC79194241ABEF4007BE572 /* MessageState.swift */,
 				FEE49DCF2426485500900BBB /* DBConnection_main.swift */,
 				FE3E387B242766A900D3A8E8 /* DBChannelStore.swift */,
+				FEBC12F324C70E2900689475 /* DBChatHistorySyncStore.swift */,
 			);
 			path = database;
 			sourceTree = "<group>";
@@ -736,6 +741,7 @@
 				FE10BCF223FD4EF000E214F3 /* db-schema-10.sql */,
 				FEC79198241BE89E007BE572 /* db-schema-11.sql */,
 				FE3BA0BF24B61583000C80D4 /* db-schema-12.sql */,
+				FEBC12F124C70DE000689475 /* db-schema-13.sql */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -1128,6 +1134,7 @@
 				FE759FF12371F21C001E78D9 /* db-schema-5.sql in Resources */,
 				FE759FF523741527001E78D9 /* db-schema-8.sql in Resources */,
 				FE759FEE2371F217001E78D9 /* db-schema-1.sql in Resources */,
+				FEBC12F224C70DE000689475 /* db-schema-13.sql in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1246,6 +1253,7 @@
 				FE507A211CDB7B3B001A015C /* SettingsViewController.swift in Sources */,
 				FE507A191CDB7B3B001A015C /* DBChatHistoryStore.swift in Sources */,
 				FEA8D65D1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift in Sources */,
+				FEBC12F524C70E7F00689475 /* DBChatHistorySyncStore.swift in Sources */,
 				FEDC6790238B05E4005C0FAB /* BlockedContactsController.swift in Sources */,
 				FE2332E1242CCDB400008ED4 /* InvitationChatTableViewCell.swift in Sources */,
 				FE3E38862428C21100D3A8E8 /* OSLog.swift in Sources */,
