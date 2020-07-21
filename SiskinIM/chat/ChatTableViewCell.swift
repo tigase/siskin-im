@@ -81,6 +81,7 @@ class ChatTableViewCell: BaseChatTableViewCell {
             }
         }
         if Settings.EnableMarkdownFormatting.getBool() {
+            attrText.addAttribute(.foregroundColor, value: UIColor(named: "chatMessageText"), range: NSRange(location: 0, length: attrText.length));
             Markdown.applyStyling(attributedString: attrText, font: UIFont.systemFont(ofSize: self.messageTextView.fontSize), showEmoticons:Settings.ShowEmoticons.getBool());
         }
         self.messageTextView.attributedText = attrText;

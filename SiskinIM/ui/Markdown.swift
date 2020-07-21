@@ -201,7 +201,6 @@ class Markdown {
 
                         if message.distance(from: codeStart, to: idx) > 1 {
                             let clearRange = NSRange(message.index(codeStart, offsetBy: codeCount)...message.index(idx, offsetBy: codeCount * -1), in: message);
-                            msg.removeAttribute(.foregroundColor, range: clearRange);
                             msg.removeAttribute(.underlineStyle, range: clearRange);
                             //msg.addAttribute(.foregroundColor, value: textColor ?? NSColor.textColor, range: clearRange);
                         }
