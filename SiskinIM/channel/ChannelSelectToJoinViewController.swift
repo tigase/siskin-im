@@ -98,8 +98,42 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
         self.joinButton.isEnabled = false;
     }
     
+    private var queryRemote: String?;
+    
     func updateSearchResults(for searchController: UISearchController) {
         updateItems();
+        self.queryRemote = searchController.searchBar.text;
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: { [weak self] in
+            guard let that = self, let remoteQuery = that.queryRemote, let account = that.account, let text = searchController.searchBar.text, remoteQuery == text else {
+                print("remote query", self?.queryRemote, "text:", searchController.searchBar.text)
+                return;
+            }
+            that.queryRemote = nil;
+            print("executing query for:", text);
+            ChannelsHelper.queryChannel(for: account, at: that.components, name: text, completionHandler: { result in
+                switch result {
+                case .success(let items):
+                    print("got items:", items);
+                    DispatchQueue.main.async {
+                        guard let that = self else {
+                            return;
+                        }
+                        var changed = false;
+                        for item in items {
+                            if that.allItems.first(where: { $0.jid == item.jid }) == nil {
+                                that.allItems.append(item);
+                                changed = true;
+                            }
+                        }
+                        if changed {
+                            that.updateItems();
+                        }
+                    }
+                case .failure(let err):
+                    print("got error:", err);
+                }
+            })
+        });
     }
     
     @IBAction func cancelClicked(_ sender: Any) {

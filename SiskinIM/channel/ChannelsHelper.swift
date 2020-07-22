@@ -100,6 +100,34 @@ class ChannelsHelper {
         })
     }
     
+    static func queryChannel(for account: BareJID, at components: [Component], name: String, completionHandler: @escaping (Result<[DiscoveryModule.Item],ErrorCondition>)->Void) {
+        guard let client = XmppService.instance.getClient(for: account), let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) else {
+            completionHandler(.failure(.item_not_found));
+            return;
+        }
+        
+        var allItems: [DiscoveryModule.Item] = [];
+        let group = DispatchGroup();
+        for component in components {
+            group.enter();
+            let channelJid = JID(BareJID(localPart: name, domain: component.jid.domain));
+            discoModule.getInfo(for: channelJid, node: nil, completionHandler: { result in
+                 switch result {
+                 case .success(_, let identities, let items):
+                     DispatchQueue.main.async {
+                        allItems.append(DiscoveryModule.Item(jid: channelJid, name: identities.first?.name));
+                     }
+                 case .failure(_, _):
+                     break;
+                 }
+                 group.leave();
+             });
+        }
+        group.notify(queue: DispatchQueue.main, execute: {
+            completionHandler(.success(allItems));
+        })
+    }
+    
     static func retrieveComponent(from jid: JID, name: String?, discoModule: DiscoveryModule, completionHandler: @escaping (Result<Component,ErrorCondition>)->Void) {
         discoModule.getInfo(for: jid, completionHandler: { result in
             switch result {
