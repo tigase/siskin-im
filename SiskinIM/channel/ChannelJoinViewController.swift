@@ -238,6 +238,9 @@ class ChannelJoinViewController: UITableViewController {
                     }, onError: nil);
                 }, onError: nil);
             }, onJoined: { room in
+                DispatchQueue.main.async { [weak self] in
+                    self?.dismiss(animated: true, completion: nil);
+                }
                 if let vCardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID) {
                     let vcard = VCard();
                     if let binval = avatar?.scaled(maxWidthOrHeight: 512.0)?.jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
