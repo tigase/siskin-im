@@ -263,6 +263,8 @@ class Markdown {
                 message.replaceSubrange(wordIdx!..<idx, with: emoji);
             }
         }
+        
+        msg.fixAttributes(in: NSRange(location: 0, length: msg.length));
     }
     
 }
