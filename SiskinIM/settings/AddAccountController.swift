@@ -23,7 +23,7 @@
 import UIKit
 import TigaseSwift
 
-class AddAccountController: CustomTableViewController, UITextFieldDelegate {
+class AddAccountController: UITableViewController, UITextFieldDelegate {
     
     var account:String?;
     

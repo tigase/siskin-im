@@ -29,6 +29,8 @@ open class DBVCardsCache {
     
     let dbConnection: DBConnection;
     
+    static let instance = DBVCardsCache(dbConnection: DBConnection.main);
+    
     fileprivate lazy var updateVCardStmt:DBStatement! = try? self.dbConnection.prepareStatement("UPDATE vcards_cache SET data = :data, timestamp = :timestamp WHERE jid = :jid");
     fileprivate lazy var insertVCardStmt:DBStatement! = try? self.dbConnection.prepareStatement("INSERT INTO vcards_cache (jid, data, timestamp) VALUES(:jid, :data, :timestamp)");
     fileprivate lazy var getVCardStmt:DBStatement! = try? self.dbConnection.prepareStatement("SELECT data FROM vcards_cache WHERE jid = :jid");

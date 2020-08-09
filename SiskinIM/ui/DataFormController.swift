@@ -23,8 +23,9 @@ import UIKit
 import TigaseSwift
 
 
-class DataFormController: CustomTableViewController {
+class DataFormController: UITableViewController {
     
+    var bob: [BobData] = [];
     var form: JabberDataElement?;
     
     var passwordSuggestNew: Bool?;
@@ -42,46 +43,72 @@ class DataFormController: CustomTableViewController {
         tableView.register(FixedFieldCell.self, forCellReuseIdentifier: "FormViewCell-fixed");
         tableView.register(ListSingleFieldCell.self, forCellReuseIdentifier: "FormViewCell-list-single");
         tableView.register(ListMultiFieldCell.self, forCellReuseIdentifier: "FormViewCell-list-multi");
+        tableView.register(MediaFieldCell.self, forCellReuseIdentifier: "FormViewCell-media");
     }
     
     override func viewWillAppear(_ animated: Bool) {
         tableView.reloadData();
         super.viewWillAppear(animated);
     }
-
+    
     override func numberOfSections(in tableView: UITableView) -> Int {
         guard form != nil else {
             return 0;
         }
-        return 1;
+        return 1 + form!.visibleFieldNames.count;
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard form != nil else {
+        guard form != nil && section != 0 else {
             return 0;
         }
-        return form!.visibleFieldNames.count;
+        
+        let fieldName = form!.visibleFieldNames[section - 1];
+        let field = form!.getField(named: fieldName)!;
+        return 1 + field.media.count;
+        
     }
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        let instructions: [String]? = form?.instructions as? [String];
+        if section == 0 {
+            let instructions: [String]? = form?.instructions as? [String];
         
-        return (instructions == nil || instructions!.isEmpty) ? "Please fill this form" : instructions!.joined(separator: "\n");
+            return (instructions == nil || instructions!.isEmpty) ? "Please fill this form" : instructions!.joined(separator: "\n");
+        } else {
+            let fieldName = form!.visibleFieldNames[section - 1];
+            return form?.getField(named: fieldName)?.label ?? fieldName;
+        }
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let fieldName = form!.visibleFieldNames[indexPath.row];
+        let fieldName = form!.visibleFieldNames[indexPath.section - 1];
         let field = form!.getField(named: fieldName)!;
-        let cellId = "FormViewCell-" + ( field.type ?? "fixed" );
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath);
-        (cell as? FieldCell)?.field = field;
-        if field.type == "list-single" || field.type == "list-multi" || field.type == "text-multi" || field.type == "jid-multi" {
-            cell.accessoryType = .disclosureIndicator;
+        let medias = field.media;
+        if indexPath.row < medias.count {
+            let media = medias[indexPath.row];
+            let cell = tableView.dequeueReusableCell(withIdentifier: "FormViewCell-media", for: indexPath) as! MediaFieldCell;
+            if let uri = media.uris.first(where: { $0.type.starts(with: "image/") }) {
+                if let bob = self.bob.first(where: { $0.matches(uri: uri.value) }) {
+                    cell.loadImage(bob: bob);
+                } else {
+                    cell.loadImage(uri: uri.value);
+                }
+            } else {
+                cell.loadError();
+            }
+            return cell;
+        } else {
+            let cellId = "FormViewCell-" + ( field.type ?? "fixed" );
+            let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath);
+            (cell as? FieldCell)?.field = field;
+            if field.type == "list-single" || field.type == "list-multi" || field.type == "text-multi" || field.type == "jid-multi" {
+                cell.accessoryType = .disclosureIndicator;
+            }
+            if let passwordSuggestNew = self.passwordSuggestNew, let c = cell as? TextPrivateFieldCell {
+                c.passwordSuggestNew = passwordSuggestNew;
+            }
+            return cell;
         }
-        if let passwordSuggestNew = self.passwordSuggestNew, let c = cell as? TextPrivateFieldCell {
-            c.passwordSuggestNew = passwordSuggestNew;
-        }
-        return cell;
     }
     
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
@@ -91,7 +118,7 @@ class DataFormController: CustomTableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: false);
         
-        guard let fieldName = form?.visibleFieldNames[indexPath.row] else {
+        guard indexPath.section > 0, let fieldName = form?.visibleFieldNames[indexPath.section - 1] else {
             return;
         }
         
@@ -112,7 +139,6 @@ class DataFormController: CustomTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        super.tableView(tableView, willDisplay: cell, forRowAt: indexPath);
         if errors.firstIndex(where: { (idx)->Bool in
             return idx.row == indexPath.row && idx.section == indexPath.section
         }) != nil {
@@ -146,52 +172,10 @@ class DataFormController: CustomTableViewController {
         return errors.isEmpty;
     }
     
-    func fillWithTestForm() {
-        // For testing only!
-        let form = JabberDataElement(type: .form);
-        form.addField(TextSingleField(name: "username"));
-        form.addField(TextPrivateField(name: "password"));
-        form.addField(TextSingleField(name: "email"));
-        form.addField(BooleanField(name: "policy", label: "Accept policy", value: true));
-        form.addField(FixedField(name: "fixed 1", value: "Some random text to display which may be very long... and even longer..."));
-        let hidden = HiddenField(name: "hidden-1");
-        hidden.value = "some-value";
-        form.addField(hidden);
-        let singleList = ListSingleField(name: "role");
-        singleList.options = [
-            ListFieldOption(value: "admin", label: "Admin"),
-            ListFieldOption(value: "user")
-        ];
-        singleList.value = "user";
-        form.addField(singleList);
-        let multiList = ListMultiField(name: "roles");
-        multiList.options = [
-            ListFieldOption(value: "admin", label: "Admin"),
-            ListFieldOption(value: "user")
-        ];
-        multiList.value = ["user"];
-        form.addField(multiList);
-        let textMulti = TextMultiField(name: "description");
-        textMulti.value = [ "First line", "Second line", "Third line" ];
-        form.addField(textMulti);
-        
-        let jidSingle = JidSingleField(name: "buddy");
-        jidSingle.value = JID("someone@example.com");
-        form.addField(jidSingle);
-        
-        let jidMulti = JidMultiField(name: "spammers");
-        jidMulti.value = [ JID("spammer1@example.com")!, JID("spammer2@example.com")! ];
-        form.addField(jidMulti);
-        
-        self.form = form;
-        tableView.reloadData();
-    }
-    
     class TextSingleFieldCell: AbstractTextSingleFieldCell {
         
         override var field: Field? {
             didSet {
-                label = field?.label ?? field?.name.capitalized;
                 guard let f: TextSingleField = field as? TextSingleField else {
                     value = nil;
                     return;
@@ -225,7 +209,6 @@ class DataFormController: CustomTableViewController {
         
         override var field: Field? {
             didSet {
-                label = field?.label ?? field?.name.capitalized;
                 uiTextField.isSecureTextEntry = true;
                 guard let f: TextPrivateField = field as? TextPrivateField else {
                     value = nil;
@@ -291,7 +274,6 @@ class DataFormController: CustomTableViewController {
         
         override var field: Field? {
             didSet {
-                label = field?.label ?? field?.name.capitalized;
                 guard let f: TextMultiField = field as? TextMultiField else {
                     value = nil;
                     return;
@@ -330,7 +312,6 @@ class DataFormController: CustomTableViewController {
         
         override var field: Field? {
             didSet {
-                label = field?.label ?? field?.name.capitalized;
                 guard let f: JidSingleField = field as? JidSingleField else {
                     value = nil;
                     return;
@@ -368,7 +349,6 @@ class DataFormController: CustomTableViewController {
         
         override var field: Field? {
             didSet {
-                label = field?.label ?? field?.name.capitalized;
                 guard let f: JidMultiField = field as? JidMultiField else {
                     value = [];
                     return;
@@ -383,16 +363,48 @@ class DataFormController: CustomTableViewController {
         }
     }
     
-    class BooleanFieldCell: AbstractFieldCell {
+    class BooleanFieldCell: UITableViewCell, FieldCell {
+        
+        var label: String? {
+            get {
+                return self.textLabel?.text;
+            }
+            set {
+                self.textLabel?.text = newValue;
+            }
+        }
         
         var uiSwitch: UISwitch! {
             return fieldView as? UISwitch;
         }
         
-        override var fieldView: UIView? {
+                
+        var field: Field? {
+            didSet {
+                label = field?.label ?? field?.name.capitalized;
+                value = (field as? BooleanField)?.value ?? false;
+            }
+        }
+        var fieldView: UIView? {
             didSet {
                 uiSwitch.addTarget(self, action: #selector(switchValueChanged(switch:)), for: .valueChanged);
             }
+        }
+        
+        override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+            super.init(style: UITableViewCell.CellStyle.value1, reuseIdentifier: reuseIdentifier);
+            initialize(field: createFieldView());
+        }
+        
+        required init?(coder aDecoder: NSCoder) {
+            super.init(coder: aDecoder);
+            initialize(field: createFieldView());
+            initialize(field: fieldView);
+        }
+        
+        func initialize(field: UIView?) {
+            self.fieldView = field;
+            accessoryView = field;
         }
         
         var value: Bool {
@@ -404,20 +416,8 @@ class DataFormController: CustomTableViewController {
             }
         }
         
-        override var field: Field? {
-            didSet {
-                label = field?.label ?? field?.name.capitalized;
-                value = (field as? BooleanField)?.value ?? false;
-            }
-        }
-        
-        override func createFieldView() -> UIView? {
+        func createFieldView() -> UIView? {
             return UISwitch();
-        }
-        
-        override func initialize(field: UIView?) {
-            self.fieldView = field;
-            accessoryView = field;
         }
         
         @objc func switchValueChanged(switch uiswitch: UISwitch) {
@@ -427,12 +427,7 @@ class DataFormController: CustomTableViewController {
     }
     
     class FixedFieldCell: AbstractFieldCell {
-        
-        override var label: String? {
-            get { return nil; }
-            set { }
-        }
-        
+                
         var value: String? {
             get {
                 return self.textLabel?.text;
@@ -470,7 +465,6 @@ class DataFormController: CustomTableViewController {
         
         override var field: Field? {
             didSet {
-                label = field?.label ?? field?.name.capitalized;
                 if let f: ListSingleField = field as? ListSingleField {
                     let value = f.value;
                     let selected = f.options.first(where: { (option) -> Bool in
@@ -483,7 +477,7 @@ class DataFormController: CustomTableViewController {
         
         override func createFieldView() -> UIView? {
             let label = UILabel();
-            label.textAlignment = .right;
+//            label.textAlignment = .right;
             return label;
         }
     }
@@ -501,7 +495,6 @@ class DataFormController: CustomTableViewController {
         
         override var field: Field? {
             didSet {
-                label = field?.label ?? field?.name.capitalized;
                 if let f: ListMultiField = field as? ListMultiField {
                     let value = f.value;
                     let selected = f.options.filter({ (option) -> Bool in
@@ -521,21 +514,12 @@ class DataFormController: CustomTableViewController {
     }
     
     class AbstractFieldCell: UITableViewCell, FieldCell {
-        
-        var label: String? {
-            get {
-                return self.textLabel?.text;
-            }
-            set {
-                self.textLabel?.text = newValue;
-            }
-        }
-        
+                
         var field: Field?;
         var fieldView: UIView?;
         
         override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-            super.init(style: UITableViewCell.CellStyle.value1, reuseIdentifier: reuseIdentifier);
+            super.init(style: UITableViewCell.CellStyle.default, reuseIdentifier: reuseIdentifier);
             initialize(field: createFieldView());
         }
         
@@ -546,20 +530,22 @@ class DataFormController: CustomTableViewController {
         }
         
         func initialize(field: UIView?) {
+            self.preservesSuperviewLayoutMargins = true;
+            self.insetsLayoutMarginsFromSafeArea = true;
             self.fieldView = field;
             guard field != nil else {
                 return;
             }
+            field!.insetsLayoutMarginsFromSafeArea = true;
             field!.translatesAutoresizingMaskIntoConstraints = false;
+            field!.preservesSuperviewLayoutMargins = true;
             contentView.addSubview(field!);
             addConstraints([
-                NSLayoutConstraint(item: field!, attribute: .leading, relatedBy: .equal, toItem: textLabel, attribute: .trailing, multiplier: 1, constant: 8),
-                NSLayoutConstraint(item: field!, attribute: .top, relatedBy: .equal, toItem: contentView, attribute: .top, multiplier: 1, constant: 8),
-                NSLayoutConstraint(item: field!, attribute: .bottom, relatedBy: .equal, toItem: contentView, attribute: .bottom, multiplier: 1, constant: -8),
-                NSLayoutConstraint(item: field!, attribute: .trailing, relatedBy: .equal, toItem: contentView, attribute: .trailing, multiplier: 1, constant: -8)
+                field!.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
+                field!.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+                field!.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
+                field!.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8)
                 ]);
-            (field as? UITextField)?.textAlignment = .right;
-            (field as? UILabel)?.textAlignment = .right;
         }
         
         func createFieldView() -> UIView? {
@@ -567,7 +553,69 @@ class DataFormController: CustomTableViewController {
         }
     }
     
-    class ListSelectorController: CustomTableViewController {
+    class MediaFieldCell: UITableViewCell {
+        
+        private let mediaView = UIImageView();
+        
+        override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+            super.init(style: UITableViewCell.CellStyle.default, reuseIdentifier: reuseIdentifier);
+            setup();
+        }
+        
+        required init?(coder aDecoder: NSCoder) {
+            super.init(coder: aDecoder);
+            setup();
+        }
+        
+        func setup() {
+            mediaView.translatesAutoresizingMaskIntoConstraints = false;
+            mediaView.contentMode = .scaleAspectFit;
+            self.contentView.addSubview(mediaView);
+            NSLayoutConstraint.activate([
+                contentView.leadingAnchor.constraint(equalTo: mediaView.leadingAnchor),
+                contentView.trailingAnchor.constraint(equalTo: mediaView.trailingAnchor),
+                contentView.topAnchor.constraint(equalTo: mediaView.topAnchor),
+                contentView.bottomAnchor.constraint(equalTo: mediaView.bottomAnchor)
+            ]);
+        }
+
+        func loadImage(bob: BobData) {
+            if let data = bob.data, let image = UIImage(data: data) {
+                self.mediaView.image = image;
+            } else {
+                self.mediaView.image = UIImage(named: "presence_error");
+            }
+        }
+        
+        func loadImage(uri: String) {
+            if uri.starts(with: "cid:") {
+                self.loadError();
+            } else {
+                if let url = URL(string: uri) {
+                DispatchQueue.global().async { [weak self] in
+                    if let data = try? Data(contentsOf: url), let image = UIImage(data: data) {
+                        DispatchQueue.main.async {
+                            self?.mediaView.image = image;
+                        }
+                    } else {
+                        DispatchQueue.main.async {
+                            self?.loadError();
+                        }
+                    }
+                }
+                } else {
+                    self.loadError();
+                }
+            }
+        }
+        
+        func loadError() {
+            self.mediaView.image = UIImage(named: "presence_error");
+        }
+        
+    }
+    
+    class ListSelectorController: UITableViewController {
         
         var field: ListField! {
             didSet {
@@ -598,7 +646,6 @@ class DataFormController: CustomTableViewController {
         }
         
         override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-            super.tableView(tableView, willDisplay: cell, forRowAt: indexPath);
             let option = options[indexPath.row];
             if let multiList: ListMultiField = field as? ListMultiField {
                 let values = multiList.value;

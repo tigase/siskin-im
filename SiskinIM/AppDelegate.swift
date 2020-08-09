@@ -56,7 +56,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Log.initialize();
         Settings.initialize();
         AccountSettings.initialize();
-        Appearance.sync();
+        if #available(iOS 13.0, *) {
+            switch Settings.appearance.string()! {
+            case "light":
+                for window in application.windows {
+                    window.overrideUserInterfaceStyle = .light;
+                }
+            case "dark":
+                for window in application.windows {
+                    window.overrideUserInterfaceStyle = .dark;
+                }
+            default:
+                break;
+            }
+        }
+        UINavigationBar.appearance().tintColor = UIColor(named: "tintColor");
         NotificationManager.instance.initialize(provider: MainNotificationManagerProvider());
         xmppService.initialize();
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
@@ -68,6 +82,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         ];
         UNUserNotificationCenter.current().setNotificationCategories(Set(categories));
         application.registerForRemoteNotifications();
+        _ = CallManager.instance;
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.unreadMessagesCountChanged), name: DBChatStore.UNREAD_MESSAGES_COUNT_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.serverCertificateError), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
@@ -140,6 +155,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
         xmppService.applicationState = .inactive;
 
+        initiateBackgroundTask();
+    }
+    
+    func initiateBackgroundTask() {
+        guard xmppService.applicationState == .inactive else {
+            return;
+        }
+        let application = UIApplication.shared;
         backgroundTaskId = application.beginBackgroundTask {
             print("keep online on away background task expired", self.backgroundTaskId);
             self.applicationKeepOnlineOnAwayFinished(application);
@@ -164,9 +187,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func applicationWillEnterForeground(_ application: UIApplication) {
-        if #available(iOS 13.0, *) {
-            Appearance.sync();
-        }
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
             let toDiscard = notifications.filter({(notification) in
@@ -188,7 +208,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             self.updateApplicationIconBadgeNumber(completionHandler: nil);
         }
     }
-
+    
     func applicationDidBecomeActive(_ application: UIApplication) {
         if #available(iOS 13, *) {
             BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: backgroundRefreshTaskIdentifier);
@@ -220,7 +240,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         guard let xmppUri = XmppUri(url: url) else {
             return false;
         }
-        print("got xmpp url with jid:", xmppUri.jid, "action:", xmppUri.action, "params:", xmppUri.dict);
+        print("got xmpp url with jid:", xmppUri.jid, "action:", xmppUri.action as Any, "params:", xmppUri.dict as Any);
 
         if let action = xmppUri.action {
             self.open(xmppUri: xmppUri, action: action);
@@ -324,7 +344,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         case .register:
             let alert = UIAlertController(title: "Registering account", message: xmppUri.jid.localPart == nil ? "Do you wish to register a new account at \(xmppUri.jid.domain!)?" : "Do you wish to register a new account \(xmppUri.jid.stringValue)?", preferredStyle: .alert);
             alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { action in
-                let registerAccountController = RegisterAccountController.instantiate(fromAppStoryboard: .Main);
+                let registerAccountController = RegisterAccountController.instantiate(fromAppStoryboard: .Account);
                 registerAccountController.hidesBottomBarWhenPushed = true;
                 registerAccountController.account = xmppUri.jid.bareJid;
                 registerAccountController.preauth = xmppUri.dict?["preauth"];
@@ -333,8 +353,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }));
             alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
             self.window?.rootViewController?.present(alert, animated: true, completion: nil);
-        default:
-            break;
         }
     }
     
@@ -350,8 +368,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
+    var backgroundFetchInProgress = false;
+    
     @available(iOS 13, *)
     func handleAppRefresh(task: BGAppRefreshTask) {
+        guard DispatchQueue.main.sync(execute: {
+            if self.backgroundFetchInProgress {
+                return false;
+            }
+            backgroundFetchInProgress = true;
+            return true;
+        }) else {
+            task.setTaskCompleted(success: true);
+            return;
+        }
         self.scheduleAppRefresh();
         let fetchStart = Date();
         print("starting fetching", fetchStart);
@@ -359,11 +389,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let fetchEnd = Date();
             let time = fetchEnd.timeIntervalSince(fetchStart);
             print(Date(), "fetched date in \(time) seconds with result = \(result)");
+            self.backgroundFetchInProgress = false;
             task.setTaskCompleted(success: result != .failed);
         });
         
         task.expirationHandler = {
             print("task expiration reached, start", Date());
+            DispatchQueue.main.sync {
+                self.backgroundFetchInProgress = false;
+            }
             self.xmppService.performFetchExpired();
             print("task expiration reached, end", Date());
         }
@@ -373,36 +407,49 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         guard let account = acc, let jid = j else {
             return false;
         }
+        
+        guard let baseChatController = AppDelegate.getChatController(visible: true) else {
+            return false;
+        }
+        
+        print("comparing", baseChatController.account.stringValue, account, baseChatController.jid.stringValue, jid);
+        return (baseChatController.account == BareJID(account)) && (baseChatController.jid == BareJID(jid));
+    }
+    
+    static func getChatController(visible: Bool) -> BaseChatViewController? {
         var topController = UIApplication.shared.keyWindow?.rootViewController;
         while (topController?.presentedViewController != nil) {
             topController = topController?.presentedViewController;
         }
         guard let splitViewController = topController as? UISplitViewController else {
-            return false;
+            return nil;
         }
         
-        guard let selectedTabController = splitViewController.viewControllers.map({(controller) in controller as? UITabBarController }).filter({ (controller) -> Bool in
-            controller != nil
-        }).map({(controller) in controller! }).first?.selectedViewController else {
-            return false;
+        guard let navigationController = navigationController(fromSplitViewController: splitViewController) else {
+            return nil;
         }
         
-        var baseChatController: BaseChatViewController? = nil;
-        if let navigationController = selectedTabController as? UINavigationController {
-            if let presented = navigationController.viewControllers.last {
-                print("presented", presented);
-                baseChatController = presented as? BaseChatViewController;
+            if visible {
+                return navigationController.viewControllers.last as? BaseChatViewController;
+            } else {
+                for controller in navigationController.viewControllers.reversed() {
+                    if let baseChatViewController = controller as? BaseChatViewController {
+                        return baseChatViewController;
+                    }
+                }
+                return nil;
             }
+//        } else {
+//            return selectedTabController as? BaseChatViewController;
+//        }
+    }
+    
+    private static func navigationController(fromSplitViewController splitViewController: UISplitViewController) -> UINavigationController? {
+        if splitViewController.isCollapsed {
+            return splitViewController.viewControllers.first(where: { $0 is UITabBarController }).map({ $0 as! UITabBarController })?.selectedViewController as? UINavigationController;
         } else {
-            baseChatController = selectedTabController as? BaseChatViewController;
+            return splitViewController.viewControllers.first(where: { !($0 is UITabBarController) }) as? UINavigationController;
         }
-        
-        guard baseChatController != nil else {
-            return false;
-        }
-        
-        print("comparing", baseChatController!.account.stringValue, account, baseChatController!.jid.stringValue, jid);
-        return (baseChatController!.account == BareJID(account)) && (baseChatController!.jid == BareJID(jid));
     }
     
     func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
@@ -457,6 +504,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 }
             } else if body != nil {
                 NotificationManager.instance.notifyNewMessage(account: account.bareJid, sender: sender?.bareJid, type: .unknown, nickname: userInfo[AnyHashable("nickname")] as? String, body: body!);
+            } else {
+                if let encryped = userInfo["encrypted"] as? String, let ivStr = userInfo["iv"] as? String, let key = NotificationEncryptionKeys.key(for: account.bareJid), let data = Data(base64Encoded: encryped), let iv = Data(base64Encoded: ivStr) {
+                    print("got encrypted push with known key");
+                    let cipher = Cipher.AES_GCM();
+                    var decoded = Data();
+                    if cipher.decrypt(iv: iv, key: key, encoded: data, auth: nil, output: &decoded) {
+                        print("got decrypted data:", String(data: decoded, encoding: .utf8) as Any);
+                        if let payload = try? JSONDecoder().decode(Payload.self, from: decoded) {
+                            print("decoded payload successfully!");
+                            if let sid = payload.sid {
+                                guard CallManager.instance.currentCall?.state ?? .ringing == .ringing else {
+                                    return;
+                                }
+                                CallManager.instance.endCall(on: account.bareJid, sid: sid, completionHandler: {
+                                    print("ended call");
+                                    completionHandler(.newData);
+                                })
+                                return;
+                            }
+                        }
+                        
+                    }
+                }
             }
         }
         

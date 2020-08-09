@@ -9,7 +9,7 @@
 import UIKit
 import TigaseSwift
 
-class BlockedContactsController: CustomTableViewController {
+class BlockedContactsController: UITableViewController {
         
     var activityIndicator: UIActivityIndicatorView!;
     

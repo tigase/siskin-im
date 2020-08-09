@@ -32,16 +32,11 @@ class SetupViewController: UIViewController {
     @IBOutlet var existingAccountBtn: UIButton!
     
     override func viewDidLoad() {
-        createAccountBtn.backgroundColor = self.view.tintColor;
         createAccountBtn.layer.borderWidth = 1;
         //createAccountBtn.layer.cornerRadius = createAccountBtn.frame.height / 2;
         createAccountBtn.layer.borderColor = UIColor.white.cgColor;
-        createAccountBtn.setTitleColor(UIColor.white, for: .normal);
         
         NotificationCenter.default.addObserver(self, selector: #selector(orientationChanged(_:)), name: UIDevice.orientationDidChangeNotification, object: nil);
-        
-        createAccountBtn.backgroundColor = self.subtitleView.textColor;
-        existingAccountBtn.setTitleColor(self.subtitleView.textColor, for: .normal);
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -60,18 +55,16 @@ class SetupViewController: UIViewController {
     }
     
     @IBAction func createAccountBtnClicked(_ sender: AnyObject) {
-        let addAccountController = RegisterAccountController.instantiate(fromAppStoryboard: .Main);
+        let addAccountController = RegisterAccountController.instantiate(fromAppStoryboard: .Account);
         addAccountController.hidesBottomBarWhenPushed = true;
         let navigationController = UINavigationController(rootViewController: addAccountController);
-        navigationController.view.backgroundColor = UIColor.white;
         self.showDetailViewController(navigationController, sender: self);
     }
     
     @IBAction func existingAccountBtnClicked(_ sender: AnyObject) {
-        let addAccountController = AddAccountController.instantiate(fromAppStoryboard: .Main);
+        let addAccountController = AddAccountController.instantiate(fromAppStoryboard: .Account);
         addAccountController.hidesBottomBarWhenPushed = true;
         let navigationController = UINavigationController(rootViewController: addAccountController);
-        navigationController.view.backgroundColor = UIColor.white;
         self.showDetailViewController(navigationController, sender: self);
     }
 

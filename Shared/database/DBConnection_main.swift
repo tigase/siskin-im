@@ -28,18 +28,8 @@ extension DBConnection {
         return containerURL.appendingPathComponent("siskinim_main.db");
     }
     
-    private static var createIfNotExist: Bool = false;
-    
-    public static let main: DBConnection = {
-        let dbURL = mainDbURL();
-
-        if (!FileManager.default.fileExists(atPath: dbURL.path)) && (!createIfNotExist)  {
-            return try! DBConnection.initialize(dbPath: ":memory:");
-        } else {
-            return try! DBConnection.initialize(dbPath: dbURL.path);
-        }
-    }();
-    
+    public private(set) static var createIfNotExist: Bool = false;
+        
     public static func migrateToGroupIfNeeded() throws {
         let dbURL = mainDbURL();
 
@@ -55,7 +45,7 @@ extension DBConnection {
         createIfNotExist = true;
     }
     
-    private static func initialize(dbPath: String) throws -> DBConnection {
+    public static func initialize(dbPath: String) throws -> DBConnection {
         let conn = try DBConnection(dbPath: dbPath);
         try? conn.execute("PRAGMA busy_timeout = 2")
         try DBSchemaManager(dbConnection: conn).upgradeSchema();

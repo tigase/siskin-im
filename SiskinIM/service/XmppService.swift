@@ -48,15 +48,14 @@ open class XmppService: Logger, EventHandler {
     fileprivate var fetchStart = NSDate();
         
     #if targetEnvironment(simulator)
-    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), PushEventHandler.instance, BlockedEventHandler.instance];
+    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), PushEventHandler.instance, BlockedEventHandler.instance, MixEventHandler.instance];
     #else
-    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), PushEventHandler.instance, JingleManager.instance, BlockedEventHandler.instance];
+    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), PushEventHandler.instance, JingleManager.instance, BlockedEventHandler.instance, MixEventHandler.instance];
     #endif
     
     public let dbCapsCache: DBCapabilitiesCache;
     public let dbChatStore: DBChatStore;
     public let dbChatHistoryStore: DBChatHistoryStore;
-    fileprivate let dbRosterStore: DBRosterStore;
     public let dbVCardsCache: DBVCardsCache;
     fileprivate let avatarStore: AvatarStore;
     open var applicationState: ApplicationState = .inactive {
@@ -66,6 +65,13 @@ open class XmppService: Logger, EventHandler {
             }
             if applicationState != .active {
                 AvatarManager.instance.clearCache();
+            }
+        }
+    }
+    open var onCall: Bool = false {
+        didSet {
+            if oldValue != onCall {
+                applicationStateChanged();
             }
         }
     }
@@ -102,11 +108,10 @@ open class XmppService: Logger, EventHandler {
         self.dnsSrvResolverCache = DNSSrvResolverWithCache.InMemoryCache(store: DNSSrvDiskCache(cacheDirectoryName: "dns-cache"));
         self.dnsSrvResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: self.dnsSrvResolverCache);
         self.streamFeaturesCache = StreamFeaturesCache();
-        self.dbCapsCache = DBCapabilitiesCache(dbConnection: dbConnection);
+        self.dbCapsCache = DBCapabilitiesCache.instance;
         self.dbChatStore = DBChatStore.instance;
-        self.dbChatHistoryStore = DBChatHistoryStore(dbConnection: dbConnection);
-        self.dbRosterStore = DBRosterStore(dbConnection: dbConnection);
-        self.dbVCardsCache = DBVCardsCache(dbConnection: dbConnection);
+        self.dbChatHistoryStore = DBChatHistoryStore.instance;
+        self.dbVCardsCache = DBVCardsCache.instance;
         self.avatarStore = AvatarStore(dbConnection: dbConnection);
         self.reachability = Reachability();
         self.networkAvailable = false;
@@ -168,7 +173,7 @@ open class XmppService: Logger, EventHandler {
             if let account = AccountManager.getAccount(for: e.sessionObject.userBareJid!) {
                 account.active = false;
                 account.serverCertificate = certInfo;
-                AccountManager.save(account: account);
+                _ = AccountManager.save(account: account);
             }
             
             var info = certInfo;
@@ -208,10 +213,10 @@ open class XmppService: Logger, EventHandler {
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
             let account = e.sessionObject.userBareJid!;
 
-            let client = getClient(forJid: e.sessionObject.userBareJid!);
+            let client = getClient(forJid: account);
             client?.sessionObject.setProperty(XmppService.CONNECTION_RETRY_NO_KEY, value: nil);
             DispatchQueue.global(qos: .default).async {
-                NotificationCenter.default.post(name: XmppService.ACCOUNT_STATE_CHANGED, object: self, userInfo: ["account":e.sessionObject.userBareJid!.stringValue]);
+                NotificationCenter.default.post(name: XmppService.ACCOUNT_STATE_CHANGED, object: self, userInfo: ["account": account.stringValue]);
             }
             if let c = client {
                 let end = Date().timeIntervalSinceReferenceDate
@@ -231,7 +236,7 @@ open class XmppService: Logger, EventHandler {
             if e.error != SaslError.aborted && e.error != SaslError.temporary_auth_failure {
                 if let account = AccountManager.getAccount(for: e.sessionObject.userBareJid!) {
                     account.active = false;
-                    AccountManager.save(account: account);
+                    _ = AccountManager.save(account: account);
                 }
                 var info: [String: AnyObject] = [:];
                 info["account"] = e.sessionObject.userBareJid!.stringValue as NSString;
@@ -280,7 +285,7 @@ open class XmppService: Logger, EventHandler {
                 }
             }
         }
-        if applicationState == .active {
+        if applicationState == .active || onCall {
             connectClients();
             forEachClient { client in
                 client.sessionObject.setProperty(XmppService.CONNECTION_RETRY_NO_KEY, value: nil);
@@ -330,7 +335,7 @@ open class XmppService: Logger, EventHandler {
             if let client = self.clients[account.name] {
                 self.disconnect(client: client);
             } else if let client = self.initializeClient(jid: account.name) {
-                self.register(client: client, for: account.name);
+                _ = self.register(client: client, for: account.name);
                 self.connect(client: client);
             }
         }
@@ -358,23 +363,16 @@ open class XmppService: Logger, EventHandler {
             }
         case .StatusMessage, .StatusType:
             sendAutoPresence();
-        case .DeviceToken:
-            let newDeviceId = notification.userInfo?["newValue"] as? String;
-            // FIXME: do something about it? is it needed?
-//            forEachClient { (client) in
-//                if let pushModule: TigasePushNotificationsModule = client.modulesManager.getModule(PushNotificationsModule.ID) {
-//                    pushModule.deviceId = newDeviceId;
-//                }
-//            }
         default:
             break;
         }
     }
     
     func forEachClient(_ task: @escaping (XMPPClient)->Void) {
-        dispatcher.async {
-            self.clients.values.forEach(task);
+        let clients = dispatcher.sync {
+            return Array(self.clients.values);
         }
+        clients.forEach(task);
     }
     
     open func backgroundTaskFinished() {
@@ -467,7 +465,7 @@ open class XmppService: Logger, EventHandler {
     }
     
     open func performFetchExpired() {
-        guard applicationState == .inactive, let fetchGroup = self.fetchGroup else {
+        guard applicationState == .inactive, self.fetchGroup != nil else {
             return;
         }
         
@@ -637,6 +635,12 @@ open class XmppService: Logger, EventHandler {
         if let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) {
             ((messageModule.chatManager as! DefaultChatManager).chatStore as! DBChatStoreWrapper).deinitialize();
         }
+        if let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) {
+            (mucModule.roomsManager.store as! DBRoomStore).deinitialize();
+        }
+        if let mixModule: MixModule = client.modulesManager.getModule(MixModule.ID) {
+            ((mixModule.channelManager as! DefaultChannelManager).store as! DBChannelStore).deinitialize();
+        }
         AccountSettings.reconnectionLocation(account).set(string: nil);
         unregisterEventHandlers(client);
     }
@@ -662,17 +666,23 @@ open class XmppService: Logger, EventHandler {
             _ = client.modulesManager.register(PEPUserAvatarModule());
             _ = client.modulesManager.register(PEPBookmarksModule());
             let rosterModule =  client.modulesManager.register(RosterModule());
-            rosterModule.rosterStore = DBRosterStoreWrapper(sessionObject: client.sessionObject, store: dbRosterStore);
-            rosterModule.versionProvider = dbRosterStore;
+            let rosterStore = DBRosterStoreWrapper(sessionObject: client.sessionObject);
+            rosterStore.initialize();
+            rosterModule.rosterStore = rosterStore;
+            rosterModule.versionProvider = DBRosterStore.instance;
             _ = client.modulesManager.register(PresenceModule());
             let messageModule = client.modulesManager.register(MessageModule());
-            let chatManager = CustomChatManager(context: client.context, chatStore: DBChatStoreWrapper(sessionObject: client.sessionObject));
-            messageModule.chatManager = chatManager;
+            let chatStoreWrapper = DBChatStoreWrapper(sessionObject: client.context.sessionObject);
+            chatStoreWrapper.initialize();
+            messageModule.chatManager = DefaultChatManager(context: client.context, chatStore: chatStoreWrapper);
             _ = client.modulesManager.register(MessageCarbonsModule());
             _ = client.modulesManager.register(MessageArchiveManagementModule());
-            let mucModule = MucModule();
-            mucModule.roomsManager = DBRoomsManager(store: dbChatStore);
-            _ = client.modulesManager.register(mucModule);
+            let roomStore = DBRoomStore(sessionObject: client.context.sessionObject);
+            _ = client.modulesManager.register(MucModule(roomsManager: DefaultRoomsManager(store: roomStore)));
+            roomStore.initialize();
+            let channelStore = DBChannelStore(sessionObject: client.context.sessionObject);
+            _ = client.modulesManager.register(MixModule(channelManager: DefaultChannelManager(context: client.context, store: channelStore)));
+            channelStore.initialize();
             _ = client.modulesManager.register(AdHocCommandsModule());
             _ = client.modulesManager.register(SiskinPushNotificationsModule(defaultPushServiceJid: XmppService.pushServiceJid, provider: SiskinPushNotificationsModuleProvider()));
             _ = client.modulesManager.register(HttpFileUploadModule());
@@ -681,11 +691,12 @@ open class XmppService: Logger, EventHandler {
             #if targetEnvironment(simulator)
             #else
             let jingleModule = client.modulesManager.register(JingleModule(sessionManager: JingleManager.instance));
+            jingleModule.supportsMessageInitiation = true;
             jingleModule.register(transport: Jingle.Transport.ICEUDPTransport.self, features: [Jingle.Transport.ICEUDPTransport.XMLNS, "urn:xmpp:jingle:apps:dtls:0"]);
             jingleModule.register(description: Jingle.RTP.Description.self, features: ["urn:xmpp:jingle:apps:rtp:1", "urn:xmpp:jingle:apps:rtp:audio", "urn:xmpp:jingle:apps:rtp:video"]);
             #endif
             _ = client.modulesManager.register(InBandRegistrationModule());
-            let capsModule = client.modulesManager.register(CapabilitiesModule());
+            let capsModule = client.modulesManager.register(CapabilitiesModule(additionalFeatures: [.lastMessageCorrection, .messageRetraction]));
             capsModule.cache = dbCapsCache;
             ScramMechanism.setSaltedPasswordCache(AccountManager.saltedPasswordCache, sessionObject: client.sessionObject);
             

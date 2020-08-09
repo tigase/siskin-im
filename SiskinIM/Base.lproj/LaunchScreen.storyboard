@@ -1,28 +1,107 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11201" systemVersion="16A323" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="oxa-1l-6kK">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16086"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
         <!--View Controller-->
-        <scene sceneID="EHf-IW-A2E">
+        <scene sceneID="1XM-RN-tey">
             <objects>
-                <viewController id="01J-lp-oVM" sceneMemberID="viewController">
+                <viewController id="ElR-11-Gau" sceneMemberID="viewController">
                     <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="Llm-lL-Icb"/>
-                        <viewControllerLayoutGuide type="bottom" id="xb3-aO-Qok"/>
+                        <viewControllerLayoutGuide type="top" id="ouf-3P-yxh"/>
+                        <viewControllerLayoutGuide type="bottom" id="DsC-se-tRQ"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                    <view key="view" contentMode="scaleToFill" id="To2-Hy-GcK">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                     </view>
                 </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="6qf-r5-Vni" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="53" y="375"/>
+            <point key="canvasLocation" x="535" y="320"/>
+        </scene>
+        <!--Table View Controller-->
+        <scene sceneID="l3a-A1-fkh">
+            <objects>
+                <tableViewController clearsSelectionOnViewWillAppear="NO" id="r6W-zK-ipJ" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="TxL-vg-tGC">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" name="chatslistBackground"/>
+                        <sections/>
+                        <connections>
+                            <outlet property="dataSource" destination="r6W-zK-ipJ" id="C9p-QO-DZB"/>
+                            <outlet property="delegate" destination="r6W-zK-ipJ" id="ETR-ch-c5o"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" id="pKk-3h-RwS"/>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Qwn-6Q-9cP" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2505.7971014492755" y="-751.33928571428567"/>
+        </scene>
+        <!--Split View Controller-->
+        <scene sceneID="rW3-hL-8TP">
+            <objects>
+                <splitViewController id="oxa-1l-6kK" sceneMemberID="viewController">
+                    <connections>
+                        <segue destination="ElR-11-Gau" kind="relationship" relationship="detailViewController" id="J8X-32-rjQ"/>
+                        <segue destination="D9q-bN-UhK" kind="relationship" relationship="masterViewController" id="upB-kt-hIm"/>
+                    </connections>
+                </splitViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="sWd-rL-5Sg" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-384" y="-5"/>
+        </scene>
+        <!--Tab Bar Controller-->
+        <scene sceneID="cj2-4h-znl">
+            <objects>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="2zb-D1-xs3" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+                <tabBarController id="D9q-bN-UhK" sceneMemberID="viewController">
+                    <tabBar key="tabBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="n2Q-uy-YoY">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="49"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <color key="barTintColor" name="chatslistBackground"/>
+                        <color key="selectedImageTintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </tabBar>
+                    <connections>
+                        <segue destination="mA0-Mb-ZG3" kind="relationship" relationship="viewControllers" id="gnT-o0-is4"/>
+                    </connections>
+                </tabBarController>
+            </objects>
+            <point key="canvasLocation" x="510" y="-402"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="nj2-14-nOH">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="mA0-Mb-ZG3" sceneMemberID="viewController">
+                    <tabBarItem key="tabBarItem" title="" image="gear" id="BQH-aG-YCV"/>
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="C1y-Ps-L1C">
+                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <color key="barTintColor" name="chatslistBackground"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="r6W-zK-ipJ" kind="relationship" relationship="rootViewController" id="5BY-gf-egd"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="OMB-Nb-kCD" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1595.6521739130435" y="-751.33928571428567"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="gear" width="24" height="24"/>
+        <namedColor name="chatslistBackground">
+            <color red="0.36862745098039218" green="0.36862745098039218" blue="0.54117647058823526" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+        </namedColor>
+    </resources>
 </document>

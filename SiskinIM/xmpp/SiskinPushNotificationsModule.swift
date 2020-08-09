@@ -32,6 +32,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         public let jid: JID;
         public let node: String;
         public let deviceId: String;
+        public let pushkitDeviceId: String?;
         public let encryption: Bool;
 
         init?(dictionary: [String: Any]?) {
@@ -41,18 +42,22 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
             guard let jid = JID(dict["jid"] as? String), let node = dict["node"] as? String, let deviceId = dict["device"] as? String else {
                 return nil;
             }
-            self.init(jid: jid, node: node, deviceId: deviceId, encryption: dict["encryption"] as? Bool ?? false);
+            self.init(jid: jid, node: node, deviceId: deviceId, pushkitDeviceId: dict["pushkitDevice"] as? String, encryption: dict["encryption"] as? Bool ?? false);
         }
         
-        init(jid: JID, node: String, deviceId: String, encryption: Bool) {
+        init(jid: JID, node: String, deviceId: String, pushkitDeviceId: String? = nil, encryption: Bool) {
             self.jid = jid;
             self.node = node;
             self.deviceId = deviceId;
+            self.pushkitDeviceId = pushkitDeviceId;
             self.encryption = encryption;
         }
         
         func dictionary() -> [String: Any] {
             var dict: [String: Any] =  ["jid": jid.stringValue, "node": node, "device": deviceId];
+            if let pushkitDevice = self.pushkitDeviceId {
+                dict["pushkitDevice"] = pushkitDevice;
+            }
             if encryption {
                 dict["encryption"] = true;
             }
@@ -86,13 +91,13 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         super.init();
     }
     
-    open func registerDeviceAndEnable(deviceId: String, completionHandler: @escaping (Result<PushSettings,ErrorCondition>)->Void) {
+    open func registerDeviceAndEnable(deviceId: String, pushkitDeviceId: String?, completionHandler: @escaping (Result<PushSettings,ErrorCondition>)->Void) {
         self.findPushComponent { result in
             switch result {
             case .success(let jid):
-                self.registerDeviceAndEnable(deviceId: deviceId, pushServiceJid: jid, completionHandler: completionHandler);
-            case .failure(let error):
-                self.registerDeviceAndEnable(deviceId: deviceId, pushServiceJid: self.defaultPushServiceJid, completionHandler: completionHandler);
+                self.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, pushServiceJid: jid, completionHandler: completionHandler);
+            case .failure(_):
+                self.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, pushServiceJid: self.defaultPushServiceJid, completionHandler: completionHandler);
             }
         }
     }
@@ -122,7 +127,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
             if priority {
                 extensions.append(TigasePushNotificationsModule.Priority());
                 if componentSupportsEncryption && self.isSupported(extension: TigasePushNotificationsModule.Encryption.self) && self.isSupported(feature: TigasePushNotificationsModule.Encryption.AES_128_GCM) {
-                    extensions.append(TigasePushNotificationsModule.Encryption(algorithm: TigasePushNotificationsModule.Encryption.AES_128_GCM, key: NotificationEncryptionKeys.key(for: account) ?? Cipher.AES_GCM.generateKey(ofSize: 128)!));
+                    extensions.append(TigasePushNotificationsModule.Encryption(algorithm: TigasePushNotificationsModule.Encryption.AES_128_GCM.replacingOccurrences(of: "tigase:push:encrypt:", with: ""), key: NotificationEncryptionKeys.key(for: account) ?? Cipher.AES_GCM.generateKey(ofSize: 128)!));
                 }
             }
         }
@@ -131,14 +136,18 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
             extensions.append(TigasePushNotificationsModule.PushForAway());
         }
         
+        if self.isSupported(extension: TigasePushNotificationsModule.Jingle.self) {
+            extensions.append(TigasePushNotificationsModule.Jingle());
+        }
+        
         return extensions;
     }
     
-    open func registerDeviceAndEnable(deviceId: String, pushServiceJid: JID, completionHandler: @escaping (Result<PushSettings,ErrorCondition>)->Void) {
-        self.registerDevice(serviceJid: pushServiceJid, provider: self.providerId, deviceId: deviceId, completionHandler: { (result) in
+    open func registerDeviceAndEnable(deviceId: String, pushkitDeviceId: String? = nil, pushServiceJid: JID, completionHandler: @escaping (Result<PushSettings,ErrorCondition>)->Void) {
+        self.registerDevice(serviceJid: pushServiceJid, provider: self.providerId, deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, completionHandler: { (result) in
             switch result {
             case .success(let data):
-                self.enable(serviceJid: pushServiceJid, node: data.node, deviceId: deviceId, features: data.features ?? [], completionHandler: completionHandler);
+                self.enable(serviceJid: pushServiceJid, node: data.node, deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, features: data.features ?? [], completionHandler: completionHandler);
             case .failure(let err):
                 completionHandler(.failure(err));
             }
@@ -161,7 +170,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         return hash;
     }
     
-    private func enable(serviceJid: JID, node: String, deviceId: String, features: [String], publishOptions: JabberDataElement? = nil, completionHandler: @escaping (Result<PushSettings,ErrorCondition>)->Void) {
+    private func enable(serviceJid: JID, node: String, deviceId: String, pushkitDeviceId: String? = nil, features: [String], publishOptions: JabberDataElement? = nil, completionHandler: @escaping (Result<PushSettings,ErrorCondition>)->Void) {
         let extensions: [PushNotificationsModuleExtension] = self.prepareExtensions(componentSupportsEncryption: features.contains(TigasePushNotificationsModule.Encryption.XMLNS));
         
         let newHash = hash(extensions: extensions);
@@ -176,7 +185,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
             return ext is TigasePushNotificationsModule.Encryption;
         }) as? TigasePushNotificationsModule.Encryption;
                 
-        let settings = PushSettings(jid: serviceJid, node: node, deviceId: deviceId, encryption: encryption != nil);
+        let settings = PushSettings(jid: serviceJid, node: node, deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, encryption: encryption != nil);
 
         self.enable(serviceJid: serviceJid, node: node, extensions: extensions, completionHandler: { (result) in
             switch result {
@@ -188,7 +197,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
                 if let config = AccountManager.getAccount(for: accountJid) {
                     config.pushSettings = settings;
                     config.pushNotifications = true;
-                    AccountManager.save(account: config);
+                    _ = AccountManager.save(account: config);
                 }
                 completionHandler(.success(settings));
             case .failure(let err):
@@ -231,7 +240,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
                 if let config = AccountManager.getAccount(for: accountJid) {
                     config.pushSettings = nil;
                     config.pushNotifications = false;
-                    AccountManager.save(account: config);
+                    _ = AccountManager.save(account: config);
                 }
                 completionHandler(total);
             }

@@ -22,6 +22,7 @@
 import Foundation
 import TigaseSwift
 import UserNotifications
+import os
 
 public class NotificationManager {
     
@@ -98,18 +99,18 @@ public class NotificationManager {
             let uid = generateMessageUID(account: account, sender: sender, body: body)!;
             content.threadIdentifier = "account=\(account.stringValue)|sender=\(sender.stringValue)";
             self.provider.getChatNameAndType(for: account, with: sender, completionHandler: { (name, type) in
+                os_log("%{public}@", log: OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SiskinPush"), "Found: name: \(name ?? ""), type: \(type.rawValue)");
                 switch type {
                 case .chat:
                     content.title = name ?? sender.stringValue;
                     content.body = body;
                     content.userInfo = ["account": account.stringValue, "sender": sender.stringValue, "uid": uid];
                 case .groupchat:
-                    if let nickname = nickname {
-                        content.title = "\(nickname): \(name ?? sender.stringValue)";
-                    } else {
-                        content.title = "\(name ?? sender.stringValue)";
-                    }
+                    content.title = "\(name ?? sender.stringValue)";
                     content.body = body;
+                    if let nickname = nickname {
+                        content.subtitle = nickname;
+                    }
                     content.userInfo = ["account": account.stringValue, "sender": sender.stringValue, "uid": uid];
                 default:
                     break;
@@ -153,6 +154,7 @@ public class Payload: Decodable {
     public var type: Kind;
     public var nickname: String?;
     public var message: String?;
+    public var sid: String?;
     
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self);
@@ -161,6 +163,7 @@ public class Payload: Decodable {
         type = Kind(rawValue: (try container.decodeIfPresent(String.self, forKey: .type)) ?? Kind.unknown.rawValue)!;
         nickname = try container.decodeIfPresent(String.self, forKey: .nickname);
         message = try container.decodeIfPresent(String.self, forKey: .message);
+        sid = try container.decodeIfPresent(String.self, forKey: .sid)
         // -- and so on...
     }
     
@@ -168,6 +171,7 @@ public class Payload: Decodable {
         case unknown
         case groupchat
         case chat
+        case call
     }
     
     public enum CodingKeys: String, CodingKey {
@@ -176,5 +180,6 @@ public class Payload: Decodable {
         case type
         case nickname
         case message
+        case sid
     }
 }

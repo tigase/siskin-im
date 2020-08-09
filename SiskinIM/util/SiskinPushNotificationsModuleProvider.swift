@@ -39,26 +39,50 @@ class SiskinPushNotificationsModuleProvider: SiskinPushNotificationsModuleProvid
     
     func groupchatFilterRules(for account: BareJID) -> [TigasePushNotificationsModule.GroupchatFilter.Rule] {
         return DBChatStore.instance.getChats(for: account).filter({ (c) -> Bool in
-            if let room = c as? DBRoom {
+            switch c {
+            case let channel as DBChannel:
+                switch channel.options.notifications {
+                case .none:
+                    return false;
+                case .always, .mention:
+                    return true;
+                }
+            case let room as DBRoom:
                 switch room.options.notifications {
                 case .none:
                     return false;
                 case .always, .mention:
                     return true;
                 }
+            default:
+                break;
             }
             return false;
         }).sorted(by: { (r1, r2) -> Bool in
             return r1.jid.bareJid.stringValue.compare(r2.jid.bareJid.stringValue) == .orderedAscending;
         }).map({ (c) -> TigasePushNotificationsModule.GroupchatFilter.Rule in
-            let room = c as! DBRoom;
-            switch room.options.notifications {
-            case .none:
-                return .never(room: room.roomJid);
-            case .always:
-                return .always(room: room.roomJid);
-            case .mention:
-                return .mentioned(room: room.roomJid, nickname: room.nickname);
+            switch c {
+            case let channel as DBChannel:
+                switch channel.options.notifications {
+                case .none:
+                    return .never(room: channel.channelJid);
+                case .always:
+                    return .always(room: channel.channelJid);
+                case .mention:
+                    return .mentioned(room: channel.channelJid, nickname: channel.nickname ?? "");
+                }
+            case let room as DBRoom:
+                switch room.options.notifications {
+                case .none:
+                    return .never(room: room.roomJid);
+                case .always:
+                    return .always(room: room.roomJid);
+                case .mention:
+                    return .mentioned(room: room.roomJid, nickname: room.nickname);
+                }
+            default:
+                // should not happen
+                return .never(room: c.account);
             }
         });
     }

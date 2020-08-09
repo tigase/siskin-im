@@ -27,7 +27,6 @@ class NewFeaturesDetector: XmppServiceEventHandler {
     let events: [Event] = [DiscoveryModule.AccountFeaturesReceivedEvent.TYPE];
     
     let suggestions: [NewFeaturesDetectorSuggestion] = [MAMSuggestion(), PushSuggestion()];
-    weak var xmppService: XmppService?;
     
     fileprivate var allControllers: [NewFeatureSuggestionView] = [];
     fileprivate var inProgress: Bool = false;
@@ -57,7 +56,7 @@ class NewFeaturesDetector: XmppServiceEventHandler {
     func handle(event: Event) {
         switch event {
         case let e as DiscoveryModule.AccountFeaturesReceivedEvent:
-            guard let account = e.sessionObject.userBareJid, let xmppService = self.xmppService else {
+            guard let account = e.sessionObject.userBareJid else {
                 return;
             }
             guard DispatchQueue.main.sync(execute: { return UIApplication.shared.applicationState == .active }) else {
@@ -70,7 +69,7 @@ class NewFeaturesDetector: XmppServiceEventHandler {
             };
             
             suggestions.forEach { suggestion in
-                suggestion.handle(xmppService: xmppService, account: account, newServerFeatures: newFeatures, onNext: self.showNext, completionHandler: self.completionHandler);
+                suggestion.handle(account: account, newServerFeatures: newFeatures, onNext: self.showNext, completionHandler: self.completionHandler);
             }
             
             let newKnownFeatures = e.features.filter { feature -> Bool in
@@ -95,73 +94,78 @@ class NewFeaturesDetector: XmppServiceEventHandler {
             return self.feature == feature;
         }
 
-        func handle(xmppService: XmppService, account: BareJID, newServerFeatures features: [String], onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
+        func handle(account: BareJID, newServerFeatures features: [String], onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
             guard features.contains(feature) else {
                 completionHandler([]);
                 return;
             }
             
-            askToEnableMAM(xmppService: xmppService, account: account, onNext: onNext, completionHandler: completionHandler);
+            askToEnableMAM(account: account, onNext: onNext, completionHandler: completionHandler);
         }
      
-        fileprivate func askToEnableMAM(xmppService: XmppService, account: BareJID, onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
-            guard let mamModule: MessageArchiveManagementModule = xmppService.getClient(forJid: account)?.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
+        fileprivate func askToEnableMAM(account: BareJID, onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
+            guard let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(forJid: account)?.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
                 completionHandler([]);
                 return;
             }
             
-            mamModule.retrieveSettings(onSuccess: { (defValue, always, never) in
-                if defValue == .never {
-                    DispatchQueue.main.async {
-                        let controller = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(withIdentifier: "NewFeatureSuggestionView") as! NewFeatureSuggestionView;
-                        
-                        _ = controller.view;
-                        
-                        controller.titleField.text = "Message Archiving";
-                        controller.iconField.image = UIImage(named: "messageArchiving")
-                        controller.descriptionField.text = """
-                        Your server for account \(account) supports message archiving.
-                        
-                        When it is enabled your XMPP server will archive all messages which you exchange. This will allow any XMPP client which you use and which supports message archiving to query this archive and show you message history even if messages were sent using different XMPP client.
-                        """;
-                        controller.onSkip = {
-                            controller.dismiss(animated: true, completion: onNext);
-                        }
-                        controller.onEnable = { (handler) in
-                            mamModule.updateSettings(defaultValue: .always, always: always, never: never, onSuccess: { (defValue, always, never) in
-                                DispatchQueue.main.async {
-                                    handler();
-                                    self.askToEnableMessageSync(xmppService: xmppService, account: account, onNext: onNext, completionHandler: { subcontrollers in
-                                        guard let toShow = subcontrollers.first else {
-                                            controller.dismiss(animated: true, completion: onNext);
-                                            return;
+            mamModule.retrieveSettings(completionHandler: { result in
+                switch result {
+                case .success(let defValue, let always, let never):
+                    if defValue == .never {
+                        DispatchQueue.main.async {
+                            let controller = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(withIdentifier: "NewFeatureSuggestionView") as! NewFeatureSuggestionView;
+                            
+                            _ = controller.view;
+                            
+                            controller.titleField.text = "Message Archiving";
+                            controller.iconField.image = UIImage(named: "messageArchiving")
+                            controller.descriptionField.text = """
+                            Your server for account \(account) supports message archiving.
+                            
+                            When it is enabled your XMPP server will archive all messages which you exchange. This will allow any XMPP client which you use and which supports message archiving to query this archive and show you message history even if messages were sent using different XMPP client.
+                            """;
+                            controller.onSkip = {
+                                controller.dismiss(animated: true, completion: onNext);
+                            }
+                            controller.onEnable = { (handler) in
+                                mamModule.updateSettings(defaultValue: .always, always: always, never: never, completionHandler: { result in
+                                    switch result {
+                                    case .success(_, _, _):
+                                        DispatchQueue.main.async {
+                                            handler();
+                                            self.askToEnableMessageSync(account: account, onNext: onNext, completionHandler: { subcontrollers in
+                                                guard let toShow = subcontrollers.first else {
+                                                    controller.dismiss(animated: true, completion: onNext);
+                                                    return;
+                                                }
+                                                controller.dismiss(animated: true, completion: {
+                                                    UIApplication.shared.keyWindow?.rootViewController?.present(toShow, animated: true, completion: nil);
+                                                })
+                                            });
                                         }
-                                        controller.dismiss(animated: true, completion: {
-                                            UIApplication.shared.keyWindow?.rootViewController?.present(toShow, animated: true, completion: nil);
-                                        })
-                                    });
-                                }
-                            }, onError: { (error, stanza) in
-                                DispatchQueue.main.async {
-                                    handler();
-                                    self.showError(title: "Message Archiving Error", message: "Server \(account.domain) returned an error on the request to enable archiving. You can try to enable this feature later on from the account settings.");
-                                }
-                            });
-                        };
-                        
-                        completionHandler([controller]);
+                                    case .failure(_, _):
+                                        DispatchQueue.main.async {
+                                            handler();
+                                            self.showError(title: "Message Archiving Error", message: "Server \(account.domain) returned an error on the request to enable archiving. You can try to enable this feature later on from the account settings.");
+                                        }
+                                    }
+                                });
+                            };
+                            
+                            completionHandler([controller]);
+                        }
+                    } else {
+                        self.askToEnableMessageSync(account: account, onNext: onNext, completionHandler: completionHandler);
                     }
-                } else {
-                    self.askToEnableMessageSync(xmppService: xmppService, account: account, onNext: onNext, completionHandler: completionHandler);
+                case .failure(_, _):
+                    completionHandler([]);
                 }
-            }, onError: { (error, stanza) in
-                print("received an error:", error as Any, "- ignoring");
-                completionHandler([])
             });
 
         }
         
-        fileprivate func askToEnableMessageSync(xmppService: XmppService, account: BareJID, onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
+        fileprivate func askToEnableMessageSync(account: BareJID, onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
             guard !AccountSettings.messageSyncAuto(account).getBool() else {
                 completionHandler([]);
                 return;
@@ -186,7 +190,7 @@ Have it enabled will keep synchronized copy of your messages exchanged using \(a
                     AccountSettings.messageSyncPeriod(account).set(double: 24 * 7);
                     AccountSettings.messageSyncAuto(account).set(bool: true);
                     
-                    MessageEventHandler.syncMessages(for: account);
+                    MessageEventHandler.syncMessages(for: account, since: Date().addingTimeInterval(-1 * 24 * 7 * 60 * 60));
                     
                     controller.dismiss(animated: true, completion: onNext);
                 }
@@ -204,13 +208,13 @@ Have it enabled will keep synchronized copy of your messages exchanged using \(a
             return self.feature == feature;
         }
         
-        func handle(xmppService: XmppService, account: BareJID, newServerFeatures features: [String], onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
+        func handle(account: BareJID, newServerFeatures features: [String], onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
             guard features.contains(feature) else {
                 completionHandler([]);
                 return;
             }
             
-            guard let pushModule: SiskinPushNotificationsModule = xmppService.getClient(forJid: account)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), PushEventHandler.instance.deviceId != nil else {
+            guard let _: SiskinPushNotificationsModule = XmppService.instance.getClient(forJid: account)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), PushEventHandler.instance.deviceId != nil else {
                 completionHandler([]);
                 return;
             }
@@ -236,7 +240,7 @@ With this feature enabled Tigase iOS Messenger can be automatically notified abo
                     controller.dismiss(animated: true, completion: onNext);
                 }
                 controller.onEnable = { (handler) in
-                    self.enablePush(xmppService: xmppService, account: account, operationFinished: handler, completionHandler: {
+                    self.enablePush(account: account, operationFinished: handler, completionHandler: {
                         controller.dismiss(animated: true, completion: onNext);
                     });
                 };
@@ -245,28 +249,21 @@ With this feature enabled Tigase iOS Messenger can be automatically notified abo
             }
         }
         
-        func enablePush(xmppService: XmppService, account accountJid: BareJID, operationFinished: @escaping ()->Void, completionHandler: @escaping ()->Void) {
-            guard let pushModule: SiskinPushNotificationsModule = xmppService.getClient(forJid: accountJid)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), let deviceId = PushEventHandler.instance.deviceId else {
+        func enablePush(account accountJid: BareJID, operationFinished: @escaping ()->Void, completionHandler: @escaping ()->Void) {
+            guard let pushModule: SiskinPushNotificationsModule = XmppService.instance.getClient(forJid: accountJid)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), let deviceId = PushEventHandler.instance.deviceId else {
                 completionHandler();
                 return;
             }
             
             
-            pushModule.registerDeviceAndEnable(deviceId: deviceId) { (result) in
-                // FIXME: handle this somehow??
+            pushModule.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: PushEventHandler.instance.pushkitDeviceId) { (result) in
                 switch result {
                 case .success(_):
                     DispatchQueue.main.async {
                         operationFinished();
-//                        if let config = AccountManager.getAccount(for: accountJid) {
-//                            config.pushServiceNode = pushModule.pushServiceNode
-//                            config.pushServiceJid = jid;
-//                            config.pushNotifications = true;
-//                            AccountManager.save(account: config);
-//                        }
                         completionHandler();
                     }
-                case .failure(let errorCondition):
+                case .failure(_):
                     DispatchQueue.main.async {
                         operationFinished();
                         self.showError(title: "Push Notifications Error", message: "Server \(accountJid.domain) returned an error on the request to enable push notifications. You can try to enable this feature later on from the account settings.");
@@ -280,7 +277,7 @@ With this feature enabled Tigase iOS Messenger can be automatically notified abo
 
 protocol NewFeaturesDetectorSuggestion: class {
     
-    func handle(xmppService: XmppService, account: BareJID, newServerFeatures features: [String], onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void);
+    func handle(account: BareJID, newServerFeatures features: [String], onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void);
     
     func isCapable(_ feature: String) -> Bool;
     
@@ -328,16 +325,6 @@ class NewFeatureSuggestionView: UIViewController {
  
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        self.view.backgroundColor = Appearance.current.systemBackground;
-        
-        let textColor = Appearance.current.labelColor.mix(color: Appearance.current.tintColor, ratio: 0.66);
-        
-        self.titleField.textColor = textColor;
-        self.iconField.tintColor = textColor;
-        self.descriptionField.textColor = textColor;
-        self.enableButton.tintColor = Appearance.current.tintColor;
-        self.cancelButton.tintColor = Appearance.current.tintColor;
-        self.progressIndicator.tintColor = Appearance.current.tintColor;
     }
     
     @IBAction func enableClicked(_ sender: UIButton) {

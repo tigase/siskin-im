@@ -22,7 +22,7 @@
 
 import UIKit
 
-class AccountTableViewCell: CustomTableViewCell {
+class AccountTableViewCell: UITableViewCell {
 
     @IBOutlet var avatarStatusView: AvatarStatusView!
     @IBOutlet var nameLabel: UILabel!

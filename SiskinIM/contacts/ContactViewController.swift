@@ -23,7 +23,7 @@ import UIKit
 import TigaseSwift
 import TigaseSwiftOMEMO
 
-class ContactViewController: CustomTableViewController {
+class ContactViewController: UITableViewController {
     
     var account: BareJID!;
     var jid: BareJID!;
@@ -226,7 +226,7 @@ class ContactViewController: CustomTableViewController {
                 cell.trustSwitch.isOn = identity.status.trust == .trusted || identity.status.trust == .undecided;
                 let account = self.account!;
                 cell.valueChangedListener = { (sender) in
-                    DBOMEMOStore.instance.setStatus(identity.status.toTrust(sender.isOn ? .trusted : .compromised), forIdentity: identity.address, andAccount: account);
+                    _ = DBOMEMOStore.instance.setStatus(identity.status.toTrust(sender.isOn ? .trusted : .compromised), forIdentity: identity.address, andAccount: account);
                 }
                 return cell;
             }
@@ -290,17 +290,6 @@ class ContactViewController: CustomTableViewController {
 //            let cell = tableView.dequeueReusableCell(withIdentifier: "ContactFormCell", for: indexPath as IndexPath) as! ContactFormTableViewCell;
 //            return cell;
         }
-    }
-    
-    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        cell.tintColor = Appearance.current.tintColor;
-        cell.backgroundColor = Appearance.current.systemBackground;
-        cell.subviews.first?.subviews.forEach({ (view) in
-            (view as? UILabel)?.textColor = Appearance.current.tintColor;
-            if let textField = view as? UITextField, textField.inputView != nil {
-                textField.textColor = Appearance.current.tintColor;
-            }
-        })
     }
 
     override func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
@@ -400,7 +389,7 @@ class ContactViewController: CustomTableViewController {
         if sender.isOn {
             blockingModule.block(jids: [JID(jid!)], completionHandler: { [weak sender] result in
                 switch result {
-                case .failure(let _):
+                case .failure(_):
                     sender?.isOn = false;
                 default:
                     break;
@@ -409,7 +398,7 @@ class ContactViewController: CustomTableViewController {
         } else {
             blockingModule.unblock(jids: [JID(jid!)], completionHandler: { [weak sender] result in
                 switch result {
-                case .failure(let _):
+                case .failure(_):
                     sender?.isOn = true;
                 default:
                     break;
@@ -431,7 +420,7 @@ class ContactViewController: CustomTableViewController {
                     switch result {
                     case .success(_):
                         break;
-                    case .failure(let err):
+                    case .failure(_):
                         AccountSettings.pushHash(account).set(int: 0);
                     }
                 });

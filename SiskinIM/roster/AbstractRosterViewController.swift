@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class AbstractRosterViewController: CustomTableViewController, UISearchResultsUpdating, UISearchBarDelegate {
+class AbstractRosterViewController: UITableViewController, UISearchResultsUpdating, UISearchBarDelegate {
     
     fileprivate static let UPDATE_NOTIFICATION_NAME = Notification.Name("ROSTER_UPDATE");
     
@@ -44,11 +44,13 @@ class AbstractRosterViewController: CustomTableViewController, UISearchResultsUp
         super.viewDidLoad()
         searchController = UISearchController(searchResultsController: nil);
         searchController.dimsBackgroundDuringPresentation = false;
+        searchController.hidesNavigationBarDuringPresentation = false;
         searchController.searchResultsUpdater = self;
         searchController.searchBar.searchBarStyle = .prominent;
-        
+        searchController.searchBar.isOpaque = false;
+        searchController.searchBar.isTranslucent = true;
+        refreshControl?.isOpaque = false;
         navigationItem.searchController = self.searchController;
-        self.definesPresentationContext = true;
         tableView.rowHeight = 48;//UITableViewAutomaticDimension;
         self.navigationItem.hidesSearchBarWhenScrolling = true;
     }
@@ -67,10 +69,8 @@ class AbstractRosterViewController: CustomTableViewController, UISearchResultsUp
         reloadData();
         NotificationCenter.default.addObserver(self, selector: #selector(RosterViewController.reloadData), name: AvatarManager.AVATAR_CHANGED, object: nil);
         super.viewWillAppear(animated);
-        navigationController?.view.backgroundColor = Appearance.current.controlBackgroundColor;
-        Appearance.current.update(seachBar: searchController.searchBar);
     }
-    
+        
     func initializeRosterProvider(availableOnly: Bool = false, sortOrder: RosterSortingOrder = .alphabetical) {
         let rosterType = RosterType(rawValue: Settings.RosterType.getString() ?? "") ?? RosterType.flat;
         let displayHiddenGroup = Settings.RosterDisplayHiddenGroup.getBool();
@@ -107,41 +107,21 @@ class AbstractRosterViewController: CustomTableViewController, UISearchResultsUp
         
         if let item = roster?.item(at: indexPath) {
             cell.nameLabel.text = item.displayName;
-            cell.nameLabel.textColor = Appearance.current.labelColor;
-            cell.statusLabel.textColor = Appearance.current.secondaryLabelColor;
             cell.statusLabel.text = item.account.stringValue;
             cell.avatarStatusView.setStatus(item.presence?.show);
-            cell.avatarStatusView.backgroundColor = Appearance.current.systemBackground;
             cell.avatarStatusView.set(name: item.displayName, avatar: AvatarManager.instance.avatar(for: item.jid.bareJid, on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
         }
         
         return cell;
     }
-    
-    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        // nothing to do in this case
-        cell.backgroundColor = Appearance.current.systemBackground;
-    }
-    
-//    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-//        guard self.roster is RosterProviderGrouped else {
-//            return nil;
-//        }
-//        guard let header = self.tableView(tableView, titleForHeaderInSection: section) else {
-//            return nil;
-//        }
-//        let label = UILabel();
-//        label.text = header;
-//        return label;
-//    }
-    
+        
     override func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
-        super.tableView(tableView, willDisplayHeaderView: view, forSection: section);
         if let v = view as? UITableViewHeaderFooterView {
             v.textLabel?.font = UIFont.preferredFont(forTextStyle: .subheadline);
             v.textLabel?.text = v.textLabel?.text?.uppercased();
-            v.tintColor = Appearance.current.secondarySystemBackground;
-            v.textLabel?.backgroundColor = Appearance.current.secondarySystemBackground;
+            v.textLabel?.textColor = UIColor.white;
+            v.isOpaque = true;
+            v.tintColor = UIColor(named: "chatslistBackground")?.lighter(ratio: 0.1);
         }
     }
     

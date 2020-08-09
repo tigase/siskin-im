@@ -23,7 +23,7 @@ import UIKit
 import TigaseSwift
 import TigaseSwiftOMEMO
 
-class OMEMOFingerprintsController: CustomTableViewController {
+class OMEMOFingerprintsController: UITableViewController {
     
     var account: BareJID!;
     var localIdentity: Identity?;
@@ -76,7 +76,7 @@ class OMEMOFingerprintsController: CustomTableViewController {
             cell.trustSwitch.isOn = identity.status.trust == .trusted || identity.status.trust == .undecided;
             let account = self.account!;
             cell.valueChangedListener = { (sender) in
-                DBOMEMOStore.instance.setStatus(identity.status.toTrust(sender.isOn ? .trusted : .compromised), forIdentity: identity.address, andAccount: account);
+                _ = DBOMEMOStore.instance.setStatus(identity.status.toTrust(sender.isOn ? .trusted : .compromised), forIdentity: identity.address, andAccount: account);
             }
             return cell;
         }

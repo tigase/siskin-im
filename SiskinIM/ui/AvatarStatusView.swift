@@ -26,7 +26,11 @@ import TigaseSwift
 class AvatarStatusView: UIView {
     
     @IBOutlet var avatarImageView: AvatarView!
-    @IBOutlet var statusImageView: UIImageView!
+    @IBOutlet var statusImageView: UIImageView! {
+        didSet {
+            statusImageView.backgroundColor = self.backgroundColor;
+        }
+    }
     
     override var backgroundColor: UIColor? {
         get {

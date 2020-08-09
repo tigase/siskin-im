@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class AccountSettingsViewController: CustomTableViewController {
+class AccountSettingsViewController: UITableViewController {
     
     var account: BareJID!;
     
@@ -125,6 +125,9 @@ class AccountSettingsViewController: CustomTableViewController {
             };
             self.navigationController?.pushViewController(controller, animated: true);
         }
+        if indexPath.section == 5 && indexPath.row == 0 {
+            self.deleteAccount();
+        }
     }
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -151,18 +154,20 @@ class AccountSettingsViewController: CustomTableViewController {
         archivingEnabledSwitch.isEnabled = false;
         
         if (client?.state ?? SocketConnector.State.disconnected == SocketConnector.State.connected), let mamModule: MessageArchiveManagementModule = client?.modulesManager.getModule(MessageArchiveManagementModule.ID) {
-            mamModule.retrieveSettings(onSuccess: { (
-                defValue, always, never) in
-                DispatchQueue.main.async {
-                    self.archivingEnabledSwitch.isEnabled = true;
-                    self.archivingEnabledSwitch.isOn = defValue == MessageArchiveManagementModule.DefaultValue.always;
-                    self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
-                }
-            }, onError: { (error, stanza) in
-                DispatchQueue.main.async {
-                    self.archivingEnabledSwitch.isOn = false;
-                    self.archivingEnabledSwitch.isEnabled = false;
-                    self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
+            mamModule.retrieveSettings(completionHandler: { result in
+                switch result {
+                case .success(let defValue, _, _):
+                    DispatchQueue.main.async {
+                        self.archivingEnabledSwitch.isEnabled = true;
+                        self.archivingEnabledSwitch.isOn = defValue == MessageArchiveManagementModule.DefaultValue.always;
+                        self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
+                    }
+                case .failure(_, _):
+                    DispatchQueue.main.async {
+                        self.archivingEnabledSwitch.isOn = false;
+                        self.archivingEnabledSwitch.isEnabled = false;
+                        self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
+                    }
                 }
             })
         }
@@ -243,7 +248,7 @@ class AccountSettingsViewController: CustomTableViewController {
         }
         // let's check if push notifications component is accessible
         if let pushModule: SiskinPushNotificationsModule = XmppService.instance.getClient(forJid: accountJid)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), let deviceId = PushEventHandler.instance.deviceId {
-            pushModule.registerDeviceAndEnable(deviceId: deviceId, completionHandler: { result in
+            pushModule.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: PushEventHandler.instance.pushkitDeviceId, completionHandler: { result in
                 switch result {
                 case .success(_):
                     break;
@@ -298,7 +303,7 @@ class AccountSettingsViewController: CustomTableViewController {
                         self.present(alert, animated: true, completion: nil);
                     }
                 }
-            case .failure(let errorCondition):
+            case .failure(_):
                 DispatchQueue.main.async {
                     self.pushNotificationsForAwaySwitch.isOn = !self.pushNotificationsForAwaySwitch.isOn;
                     AccountSettings.PushNotificationsForAway(self.account).set(bool: self.pushNotificationsForAwaySwitch.isOn);
@@ -318,22 +323,28 @@ class AccountSettingsViewController: CustomTableViewController {
         let client = XmppService.instance.getClient(forJid: account);
         if let mamModule: MessageArchiveManagementModule = client?.modulesManager.getModule(MessageArchiveManagementModule.ID) {
             let defValue = archivingEnabledSwitch.isOn ? MessageArchiveManagementModule.DefaultValue.always : MessageArchiveManagementModule.DefaultValue.never;
-            mamModule.retrieveSettings(onSuccess: { (oldDefValue, always, never) in
-                mamModule.updateSettings(defaultValue: defValue, always: always, never: never, onSuccess: { (newDefValue, always1, never1)->Void in
+            mamModule.retrieveSettings(completionHandler: { result in
+                switch result {
+                case .success(let oldDefValue, let always, let never):
+                    mamModule.updateSettings(defaultValue: defValue, always: always, never: never, completionHandler: { result in
+                        switch result {
+                        case .success(let newDefValue, _, _):
+                            DispatchQueue.main.async {
+                                self.archivingEnabledSwitch.isOn = newDefValue == MessageArchiveManagementModule.DefaultValue.always;
+                                self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
+                            }
+                        case .failure(_, _):
+                            DispatchQueue.main.async {
+                                self.archivingEnabledSwitch.isOn = oldDefValue == MessageArchiveManagementModule.DefaultValue.always;
+                                self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
+                            }
+                        }
+                    });
+                case .failure(_, _):
                     DispatchQueue.main.async {
-                        self.archivingEnabledSwitch.isOn = newDefValue == MessageArchiveManagementModule.DefaultValue.always;
+                        self.archivingEnabledSwitch.isOn = !self.archivingEnabledSwitch.isOn;
                         self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
                     }
-                }, onError: {(error,stanza)->Void in
-                    DispatchQueue.main.async {
-                        self.archivingEnabledSwitch.isOn = oldDefValue == MessageArchiveManagementModule.DefaultValue.always;
-                        self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
-                    }
-                });
-            }, onError: {(error, stanza)->Void in
-                DispatchQueue.main.async {
-                    self.archivingEnabledSwitch.isOn = !self.archivingEnabledSwitch.isOn;
-                    self.messageSyncAutomaticSwitch.isEnabled = self.archivingEnabledSwitch.isOn;
                 }
             });
         }
@@ -391,6 +402,109 @@ class AccountSettingsViewController: CustomTableViewController {
         }
     }
     
+    func deleteAccount() {
+        guard let account = self.account, let config = AccountManager.getAccount(for: account) else {
+            return;
+        }
+        
+        let removeAccount: (BareJID, Bool)->Void = { account, fromServer in
+            if fromServer {
+                if let client = XmppService.instance.getClient(forJid: BareJID(account)), client.state == .connected {
+                    let regModule = client.modulesManager.register(InBandRegistrationModule());
+                    regModule.unregister({ (stanza) in
+                        DispatchQueue.main.async() {
+                            _ = AccountManager.deleteAccount(for: account);
+                            self.navigationController?.popViewController(animated: true);
+                        }
+                    })
+                } else {
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(title: "Account removal", message: "Could not delete account as it was not possible to connect to the XMPP server. Please try again later.", preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                            self.tableView.reloadData();
+                        }));
+                        self.present(alert, animated: true, completion: nil);
+                    }
+                }
+            } else {
+                DispatchQueue.main.async {
+                    _ = AccountManager.deleteAccount(for: account);
+                    self.navigationController?.popViewController(animated: true);
+                }
+            }
+        };
+        
+        self.askAboutAccountRemoval(account: account, atRow: IndexPath(row: 0, section: 5), completionHandler: { result in
+            switch result {
+            case .success(let removeFromServer):
+                if let pushSettings = config.pushSettings {
+                    if let client = XmppService.instance.getClient(forJid: BareJID(account)), client.state == .connected, let pushModule: SiskinPushNotificationsModule = client.modulesManager.getModule(SiskinPushNotificationsModule.ID) {
+                        pushModule.unregisterDeviceAndDisable(completionHandler: { result in
+                            switch result {
+                            case .success(_):
+                                // now remove the account...
+                                removeAccount(account, removeFromServer)
+                                break;
+                            case .failure(_):
+                                PushEventHandler.unregisterDevice(from: pushSettings.jid.bareJid, account: account, deviceId: pushSettings.deviceId, completionHandler: { result in
+                                    config.pushSettings = nil;
+                                    AccountManager.save(account: config);
+                                    DispatchQueue.main.async {
+                                        switch result {
+                                        case .success(_):
+                                            removeAccount(account, removeFromServer);
+                                        case .failure(let _):
+                                            let alert = UIAlertController(title: "Account removal", message: "Push notifications are enabled for \(account). They need to be disabled before account can be removed and it is not possible to at this time. Please try again later.", preferredStyle: .alert);
+                                            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                                            self.present(alert, animated: true, completion: nil);
+                                        }
+                                    }
+                                })
+                            }
+                        });
+                    } else {
+                        PushEventHandler.unregisterDevice(from: pushSettings.jid.bareJid, account: account, deviceId: pushSettings.deviceId, completionHandler: { result in
+                            DispatchQueue.main.async {
+                                switch result {
+                                case .success(_):
+                                    config.pushSettings = nil;
+                                    AccountManager.save(account: config);
+                                    removeAccount(account, removeFromServer);
+                                case .failure(let _):
+                                    let alert = UIAlertController(title: "Account removal", message: "Push notifications are enabled for \(account). They need to be disabled before account can be removed and it is not possible to at this time. Please try again later.", preferredStyle: .alert);
+                                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                                    self.present(alert, animated: true, completion: nil);
+                                }
+                            }
+                        })
+                    }
+                } else {
+                    removeAccount(account, removeFromServer);
+                }
+            case .failure(_):
+                break;
+            }
+        })
+    }
+        
+    func askAboutAccountRemoval(account: BareJID, atRow indexPath: IndexPath, completionHandler: @escaping (Result<Bool, Error>)->Void) {
+        let client = XmppService.instance.getClient(forJid: BareJID(account))
+        let alert = UIAlertController(title: "Account removal", message: client != nil ? "Should account be removed from server as well?" : "Remove account from application?", preferredStyle: .actionSheet);
+        if client?.state == .connected {
+            alert.addAction(UIAlertAction(title: "Remove from server", style: .destructive, handler: { (action) in
+                completionHandler(.success(true));
+            }));
+        }
+        alert.addAction(UIAlertAction(title: "Remove from application", style: .default, handler: { (action) in
+            completionHandler(.success(false));
+        }));
+        alert.addAction(UIAlertAction(title: "Cancel", style: .default, handler: nil));
+        alert.popoverPresentationController?.sourceView = self.tableView;
+        alert.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: indexPath);
+
+        self.present(alert, animated: true, completion: nil);
+    }
+
     class SyncTimeItem: TablePickerViewItemsProtocol {
         
         public static func descriptionFromHours(hours: Double) -> String {

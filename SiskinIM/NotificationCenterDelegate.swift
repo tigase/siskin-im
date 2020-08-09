@@ -225,32 +225,70 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
                 completionHandler();
             }
         } else {
-            var topController = UIApplication.shared.keyWindow?.rootViewController;
-            while (topController?.presentedViewController != nil) {
+            openChatView(on: accountJid, with: senderJid, completionHandler: completionHandler);
+        }
+    }
+    
+    private func openChatView(on account: BareJID, with jid: BareJID, completionHandler: @escaping ()->Void) {
+        var topController = UIApplication.shared.keyWindow?.rootViewController;
+        while (topController?.presentedViewController != nil) {
+            if #available(iOS 13.0, *), let tmp = topController?.presentedViewController, tmp.modalPresentationStyle != .none {
+                tmp.dismiss(animated: true, completion: {
+                    self.openChatView(on: account, with: jid, completionHandler: completionHandler);
+                });
+                return;
+            } else {
                 topController = topController?.presentedViewController;
             }
+        }
         
-            if topController != nil {
-                guard let chat = DBChatStore.instance.getChat(for: accountJid, with: senderJid) else {
-                    completionHandler();
-                    return;
-                }
-                
-                let controller = chat is DBRoom ? UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "RoomViewNavigationController") : topController!.storyboard?.instantiateViewController(withIdentifier: "ChatViewNavigationController");
-                let navigationController = controller as? UINavigationController;
-                let destination = navigationController?.visibleViewController ?? controller;
-            
-                if let baseChatViewController = destination as? BaseChatViewController {
-                    baseChatViewController.account = accountJid;
-                    baseChatViewController.jid = senderJid;
-                }
-                destination?.hidesBottomBarWhenPushed = true;
-            
-                topController!.showDetailViewController(controller!, sender: self);
-            } else {
-                print("No top controller!");
+        if topController != nil {
+            guard let chat = DBChatStore.instance.getChat(for: account, with: jid), let controller = viewController(for: chat) else {
+                completionHandler();
+                return;
             }
-            completionHandler();
+            
+            let navigationController = controller;
+            let destination = navigationController.visibleViewController ?? controller;
+            
+            if let baseChatViewController = destination as? BaseChatViewController {
+                baseChatViewController.account = account;
+                baseChatViewController.jid = jid;
+            }
+            destination.hidesBottomBarWhenPushed = true;
+            
+            if let chatController = AppDelegate.getChatController(visible: false), let navController = chatController.parent as? UINavigationController {
+                navController.pushViewController(destination, animated: true);
+                var viewControllers = navController.viewControllers;
+                if !viewControllers.isEmpty {
+                    var i = 0;
+                    while viewControllers[i] != chatController {
+                        i = i + 1;
+                    }
+                    while (!viewControllers.isEmpty) && viewControllers[i] != destination {
+                        viewControllers.remove(at: i);
+                        i = i - 1;
+                    }
+                    navController.viewControllers = viewControllers;
+                }
+            } else {
+                topController!.showDetailViewController(controller, sender: self);
+            }
+        } else {
+            print("No top controller!");
+        }
+    }
+    
+    private func viewController(for item: DBChatProtocol) -> UINavigationController? {
+        switch item {
+        case is DBRoom:
+            return UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "RoomViewNavigationController") as? UINavigationController;
+        case is DBChat:
+            return UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ChatViewNavigationController") as? UINavigationController;
+        case is DBChannel:
+            return UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelViewNavigationController") as? UINavigationController;
+        default:
+            return nil;
         }
     }
     
@@ -276,14 +314,15 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
             case .denied, .restricted:
                 break;
             default:
-                alert.addAction(UIAlertAction(title: "Video call", style: .default, handler: { action in
-                    // accept video
-                    VideoCallController.accept(session: session, sdpOffer: sdp, withAudio: true, withVideo: true, sender: topController!);
-                }))
+                break;
+//                alert.addAction(UIAlertAction(title: "Video call", style: .default, handler: { action in
+//                    // accept video
+//                    VideoCallController.accept(session: session, sdpOffer: sdp, withAudio: true, withVideo: true, sender: topController!);
+//                }))
             }
-            alert.addAction(UIAlertAction(title: "Audio call", style: .default, handler: { action in
-                VideoCallController.accept(session: session, sdpOffer: sdp, withAudio: true, withVideo: false, sender: topController!);
-            }));
+//            alert.addAction(UIAlertAction(title: "Audio call", style: .default, handler: { action in
+//                VideoCallController.accept(session: session, sdpOffer: sdp, withAudio: true, withVideo: false, sender: topController!);
+//            }));
             alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: { action in
                 _ = session.decline();
             }));

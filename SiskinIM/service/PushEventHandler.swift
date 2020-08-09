@@ -24,14 +24,47 @@ import TigaseSwift
 
 open class PushEventHandler: XmppServiceEventHandler {
     
+    public static func unregisterDevice(from pushServiceJid: BareJID, account: BareJID, deviceId: String, completionHandler: @escaping (Result<Void,ErrorCondition>)->Void) {
+        guard let url = URL(string: "https://\(pushServiceJid.stringValue)/unregister-device/\(pushServiceJid.stringValue)") else {
+            completionHandler(.failure(.service_unavailable));
+            return;
+        }
+        var request = URLRequest(url: url);
+        request.httpMethod = "POST";
+        guard let payload = try? JSONEncoder().encode(UnregisterDeviceRequestPayload(account: account, provider: "tigase:messenger:apns:1", deviceToken: deviceId)) else {
+            completionHandler(.failure(.internal_server_error));
+            return;
+        }
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type");
+        request.httpBody = payload;
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard error == nil else {
+                completionHandler(.failure(.service_unavailable));
+                return;
+            }
+            guard let data = data, let payload = try? JSONDecoder().decode(UnregisterDeviceResponsePayload.self, from: data) else {
+                completionHandler(.failure(.internal_server_error));
+                return;
+            }
+            if payload.success {
+                completionHandler(.success(Void()));
+            } else {
+                completionHandler(.failure(.not_acceptable));
+            }
+        }
+        task.resume();
+    }
+    
     public static let instance = PushEventHandler();
 
     var deviceId: String?;
+    var pushkitDeviceId: String?;
     
     let events: [Event] = [DiscoveryModule.AccountFeaturesReceivedEvent.TYPE];
     
     init() {
-        NotificationCenter.default.addObserver(self, selector: #selector(chatDestroyed(_:)), name: DBChatStore.CHAT_DESTROYED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(chatDestroyed(_:)), name: DBChatStore.CHAT_CLOSED, object: nil);
     }
     
     public func handle(event: Event) {
@@ -49,17 +82,20 @@ open class PushEventHandler: XmppServiceEventHandler {
         }
         
         let hasPush = features.contains(SiskinPushNotificationsModule.PUSH_NOTIFICATIONS_XMLNS);
+        let hasPushJingle = features.contains(TigasePushNotificationsModule.Jingle.XMLNS);
+        
+        let pushkitDeviceId = hasPushJingle ? self.pushkitDeviceId : nil;
         
         if hasPush && pushModule.shouldEnable {
             if let pushSettings = pushModule.pushSettings {
-                if pushSettings.deviceId != deviceId {
+                if pushSettings.deviceId != deviceId || pushSettings.pushkitDeviceId != pushkitDeviceId {
                     pushModule.unregisterDeviceAndDisable(completionHandler: { result in
                         switch result {
                         case .success(_):
-                            pushModule.registerDeviceAndEnable(deviceId: deviceId, completionHandler: { result2 in
+                            pushModule.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, completionHandler: { result2 in
                                 print("reregistration:", result2);
                             });
-                        case .failure(let err):
+                        case .failure(_):
                             // we need to try again later
                             break;
                         }
@@ -71,12 +107,12 @@ open class PushEventHandler: XmppServiceEventHandler {
                     })
                 }
             } else {
-                pushModule.registerDeviceAndEnable(deviceId: deviceId, completionHandler: { result in
+                pushModule.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, completionHandler: { result in
                     print("automatic registration:", result);
                 })
             }
         } else {
-            if let pushSettings = pushModule.pushSettings, (!hasPush) || (!pushModule.shouldEnable) {
+            if pushModule.pushSettings != nil, (!hasPush) || (!pushModule.shouldEnable) {
                 pushModule.unregisterDeviceAndDisable(completionHandler: { result in
                     print("automatic deregistration:", result);
                 })
@@ -90,7 +126,7 @@ open class PushEventHandler: XmppServiceEventHandler {
         }
         
         switch c {
-        case let chat as DBChat:
+        case is DBChat:
             // nothing to do for now...
             break;
         case let room as DBRoom:
@@ -98,6 +134,11 @@ open class PushEventHandler: XmppServiceEventHandler {
                 return;
             }
             self.updateAccountPushSettings(for: room.account);
+        case let channel as DBChannel:
+            guard channel.options.notifications != .none else {
+                return;
+            }
+            self.updateAccountPushSettings(for: channel.account);
         default:
             break;
         }
@@ -113,6 +154,31 @@ open class PushEventHandler: XmppServiceEventHandler {
             })
         } else {
             AccountSettings.pushHash(account).set(int: 0);
+        }
+    }
+    
+    public struct UnregisterDeviceRequestPayload: Encodable {
+        var account: BareJID;
+        var provider: String;
+        var deviceToken: String;
+        
+        enum CodingKeys: String, CodingKey {
+            case account
+            case provider
+            case deviceToken = "device-token"
+        }
+    }
+    
+    public struct UnregisterDeviceResponsePayload: Decodable {
+        var success: Bool;
+        
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self);
+            success = try "success" == container.decode(String.self, forKey: .result);
+        }
+        
+        enum CodingKeys: String, CodingKey {
+            case result = "result";
         }
     }
 }

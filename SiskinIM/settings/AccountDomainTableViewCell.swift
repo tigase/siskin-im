@@ -22,7 +22,7 @@
 import Foundation
 import UIKit
 
-class AccountDomainTableViewCell: CustomTableViewCell {
+class AccountDomainTableViewCell: UITableViewCell {
     
     @IBOutlet var domainField: UITextField!
     

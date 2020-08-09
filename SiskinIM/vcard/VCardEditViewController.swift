@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class VCardEditViewController: CustomTableViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class VCardEditViewController: UITableViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
     
     let picker = UIImagePickerController();
 
@@ -30,6 +30,8 @@ class VCardEditViewController: CustomTableViewController, UIImagePickerControlle
         
     var account: BareJID!;
     var vcard: VCard!;
+    
+    var datePicker: UIDatePicker!;
     
     override func viewDidLoad() {
         xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
@@ -42,7 +44,10 @@ class VCardEditViewController: CustomTableViewController, UIImagePickerControlle
         }
 
         tableView.isEditing = true;
-        tableView.separatorStyle = .none;
+        
+        datePicker = UIDatePicker();
+        datePicker.datePickerMode = .date;
+        datePicker.addTarget(self, action: #selector(VCardEditViewController.bdayValueChanged), for: .valueChanged);
     }
     
     
@@ -64,60 +69,132 @@ class VCardEditViewController: CustomTableViewController, UIImagePickerControlle
     */
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch indexPath.section {
-        case 0:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "BasicInfoCell") as! VCardEditBasicTableViewCell;
-            cell.accountJid = account;
-            cell.vcard = vcard;
-            
-            let singleTap = UITapGestureRecognizer(target: self, action: #selector(VCardEditViewController.photoClicked));
-            cell.photoView.addGestureRecognizer(singleTap);
-            cell.photoView.isMultipleTouchEnabled = true;
-            cell.photoView.isUserInteractionEnabled = true;
-            
-            return cell;
-        case 1:
+        switch VCardSections(rawValue: indexPath.section)! {
+        case .basic:
+            switch VCardBaseSectionRows(rawValue: indexPath.row)! {
+            case .avatar:
+                let cell = tableView.dequeueReusableCell(withIdentifier: "AvatarEditCell") as! VCardAvatarEditCell;
+                cell.avatarView.set(name: nil, avatar: nil, orDefault: AvatarManager.instance.defaultAvatar);
+                if let photo = vcard.photos.first {
+                    xmppService.dbVCardsCache.fetchPhoto(photo: photo) { (photoData) in
+                        DispatchQueue.main.async {
+                            if let photoData = photoData, let image = UIImage(data: photoData) {
+                                cell.avatarView.set(name: nil, avatar: image, orDefault: AvatarManager.instance.defaultAvatar);
+                            } else {
+                                cell.avatarView.set(name: nil, avatar: nil, orDefault: AvatarManager.instance.defaultAvatar);
+                            }
+                        }
+                    }
+                }
+                cell.updateCornerRadius();
+                return cell;
+            case .givenName:
+                let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
+                cell.textField.placeholder = "Given name"
+                cell.textField.text = vcard.givenName;
+                cell.textField.delegate = self;
+                cell.textField.tag = indexPath.row;
+                return cell;
+            case .familyName:
+                let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
+                cell.textField.placeholder = "Family name"
+                cell.textField.text = vcard.surname;
+                cell.textField.delegate = self;
+                cell.textField.tag = indexPath.row;
+                return cell;
+            case .fullName:
+                let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
+                cell.textField.placeholder = "Full name"
+                cell.textField.text = vcard.fn;
+                cell.textField.delegate = self;
+                cell.textField.tag = indexPath.row;
+                return cell;
+            case .birthday:
+                let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
+                cell.textField.placeholder = "Birthday"
+                cell.textField.text = vcard.bday;
+                cell.textField.inputView = self.datePicker;
+                cell.textField.tag = indexPath.row;
+                return cell;
+            case .organization:
+                let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
+                cell.textField.placeholder = "Organization"
+                cell.textField.text = vcard.organizations.first?.name;
+                cell.textField.delegate = self;
+                cell.textField.tag = indexPath.row;
+                return cell;
+            case .organizationRole:
+                let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
+                cell.textField.placeholder = "Organization role"
+                cell.textField.text = vcard.role;
+                cell.textField.delegate = self;
+                cell.textField.tag = indexPath.row;
+                return cell;
+            }
+        case .phones:
             if indexPath.row < vcard.telephones.count {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "PhoneEditCell") as! VCardEditPhoneTableViewCell;
                 cell.phone = vcard.telephones[indexPath.row];
                 return cell;
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "PhoneAddCell");
+                for subview in cell!.subviews {
+                    for view in subview.subviews {
+                        if let btn = view as? UIButton {
+                            btn.isUserInteractionEnabled = false;
+                        }
+                    }
+                }
                 return cell!;
             }
-        case 2:
+        case .emails:
             if indexPath.row < vcard.emails.count {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "EmailEditCell") as! VCardEditEmailTableViewCell;
                 cell.email = vcard.emails[indexPath.row];
                 return cell;
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "EmailAddCell");
+                for subview in cell!.subviews {
+                    for view in subview.subviews {
+                        if let btn = view as? UIButton {
+                            btn.isUserInteractionEnabled = false;
+                        }
+                    }
+                }
                 return cell!;
             }
-        case 3:
+        case .addresses:
             if indexPath.row < vcard.addresses.count {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "AddressEditCell") as! VCardEditAddressTableViewCell;
                 cell.address = vcard.addresses[indexPath.row];
                 return cell;
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "AddressAddCell");
+                for subview in cell!.subviews {
+                    for view in subview.subviews {
+                        if let btn = view as? UIButton {
+                            btn.isUserInteractionEnabled = false;
+                        }
+                    }
+                }
                 return cell!;
             }
-        default:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "PhoneAddCell");
-            return cell!;
         }
     }
     
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        (cell as? VCardAvatarEditCell)?.updateCornerRadius();
+    }
+    
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        switch indexPath.section {
-        case 0:
+        switch VCardSections(rawValue: indexPath.section)! {
+        case .basic:
             return false;
-        case 1:
+        case .phones:
             return indexPath.row < vcard.telephones.count;
-        case 2:
+        case .emails:
             return indexPath.row < vcard.emails.count;
-        case 3:
+        case .addresses:
             return indexPath.row < vcard.addresses.count;
         default:
             return false;
@@ -127,7 +204,7 @@ class VCardEditViewController: CustomTableViewController, UIImagePickerControlle
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
         case 0:
-            return 1;
+            return 7;
         case 1:
             return vcard.telephones.count + 1;
         case 2:
@@ -140,50 +217,47 @@ class VCardEditViewController: CustomTableViewController, UIImagePickerControlle
     }
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        switch section {
-        case 0:
+        switch VCardSections(rawValue: section)! {
+        case .basic:
             return nil;
-        case 1:
+        case .phones:
             return "Phones";
-        case 2:
+        case .emails:
             return "Emails";
-        case 3:
+        case .addresses:
             return "Addresses";
-        default:
-            return nil;
         }
     }
     
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        switch indexPath.section {
-        case 0:
-            return 234;
-        case 3:
-            return vcard.addresses.count == indexPath.row ? 44 : 122;
-        default:
-            return 44;
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        if VCardSections(rawValue: section)! == .basic {
+            return 1.0;
         }
+        return super.tableView(tableView, heightForHeaderInSection: section);
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true);
-        switch indexPath.section {
-        case 0:
+        switch VCardSections(rawValue: indexPath.section)! {
+        case .basic:
+            if indexPath.row == VCardBaseSectionRows.avatar.rawValue {
+                self.photoClicked();
+            }
             return;
-        case 1:
+        case .phones:
             if indexPath.row == vcard.telephones.count {
-                vcard.telephones.append(VCard.Telephone(uri: nil));
+                vcard.telephones.append(VCard.Telephone(uri: nil, types: [.home]));
                 tableView.reloadData();
             }
             return;
-        case 2:
+        case .emails:
             if indexPath.row == vcard.emails.count {
-                vcard.emails.append(VCard.Email(address: nil));
+                vcard.emails.append(VCard.Email(address: nil, types: [.home]));
                 tableView.reloadData();
             }
-        case 3:
+        case .addresses:
             if indexPath.row == vcard.addresses.count {
-                vcard.addresses.append(VCard.Address());
+                vcard.addresses.append(VCard.Address(types: [.home]));
                 tableView.reloadData();
             }
             return;
@@ -226,33 +300,37 @@ class VCardEditViewController: CustomTableViewController, UIImagePickerControlle
     }
     
     @IBAction func publishVCard(_ sender: UIBarButtonItem) {
-        DispatchQueue.global(qos: .default).async {
-            self.xmppService.publishVCard(account: self.account, vcard: self.vcard, onSuccess: {() in
-                DispatchQueue.main.async() {
-                    _ = self.navigationController?.popViewController(animated: true);
-                }
-                
-                if let photo = self.vcard.photos.first {
-                    self.xmppService.dbVCardsCache.fetchPhoto(photo: photo) { (data) in
-                        guard data != nil, let client = self.xmppService.getClient(for: self.account) else {
-                            return;
-                        }
-                        let avatarHash = Digest.sha1.digest(toHex: data);
-                        let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID)!;
-                        let x = Element(name: "x", xmlns: "vcard-temp:x:update");
-                        x.addChild(Element(name: "photo", cdata: avatarHash));
-                        presenceModule.setPresence(show: .online, status: nil, priority: nil, additionalElements: [x]);
+        self.tableView.endEditing(true);
+        DispatchQueue.main.async {
+            DispatchQueue.global(qos: .default).async {
+                self.xmppService.publishVCard(account: self.account, vcard: self.vcard, onSuccess: {() in
+                    DispatchQueue.main.async() {
+                        _ = self.navigationController?.popViewController(animated: true);
                     }
-                }
-            }, onError: {(errorCondition) in
-                let errorName = errorCondition != nil ? errorCondition!.rawValue : "Unknown";
-                DispatchQueue.main.async {
-                    let alertController = UIAlertController(title: "Failure", message: "VCard publication failed.\n\(errorName)", preferredStyle: .alert);
-                    alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
-                    self.present(alertController, animated: true, completion: nil);
-                }
-                print("VCard publication failed", errorCondition ?? "nil");
-            });
+                    self.xmppService.dbVCardsCache.updateVCard(for: self.account, on: self.account, vcard: self.vcard);
+                    if let photo = self.vcard.photos.first {
+                        self.xmppService.dbVCardsCache.fetchPhoto(photo: photo) { (data) in
+                            guard data != nil, let client = self.xmppService.getClient(for: self.account) else {
+                                return;
+                            }
+                            let avatarHash = Digest.sha1.digest(toHex: data);
+                            let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID)!;
+                            let x = Element(name: "x", xmlns: "vcard-temp:x:update");
+                            x.addChild(Element(name: "photo", cdata: avatarHash));
+                            presenceModule.setPresence(show: .online, status: nil, priority: nil, additionalElements: [x]);
+                        }
+                    }
+                }, onError: {(errorCondition) in
+                    let errorName = errorCondition != nil ? errorCondition!.rawValue : "Unknown";
+                    DispatchQueue.main.async {
+                        self.tableView.setEditing(true, animated: true);
+                        let alertController = UIAlertController(title: "Failure", message: "VCard publication failed.\n\(errorName)", preferredStyle: .alert);
+                        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                        self.present(alertController, animated: true, completion: nil);
+                    }
+                    print("VCard publication failed", errorCondition ?? "nil");
+                });
+            }
         }
     }
     
@@ -266,9 +344,9 @@ class VCardEditViewController: CustomTableViewController, UIImagePickerControlle
                 self.selectPhoto(.photoLibrary);
             }));
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
-            let cell = self.tableView(tableView, cellForRowAt: IndexPath(row: 0, section: 0)) as! VCardEditBasicTableViewCell;
-            alert.popoverPresentationController?.sourceView = cell.photoView;
-            alert.popoverPresentationController?.sourceRect = cell.photoView!.bounds;
+            let cell = self.tableView(tableView, cellForRowAt: IndexPath(row: VCardBaseSectionRows.avatar.rawValue, section: VCardSections.basic.rawValue)) as! VCardAvatarEditCell;
+            alert.popoverPresentationController?.sourceView = cell.avatarView;
+            alert.popoverPresentationController?.sourceRect = cell.avatarView!.bounds;
             present(alert, animated: true, completion: nil);
         } else {
             selectPhoto(.photoLibrary);
@@ -325,9 +403,9 @@ class VCardEditViewController: CustomTableViewController, UIImagePickerControlle
                         })
                     }));
                     question.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
-                    let cell = self.tableView(tableView, cellForRowAt: IndexPath(row: 0, section: 0)) as! VCardEditBasicTableViewCell;
-                    question.popoverPresentationController?.sourceView = cell.photoView;
-                    question.popoverPresentationController?.sourceRect = cell.photoView!.bounds;
+                    let cell = self.tableView(tableView, cellForRowAt: IndexPath(row: VCardBaseSectionRows.avatar.rawValue, section: VCardSections.basic.rawValue)) as! VCardAvatarEditCell;
+                    question.popoverPresentationController?.sourceView = cell.avatarView;
+                    question.popoverPresentationController?.sourceRect = cell.avatarView!.bounds;
 
                     present(question, animated: true, completion: nil);
                 }
@@ -337,6 +415,54 @@ class VCardEditViewController: CustomTableViewController, UIImagePickerControlle
 
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil);
+    }
+    
+    @objc func bdayValueChanged(_ sender: UIDatePicker) {
+        let formatter = DateFormatter();
+        formatter.timeStyle = .none;
+        formatter.dateFormat = "yyyy-MM-dd";
+        let string = formatter.string(from: sender.date);
+        if let cell = tableView.cellForRow(at: IndexPath(row: VCardBaseSectionRows.birthday.rawValue, section: VCardSections.basic.rawValue)) as? VCardTextEditCell {
+            cell.textField.text = string;
+        }
+        vcard.bday = string;
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        let text = textField.text;
+        if let row = VCardBaseSectionRows(rawValue: textField.tag) {
+            switch row {
+            case .givenName:
+                vcard.givenName = text;
+            case .familyName:
+                vcard.surname = text;
+            case .fullName:
+                vcard.fn = text;
+            case .organization:
+                vcard.organizations = (text?.isEmpty ?? true) ? [] : [VCard.Organization(name: text!, types: [.work])];
+            case .organizationRole:
+                vcard.role = text;
+            default:
+                break;
+            }
+        }
+    }
+    
+    enum VCardSections: Int {
+        case basic = 0
+        case phones = 1
+        case emails = 2
+        case addresses = 3
+    }
+    
+    enum VCardBaseSectionRows: Int {
+        case avatar = 0
+        case givenName = 1
+        case familyName = 2
+        case fullName = 3
+        case birthday = 4
+        case organization = 5
+        case organizationRole = 6
     }
 }
 

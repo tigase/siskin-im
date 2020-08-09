@@ -29,6 +29,8 @@ import TigaseSwift
  */
 open class DBCapabilitiesCache: CapabilitiesCache {
     
+    public static let instance = DBCapabilitiesCache(dbConnection: DBConnection.main);
+
     let dbConnection: DBConnection;
     
     fileprivate lazy var getFeatureStmt: DBStatement! = try? self.dbConnection.prepareStatement("SELECT feature FROM caps_features WHERE node = :node");
@@ -44,7 +46,7 @@ open class DBCapabilitiesCache: CapabilitiesCache {
 
     public let dispatcher: QueueDispatcher;
     
-    public init(dbConnection: DBConnection) {
+    private init(dbConnection: DBConnection) {
         self.dbConnection = dbConnection;
         self.dispatcher = QueueDispatcher(label: "DBCapabilitiesCache");
     }

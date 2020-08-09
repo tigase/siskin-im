@@ -22,7 +22,7 @@
 import Foundation
 import UIKit
 
-class ServerSelectorTableViewCell: CustomTableViewCell {
+class ServerSelectorTableViewCell: UITableViewCell {
     
     @IBOutlet var serverDomain: UILabel!
  
