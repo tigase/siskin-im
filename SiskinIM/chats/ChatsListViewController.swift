@@ -106,7 +106,7 @@ class ChatsListViewController: UITableViewController {
             if let lastActivity = item.lastActivity {
                 switch lastActivity {
                 case .message(let lastMessage, let sender):
-                    let font = item.unread > 0 ? UIFont(descriptor: cell.lastMessageLabel.font.fontDescriptor.withSymbolicTraits([.traitBold])!, size: cell.lastMessageLabel.font.fontDescriptor.pointSize) : cell.lastMessageLabel.font!;
+                    let font = UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize, weight: item.unread > 0 ? .medium : .light)//UIFont(descriptor: cell.lastMessageLabel.font.fontDescriptor.withSymbolicTraits([.traitBold])!, size: cell.lastMessageLabel.font.fontDescriptor.pointSize) : cell.lastMessageLabel.font!;
                     let msg = NSMutableAttributedString(string: lastMessage);
                     Markdown.applyStyling(attributedString: msg, font: font, showEmoticons: Settings.ShowEmoticons.bool());
                     if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
