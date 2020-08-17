@@ -235,6 +235,13 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
     init(_ controller: BaseChatViewController_ShareImageExtension) {
         self.controller = controller;
     }
+    
+    fileprivate func shouldEncryptUploadedFile() -> Bool {
+        if let chat = self.controller.chat as? DBChat {
+            return (chat.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!) == .omemo;
+        }
+        return false;
+    }
 
     func share(filename: String, url: URL, completionHandler: @escaping (UploadResult)->Void) {
         guard url.startAccessingSecurityScopedResource() else {
@@ -253,7 +260,7 @@ class BaseChatViewController_SharePickerDelegate: NSObject, URLSessionDelegate, 
             mimeType = UTTypeCopyPreferredTagWithClass(type as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as String?;
         }
         
-        let encrypted = ((self.controller.chat as? DBChat)?.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!) == .omemo;
+        let encrypted = shouldEncryptUploadedFile();
 
         if encrypted {
             var iv = Data(count: 12);
@@ -465,7 +472,7 @@ class BaseChatViewController_ShareImagePickerDelegate: BaseChatViewController_Sh
         let data = photo.jpegData(compressionQuality: 0.9);
         picker.dismiss(animated: true, completion: nil);
         if data != nil {
-            let encrypted = ((self.controller.chat as? DBChat)?.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!) == .omemo;
+            let encrypted = self.shouldEncryptUploadedFile();
 
             if encrypted {
                 var iv = Data(count: 12);
