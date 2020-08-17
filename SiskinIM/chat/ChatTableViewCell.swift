@@ -80,9 +80,13 @@ class ChatTableViewCell: BaseChatTableViewCell {
                 }
             }
         }
+        attrText.addAttribute(.foregroundColor, value: UIColor(named: "chatMessageText") as Any, range: NSRange(location: 0, length: attrText.length));
         if Settings.EnableMarkdownFormatting.getBool() {
-            attrText.addAttribute(.foregroundColor, value: UIColor(named: "chatMessageText"), range: NSRange(location: 0, length: attrText.length));
             Markdown.applyStyling(attributedString: attrText, font: UIFont.systemFont(ofSize: self.messageTextView.fontSize), showEmoticons:Settings.ShowEmoticons.getBool());
+        } else {
+            attrText.addAttribute(.font, value: UIFont.systemFont(ofSize: self.messageTextView.fontSize), range: NSRange(location: 0, length: attrText.length));
+            attrText.fixAttributes(in: NSRange(location: 0, length: attrText.length));
+
         }
         self.messageTextView.attributedText = attrText;
         if item.state.isError {
