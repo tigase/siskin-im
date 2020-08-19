@@ -241,7 +241,7 @@ open class AccountManager {
                     guard let pushServiceNode = self.pushServiceNode, let deviceId = Settings.DeviceToken.string() else {
                         return nil;
                     }
-                    return SiskinPushNotificationsModule.PushSettings(jid: self.pushServiceJid ?? XmppService.pushServiceJid, node: pushServiceNode, deviceId: deviceId, encryption: false);
+                    return SiskinPushNotificationsModule.PushSettings(jid: self.pushServiceJid ?? XmppService.pushServiceJid, node: pushServiceNode, deviceId: deviceId, encryption: false, maxSize: nil);
                 }
                 return settings;
             }
