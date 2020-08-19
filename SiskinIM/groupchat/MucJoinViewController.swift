@@ -91,23 +91,28 @@ class MucJoinViewController: UITableViewController, UIPickerViewDataSource, UIPi
                     }, onError: nil);
                 }, onError: nil);
                 if let regModule: InBandRegistrationModule = client!.modulesManager.getModule(InBandRegistrationModule.ID) {
-                    regModule.retrieveRegistrationForm(from: room.jid, onSuccess: { (isForm, form) in
-                        if isForm {
-                            if let nickField: TextSingleField = form.getField(named: "muc#register_roomnick") {
-                                nickField.value = nickname;
+                    regModule.retrieveRegistrationForm(from: room.jid, completionHandler: { result in
+                        switch result {
+                        case .success(let type, let form, let bob):
+                            if type == .dataForm {
+                                if let nickField: TextSingleField = form.getField(named: "muc#register_roomnick") {
+                                    nickField.value = nickname;
+                                }
+                                if let offlineField: BooleanField = form.getField(named: "{http://tigase.org/protocol/muc}offline") {
+                                    offlineField.value = true;
+                                }
+                                regModule.submitRegistrationForm(to: room.jid, form: form, onSuccess: {
+                                    print("nickname registered!");
+                                }, onError: { (err, msg) in
+                                    print("got error:", err as Any, msg as Any);
+                                })
+                            } else {
+                                print("invalid form type, ignoring..");
                             }
-                            if let offlineField: BooleanField = form.getField(named: "{http://tigase.org/protocol/muc}offline") {
-                                offlineField.value = true;
-                            }
-                            regModule.submitRegistrationForm(to: room.jid, form: form, onSuccess: {
-                                print("nickname registered!");
-                            }, onError: { (err, msg) in
-                                print("got error:", err as Any, msg as Any);
-                            })
+                        case .failure(let errorCondition, let errorText):
+                            print("could not register nick:", errorCondition, "with message:", errorText as Any);
                         }
-                    }, onError: { (err, msg) in
-                        print("got error:", err as Any, msg as Any);
-                    })
+                    });
                 }
             }, onJoined: { room in
                 room.registerForTigasePushNotification(true, completionHandler: { (result) in
