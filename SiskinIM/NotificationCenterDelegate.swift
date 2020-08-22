@@ -265,7 +265,7 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
                     while viewControllers[i] != chatController {
                         i = i + 1;
                     }
-                    while (!viewControllers.isEmpty) && i >= 0 && viewControllers[i] != destination {
+                    while (!viewControllers.isEmpty) && i > 0 && viewControllers[i] != destination {
                         viewControllers.remove(at: i);
                         i = i - 1;
                     }
