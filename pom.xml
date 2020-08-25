@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<parent>
+		<groupId>tigase</groupId>
+		<artifactId>tigase-projects-parent</artifactId>
+		<version>1.0.4-SNAPSHOT</version>
+		<relativePath />
+	</parent>
+
 	<properties>
 		<packaging.type>pom</packaging.type>
 		<dist_path>.</dist_path>
-		<guide_name>Tigase_Swift</guide_name>
-		<guide_path>${dist_path}/docs/${guide_name}_Guide</guide_path>
-		<guide_filename>index</guide_filename>
-        <skip-distribution-deploy>true</skip-distribution-deploy>
+		<guide_name>Tigase_SiskinIM</guide_name>
+		<docs.source.directory>./Documentation</docs.source.directory>
+		<documentation_phases.all_converters>generate-resources</documentation_phases.all_converters>
 	</properties>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -18,230 +24,10 @@
 	<groupId>iosdocs</groupId>
 	<version>v1.0</version>
 
-	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.asciidoctor</groupId>
-					<artifactId>asciidoctor-maven-plugin</artifactId>
-					<version>1.5.0</version>
-					<executions>
-						<execution>
-							<id>output-html</id>
-							<goals>
-								<goal>process-asciidoc</goal>
-							</goals>
-							<configuration>
-								<sourceHighlighter>coderay</sourceHighlighter>
-								<backend>html5</backend>
-								<preserveDirectories>true</preserveDirectories>
-								<outputDirectory>${guide_path}/html</outputDirectory>
-								<attributes>
-									<toc>left</toc>
-									<sectanchors>true</sectanchors>
-									<linkcss>true</linkcss>
-									<imagesdir>.</imagesdir>
-								</attributes>
-							</configuration>
-						</execution>
-						<execution>
-							<id>output-docbook</id>
-							<goals>
-								<goal>process-asciidoc</goal>
-							</goals>
-							<configuration>
-								<preserveDirectories>true</preserveDirectories>
-								<outputDirectory>${project.build.directory}/docbook/</outputDirectory>
-								<backend>docbook</backend>
-								<doctype>book</doctype>
-								<attributes>
-									<linkcss>true</linkcss>
-									<imagesdir>.</imagesdir>
-								</attributes>
-							</configuration>
-						</execution>
-					</executions>
-					<configuration>
-						<gemPath>gems-provided</gemPath>
-						<sourceDirectory>./Documentation</sourceDirectory>
-						<sourceDocumentName>index.asciidoc</sourceDocumentName>
-						<attributes>
-							<endpoint-url>http://docs.tigase.org</endpoint-url>
-						</attributes>
-						<headerFooter>true</headerFooter>
-					</configuration>
-				</plugin>
-
-				<plugin>
-					<groupId>com.agilejava.docbkx</groupId>
-					<artifactId>docbkx-maven-plugin</artifactId>
-					<version>2.0.16</version>
-					<dependencies>
-						<dependency>
-							<groupId>net.sf.docbook</groupId>
-							<artifactId>docbook-xml</artifactId>
-							<version>5.0-all</version>
-							<classifier>resources</classifier>
-							<type>zip</type>
-							<scope>runtime</scope>
-						</dependency>
-						<dependency>
-							<groupId>net.sf.xslthl</groupId>
-							<artifactId>xslthl</artifactId>
-							<version>2.0.1</version>
-							<scope>runtime</scope>
-						</dependency>
-						<dependency>
-							<groupId>net.sf.offo</groupId>
-							<artifactId>fop-hyph</artifactId>
-							<version>1.2</version>
-							<scope>runtime</scope>
-						</dependency>
-					</dependencies>
-					<executions>
-						<execution>
-							<id>generate-webhelp</id>
-							<goals>
-								<goal>generate-webhelp</goal>
-							</goals>
-							<configuration>
-								<targetDirectory>${guide_path}/webhelp/</targetDirectory>
-								<!--<imgSrcPath>../html/</imgSrcPath>-->
-								<ignoreImageScaling>true</ignoreImageScaling>
-								<postProcess>
-									<copy todir="${guide_path}/webhelp/css">
-										<fileset dir="Documentation/css"></fileset>
-									</copy>
-									<copy todir="${guide_path}/webhelp/images">
-										<fileset dir="Documentation/images"></fileset>
-									</copy>
-								</postProcess>
-
-							</configuration>
-						</execution>
-						<execution>
-							<id>generate-pdf</id>
-							<goals>
-								<goal>generate-pdf</goal>
-							</goals>
-							<configuration>
-								<targetDirectory>${guide_path}/pdf/</targetDirectory>
-								<imgSrcPath>${project.build.directory}/docbook/</imgSrcPath>
-								<ignoreImageScaling>true</ignoreImageScaling>
-								<fopLogLevel>OFF</fopLogLevel>
-								<!--<defaultImageWidth>3cm</defaultImageWidth>-->
-								<!--<ignoreImageScaling>true</ignoreImageScaling>-->
-								<postProcess>
-									<move file="${guide_path}/pdf/index.pdf" tofile="${guide_path}/pdf/${guide_name}Guide.pdf" failonerror="false" />
-								</postProcess>
-							</configuration>
-						</execution>
-					</executions>
-					<configuration>
-						<chunkedOutput>true</chunkedOutput>
-						<sourceDirectory>${project.build.directory}/docbook/</sourceDirectory>
-						<includes>${guide_filename}.xml</includes>
-						<!--<imgSrcPath>../html/</imgSrcPath>-->
-						<highlightSource>1</highlightSource>
-						<!--<foCustomization>src/docbkx/docbook-fo.xsl</foCustomization>-->
-						<hyphenate>true</hyphenate>
-						<hyphenateVerbatim>true</hyphenateVerbatim>
-
-					</configuration>
-				</plugin>
-
-				<plugin>
-					<artifactId>maven-clean-plugin</artifactId>
-					<version>2.6</version>
-					<executions>
-						<execution>
-							<id>Remove *.fo file</id>
-							<goals>
-								<goal>clean</goal>
-							</goals>
-						</execution>
-					</executions>
-					<configuration>
-						<filesets>
-							<fileset>
-								<directory>${guide_path}/pdf/</directory>
-								<followSymlinks>false</followSymlinks>
-								<includes>
-									<include>*.fo</include>
-								</includes>
-							</fileset>
-						</filesets>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<version>2.8.2</version>
-				<configuration>
-                    <skip>${skip-distribution-deploy}</skip>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.asciidoctor</groupId>
-				<artifactId>asciidoctor-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>output-html</id>
-						<phase>generate-resources</phase>
-					</execution>
-					<execution>
-						<id>output-docbook</id>
-						<phase>generate-resources</phase>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>com.agilejava.docbkx</groupId>
-				<artifactId>docbkx-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>generate-pdf</id>
-						<phase>generate-resources</phase>
-					</execution>
-					<execution>
-						<id>generate-html</id>
-						<phase>generate-resources</phase>
-					</execution>
-					<execution>
-						<phase>generate-resources</phase>
-						<id>generate-webhelp</id>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<artifactId>maven-clean-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>Remove *.fo file</id>
-						<phase>package</phase>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-
-	</build>
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>sonatype.snapshots</id>
-			<name>Maven Plugin Snapshots</name>
-			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</pluginRepository>
-	</pluginRepositories>
+	<repositories>
+		<repository>
+			<id>tigase</id>
+			<url>http://maven-repo.tigase.org/repository/tigase</url>
+		</repository>
+	</repositories>
 </project>
