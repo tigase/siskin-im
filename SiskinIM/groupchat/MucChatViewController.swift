@@ -119,8 +119,10 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             let sender = item.authorNickname ?? "From \(item.jid.stringValue)";
             if let author = item.authorNickname, let recipient = item.recipientNickname {
                 let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(author) " : "To \(recipient)  ");
-                let font = UIFont.italicSystemFont(ofSize: cell.nicknameView!.font!.pointSize - 2);
-                var attrs: [NSAttributedString.Key : Any] = [.font: font];
+                var attrs: [NSAttributedString.Key : Any] = [:];
+                if let origFontSize = cell.nicknameView?.font?.pointSize {
+                    attrs[.font] = UIFont.italicSystemFont(ofSize: origFontSize - 2);
+                }
                 if let color = UIColor(named: "chatMessageText") {
                     attrs[.foregroundColor] = color;
                 }
@@ -149,8 +151,10 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             let sender = item.authorNickname ?? "From \(item.jid.stringValue)";
             if let author = item.authorNickname, let recipient = item.recipientNickname {
                 let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(author) " : "To \(recipient)  ");
-                let font = UIFont.italicSystemFont(ofSize: cell.nicknameView!.font!.pointSize - 2);
-                var attrs: [NSAttributedString.Key : Any] = [.font: font];
+                var attrs: [NSAttributedString.Key : Any] = [:];
+                if let origFontSize = cell.nicknameView?.font?.pointSize {
+                    attrs[.font] = UIFont.italicSystemFont(ofSize: origFontSize - 2);
+                }
                 if let color = UIColor(named: "chatMessageText") {
                     attrs[.foregroundColor] = color;
                 }
@@ -193,8 +197,10 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             let sender = item.authorNickname ?? "From \(item.jid.stringValue)";
             if let author = item.authorNickname, let recipient = item.recipientNickname {
                 let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(author) " : "To \(recipient)  ");
-                let font = UIFont.italicSystemFont(ofSize: cell.nicknameView!.font!.pointSize - 2);
-                var attrs: [NSAttributedString.Key : Any] = [.font: font];
+                var attrs: [NSAttributedString.Key : Any] = [:];
+                if let origFontSize = cell.nicknameView?.font?.pointSize {
+                    attrs[.font] = UIFont.italicSystemFont(ofSize: origFontSize - 2);
+                }
                 if let color = UIColor(named: "chatMessageText") {
                     attrs[.foregroundColor] = color;
                 }
