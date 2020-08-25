@@ -291,7 +291,7 @@ class ChatViewDataSource {
         guard let item = notification.object as? ChatViewItemProtocol else {
             return;
         }
-        guard let account = delegate?.account, let jid = delegate?.jid else {
+        guard delegate?.chat != nil, let account = delegate?.account, let jid = delegate?.jid else {
             return;
         }
         guard account == item.account && jid == item.jid else {
