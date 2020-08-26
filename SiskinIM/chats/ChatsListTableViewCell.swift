@@ -39,7 +39,7 @@ class ChatsListTableViewCell: UITableViewCell {
             return super.backgroundColor;
         }
         set {
-            //super.backgroundColor = UIColor(named: "chatslistBackground");
+            super.backgroundColor = UIColor(named: "chatslistBackground");
             avatarStatusView?.backgroundColor = UIColor(named: "chatslistBackground");
         }
     }    
