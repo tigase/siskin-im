@@ -30,33 +30,52 @@ extension XmppService {
             return;
         }
         
-        if let vcard4Module: VCard4Module = client.modulesManager.getModule(VCard4Module.ID) {
-            refreshVCard(module: vcard4Module, for: jid, onSuccess: onSuccess, onError: {(error) in
-                if let vcardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID) {
-                    self.refreshVCard(module: vcardTempModule, for: jid, onSuccess: onSuccess, onError: onError);
-                } else {
-                    onError?(error);
+        retrieveVCard(account: account, for: jid == nil ? nil : JID(jid!), completionHandler: { result in
+            switch result {
+            case .success(let vcard):
+                DispatchQueue.global(qos: .default).async() {
+                    self.dbVCardsCache.updateVCard(for: jid ?? account, on: account, vcard: vcard);
+                    onSuccess?(vcard);
                 }
-            });
-        } else if let vcardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID) {
-            refreshVCard(module: vcardTempModule, for: jid, onSuccess: onSuccess, onError: onError);
-        } else {
-            onError?(ErrorCondition.service_unavailable);
-        }
-    }
-    
-    fileprivate func refreshVCard(module: VCardModuleProtocol, for jid: BareJID?, onSuccess: ((VCard)->Void)?, onError: ((ErrorCondition?)->Void)?) {
-        let account = (module as? ContextAware)!.context.sessionObject.userBareJid!;
-        module.retrieveVCard(from: jid == nil ? nil : JID(jid!), onSuccess: {(vcard) in
-            DispatchQueue.global(qos: .default).async() {
-                self.dbVCardsCache.updateVCard(for: jid ?? account, on: account, vcard: vcard);
-                onSuccess?(vcard);
+            case .failure(let errorCondition):
+                onError?(errorCondition);
             }
-        }, onError: { errorCondition in
-            onError?(errorCondition);
         });
     }
     
+    open func retrieveVCard(account: BareJID, for jid: JID?, completionHandler: @escaping (Result<VCard,ErrorCondition>)->Void) {
+        guard let client = getClient(forJid: account) else {
+            completionHandler(.failure(ErrorCondition.service_unavailable));
+            return;
+        }
+        if let vcard4Module: VCard4Module = client.modulesManager.getModule(VCard4Module.ID) {
+            retrieveVCard(module: vcard4Module, for: jid, completionHandler: { result in
+                switch result {
+                case .success(let vcard):
+                    completionHandler(.success(vcard));
+                case .failure(let errorCondition):
+                    if let vcardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID) {
+                        self.retrieveVCard(module: vcardTempModule, for: jid, completionHandler: completionHandler);
+                    } else {
+                        completionHandler(.failure(errorCondition));
+                    }
+                }
+            });
+        } else if let vcardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID) {
+            retrieveVCard(module: vcardTempModule, for: jid, completionHandler: completionHandler);
+        } else {
+            completionHandler(.failure(.undefined_condition));
+        }
+    }
+    
+    private func retrieveVCard(module: VCardModuleProtocol, for jid: JID?, completionHandler: @escaping (Result<VCard,ErrorCondition>)->Void) {
+        module.retrieveVCard(from: jid, onSuccess: {(vcard) in
+            completionHandler(.success(vcard));
+        }, onError: { errorCondition in
+            completionHandler(.failure(errorCondition ?? ErrorCondition.remote_server_timeout));
+        });
+    }
+        
     open func publishVCard(account: BareJID, vcard: VCard, onSuccess: @escaping ()->Void, onError: @escaping (ErrorCondition?)->Void) {
         guard let client = getClient(forJid: account) else {
             onError(ErrorCondition.service_unavailable);

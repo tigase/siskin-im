@@ -85,8 +85,8 @@ class MucChatOccupantsTableViewController: UITableViewController {
         
         let occupant = participants[indexPath.row];
         cell.nicknameLabel.text = occupant.nickname;
-        if let jid = occupant.jid {
-            cell.avatarStatusView.set(name: occupant.nickname, avatar: AvatarManager.instance.avatar(for: jid.bareJid, on: self.account), orDefault: AvatarManager.instance.defaultAvatar);
+        if let jid = occupant.jid, let avatar = AvatarManager.instance.avatar(for: jid.bareJid, on: self.account) {
+            cell.avatarStatusView.set(name: occupant.nickname, avatar: avatar, orDefault: AvatarManager.instance.defaultAvatar);
         } else if let photoHash = occupant.presence.vcardTempPhoto {
             cell.avatarStatusView.set(name: occupant.nickname, avatar: AvatarManager.instance.avatar(withHash: photoHash), orDefault: AvatarManager.instance.defaultAvatar);
         } else {

@@ -30,10 +30,29 @@ class AvatarEventHandler: XmppServiceEventHandler {
         switch event {
         case let e as PresenceModule.ContactPresenceChanged:
             NotificationCenter.default.post(name: XmppService.CONTACT_PRESENCE_CHANGED, object: e);
-            guard let photoId = e.presence.vcardTempPhoto, let from = e.presence.from?.bareJid, let to = e.presence.to?.bareJid, e.presence.findChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") == nil  else {
+            guard let photoId = e.presence.vcardTempPhoto, let from = e.presence.from?.bareJid, let to = e.presence.to?.bareJid else {
                 return;
             }
-            AvatarManager.instance.avatarHashChanged(for: from, on: to, type: .vcardTemp, hash: photoId);
+            if e.presence.findChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") == nil {
+                AvatarManager.instance.avatarHashChanged(for: from, on: to, type: .vcardTemp, hash: photoId);
+            } else {
+                if !AvatarManager.instance.hasAvatar(withHash: photoId) {
+                    XmppService.instance.retrieveVCard(account: to, for: e.presence.from, completionHandler: { result in
+                        switch result {
+                        case .success(let vcard):
+                            if let photo = vcard.photos.first {
+                                AvatarManager.fetchData(photo: photo, completionHandler: { result in
+                                    if let data = result {
+                                        _ = AvatarManager.instance.storeAvatar(data: data);
+                                    }
+                                })
+                            }
+                        case .failure(let error):
+                            print("could not retrieve a vcard from:", e.presence.from as Any, "on:", to, "error:", error);
+                        }
+                    })
+                }
+            }
         case let e as PEPUserAvatarModule.AvatarChangedEvent:
             guard let item = e.info.first(where: { info -> Bool in
                 return info.url == nil;
