@@ -35,6 +35,10 @@ class ChatsListViewController: UITableViewController {
         xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
         dataSource = ChatsDataSource(controller: self);
         super.viewDidLoad();
+        if #available(iOS 13.0, *) {
+        } else {
+            self.navigationController?.navigationBar.isTranslucent = false;
+        }
         
         tableView.rowHeight = UITableView.automaticDimension;
         tableView.estimatedRowHeight = 66.0;
