@@ -100,14 +100,14 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                     toClose.forEach({ (session) in
                         self.close(session: session);
                     })
-                    if let presenceModule: PresenceModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(PresenceModule.ID), !presenceModule.presenceStore.isAvailable(jid: from.bareJid) {
-                        CallManager.instance.terminateCall(for: e.sessionObject.userBareJid!, with: from.bareJid);
+                    if CallManager.isAvailable, let presenceModule: PresenceModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(PresenceModule.ID), !presenceModule.presenceStore.isAvailable(jid: from.bareJid) {
+                        CallManager.instance?.terminateCall(for: e.sessionObject.userBareJid!, with: from.bareJid);
                     }
                 }
             case let e as JingleModule.JingleMessageInitiationEvent:
                 switch e.action! {
                 case .propose(let id, let descriptions):
-                    guard self.session(for: e.sessionObject.userBareJid!, with: e.jid, sid: id) == nil else {
+                    guard CallManager.isAvailable, self.session(for: e.sessionObject.userBareJid!, with: e.jid, sid: id) == nil else {
                         return;
                     }
                     if let pushModule: SiskinPushNotificationsModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), pushModule.isEnabled && pushModule.isSupported(extension: TigasePushNotificationsModule.Jingle.self) {
@@ -117,7 +117,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                         
                     let media = descriptions.map({ Call.Media.from(string: $0.media) }).filter({ $0 != nil }).map({ $0! });
                     let call = Call(account: e.sessionObject.userBareJid!, with: e.jid.bareJid, sid: id, direction: .incoming, media: media);
-                    CallManager.instance.reportIncomingCall(call, completionHandler: { result in
+                    CallManager.instance?.reportIncomingCall(call, completionHandler: { result in
                         switch result {
                         case .success(_):
                             break;
@@ -132,18 +132,18 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                     self.sessionTerminated(account: account, sid: id);
                 case .reject(let id):
                     let account = e.sessionObject.userBareJid!;
-                    if account != e.jid.bareJid {
+                    if CallManager.isAvailable && account != e.jid.bareJid {
                         let call = Call(account: e.sessionObject.userBareJid!, with: e.jid.bareJid, sid: id, direction: .incoming, media: []);
-                        CallManager.instance.declinedOutgoingCall(call);
+                        CallManager.instance?.declinedOutgoingCall(call);
                     }
                     self.sessionTerminated(account: account, sid: id);
                 case .proceed(let id):
-                    guard let session = self.session(for: e.sessionObject.userBareJid!, with: e.jid, sid: id) else {
+                    guard CallManager.isAvailable, let session = self.session(for: e.sessionObject.userBareJid!, with: e.jid, sid: id) else {
                         return;
                     }
                     session.accepted(by: e.jid);
                     let call = Call(account: e.sessionObject.userBareJid!, with: e.jid.bareJid, sid: id, direction: .incoming, media: []);
-                    CallManager.instance.acceptedOutgoingCall(call, by: e.jid, completionHandler: { result in
+                    CallManager.instance?.acceptedOutgoingCall(call, by: e.jid, completionHandler: { result in
                         switch result {
                         case .success(_):
                             break;
@@ -156,7 +156,9 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                     break;
                 }
             case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
-                CallManager.instance.connectionEstablished(for: e.sessionObject.userBareJid!);
+                if CallManager.isAvailable {
+                    CallManager.instance?.connectionEstablished(for: e.sessionObject.userBareJid!);
+                }
             default:
                 break;
             }
@@ -216,7 +218,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
     
     fileprivate func sessionInitiated(event e: JingleModule.JingleEvent) {
         
-        guard let content = e.contents.first, let _ = content.description as? Jingle.RTP.Description else {
+        guard CallManager.isAvailable, let content = e.contents.first, let _ = content.description as? Jingle.RTP.Description else {
             return;
         }
         
@@ -228,7 +230,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
         } else {
             let session = open(for: e.sessionObject, with: e.jid, sid: e.sid, role: .responder, initiationType: .iq);
             session.initiated(remoteDescription:  SDP(contents: e.contents, bundle: e.bundle));
-            CallManager.instance.reportIncomingCall(call, completionHandler: { result in
+            CallManager.instance?.reportIncomingCall(call, completionHandler: { result in
                 switch result {
                 case .success(_):
                     break;

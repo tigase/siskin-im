@@ -23,7 +23,7 @@ import UIKit
 import WebRTC
 import TigaseSwift
 import UserNotifications
-import CallKit
+//import CallKit
 
 public class VideoCallController: UIViewController, CallManagerDelegate {
 
@@ -144,13 +144,17 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
     }
     
     static func call(jid: BareJID, from account: BareJID, media: [Call.Media], completionHandler: @escaping (Result<Void,Error>)->Void) {
+        guard let instance = CallManager.instance else {
+            completionHandler(.failure(ErrorCondition.not_allowed))
+            return;
+        }
         
         let call = Call(account: account, with: jid, sid: UUID().uuidString, direction: .outgoing, media: media);
             
         checkMediaAvailability(forCall: call, completionHandler: { result in
             switch result {
             case .success(_):
-                CallManager.instance.reportOutgoingCall(call, completionHandler: completionHandler);
+                instance.reportOutgoingCall(call, completionHandler: completionHandler);
             case .failure(let err):
                 completionHandler(.failure(err));
             }
@@ -197,7 +201,9 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
         self.view.sendSubviewToBack(mtkview);
 //        remoteVideoView.delegate = self;
         NotificationCenter.default.addObserver(self, selector: #selector(orientationChanged), name: UIDevice.orientationDidChangeNotification, object: nil)
-        CallManager.instance.delegate = self;
+        if CallManager.isAvailable {
+            CallManager.instance?.delegate = self;
+        }
     }
     
     private func updateAvatar() {
@@ -262,23 +268,25 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
 //    }
     
     @IBAction func switchCamera(_ sender: UIButton) {
-        CallManager.instance.switchCameraDevice();
+        if let instance = CallManager.instance {
+            instance.switchCameraDevice();
+        }
     }
     
     fileprivate var muted: Bool = false;
     
     @IBAction func mute(_ sender: UIButton) {
         self.muted = !self.muted;
-        if let call = self.call {
-            CallManager.instance.muteCall(call, value: self.muted);
+        if let instance = CallManager.instance, let call = self.call {
+            instance.muteCall(call, value: self.muted);
         }
         sender.backgroundColor = self.muted ? UIColor.red : UIColor.white;
         sender.tintColor = self.muted ? UIColor.white : UIColor.black;
     }
     
     @IBAction func disconnectClicked(_ sender: UIButton) {
-        if let call = self.call {
-            CallManager.instance.endCall(call);
+        if let instance = CallManager.instance, let call = self.call {
+            instance.endCall(call);
         }
         dismiss();
     }

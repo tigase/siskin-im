@@ -23,12 +23,34 @@ import UIKit
 import CallKit
 import PushKit
 import WebRTC
-import TigaseSwift
+import TigaseSwift  
 import Shared
 
 class CallManager: NSObject, CXProviderDelegate {
     
-    static let instance = CallManager();
+    static var isAvailable: Bool {
+        let userLocale = NSLocale.current
+
+        if (userLocale.regionCode?.contains("CN") ?? false) ||
+            (userLocale.regionCode?.contains("CHN") ?? false) {
+
+            return false
+        } else {
+            return true
+        }
+    }
+    
+    private(set) static var instance: CallManager? = nil;
+    
+    static func initializeCallManager() {
+        if isAvailable {
+            if instance == nil {
+                instance = CallManager();
+            }
+        } else {
+            instance = nil;
+        }
+    }
     
     private let pushRegistry: PKPushRegistry;
     

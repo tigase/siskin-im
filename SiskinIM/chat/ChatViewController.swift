@@ -322,7 +322,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
         }
         #if targetEnvironment(simulator)
         #else
-        let jingleSupported = JingleManager.instance.support(for: JID(self.jid), on: self.account);
+        let jingleSupported = CallManager.isAvailable ? JingleManager.instance.support(for: JID(self.jid), on: self.account) : [];
         var count = jingleSupported.contains(.audio) ? 1 : 0;
         if jingleSupported.contains(.video) {
             count = count + 1;
