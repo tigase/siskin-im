@@ -303,32 +303,35 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         self.tableView.endEditing(true);
         DispatchQueue.main.async {
             DispatchQueue.global(qos: .default).async {
-                self.xmppService.publishVCard(account: self.account, vcard: self.vcard, onSuccess: {() in
-                    DispatchQueue.main.async() {
-                        _ = self.navigationController?.popViewController(animated: true);
-                    }
-                    self.xmppService.dbVCardsCache.updateVCard(for: self.account, on: self.account, vcard: self.vcard);
-                    if let photo = self.vcard.photos.first {
-                        self.xmppService.dbVCardsCache.fetchPhoto(photo: photo) { (data) in
-                            guard data != nil, let client = self.xmppService.getClient(for: self.account) else {
-                                return;
-                            }
-                            let avatarHash = Digest.sha1.digest(toHex: data);
-                            let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID)!;
-                            let x = Element(name: "x", xmlns: "vcard-temp:x:update");
-                            x.addChild(Element(name: "photo", cdata: avatarHash));
-                            presenceModule.setPresence(show: .online, status: nil, priority: nil, additionalElements: [x]);
+                self.xmppService.publishVCard(account: self.account, vcard: self.vcard, completionHandler: {(result) in
+                    switch result {
+                    case .success(_):
+                        DispatchQueue.main.async() {
+                            _ = self.navigationController?.popViewController(animated: true);
                         }
+                        self.xmppService.dbVCardsCache.updateVCard(for: self.account, on: self.account, vcard: self.vcard);
+                        if let photo = self.vcard.photos.first {
+                            self.xmppService.dbVCardsCache.fetchPhoto(photo: photo) { (data) in
+                                guard data != nil, let client = self.xmppService.getClient(for: self.account) else {
+                                    return;
+                                }
+                                let avatarHash = Digest.sha1.digest(toHex: data);
+                                let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID)!;
+                                let x = Element(name: "x", xmlns: "vcard-temp:x:update");
+                                x.addChild(Element(name: "photo", cdata: avatarHash));
+                                presenceModule.setPresence(show: .online, status: nil, priority: nil, additionalElements: [x]);
+                            }
+                        }
+                    case .failure(let errorCondition):
+                        let errorName = errorCondition.rawValue;
+                        DispatchQueue.main.async {
+                            self.tableView.setEditing(true, animated: true);
+                            let alertController = UIAlertController(title: "Failure", message: "VCard publication failed.\n\(errorName)", preferredStyle: .alert);
+                            alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                            self.present(alertController, animated: true, completion: nil);
+                        }
+                        print("VCard publication failed", errorCondition);
                     }
-                }, onError: {(errorCondition) in
-                    let errorName = errorCondition != nil ? errorCondition!.rawValue : "Unknown";
-                    DispatchQueue.main.async {
-                        self.tableView.setEditing(true, animated: true);
-                        let alertController = UIAlertController(title: "Failure", message: "VCard publication failed.\n\(errorName)", preferredStyle: .alert);
-                        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
-                        self.present(alertController, animated: true, completion: nil);
-                    }
-                    print("VCard publication failed", errorCondition ?? "nil");
                 });
             }
         }

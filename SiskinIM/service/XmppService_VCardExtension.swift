@@ -69,31 +69,32 @@ extension XmppService {
     }
     
     private func retrieveVCard(module: VCardModuleProtocol, for jid: JID?, completionHandler: @escaping (Result<VCard,ErrorCondition>)->Void) {
-        module.retrieveVCard(from: jid, onSuccess: {(vcard) in
-            completionHandler(.success(vcard));
-        }, onError: { errorCondition in
-            completionHandler(.failure(errorCondition ?? ErrorCondition.remote_server_timeout));
-        });
+        module.retrieveVCard(from: jid, completionHandler: completionHandler);
     }
         
-    open func publishVCard(account: BareJID, vcard: VCard, onSuccess: @escaping ()->Void, onError: @escaping (ErrorCondition?)->Void) {
+    open func publishVCard(account: BareJID, vcard: VCard, completionHandler: @escaping (Result<Void,ErrorCondition>)->Void) {
         guard let client = getClient(forJid: account) else {
-            onError(ErrorCondition.service_unavailable);
+            completionHandler(.failure(ErrorCondition.service_unavailable));
             return;
         }
         
         if let vcard4Module: VCard4Module = client.modulesManager.getModule(VCard4Module.ID) {
-            vcard4Module.publishVCard(vcard, onSuccess: onSuccess, onError: {(error) in
-                if let vcardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID) {
-                    vcardTempModule.publishVCard(vcard, onSuccess: onSuccess, onError: onError);
-                } else {
-                    onError(error);
+            vcard4Module.publishVCard(vcard, completionHandler: { result in
+                switch result {
+                case .success(_):
+                    completionHandler(.success(Void()));
+                case .failure(let error):
+                    if let vcardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID) {
+                        vcardTempModule.publishVCard(vcard, completionHandler: completionHandler);
+                    } else {
+                        completionHandler(.failure(error));
+                    }
                 }
             });
         } else if let vcardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID) {
-            vcardTempModule.publishVCard(vcard, onSuccess: onSuccess, onError: onError);
+            vcardTempModule.publishVCard(vcard, completionHandler: completionHandler);
         } else {
-            onError(ErrorCondition.service_unavailable);
+            completionHandler(.failure(ErrorCondition.service_unavailable));
         }
     }
     

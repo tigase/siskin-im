@@ -95,16 +95,19 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
             }
         })
         dispatchGroup.enter();
-        vcardTempModule.retrieveVCard(from: room.jid, onSuccess: { (vcard) in
-            XmppService.instance.dbVCardsCache.updateVCard(for: self.room.roomJid, on: self.account, vcard: vcard);
-            DispatchQueue.main.async {
-                self.canEditVCard = true;
-                dispatchGroup.leave();
-            }
-        }, onError: { errorCondition in
-            DispatchQueue.main.async {
-                self.canEditVCard = false;
-                dispatchGroup.leave();
+        vcardTempModule.retrieveVCard(from: room.jid, completionHandler: { (result) in
+            switch result {
+            case .success(let vcard):
+                XmppService.instance.dbVCardsCache.updateVCard(for: self.room.roomJid, on: self.account, vcard: vcard);
+                DispatchQueue.main.async {
+                    self.canEditVCard = true;
+                    dispatchGroup.leave();
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    self.canEditVCard = false;
+                    dispatchGroup.leave();
+                }
             }
         })
         
@@ -268,15 +271,18 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         
         let vcard = VCard();
         vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: data.base64EncodedString(), types: [.home])];
-        vcardTempModule.publishVCard(vcard, to: room.roomJid, onSuccess: {
-            DispatchQueue.main.async {
-                self.roomAvatarView.image = self.squared(image: photo);
-                self.hideIndicator();
-            }
-        }, onError: { errorCondition in
-            DispatchQueue.main.async {
-                self.hideIndicator();
-                self.showError(title: "Error", message: "Could not set group chat avatar. The server responded with an error: \((errorCondition ?? ErrorCondition.undefined_condition).rawValue)");
+        vcardTempModule.publishVCard(vcard, to: room.roomJid, completionHandler: { result in
+            switch result {
+            case .success(_):
+                DispatchQueue.main.async {
+                    self.roomAvatarView.image = self.squared(image: photo);
+                    self.hideIndicator();
+                }
+            case .failure(let errorCondition):
+                DispatchQueue.main.async {
+                    self.hideIndicator();
+                    self.showError(title: "Error", message: "Could not set group chat avatar. The server responded with an error: \(errorCondition.rawValue)");
+                }
             }
         });
     }
