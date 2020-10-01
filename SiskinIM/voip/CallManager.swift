@@ -362,7 +362,28 @@ class CallManager: NSObject, CXProviderDelegate {
     }
     
     private func initiateWebRTC(for call: Call, completionHandler: @escaping (Result<Void,Error>)->Void) {
-        currentConnection = VideoCallController.initiatePeerConnection(withDelegate: self);
+        if let module: ExternalServiceDiscoveryModule = XmppService.instance.getClient(for: call.account)?.modulesManager.getModule(ExternalServiceDiscoveryModule.ID) {
+            module.discover(from: nil, type: nil, completionHandler: { result in
+                switch result {
+                case .success(let services):
+                    var servers: [RTCIceServer] = [];
+                    for service in services {
+                        if let server = service.rtcIceServer() {
+                            servers.append(server);
+                        }
+                    }
+                    self.initiateWebRTC(for: call, iceServers: servers, completionHandler: completionHandler);
+                case .failure(_):
+                    self.initiateWebRTC(for: call, iceServers: [], completionHandler: completionHandler);
+                }
+            })
+        } else {
+            initiateWebRTC(for: call, iceServers: [], completionHandler: completionHandler);
+        }
+    }
+    
+    private func initiateWebRTC(for call: Call, iceServers: [RTCIceServer], completionHandler: @escaping (Result<Void,Error>)->Void) {
+        currentConnection = VideoCallController.initiatePeerConnection(iceServers: iceServers, withDelegate: self);
         if currentConnection != nil {
             self.localAudioTrack = VideoCallController.peerConnectionFactory.audioTrack(withTrackId: "audio-" + UUID().uuidString);
             if let localAudioTrack = self.localAudioTrack {
@@ -421,33 +442,34 @@ class CallManager: NSObject, CXProviderDelegate {
                 }
                 self.accountConnected = nil;
                 
+                self.initiateWebRTC(for: call, completionHandler: { result in
+                    switch result {
+                    case .success(_):
+                        action.fulfill();
+
+                        let avsession = AVAudioSession.sharedInstance()
+
+                        do {
+                            try avsession.setCategory(.playAndRecord, mode: .videoChat)
+                            try avsession.setPreferredIOBufferDuration(0.005)
+                            try avsession.setPreferredSampleRate(4_410)
+                        } catch {
+                            fatalError(error.localizedDescription)
+                        }
+                        
+                        
+                        session.delegate = self;
+                        session.accept();
+                    case .failure(_):
+                        action.fail();
+                    }
+                })
+
                 self.showCallController();
-                action.fulfill();
-                session.accept();
             }
+            
+            self.connectionEstablished(for: call.account);
         }
-        
-        initiateWebRTC(for: call, completionHandler: { result in
-            switch result {
-            case .success(_):
-                let avsession = AVAudioSession.sharedInstance()
-
-                do {
-                    try avsession.setCategory(.playAndRecord, mode: .videoChat)
-                    try avsession.setPreferredIOBufferDuration(0.005)
-                    try avsession.setPreferredSampleRate(4_410)
-                } catch {
-                    fatalError(error.localizedDescription)
-                }
-                
-                
-                session.delegate = self;
-
-                self.connectionEstablished(for: call.account);
-            case .failure(_):
-                action.fail();
-            }
-        })
     }
     
     private var accountConnected: ((BareJID)->Void)?;

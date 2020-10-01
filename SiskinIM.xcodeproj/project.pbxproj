@@ -14,6 +14,7 @@
 		FE137A4821F6464D006B7F7C /* UIColor_mix.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4721F6464D006B7F7C /* UIColor_mix.swift */; };
 		FE137A4C21F75660006B7F7C /* ChatBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4B21F75660006B7F7C /* ChatBottomView.swift */; };
 		FE17808D23EB4C7F00A1EA76 /* AccountQRCodeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE17808C23EB4C7F00A1EA76 /* AccountQRCodeController.swift */; };
+		FE1A07482525EDD4004F38A0 /* ExternalServiceDiscovery_Service_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A07472525EDD4004F38A0 /* ExternalServiceDiscovery_Service_extension.swift */; };
 		FE1AC8F7216B8AB700D4CDAB /* NewFeaturesDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */; };
 		FE1DCCA21EA52CE200850563 /* DataFormController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1DCCA11EA52CE200850563 /* DataFormController.swift */; };
 		FE2332DB242B9C2300008ED4 /* ChannelInviteController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2332DA242B9C2300008ED4 /* ChannelInviteController.swift */; };
@@ -285,6 +286,7 @@
 		FE137A4B21F75660006B7F7C /* ChatBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatBottomView.swift; sourceTree = "<group>"; };
 		FE168ACC1CCD197A003F8B26 /* db-schema-1.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-1.sql"; sourceTree = "<group>"; };
 		FE17808C23EB4C7F00A1EA76 /* AccountQRCodeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountQRCodeController.swift; sourceTree = "<group>"; };
+		FE1A07472525EDD4004F38A0 /* ExternalServiceDiscovery_Service_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServiceDiscovery_Service_extension.swift; sourceTree = "<group>"; };
 		FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewFeaturesDetector.swift; sourceTree = "<group>"; };
 		FE1DCCA11EA52CE200850563 /* DataFormController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataFormController.swift; sourceTree = "<group>"; };
 		FE2332DA242B9C2300008ED4 /* ChannelInviteController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelInviteController.swift; sourceTree = "<group>"; };
@@ -544,6 +546,7 @@
 				FE233CD421E6846E00099281 /* CameraPreviewView.swift */,
 				FE2D481924505F1600C13CE5 /* CallManager.swift */,
 				FE2D481B24518C2800C13CE5 /* RTCCameraVideoCapturer_Format.swift */,
+				FE1A07472525EDD4004F38A0 /* ExternalServiceDiscovery_Service_extension.swift */,
 			);
 			path = voip;
 			sourceTree = "<group>";
@@ -1367,6 +1370,7 @@
 				FEC514281CEB82E9003AF765 /* MucChatViewController.swift in Sources */,
 				FE719E7A227307D0007CEEC9 /* OMEMOEncryptionSwitchTableViewCell.swift in Sources */,
 				FE3024321CE2036A00466497 /* DBVCardsCache.swift in Sources */,
+				FE1A07482525EDD4004F38A0 /* ExternalServiceDiscovery_Service_extension.swift in Sources */,
 				FE74D510234A4E1F001A925B /* ChatTableViewSystemCell.swift in Sources */,
 				FE507A241CDB7B3B001A015C /* GlobalSplitViewController.swift in Sources */,
 				FEC79193241AAF55007BE572 /* DBRoomStore.swift in Sources */,

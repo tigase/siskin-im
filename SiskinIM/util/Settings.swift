@@ -54,6 +54,7 @@ public enum Settings: String {
     @available(iOS 13.0, *)
     case linkPreviews
     case appearance
+    case usePublicStunServers
     
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     
@@ -78,7 +79,8 @@ public enum Settings: String {
             "SendMessageOnReturn" : true,
             "messageEncryption": "none",
             "linkPreviews": true,
-            "appearance": "auto"
+            "appearance": "auto",
+            "usePublicStunServers": true
         ];
         store.register(defaults: defaults);
         ["EnableMessageCarbons": Settings.enableMessageCarbons, "MessageEncryption": .messageEncryption, "EnableBookmarksSync": Settings.enableBookmarksSync].forEach { (oldKey, newKey) in

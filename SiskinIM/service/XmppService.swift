@@ -694,6 +694,7 @@ open class XmppService: Logger, EventHandler {
             jingleModule.supportsMessageInitiation = true;
             jingleModule.register(transport: Jingle.Transport.ICEUDPTransport.self, features: [Jingle.Transport.ICEUDPTransport.XMLNS, "urn:xmpp:jingle:apps:dtls:0"]);
             jingleModule.register(description: Jingle.RTP.Description.self, features: ["urn:xmpp:jingle:apps:rtp:1", "urn:xmpp:jingle:apps:rtp:audio", "urn:xmpp:jingle:apps:rtp:video"]);
+            _ = client.modulesManager.register(ExternalServiceDiscoveryModule());
             #endif
             _ = client.modulesManager.register(InBandRegistrationModule());
             let capsModule = client.modulesManager.register(CapabilitiesModule(additionalFeatures: [.lastMessageCorrection, .messageRetraction]));

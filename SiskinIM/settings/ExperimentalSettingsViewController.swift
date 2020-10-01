@@ -28,7 +28,7 @@ class ExperimentalSettingsViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 4;
+        return 5;
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -67,6 +67,14 @@ class ExperimentalSettingsViewController: UITableViewController {
                 Settings.ShowEmoticons.setValue(switchView.isOn);
             }
             return cell;
+        case .usePublicStinServers:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "PublicStunServersTableViewCell", for: indexPath) as! SwitchTableViewCell;
+            cell.switchView.isOn = Settings.usePublicStunServers.getBool();
+            cell.switchView.isEnabled = true;
+            cell.valueChangedListener = {(switchView: UISwitch) in
+                Settings.usePublicStunServers.setValue(switchView.isOn);
+            }
+            return cell;
         }
     }
     
@@ -79,5 +87,6 @@ class ExperimentalSettingsViewController: UITableViewController {
         case enableBookmarksSync = 1
         case enableMarkdown = 2
         case showEmoticons = 3
+        case usePublicStinServers = 4
     }
 }
