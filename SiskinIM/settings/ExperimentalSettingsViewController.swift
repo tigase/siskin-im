@@ -67,7 +67,7 @@ class ExperimentalSettingsViewController: UITableViewController {
                 Settings.ShowEmoticons.setValue(switchView.isOn);
             }
             return cell;
-        case .usePublicStinServers:
+        case .usePublicStunServers:
             let cell = tableView.dequeueReusableCell(withIdentifier: "PublicStunServersTableViewCell", for: indexPath) as! SwitchTableViewCell;
             cell.switchView.isOn = Settings.usePublicStunServers.getBool();
             cell.switchView.isEnabled = true;
@@ -87,6 +87,6 @@ class ExperimentalSettingsViewController: UITableViewController {
         case enableBookmarksSync = 1
         case enableMarkdown = 2
         case showEmoticons = 3
-        case usePublicStinServers = 4
+        case usePublicStunServers = 4
     }
 }
