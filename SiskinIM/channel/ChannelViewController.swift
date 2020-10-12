@@ -154,7 +154,7 @@ class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
     override func canExecuteContext(action: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.ContextAction, forItem item: ChatEntry, at indexPath: IndexPath) -> Bool {
         switch action {
         case .retract:
-            return XmppService.instance.getClient(for: item.account)?.state ?? .disconnected == .connected && (self.chat as? Channel)?.state ?? .left == .joined;
+            return item.state.direction == .outgoing && XmppService.instance.getClient(for: item.account)?.state ?? .disconnected == .connected && (self.chat as? Channel)?.state ?? .left == .joined;
         default:
             return super.canExecuteContext(action: action, forItem: item, at: indexPath);
         }
@@ -163,7 +163,7 @@ class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
     override func executeContext(action: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.ContextAction, forItem item: ChatEntry, at indexPath: IndexPath) {
         switch action {
         case .retract:
-            guard let channel = self.chat as? Channel else {
+            guard let channel = self.chat as? Channel, item.state.direction == .outgoing else {
                 return;
             }
             

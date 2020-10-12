@@ -221,7 +221,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
     override func canExecuteContext(action: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.ContextAction, forItem item: ChatEntry, at indexPath: IndexPath) -> Bool {
         switch action {
         case .retract:
-            return XmppService.instance.getClient(for: item.account)?.state ?? .disconnected == .connected && (self.chat as? Room)?.state ?? .not_joined == .joined;
+            return item.state.direction == .outgoing && XmppService.instance.getClient(for: item.account)?.state ?? .disconnected == .connected && (self.chat as? Room)?.state ?? .not_joined == .joined;
         default:
             return super.canExecuteContext(action: action, forItem: item, at: indexPath);
         }
@@ -230,7 +230,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
     override func executeContext(action: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.ContextAction, forItem item: ChatEntry, at indexPath: IndexPath) {
         switch action {
         case .retract:
-            guard let room = self.chat as? Room else {
+            guard let room = self.chat as? Room, item.state.direction == .outgoing else {
                 return;
             }
             
