@@ -22,7 +22,7 @@
 import UIKit
 import TigaseSwift
 
-class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar, BaseChatViewController_ShareImageExtension {
+class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar {
 
     static let MENTION_OCCUPANT = Notification.Name("groupchatMentionOccupant");
     
@@ -41,10 +41,6 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
     }
 
     let log: Logger = Logger();
-
-    var progressBar: UIProgressView?;
-    var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
-    var filePickerDelegate: BaseChatViewController_ShareFilePickerDelegate?;
 
     override func viewDidLoad() {
         
@@ -331,7 +327,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         }
     }
     
-    func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (() -> Void)?) {
+    override func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (() -> Void)?) {
         self.room!.sendMessage(uploadedUrl, url: uploadedUrl, additionalElements: []);
         completionHandler?();
     }

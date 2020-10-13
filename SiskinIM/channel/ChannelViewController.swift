@@ -22,12 +22,8 @@
 import UIKit
 import TigaseSwift
 
-class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar, BaseChatViewController_ShareImageExtension {
+class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar {
 
-    var progressBar: UIProgressView?
-    var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?
-    var filePickerDelegate: BaseChatViewController_ShareFilePickerDelegate?
-    
     var titleView: ChannelTitleView? {
         get {
             return self.navigationItem.titleView as? ChannelTitleView
@@ -246,7 +242,7 @@ class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         }
     }
     
-    func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (() -> Void)?) {
+    override func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (() -> Void)?) {
         let msg = self.channel!.createMessage(uploadedUrl);
         msg.oob = uploadedUrl;
         XmppService.instance.getClient(for: account)?.context.writer?.write(msg);

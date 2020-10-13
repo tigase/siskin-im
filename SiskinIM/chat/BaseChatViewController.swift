@@ -48,6 +48,8 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     
     private(set) var correctedMessageOriginId: String?;
     
+    var progressBar: UIProgressView?;
+
     var messageText: String? {
         get {
             return chatViewInputBar.text;
@@ -254,6 +256,11 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     }
     
     func sendMessage() {
+        assert(false, "This method should be overridden");
+    }
+    
+    func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (() -> Void)?) {
+        assert(false, "This method should be overridden");
     }
     
     func messageTextCleared() {

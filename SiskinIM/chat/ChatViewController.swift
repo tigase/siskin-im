@@ -25,7 +25,7 @@ import Shared
 import TigaseSwift
 import TigaseSwiftOMEMO
 
-class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar, BaseChatViewController_ShareImageExtension {
+class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar {
 
     var titleView: ChatTitleView! {
         get {
@@ -34,11 +34,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     }
     
     let log: Logger = Logger();
-            
-    var progressBar: UIProgressView?;
-    var imagePickerDelegate: BaseChatViewController_ShareImagePickerDelegate?;
-    var filePickerDelegate: BaseChatViewController_ShareFilePickerDelegate?;
-    
+                
     override var conversationLogController: ConversationLogController? {
         didSet {
             if conversationLogController != nil {
@@ -418,7 +414,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     }
     
     
-    func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (() -> Void)?) {
+    override func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (() -> Void)?) {
         guard let chat = self.chat as? DBChat else {
             completionHandler?();
             return;

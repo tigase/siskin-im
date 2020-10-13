@@ -10,6 +10,10 @@
 		FE00157D2017617B00490340 /* StreamFeaturesCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE00157C2017617B00490340 /* StreamFeaturesCache.swift */; };
 		FE00157F2019090300490340 /* ExperimentalSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE00157E2019090300490340 /* ExperimentalSettingsViewController.swift */; };
 		FE01ADA91E224CF400FA7E65 /* SiskinPushNotificationsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE01ADA81E224CF400FA7E65 /* SiskinPushNotificationsModule.swift */; };
+		FE0E30DF2535B9D20030F8C5 /* BaseChatViewController+Share.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30DE2535B9D20030F8C5 /* BaseChatViewController+Share.swift */; };
+		FE0E30E42535BA520030F8C5 /* HTTPFileUploadHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30E32535BA520030F8C5 /* HTTPFileUploadHelper.swift */; };
+		FE0E30E92535BA910030F8C5 /* BaseChatViewController+ShareMedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30E82535BA910030F8C5 /* BaseChatViewController+ShareMedia.swift */; };
+		FE0E30F12535BB530030F8C5 /* BaseChatViewController+ShareFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30F02535BB530030F8C5 /* BaseChatViewController+ShareFile.swift */; };
 		FE10BCF323FD4EF000E214F3 /* db-schema-10.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE10BCF223FD4EF000E214F3 /* db-schema-10.sql */; };
 		FE137A4821F6464D006B7F7C /* UIColor_mix.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4721F6464D006B7F7C /* UIColor_mix.swift */; };
 		FE137A4C21F75660006B7F7C /* ChatBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4B21F75660006B7F7C /* ChatBottomView.swift */; };
@@ -81,7 +85,6 @@
 		FE507A251CDB7B3B001A015C /* AccountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A131CDB7B3B001A015C /* AccountManager.swift */; };
 		FE507A261CDB7B3B001A015C /* AvatarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A141CDB7B3B001A015C /* AvatarManager.swift */; };
 		FE5146EF2420B900004923A3 /* Account.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE5146EE2420B900004923A3 /* Account.storyboard */; };
-		FE5628911F3621DB00452C73 /* BaseChatViewController_ShareExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5628901F3621DB00452C73 /* BaseChatViewController_ShareExtension.swift */; };
 		FE6545601E9E7B85006A14AC /* RegisterAccountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE65455F1E9E7B85006A14AC /* RegisterAccountController.swift */; };
 		FE6545621E9E7FDE006A14AC /* AccountDomainTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6545611E9E7FDE006A14AC /* AccountDomainTableViewCell.swift */; };
 		FE6545641E9E8B67006A14AC /* ServerSelectorTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6545631E9E8B67006A14AC /* ServerSelectorTableViewCell.swift */; };
@@ -281,6 +284,10 @@
 		FE00157C2017617B00490340 /* StreamFeaturesCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamFeaturesCache.swift; sourceTree = "<group>"; };
 		FE00157E2019090300490340 /* ExperimentalSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperimentalSettingsViewController.swift; sourceTree = "<group>"; };
 		FE01ADA81E224CF400FA7E65 /* SiskinPushNotificationsModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SiskinPushNotificationsModule.swift; sourceTree = "<group>"; };
+		FE0E30DE2535B9D20030F8C5 /* BaseChatViewController+Share.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BaseChatViewController+Share.swift"; sourceTree = "<group>"; };
+		FE0E30E32535BA520030F8C5 /* HTTPFileUploadHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPFileUploadHelper.swift; sourceTree = "<group>"; };
+		FE0E30E82535BA910030F8C5 /* BaseChatViewController+ShareMedia.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BaseChatViewController+ShareMedia.swift"; sourceTree = "<group>"; };
+		FE0E30F02535BB530030F8C5 /* BaseChatViewController+ShareFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BaseChatViewController+ShareFile.swift"; sourceTree = "<group>"; };
 		FE10BCF223FD4EF000E214F3 /* db-schema-10.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-10.sql"; sourceTree = "<group>"; };
 		FE137A4721F6464D006B7F7C /* UIColor_mix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor_mix.swift; sourceTree = "<group>"; };
 		FE137A4B21F75660006B7F7C /* ChatBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatBottomView.swift; sourceTree = "<group>"; };
@@ -359,7 +366,6 @@
 		FE507A131CDB7B3B001A015C /* AccountManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountManager.swift; sourceTree = "<group>"; };
 		FE507A141CDB7B3B001A015C /* AvatarManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarManager.swift; sourceTree = "<group>"; };
 		FE5146EE2420B900004923A3 /* Account.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Account.storyboard; sourceTree = "<group>"; };
-		FE5628901F3621DB00452C73 /* BaseChatViewController_ShareExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewController_ShareExtension.swift; sourceTree = "<group>"; };
 		FE60F29B1ED48B470030D411 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
 		FE65455F1E9E7B85006A14AC /* RegisterAccountController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegisterAccountController.swift; sourceTree = "<group>"; };
 		FE6545611E9E7FDE006A14AC /* AccountDomainTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountDomainTableViewCell.swift; sourceTree = "<group>"; };
@@ -573,7 +579,9 @@
 				FE507A001CDB7B3B001A015C /* ChatTableViewCell.swift */,
 				FE507A011CDB7B3B001A015C /* ChatViewController.swift */,
 				FEC514251CEB74F8003AF765 /* BaseChatViewController.swift */,
-				FE5628901F3621DB00452C73 /* BaseChatViewController_ShareExtension.swift */,
+				FE0E30DE2535B9D20030F8C5 /* BaseChatViewController+Share.swift */,
+				FE0E30F02535BB530030F8C5 /* BaseChatViewController+ShareFile.swift */,
+				FE0E30E82535BA910030F8C5 /* BaseChatViewController+ShareMedia.swift */,
 				FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift */,
 				FEF19F07234751FF005CFE9A /* ChatViewItemProtocol.swift */,
 				FEF19F0D23479F4C005CFE9A /* ChatViewDataSource.swift */,
@@ -697,6 +705,7 @@
 				FECEF29523B7B076007EC323 /* DownloadStore.swift */,
 				FE7D293323B919FF001A877D /* DownloadManager.swift */,
 				FE3E38852428C21100D3A8E8 /* OSLog.swift */,
+				FE0E30E32535BA520030F8C5 /* HTTPFileUploadHelper.swift */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -1279,6 +1288,7 @@
 				FE01ADA91E224CF400FA7E65 /* SiskinPushNotificationsModule.swift in Sources */,
 				FE507A1F1CDB7B3B001A015C /* AccountTableViewCell.swift in Sources */,
 				FEF19F122348A3B8005CFE9A /* AvatarEventHandler.swift in Sources */,
+				FE0E30E92535BA910030F8C5 /* BaseChatViewController+ShareMedia.swift in Sources */,
 				FE7F645B1D281B1C00B9DF56 /* DBCapabilitiesCache.swift in Sources */,
 				FECEF29023B7926E007EC323 /* ChatAttachment.swift in Sources */,
 				FE43E43823BF3DE80079BD9B /* ChatAttachementsController.swift in Sources */,
@@ -1307,6 +1317,7 @@
 				FE2332E3242CE8D600008ED4 /* ChannelBlockedUsersController.swift in Sources */,
 				FE75A006237475E2001E78D9 /* MainNotificationManagerProvider.swift in Sources */,
 				FEDE93871D07564F00CA60A9 /* SwitchTableViewCell.swift in Sources */,
+				FE0E30E42535BA520030F8C5 /* HTTPFileUploadHelper.swift in Sources */,
 				FE507A171CDB7B3B001A015C /* ChatTableViewCell.swift in Sources */,
 				FE31DDE4201261A200C2AB1D /* DNSSrvDiskCache.swift in Sources */,
 				FE233CDD21EA062E00099281 /* AboutController.swift in Sources */,
@@ -1331,7 +1342,6 @@
 				FE6545621E9E7FDE006A14AC /* AccountDomainTableViewCell.swift in Sources */,
 				FE507A231CDB7B3B001A015C /* CustomTabBarController.swift in Sources */,
 				FEA8D6621F30F54B0077C12F /* XmppService.swift in Sources */,
-				FE5628911F3621DB00452C73 /* BaseChatViewController_ShareExtension.swift in Sources */,
 				FEF19F0A2347619D005CFE9A /* TasksQueue.swift in Sources */,
 				FE8DD9C7221B15DC0090F5AA /* AbstractRosterViewController.swift in Sources */,
 				FEA7BF5D21E50CAB00D9E36C /* JingleManager_Session.swift in Sources */,
@@ -1342,6 +1352,7 @@
 				FEF8255524BA0AFE00820108 /* MessageTextView.swift in Sources */,
 				FEDE939B1D0C38B000CA60A9 /* ContactFormTableViewCell.swift in Sources */,
 				FEDE93991D0C207100CA60A9 /* ContactBasicTableViewCell.swift in Sources */,
+				FE0E30F12535BB530030F8C5 /* BaseChatViewController+ShareFile.swift in Sources */,
 				FE507A251CDB7B3B001A015C /* AccountManager.swift in Sources */,
 				FEC79195241ABEF4007BE572 /* MessageState.swift in Sources */,
 				FE719E7C22730DC3007CEEC9 /* OMEMOIdentityTableViewCell.swift in Sources */,
@@ -1355,6 +1366,7 @@
 				FE9E136D1F25F5F7005C0EE5 /* ChatSettingsViewController.swift in Sources */,
 				FE3E387A242765E800D3A8E8 /* MixEventHandler.swift in Sources */,
 				FECEF29623B7B076007EC323 /* DownloadStore.swift in Sources */,
+				FE0E30DF2535B9D20030F8C5 /* BaseChatViewController+Share.swift in Sources */,
 				FEF19F08234751FF005CFE9A /* ChatViewItemProtocol.swift in Sources */,
 				FECEF28C23B79151007EC323 /* ChatEntry.swift in Sources */,
 				FECEF29223B792C6007EC323 /* ChatLinkPreview.swift in Sources */,
