@@ -85,7 +85,8 @@ class ChannelSettingsViewController: UITableViewController {
     }
     
     func refreshPermissions() {
-        editButtonItem.isEnabled = !(channel?.permissions?.isEmpty ?? true);
+        navigationItem.rightBarButtonItem?.isEnabled = channel.permissions?.contains(.changeInfo) ?? false;
+        editButtonItem.isEnabled = channel.permissions?.contains(.changeInfo) ?? false;
         tableView.reloadData();
     }
     
