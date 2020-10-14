@@ -162,6 +162,10 @@ class SettingsViewController: UITableViewController {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationSettingsViewCell", for: indexPath);
                 cell.accessoryType = .disclosureIndicator;
                 return cell;
+            case .media:
+                let cell = tableView.dequeueReusableCell(withIdentifier: "MediaSettingsViewCell", for: indexPath);
+                cell.accessoryType = .disclosureIndicator;
+                return cell;
             case .experimental:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "ExperimentalSettingsViewCell", for: indexPath);
                 cell.accessoryType = .disclosureIndicator;
@@ -389,14 +393,15 @@ class SettingsViewController: UITableViewController {
         case chat
         case contacts
         case notifications
+        case media
         case experimental
         case about
         
         static let groups: [SettingsGroup] = {
             if #available(iOS 13.0, *) {
-                return [.appearance, .chat, .contacts, .notifications, .experimental, .about]
+                return [.appearance, .chat, .contacts, .notifications, .media, .experimental, .about]
             } else {
-                return [.chat, .contacts, .notifications, .experimental, .about]
+                return [.chat, .contacts, .notifications, .experimental, .media, .about]
             }
         }()
     }

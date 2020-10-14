@@ -27,12 +27,33 @@ class TablePickerViewController: UITableViewController {
     var items = [TablePickerViewItemsProtocol]();
     var onSelectionChange: ((TablePickerViewItemsProtocol)->Void)?;
     
+    var message: String?;
+    var footer: String?;
+    
+    init(style: UITableView.Style = .grouped, message: String? = nil, footer: String? = nil) {
+        self.message = message;
+        self.footer = footer;
+        super.init(style: style);
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad();
         
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "item");
         tableView.dataSource = self;
         tableView.delegate = self;
+    }
+    
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return message;
+    }
+    
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+        return footer;
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {

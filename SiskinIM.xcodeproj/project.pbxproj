@@ -17,6 +17,7 @@
 		FE0E30FE253714050030F8C5 /* MediaHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30FD253714050030F8C5 /* MediaHelper.swift */; };
 		FE0E3103253714420030F8C5 /* ImageQuality.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E3102253714420030F8C5 /* ImageQuality.swift */; };
 		FE0E3108253714570030F8C5 /* VideoQuality.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E3107253714570030F8C5 /* VideoQuality.swift */; };
+		FE0E31122537288A0030F8C5 /* MediaSettingsVIewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E31112537288A0030F8C5 /* MediaSettingsVIewController.swift */; };
 		FE10BCF323FD4EF000E214F3 /* db-schema-10.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE10BCF223FD4EF000E214F3 /* db-schema-10.sql */; };
 		FE137A4821F6464D006B7F7C /* UIColor_mix.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4721F6464D006B7F7C /* UIColor_mix.swift */; };
 		FE137A4C21F75660006B7F7C /* ChatBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4B21F75660006B7F7C /* ChatBottomView.swift */; };
@@ -294,6 +295,7 @@
 		FE0E30FD253714050030F8C5 /* MediaHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaHelper.swift; sourceTree = "<group>"; };
 		FE0E3102253714420030F8C5 /* ImageQuality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageQuality.swift; sourceTree = "<group>"; };
 		FE0E3107253714570030F8C5 /* VideoQuality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoQuality.swift; sourceTree = "<group>"; };
+		FE0E31112537288A0030F8C5 /* MediaSettingsVIewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaSettingsVIewController.swift; sourceTree = "<group>"; };
 		FE10BCF223FD4EF000E214F3 /* db-schema-10.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-10.sql"; sourceTree = "<group>"; };
 		FE137A4721F6464D006B7F7C /* UIColor_mix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor_mix.swift; sourceTree = "<group>"; };
 		FE137A4B21F75660006B7F7C /* ChatBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatBottomView.swift; sourceTree = "<group>"; };
@@ -662,6 +664,7 @@
 				FE719E7D2274D20D007CEEC9 /* OMEMOFingerprintsController.swift */,
 				FEDC678F238B05E4005C0FAB /* BlockedContactsController.swift */,
 				FE17808C23EB4C7F00A1EA76 /* AccountQRCodeController.swift */,
+				FE0E31112537288A0030F8C5 /* MediaSettingsVIewController.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -1327,6 +1330,7 @@
 				FE00157F2019090300490340 /* ExperimentalSettingsViewController.swift in Sources */,
 				FE2332E3242CE8D600008ED4 /* ChannelBlockedUsersController.swift in Sources */,
 				FE75A006237475E2001E78D9 /* MainNotificationManagerProvider.swift in Sources */,
+				FE0E31122537288A0030F8C5 /* MediaSettingsVIewController.swift in Sources */,
 				FEDE93871D07564F00CA60A9 /* SwitchTableViewCell.swift in Sources */,
 				FE0E30E42535BA520030F8C5 /* HTTPFileUploadHelper.swift in Sources */,
 				FE507A171CDB7B3B001A015C /* ChatTableViewCell.swift in Sources */,

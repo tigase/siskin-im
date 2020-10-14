@@ -27,14 +27,14 @@ class ChatSettingsViewController: UITableViewController {
         if #available(iOS 13.0, *) {
             return [
             [SettingsEnum.recentsMessageLinesNo, SettingsEnum.recentsSortType],
-            [SettingsEnum.sendMessageOnReturn, SettingsEnum.deleteChatHistoryOnClose, SettingsEnum.enableMessageCarbons, SettingsEnum.messageDeliveryReceipts, SettingsEnum.messageEncryption],
-            [SettingsEnum.sharingViaHttpUpload, SettingsEnum.linkPreviews, SettingsEnum.maxImagePreviewSize, SettingsEnum.clearDownloadStore],
+            [SettingsEnum.sendMessageOnReturn, SettingsEnum.deleteChatHistoryOnClose, SettingsEnum.enableMessageCarbons, SettingsEnum.messageDeliveryReceipts, SettingsEnum.messageEncryption, SettingsEnum.linkPreviews],
+                [SettingsEnum.media]
                 ];
         } else {
             return [
             [SettingsEnum.recentsMessageLinesNo, SettingsEnum.recentsSortType],
             [SettingsEnum.sendMessageOnReturn, SettingsEnum.deleteChatHistoryOnClose, SettingsEnum.enableMessageCarbons, SettingsEnum.messageDeliveryReceipts, SettingsEnum.messageEncryption],
-            [SettingsEnum.sharingViaHttpUpload, SettingsEnum.maxImagePreviewSize, SettingsEnum.clearDownloadStore],
+                [SettingsEnum.media]
                 ];
         }
         }();
@@ -96,31 +96,6 @@ class ChatSettingsViewController: UITableViewController {
             (cell.contentView.subviews[1] as! UILabel).text = RecentsSortTypeItem.description(of: ChatsListViewController.SortOrder(rawValue: Settings.RecentsOrder.getString()!)!);
             cell.accessoryType = .disclosureIndicator;
             return cell;
-        case .sharingViaHttpUpload:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "SharingViaHttpUploadTableViewCell", for: indexPath ) as! SwitchTableViewCell;
-            cell.switchView.isOn = Settings.SharingViaHttpUpload.getBool();
-            cell.valueChangedListener = {(switchView: UISwitch) in
-                if switchView.isOn {
-                    let alert = UIAlertController(title: nil, message: "When you share files using HTTP, they are uploaded to HTTP server with unique URL. Anyone who knows the unique URL to the file is able to download it.\nDo you wish to enable?",preferredStyle: .alert);
-                    alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
-                        Settings.SharingViaHttpUpload.setValue(true);
-                    }));
-                    alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: { (action) in
-                        switchView.isOn = false;
-                    }));
-                    self.present(alert, animated: true, completion: nil);
-                } else {
-                    Settings.SharingViaHttpUpload.setValue(false);
-                }
-            }
-            return cell;
-        case .maxImagePreviewSize:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "MaxImagePreviewSizeTableViewCell", for: indexPath);
-            (cell.contentView.subviews[1] as! UILabel).text = AutoFileDownloadLimit.description(of: Settings.fileDownloadSizeLimit.getInt());
-            cell.accessoryType = .disclosureIndicator;
-            return cell;
-        case .clearDownloadStore:
-            return tableView.dequeueReusableCell(withIdentifier: "ClearDownloadStoreTableViewCell", for: indexPath);
         case .messageDeliveryReceipts:
             let cell = tableView.dequeueReusableCell(withIdentifier: "MessageDeliveryReceiptsTableViewCell", for: indexPath) as! SwitchTableViewCell;
             cell.switchView.isOn = Settings.MessageDeliveryReceiptsEnabled.getBool();
@@ -150,6 +125,9 @@ class ChatSettingsViewController: UITableViewController {
             (cell.contentView.subviews[1] as! UILabel).text = label;
             cell.accessoryType = .disclosureIndicator;
             return cell;
+        case .media:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "MediaSettingsViewCell", for: indexPath);
+            return cell;
         }
     }
     
@@ -171,38 +149,6 @@ class ChatSettingsViewController: UITableViewController {
                 self.tableView.reloadData();
             };
             self.navigationController?.pushViewController(controller, animated: true);
-        case .maxImagePreviewSize:
-            let controller = TablePickerViewController(style: .grouped);
-            let values: [Int] = [0, 1, 2, 4, 8, 10, 15, 30, 50, Int.max];
-            controller.selected = values.firstIndex(of: Settings.fileDownloadSizeLimit.getInt() ) ?? 0;
-            controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
-                return AutoFileDownloadLimit(value: it);
-            });
-            //controller.selected = 1;
-            controller.onSelectionChange = { (_item) -> Void in
-                let item = _item as! AutoFileDownloadLimit;
-                Settings.fileDownloadSizeLimit.setValue(item.value);
-                self.tableView.reloadData();
-            };
-            self.navigationController?.pushViewController(controller, animated: true);
-        case .clearDownloadStore:
-            let alert = UIAlertController(title: "Download storage", message: "We are using \(DownloadStore.instance.size/(1024*1014)) MB of storage.", preferredStyle: .actionSheet);
-            alert.addAction(UIAlertAction(title: "Flush", style: .destructive, handler: {(action) in
-                DispatchQueue.global(qos: .background).async {
-                    DownloadStore.instance.clear();
-                }
-            }));
-            alert.addAction(UIAlertAction(title: "Older than 7 days", style: .destructive, handler: {(action) in
-                DispatchQueue.global(qos: .background).async {
-                    DownloadStore.instance.clear(olderThan: Date().addingTimeInterval(7*24*60*60.0*(-1.0)));
-                }
-            }));
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
-            alert.popoverPresentationController?.sourceView = self.tableView;
-            alert.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: indexPath);
-
-            self.present(alert, animated: true, completion: nil);
-            break;
         case .messageEncryption:
             let current = ChatEncryption(rawValue: Settings.messageEncryption.getString() ?? "") ?? .none;
             let controller = TablePickerViewController(style: .grouped);
@@ -229,34 +175,12 @@ class ChatSettingsViewController: UITableViewController {
         case enableMessageCarbons = 1
         case recentsMessageLinesNo = 2
         case recentsSortType = 3
-        case sharingViaHttpUpload = 4
-        case maxImagePreviewSize = 5;
-        case clearDownloadStore = 6;
         case messageDeliveryReceipts = 7;
         @available(iOS 13.0, *)
         case linkPreviews = 8;
         case sendMessageOnReturn = 9;
         case messageEncryption = 10;
-    }
-    
-    internal class AutoFileDownloadLimit: TablePickerViewItemsProtocol {
-        
-        public static func description(of value: Int) -> String {
-            if value == Int.max {
-                return "Unlimited";
-            } else {
-                return "\(value) MB";
-            }
-        }
-        
-        let description: String;
-        let value: Int;
-        
-        init(value: Int) {
-            self.value = value;
-            self.description = AutoFileDownloadLimit.description(of: value);
-        }
-        
+        case media
     }
     
     internal class MessageEncryptionItem: TablePickerViewItemsProtocol {
