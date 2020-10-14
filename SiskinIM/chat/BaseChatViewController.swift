@@ -50,6 +50,8 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     
     var progressBar: UIProgressView?;
 
+    var askMediaQuality: Bool = false;
+    
     var messageText: String? {
         get {
             return chatViewInputBar.text;

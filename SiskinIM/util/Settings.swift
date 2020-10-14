@@ -56,6 +56,9 @@ public enum Settings: String {
     case appearance
     case usePublicStunServers
     
+    case imageQuality
+    case videoQuality
+    
     public static let SETTINGS_CHANGED = Notification.Name("settingsChanged");
     
     fileprivate static var store: UserDefaults {
@@ -80,7 +83,9 @@ public enum Settings: String {
             "messageEncryption": "none",
             "linkPreviews": true,
             "appearance": "auto",
-            "usePublicStunServers": true
+            "usePublicStunServers": true,
+            "imageQuality": ImageQuality.medium.rawValue,
+            "videoQuality": VideoQuality.medium.rawValue
         ];
         store.register(defaults: defaults);
         ["EnableMessageCarbons": Settings.enableMessageCarbons, "MessageEncryption": .messageEncryption, "EnableBookmarksSync": Settings.enableBookmarksSync].forEach { (oldKey, newKey) in

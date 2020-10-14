@@ -22,13 +22,24 @@
 import UIKit
 
 extension UIImage {
-    func scaled(maxWidthOrHeight: CGFloat) -> UIImage? {
-        let newSize = size.height > size.width ? CGSize(width: (size.width / size.height) * maxWidthOrHeight, height: maxWidthOrHeight) : CGSize(width: maxWidthOrHeight, height: (size.height / size.width) * maxWidthOrHeight);
-        UIGraphicsBeginImageContextWithOptions(newSize, false, 0);
-        self.draw(in: CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height));
-        defer {
-            UIGraphicsEndImageContext();
+    func scaled(maxWidthOrHeight: CGFloat, isOpaque: Bool = false) -> UIImage? {
+        guard maxWidthOrHeight < size.height || maxWidthOrHeight < size.width else {
+            return self;
         }
-        return  UIGraphicsGetImageFromCurrentImageContext();
+        let newSize = size.height > size.width ? CGSize(width: (size.width / size.height) * maxWidthOrHeight, height: maxWidthOrHeight) : CGSize(width: maxWidthOrHeight, height: (size.height / size.width) * maxWidthOrHeight);
+        let format = imageRendererFormat;
+        if isOpaque {
+            format.opaque = isOpaque;
+        }
+        return UIGraphicsImageRenderer(size: newSize, format: format).image { _ in
+            draw(in: CGRect(origin: .zero, size: newSize));
+        };
+//        UIGraphicsBeginImageContextWithOptions(newSize, false, 0);
+//        self.imageRendererFormat
+//        self.draw(in: CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height));
+//        defer {
+//            UIGraphicsEndImageContext();
+//        }
+//        return  UIGraphicsGetImageFromCurrentImageContext();
     }
 }
