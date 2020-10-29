@@ -103,13 +103,25 @@ public class NotificationManager {
                 switch type {
                 case .chat:
                     content.title = name ?? sender.stringValue;
-                    content.body = body;
+                    if body.starts(with: "/me ") {
+                        content.body = String(body.dropFirst(4));
+                    } else {
+                        content.body = body;
+                    }
                     content.userInfo = ["account": account.stringValue, "sender": sender.stringValue, "uid": uid];
                 case .groupchat:
                     content.title = "\(name ?? sender.stringValue)";
-                    content.body = body;
-                    if let nickname = nickname {
-                        content.subtitle = nickname;
+                    if body.starts(with: "/me ") {
+                        if let nickname = nickname {
+                            content.body = "\(nickname) \(body.dropFirst(4))";
+                        } else {
+                            content.body = String(body.dropFirst(4));
+                        }
+                    } else {
+                        content.body = body;
+                        if let nickname = nickname {
+                            content.subtitle = nickname;
+                        }
                     }
                     content.userInfo = ["account": account.stringValue, "sender": sender.stringValue, "uid": uid];
                 default:

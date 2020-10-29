@@ -76,24 +76,31 @@ class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         
         switch dbItem {
         case let item as ChatMessage:
-            let id = continuation ? "ChatTableViewMessageContinuationCell" : "ChatTableViewMessageCell";
-
-            let cell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
-            cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-            //        cell.nicknameLabel?.text = item.nickname;
-            if cell.avatarView != nil {
-                if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
-                    cell.avatarView?.set(name: item.authorNickname, avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
-                } else if let participantId = item.participantId {
-                    cell.avatarView?.set(name: item.authorNickname, avatar: AvatarManager.instance.avatar(for: BareJID(localPart: "\(participantId)#\(item.jid.localPart!)", domain: item.jid.domain), on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
-                } else {
-                    cell.avatarView?.set(name: item.authorNickname, avatar: nil, orDefault: AvatarManager.instance.defaultAvatar);
+            if item.message.starts(with: "/me ") {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "ChatTableViewMeCell", for: indexPath) as! ChatTableViewMeCell;
+                cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+                cell.set(item: item, nickname: item.authorNickname);
+                return cell;
+            } else {
+                let id = continuation ? "ChatTableViewMessageContinuationCell" : "ChatTableViewMessageCell";
+                
+                let cell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
+                cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+                //        cell.nicknameLabel?.text = item.nickname;
+                if cell.avatarView != nil {
+                    if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
+                        cell.avatarView?.set(name: item.authorNickname, avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
+                    } else if let participantId = item.participantId {
+                        cell.avatarView?.set(name: item.authorNickname, avatar: AvatarManager.instance.avatar(for: BareJID(localPart: "\(participantId)#\(item.jid.localPart!)", domain: item.jid.domain), on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
+                    } else {
+                        cell.avatarView?.set(name: item.authorNickname, avatar: nil, orDefault: AvatarManager.instance.defaultAvatar);
+                    }
                 }
-            }
-            cell.nicknameView?.text = item.authorNickname;
-
-            cell.set(message: item);
+                cell.nicknameView?.text = item.authorNickname;
+                
+                cell.set(message: item);
             return cell;
+            }
         case let item as ChatAttachment:
             let id = continuation ? "ChatTableViewAttachmentContinuationCell" : "ChatTableViewAttachmentCell";
             let cell: AttachmentChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! AttachmentChatTableViewCell;

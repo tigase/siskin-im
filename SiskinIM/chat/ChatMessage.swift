@@ -38,5 +38,10 @@ class ChatMessage: ChatEntry {
             return message;
         }
     }
+    
+    override func isMergeable() -> Bool {
+        return !message.starts(with: "/me ");
+    }
+
 }
 

@@ -98,39 +98,47 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         
         switch dbItem {
         case let item as ChatMessage:
-            let id = continuation ? "ChatTableViewMessageContinuationCell" : "ChatTableViewMessageCell";
-
-            let cell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
-            cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-            //        cell.nicknameLabel?.text = item.nickname;
-            if cell.avatarView != nil {
-                if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account, let avatar = AvatarManager.instance.avatar(for: senderJid, on: item.account) {
-                    cell.avatarView?.set(name: item.authorNickname, avatar: avatar, orDefault: AvatarManager.instance.defaultAvatar);
-                } else if let nickname = item.authorNickname, let photoHash = self.room?.presences[nickname]?.presence.vcardTempPhoto {
-                    cell.avatarView?.set(name: item.authorNickname, avatar: AvatarManager.instance.avatar(withHash: photoHash), orDefault: AvatarManager.instance.defaultAvatar);
-                } else {
-                    cell.avatarView?.set(name: item.authorNickname, avatar: nil, orDefault: AvatarManager.instance.defaultAvatar);
-                }
-            }
-            let sender = item.authorNickname ?? "From \(item.jid.stringValue)";
-            if let author = item.authorNickname, let recipient = item.recipientNickname {
-                let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(author) " : "To \(recipient)  ");
-                var attrs: [NSAttributedString.Key : Any] = [:];
-                if let origFontSize = cell.nicknameView?.font?.pointSize {
-                    attrs[.font] = UIFont.italicSystemFont(ofSize: origFontSize - 2);
-                }
-                if let color = UIColor(named: "chatMessageText") {
-                    attrs[.foregroundColor] = color;
-                }
-                val.append(NSAttributedString(string: " (private message)", attributes: attrs));
-
-                cell.nicknameView?.attributedText = val;
+            if item.message.starts(with: "/me ") {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "ChatTableViewMeCell", for: indexPath) as! ChatTableViewMeCell;
+                cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+                let name = item.authorNickname ?? item.jid.stringValue;
+                cell.set(item: item, nickname: name);
+                return cell;
             } else {
-                cell.nicknameView?.text = sender;
+                let id = continuation ? "ChatTableViewMessageContinuationCell" : "ChatTableViewMessageCell";
+                
+                let cell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
+                cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+                //        cell.nicknameLabel?.text = item.nickname;
+                if cell.avatarView != nil {
+                    if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account, let avatar = AvatarManager.instance.avatar(for: senderJid, on: item.account) {
+                        cell.avatarView?.set(name: item.authorNickname, avatar: avatar, orDefault: AvatarManager.instance.defaultAvatar);
+                    } else if let nickname = item.authorNickname, let photoHash = self.room?.presences[nickname]?.presence.vcardTempPhoto {
+                        cell.avatarView?.set(name: item.authorNickname, avatar: AvatarManager.instance.avatar(withHash: photoHash), orDefault: AvatarManager.instance.defaultAvatar);
+                    } else {
+                        cell.avatarView?.set(name: item.authorNickname, avatar: nil, orDefault: AvatarManager.instance.defaultAvatar);
+                    }
+                }
+                let sender = item.authorNickname ?? "From \(item.jid.stringValue)";
+                if let author = item.authorNickname, let recipient = item.recipientNickname {
+                    let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(author) " : "To \(recipient)  ");
+                    var attrs: [NSAttributedString.Key : Any] = [:];
+                    if let origFontSize = cell.nicknameView?.font?.pointSize {
+                        attrs[.font] = UIFont.italicSystemFont(ofSize: origFontSize - 2);
+                    }
+                    if let color = UIColor(named: "chatMessageText") {
+                        attrs[.foregroundColor] = color;
+                    }
+                    val.append(NSAttributedString(string: " (private message)", attributes: attrs));
+                    
+                    cell.nicknameView?.attributedText = val;
+                } else {
+                    cell.nicknameView?.text = sender;
+                }
+                
+                cell.set(message: item);
+                return cell;
             }
-
-            cell.set(message: item);
-            return cell;
         case let item as ChatAttachment:
             let id = continuation ? "ChatTableViewAttachmentContinuationCell" : "ChatTableViewAttachmentCell";
             let cell: AttachmentChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! AttachmentChatTableViewCell;

@@ -107,19 +107,49 @@ class ChatsListViewController: UITableViewController {
 //            cell.nameLabel.textColor = Appearance.current.labelColor;
             cell.nameLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.nameLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.nameLabel.font.pointSize);
 //            cell.lastMessageLabel.textColor = item.unread > 0 ? Appearance.current.labelColor : Appearance.current.secondaryLabelColor;
+            let xmppClient = self.xmppService.getClient(forJid: item.account);
+            switch item {
+            case let room as DBRoom:
+                cell.avatarStatusView.set(name: nil, avatar: AvatarManager.instance.avatar(for: room.roomJid, on: room.account), orDefault: AvatarManager.instance.defaultGroupchatAvatar);
+                cell.avatarStatusView.setStatus(room.state == .joined ? Presence.Show.online : nil);
+                cell.nameLabel.text = room.name ?? item.jid.stringValue;
+            case let channel as DBChannel:
+                cell.avatarStatusView.set(name: nil, avatar: AvatarManager.instance.avatar(for: channel.channelJid, on: channel.account), orDefault: AvatarManager.instance.defaultGroupchatAvatar);
+                cell.nameLabel.text = channel.name ?? item.jid.localPart ?? item.jid.stringValue;
+                cell.avatarStatusView.setStatus(channel.state == .joined ? Presence.Show.online : nil)
+            default:
+                let rosterModule: RosterModule? = xmppClient?.modulesManager.getModule(RosterModule.ID);
+                let rosterItem = rosterModule?.rosterStore.get(for: item.jid);
+                let name = rosterItem?.name ?? item.jid.bareJid.stringValue;
+                cell.nameLabel.text = name;
+                cell.avatarStatusView.set(name: name, avatar: AvatarManager.instance.avatar(for: item.jid.bareJid, on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
+                let presenceModule: PresenceModule? = xmppClient?.modulesManager.getModule(PresenceModule.ID);
+                let presence = presenceModule?.presenceStore.getBestPresence(for: item.jid.bareJid);
+                cell.avatarStatusView.setStatus(presence?.show);
+            }
+            
             if let lastActivity = item.lastActivity {
                 switch lastActivity {
-                case .message(let lastMessage, let sender):
-                    let font = UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize, weight: item.unread > 0 ? .medium : .light)//UIFont(descriptor: cell.lastMessageLabel.font.fontDescriptor.withSymbolicTraits([.traitBold])!, size: cell.lastMessageLabel.font.fontDescriptor.pointSize) : cell.lastMessageLabel.font!;
-                    let msg = NSMutableAttributedString(string: lastMessage);
-                    Markdown.applyStyling(attributedString: msg, font: font, showEmoticons: Settings.ShowEmoticons.bool());
-                    if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
-                        prefix.append(msg);
-                        cell.lastMessageLabel.attributedText = prefix;
-                    } else {
+                case .message(let lastMessage, let direction, let sender):
+                    if lastMessage.starts(with: "/me ") {
+                        let nick = sender ?? (direction == .incoming ? (cell.nameLabel.text ?? "") : "Me");
+                        var fontDescriptor = UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize, weight: item.unread > 0 ? .medium : .regular).fontDescriptor.withSymbolicTraits(.traitItalic) ?? UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize, weight: item.unread > 0 ? .medium : .regular).fontDescriptor;
+                        let msg = NSMutableAttributedString(string: "\(nick) ", attributes: [.font: UIFont(descriptor: fontDescriptor, size: 0)]);
+                        fontDescriptor = UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize, weight: item.unread > 0 ? .regular : .light).fontDescriptor.withSymbolicTraits(.traitItalic) ?? UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize, weight: item.unread > 0 ? .medium : .regular).fontDescriptor;
+                        msg.append(NSAttributedString(string: "\(lastMessage.dropFirst(4))", attributes: [.font: UIFont(descriptor: fontDescriptor, size: 0)]));
                         cell.lastMessageLabel.attributedText = msg;
+                    } else {
+                        let font = UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize, weight: item.unread > 0 ? .medium : .light)//UIFont(descriptor: cell.lastMessageLabel.font.fontDescriptor.withSymbolicTraits([.traitBold])!, size: cell.lastMessageLabel.font.fontDescriptor.pointSize) : cell.lastMessageLabel.font!;
+                        let msg = NSMutableAttributedString(string: lastMessage);
+                        Markdown.applyStyling(attributedString: msg, font: font, showEmoticons: Settings.ShowEmoticons.bool());
+                        if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                            prefix.append(msg);
+                            cell.lastMessageLabel.attributedText = prefix;
+                        } else {
+                            cell.lastMessageLabel.attributedText = msg;
+                        }
                     }
-                case .invitation(_, let sender):
+                case .invitation(_, _, let sender):
                     if let fieldfont = cell.lastMessageLabel.font {
                         let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: fieldfont.fontDescriptor.pointSize);
                         let msg = NSAttributedString(string: "📨 Invitation", attributes: [.font:  font, .foregroundColor: cell.lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
@@ -140,7 +170,7 @@ class ChatsListViewController: UITableViewController {
                             cell.lastMessageLabel.attributedText = msg;
                         }
                     }
-                case .attachment(_, let sender):
+                case .attachment(_, _, let sender):
                     if let fieldfont = cell.lastMessageLabel.font {
                         let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: fieldfont.fontDescriptor.pointSize);
                         let msg = NSAttributedString(string: "📎 Attachment", attributes: [.font:  font, .foregroundColor: cell.lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
@@ -173,26 +203,6 @@ class ChatsListViewController: UITableViewController {
             cell.timestampLabel.text = formattedTS;
 //            cell.timestampLabel.textColor = Appearance.current.secondaryLabelColor;
             
-            let xmppClient = self.xmppService.getClient(forJid: item.account);
-            switch item {
-            case let room as DBRoom:
-                cell.avatarStatusView.set(name: nil, avatar: AvatarManager.instance.avatar(for: room.roomJid, on: room.account), orDefault: AvatarManager.instance.defaultGroupchatAvatar);
-                cell.avatarStatusView.setStatus(room.state == .joined ? Presence.Show.online : nil);
-                cell.nameLabel.text = room.name ?? item.jid.stringValue;
-            case let channel as DBChannel:
-                cell.avatarStatusView.set(name: nil, avatar: AvatarManager.instance.avatar(for: channel.channelJid, on: channel.account), orDefault: AvatarManager.instance.defaultGroupchatAvatar);
-                cell.nameLabel.text = channel.name ?? item.jid.localPart ?? item.jid.stringValue;
-                cell.avatarStatusView.setStatus(channel.state == .joined ? Presence.Show.online : nil)
-            default:
-                let rosterModule: RosterModule? = xmppClient?.modulesManager.getModule(RosterModule.ID);
-                let rosterItem = rosterModule?.rosterStore.get(for: item.jid);
-                let name = rosterItem?.name ?? item.jid.bareJid.stringValue;
-                cell.nameLabel.text = name;
-                cell.avatarStatusView.set(name: name, avatar: AvatarManager.instance.avatar(for: item.jid.bareJid, on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
-                let presenceModule: PresenceModule? = xmppClient?.modulesManager.getModule(PresenceModule.ID);
-                let presence = presenceModule?.presenceStore.getBestPresence(for: item.jid.bareJid);
-                cell.avatarStatusView.setStatus(presence?.show);
-            }
         }
         cell.avatarStatusView.updateCornerRadius();
         

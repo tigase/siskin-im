@@ -136,17 +136,25 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
         
         switch dsItem {
         case let item as ChatMessage:
-            let id = continuation ? "ChatTableViewMessageContinuationCell" : "ChatTableViewMessageCell";
-            let cell: ChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
-            cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-            let name = incoming ? self.titleView.name : "Me";
-            cell.avatarView?.set(name: name, avatar: AvatarManager.instance.avatar(for: incoming ? jid : account, on: account), orDefault: AvatarManager.instance.defaultAvatar);
-            cell.nicknameView?.text = name;
-            cell.set(message: item);
+            if item.message.starts(with: "/me ") {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "ChatTableViewMeCell", for: indexPath) as! ChatTableViewMeCell;
+                cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+                let name = incoming ? self.titleView.name : "Me";
+                cell.set(item: item, nickname: name);
+                return cell;
+            } else {
+                let id = continuation ? "ChatTableViewMessageContinuationCell" : "ChatTableViewMessageCell";
+                let cell: ChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
+                cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
+                let name = incoming ? self.titleView.name : "Me";
+                cell.avatarView?.set(name: name, avatar: AvatarManager.instance.avatar(for: incoming ? jid : account, on: account), orDefault: AvatarManager.instance.defaultAvatar);
+                cell.nicknameView?.text = name;
+                cell.set(message: item);
 //            cell.setNeedsUpdateConstraints();
 //            cell.updateConstraintsIfNeeded();
             
-            return cell;
+                return cell;
+            }
         case let item as ChatAttachment:
             let id = continuation ? "ChatTableViewAttachmentContinuationCell" : "ChatTableViewAttachmentCell" ;
             let cell: AttachmentChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! AttachmentChatTableViewCell;
