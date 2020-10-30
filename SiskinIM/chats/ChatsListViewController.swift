@@ -132,7 +132,7 @@ class ChatsListViewController: UITableViewController {
                 switch lastActivity {
                 case .message(let lastMessage, let direction, let sender):
                     if lastMessage.starts(with: "/me ") {
-                        let nick = sender ?? (direction == .incoming ? (cell.nameLabel.text ?? "") : "Me");
+                        let nick = sender ?? (direction == .incoming ? (cell.nameLabel.text ?? "") : (AccountManager.getAccount(for: item.account)?.nickname ?? "Me"));
                         var fontDescriptor = UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize, weight: item.unread > 0 ? .medium : .regular).fontDescriptor.withSymbolicTraits(.traitItalic) ?? UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize, weight: item.unread > 0 ? .medium : .regular).fontDescriptor;
                         let msg = NSMutableAttributedString(string: "\(nick) ", attributes: [.font: UIFont(descriptor: fontDescriptor, size: 0)]);
                         fontDescriptor = UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize, weight: item.unread > 0 ? .regular : .light).fontDescriptor.withSymbolicTraits(.traitItalic) ?? UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize, weight: item.unread > 0 ? .medium : .regular).fontDescriptor;

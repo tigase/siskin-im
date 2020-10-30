@@ -58,6 +58,9 @@ class ChannelJoinViewController: UITableViewController {
         super.viewWillAppear(animated);
         self.nameField.text = name;
         self.jidField.text = channelJid?.stringValue;
+        if let account = self.account {
+            self.nicknameField.text = AccountManager.getAccount(for: account)?.nickname;
+        }
                 
         switch action {
         case .join:
@@ -69,18 +72,23 @@ class ChannelJoinViewController: UITableViewController {
                         DispatchQueue.main.async {
                             self.passwordRequired = features.contains("muc_passwordprotected");
                             self.tableView.reloadData();
+                            self.updateJoinButtonStatus();
                             self.operationEnded();
                         }
                     case .failure(_, _):
                         DispatchQueue.main.async {
+                            self.updateJoinButtonStatus();
                             self.operationEnded();
                         }
                     }
                 });
+            } else {
+                self.updateJoinButtonStatus();
             }
             joinButton.title = "Join";
         default:
             joinButton.title = "Create";
+            updateJoinButtonStatus();
             break;
         }
     }
@@ -147,6 +155,10 @@ class ChannelJoinViewController: UITableViewController {
     }
     
     @IBAction func textFieldChanged(_ sender: Any) {
+        updateJoinButtonStatus();
+    }
+    
+    private func updateJoinButtonStatus() {
         let nick = self.nicknameField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "";
         self.joinButton.isEnabled = (!nick.isEmpty) && ((!passwordRequired) || (!(passwordField.text?.isEmpty ?? true)));
     }

@@ -32,6 +32,7 @@ class AccountSettingsViewController: UITableViewController {
     @IBOutlet var addressTextView: UILabel!
     
     @IBOutlet var enabledSwitch: UISwitch!
+    @IBOutlet var nicknameLabel: UILabel!;
     @IBOutlet var pushNotificationSwitch: UISwitch!;
     @IBOutlet var pushNotificationsForAwaySwitch: UISwitch!
     
@@ -56,6 +57,7 @@ class AccountSettingsViewController: UITableViewController {
         
         let config = AccountManager.getAccount(for: account);
         enabledSwitch.isOn = config?.active ?? false;
+        nicknameLabel.text = config?.nickname;
         pushNotificationSwitch.isOn = config?.pushNotifications ?? false;
         archivingEnabledSwitch.isOn = false;
         messageSyncAutomaticSwitch.isEnabled = false;
@@ -124,6 +126,21 @@ class AccountSettingsViewController: UITableViewController {
                 AccountSettings.messageSyncPeriod(self.account).set(double: item.hours);
             };
             self.navigationController?.pushViewController(controller, animated: true);
+        }
+        if indexPath.section == 1 && indexPath.row == 3 {
+            let controller = UIAlertController(title: "Nickname", message: "Enter default nickname to use in chats", preferredStyle: .alert);
+            controller.addTextField(configurationHandler: { textField in
+                textField.text = AccountManager.getAccount(for: self.account)?.nickname ?? "";
+            });
+            controller.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                let nickname = controller.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines);
+                if let account = AccountManager.getAccount(for: self.account) {
+                    account.nickname = nickname;
+                    AccountManager.save(account: account);
+                    self.nicknameLabel.text = account.nickname;
+                }
+            }))
+            self.navigationController?.present(controller, animated: true, completion: nil);
         }
         if indexPath.section == 5 && indexPath.row == 0 {
             self.deleteAccount();

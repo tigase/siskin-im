@@ -187,6 +187,22 @@ open class AccountManager {
             }
         }
         
+        open var nickname: String? {
+            get {
+                guard let nick = data["nickname"] as? String, !nick.isEmpty else {
+                    return name.localPart;
+                }
+                return nick;
+            }
+            set {
+                if newValue == nil {
+                    data.removeValue(forKey: "nickname");
+                } else {
+                    data["nickname"] = newValue;
+                }
+            }
+        }
+        
         open var server:String? {
             get {
                 return data["serverHost"] as? String;

@@ -34,7 +34,9 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     }
     
     let log: Logger = Logger();
-                
+                    
+    private var localNickname: String = "";
+
     override var conversationLogController: ConversationLogController? {
         didSet {
             if conversationLogController != nil {
@@ -52,6 +54,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     override func viewDidLoad() {
         let messageModule: MessageModule? = XmppService.instance.getClient(forJid: account)?.modulesManager.getModule(MessageModule.ID);
         self.chat = messageModule?.chatManager.getChat(with: JID(self.jid), thread: nil) as? DBChat;
+        self.localNickname = AccountManager.getAccount(for: account)?.nickname ?? "Me";
         
         super.viewDidLoad()
         
@@ -139,14 +142,14 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
             if item.message.starts(with: "/me ") {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "ChatTableViewMeCell", for: indexPath) as! ChatTableViewMeCell;
                 cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-                let name = incoming ? self.titleView.name : "Me";
+                let name = incoming ? self.titleView.name : localNickname;
                 cell.set(item: item, nickname: name);
                 return cell;
             } else {
                 let id = continuation ? "ChatTableViewMessageContinuationCell" : "ChatTableViewMessageCell";
                 let cell: ChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
                 cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-                let name = incoming ? self.titleView.name : "Me";
+                let name = incoming ? self.titleView.name : localNickname;
                 cell.avatarView?.set(name: name, avatar: AvatarManager.instance.avatar(for: incoming ? jid : account, on: account), orDefault: AvatarManager.instance.defaultAvatar);
                 cell.nicknameView?.text = name;
                 cell.set(message: item);
@@ -159,7 +162,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
             let id = continuation ? "ChatTableViewAttachmentContinuationCell" : "ChatTableViewAttachmentCell" ;
             let cell: AttachmentChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! AttachmentChatTableViewCell;
             cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-            let name = incoming ? self.titleView.name : "Me";
+            let name = incoming ? self.titleView.name : localNickname;
             cell.avatarView?.set(name: name, avatar: AvatarManager.instance.avatar(for: incoming ? jid : account, on: account), orDefault: AvatarManager.instance.defaultAvatar);
             cell.nicknameView?.text = name;
             cell.set(attachment: item);
@@ -182,7 +185,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
             let id = "ChatTableViewInvitationCell";
             let cell: InvitationChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! InvitationChatTableViewCell;
             cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-            let name = incoming ? self.titleView.name : "Me";
+            let name = incoming ? self.titleView.name : localNickname;
             cell.avatarView?.set(name: name, avatar: AvatarManager.instance.avatar(for: incoming ? jid : account, on: account), orDefault: AvatarManager.instance.defaultAvatar);
             cell.nicknameView?.text = name;
             cell.set(invitation: item);
