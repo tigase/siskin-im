@@ -45,50 +45,54 @@ class NotificationService: UNNotificationServiceExtension {
 
             if let account = BareJID(bestAttemptContent.userInfo["account"] as? String) {
                 DispatchQueue.main.async {
-                NotificationManager.instance.initialize(provider: ExtensionNotificationManagerProvider());
+                    NotificationManager.instance.initialize(provider: ExtensionNotificationManagerProvider());
                     self.debug("push for account:", account);
-                if let encryped = bestAttemptContent.userInfo["encrypted"] as? String, let ivStr = bestAttemptContent.userInfo["iv"] as? String {
-                    if let key = NotificationEncryptionKeys.key(for: account), let data = Data(base64Encoded: encryped), let iv = Data(base64Encoded: ivStr) {
-                        self.debug("got encrypted push with known key");
-                        let cipher = Cipher.AES_GCM();
-                        var decoded = Data();
-                        if cipher.decrypt(iv: iv, key: key, encoded: data, auth: nil, output: &decoded) {
-                            self.debug("got decrypted data:", String(data: decoded, encoding: .utf8) as Any);
-                            if let payload = try? JSONDecoder().decode(Payload.self, from: decoded) {
-                                self.debug("decoded payload successfully!");
-                                NotificationManager.instance.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: payload.sender.bareJid, type: payload.type, nickname: payload.nickname, body: payload.message, completionHandler: { content in
-                                    DispatchQueue.main.async {
-                                        contentHandler(content);
-                                    }
-                                });
+                    if let encryped = bestAttemptContent.userInfo["encrypted"] as? String, let ivStr = bestAttemptContent.userInfo["iv"] as? String {
+                        if let key = NotificationEncryptionKeys.key(for: account), let data = Data(base64Encoded: encryped), let iv = Data(base64Encoded: ivStr) {
+                            self.debug("got encrypted push with known key");
+                            let cipher = Cipher.AES_GCM();
+                            var decoded = Data();
+                            if cipher.decrypt(iv: iv, key: key, encoded: data, auth: nil, output: &decoded) {
+                                self.debug("got decrypted data:", String(data: decoded, encoding: .utf8) as Any);
+                                if let payload = try? JSONDecoder().decode(Payload.self, from: decoded) {
+                                    self.debug("decoded payload successfully!");
+                                    NotificationManager.instance.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: payload.sender.bareJid, type: payload.type, nickname: payload.nickname, body: payload.message, completionHandler: { content in
+                                        DispatchQueue.main.async {
+                                            contentHandler(content);
+                                        }
+                                    });
+                                    return;
+                                }
                             }
                         }
+                        contentHandler(bestAttemptContent)
+                    } else {
+                        self.debug("got plain push with", bestAttemptContent.userInfo[AnyHashable("sender")] as? String as Any, bestAttemptContent.userInfo[AnyHashable("body")] as? String as Any, bestAttemptContent.userInfo[AnyHashable("unread-messages")] as? Int as Any, bestAttemptContent.userInfo[AnyHashable("nickname")] as? String as Any);
+                        NotificationManager.instance.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: JID(bestAttemptContent.userInfo[AnyHashable("sender")] as? String)?.bareJid, type: .unknown, nickname: bestAttemptContent.userInfo[AnyHashable("nickname")] as? String, body: bestAttemptContent.userInfo[AnyHashable("body")] as? String, completionHandler: { content in
+                            DispatchQueue.main.async {
+                                contentHandler(content);
+                            }
+                        });
                     }
-                    contentHandler(bestAttemptContent)
-                } else {
-                    self.debug("got plain push with", bestAttemptContent.userInfo[AnyHashable("sender")] as? String as Any, bestAttemptContent.userInfo[AnyHashable("body")] as? String as Any, bestAttemptContent.userInfo[AnyHashable("unread-messages")] as? Int as Any, bestAttemptContent.userInfo[AnyHashable("nickname")] as? String as Any);
-                    NotificationManager.instance.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: JID(bestAttemptContent.userInfo[AnyHashable("sender")] as? String)?.bareJid, type: .unknown, nickname: bestAttemptContent.userInfo[AnyHashable("nickname")] as? String, body: bestAttemptContent.userInfo[AnyHashable("body")] as? String, completionHandler: { content in
-                        DispatchQueue.main.async {
-                            contentHandler(content);
-                        }
-                    });
                 }
-                }
+                return;
             } else {
                 contentHandler(bestAttemptContent);
             }
+        } else {
+            contentHandler(request.content);
         }
-        if #available(iOS 13.0, *) {
-            let taskRequest = BGAppRefreshTaskRequest(identifier: "org.tigase.messenger.mobile.refresh");
-            taskRequest.earliestBeginDate = nil
-            do {
-                debug("scheduling background app refresh")
-                BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: "org.tigase.messenger.mobile.refresh")
-                try BGTaskScheduler.shared.submit(taskRequest);
-            } catch {
-                debug("Could not schedule app refresh: \(error)")
-            }
-        }
+//        if #available(iOS 13.0, *) {
+//            let taskRequest = BGAppRefreshTaskRequest(identifier: "org.tigase.messenger.mobile.refresh");
+//            taskRequest.earliestBeginDate = nil
+//            do {
+//                debug("scheduling background app refresh")
+//                BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: "org.tigase.messenger.mobile.refresh")
+//                try BGTaskScheduler.shared.submit(taskRequest);
+//            } catch {
+//                debug("Could not schedule app refresh: \(error)")
+//            }
+//        }
     }
     
 //    func updateNotification(content: UNMutableNotificationContent, account: BareJID, unread: Int, sender: JID, type kind: Payload.Kind, nickname: String?, body: String) {
