@@ -81,7 +81,10 @@ class MediaHelper {
         if deleteSource {
             try? FileManager.default.removeItem(at: url);
         }
-        
+        compressImage(image: image, filename: filename, quality: quality, completionHandler: completionHandler);
+    }
+    
+    static func compressImage(image: UIImage, filename: String, quality: ImageQuality, completionHandler: @escaping(Result<URL,ShareError>)->Void) {
         let fileUrl = FileManager.default.temporaryDirectory.appendingPathComponent(filename + ".jpg", isDirectory: false);
         guard let outData = image.scaled(maxWidthOrHeight: quality.size)?.jpegData(compressionQuality: quality.quality) else {
             return;

@@ -200,6 +200,23 @@ extension BaseChatViewController: UIImagePickerControllerDelegate, UINavigationC
             }
 
             upload(imageUrl: imageUrl, filename: filename);
+        } else if let image = (info[.editedImage] as? UIImage) ?? (info[.originalImage] as? UIImage) {
+            MediaHelper.askImageQuality(controller: self, forceQualityQuestion: self.askMediaQuality, { result in
+                self.askMediaQuality = false;
+                switch result {
+                case .success(let quality):
+                    MediaHelper.compressImage(image: image, filename: UUID().uuidString, quality: quality, completionHandler: { result in
+                        switch result {
+                        case .success(let fileUrl):
+                            self.uploadFile(url: fileUrl, filename: fileUrl.lastPathComponent, deleteSource: true);
+                        case .failure(let error):
+                            self.showAlert(shareError: error);
+                        }
+                    })
+                case .failure(_):
+                    return;
+                }
+            });
         }
         
         picker.dismiss(animated: true, completion: nil);
