@@ -29,7 +29,7 @@ class DBOMEMOStore {
     public static let instance = DBOMEMOStore();
     
     fileprivate let keyPairForAccountStmt = try! DBConnection.main.prepareStatement("SELECT key FROM omemo_identities WHERE account = :account AND name = :name AND device_id = :deviceId AND own = 1");
-    fileprivate let updateKeyPairStmt = try! DBConnection.main.prepareStatement("UPDATE omemo_identities SET key = :key, fingerprint = :fingerprint, own = :own WHERE account = :account AND name = :name AND device_id = :deviceId");
+    private let existsKeyPairStmt = try! DBConnection.main.prepareStatement("SELECT count(1) FROM omemo_identities WHERE account = :account AND name = :name AND fingerprint = :fingerprint");
     fileprivate let loadKeyPairStatusStmt = try! DBConnection.main.prepareStatement("SELECT status FROM omemo_identities WHERE account = :account AND name = :name AND device_id = :deviceId");
     fileprivate let updateKeyPairStatusStmt = try! DBConnection.main.prepareStatement("UPDATE omemo_identities SET status = :status WHERE account = :account AND name = :name AND device_id = :deviceId");
     fileprivate let insertKeyPairStmt = try! DBConnection.main.prepareStatement("INSERT INTO omemo_identities (account, name, device_id, key, fingerprint, own, status) VALUES (:account,:name,:deviceId,:key,:fingerprint,:own,:status) ON CONFLICT(account, name, fingerprint) DO UPDATE SET device_id = :deviceId, status = :status");
@@ -79,7 +79,7 @@ class DBOMEMOStore {
             return cursor["fingerprint"];
         });
     }
-    
+
     func identities(forAccount account: BareJID, andName name: String) -> [Identity] {
         let params: [String: Any?] = ["account": account, "name": name];
         return try! getIdentityStmt.query(params, map: { (cursor) -> Identity? in
@@ -103,39 +103,44 @@ class DBOMEMOStore {
             return false;
         }
         
-        let fingerprint: String = publicKeyData.map { (byte) -> String in
-            return String(format: "%02x", byte)
-            }.joined();
-        var params: [String: Any?] = ["account": account, "name": identity.name, "deviceId": identity.deviceId, "key": key!.serialized(), "fingerprint": fingerprint, "own": (own ? 1 : 0)];
-        
+        let fingerprint: String = self.fingerprint(publicKey: publicKeyData);
+                
         defer {
             _ = self.setStatus(.verifiedActive, forIdentity: identity, andAccount: account);
         }
-        if try! updateKeyPairStmt.update(params) == 0 {
-            params["status"] = IdentityStatus.verifiedActive.rawValue;
-            return try! insertKeyPairStmt.insert(params) != 0;
-        }
-        
-        return true;
+
+        return save(identity: identity, fingerprint: fingerprint, own: own, data: key!.serialized(), forAccount: account);
+    }
+    
+    func fingerprint(publicKey: Data) -> String {
+        return publicKey.map { (byte) -> String in
+           return String(format: "%02x", byte)
+        }.joined();
     }
     
     func save(identity: SignalAddress, publicKeyData: Data?, forAccount account: BareJID) -> Bool {
-        guard publicKeyData != nil else {
+        guard let publicKeyData = publicKeyData else {
             // should we remove this key?
             return false;
         }
+        let fingerprint: String = self.fingerprint(publicKey: publicKeyData);
+        return save(identity: identity, fingerprint: fingerprint, own: false, data: publicKeyData, forAccount: account);
+    }
         
-        let fingerprint: String = publicKeyData!.map { (byte) -> String in
-            return String(format: "%02x", byte)
-            }.joined();
-        var params: [String: Any?] = ["account": account, "name": identity.name, "deviceId": identity.deviceId, "key": publicKeyData!, "fingerprint": fingerprint, "own": 0];
-        print("updating identity for account \(account) and address \(identity) with fingerprint \(fingerprint)");
-        if try! updateKeyPairStmt.update(params) == 0 {
-            // we are blindtrusting the remote identity
-            print("inserting identity for account \(account) and address \(identity) with fingerprint \(fingerprint)");
-            params["status"] = IdentityStatus.trustedActive.rawValue;
-            return try! insertKeyPairStmt.insert(params) != 0;
+    private func save(identity: SignalAddress, fingerprint: String, own: Bool, data: Data?, forAccount account: BareJID) -> Bool {
+        let paramsCount: [String: Any?] = ["account": account, "name": identity.name, "fingerprint": fingerprint];
+        
+        guard try! self.existsKeyPairStmt.scalar(paramsCount) ?? 0 == 0 else {
+            return true;
         }
+        
+        print("inserting identity for account \(account) and address \(identity) with fingerprint \(fingerprint)");
+        var params: [String: Any?] = paramsCount;
+        params["deviceId"] = identity.deviceId;
+        params["key"] = data;
+        params["own"] = own ? 1 : 0;
+        params["status"] = IdentityStatus.trustedActive.rawValue;
+        try! insertKeyPairStmt.insert(params);
         return true;
     }
     
