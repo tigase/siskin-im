@@ -40,15 +40,18 @@ class MucEventHandler: XmppServiceEventHandler {
                 return;
             }
             if let client = XmppService.instance.getClient(for: e.sessionObject.userBareJid!), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) {
-                mucModule.roomsManager.getRooms().forEach { (room) in
+                mucModule.roomsManager.getRooms().forEach { (r) in
+                    let room = r as! DBRoom;
                     // first we need to check if room supports MAM
                     if let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID), let mamModule: MessageArchiveManagementModule = client.modulesManager.getModule(MessageArchiveManagementModule.ID) {
                         discoModule.getInfo(for: room.jid, completionHandler: { result in
                             var mamVersions: [MessageArchiveManagementModule.Version] = [];
                             switch result {
                             case .success(_, _, let features):
+                                room.supportedFeatures = features;
                                 mamVersions = features.map({ MessageArchiveManagementModule.Version(rawValue: $0) }).filter({ $0 != nil}).map({ $0! });
                             default:
+                                room.supportedFeatures = [];
                                 break;
                             }
                             if let timestamp = room.lastMessageDate, !mamVersions.isEmpty {
@@ -100,6 +103,23 @@ class MucEventHandler: XmppServiceEventHandler {
 
             DBChatHistoryStore.instance.append(for: room.account, message: e.message, source: .stream);
         case let e as MucModule.AbstractOccupantEvent:
+            if let room = e.room as? DBRoom, room.isOMEMOCapable, let jid = e.occupant.jid {
+                if (e.occupant.affiliation == .none || e.occupant.affiliation == .outcast) {
+                    // remove
+                    DispatchQueue.main.async {
+                        if let idx = room.members?.firstIndex(of: jid) {
+                            room.members?.remove(at: idx);
+                        }
+                    }
+                } else {
+                    // ensure exists
+                    DispatchQueue.main.async {
+                        if let members = room.members, !members.contains(jid) {
+                            room.members?.append(jid);
+                        }
+                    }
+                }
+            }
             NotificationCenter.default.post(name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: e);
         case let e as MucModule.PresenceErrorEvent:
             guard let error = MucModule.RoomError.from(presence: e.presence), e.nickname == nil || e.nickname! == e.room.nickname else {

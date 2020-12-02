@@ -37,6 +37,7 @@ class ChannelJoinViewController: UITableViewController {
     var componentType: ChannelsHelper.ComponentType = .mix;
     var passwordRequired: Bool = false;
     var action: Action = .join
+    var password: String?;
     
     var mixInvitation: MixInvitation? {
         didSet {
@@ -49,6 +50,8 @@ class ChannelJoinViewController: UITableViewController {
         }
     }
     
+    var roomFeatures: [String]?;
+    
     override func viewDidLoad() {
         super.viewDidLoad();
         self.tableView.contentInsetAdjustmentBehavior = .always;
@@ -58,6 +61,7 @@ class ChannelJoinViewController: UITableViewController {
         super.viewWillAppear(animated);
         self.nameField.text = name;
         self.jidField.text = channelJid?.stringValue;
+        self.passwordField.text = password
         if let account = self.account {
             self.nicknameField.text = AccountManager.getAccount(for: account)?.nickname;
         }
@@ -68,8 +72,12 @@ class ChannelJoinViewController: UITableViewController {
                 operationStarted(message: "Checking...");
                 discoModule.getInfo(for: JID(channelJid!), node: nil, completionHandler: { result in
                     switch result {
-                    case .success(_, _, let features):
+                    case .success(_, let identities, let features):
                         DispatchQueue.main.async {
+                            if let name = identities.first?.name {
+                                self.nameField.text = name;
+                            }
+                            self.roomFeatures = features;
                             self.passwordRequired = features.contains("muc_passwordprotected");
                             self.tableView.reloadData();
                             self.updateJoinButtonStatus();
@@ -77,6 +85,7 @@ class ChannelJoinViewController: UITableViewController {
                         }
                     case .failure(_, _):
                         DispatchQueue.main.async {
+                            self.roomFeatures = [];
                             self.updateJoinButtonStatus();
                             self.operationEnded();
                         }
@@ -226,6 +235,7 @@ class ChannelJoinViewController: UITableViewController {
             guard let client = XmppService.instance.getClient(for: account), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) else {
                 return;
             }
+            let supportedFeatures = self.roomFeatures ?? [];
             let roomName = isPublic ? channelJid.localPart! : UUID().uuidString;
             _ = mucModule.join(roomName: roomName, mucServer: channelJid.domain, nickname: nick, ifCreated: { room in
                 mucModule.getRoomConfiguration(roomJid: room.jid, onSuccess: { (config) in
@@ -234,6 +244,11 @@ class ChannelJoinViewController: UITableViewController {
                     }
                     if let membersOnlyField: BooleanField = config.getField(named: "muc#roomconfig_membersonly") {
                         membersOnlyField.value = invitationOnly;
+                        if invitationOnly {
+                            if let anonimityField: ListSingleField = config.getField(named: "muc#roomconfig_anonymity") {
+                                anonimityField.value = "nonanonymous";
+                            }
+                        }
                     }
                     if let persistantField: BooleanField = config.getField(named: "muc#roomconfig_persistentroom") {
                         persistantField.value = true;
@@ -251,6 +266,7 @@ class ChannelJoinViewController: UITableViewController {
                 }, onError: nil);
             }, onJoined: { room in
                 DispatchQueue.main.async { [weak self] in
+                    (room as! DBRoom).supportedFeatures = supportedFeatures;
                     self?.dismiss(animated: true, completion: nil);
                 }
                 if let vCardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID) {
@@ -299,11 +315,23 @@ class ChannelJoinViewController: UITableViewController {
                  }
              });
          case .muc:
-             guard let mucModule: MucModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MucModule.ID) else {
+            guard let client = XmppService.instance.getClient(for: account), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID), let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) else {
                  return;
              }
              let room = channelJid;
-             _ = mucModule.join(roomName: room.localPart!, mucServer: room.domain, nickname: nick, password: password);
+            _ = mucModule.join(roomName: room.localPart!, mucServer: room.domain, nickname: nick, password: password, onJoined: { room in
+                discoModule.getInfo(for: room.jid, node: nil, completionHandler: { result in
+                    switch result {
+                    case .success(_, let identities, let features):
+                        (room as! DBRoom).supportedFeatures = features;
+                    case .failure(_, _):
+                        break;
+                    }
+                });
+                room.registerForTigasePushNotification(true, completionHandler: { (result) in
+                    print("automatically enabled push for:", room.roomJid, "result:", result);
+                })
+            });
              PEPBookmarksModule.updateOrAdd(for: account, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nick, password: password));
              DispatchQueue.main.async {
                  self.dismiss(animated: true, completion: nil);

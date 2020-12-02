@@ -21,6 +21,7 @@
 
 import UIKit
 import TigaseSwift
+import TigaseSwiftOMEMO
 
 class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar {
 
@@ -315,29 +316,91 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
     }
 
     override func sendMessage() {
-        let text = messageText;
-        guard !(text?.isEmpty != false) else {
+        guard let text = messageText, !(text.isEmpty != false), let room = self.room else {
             return;
         }
         
-        guard room?.state == .joined else {
+        guard room.state == .joined else {
             let alert: UIAlertController?  = UIAlertController.init(title: "Warning", message: "You are not connected to room.\nPlease wait reconnection to room", preferredStyle: .alert);
             alert?.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
             self.present(alert!, animated: true, completion: nil);
             return;
         }
         
+        let encryption: ChatEncryption = room.options.encryption ?? (ChatEncryption(rawValue: Settings.messageEncryption.string() ?? "") ?? .none);
+        guard encryption == .none || ((room.supportedFeatures?.contains("muc_nonanonymous") ?? false) && (room.supportedFeatures?.contains("muc_membersonly") ?? false)) else {
+            return;
+        }
+        
         let msg = self.room!.createMessage(text);
         msg.lastMessageCorrectionId = self.correctedMessageOriginId;
-        XmppService.instance.getClient(for: account)?.context.writer?.write(msg);
+
+        guard let client = XmppService.instance.getClient(for: account) else {
+            return;
+        }
+        
+        if encryption == .omemo, let omemoModule: OMEMOModule = client.modulesManager.getModule(OMEMOModule.ID) {
+            guard let members = room.members else {
+                return;
+            }
+            omemoModule.encode(message: msg, for: members.map({ $0.bareJid }), completionHandler: { result in
+                switch result {
+                case .failure(let error):
+                    print("could not encrypt message for", room.jid);
+                case .successMessage(let message, let fingerprint):
+                    client.context.writer?.write(message);
+                    DBChatHistoryStore.instance.appendItem(for: self.account, with: self.jid, state: .outgoing, authorNickname: room.nickname, authorJid: nil, recipientNickname: nil, participantId: nil, type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, encryption: .decrypted, encryptionFingerprint: fingerprint, linkPreviewAction: .auto, completionHandler: nil);
+                }
+            })
+        } else {
+            client.context.writer?.write(msg);
+            DBChatHistoryStore.instance.appendItem(for: self.account, with: self.jid, state: .outgoing, authorNickname: room.nickname, authorJid: nil, recipientNickname: nil, participantId: nil, type: .message, timestamp: Date(), stanzaId: msg.id, serverMsgId: nil, remoteMsgId: nil, data: text, encryption: .none, encryptionFingerprint: nil, linkPreviewAction: .auto, completionHandler: nil);
+        }
         DispatchQueue.main.async {
             self.messageText = nil;
         }
     }
     
     override func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (() -> Void)?) {
-        self.room!.sendMessage(uploadedUrl, url: uploadedUrl, additionalElements: []);
-        completionHandler?();
+        guard let room = self.room else {
+            completionHandler?();
+            return;
+        }
+        let encryption: ChatEncryption = room.options.encryption ?? (ChatEncryption(rawValue: Settings.messageEncryption.string() ?? "") ?? .none);
+        guard encryption == .none || ((room.supportedFeatures?.contains("muc_nonanonymous") ?? false) && (room.supportedFeatures?.contains("muc_membersonly") ?? false)) else {
+            completionHandler?();
+            return;
+        }
+        
+        let msg = room.createMessage(uploadedUrl);
+        msg.lastMessageCorrectionId = self.correctedMessageOriginId;
+
+        guard let client = XmppService.instance.getClient(for: account) else {
+            completionHandler?();
+            return;
+        }
+        
+        if encryption == .omemo, let omemoModule: OMEMOModule = client.modulesManager.getModule(OMEMOModule.ID) {
+            guard let members = room.members else {
+                completionHandler?();
+                return;
+            }
+            omemoModule.encode(message: msg, for: members.map({ $0.bareJid }), completionHandler: { result in
+                switch result {
+                case .failure(let error):
+                    print("could not encrypt message for", room.jid);
+                case .successMessage(let message, let fingerprint):
+                    client.context.writer?.write(message);
+                    DBChatHistoryStore.instance.appendItem(for: self.account, with: self.jid, state: .outgoing, authorNickname: room.nickname, authorJid: nil, recipientNickname: nil, participantId: nil, type: .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: uploadedUrl, encryption: .decrypted, encryptionFingerprint: fingerprint, linkPreviewAction: .auto, completionHandler: nil);
+                }
+                completionHandler?();
+            })
+        } else {
+            msg.oob = uploadedUrl;
+            client.context.writer?.write(msg);
+            DBChatHistoryStore.instance.appendItem(for: self.account, with: self.jid, state: .outgoing, authorNickname: room.nickname, authorJid: nil, recipientNickname: nil, participantId: nil, type: .attachment, timestamp: Date(), stanzaId: msg.id, serverMsgId: nil, remoteMsgId: nil, data: uploadedUrl, encryption: .none, encryptionFingerprint: nil, linkPreviewAction: .auto, completionHandler: nil);
+            completionHandler?();
+        }
     }
     
     @objc func roomInfoClicked() {

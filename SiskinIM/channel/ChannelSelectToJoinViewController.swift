@@ -40,6 +40,12 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
         }
     }
     
+    var joinConversation: (BareJID,String?)? {
+        didSet {
+            domain = joinConversation?.0.domain;
+        }
+    }
+    
     private var components: [ChannelsHelper.Component] = [];
     private var allItems: [DiscoveryModule.Item] = [];
     
@@ -151,6 +157,7 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
                 destination.channelJid = item.jid.bareJid;
                 destination.name = item.name ?? item.jid.localPart;
                 destination.componentType = self.components.first(where: { $0.jid.domain == item.jid.domain })?.type ?? .mix;
+                destination.password = self.joinConversation?.1;
             }
         }
     }
@@ -187,18 +194,45 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
                 return;
             }
             that.components = components;
-            ChannelsHelper.findChannels(for: account, at: components, completionHandler: { [weak self] allItems in
-                guard let that = self, that.account == account else {
-                    return;
-                }
-                let currDomain = that.domain ?? account.domain;
-                guard currDomain == domain else {
-                    return;
-                }
-                that.allItems = allItems;
-                that.updateItems();
-                that.operationFinished();
-            })
+            if let data = that.joinConversation, let name = data.0.localPart {
+                ChannelsHelper.queryChannel(for: account, at: that.components, name: name, completionHandler: { result in
+                    switch result {
+                    case .success(let items):
+                        print("got items:", items);
+                        DispatchQueue.main.async {
+                            guard let that = self else {
+                                return;
+                            }
+                            var changed = false;
+                            for item in items {
+                                if that.allItems.first(where: { $0.jid == item.jid }) == nil {
+                                    that.allItems.append(item);
+                                    changed = true;
+                                }
+                            }
+                            if changed {
+                                that.updateItems();
+                            }
+                            that.operationFinished();
+                        }
+                    case .failure(let err):
+                        print("got error:", err);
+                    }
+                })
+            } else {
+                ChannelsHelper.findChannels(for: account, at: components, completionHandler: { [weak self] allItems in
+                    guard let that = self, that.account == account else {
+                        return;
+                    }
+                    let currDomain = that.domain ?? account.domain;
+                    guard currDomain == domain else {
+                        return;
+                    }
+                    that.allItems = allItems;
+                    that.updateItems();
+                    that.operationFinished();
+                })
+            }
         })
     }
     

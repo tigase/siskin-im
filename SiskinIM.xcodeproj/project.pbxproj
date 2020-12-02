@@ -136,7 +136,6 @@
 		FE8DD9C3221B118E0090F5AA /* Groupchat.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE8DD9C2221B118E0090F5AA /* Groupchat.storyboard */; };
 		FE8DD9C5221B153A0090F5AA /* InviteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8DD9C4221B153A0090F5AA /* InviteViewController.swift */; };
 		FE8DD9C7221B15DC0090F5AA /* AbstractRosterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8DD9C6221B15DC0090F5AA /* AbstractRosterViewController.swift */; };
-		FE8DD9C9221B29520090F5AA /* MucNewGroupchatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8DD9C8221B29520090F5AA /* MucNewGroupchatController.swift */; };
 		FE94E5251CCBA74F00FAE755 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE94E5241CCBA74F00FAE755 /* AppDelegate.swift */; };
 		FE94E52C1CCBA74F00FAE755 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE94E52A1CCBA74F00FAE755 /* Main.storyboard */; };
 		FE94E52E1CCBA74F00FAE755 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FE94E52D1CCBA74F00FAE755 /* Assets.xcassets */; };
@@ -163,7 +162,6 @@
 		FEB62C501DA80956001500D5 /* AvatarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB62C4F1DA80956001500D5 /* AvatarStore.swift */; };
 		FEBC12F224C70DE000689475 /* db-schema-13.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEBC12F124C70DE000689475 /* db-schema-13.sql */; };
 		FEBC12F524C70E7F00689475 /* DBChatHistorySyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEBC12F324C70E2900689475 /* DBChatHistorySyncStore.swift */; };
-		FEC514241CEB2FF7003AF765 /* MucJoinViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514231CEB2FF7003AF765 /* MucJoinViewController.swift */; };
 		FEC514261CEB74F8003AF765 /* BaseChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514251CEB74F8003AF765 /* BaseChatViewController.swift */; };
 		FEC514281CEB82E9003AF765 /* MucChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514271CEB82E9003AF765 /* MucChatViewController.swift */; };
 		FEC79193241AAF55007BE572 /* DBRoomStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC79192241AAF55007BE572 /* DBRoomStore.swift */; };
@@ -415,7 +413,6 @@
 		FE8DD9C2221B118E0090F5AA /* Groupchat.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Groupchat.storyboard; sourceTree = "<group>"; };
 		FE8DD9C4221B153A0090F5AA /* InviteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteViewController.swift; sourceTree = "<group>"; };
 		FE8DD9C6221B15DC0090F5AA /* AbstractRosterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractRosterViewController.swift; sourceTree = "<group>"; };
-		FE8DD9C8221B29520090F5AA /* MucNewGroupchatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MucNewGroupchatController.swift; sourceTree = "<group>"; };
 		FE8DD9CA221DBED80090F5AA /* db-schema-4.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-4.sql"; sourceTree = "<group>"; };
 		FE94E5211CCBA74F00FAE755 /* Siskin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Siskin.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE94E5241CCBA74F00FAE755 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -445,7 +442,6 @@
 		FEB62C4F1DA80956001500D5 /* AvatarStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarStore.swift; sourceTree = "<group>"; };
 		FEBC12F124C70DE000689475 /* db-schema-13.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-13.sql"; sourceTree = "<group>"; };
 		FEBC12F324C70E2900689475 /* DBChatHistorySyncStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBChatHistorySyncStore.swift; sourceTree = "<group>"; };
-		FEC514231CEB2FF7003AF765 /* MucJoinViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucJoinViewController.swift; sourceTree = "<group>"; };
 		FEC514251CEB74F8003AF765 /* BaseChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewController.swift; sourceTree = "<group>"; };
 		FEC514271CEB82E9003AF765 /* MucChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatViewController.swift; sourceTree = "<group>"; };
 		FEC79192241AAF55007BE572 /* DBRoomStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBRoomStore.swift; sourceTree = "<group>"; };
@@ -910,12 +906,10 @@
 		FEE49DD12426879400900BBB /* groupchat */ = {
 			isa = PBXGroup;
 			children = (
-				FEC514231CEB2FF7003AF765 /* MucJoinViewController.swift */,
 				FEC514271CEB82E9003AF765 /* MucChatViewController.swift */,
 				FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */,
 				FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */,
 				FE8DD9C4221B153A0090F5AA /* InviteViewController.swift */,
-				FE8DD9C8221B29520090F5AA /* MucNewGroupchatController.swift */,
 				FEE9608922F191980009B191 /* MucChatSettingsViewController.swift */,
 			);
 			path = groupchat;
@@ -1293,7 +1287,6 @@
 				FEA303AD24696604004A3B3E /* VCardTextEditCell.swift in Sources */,
 				FE36B3C821FA52E000D1F037 /* EmptyViewController.swift in Sources */,
 				FE507A161CDB7B3B001A015C /* ChatsListViewController.swift in Sources */,
-				FE8DD9C9221B29520090F5AA /* MucNewGroupchatController.swift in Sources */,
 				FE3E38842427E34300D3A8E8 /* ChannelJoinViewController.swift in Sources */,
 				FE75A0122376E73C001E78D9 /* SiskinPushNotificationsModuleProvider.swift in Sources */,
 				FE3E3890242A98C000D3A8E8 /* ChannelParticipantsController.swift in Sources */,
@@ -1343,7 +1336,6 @@
 				FE507A181CDB7B3B001A015C /* ChatViewController.swift in Sources */,
 				FEFB63AD1F31E4EE00EFB3E7 /* MainTabBarController.swift in Sources */,
 				FE65D62822E9F8EB0065DEA5 /* Markdown.swift in Sources */,
-				FEC514241CEB2FF7003AF765 /* MucJoinViewController.swift in Sources */,
 				FE507A201CDB7B3B001A015C /* AddAccountController.swift in Sources */,
 				FE2332DB242B9C2300008ED4 /* ChannelInviteController.swift in Sources */,
 				FE507A151CDB7B3B001A015C /* ChatsListTableViewCell.swift in Sources */,

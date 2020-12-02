@@ -267,16 +267,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     fileprivate func open(xmppUri: XmppUri, action: XmppUri.Action, then: (()->Void)? = nil) {
         switch action {
         case .join:
-            let navController = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "MucJoinNavigationController") as! UINavigationController;
-            let newGroupchat = navController.visibleViewController as! MucJoinViewController;
-            newGroupchat.xmppService = self.xmppService;
-            newGroupchat.hidesBottomBarWhenPushed = true;
+            let navController = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelJoinNavigationViewController") as! UINavigationController;
+            let joinController = navController.visibleViewController as! ChannelSelectToJoinViewController;
+            joinController.joinConversation = (xmppUri.jid.bareJid, xmppUri.dict?["password"]);
+
+            
+            joinController.hidesBottomBarWhenPushed = true;
             navController.modalPresentationStyle = .formSheet;
-            self.window?.rootViewController?.present(navController, animated: true, completion: {
-                newGroupchat.serverTextField.text = xmppUri.jid.domain;
-                newGroupchat.roomTextField.text = xmppUri.jid.localPart;
-                newGroupchat.passwordTextField.text = xmppUri.dict?["password"];
-            });
+            self.window?.rootViewController?.present(navController, animated: true, completion: nil);
         case .message:
             let alert = UIAlertController(title: "Start chatting", message: "Select account to open chat from", preferredStyle: .alert);
             let accounts = self.xmppService.getClients().map({ (client) -> BareJID in

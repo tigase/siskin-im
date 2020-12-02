@@ -29,6 +29,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
     @IBOutlet var roomSubjectField: UILabel!;
     @IBOutlet var pushNotificationsSwitch: UISwitch!;
     @IBOutlet var notificationsField: UILabel!;
+    @IBOutlet var encryptionField: UILabel!;
         
     fileprivate var activityIndicator: UIActivityIndicatorView?;
     
@@ -46,7 +47,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         roomSubjectField.text = room.subject ?? "";
         pushNotificationsSwitch.isEnabled = false;
         pushNotificationsSwitch.isOn = false;
-        
+        encryptionField.text = room.options.encryption == .none ? "None" : "OMEMO";
         refresh();
         refreshPermissions();
     }
@@ -157,35 +158,59 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         activityIndicator = nil;
     }
     
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if indexPath.section == 2 && indexPath.row == 1 && !room.isOMEMOCapable {
+            return 0;
+        }
+        return super.tableView(tableView, heightForRowAt: indexPath);
+    }
+    
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true);
         
-        if indexPath.section == 2 && indexPath.row == 0 {
-            let controller = TablePickerViewController();
-            controller.items = [NotificationItem(type: .always), NotificationItem(type: .mention), NotificationItem(type: .none)];
-            controller.selected = controller.items.firstIndex(where: { (item) -> Bool in
-                return (item as! NotificationItem).type == room.options.notifications;
-            })!;
-            controller.onSelectionChange = { item in
-                self.notificationsField.text = item.description;
-                
-                let account = self.room.account;
-                self.room.modifyOptions({ (options) in
-                    options.notifications = (item as! NotificationItem).type;
-                }, completionHandler: {
-                    if let pushModule: SiskinPushNotificationsModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), let pushSettings = pushModule.pushSettings {
-                        pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
-                            switch result {
-                            case .success(_):
-                                break;
-                            case .failure(_):
-                                AccountSettings.pushHash(account).set(int: 0);
-                            }
-                        });
-                    }
-                });
+        if indexPath.section == 2 {
+            if indexPath.row == 0 {
+                let controller = TablePickerViewController();
+                controller.items = [NotificationItem(type: .always), NotificationItem(type: .mention), NotificationItem(type: .none)];
+                controller.selected = controller.items.firstIndex(where: { (item) -> Bool in
+                    return (item as! NotificationItem).type == room.options.notifications;
+                })!;
+                controller.onSelectionChange = { item in
+                    self.notificationsField.text = item.description;
+                    
+                    let account = self.room.account;
+                    self.room.modifyOptions({ (options) in
+                        options.notifications = (item as! NotificationItem).type;
+                    }, completionHandler: {
+                        if let pushModule: SiskinPushNotificationsModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), let pushSettings = pushModule.pushSettings {
+                            pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
+                                switch result {
+                                case .success(_):
+                                    break;
+                                case .failure(_):
+                                    AccountSettings.pushHash(account).set(int: 0);
+                                }
+                            });
+                        }
+                    });
+                }
+                self.navigationController?.pushViewController(controller, animated: true);
             }
-            self.navigationController?.pushViewController(controller, animated: true);
+            if indexPath.row == 1 {
+                let controller = TablePickerViewController();
+                controller.items = [EncryptionItem(type: .none), EncryptionItem(type: .omemo)];
+                controller.selected = controller.items.firstIndex(where: { (item) -> Bool in
+                    return (item as! EncryptionItem).type == (room.options.encryption ?? .none);
+                })!;
+                controller.onSelectionChange = { item in
+                    self.encryptionField.text = item.description;
+                    
+                    self.room.modifyOptions({ (options) in
+                        options.encryption = (item as! EncryptionItem).type;
+                    }, completionHandler: nil);
+                }
+                self.navigationController?.pushViewController(controller, animated: true);
+            }
         }
     }
     
@@ -370,6 +395,27 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         return squared;
     }
     
+    class EncryptionItem: TablePickerViewItemsProtocol {
+        
+        let type: ChatEncryption;
+        
+        var description: String {
+            get {
+                switch type {
+                case .none:
+                    return "None";
+                case .omemo:
+                    return "OMEMO";
+                }
+            }
+        }
+        
+        init(type: ChatEncryption) {
+            self.type = type;
+        }
+        
+    }
+
     class NotificationItem: TablePickerViewItemsProtocol {
         
         let type: ConversationNotification;

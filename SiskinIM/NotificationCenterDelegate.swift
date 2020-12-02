@@ -167,28 +167,26 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
     }
     
     func didReceive(mucInvitation content: UNNotificationContent, withCompletionHandler completionHandler: @escaping () -> Void) {
-                    guard let account = BareJID(content.userInfo["account"] as? String), let roomJid: BareJID = BareJID(content.userInfo["roomJid"] as? String) else {
-                        return;
-                    }
-                    
-                    let password = content.userInfo["password"] as? String;
-                    
-                    let navController = UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "MucJoinNavigationController") as! UINavigationController;
+        guard let account = BareJID(content.userInfo["account"] as? String), let roomJid: BareJID = BareJID(content.userInfo["roomJid"] as? String) else {
+            return;
+        }
+                
+        let password = content.userInfo["password"] as? String;
+                
+        let controller = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelJoinViewController") as! ChannelJoinViewController;
+    
+        controller.account = account;
+        controller.channelJid = roomJid;
+        controller.componentType = .mix;
+        controller.password = password;
 
-                    let controller = navController.visibleViewController! as! MucJoinViewController;
-                    _ = controller.view;
-                    controller.accountTextField.text = account.stringValue;
-                    controller.roomTextField.text = roomJid.localPart;
-                    controller.serverTextField.text = roomJid.domain;
-                    controller.passwordTextField.text = password;
-                    
-                    var topController = UIApplication.shared.keyWindow?.rootViewController;
-                    while (topController?.presentedViewController != nil) {
-                        topController = topController?.presentedViewController;
-                    }
-        //            let navController = UINavigationController(rootViewController: controller);
-                    navController.modalPresentationStyle = .formSheet;
-                    topController?.present(navController, animated: true, completion: nil);
+        var topController = UIApplication.shared.keyWindow?.rootViewController;
+        while (topController?.presentedViewController != nil) {
+            topController = topController?.presentedViewController;
+        }
+        let navController = UINavigationController(rootViewController: controller);
+        navController.modalPresentationStyle = .formSheet;
+        topController?.present(navController, animated: true, completion: nil);
         completionHandler();
     }
     

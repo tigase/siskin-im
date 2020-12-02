@@ -804,7 +804,40 @@ class DBRoom: Room, DBChatProtocol {
     var unread: Int;
     var name: String? = nil;
     fileprivate(set) var options: RoomOptions = RoomOptions();
-
+    
+    var isOMEMOCapable: Bool {
+        if let features = supportedFeatures {
+            return features.contains("muc_membersonly") && features.contains("muc_nonanonymous");
+        }
+        return false;
+    }
+    
+    var supportedFeatures: [String]? {
+        didSet {
+            if isOMEMOCapable {
+                if let mucModule: MucModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MucModule.ID) {
+                    var members: [JID] = [];
+                    let group = DispatchGroup();
+                    for affiliation in [MucAffiliation.member, MucAffiliation.admin, MucAffiliation.owner] {
+                        group.enter();
+                        mucModule.getRoomAffiliations(from: self, with: affiliation, completionHandler: { (affiliations, error) in
+                            if let affiliations = affiliations {
+                                members.append(contentsOf: affiliations.map({ $0.jid }));
+                            }
+                            group.leave();
+                        });
+                    }
+                    group.notify(queue: DispatchQueue.main, execute: { [weak self] in
+                        self?.members = members;
+                    })
+                }
+            }
+            NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: self);
+        }
+    }
+    
+    var members: [JID]?;
+    
     init(id: Int, context: Context, account: BareJID, roomJid: BareJID, name: String?, nickname: String, password: String?, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: RoomOptions) {
         self.id = id;
         self.account = account;
@@ -950,23 +983,31 @@ public protocol ChatOptionsProtocol {
 
 public struct RoomOptions: Codable, ChatOptionsProtocol {
     
+    var encryption: ChatEncryption?;
     public var notifications: ConversationNotification = .mention;
     
     init() {}
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self);
+        if let val = try container.decodeIfPresent(String.self, forKey: .encryption) {
+            encryption = ChatEncryption(rawValue: val);
+        }
         notifications = ConversationNotification(rawValue: try container.decodeIfPresent(String.self, forKey: .notifications) ?? "") ?? .mention;
     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self);
+        if encryption != nil {
+            try container.encode(encryption!.rawValue, forKey: .encryption);
+        }
         if notifications != .mention {
             try container.encode(notifications.rawValue, forKey: .notifications);
         }
     }
     
     enum CodingKeys: String, CodingKey {
+        case encryption = "encrypt"
         case notifications = "notifications";
     }
 }

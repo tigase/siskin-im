@@ -105,6 +105,9 @@ extension BaseChatViewController: URLSessionDelegate {
         if let chat = self.chat as? DBChat {
             return (chat.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!) == .omemo;
         }
+        if let room = self.chat as? DBRoom {
+            return (room.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!) == .omemo;
+        }
         return false;
     }
 
