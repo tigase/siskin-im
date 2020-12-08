@@ -20,7 +20,7 @@
 //
 
 import Foundation
-import openssl
+import OpenSSL
 
 open class Cipher {
     

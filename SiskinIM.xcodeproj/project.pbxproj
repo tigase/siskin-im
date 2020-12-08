@@ -105,7 +105,6 @@
 		FE759FCC2370B2A4001E78D9 /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE759FC52370B2A4001E78D9 /* Shared.framework */; };
 		FE759FCD2370B2A4001E78D9 /* Shared.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE759FC52370B2A4001E78D9 /* Shared.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE759FD12370B2F2001E78D9 /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE759FC52370B2A4001E78D9 /* Shared.framework */; };
-		FE759FD72370B359001E78D9 /* openssl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FED353822270BFD300B69C53 /* openssl.framework */; };
 		FE759FDB2370B384001E78D9 /* Cipher+AES.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE759FDA2370B384001E78D9 /* Cipher+AES.swift */; };
 		FE759FDE2371989B001E78D9 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FE759FDD2371988B001E78D9 /* libsqlite3.tbd */; };
 		FE759FE22371C83D001E78D9 /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE759FC52370B2A4001E78D9 /* Shared.framework */; };
@@ -177,7 +176,6 @@
 		FECEF29823B7B838007EC323 /* db-schema-9.sql in Resources */ = {isa = PBXBuildFile; fileRef = FECEF29723B7B838007EC323 /* db-schema-9.sql */; };
 		FECEF29B23B7BC02007EC323 /* BaseChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECEF29923B7BBD3007EC323 /* BaseChatTableViewCell.swift */; };
 		FECEF29E23B7C390007EC323 /* AttachmentChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECEF29C23B7C36F007EC323 /* AttachmentChatTableViewCell.swift */; };
-		FED353852270BFE600B69C53 /* openssl.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FED353822270BFD300B69C53 /* openssl.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FED353892270C1D000B69C53 /* DBOMEMOStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED353882270C1D000B69C53 /* DBOMEMOStore.swift */; };
 		FEDC678A238A9F16005C0FAB /* BlockedEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDC6789238A9F16005C0FAB /* BlockedEventHandler.swift */; };
 		FEDC678C238AFB9F005C0FAB /* Settings.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEDC678B238AFB9F005C0FAB /* Settings.storyboard */; };
@@ -194,6 +192,8 @@
 		FEDE93971D0C202600CA60A9 /* ContactViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE93961D0C202600CA60A9 /* ContactViewController.swift */; };
 		FEDE93991D0C207100CA60A9 /* ContactBasicTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE93981D0C207100CA60A9 /* ContactBasicTableViewCell.swift */; };
 		FEDE939B1D0C38B000CA60A9 /* ContactFormTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE939A1D0C38B000CA60A9 /* ContactFormTableViewCell.swift */; };
+		FEDECEB4257FF34D0021F20D /* OpenSSL in Frameworks */ = {isa = PBXBuildFile; productRef = FEDECEB3257FF34D0021F20D /* OpenSSL */; };
+		FEDECEB9257FF3600021F20D /* OpenSSL in Frameworks */ = {isa = PBXBuildFile; productRef = FEDECEB8257FF3600021F20D /* OpenSSL */; };
 		FEE097621F1FCE1800B1CEAB /* TablePicketViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE097611F1FCE1800B1CEAB /* TablePicketViewController.swift */; };
 		FEE49DCC2424C03200900BBB /* Conversation.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEE49DCB2424C03200900BBB /* Conversation.storyboard */; };
 		FEE49DCE2424C1F800900BBB /* ConversationLogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE49DCD2424C1F800900BBB /* ConversationLogController.swift */; };
@@ -274,7 +274,6 @@
 			dstSubfolderSpec = 10;
 			files = (
 				FEB28A9123CB5ADD00F876B7 /* WebRTC.framework in Embed Frameworks */,
-				FED353852270BFE600B69C53 /* openssl.framework in Embed Frameworks */,
 				FE759FCD2370B2A4001E78D9 /* Shared.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -521,8 +520,8 @@
 			files = (
 				FE759FDE2371989B001E78D9 /* libsqlite3.tbd in Frameworks */,
 				FE759FE82371C972001E78D9 /* libxml2.tbd in Frameworks */,
-				FE759FD72370B359001E78D9 /* openssl.framework in Frameworks */,
 				FEC9B1162440E7B500A484EE /* TigaseSwiftOMEMO in Frameworks */,
+				FEDECEB9257FF3600021F20D /* OpenSSL in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -533,6 +532,7 @@
 				FE5079F01CD3CA91001A015C /* Security.framework in Frameworks */,
 				FE759FCC2370B2A4001E78D9 /* Shared.framework in Frameworks */,
 				FEB28A9023CB5AD600F876B7 /* WebRTC.framework in Frameworks */,
+				FEDECEB4257FF34D0021F20D /* OpenSSL in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1008,6 +1008,7 @@
 			name = Shared;
 			packageProductDependencies = (
 				FEC9B1152440E7B500A484EE /* TigaseSwiftOMEMO */,
+				FEDECEB8257FF3600021F20D /* OpenSSL */,
 			);
 			productName = Shared;
 			productReference = FE759FC52370B2A4001E78D9 /* Shared.framework */;
@@ -1034,6 +1035,7 @@
 			);
 			name = "Siskin IM";
 			packageProductDependencies = (
+				FEDECEB3257FF34D0021F20D /* OpenSSL */,
 			);
 			productName = SiskinIM;
 			productReference = FE94E5211CCBA74F00FAE755 /* Siskin.app */;
@@ -1106,6 +1108,7 @@
 			mainGroup = FE94E5181CCBA74F00FAE755;
 			packageReferences = (
 				FEC9B1122440E79D00A484EE /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */,
+				FEDECEB2257FF34D0021F20D /* XCRemoteSwiftPackageReference "OpenSSL" */,
 			);
 			productRefGroup = FE94E5221CCBA74F00FAE755 /* Products */;
 			projectDirPath = "";
@@ -1935,6 +1938,14 @@
 				kind = branch;
 			};
 		};
+		FEDECEB2257FF34D0021F20D /* XCRemoteSwiftPackageReference "OpenSSL" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/krzyzanowskim/OpenSSL";
+			requirement = {
+				kind = exactVersion;
+				version = 1.1.171;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1942,6 +1953,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FEC9B1122440E79D00A484EE /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */;
 			productName = TigaseSwiftOMEMO;
+		};
+		FEDECEB3257FF34D0021F20D /* OpenSSL */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FEDECEB2257FF34D0021F20D /* XCRemoteSwiftPackageReference "OpenSSL" */;
+			productName = OpenSSL;
+		};
+		FEDECEB8257FF3600021F20D /* OpenSSL */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FEDECEB2257FF34D0021F20D /* XCRemoteSwiftPackageReference "OpenSSL" */;
+			productName = OpenSSL;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
