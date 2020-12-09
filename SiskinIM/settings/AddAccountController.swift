@@ -138,7 +138,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         } else {
             let newController = navigationController?.popViewController(animated: true);
             if newController == nil || newController != self {
-                let emptyDetailController = storyboard!.instantiateViewController(withIdentifier: "emptyDetailViewController");
+                let emptyDetailController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "emptyDetailViewController");
                 self.showDetailViewController(emptyDetailController, sender: self);
             }
         }

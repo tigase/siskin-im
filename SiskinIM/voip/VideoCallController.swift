@@ -165,7 +165,7 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
 
     fileprivate let hasMetal = MTLCreateSystemDefaultDevice() != nil;
     
-    @IBOutlet var titleLabel: UILabel!;
+    @IBOutlet var titleLabel: UILabel?;
     
     @IBOutlet var remoteVideoView: RTCMTLVideoView!;
     @IBOutlet var localVideoView: CameraPreviewView!;
@@ -306,15 +306,15 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
     fileprivate func updateTitleLabel() {
         switch call?.state ?? .new {
         case .new:
-            self.titleLabel.text = "New call...";
+            self.titleLabel?.text = "New call...";
         case .ringing:
-            self.titleLabel.text = "Ringing...";
+            self.titleLabel?.text = "Ringing...";
         case .connecting:
-            self.titleLabel.text = "Connecting...";
+            self.titleLabel?.text = "Connecting...";
         case .connected:
-            self.titleLabel.text = nil;
+            self.titleLabel?.text = nil;
         case .ended:
-            self.titleLabel.text = "Call ended";
+            self.titleLabel?.text = "Call ended";
         }
     }
     #endif
