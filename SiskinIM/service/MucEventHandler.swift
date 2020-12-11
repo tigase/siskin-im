@@ -179,6 +179,7 @@ class MucEventHandler: XmppServiceEventHandler {
             let newName = identities.first(where: { (identity) -> Bool in
                 return identity.category == "conference";
             })?.name?.trimmingCharacters(in: .whitespacesAndNewlines);
+            room.supportedFeatures = features;
             
             DBChatStore.instance.updateChatName(for: room.account, with: room.roomJid, name: (newName?.isEmpty ?? true) ? nil : newName);
         }, onError: nil);

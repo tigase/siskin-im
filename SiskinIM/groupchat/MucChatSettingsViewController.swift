@@ -47,7 +47,11 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         roomSubjectField.text = room.subject ?? "";
         pushNotificationsSwitch.isEnabled = false;
         pushNotificationsSwitch.isOn = false;
-        encryptionField.text = room.options.encryption == .none ? "None" : "OMEMO";
+        if let encryption = room.options.encryption {
+            encryptionField.text = encryption == .none ? "None" : "OMEMO";
+        } else if room.isOMEMOCapable {
+            encryptionField.text = (ChatEncryption(rawValue: Settings.messageEncryption.getString() ?? "") ?? ChatEncryption.none) == .none ? "None" : "OMEMO";
+        }
         refresh();
         refreshPermissions();
     }

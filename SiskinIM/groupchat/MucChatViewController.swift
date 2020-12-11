@@ -321,14 +321,21 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         }
         
         guard room.state == .joined else {
-            let alert: UIAlertController?  = UIAlertController.init(title: "Warning", message: "You are not connected to room.\nPlease wait reconnection to room", preferredStyle: .alert);
-            alert?.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
-            self.present(alert!, animated: true, completion: nil);
+            let alert = UIAlertController.init(title: "Warning", message: "You are not connected to room.\nPlease wait reconnection to room", preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+            self.present(alert, animated: true, completion: nil);
             return;
         }
         
-        let encryption: ChatEncryption = room.options.encryption ?? (ChatEncryption(rawValue: Settings.messageEncryption.string() ?? "") ?? .none);
-        guard encryption == .none || ((room.supportedFeatures?.contains("muc_nonanonymous") ?? false) && (room.supportedFeatures?.contains("muc_membersonly") ?? false)) else {
+        let canEncrypt = (room.supportedFeatures?.contains("muc_nonanonymous") ?? false) && (room.supportedFeatures?.contains("muc_membersonly") ?? false);
+        
+        let encryption: ChatEncryption = room.options.encryption ?? (canEncrypt ? (ChatEncryption(rawValue: Settings.messageEncryption.string() ?? "") ?? .none) : .none);
+        guard encryption == .none || canEncrypt else {
+            if encryption == .omemo && !canEncrypt {
+                let alert = UIAlertController(title: "Warning", message: "This room is not capable of sending encrypted messages. Please change encryption settings to be able to send messages", preferredStyle: .alert);
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                self.present(alert, animated: true, completion: nil);
+            }
             return;
         }
         

@@ -250,6 +250,14 @@ class ChannelJoinViewController: UITableViewController {
                             }
                         }
                     }
+                    if let whoisField: ListSingleField = config.getField(named: "muc#roomconfig_whois") {
+                        if invitationOnly && whoisField.options.contains(where: { $0.value == "anyone" }) {
+                            whoisField.value = "anyone";
+                        }
+                        if !invitationOnly && whoisField.options.contains(where: { $0.value == "moderators" }) {
+                            whoisField.value = "moderators";
+                        }
+                    }
                     if let persistantField: BooleanField = config.getField(named: "muc#roomconfig_persistentroom") {
                         persistantField.value = true;
                     }
