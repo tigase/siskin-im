@@ -22,6 +22,11 @@
 		FE137A4821F6464D006B7F7C /* UIColor_mix.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4721F6464D006B7F7C /* UIColor_mix.swift */; };
 		FE137A4C21F75660006B7F7C /* ChatBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4B21F75660006B7F7C /* ChatBottomView.swift */; };
 		FE17808D23EB4C7F00A1EA76 /* AccountQRCodeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE17808C23EB4C7F00A1EA76 /* AccountQRCodeController.swift */; };
+		FE1908AA2584D6BC00CA049F /* OpenSSL.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE1908962584D69400CA049F /* OpenSSL.xcframework */; };
+		FE1908AB2584D6BC00CA049F /* OpenSSL.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE1908962584D69400CA049F /* OpenSSL.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FE1908AF2584D6BF00CA049F /* WebRTC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE1908922584D69400CA049F /* WebRTC.framework */; };
+		FE1908B02584D6BF00CA049F /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE1908922584D69400CA049F /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FE1908B72584D70300CA049F /* OpenSSL.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE1908962584D69400CA049F /* OpenSSL.xcframework */; };
 		FE1A07482525EDD4004F38A0 /* ExternalServiceDiscovery_Service_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A07472525EDD4004F38A0 /* ExternalServiceDiscovery_Service_extension.swift */; };
 		FE1AC8F7216B8AB700D4CDAB /* NewFeaturesDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */; };
 		FE1DCCA21EA52CE200850563 /* DataFormController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1DCCA11EA52CE200850563 /* DataFormController.swift */; };
@@ -155,8 +160,6 @@
 		FEA8D6641F30F9260077C12F /* XmppService_VCardExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8D6631F30F9260077C12F /* XmppService_VCardExtension.swift */; };
 		FEAC71791CECE50400ABABEF /* MucChatOccupantsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */; };
 		FEAC717B1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */; };
-		FEB28A9023CB5AD600F876B7 /* WebRTC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEB28A8F23CB5AD600F876B7 /* WebRTC.framework */; };
-		FEB28A9123CB5ADD00F876B7 /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FEB28A8F23CB5AD600F876B7 /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FEB5EC9D1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift */; };
 		FEB62C501DA80956001500D5 /* AvatarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB62C4F1DA80956001500D5 /* AvatarStore.swift */; };
 		FEBC12F224C70DE000689475 /* db-schema-13.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEBC12F124C70DE000689475 /* db-schema-13.sql */; };
@@ -192,8 +195,6 @@
 		FEDE93971D0C202600CA60A9 /* ContactViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE93961D0C202600CA60A9 /* ContactViewController.swift */; };
 		FEDE93991D0C207100CA60A9 /* ContactBasicTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE93981D0C207100CA60A9 /* ContactBasicTableViewCell.swift */; };
 		FEDE939B1D0C38B000CA60A9 /* ContactFormTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE939A1D0C38B000CA60A9 /* ContactFormTableViewCell.swift */; };
-		FEDECEB4257FF34D0021F20D /* OpenSSL in Frameworks */ = {isa = PBXBuildFile; productRef = FEDECEB3257FF34D0021F20D /* OpenSSL */; };
-		FEDECEB9257FF3600021F20D /* OpenSSL in Frameworks */ = {isa = PBXBuildFile; productRef = FEDECEB8257FF3600021F20D /* OpenSSL */; };
 		FEE097621F1FCE1800B1CEAB /* TablePicketViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE097611F1FCE1800B1CEAB /* TablePicketViewController.swift */; };
 		FEE49DCC2424C03200900BBB /* Conversation.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEE49DCB2424C03200900BBB /* Conversation.storyboard */; };
 		FEE49DCE2424C1F800900BBB /* ConversationLogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE49DCD2424C1F800900BBB /* ConversationLogController.swift */; };
@@ -273,8 +274,9 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				FEB28A9123CB5ADD00F876B7 /* WebRTC.framework in Embed Frameworks */,
+				FE1908AB2584D6BC00CA049F /* OpenSSL.xcframework in Embed Frameworks */,
 				FE759FCD2370B2A4001E78D9 /* Shared.framework in Embed Frameworks */,
+				FE1908B02584D6BF00CA049F /* WebRTC.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -298,6 +300,8 @@
 		FE137A4B21F75660006B7F7C /* ChatBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatBottomView.swift; sourceTree = "<group>"; };
 		FE168ACC1CCD197A003F8B26 /* db-schema-1.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-1.sql"; sourceTree = "<group>"; };
 		FE17808C23EB4C7F00A1EA76 /* AccountQRCodeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountQRCodeController.swift; sourceTree = "<group>"; };
+		FE1908922584D69400CA049F /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
+		FE1908962584D69400CA049F /* OpenSSL.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = OpenSSL.xcframework; sourceTree = "<group>"; };
 		FE1A07472525EDD4004F38A0 /* ExternalServiceDiscovery_Service_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServiceDiscovery_Service_extension.swift; sourceTree = "<group>"; };
 		FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewFeaturesDetector.swift; sourceTree = "<group>"; };
 		FE1DCCA11EA52CE200850563 /* DataFormController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataFormController.swift; sourceTree = "<group>"; };
@@ -436,7 +440,6 @@
 		FEA8D6631F30F9260077C12F /* XmppService_VCardExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XmppService_VCardExtension.swift; sourceTree = "<group>"; };
 		FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatOccupantsTableViewController.swift; sourceTree = "<group>"; };
 		FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatOccupantsTableViewCell.swift; sourceTree = "<group>"; };
-		FEB28A8F23CB5AD600F876B7 /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
 		FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift; sourceTree = "<group>"; };
 		FEB62C4F1DA80956001500D5 /* AvatarStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarStore.swift; sourceTree = "<group>"; };
 		FEBC12F124C70DE000689475 /* db-schema-13.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-13.sql"; sourceTree = "<group>"; };
@@ -456,7 +459,6 @@
 		FECEF29923B7BBD3007EC323 /* BaseChatTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseChatTableViewCell.swift; sourceTree = "<group>"; };
 		FECEF29C23B7C36F007EC323 /* AttachmentChatTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentChatTableViewCell.swift; sourceTree = "<group>"; };
 		FED353732270BBA500B69C53 /* TigaseSwiftOMEMO.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TigaseSwiftOMEMO.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		FED353822270BFD300B69C53 /* openssl.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = openssl.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FED353882270C1D000B69C53 /* DBOMEMOStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBOMEMOStore.swift; sourceTree = "<group>"; };
 		FEDC6789238A9F16005C0FAB /* BlockedEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedEventHandler.swift; sourceTree = "<group>"; };
 		FEDC678B238AFB9F005C0FAB /* Settings.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Settings.storyboard; sourceTree = "<group>"; };
@@ -520,8 +522,8 @@
 			files = (
 				FE759FDE2371989B001E78D9 /* libsqlite3.tbd in Frameworks */,
 				FE759FE82371C972001E78D9 /* libxml2.tbd in Frameworks */,
+				FE1908B72584D70300CA049F /* OpenSSL.xcframework in Frameworks */,
 				FEC9B1162440E7B500A484EE /* TigaseSwiftOMEMO in Frameworks */,
-				FEDECEB9257FF3600021F20D /* OpenSSL in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -531,8 +533,8 @@
 			files = (
 				FE5079F01CD3CA91001A015C /* Security.framework in Frameworks */,
 				FE759FCC2370B2A4001E78D9 /* Shared.framework in Frameworks */,
-				FEB28A9023CB5AD600F876B7 /* WebRTC.framework in Frameworks */,
-				FEDECEB4257FF34D0021F20D /* OpenSSL in Frameworks */,
+				FE1908AA2584D6BC00CA049F /* OpenSSL.xcframework in Frameworks */,
+				FE1908AF2584D6BF00CA049F /* WebRTC.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -545,6 +547,15 @@
 				FE01ADA81E224CF400FA7E65 /* SiskinPushNotificationsModule.swift */,
 			);
 			path = xmpp;
+			sourceTree = "<group>";
+		};
+		FE1908902584D69400CA049F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				FE1908922584D69400CA049F /* WebRTC.framework */,
+				FE1908962584D69400CA049F /* OpenSSL.xcframework */,
+			);
+			path = Frameworks;
 			sourceTree = "<group>";
 		};
 		FE4071E221E2603400F09B58 /* voip */ = {
@@ -723,7 +734,6 @@
 			children = (
 				FE759FE72371C966001E78D9 /* libxml2.tbd */,
 				FE759FDD2371988B001E78D9 /* libsqlite3.tbd */,
-				FED353822270BFD300B69C53 /* openssl.framework */,
 				FED353732270BBA500B69C53 /* TigaseSwiftOMEMO.framework */,
 				FE60F29B1ED48B470030D411 /* libxml2.tbd */,
 			);
@@ -796,7 +806,7 @@
 		FE94E5181CCBA74F00FAE755 = {
 			isa = PBXGroup;
 			children = (
-				FEB28A8F23CB5AD600F876B7 /* WebRTC.framework */,
+				FE1908902584D69400CA049F /* Frameworks */,
 				FE759FA22370ACA4001E78D9 /* NotificationService */,
 				FE759FC62370B2A4001E78D9 /* Shared */,
 				FE60F29A1ED48B470030D411 /* Frameworks */,
@@ -1008,7 +1018,6 @@
 			name = Shared;
 			packageProductDependencies = (
 				FEC9B1152440E7B500A484EE /* TigaseSwiftOMEMO */,
-				FEDECEB8257FF3600021F20D /* OpenSSL */,
 			);
 			productName = Shared;
 			productReference = FE759FC52370B2A4001E78D9 /* Shared.framework */;
@@ -1035,7 +1044,6 @@
 			);
 			name = "Siskin IM";
 			packageProductDependencies = (
-				FEDECEB3257FF34D0021F20D /* OpenSSL */,
 			);
 			productName = SiskinIM;
 			productReference = FE94E5211CCBA74F00FAE755 /* Siskin.app */;
@@ -1108,7 +1116,6 @@
 			mainGroup = FE94E5181CCBA74F00FAE755;
 			packageReferences = (
 				FEC9B1122440E79D00A484EE /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */,
-				FEDECEB2257FF34D0021F20D /* XCRemoteSwiftPackageReference "OpenSSL" */,
 			);
 			productRefGroup = FE94E5221CCBA74F00FAE755 /* Products */;
 			projectDirPath = "";
@@ -1938,14 +1945,6 @@
 				kind = branch;
 			};
 		};
-		FEDECEB2257FF34D0021F20D /* XCRemoteSwiftPackageReference "OpenSSL" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/krzyzanowskim/OpenSSL";
-			requirement = {
-				kind = exactVersion;
-				version = 1.1.171;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1953,16 +1952,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FEC9B1122440E79D00A484EE /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */;
 			productName = TigaseSwiftOMEMO;
-		};
-		FEDECEB3257FF34D0021F20D /* OpenSSL */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FEDECEB2257FF34D0021F20D /* XCRemoteSwiftPackageReference "OpenSSL" */;
-			productName = OpenSSL;
-		};
-		FEDECEB8257FF3600021F20D /* OpenSSL */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FEDECEB2257FF34D0021F20D /* XCRemoteSwiftPackageReference "OpenSSL" */;
-			productName = OpenSSL;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
