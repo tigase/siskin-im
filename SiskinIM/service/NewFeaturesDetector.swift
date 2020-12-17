@@ -234,7 +234,7 @@ Have it enabled will keep synchronized copy of your messages exchanged using \(a
                 controller.descriptionField.text = """
 Your server for account \(account) supports push notifications.
                 
-With this feature enabled Tigase iOS Messenger can be automatically notified about new messages when it is in background or stopped. Notifications about new messages will be forwarded to our push component and delivered to the device. These notifications will contain message senders jid and part of a message.
+With this feature enabled Siskin IM can be automatically notified about new messages when it is in background or stopped. Notifications about new messages will be forwarded to our push component and delivered to the device. These notifications will contain message senders jid and part of a message.
 """;
                 controller.onSkip = {
                     controller.dismiss(animated: true, completion: onNext);

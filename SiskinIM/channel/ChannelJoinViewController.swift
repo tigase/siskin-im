@@ -159,8 +159,10 @@ class ChannelJoinViewController: UITableViewController {
     }
     
     func operationEnded() {
-        self.tableView.refreshControl?.endRefreshing();
-        self.tableView.refreshControl = nil;
+        if let tableView = self.tableView {
+            tableView.refreshControl?.endRefreshing();
+            tableView.refreshControl = nil;
+        }
     }
     
     @IBAction func textFieldChanged(_ sender: Any) {
