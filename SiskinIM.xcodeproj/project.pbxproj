@@ -24,10 +24,10 @@
 		FE17808D23EB4C7F00A1EA76 /* AccountQRCodeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE17808C23EB4C7F00A1EA76 /* AccountQRCodeController.swift */; };
 		FE1908AA2584D6BC00CA049F /* OpenSSL.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE1908962584D69400CA049F /* OpenSSL.xcframework */; };
 		FE1908AB2584D6BC00CA049F /* OpenSSL.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE1908962584D69400CA049F /* OpenSSL.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		FE1908AF2584D6BF00CA049F /* WebRTC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE1908922584D69400CA049F /* WebRTC.framework */; };
-		FE1908B02584D6BF00CA049F /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE1908922584D69400CA049F /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE1908B72584D70300CA049F /* OpenSSL.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE1908962584D69400CA049F /* OpenSSL.xcframework */; };
 		FE1A07482525EDD4004F38A0 /* ExternalServiceDiscovery_Service_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A07472525EDD4004F38A0 /* ExternalServiceDiscovery_Service_extension.swift */; };
+		FE1A34A7258CD3EE0058B86A /* WebRTC.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE1A349F258CD3E10058B86A /* WebRTC.xcframework */; };
+		FE1A34A8258CD3EE0058B86A /* WebRTC.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE1A349F258CD3E10058B86A /* WebRTC.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE1AC8F7216B8AB700D4CDAB /* NewFeaturesDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */; };
 		FE1DCCA21EA52CE200850563 /* DataFormController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1DCCA11EA52CE200850563 /* DataFormController.swift */; };
 		FE2332DB242B9C2300008ED4 /* ChannelInviteController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2332DA242B9C2300008ED4 /* ChannelInviteController.swift */; };
@@ -276,7 +276,7 @@
 			files = (
 				FE1908AB2584D6BC00CA049F /* OpenSSL.xcframework in Embed Frameworks */,
 				FE759FCD2370B2A4001E78D9 /* Shared.framework in Embed Frameworks */,
-				FE1908B02584D6BF00CA049F /* WebRTC.framework in Embed Frameworks */,
+				FE1A34A8258CD3EE0058B86A /* WebRTC.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -300,9 +300,9 @@
 		FE137A4B21F75660006B7F7C /* ChatBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatBottomView.swift; sourceTree = "<group>"; };
 		FE168ACC1CCD197A003F8B26 /* db-schema-1.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-1.sql"; sourceTree = "<group>"; };
 		FE17808C23EB4C7F00A1EA76 /* AccountQRCodeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountQRCodeController.swift; sourceTree = "<group>"; };
-		FE1908922584D69400CA049F /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
 		FE1908962584D69400CA049F /* OpenSSL.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = OpenSSL.xcframework; sourceTree = "<group>"; };
 		FE1A07472525EDD4004F38A0 /* ExternalServiceDiscovery_Service_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServiceDiscovery_Service_extension.swift; sourceTree = "<group>"; };
+		FE1A349F258CD3E10058B86A /* WebRTC.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = WebRTC.xcframework; sourceTree = "<group>"; };
 		FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewFeaturesDetector.swift; sourceTree = "<group>"; };
 		FE1DCCA11EA52CE200850563 /* DataFormController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataFormController.swift; sourceTree = "<group>"; };
 		FE2332DA242B9C2300008ED4 /* ChannelInviteController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelInviteController.swift; sourceTree = "<group>"; };
@@ -531,10 +531,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FE1A34A7258CD3EE0058B86A /* WebRTC.xcframework in Frameworks */,
 				FE5079F01CD3CA91001A015C /* Security.framework in Frameworks */,
 				FE759FCC2370B2A4001E78D9 /* Shared.framework in Frameworks */,
 				FE1908AA2584D6BC00CA049F /* OpenSSL.xcframework in Frameworks */,
-				FE1908AF2584D6BF00CA049F /* WebRTC.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -552,7 +552,7 @@
 		FE1908902584D69400CA049F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				FE1908922584D69400CA049F /* WebRTC.framework */,
+				FE1A349F258CD3E10058B86A /* WebRTC.xcframework */,
 				FE1908962584D69400CA049F /* OpenSSL.xcframework */,
 			);
 			path = Frameworks;
