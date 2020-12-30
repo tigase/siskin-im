@@ -49,9 +49,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         try! DBConnection.migrateToGroupIfNeeded();
         ImageCache.convertToAttachments();
-        RTCInitFieldTrialDictionary([:]);
+//        RTCInitFieldTrialDictionary([:]);
         RTCInitializeSSL();
-        RTCSetupInternalTracer();
+        //RTCSetupInternalTracer();
         Log.initialize();
         Settings.initialize();
         AccountSettings.initialize();
@@ -69,6 +69,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 break;
             }
         }
+        _ = JingleManager.instance;
         UINavigationBar.appearance().tintColor = UIColor(named: "tintColor");
         NotificationManager.instance.initialize(provider: MainNotificationManagerProvider());
         xmppService.initialize();

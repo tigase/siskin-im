@@ -27,6 +27,8 @@ extension JingleManager {
 
     class Session: JingleSession {
                 
+        public let id = UUID().uuidString;
+        
         fileprivate(set) var state: JingleSessionState = .created {
             didSet {
                 print("RTPSession:", self, "state:", state);

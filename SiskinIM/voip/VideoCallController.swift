@@ -150,17 +150,40 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
             return;
         }
         
-        let call = Call(account: account, with: jid, sid: UUID().uuidString, direction: .outgoing, media: media);
-            
-        checkMediaAvailability(forCall: call, completionHandler: { result in
-            switch result {
-            case .success(_):
-                instance.reportOutgoingCall(call, completionHandler: completionHandler);
-            case .failure(let err):
-                completionHandler(.failure(err));
-            }
+        let continueCall = {
+            // we do not know "internal id" of a session
+            let call = Call(account: account, with: jid, sid: UUID().uuidString, direction: .outgoing, media: media, sessionId: nil);
+                
+            checkMediaAvailability(forCall: call, completionHandler: { result in
+                switch result {
+                case .success(_):
+                    instance.reportOutgoingCall(call, completionHandler: completionHandler);
+                case .failure(let err):
+                    completionHandler(.failure(err));
+                }
 
-        })
+            })
+        };
+        
+        AVCaptureDevice.requestAccess(for: .audio, completionHandler: { result in
+            if result {
+                if media.contains(.video) {
+                    AVCaptureDevice.requestAccess(for: .audio, completionHandler: { result in
+                        if result {
+                            continueCall();
+                        } else {
+                            completionHandler(.failure(ErrorCondition.not_allowed))
+                        }
+                    });
+                } else {
+                    continueCall();
+                }
+            } else {
+                completionHandler(.failure(ErrorCondition.not_allowed))
+            }
+        });
+        
+        
     }
 
     fileprivate let hasMetal = MTLCreateSystemDefaultDevice() != nil;
@@ -216,14 +239,23 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
         }
     }
     
+//    var timer: Foundation.Timer?;
+    
     public override func viewWillAppear(_ animated: Bool) {
         self.updateAvatar();
         super.viewWillAppear(animated);
         self.orientationChanged();
         NotificationCenter.default.addObserver(self, selector: #selector(audioRouteChanged), name: AVAudioSession.routeChangeNotification, object: nil)
+//        timer = Foundation.Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { timer in
+//            CallManager.instance?.currentConnection?.statistics(completionHandler: { report in
+//                print("stats: \(report.statistics.description)");
+//            });
+//        })
     }
 
     public override func viewWillDisappear(_ animated: Bool) {
+//        timer?.invalidate();
+//        timer = nil;
         remoteVideoTrack = nil;
         localVideoView.captureSession = nil;
         localVideoCapturer = nil;
@@ -331,6 +363,7 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
         os_log("using ICE servers: %s", log: .jingle, type: .debug, iceServers.map({ $0.urlStrings.description }).description);
 
         let configuration = RTCConfiguration();
+        configuration.tcpCandidatePolicy = .disabled;
         configuration.sdpSemantics = .unifiedPlan;
         configuration.iceServers = iceServers;
         configuration.bundlePolicy = .maxCompat;

@@ -1953,7 +1953,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tigase/tigase-swift-omemo/";
 			requirement = {
-				branch = "omemo-muc";
+				branch = stable;
 				kind = branch;
 			};
 		};
