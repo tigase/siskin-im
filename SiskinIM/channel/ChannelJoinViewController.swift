@@ -316,11 +316,11 @@ class ChannelJoinViewController: UITableViewController {
                          self.dismiss(animated: true, completion: nil);
                      }
                  case .failure(let errorCondition, let response):
-                     DispatchQueue.main.async {
-                         self.operationEnded();
+                     DispatchQueue.main.async { [weak self] in
+                         self?.operationEnded();
                          let alert = UIAlertController(title: "Could not join", message: "It was not possible to join a channel. The server returned an error: \(response?.errorText ?? errorCondition.rawValue)", preferredStyle: .alert);
                          alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
-                         alert.present(alert, animated: true, completion: nil);
+                         self?.present(alert, animated: true, completion: nil);
                      }
                  }
              });

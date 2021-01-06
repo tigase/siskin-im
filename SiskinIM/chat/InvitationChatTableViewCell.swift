@@ -78,6 +78,7 @@ class InvitationChatTableViewCell: BaseChatTableViewCell {
         
         let controller = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelJoinViewController") as! ChannelJoinViewController;
         controller.account = account;
+        controller.componentType = .mix
         controller.mixInvitation = mixInvitation;
         
         controller.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: controller, action: #selector(ChannelJoinViewController.cancelClicked(_:)));

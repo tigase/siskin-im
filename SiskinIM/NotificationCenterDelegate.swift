@@ -177,9 +177,11 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
     
         controller.account = account;
         controller.channelJid = roomJid;
-        controller.componentType = .mix;
+        controller.componentType = .muc;
         controller.password = password;
 
+        controller.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: controller, action: #selector(ChannelJoinViewController.cancelClicked(_:)));
+        
         var topController = UIApplication.shared.keyWindow?.rootViewController;
         while (topController?.presentedViewController != nil) {
             topController = topController?.presentedViewController;
