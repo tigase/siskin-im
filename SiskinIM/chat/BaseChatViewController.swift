@@ -97,6 +97,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
         chatViewInputBar.delegate = self;
         
         let sendMessageButton = UIButton(type: .custom);
+        sendMessageButton.contentEdgeInsets = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4);
         if #available(iOS 13.0, *) {
             sendMessageButton.setImage(UIImage(systemName: "paperplane.fill"), for: .normal);
         } else {
@@ -296,7 +297,7 @@ class ChatViewInputBar: UIView, UITextViewDelegate, NSTextStorageDelegate {
         view.alignment = .trailing;
         view.semanticContentAttribute = .forceRightToLeft;
         //        view.distribution = .fillEqually;
-        view.spacing = 15;
+        view.spacing = 7;
         view.setContentHuggingPriority(.defaultHigh, for: .horizontal);
         view.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
         return view;
@@ -402,7 +403,7 @@ class ChatViewInputBar: UIView, UITextViewDelegate, NSTextStorageDelegate {
             inputTextView.bottomAnchor.constraint(equalTo: bottomStackView.topAnchor),
             bottomStackView.leadingAnchor.constraint(greaterThanOrEqualTo: safeAreaLayoutGuide.leadingAnchor, constant: 10),
             bottomStackView.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -10),
-            bottomStackView.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor, constant: -4)
+            bottomStackView.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor, constant: 0)
         ]);
         inputTextView.addSubview(placeholderLabel);
         NSLayoutConstraint.activate([

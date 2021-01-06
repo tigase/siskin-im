@@ -47,6 +47,7 @@ extension ChatViewInputBar {
             self.tintColor = UIColor(named: "tintColor");
             self.addTarget(self, action: #selector(execute(_:)), for: .touchUpInside);
             self.contentMode = .scaleToFill;
+            self.contentEdgeInsets = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4);
             if #available(iOS 13.0, *) {
             } else {
                 self.widthAnchor.constraint(equalTo: heightAnchor).isActive = true;
