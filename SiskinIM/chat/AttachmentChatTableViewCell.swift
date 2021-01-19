@@ -106,6 +106,7 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                 linkView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
                 linkView.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal);
                 linkView.translatesAutoresizingMaskIntoConstraints = false;
+                linkView.isUserInteractionEnabled = false;
 
                 self.linkView = linkView;
 

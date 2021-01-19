@@ -73,8 +73,8 @@ import UIKit
 //        textContainer.widthTracksTextView = false;
         textContainer.heightTracksTextView = false;
         textView.isEditable = false;
-        textView.isSelectable = false;
-        textView.isUserInteractionEnabled = false;
+        textView.isSelectable = true;
+        textView.isUserInteractionEnabled = true;
         textView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
         textView.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
         textView.font = UIFont.systemFont(ofSize: fontSize);

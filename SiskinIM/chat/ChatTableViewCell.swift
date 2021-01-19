@@ -23,14 +23,11 @@
 import UIKit
 import TigaseSwift
 
-class ChatTableViewCell: BaseChatTableViewCell {
+class ChatTableViewCell: BaseChatTableViewCell, UITextViewDelegate {
 
     @IBOutlet var messageTextView: MessageTextView!
         
-    fileprivate var messageLinkTapGestureRecognizer: UITapGestureRecognizer!;
-    
     fileprivate var originalTextColor: UIColor!;
-    fileprivate var links: [Link] = [];
     
     override var backgroundColor: UIColor? {
         didSet {
@@ -42,17 +39,12 @@ class ChatTableViewCell: BaseChatTableViewCell {
         super.awakeFromNib()
         // Initialization code
         originalTextColor = messageTextView.textColor;
-        messageLinkTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(messageLinkTapGestureDidFire));
-        messageLinkTapGestureRecognizer.numberOfTapsRequired = 1;
-        messageLinkTapGestureRecognizer.cancelsTouchesInView = false;
-        messageTextView.addGestureRecognizer(messageLinkTapGestureRecognizer);
     }
     
     func set(message item: ChatMessage) {
+        messageTextView.textView.delegate = self;
         super.set(item: item);
-                
-        self.links.removeAll();
-            
+                            
         let attrText = NSMutableAttributedString(string: item.message);
             
         if let detect = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue | NSTextCheckingResult.CheckingType.date.rawValue) {
@@ -73,10 +65,8 @@ class ChatTableViewCell: BaseChatTableViewCell {
                 if match.date != nil {
                     url = URL(string: "calshow:\(match.date!.timeIntervalSinceReferenceDate)");
                 }
-                if url != nil {
-                    self.links.append(Link(url: url!, range: match.range));
-                    
-                    attrText.setAttributes([NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue, NSAttributedString.Key.foregroundColor: self.linkColor()], range: match.range);
+                if let url = url {
+                    attrText.setAttributes([.link : url], range: match.range);
                 }
             }
         }
@@ -103,52 +93,11 @@ class ChatTableViewCell: BaseChatTableViewCell {
         }
     }
     
-    func linkColor() -> UIColor {
-        if #available(iOS 13.0, *) {
-            return UIColor.systemBlue;
-        } else {
-            return UIColor.blue;
-        }
+    func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
+        UIApplication.shared.open(URL);
+        return false;
     }
-        
-    @objc func messageLinkTapGestureDidFire(_ recognizer: UITapGestureRecognizer) {
-        guard self.messageTextView.attributedText != nil else {
-            return;
-        }
-        
-//        let point = recognizer.location(in: self.messageTextView);
-//        let layoutManager = NSLayoutManager();
-//        let attrText = self.messageTextView.attributedText!.mutableCopy() as! NSMutableAttributedString;
-//        attrText.addAttribute(NSAttributedString.Key.font, value: self.messageTextView.font!, range: NSRange(location: 0, length: attrText.length));
-//        let textStorage = NSTextStorage(attributedString: attrText);
-//        let textContainer = NSTextContainer(size: self.messageTextView.bounds.size);
-////        textContainer.maximumNumberOfLines = self.messageTextView.numberOfLines;
-//        layoutManager.usesFontLeading = true;
-//        textContainer.lineFragmentPadding = 0;
-////        textContainer.lineBreakMode = self.messageTextView.lineBreakMode;
-//        layoutManager.addTextContainer(textContainer);
-//        textStorage.addLayoutManager(layoutManager);
-//        
-//        let idx = layoutManager.characterIndex(for: point, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil);
-//        if let url = links.first(where: { link -> Bool in link.contains(idx: idx)}) {
-////        if let url = attrText.attribute(NSAttributedString.Key.link, at: idx, effectiveRange: nil) as? NSURL {
-//            UIApplication.shared.open(url.url);
-//        }
-    }
-        
-    class Link {
-        let url: URL;
-        let range: NSRange;
-        
-        init(url: URL, range: NSRange) {
-            self.url = url;
-            self.range = range;
-        }
-        
-        func contains(idx: Int) -> Bool {
-            return range.contains(idx);
-        }
-    }
+    
 }
 
 // Helper function inserted by Swift 4.2 migrator.
