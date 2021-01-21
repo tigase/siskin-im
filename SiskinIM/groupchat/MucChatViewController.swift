@@ -373,8 +373,11 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             completionHandler?();
             return;
         }
-        let encryption: ChatEncryption = room.options.encryption ?? (ChatEncryption(rawValue: Settings.messageEncryption.string() ?? "") ?? .none);
-        guard encryption == .none || ((room.supportedFeatures?.contains("muc_nonanonymous") ?? false) && (room.supportedFeatures?.contains("muc_membersonly") ?? false)) else {
+        
+        let canEncrypt = (room.supportedFeatures?.contains("muc_nonanonymous") ?? false) && (room.supportedFeatures?.contains("muc_membersonly") ?? false);
+        
+        let encryption: ChatEncryption = room.options.encryption ?? (canEncrypt ? (ChatEncryption(rawValue: Settings.messageEncryption.string() ?? "") ?? .none) : .none);
+        guard encryption == .none || canEncrypt else {
             completionHandler?();
             return;
         }
