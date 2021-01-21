@@ -107,7 +107,13 @@ extension BaseChatViewController: URLSessionDelegate {
             return (chat.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!) == .omemo;
         }
         if let room = self.chat as? DBRoom {
-            return (room.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!) == .omemo;
+            let canEncrypt = (room.supportedFeatures?.contains("muc_nonanonymous") ?? false) && (room.supportedFeatures?.contains("muc_membersonly") ?? false);
+            let encryption: ChatEncryption = room.options.encryption ?? (canEncrypt ? (ChatEncryption(rawValue: Settings.messageEncryption.string() ?? "") ?? .none) : .none);
+            
+            guard encryption == .none || canEncrypt else {
+                return true;
+            }
+            return encryption == .omemo;
         }
         return false;
     }
