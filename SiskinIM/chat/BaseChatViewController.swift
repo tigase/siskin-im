@@ -438,7 +438,7 @@ class ChatViewInputBar: UIView, UITextViewDelegate, NSTextStorageDelegate {
                 return false;
             }
         }
-        if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if textView.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             delegate?.messageTextCleared();
         }
         return true;
