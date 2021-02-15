@@ -43,7 +43,11 @@ class ChannelCreateViewController: UITableViewController, ChannelSelectAccountAn
     }
     var kind: ChannelKind = .adhoc;
     
-    private var components: [ChannelsHelper.Component] = [];
+    private var components: [ChannelsHelper.Component] = [] {
+        didSet {
+            updateJoinButtonStatus();
+        }
+    }
     private var invitationOnly: Bool = true;
     private var useMix: Bool = false;
     private var needRefresh = false;
@@ -129,6 +133,7 @@ class ChannelCreateViewController: UITableViewController, ChannelSelectAccountAn
     
     @objc func mixSwitchChanged(_ sender: UISwitch) {
         useMix = sender.isOn;
+        updateJoinButtonStatus();
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -169,9 +174,13 @@ class ChannelCreateViewController: UITableViewController, ChannelSelectAccountAn
     }
 
     @IBAction func textFieldChanged(_ sender: Any) {
+        updateJoinButtonStatus();
+    }
+    
+    private func updateJoinButtonStatus() {
         let name = self.channelNameField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "";
         let channelId = self.channelIdField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "";
-        self.joinButton.isEnabled = (!name.isEmpty) && (kind == .adhoc || !channelId.isEmpty);
+        self.joinButton.isEnabled = (!name.isEmpty) && (kind == .adhoc || !channelId.isEmpty) && self.components.contains(where: { $0.type == (useMix ? .mix : .muc) });
     }
 
     private func refresh() {
@@ -193,6 +202,7 @@ class ChannelCreateViewController: UITableViewController, ChannelSelectAccountAn
                     }
                 }
                 self.tableView.reloadData();
+                self.updateJoinButtonStatus();
                 self.operationEnded();
             }
         })

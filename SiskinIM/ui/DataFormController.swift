@@ -142,7 +142,10 @@ class DataFormController: UITableViewController {
         if errors.firstIndex(where: { (idx)->Bool in
             return idx.row == indexPath.row && idx.section == indexPath.section
         }) != nil {
-            let backgroundColor = cell.backgroundColor;
+            var backgroundColor = UIColor.white;
+            if #available(iOS 13.0, *) {
+                backgroundColor = UIColor.systemBackground;
+            }
             UIView.animate(withDuration: 0.5, animations: {
                 //cell.backgroundColor = UIColor(red: 1.0, green: 0.5, blue: 0.5, alpha: 1);
                 cell.backgroundColor = UIColor(hue: 0, saturation: 0.7, brightness: 0.8, alpha: 1)
@@ -163,7 +166,7 @@ class DataFormController: UITableViewController {
         for (index, fieldName) in form!.visibleFieldNames.enumerated() {
             if let field = form!.getField(named: fieldName)! as? ValidatableField {
                 if !field.valid {
-                    errors.append(IndexPath(row: index, section: 0));
+                    errors.append(IndexPath(row: 0, section: index + 1));
                 }
             }
         }
