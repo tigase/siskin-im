@@ -918,18 +918,25 @@ extension CallManager: PKPushRegistryDelegate {
                         print("got decrypted voip data:", String(data: decoded, encoding: .utf8) as Any);
                         if let payload = try? JSONDecoder().decode(VoIPPayload.self, from: decoded) {
                             print("decoded voip payload successfully!");
-                            if let sender = payload.sender, let media = payload.media, let client = XmppService.instance.getClient(for: BareJID(account)) {
-                                let session = JingleManager.instance.open(for: client.sessionObject, with: sender, sid: payload.sid, role: .responder, initiationType: .message);
-                                let call = Call(account: BareJID(account), with: sender.bareJid, sid: payload.sid, direction: .incoming, media: media, sessionId: session?.id);
-                                self.reportIncomingCall(call, completionHandler: { result in
-                                    switch result {
-                                    case .success(_):
-                                        break;
-                                    case .failure(_):
-                                        _ = session?.decline();
-                                    }
-                                    completion();
-                                })
+                            if let sender = payload.sender, let client = XmppService.instance.getClient(for: BareJID(account)) {
+                                // we require `media` to be present (even empty) in incoming push for jingle session initiation
+                                if let media = payload.media {
+                                    let session = JingleManager.instance.open(for: client.sessionObject, with: sender, sid: payload.sid, role: .responder, initiationType: .message);
+                                    let call = Call(account: BareJID(account), with: sender.bareJid, sid: payload.sid, direction: .incoming, media: media, sessionId: session?.id);
+                                    self.reportIncomingCall(call, completionHandler: { result in
+                                        switch result {
+                                        case .success(_):
+                                            break;
+                                        case .failure(_):
+                                            _ = session?.decline();
+                                        }
+                                        completion();
+                                    });
+                                } else {
+                                    self.endCall(on: account, sid: payload.sid, completionHandler: {
+                                        print("ended call");
+                                    })
+                                }
                                 return;
                             }
                         }

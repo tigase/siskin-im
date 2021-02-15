@@ -167,6 +167,7 @@ public class Payload: Decodable {
     public var nickname: String?;
     public var message: String?;
     public var sid: String?;
+    public var media: [String]?;
     
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self);
@@ -176,6 +177,7 @@ public class Payload: Decodable {
         nickname = try container.decodeIfPresent(String.self, forKey: .nickname);
         message = try container.decodeIfPresent(String.self, forKey: .message);
         sid = try container.decodeIfPresent(String.self, forKey: .sid)
+        media = try container.decodeIfPresent([String].self, forKey: .media);
         // -- and so on...
     }
     
@@ -193,5 +195,6 @@ public class Payload: Decodable {
         case nickname
         case message
         case sid
+        case media
     }
 }

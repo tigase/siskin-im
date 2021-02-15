@@ -512,7 +512,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                         print("got decrypted data:", String(data: decoded, encoding: .utf8) as Any);
                         if let payload = try? JSONDecoder().decode(Payload.self, from: decoded) {
                             print("decoded payload successfully!");
-                            if let sid = payload.sid {
+                            // we require `media` to be present (even empty) in incoming push for jingle session initiation,
+                            // so we can assume that if `media` is `nil` then this is a push for call termination
+                            if let sid = payload.sid, payload.media == nil {
                                 guard CallManager.isAvailable, CallManager.instance?.currentCall?.state ?? .ringing == .ringing else {
                                     return;
                                 }
