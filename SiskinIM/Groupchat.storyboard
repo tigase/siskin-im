@@ -191,7 +191,7 @@
         <!--Navigation Controller-->
         <scene sceneID="CJK-x4-axt">
             <objects>
-                <navigationController storyboardIdentifier="RoomViewNavigationController" automaticallyAdjustsScrollViewInsets="NO" toolbarHidden="NO" id="Q49-7n-7nT" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="RoomViewNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="Q49-7n-7nT" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" id="C6i-6F-QcS">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
@@ -199,7 +199,6 @@
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <toolbar key="toolbar" opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="g7C-gM-aQF">
-                        <rect key="frame" x="0.0" y="813" width="414" height="49"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </toolbar>
                     <connections>
