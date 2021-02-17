@@ -151,7 +151,7 @@ class Markdown {
                         msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: italicStart!, length: 1));
                         msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: idx, length: 1));
                         
-                        msg.enumerateAttribute(.font, in: NSRange(location: italicStart!, length: (idx+1)), options: .init()) { (attr, range: NSRange, stop) -> Void in
+                        msg.enumerateAttribute(.font, in: NSRange(location: italicStart!, length: (idx+1) - italicStart!), options: .init()) { (attr, range: NSRange, stop) -> Void in
                             let font = attr as? UIFont;
                             let italicFont = Markdown.italic(font: font ?? defFont);
                             msg.addAttribute(.font, value: italicFont, range: range);
@@ -216,7 +216,7 @@ class Markdown {
                                                                                     
                             if idx - codeStart > 1 {
                                 let clearRange = NSRange(location: codeStart + codeCount, length: idx - (codeStart + (2*codeCount)));
-                                msg.removeAttribute(.foregroundColor, range: clearRange);
+                                //msg.removeAttribute(.foregroundColor, range: clearRange);
                                 msg.removeAttribute(.underlineStyle, range: clearRange);
                                 //msg.addAttribute(.foregroundColor, value: textColor ?? NSColor.textColor, range: clearRange);
                             }
@@ -238,6 +238,7 @@ class Markdown {
                         let range = NSRange(location: wordIdx!, length: idx - wordIdx!);
                         if let emoji = String.emojis[message.substring(with: range)] {
                             let len = message.length;
+                            print("replacing:", range, "for:", emoji, "in:", msg, "range:", NSRange(location: 0, length: msg.length));
                             msg.replaceCharacters(in: range, with: emoji);
                             message = msg.string as NSString;
                             let diff = message.length - len;
