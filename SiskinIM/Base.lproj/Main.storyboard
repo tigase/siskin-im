@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="vAU-gJ-Tx3">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="vAU-gJ-Tx3">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -48,6 +48,7 @@
                                                     </subviews>
                                                     <constraints>
                                                         <constraint firstItem="ga8-2K-hxE" firstAttribute="top" secondItem="i0O-Zv-fEx" secondAttribute="top" id="0QG-zI-LV6"/>
+                                                        <constraint firstItem="ga8-2K-hxE" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Qr0-8H-IJq" secondAttribute="trailing" constant="6" id="1yY-dN-M8X"/>
                                                         <constraint firstAttribute="bottom" secondItem="Qr0-8H-IJq" secondAttribute="bottom" id="5AF-v3-SCd"/>
                                                         <constraint firstItem="Qr0-8H-IJq" firstAttribute="top" secondItem="i0O-Zv-fEx" secondAttribute="top" id="R45-CA-F0x"/>
                                                         <constraint firstItem="Qr0-8H-IJq" firstAttribute="leading" secondItem="i0O-Zv-fEx" secondAttribute="leading" id="ZfK-Fb-tka"/>
@@ -1194,9 +1195,6 @@
         <namedColor name="tintColor">
             <color red="0.33000001311302185" green="0.33000001311302185" blue="0.48800000548362732" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
-        <systemColor name="groupTableViewBackgroundColor">
-            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </systemColor>
         <systemColor name="groupTableViewBackgroundColor">
             <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
