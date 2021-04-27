@@ -73,15 +73,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UINavigationBar.appearance().tintColor = UIColor(named: "tintColor");
         NotificationManager.instance.initialize(provider: MainNotificationManagerProvider());
         xmppService.initialize();
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
-            // sending notifications not granted!
-        }
-        UNUserNotificationCenter.current().delegate = self.notificationCenterDelegate;
-        let categories = [
-            UNNotificationCategory(identifier: "MESSAGE", actions: [], intentIdentifiers: [], hiddenPreviewsBodyPlaceholder: "New message", options: [.customDismissAction])
-        ];
-        UNUserNotificationCenter.current().setNotificationCategories(Set(categories));
-        application.registerForRemoteNotifications();
+        setupNotifications(application)
         CallManager.initializeCallManager();
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.unreadMessagesCountChanged), name: DBChatStore.UNREAD_MESSAGES_COUNT_CHANGED, object: nil);
@@ -126,6 +118,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
     
+    func setupNotifications(_ application: UIApplication) {
+        if !AccountManager.getAccounts().isEmpty {
+            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
+                // sending notifications not granted!
+            }
+            UNUserNotificationCenter.current().delegate = self.notificationCenterDelegate;
+            let categories = [
+                UNNotificationCategory(identifier: "MESSAGE", actions: [], intentIdentifiers: [], hiddenPreviewsBodyPlaceholder: "New message", options: [.customDismissAction])
+            ];
+            UNUserNotificationCenter.current().setNotificationCategories(Set(categories));
+            application.registerForRemoteNotifications();
+        }
+    }
+    
     @objc func accountsChanged(_ notification: Notification) {
         DispatchQueue.main.async {
             if let rootView = self.window?.rootViewController {
@@ -138,6 +144,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                         self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SetupViewController");
                     }
                 }
+                self.setupNotifications(UIApplication.shared)
             }
         }
     }
