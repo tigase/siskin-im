@@ -22,12 +22,10 @@ class ChatAttachmentsCellView: UICollectionViewCell, UIDocumentInteractionContro
     func set(item: ChatAttachment) {
         self.item = item;
         
-        if #available(iOS 13.0, *), self.interactions.isEmpty {
-            self.addInteraction(UIContextMenuInteraction(delegate: self));
-        }
+        self.addInteraction(UIContextMenuInteraction(delegate: self));
         
         if let fileUrl = DownloadStore.instance.url(for: "\(item.id)") {
-            if #available(iOS 13.0, *), let imageProvider = MetadataCache.instance.metadata(for: "\(item.id)")?.imageProvider {
+            if let imageProvider = MetadataCache.instance.metadata(for: "\(item.id)")?.imageProvider {
                 imageField.image = UIImage.icon(forFile: fileUrl, mimeType: nil);
                 imageProvider.loadItem(forTypeIdentifier: kUTTypeImage as String, options: nil, completionHandler: { (data, error) in
                     guard let data = data, error == nil else {
@@ -61,14 +59,12 @@ class ChatAttachmentsCellView: UICollectionViewCell, UIDocumentInteractionContro
         }
     }
     
-    @available(iOS 13.0, *)
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
             return self.prepareContextMenu();
         })
     }
     
-    @available(iOS 13.0, *)
     func prepareContextMenu() -> UIMenu {
         guard let item = self.item else {
             return UIMenu(title: "");

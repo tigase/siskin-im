@@ -33,7 +33,7 @@ class ChannelParticipantsController: UITableViewController {
         super.viewWillAppear(animated);
         NotificationCenter.default.addObserver(self, selector: #selector(participantsChanged(_:)), name: MixEventHandler.PARTICIPANTS_CHANGED, object: channel);
         refreshParticipants();
-        if #available(iOS 13.0, *), channel.permissions?.contains(.changeConfig) ?? false, let mixModule: MixModule = XmppService.instance.getClient(for: self.channel.account)?.modulesManager.getModule(MixModule.ID) {
+        if channel.permissions?.contains(.changeConfig) ?? false, let mixModule: MixModule = XmppService.instance.getClient(for: self.channel.account)?.modulesManager.getModule(MixModule.ID) {
             self.operationStarted(message: "Refreshing...");
             mixModule.checkAccessPolicy(of: channel.channelJid, completionHandler: { [weak self] result in
                 DispatchQueue.main.async {
@@ -72,15 +72,11 @@ class ChannelParticipantsController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let participant = self.participants[indexPath.row];
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ChannelParticipantVIewCell", for: indexPath);
-        let jid = participant.jid ?? BareJID(localPart: "\(participant.id)#\(channel.channelJid.localPart!)", domain: channel.channelJid.domain);
-        cell.imageView?.image = AvatarManager.instance.avatar(for: jid, on: channel.account) ?? AvatarManager.instance.defaultAvatar;
-        cell.textLabel?.text = participant.nickname;
-        cell.detailTextLabel?.text = participant.jid?.stringValue ?? participant.id
+        let cell = tableView.dequeueReusableCell(withIdentifier: "ChannelParticipantTableViewCell", for: indexPath) as! ChannelParticipantTableViewCell;
+        cell.set(participant: participant, in: channel);
         return cell;
     }
     
-    @available(iOS 13.0, *)
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         guard channel.permissions?.contains(.changeConfig) ?? false else {
             return nil;
@@ -163,4 +159,28 @@ class ChannelParticipantsController: UITableViewController {
         self.tableView.refreshControl = nil;
     }
 
+}
+
+class ChannelParticipantTableViewCell: UITableViewCell {
+    
+    @IBOutlet var avatarView: AvatarView!;
+    @IBOutlet var labelView: UILabel!;
+    @IBOutlet var jidView: UILabel!;
+    
+    static func labelViewFont() -> UIFont {
+        let preferredFont = UIFont.preferredFont(forTextStyle: .subheadline);
+        let fontDescription = preferredFont.fontDescriptor.withSymbolicTraits(.traitBold)!;
+        return UIFont(descriptor: fontDescription, size: preferredFont.pointSize);
+    }
+    
+    func set(participant: MixParticipant, in channel: DBChannel) {
+        let jid = participant.jid ?? BareJID(localPart: "\(participant.id)#\(channel.channelJid.localPart!)", domain: channel.channelJid.domain);
+        avatarView?.image = AvatarManager.instance.avatar(for: jid, on: channel.account) ?? AvatarManager.instance.defaultAvatar
+        
+        labelView.font = ChannelParticipantTableViewCell.labelViewFont();
+        print("labelView.font: \(labelView.font)")
+        labelView?.text = participant.nickname;
+        jidView?.text = participant.jid?.stringValue ?? participant.id
+    }
+    
 }

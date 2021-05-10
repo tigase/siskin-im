@@ -51,7 +51,7 @@ class AbstractRosterViewController: UITableViewController, UISearchResultsUpdati
         searchController.searchBar.isTranslucent = true;
         refreshControl?.isOpaque = false;
         navigationItem.searchController = self.searchController;
-        tableView.rowHeight = 48;//UITableViewAutomaticDimension;
+        //tableView.rowHeight = 48;//UITableViewAutomaticDimension;
         self.navigationItem.hidesSearchBarWhenScrolling = true;
     }
     

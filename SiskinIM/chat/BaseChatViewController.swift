@@ -463,7 +463,7 @@ class ChatViewInputBar: UIView, UITextViewDelegate, NSTextStorageDelegate {
         }
         
         if Settings.EnableMarkdownFormatting.bool() {
-            Markdown.applyStyling(attributedString: textStorage, font: UIFont.systemFont(ofSize: fontSize), showEmoticons: false);
+            Markdown.applyStyling(attributedString: textStorage, defTextStyle: .subheadline, showEmoticons: false);
         }
     }
 }

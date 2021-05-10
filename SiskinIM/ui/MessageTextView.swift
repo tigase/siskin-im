@@ -22,9 +22,10 @@
 
 import UIKit
 
-@IBDesignable public class MessageTextView: UIView {
+//@IBDesignable
+public class MessageTextView: UIView {
         
-    @IBInspectable public var fontSize: CGFloat = 14.0;
+//    @IBInspectable public var fontSize: CGFloat = 14.0;
     
     private(set) var textView: UITextView!;
     
@@ -46,13 +47,13 @@ import UIKit
         }
     }
     
-    @IBInspectable var textColor: UIColor = {
-        if #available(iOS 13.0, *) {
-            return UIColor.label;
-        } else {
-            return UIColor.black;
-        }
-    }();
+//    @IBInspectable var textColor: UIColor = {
+//        if #available(iOS 13.0, *) {
+//            return UIColor.label;
+//        } else {
+//            return UIColor.black;
+//        }
+//    }();
     
     public override func awakeFromNib() {
         super.awakeFromNib();
@@ -77,7 +78,7 @@ import UIKit
         textView.isUserInteractionEnabled = true;
         textView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
         textView.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
-        textView.font = UIFont.systemFont(ofSize: fontSize);
+        textView.font = UIFont.preferredFont(forTextStyle: .subheadline);
         textView.textColor = UIColor(named: "chatMessageText");
         if #available(iOS 13.0, *) {
             textView.usesStandardTextScaling = false;

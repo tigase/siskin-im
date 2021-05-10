@@ -42,6 +42,11 @@ class AvatarView: UIImageView {
             self.layer.cornerRadius = min(frame.width, frame.height) / 2;
         }
     }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews();
+        self.layer.cornerRadius = min(frame.width, frame.height) / 2;
+    }
 //    override var image: UIImage? {
 //        get {
 //            return super.image;

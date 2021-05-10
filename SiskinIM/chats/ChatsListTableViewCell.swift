@@ -33,6 +33,7 @@ class ChatsListTableViewCell: UITableViewCell {
     }
     @IBOutlet var lastMessageLabel: UILabel!
     @IBOutlet var timestampLabel: UILabel!
+    @IBOutlet var badge: BadgeButton!;
     
     override var backgroundColor: UIColor? {
         get {

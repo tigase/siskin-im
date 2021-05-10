@@ -27,20 +27,12 @@ class ChatTableViewCell: BaseChatTableViewCell, UITextViewDelegate {
 
     @IBOutlet var messageTextView: MessageTextView!
         
-    fileprivate var originalTextColor: UIColor!;
-    
     override var backgroundColor: UIColor? {
         didSet {
             self.messageTextView.backgroundColor = self.backgroundColor;
         }
     }
-    
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        // Initialization code
-        originalTextColor = messageTextView.textColor;
-    }
-    
+        
     func set(message item: ChatMessage) {
         messageTextView.textView.delegate = self;
         super.set(item: item);
@@ -72,9 +64,9 @@ class ChatTableViewCell: BaseChatTableViewCell, UITextViewDelegate {
         }
         attrText.addAttribute(.foregroundColor, value: UIColor(named: "chatMessageText") as Any, range: NSRange(location: 0, length: attrText.length));
         if Settings.EnableMarkdownFormatting.getBool() {
-            Markdown.applyStyling(attributedString: attrText, font: UIFont.systemFont(ofSize: self.messageTextView.fontSize), showEmoticons:Settings.ShowEmoticons.getBool());
+            Markdown.applyStyling(attributedString: attrText, defTextStyle: .subheadline, showEmoticons:Settings.ShowEmoticons.getBool());
         } else {
-            attrText.addAttribute(.font, value: UIFont.systemFont(ofSize: self.messageTextView.fontSize), range: NSRange(location: 0, length: attrText.length));
+            attrText.addAttribute(.font, value: UIFont.preferredFont(forTextStyle: .subheadline), range: NSRange(location: 0, length: attrText.length));
             attrText.fixAttributes(in: NSRange(location: 0, length: attrText.length));
 
         }
@@ -84,11 +76,11 @@ class ChatTableViewCell: BaseChatTableViewCell, UITextViewDelegate {
                 self.messageTextView.text = "Error: \(error)";
             }
             if item.state.direction == .incoming {
-                self.messageTextView.textColor = UIColor.red;
+                self.messageTextView.textView.textColor = UIColor.red;
             }
         } else {
             if item.encryption == .notForThisDevice || item.encryption == .decryptionFailed {
-                self.messageTextView.textColor = self.originalTextColor;
+                self.messageTextView.textView.textColor = UIColor(named: "chatMessageText");
             }
         }
     }

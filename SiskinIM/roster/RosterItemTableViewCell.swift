@@ -59,11 +59,7 @@ class RosterItemTableViewCell: UITableViewCell {
         if originalBackgroundColor == nil {
             originalBackgroundColor = self.backgroundColor;
             if originalBackgroundColor == nil {
-                if #available(iOS 13.0, *) {
-                    self.backgroundColor = UIColor.systemBackground;
-                } else {
-                    self.backgroundColor = UIColor.white;
-                }
+                self.backgroundColor = UIColor.systemBackground;
             }
         }
         if animated {

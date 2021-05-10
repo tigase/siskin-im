@@ -24,6 +24,12 @@ import UIKit
 class MucChatOccupantsTableViewCell: UITableViewCell {
 
 
+    static func labelViewFont() -> UIFont {
+        let preferredFont = UIFont.preferredFont(forTextStyle: .subheadline);
+        let fontDescription = preferredFont.fontDescriptor.withSymbolicTraits(.traitBold)!;
+        return UIFont(descriptor: fontDescription, size: preferredFont.pointSize);
+    }
+    
     @IBOutlet var avatarStatusView: AvatarStatusView!
     @IBOutlet var nicknameLabel: UILabel!
     @IBOutlet var statusLabel: UILabel!

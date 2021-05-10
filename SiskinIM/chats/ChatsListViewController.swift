@@ -100,13 +100,14 @@ class ChatsListViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cellIdentifier = "ChatsListTableViewCellNew";
+        let cellIdentifier = Settings.RecentsMessageLinesNo.getInt() == 1 ? "ChatsListTableViewCellNew" : "ChatsListTableViewCellBig";
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath as IndexPath) as! ChatsListTableViewCell;
         
         if let item = dataSource?.item(at: indexPath) {
 //            cell.nameLabel.textColor = Appearance.current.labelColor;
-            cell.nameLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.nameLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.nameLabel.font.pointSize);
+//            cell.nameLabel.font = item.unread > 0 ? UIFont.boldSystemFont(ofSize: cell.nameLabel.font.pointSize) : UIFont.systemFont(ofSize: cell.nameLabel.font.pointSize);
 //            cell.lastMessageLabel.textColor = item.unread > 0 ? Appearance.current.labelColor : Appearance.current.secondaryLabelColor;
+            cell.badge.title = item.unread > 0 ? "\(item.unread)" : nil;
             let xmppClient = self.xmppService.getClient(forJid: item.account);
             switch item {
             case let room as DBRoom:
@@ -133,16 +134,22 @@ class ChatsListViewController: UITableViewController {
                 case .message(let lastMessage, let direction, let sender):
                     if lastMessage.starts(with: "/me ") {
                         let nick = sender ?? (direction == .incoming ? (cell.nameLabel.text ?? "") : (AccountManager.getAccount(for: item.account)?.nickname ?? "Me"));
-                        var fontDescriptor = UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize, weight: item.unread > 0 ? .medium : .regular).fontDescriptor.withSymbolicTraits(.traitItalic) ?? UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize, weight: item.unread > 0 ? .medium : .regular).fontDescriptor;
-                        let msg = NSMutableAttributedString(string: "\(nick) ", attributes: [.font: UIFont(descriptor: fontDescriptor, size: 0)]);
-                        fontDescriptor = UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize, weight: item.unread > 0 ? .regular : .light).fontDescriptor.withSymbolicTraits(.traitItalic) ?? UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize, weight: item.unread > 0 ? .medium : .regular).fontDescriptor;
-                        msg.append(NSAttributedString(string: "\(lastMessage.dropFirst(4))", attributes: [.font: UIFont(descriptor: fontDescriptor, size: 0)]));
+                        let baseFontDescriptor = UIFont.preferredFont(forTextStyle: .subheadline).fontDescriptor;
+                        let fontDescriptor = baseFontDescriptor.withSymbolicTraits([.traitBold, .traitItalic]);
+                        
+                        let font = UIFont(descriptor: fontDescriptor ?? baseFontDescriptor, size: 0);
+                        
+                        let msg = NSMutableAttributedString(string: "\(nick) ", attributes: [.font: font]);
+                        msg.append(NSAttributedString(string: "\(lastMessage.dropFirst(4))", attributes: [.font: font]));
+                        
                         cell.lastMessageLabel.attributedText = msg;
                     } else {
-                        let font = UIFont.systemFont(ofSize: cell.lastMessageLabel.font.pointSize, weight: item.unread > 0 ? .medium : .light)//UIFont(descriptor: cell.lastMessageLabel.font.fontDescriptor.withSymbolicTraits([.traitBold])!, size: cell.lastMessageLabel.font.fontDescriptor.pointSize) : cell.lastMessageLabel.font!;
+                        let font = UIFont.preferredFont(forTextStyle: .subheadline);
                         let msg = NSMutableAttributedString(string: lastMessage);
-                        Markdown.applyStyling(attributedString: msg, font: font, showEmoticons: Settings.ShowEmoticons.bool());
-                        if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                        Markdown.applyStyling(attributedString: msg, defTextStyle: .subheadline, showEmoticons: Settings.ShowEmoticons.bool());
+                        if sender != nil {
+                            let prefixFontDescription = font.fontDescriptor.withSymbolicTraits(.traitBold);
+                            let prefix = NSMutableAttributedString(string: "\(sender!): ", attributes: [.font: prefixFontDescription != nil ? UIFont(descriptor: prefixFontDescription!, size: 0) : font]);
                             prefix.append(msg);
                             cell.lastMessageLabel.attributedText = prefix;
                         } else {
@@ -150,46 +157,24 @@ class ChatsListViewController: UITableViewController {
                         }
                     }
                 case .invitation(_, _, let sender):
-                    if let fieldfont = cell.lastMessageLabel.font {
-                        let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: fieldfont.fontDescriptor.pointSize);
-                        let msg = NSAttributedString(string: "📨 Invitation", attributes: [.font:  font, .foregroundColor: cell.lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
+                    let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .subheadline).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: 0);
+                    let msg = NSAttributedString(string: "📨 Invitation", attributes: [.font:  font, .foregroundColor: cell.lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
 
-                        if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
-                            prefix.append(msg);
-                            cell.lastMessageLabel.attributedText = prefix;
-                        } else {
-                            cell.lastMessageLabel.attributedText = msg;
-                        }
+                    if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                        prefix.append(msg);
+                        cell.lastMessageLabel.attributedText = prefix;
                     } else {
-                        let msg = NSAttributedString(string: "📨 Invitation", attributes: [.foregroundColor: cell.lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
-                            
-                        if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
-                            prefix.append(msg);
-                            cell.lastMessageLabel.attributedText = prefix;
-                        } else {
-                            cell.lastMessageLabel.attributedText = msg;
-                        }
+                        cell.lastMessageLabel.attributedText = msg;
                     }
                 case .attachment(_, _, let sender):
-                    if let fieldfont = cell.lastMessageLabel.font {
-                        let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: fieldfont.fontDescriptor.pointSize);
-                        let msg = NSAttributedString(string: "📎 Attachment", attributes: [.font:  font, .foregroundColor: cell.lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
+                    let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .subheadline).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: 0);
+                    let msg = NSAttributedString(string: "📎 Attachment", attributes: [.font:  font, .foregroundColor: cell.lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
 
-                        if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
-                            prefix.append(msg);
-                            cell.lastMessageLabel.attributedText = prefix;
-                        } else {
-                            cell.lastMessageLabel.attributedText = msg;
-                        }
+                    if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                        prefix.append(msg);
+                        cell.lastMessageLabel.attributedText = prefix;
                     } else {
-                        let msg = NSAttributedString(string: "📎 Attachment", attributes: [.foregroundColor: cell.lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
-                            
-                        if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
-                            prefix.append(msg);
-                            cell.lastMessageLabel.attributedText = prefix;
-                        } else {
-                            cell.lastMessageLabel.attributedText = msg;
-                        }
+                        cell.lastMessageLabel.attributedText = msg;
                     }
                 }
             } else {

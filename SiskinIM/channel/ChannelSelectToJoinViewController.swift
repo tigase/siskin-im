@@ -146,6 +146,10 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
         self.dismiss(animated: true, completion: nil);
     }
     
+    @IBAction func changeAccountOrComponentClicked(_ sender: Any) {
+        self.performSegue(withIdentifier: "ChannelSelectAccountAndComponentSegue", sender: sender);
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let destination = segue.destination as? ChannelSelectAccountAndComponentController {
             destination.delegate = self;
@@ -254,12 +258,16 @@ class ChannelJoinStatusView: UIBarButtonItem {
     
     var account: BareJID? {
         didSet {
-            accountLabel.text = account == nil ? nil : "Account: \(account!.stringValue)";
+            let value = NSMutableAttributedString(string: "Account: ", attributes: [.font: UIFont.preferredFont(forTextStyle: .caption1), .foregroundColor: UIColor.secondaryLabel]);
+            value.append(NSAttributedString(string: account?.stringValue ?? "None", attributes: [.font: UIFont.preferredFont(forTextStyle: .caption1), .foregroundColor: UIColor(named: "tintColor")!]));
+            accountLabel.attributedText = value;
         }
     }
     var server: String? {
         didSet {
-            serverLabel.text = "Component: \(server ?? "Automatic")";
+            let value = NSMutableAttributedString(string: "Component: ", attributes: [.font: UIFont.preferredFont(forTextStyle: .caption1), .foregroundColor: UIColor.secondaryLabel]);
+            value.append(NSAttributedString(string: server ?? "Automatic", attributes: [.font: UIFont.preferredFont(forTextStyle: .caption1), .foregroundColor: UIColor(named: "tintColor")!]));
+            serverLabel.attributedText = value;
         }
     }
     
@@ -280,10 +288,12 @@ class ChannelJoinStatusView: UIBarButtonItem {
         let view = UIView();
         view.translatesAutoresizingMaskIntoConstraints = false;
         self.accountLabel = UILabel();
+        accountLabel.isUserInteractionEnabled = false;
         accountLabel.font = UIFont.systemFont(ofSize: UIFont.smallSystemFontSize);
         accountLabel.translatesAutoresizingMaskIntoConstraints = false;
-        accountLabel.text = "Account: test@hi-low.eu";
+        accountLabel.text = "Account: None";
         self.serverLabel = UILabel();
+        serverLabel.isUserInteractionEnabled = false;
         serverLabel.font = UIFont.systemFont(ofSize: UIFont.smallSystemFontSize);
         if #available(iOS 13.0, *) {
             serverLabel.textColor = UIColor.secondaryLabel;

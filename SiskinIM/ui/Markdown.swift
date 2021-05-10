@@ -48,32 +48,15 @@ class Markdown {
         return paragraphStyle;
     }();
     
-    static func italic(font currentFont: UIFont) -> UIFont {
-        var traits = currentFont.fontDescriptor.symbolicTraits;
-        traits.insert(.traitItalic);
-        traits.remove(.traitCondensed);
-        return UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body).withSymbolicTraits(traits)!, size: currentFont.fontDescriptor.pointSize);
+    static func font(withTextStyle textStyle: UIFont.TextStyle, andTraits traits: UIFontDescriptor.SymbolicTraits) -> UIFont {
+        let preferredFont = UIFont.preferredFont(forTextStyle: textStyle);
+        let fontDescription = preferredFont.fontDescriptor.withSymbolicTraits(traits)!;
+        let newFont = UIFont(descriptor: fontDescription, size: preferredFont.pointSize);
+        return newFont;
     }
     
-    static func bold(font currentFont: UIFont) -> UIFont {
-        var traits = currentFont.fontDescriptor.symbolicTraits;
-        traits.insert(.traitBold);
-        traits.remove(.traitCondensed);
-        print("curr:", currentFont);
-        return UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body).withSymbolicTraits(traits)!, size: currentFont.fontDescriptor.pointSize);
-    }
-    
-    static func code(font currentFont: UIFont) -> UIFont {
-        if #available(iOS 13.0, *) {
-            return UIFont.monospacedSystemFont(ofSize: currentFont.fontDescriptor.pointSize, weight: .regular);
-        } else {
-            var traits = currentFont.fontDescriptor.symbolicTraits;
-            traits.remove(.traitItalic);
-            traits.remove(.traitBold);
-            traits.remove(.traitCondensed);
-            //        traits.insert(.traitMonoSpace);
-            return UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body).withSymbolicTraits(traits)!, size: currentFont.fontDescriptor.pointSize);
-        }
+    static func code(withTextStyle textStyle: UIFont.TextStyle) -> UIFont {
+        return UIFontMetrics(forTextStyle: textStyle).scaledFont(for: UIFont.monospacedSystemFont(ofSize: UIFont.labelFontSize, weight: .regular));
     }
     
     static let NEW_LINE: unichar = "\n";
@@ -84,7 +67,7 @@ class Markdown {
     static let GRAVE_ACCENT: unichar = "`";
     static let CR_SIGN: unichar = "\r";
     
-    static func applyStyling(attributedString msg: NSMutableAttributedString, font defFont: UIFont, showEmoticons: Bool) {
+    static func applyStyling(attributedString msg: NSMutableAttributedString, defTextStyle: UIFont.TextStyle, showEmoticons: Bool) {
         let stylingColor = UIColor.init(white: 0.5, alpha: 1.0);
         
         var message = msg.string as NSString;
@@ -101,7 +84,7 @@ class Markdown {
         var wordIdx: Int? = showEmoticons ? 0 : nil;
         
         msg.removeAttribute(.paragraphStyle, range: NSRange(location: 0, length: msg.length));
-        msg.addAttribute(.font, value: defFont, range: NSRange(location: 0, length: msg.length));
+        msg.addAttribute(.font, value: UIFont.preferredFont(forTextStyle: defTextStyle), range: NSRange(location: 0, length: msg.length));
         
         while idx < message.length {
             let c = message.character(at: idx);
@@ -134,7 +117,7 @@ class Markdown {
                         
                         msg.enumerateAttribute(.font, in: NSRange(location: boldStart!, length: (nidx+1) - boldStart!), options: .init()) { (attr, range: NSRange, stop) -> Void in
                             let font = attr as? UIFont;
-                            let boldFont = Markdown.bold(font: font ?? defFont);
+                            let boldFont = Markdown.font(withTextStyle: defTextStyle, andTraits: .traitBold);
                             msg.addAttribute(.font, value: boldFont, range: range);
                         }
                         
@@ -153,7 +136,7 @@ class Markdown {
                         
                         msg.enumerateAttribute(.font, in: NSRange(location: italicStart!, length: (idx+1) - italicStart!), options: .init()) { (attr, range: NSRange, stop) -> Void in
                             let font = attr as? UIFont;
-                            let italicFont = Markdown.italic(font: font ?? defFont);
+                            let italicFont = Markdown.font(withTextStyle: defTextStyle, andTraits: .traitItalic)
                             msg.addAttribute(.font, value: italicFont, range: range);
                         }
                         
@@ -207,7 +190,7 @@ class Markdown {
                             msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: codeStart, length: codeCount));
                             msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: (idx+1)-codeCount, length: codeCount));
 
-                            let codeFont = Markdown.code(font: defFont);
+                            let codeFont = Markdown.code(withTextStyle: defTextStyle);
                             msg.addAttribute(.font, value: codeFont, range: NSRange(location: codeStart, length: idx - codeStart));
 
                             if isBlock {

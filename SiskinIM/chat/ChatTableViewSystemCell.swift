@@ -39,18 +39,10 @@ class ChatTableViewMeCell: UITableViewCell {
 
     @IBOutlet var messageView: MessageTextView!
     
-    func textColor() -> UIColor {
-        if #available(iOS 13.0, *) {
-            return .secondaryLabel;
-        }
-        return UIColor(red: 0.23529411764705882, green: 0.23529411764705882, blue: 0.2627450980392157, alpha: 0.6);
-    }
-    
     func set(item: ChatMessage, nickname: String?) {
-        var fontDescriptor = UIFont.systemFont(ofSize: self.messageView.fontSize, weight: .medium).fontDescriptor.withSymbolicTraits([.traitItalic]) ?? UIFont.systemFont(ofSize: self.messageView.fontSize, weight: .medium).fontDescriptor;
-        let message = NSMutableAttributedString(string: "\(nickname ?? item.jid.stringValue) ", attributes: [.font: UIFont(descriptor: fontDescriptor, size: 0), .foregroundColor: textColor()]);
-        fontDescriptor = UIFont.systemFont(ofSize: self.messageView.fontSize, weight: .regular).fontDescriptor.withSymbolicTraits([.traitItalic]) ?? UIFont.systemFont(ofSize: self.messageView.fontSize, weight: .medium).fontDescriptor;
-        message.append(NSAttributedString(string: "\(item.message.dropFirst(4))", attributes: [.font: UIFont(descriptor: fontDescriptor, size: 0), .foregroundColor: textColor()]));
+        let preferredFont = UIFont.preferredFont(forTextStyle: .subheadline);
+        let message = NSMutableAttributedString(string: "\(nickname ?? item.jid.stringValue) ", attributes: [.font: UIFont(descriptor: preferredFont.fontDescriptor.withSymbolicTraits([.traitBold,.traitItalic])!, size: 0), .foregroundColor: UIColor.secondaryLabel]);
+        message.append(NSAttributedString(string: "\(item.message.dropFirst(4))", attributes: [.font: UIFont(descriptor: preferredFont.fontDescriptor.withSymbolicTraits(.traitItalic)!, size: 0), .foregroundColor: UIColor.secondaryLabel]));
         self.messageView.attributedText = message;
     }
 

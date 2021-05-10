@@ -75,6 +75,8 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
             avatarView!.layer.cornerRadius = avatarView!.frame.height / 2;
         }
         originalTimestampColor = timestampView?.textColor;
+        nicknameView?.textColor = UIColor.secondaryLabel;
+        nicknameView?.font = UIFontMetrics(forTextStyle: .subheadline).scaledFont(for: UIFont(descriptor: UIFont.preferredFont(forTextStyle: .subheadline).fontDescriptor.withSymbolicTraits(.traitBold)!, size: 0));
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {

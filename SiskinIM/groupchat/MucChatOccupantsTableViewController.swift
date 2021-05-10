@@ -85,6 +85,7 @@ class MucChatOccupantsTableViewController: UITableViewController {
         
         let occupant = participants[indexPath.row];
         cell.nicknameLabel.text = occupant.nickname;
+        cell.nicknameLabel.font = MucChatOccupantsTableViewCell.labelViewFont();
         if let jid = occupant.jid, let avatar = AvatarManager.instance.avatar(for: jid.bareJid, on: self.account) {
             cell.avatarStatusView.set(name: occupant.nickname, avatar: avatar, orDefault: AvatarManager.instance.defaultAvatar);
         } else if let photoHash = occupant.presence.vcardTempPhoto {
@@ -93,7 +94,7 @@ class MucChatOccupantsTableViewController: UITableViewController {
             cell.avatarStatusView.set(name: occupant.nickname, avatar: nil, orDefault: AvatarManager.instance.defaultAvatar);
         }
         cell.avatarStatusView.setStatus(occupant.presence.show);
-        cell.statusLabel.text = occupant.presence.status;
+        cell.statusLabel.text = occupant.presence.status ?? occupant.jid?.stringValue ?? " ";
         
         return cell
     }
