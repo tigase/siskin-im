@@ -76,7 +76,7 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
         }
         originalTimestampColor = timestampView?.textColor;
         nicknameView?.textColor = UIColor.secondaryLabel;
-        nicknameView?.font = UIFontMetrics(forTextStyle: .subheadline).scaledFont(for: UIFont(descriptor: UIFont.preferredFont(forTextStyle: .subheadline).fontDescriptor.withSymbolicTraits(.traitBold)!, size: 0));
+        nicknameView?.font = UIFontMetrics(forTextStyle: .footnote).scaledFont(for: UIFont(descriptor: UIFont.preferredFont(forTextStyle: .footnote).fontDescriptor.withSymbolicTraits(.traitBold)!, size: 0));
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {

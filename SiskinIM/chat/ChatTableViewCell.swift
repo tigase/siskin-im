@@ -64,7 +64,7 @@ class ChatTableViewCell: BaseChatTableViewCell, UITextViewDelegate {
         }
         attrText.addAttribute(.foregroundColor, value: UIColor(named: "chatMessageText") as Any, range: NSRange(location: 0, length: attrText.length));
         if Settings.EnableMarkdownFormatting.getBool() {
-            Markdown.applyStyling(attributedString: attrText, defTextStyle: .subheadline, showEmoticons:Settings.ShowEmoticons.getBool());
+            Markdown.applyStyling(attributedString: attrText, defTextStyle: .body, showEmoticons:Settings.ShowEmoticons.getBool());
         } else {
             attrText.addAttribute(.font, value: UIFont.preferredFont(forTextStyle: .subheadline), range: NSRange(location: 0, length: attrText.length));
             attrText.fixAttributes(in: NSRange(location: 0, length: attrText.length));

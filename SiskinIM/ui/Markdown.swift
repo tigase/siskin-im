@@ -51,12 +51,13 @@ class Markdown {
     static func font(withTextStyle textStyle: UIFont.TextStyle, andTraits traits: UIFontDescriptor.SymbolicTraits) -> UIFont {
         let preferredFont = UIFont.preferredFont(forTextStyle: textStyle);
         let fontDescription = preferredFont.fontDescriptor.withSymbolicTraits(traits)!;
-        let newFont = UIFont(descriptor: fontDescription, size: preferredFont.pointSize);
+        let newFont = UIFontMetrics(forTextStyle: textStyle).scaledFont(for: UIFont(descriptor: fontDescription, size: preferredFont.pointSize - 1));
         return newFont;
     }
     
     static func code(withTextStyle textStyle: UIFont.TextStyle) -> UIFont {
-        return UIFontMetrics(forTextStyle: textStyle).scaledFont(for: UIFont.monospacedSystemFont(ofSize: UIFont.labelFontSize, weight: .regular));
+        let preferredFont = UIFont.preferredFont(forTextStyle: textStyle);
+        return UIFontMetrics(forTextStyle: textStyle).scaledFont(for: UIFont(descriptor: preferredFont.fontDescriptor.withDesign(.monospaced)!, size: preferredFont.fontDescriptor.pointSize - 1));
     }
     
     static let NEW_LINE: unichar = "\n";
@@ -84,8 +85,8 @@ class Markdown {
         var wordIdx: Int? = showEmoticons ? 0 : nil;
         
         msg.removeAttribute(.paragraphStyle, range: NSRange(location: 0, length: msg.length));
-        msg.addAttribute(.font, value: UIFont.preferredFont(forTextStyle: defTextStyle), range: NSRange(location: 0, length: msg.length));
-        
+        msg.addAttribute(.font, value: font(withTextStyle: defTextStyle, andTraits: []), range: NSRange(location: 0, length: msg.length));
+                
         while idx < message.length {
             let c = message.character(at: idx);
             switch c {
