@@ -278,13 +278,8 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
 
 class ChatViewInputBar: UIView, UITextViewDelegate, NSTextStorageDelegate {
     
-    @IBInspectable public var fontSize: CGFloat = 14.0;
-    
     public let blurView: UIVisualEffectView = {
-        var blurEffect = UIBlurEffect(style: .prominent);
-        if #available(iOS 13.0, *) {
-            blurEffect = UIBlurEffect(style: .systemMaterial);
-        }
+        let blurEffect = UIBlurEffect(style: .systemMaterial);
         let view = UIVisualEffectView(effect: blurEffect);
         view.translatesAutoresizingMaskIntoConstraints = false;
         return view;
@@ -312,16 +307,14 @@ class ChatViewInputBar: UIView, UITextViewDelegate, NSTextStorageDelegate {
         layoutManager.addTextContainer(textContainer);
         
         let view = UITextView(frame: .zero, textContainer: textContainer);
-        if #available(iOS 13.0, *) {
-            view.usesStandardTextScaling = false;
-        }
         view.isOpaque = false;
         view.backgroundColor = UIColor.clear;
         view.translatesAutoresizingMaskIntoConstraints = false;
         view.layer.masksToBounds = true;
 //        view.delegate = self;
         view.isScrollEnabled = false;
-        view.font = UIFont.systemFont(ofSize: UIFont.systemFontSize);
+        view.usesStandardTextScaling = false;
+        view.font = Markdown.font(withTextStyle: .body, andTraits: []);
         if Settings.SendMessageOnReturn.getBool() {
             view.returnKeyType = .send;
         } else {
@@ -335,12 +328,8 @@ class ChatViewInputBar: UIView, UITextViewDelegate, NSTextStorageDelegate {
     public let placeholderLabel: UILabel = {
         let view = UILabel();
         view.numberOfLines = 0;
-        if #available(iOS 13.0, *) {
-            view.textColor = UIColor.label.withAlphaComponent(0.4);
-        } else {
-            view.textColor = UIColor.darkGray;
-        }
-        view.font = UIFont.systemFont(ofSize: UIFont.systemFontSize);
+        view.textColor = UIColor.secondaryLabel;
+        view.font = Markdown.font(withTextStyle: .body, andTraits: []);
         view.text = "Enter message...";
         view.backgroundColor = .clear;
         view.translatesAutoresizingMaskIntoConstraints = false;
@@ -456,14 +445,10 @@ class ChatViewInputBar: UIView, UITextViewDelegate, NSTextStorageDelegate {
         let fullRange = NSRange(0..<textStorage.length);
         textStorage.fixAttributes(in: fullRange);
         //textStorage.setAttributes([.font: self.font!], range: fullRange);
-        if #available(iOS 13.0, *) {
-            textStorage.addAttributes([.foregroundColor: UIColor.label], range: fullRange);
-        } else {
-            textStorage.addAttributes([.foregroundColor: UIColor.black], range: fullRange);
-        }
+        textStorage.addAttributes([.foregroundColor: UIColor.label], range: fullRange);
         
         if Settings.EnableMarkdownFormatting.bool() {
-            Markdown.applyStyling(attributedString: textStorage, defTextStyle: .subheadline, showEmoticons: false);
+            Markdown.applyStyling(attributedString: textStorage, defTextStyle: .body, showEmoticons: false);
         }
     }
 }
