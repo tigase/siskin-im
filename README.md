@@ -28,7 +28,7 @@ Siskin IM is easy to use and lightweight XMPP client. It has support for file an
 
 # Support
 
-When looking for support, please first search existing issues and pull-requests. If you didn't find an answer in the resources above, feel free to submit your question as [new issue on GitHub](./issues/new/choose).
+When looking for support, please first search existing issues and pull-requests. If you didn't find an answer in the resources above, feel free to submit your question as [new issue on GitHub](https://github.com/tigase/siskin-im/issues/new/choose).
 
 # Downloads
 
