@@ -279,43 +279,35 @@
                     </view>
                     <navigationItem key="navigationItem" id="5u6-YP-VV1">
                         <nil key="title"/>
-                        <barButtonItem key="backBarButtonItem" title="Back" id="Dx3-QU-3cN"/>
+                        <barButtonItem key="backBarButtonItem" title=" " id="Dx3-QU-3cN"/>
                         <view key="titleView" contentMode="scaleToFill" id="fc4-l0-VbW" customClass="ChatTitleView" customModule="Siskin" customModuleProvider="target">
                             <rect key="frame" x="12" y="2" width="390" height="40"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="750" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Jane Done" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UWL-vQ-lxc">
-                                    <rect key="frame" x="154.5" y="2" width="81.5" height="20.5"/>
-                                    <constraints>
-                                        <constraint firstAttribute="width" relation="lessThanOrEqual" constant="150" id="Aor-Uo-cTW"/>
-                                    </constraints>
-                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                    <nil key="textColor"/>
-                                    <nil key="highlightedColor"/>
-                                </label>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="750" verticalHuggingPriority="251" text="Here I'm again..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="m0n-Ls-5LF">
-                                    <rect key="frame" x="149" y="24.5" width="92" height="13.5"/>
-                                    <constraints>
-                                        <constraint firstAttribute="width" relation="lessThanOrEqual" constant="210" id="0gx-sb-tWN"/>
-                                    </constraints>
-                                    <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                    <nil key="textColor"/>
-                                    <nil key="highlightedColor"/>
-                                </label>
-                                <button opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFit" verticalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="detailDisclosure" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VeQ-bh-rcw">
-                                    <rect key="frame" x="242" y="2.5" width="20" height="20"/>
-                                    <inset key="imageEdgeInsets" minX="4" minY="4" maxX="4" maxY="4"/>
-                                </button>
+                                <stackView opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="749" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="vls-oU-dVk">
+                                    <rect key="frame" x="0.0" y="4.5" width="390" height="31.5"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Jane Done" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UWL-vQ-lxc">
+                                            <rect key="frame" x="0.0" y="0.0" width="390" height="17"/>
+                                            <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="Here I'm again..." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="m0n-Ls-5LF">
+                                            <rect key="frame" x="0.0" y="17" width="390" height="14.5"/>
+                                            <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                            <color key="textColor" systemColor="secondaryLabelColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                </stackView>
                             </subviews>
                             <constraints>
-                                <constraint firstItem="m0n-Ls-5LF" firstAttribute="top" secondItem="UWL-vQ-lxc" secondAttribute="bottom" constant="2" id="0I3-5a-q5r"/>
-                                <constraint firstItem="m0n-Ls-5LF" firstAttribute="centerX" secondItem="fc4-l0-VbW" secondAttribute="centerX" id="4bX-aO-cEh"/>
-                                <constraint firstAttribute="bottom" secondItem="m0n-Ls-5LF" secondAttribute="bottom" constant="2" id="7Fh-13-ZoT"/>
-                                <constraint firstItem="UWL-vQ-lxc" firstAttribute="centerX" secondItem="fc4-l0-VbW" secondAttribute="centerX" id="8IY-u6-app"/>
-                                <constraint firstItem="UWL-vQ-lxc" firstAttribute="top" secondItem="fc4-l0-VbW" secondAttribute="top" constant="2" id="AaV-H3-qpe"/>
-                                <constraint firstItem="VeQ-bh-rcw" firstAttribute="leading" secondItem="UWL-vQ-lxc" secondAttribute="trailing" constant="6" id="TVa-Y5-EvV"/>
-                                <constraint firstItem="VeQ-bh-rcw" firstAttribute="centerY" secondItem="UWL-vQ-lxc" secondAttribute="centerY" id="aEY-Sp-pRN"/>
-                                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="VeQ-bh-rcw" secondAttribute="trailing" constant="10" id="dKn-9A-zp4"/>
+                                <constraint firstItem="vls-oU-dVk" firstAttribute="centerY" secondItem="fc4-l0-VbW" secondAttribute="centerY" id="4gX-JJ-Zfl"/>
+                                <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="vls-oU-dVk" secondAttribute="bottom" id="6AP-p2-51c"/>
+                                <constraint firstItem="vls-oU-dVk" firstAttribute="leading" secondItem="fc4-l0-VbW" secondAttribute="leading" id="Bl1-gt-MQR"/>
+                                <constraint firstItem="vls-oU-dVk" firstAttribute="top" relation="greaterThanOrEqual" secondItem="fc4-l0-VbW" secondAttribute="top" id="euM-zD-NCW"/>
+                                <constraint firstAttribute="trailing" secondItem="vls-oU-dVk" secondAttribute="trailing" id="mR3-hH-AZz"/>
                             </constraints>
                             <connections>
                                 <outlet property="nameView" destination="UWL-vQ-lxc" id="EiA-33-ClS"/>

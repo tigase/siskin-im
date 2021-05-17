@@ -452,7 +452,6 @@ class MucTitleView: UIView {
     
     @IBOutlet var nameView: UILabel!;
     @IBOutlet var statusView: UILabel!;
-    var statusViewHeight: NSLayoutConstraint?;
     
     var name: String? {
         get {
@@ -473,26 +472,23 @@ class MucTitleView: UIView {
         }
     }
     
+    override var intrinsicContentSize: CGSize {
+        return UIView.layoutFittingExpandedSize
+    }
+    
     var state: Room.State = Room.State.not_joined {
         didSet {
             refresh();
         }
     }
     
-    override func layoutSubviews() {
-        if UIDevice.current.userInterfaceIdiom == .phone {
-            if UIDevice.current.orientation.isLandscape {
-                if statusViewHeight == nil {
-                    statusViewHeight = statusView.heightAnchor.constraint(equalToConstant: 0);
-                }
-                statusViewHeight?.isActive = true;
-            } else {
-                statusViewHeight?.isActive = false;
-                self.refresh();
-            }
+    override func didMoveToSuperview() {
+        super.didMoveToSuperview();
+        if let superview = self.superview {
+            NSLayoutConstraint.activate([ self.widthAnchor.constraint(lessThanOrEqualTo: superview.widthAnchor, multiplier: 0.6)]);
         }
     }
-
+    
     func refresh() {
         if connected {
             let statusIcon = NSTextAttachment();
@@ -511,8 +507,8 @@ class MucTitleView: UIView {
             }
             
             statusIcon.image = AvatarStatusView.getStatusImage(show);
-            let height = statusView.frame.height;
-            statusIcon.bounds = CGRect(x: 0, y: -3, width: height, height: height);
+            let height = statusView.font.pointSize;
+            statusIcon.bounds = CGRect(x: 0, y: -2, width: height, height: height);
             
             let statusText = NSMutableAttributedString(attributedString: NSAttributedString(attachment: statusIcon));
             statusText.append(NSAttributedString(string: desc));

@@ -435,11 +435,17 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
         
 }
 
-class ChatTitleView: UIView {
+class BaseConversationTitleView: UIView {
     
     @IBOutlet var nameView: UILabel!;
     @IBOutlet var statusView: UILabel!;
-    var statusViewHeight: NSLayoutConstraint?;
+    
+    override var intrinsicContentSize: CGSize {
+        return UIView.layoutFittingExpandedSize
+    }
+}
+
+class ChatTitleView: BaseConversationTitleView {
 
     var encryption: ChatEncryption? = nil {
         didSet {
@@ -471,20 +477,12 @@ class ChatTitleView: UIView {
         }
     }
     
-    override func layoutSubviews() {
-        if UIDevice.current.userInterfaceIdiom == .phone {
-            if UIDevice.current.orientation.isLandscape {
-                if statusViewHeight == nil {
-                    statusViewHeight = statusView.heightAnchor.constraint(equalToConstant: 0);
-                }
-                statusViewHeight?.isActive = true;
-            } else {
-                statusViewHeight?.isActive = false;
-                self.refresh();
-            }
+    override func didMoveToSuperview() {
+        super.didMoveToSuperview();
+        if let superview = self.superview {
+            NSLayoutConstraint.activate([ self.widthAnchor.constraint(lessThanOrEqualTo: superview.widthAnchor, multiplier: 0.6)]);
         }
     }
-    
     
     func reload(for account: BareJID, with jid: BareJID) {
         if let rosterModule: RosterModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(RosterModule.ID) {
@@ -501,8 +499,8 @@ class ChatTitleView: UIView {
             if self.connected {
                 let statusIcon = NSTextAttachment();
                 statusIcon.image = AvatarStatusView.getStatusImage(self.status?.show);
-                let height = self.statusView.frame.height;
-                statusIcon.bounds = CGRect(x: 0, y: -3, width: height, height: height);
+                let height = self.statusView.font.pointSize;
+                statusIcon.bounds = CGRect(x: 0, y: -2, width: height, height: height);
                 var desc = self.status?.status;
                 if desc == nil {
                     let show = self.status?.show;
