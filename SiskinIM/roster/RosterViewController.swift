@@ -24,8 +24,6 @@ import UIKit
 import TigaseSwift
 
 class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDelegate {
-
-    var availabilityFilterSelector: UISegmentedControl?;
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,10 +40,6 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
         }
 
         navigationItem.leftBarButtonItem = self.editButtonItem
-        availabilityFilterSelector = UISegmentedControl(items: ["All", "Available"]);
-        navigationItem.titleView = availabilityFilterSelector;
-        availabilityFilterSelector?.selectedSegmentIndex = Settings.RosterAvailableOnly.getBool() ? 1 : 0;
-        availabilityFilterSelector?.addTarget(self, action: #selector(RosterViewController.availabilityFilterChanged), for: .valueChanged);
         
         setColors();
         updateNavBarColors();
@@ -88,21 +82,14 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
     func updateNavBarColors() {
         if #available(iOS 13.0, *) {
             if self.traitCollection.userInterfaceStyle == .dark {
-                availabilityFilterSelector?.setTitleTextAttributes([NSAttributedString.Key.foregroundColor : UIColor.white], for: .selected);
-                availabilityFilterSelector?.setTitleTextAttributes([NSAttributedString.Key.foregroundColor : UIColor.white], for: .normal);
                 searchController.searchBar.setScopeBarButtonTitleTextAttributes([NSAttributedString.Key.foregroundColor : UIColor.white], for: .selected)
                 searchController.searchBar.setScopeBarButtonTitleTextAttributes([NSAttributedString.Key.foregroundColor : UIColor.white], for: .normal);
             } else {
-                availabilityFilterSelector?.setTitleTextAttributes([NSAttributedString.Key.foregroundColor : UIColor(named: "chatslistBackground")!], for: .selected);
-                availabilityFilterSelector?.setTitleTextAttributes([NSAttributedString.Key.foregroundColor : UIColor.white], for: .normal);
                 searchController.searchBar.setScopeBarButtonTitleTextAttributes([NSAttributedString.Key.foregroundColor : UIColor(named: "chatslistBackground")!], for: .selected)
                 searchController.searchBar.setScopeBarButtonTitleTextAttributes([NSAttributedString.Key.foregroundColor : UIColor.white], for: .normal);
             }
             searchController.searchBar.searchTextField.textColor = UIColor.white;
             searchController.searchBar.searchTextField.backgroundColor = (self.traitCollection.userInterfaceStyle != .dark ? UIColor.black : UIColor.white).withAlphaComponent(0.2);
-            DispatchQueue.main.async {
-                self.availabilityFilterSelector?.selectedSegmentIndex = Settings.RosterAvailableOnly.getBool() ? 1 : 0;
-            }
         }
     }
     
@@ -111,7 +98,7 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
             return;
         }
         DispatchQueue.main.async {
-            self.initializeRosterProvider(availableOnly: (self.availabilityFilterSelector?.selectedSegmentIndex ?? 0) == 1, sortOrder: self.searchController.searchBar.selectedScopeButtonIndex == 0 ? .alphabetical : .availability);
+            self.initializeRosterProvider(availableOnly: false, sortOrder: self.searchController.searchBar.selectedScopeButtonIndex == 0 ? .alphabetical : .availability);
             self.tableView.reloadData();
         }
     }
