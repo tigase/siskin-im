@@ -28,4 +28,5 @@ extension OSLog {
     static let chatStore = OSLog(subsystem: subsystem, category: "ChatStore");
     static let chatHistorySync = OSLog(subsystem: subsystem, category: "mam-sync");
     static let jingle = OSLog(subsystem: subsystem, category: "jingle");
+    static let avatar = OSLog(subsystem: subsystem, category: "avatar");
 }

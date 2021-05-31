@@ -71,15 +71,26 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
                 let accountJid = BareJID(userInfo["account"] as! String);
                 let alert = CertificateErrorAlert.create(domain: accountJid.domain, certName: userInfo["cert-name"] as! String, certHash: userInfo["cert-hash-sha1"] as! String, issuerName: userInfo["issuer-name"] as? String, issuerHash: userInfo["issuer-hash-sha1"] as? String, onAccept: {
                     print("accepted certificate!");
-                    guard let account = AccountManager.getAccount(for: accountJid) else {
+                    guard var account = AccountManager.getAccount(for: accountJid) else {
                         return;
                     }
-                    var certInfo = account.serverCertificate;
-                    certInfo?["accepted"] = true as NSObject;
+                    let certInfo = account.serverCertificate;
+                    certInfo?.accepted = true;
                     account.serverCertificate = certInfo;
                     account.active = true;
                     AccountSettings.LastError(accountJid).set(string: nil);
-                    AccountManager.save(account: account);
+                    do {
+                        try AccountManager.save(account: account);
+                    } catch {
+                        let alert = UIAlertController(title: "Error", message: "It was not possible to save account details: \(error) Please try again later.", preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
+                        var topController = UIApplication.shared.keyWindow?.rootViewController;
+                        while (topController?.presentedViewController != nil) {
+                            topController = topController?.presentedViewController;
+                        }
+                        
+                        topController?.present(alert, animated: true, completion: nil);
+                    }
                 }, onDeny: nil);
                 
                 var topController = UIApplication.shared.keyWindow?.rootViewController;
@@ -125,15 +136,16 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         }
         let alert = UIAlertController(title: "Subscription request", message: "Received presence subscription request from\n\(senderName)\non account \(accountJid.stringValue)", preferredStyle: .alert);
         alert.addAction(UIAlertAction(title: "Accept", style: .default, handler: {(action) in
-            guard let client = XmppService.instance.getClient(forJid: accountJid), let presenceModule: PresenceModule = client.context.modulesManager.getModule(PresenceModule.ID) else {
+            guard let client = XmppService.instance.getClient(for: accountJid) else {
                 return;
             }
+            let presenceModule = client.module(.presence);
             presenceModule.subscribed(by: JID(senderJid));
-            let subscription = RosterModule.getRosterStore(client.context.sessionObject).get(for: JID(senderJid))?.subscription ?? RosterItem.Subscription.none;
+            let subscription = DBRosterStore.instance.item(for: client.context, jid: JID(senderJid))?.subscription ?? .none;
             guard !subscription.isTo else {
                 return;
             }
-            if (Settings.AutoSubscribeOnAcceptedSubscriptionRequest.getBool()) {
+            if Settings.autoSubscribeOnAcceptedSubscriptionRequest {
                 presenceModule.subscribe(to: JID(senderJid));
             } else {
                 let alert2 = UIAlertController(title: "Subscribe to " + senderName, message: "Do you wish to subscribe to \n\(senderName)\non account \(accountJid.stringValue)", preferredStyle: .alert);
@@ -151,10 +163,10 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
             }
         }));
         alert.addAction(UIAlertAction(title: "Reject", style: .destructive, handler: {(action) in
-            guard let client = XmppService.instance.getClient(forJid: accountJid), let presenceModule: PresenceModule = client.context.modulesManager.getModule(PresenceModule.ID) else {
+            guard let client = XmppService.instance.getClient(for: accountJid) else {
                 return;
             }
-            presenceModule.unsubscribed(by: JID(senderJid));
+            client.module(.presence).unsubscribed(by: JID(senderJid));
         }));
         
         var topController = UIApplication.shared.keyWindow?.rootViewController;
@@ -243,7 +255,7 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         }
         
         if topController != nil {
-            guard let chat = DBChatStore.instance.getChat(for: account, with: jid), let controller = viewController(for: chat) else {
+            guard let conversation = DBChatStore.instance.conversation(for: account, with: jid), let controller = viewController(for: conversation) else {
                 completionHandler();
                 return;
             }
@@ -279,13 +291,13 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         }
     }
     
-    private func viewController(for item: DBChatProtocol) -> UINavigationController? {
+    private func viewController(for item: Conversation) -> UINavigationController? {
         switch item {
-        case is DBRoom:
+        case is Room:
             return UIStoryboard(name: "Groupchat", bundle: nil).instantiateViewController(withIdentifier: "RoomViewNavigationController") as? UINavigationController;
-        case is DBChat:
+        case is Chat:
             return UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ChatViewNavigationController") as? UINavigationController;
-        case is DBChannel:
+        case is Channel:
             return UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelViewNavigationController") as? UINavigationController;
         default:
             return nil;

@@ -22,33 +22,145 @@
 
 import UIKit
 import TigaseSwift
+import Combine
 
-open class AvatarManager {
+struct AvatarWeakRef {
+    weak var avatar: Avatar?;
+}
+
+public class Avatar {
+
+    private enum AvatarResult: Equatable {
+        case notReady
+        case ready(UIImage?)
+    }
     
-    public static let AVATAR_CHANGED = Notification.Name("messengerAvatarChanged");
-    public static let AVATAR_FOR_HASH_CHANGED = Notification.Name("avatarForHashChanged")
-    public static let instance = AvatarManager(store: AvatarStore());
+    private let key: Key;
+
+    public var hash: String? {
+        didSet {
+            if let hash = hash {
+                AvatarManager.instance.avatar(withHash: hash, completionHandler: { result in
+                    guard hash == self.hash else {
+                        return;
+                    }
+                    switch result {
+                    case .success(let avatar):
+                        self.avatarSubject.send(.ready(avatar));
+                    case .failure(_):
+                        self.avatarSubject.send(.ready(nil));
+                    }
+
+                });
+            } else {
+                self.avatarSubject.send(.ready(nil));
+            }
+        }
+    }
     
-    var defaultAvatar: UIImage;
-    var defaultGroupchatAvatar: UIImage;
-    fileprivate let store: AvatarStore;
+    private let avatarSubject = CurrentValueSubject<AvatarResult,Never>(.notReady);
+    public let avatarPublisher: AnyPublisher<UIImage?,Never>;
+    
+    init(key: Key) {
+        self.key = key;
+        self.avatarPublisher = avatarSubject.filter({ .notReady != $0 }).map({
+            switch $0 {
+            case .notReady:
+                return nil;
+            case .ready(let image):
+                return image;
+            }
+        }).removeDuplicates().eraseToAnyPublisher();
+    }
+
+    deinit {
+        AvatarManager.instance.releasePublisher(for: key);
+    }
+    
+    struct Key: Hashable {
+        let account: BareJID;
+        let jid: BareJID;
+        let mucNickname: String?;
+    }
+
+}
+
+class AvatarManager {
+
+    public static let AVATAR_CHANGED = Notification.Name("avatarChanged");
+    public static let AVATAR_FOR_HASH_CHANGED = Notification.Name("avatarForHashChanged");
+    public static let instance = AvatarManager();
+
+    fileprivate let store = AvatarStore();
+    public var defaultAvatar: UIImage {
+        return UIImage(named: "defaultAvatar")!;
+    }
+    public var defaultGroupchatAvatar: UIImage {
+        return UIImage(named: "defaultGroupchatAvatar")!;
+    }
+    
     fileprivate var dispatcher = QueueDispatcher(label: "avatar_manager", attributes: .concurrent);
-    private var cache: [BareJID: AccountAvatarHashes] = [:];
 
-    public init(store: AvatarStore) {
-        defaultAvatar = UIImage(named: "defaultAvatar")!;
-        defaultGroupchatAvatar = UIImage(named: "defaultGroupchatAvatar")!;
-        self.store = store;
-        NotificationCenter.default.addObserver(self, selector: #selector(AvatarManager.vcardUpdated), name: DBVCardsCache.VCARD_UPDATED, object: nil);
+    public init() {
+        NotificationCenter.default.addObserver(self, selector: #selector(vcardUpdated), name: DBVCardStore.VCARD_UPDATED, object: nil);
+    }
+
+    private var avatars: [Avatar.Key: AvatarWeakRef] = [:];
+    open func avatarPublisher(for key: Avatar.Key) -> Avatar {
+        return dispatcher.sync(flags: .barrier) {
+            guard let avatar = avatars[key]?.avatar else {
+                let avatar = Avatar(key: key);
+                DispatchQueue.global(qos: .userInitiated).async {
+                    avatar.hash = self.avatarHash(for: key.jid, on: key.account, withNickname: key.mucNickname);
+                }
+                avatars[key] = AvatarWeakRef(avatar: avatar);
+                return avatar;
+            }
+            return avatar;
+        }
+    }
+    
+    open func existingAvatarPublisher(for key: Avatar.Key) -> Avatar? {
+        return dispatcher.sync {
+            return avatars[key]?.avatar;
+        }
+    }
+    
+    open func releasePublisher(for key: Avatar.Key) {
+        dispatcher.async(flags: .barrier) {
+            self.avatars.removeValue(forKey: key);
+        }
+    }
+    
+    private func avatarHash(for jid: BareJID, on account: BareJID, withNickname nickname: String?) -> String? {
+        if let nickname = nickname {
+            guard let room = DBChatStore.instance.conversation(for: account, with: jid) as? Room else {
+                return nil;
+            }
+            
+            guard let occupant = room.occupant(nickname: nickname) else {
+                return nil;
+            }
+            
+            guard let hash = occupant.presence.vcardTempPhoto else {
+                guard let occuapntJid = occupant.jid?.bareJid else {
+                    return nil;
+                }
+                
+                return store.avatarHash(for: occuapntJid, on: account).first?.hash;
+            }
+            
+            return hash;
+        } else {
+            return store.avatarHash(for: jid, on: account).first?.hash;//avatars(on: account).avatarHash(for: jid);
+        }
     }
     
     open func avatar(for jid: BareJID, on account: BareJID) -> UIImage? {
-        return dispatcher.sync(flags: .barrier) {
-            if let hash = self.avatars(on: account).avatarHash(for: jid) {
-                return store.avatar(for: hash);
-            }
+        guard let hash = store.avatarHash(for: jid, on: account).first?.hash else {
             return nil;
         }
+        return store.avatar(for: hash);
     }
     
     open func hasAvatar(withHash hash: String) -> Bool {
@@ -59,6 +171,10 @@ open class AvatarManager {
         return store.avatar(for: hash);
     }
     
+    open func avatar(withHash hash: String, completionHandler: @escaping (Result<UIImage,ErrorCondition>)->Void) {
+        store.avatar(for: hash, completionHandler: completionHandler);
+    }
+    
     open func storeAvatar(data: Data) -> String {
         let hash = Digest.sha1.digest(toHex: data)!;
         self.store.storeAvatar(data: data, for: hash);
@@ -67,14 +183,28 @@ open class AvatarManager {
     }
     
     open func updateAvatar(hash: String, forType type: AvatarType, forJid jid: BareJID, on account: BareJID) {
-        dispatcher.async(flags: .barrier) {
-            let oldHash = self.store.avatarHash(for: jid, on: account)[type];
-            if oldHash == nil || oldHash! != hash {
-                self.store.updateAvatar(hash: hash, type: type, for: jid, on: account, completionHandler: {
-                    self.dispatcher.async(flags: .barrier) {
-                        self.avatars(on: account).invalidateAvatarHash(for: jid);
-                    }
-                });
+        self.store.updateAvatarHash(for: jid, on: account, hash: .init(type: type, hash: hash), completionHandler: { result in
+            switch result {
+            case .notChanged:
+                break;
+            case .noAvatar:
+                self.avatarUpdated(hash: nil, for: jid, on: account, withNickname: nil);
+            case .newAvatar(let hash):
+                self.avatarUpdated(hash: hash, for: jid, on: account, withNickname: nil);
+            }
+        })
+    }
+    
+    public func avatarUpdated(hash: String?, for jid: BareJID, on account: BareJID, withNickname nickname: String?) {
+        if let avatar = self.existingAvatarPublisher(for: .init(account: account, jid: jid, mucNickname: nickname)) {
+            if hash == nil, let nickname = nickname {
+                if let room = DBChatStore.instance.conversation(for: account, with: jid) as? Room, let occupantJid = room.occupant(nickname: nickname)?.jid?.bareJid {
+                    avatar.hash = store.avatarHash(for: occupantJid, on: account).first?.hash;
+                } else {
+                    avatar.hash = hash;
+                }
+            } else {
+                avatar.hash = hash;
             }
         }
     }
@@ -85,15 +215,16 @@ open class AvatarManager {
         } else {
             switch type {
             case .vcardTemp:
-                XmppService.instance.refreshVCard(account: account, for: jid, onSuccess: nil, onError: nil);
+                VCardManager.instance.refreshVCard(for: jid, on: account, completionHandler: nil);
             case .pepUserAvatar:
                 self.retrievePepUserAvatar(for: jid, on: account, hash: hash);
             }
         }
     }
+
     
     @objc func vcardUpdated(_ notification: Notification) {
-        guard let vcardItem = notification.object as? DBVCardsCache.VCardItem else {
+        guard let vcardItem = notification.object as? DBVCardStore.VCardItem else {
             return;
         }
 
@@ -112,32 +243,21 @@ open class AvatarManager {
             }
         }
     }
-    
+
     func retrievePepUserAvatar(for jid: BareJID, on account: BareJID, hash: String) {
-        guard let pepModule: PEPUserAvatarModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PEPUserAvatarModule.ID) else {
+        guard let pepModule = XmppService.instance.getClient(for: account)?.module(.pepUserAvatar) else {
             return;
         }
 
-        pepModule.retrieveAvatar(from: jid, itemId: hash, onSuccess: { (jid, hash, photoData) in
-            guard let data = photoData else {
-                return;
+        pepModule.retrieveAvatar(from: jid, itemId: hash, completionHandler: { result in
+            switch result {
+            case .success((let hash, let data)):
+                self.store.storeAvatar(data: data, for: hash);
+                self.updateAvatar(hash: hash, forType: .pepUserAvatar, forJid: jid, on: account);
+            case .failure(let error):
+                print("could not retrieve avatar, got error: \(error)");
             }
-            self.store.storeAvatar(data: data, for: hash);
-            self.updateAvatar(hash: hash, forType: .pepUserAvatar, forJid: jid, on: account);
-        }, onError: nil);
-    }
-    
-    func clearCache() {
-        store.clearCache();
-    }
-    
-    private func avatars(on account: BareJID) -> AvatarManager.AccountAvatarHashes {
-        if let avatars = self.cache[account] {
-            return avatars;
-        }
-        let avatars = AccountAvatarHashes(store: store, account: account);
-        self.cache[account] = avatars;
-        return avatars;
+        });
     }
 
     static func fetchData(photo: VCard.Photo, completionHandler: @escaping (Data?)->Void) {
@@ -160,45 +280,14 @@ open class AvatarManager {
             completionHandler(nil);
         }
     }
-
-    private class AccountAvatarHashes {
-
-        private static let AVATAR_TYPES_ORDER: [AvatarType] = [.pepUserAvatar, .vcardTemp];
-        
-        private var avatarHashes: [BareJID: Optional<String>] = [:];
-
-        private let store: AvatarStore;
-        let account: BareJID;
-        
-        init(store: AvatarStore, account: BareJID) {
-            self.store = store;
-            self.account = account;
-        }
-        
-        func avatarHash(for jid: BareJID) -> String? {
-            if let hash = avatarHashes[jid] {
-                return hash;
-            }
-            
-            let hashes: [AvatarType:String] = store.avatarHash(for: jid, on: account);
-        
-            for type in AccountAvatarHashes.AVATAR_TYPES_ORDER {
-                if let hash = hashes[type] {
-                    if store.hasAvatarFor(hash: hash) {
-                        avatarHashes[jid] = .some(hash);
-                        return hash;
-                    }
-                }
-            }
-            avatarHashes[jid] = .none;
-            return nil;
-        }
-        
-        func invalidateAvatarHash(for jid: BareJID) {
-            avatarHashes.removeValue(forKey: jid);
-            NotificationCenter.default.post(name: AvatarManager.AVATAR_CHANGED, object: self, userInfo: ["account": account, "jid": jid]);
-        }
-        
+    
+    public func clearCache() {
+        store.clearCache();
     }
 
+}
+
+enum AvatarResult {
+    case some(AvatarType, String)
+    case none
 }

@@ -38,7 +38,7 @@ class ContactViewController: UITableViewController {
             return chat?.options.encryption;
         }
     }
-    var chat: DBChat?;
+    var chat: Chat?;
     var omemoIdentities: [Identity] = [];
     
     var addresses: [VCard.Address] {

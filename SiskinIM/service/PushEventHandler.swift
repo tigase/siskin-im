@@ -21,9 +21,12 @@
 
 import Foundation
 import TigaseSwift
+import Combine
 
-open class PushEventHandler: XmppServiceEventHandler {
+open class PushEventHandler: XmppServiceExtension {
     
+    static let instance = PushEventHandler();
+
     public static func unregisterDevice(from pushServiceJid: BareJID, account: BareJID, deviceId: String, completionHandler: @escaping (Result<Void,ErrorCondition>)->Void) {
         guard let url = URL(string: "https://\(pushServiceJid.stringValue)/unregister-device/\(pushServiceJid.stringValue)") else {
             completionHandler(.failure(.service_unavailable));
@@ -56,12 +59,20 @@ open class PushEventHandler: XmppServiceEventHandler {
         task.resume();
     }
     
-    public static let instance = PushEventHandler();
-
     var deviceId: String?;
     var pushkitDeviceId: String?;
     
     let events: [Event] = [DiscoveryModule.AccountFeaturesReceivedEvent.TYPE];
+    
+    public func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
+        client.module(.disco).$accountDiscoResult.sink(receiveValue: { [weak client, weak self] features in
+            guard let client = client, client.state == .connected() else {
+                return;
+            }
+            self?.updatePushRegistration(for: client, features: features.features);
+        }).store(in: &cancellables);
+    }
+
     
     init() {
         NotificationCenter.default.addObserver(self, selector: #selector(chatDestroyed(_:)), name: DBChatStore.CHAT_CLOSED, object: nil);
@@ -77,10 +88,19 @@ open class PushEventHandler: XmppServiceEventHandler {
     }
     
     func updatePushRegistration(for account: BareJID, features: [String]) {
-        guard let client = XmppService.instance.getClient(for: account), let pushModule: SiskinPushNotificationsModule = client.modulesManager.getModule(SiskinPushNotificationsModule.ID), let deviceId = self.deviceId else {
+        guard let client = XmppService.instance.getClient(for: account) else {
             return;
         }
         
+        self.updatePushRegistration(for: client, features: features);
+    }
+    
+    func updatePushRegistration(for client: XMPPClient, features: [String]) {
+        guard let deviceId = self.deviceId else {
+            return;
+        }
+        
+        let pushModule = client.module(.push) as! SiskinPushNotificationsModule;
         let hasPush = features.contains(SiskinPushNotificationsModule.PUSH_NOTIFICATIONS_XMLNS);
         let hasPushJingle = features.contains(TigasePushNotificationsModule.Jingle.XMLNS);
         
@@ -101,7 +121,7 @@ open class PushEventHandler: XmppServiceEventHandler {
                         }
                     });
                     return;
-                } else if AccountSettings.pushHash(account).int() == 0 {
+                } else if AccountSettings.pushHash(client.userBareJid).int() == 0 {
                     pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
                         print("reenabling device:", result);
                     })

@@ -22,6 +22,7 @@
 import UIKit
 import TigaseSwift
 
+// FIXME: needs to be reattached!!
 class NewFeaturesDetector: XmppServiceEventHandler {
     
     let events: [Event] = [DiscoveryModule.AccountFeaturesReceivedEvent.TYPE];

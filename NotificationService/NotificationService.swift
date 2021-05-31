@@ -136,12 +136,19 @@ class NotificationService: UNNotificationServiceExtension {
 
 }
 
-extension DBConnection {
-    static func main<T>(execute: @escaping (DBConnection) throws ->T) throws -> T {
-        let dbURL = mainDbURL();
-        let connection = try DBConnection.init(dbPath: dbURL.path);
-        return try execute(connection);
+import TigaseSQLite3
+
+extension Database {
+    
+    private static var mainReaderInstance: DatabaseReader?;
+    
+    static func mainReader() throws -> DatabaseReader {
+        if mainReaderInstance == nil {
+            mainReaderInstance = try Database(path: Database.mainDatabaseUrl().path, flags: SQLITE_OPEN_READONLY |  SQLITE_OPEN_NOMUTEX);
+        }
+        return mainReaderInstance!;
     }
+    
 }
 
 class ExtensionNotificationManagerProvider: NotificationManagerProvider {
@@ -151,11 +158,8 @@ class ExtensionNotificationManagerProvider: NotificationManagerProvider {
     static let GET_UNREAD_CHATS = "select c.account, c.jid from chats c inner join chat_history ch where ch.account = c.account and ch.jid = c.jid and ch.state in (2,6,7) group by c.account, c.jid";
     
     func getChatNameAndType(for account: BareJID, with jid: BareJID, completionHandler: @escaping (String?, Payload.Kind) -> Void) {
-        let tmp = try? DBConnection.main(execute: { conn in
-            return try conn.prepareStatement(ExtensionNotificationManagerProvider.GET_NAME_QUERY).findFirst(["account": account, "jid": jid] as [String: Any?], map: { (cursor) -> (String?, Int)? in
-                    return (cursor["name"], cursor["type"]!);
-                });
-        });
+        let tmp = try? Database.mainReader().select(ExtensionNotificationManagerProvider.GET_NAME_QUERY, cached: false, params: ["account": account, "jid": jid]).mapFirst({ return ($0.string(for: "name"), $0.int(for: "type")!) })
+
         completionHandler(tmp?.0, tmp?.1 == 0 ? .chat : .groupchat);
     }
     
@@ -163,13 +167,13 @@ class ExtensionNotificationManagerProvider: NotificationManagerProvider {
         NotificationManager.unreadChatsThreadIds { (result) in
             var unreadChats = result;
 
-            try? DBConnection.main(execute: { conn in
-                try conn.prepareStatement(ExtensionNotificationManagerProvider.GET_UNREAD_CHATS).query(forEach: { cursor in
-                    if let account: BareJID = cursor["account"], let jid: BareJID = cursor["jid"] {
-                        unreadChats.insert("account=\(account.stringValue)|sender=\(jid.stringValue)");
-                    }
-                })
-            });
+            try? Database.mainReader().select(ExtensionNotificationManagerProvider.GET_UNREAD_CHATS, cached: false, params: []).mapAll({ cursor in
+                if let account = cursor.bareJid(for: "account"), let jid = cursor.bareJid(for: "jid") {
+                    return "account=\(account.stringValue)|sender=\(jid.stringValue)"
+                }
+                return nil;
+            }).forEach({ unreadChats.insert($0) });
+            
 
             if let threadId = withThreadId {
                 unreadChats.insert(threadId);

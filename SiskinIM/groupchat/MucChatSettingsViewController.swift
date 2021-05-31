@@ -21,6 +21,7 @@
 
 import UIKit
 import TigaseSwift
+import Combine
 
 class MucChatSettingsViewController: UITableViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
@@ -33,27 +34,38 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         
     fileprivate var activityIndicator: UIActivityIndicatorView?;
     
-    var account: BareJID!;
-    var room: DBRoom!;
+    var room: Room!;
     
     private var canEditVCard: Bool = false;
     
+    private var cancellables: Set<AnyCancellable> = [];
+    
     override func viewWillAppear(_ animated: Bool) {
-        roomNameField.text = room.name ?? "";
         roomAvatarView.layer.cornerRadius = roomAvatarView.frame.width / 2;
         roomAvatarView.layer.masksToBounds = true;
 //        roomAvatarView.widthAnchor.constraint(equalTo: roomAvatarView.heightAnchor).isActive = true;
-        roomAvatarView.set(name: nil, avatar: self.squared(image: AvatarManager.instance.avatar(for: room.roomJid, on: account)), orDefault: AvatarManager.instance.defaultGroupchatAvatar);
-        roomSubjectField.text = room.subject ?? "";
+        room.optionsPublisher.compactMap({ $0.name }).receive(on: DispatchQueue.main).assign(to: \.text, on: roomNameField).store(in: &cancellables);
+        room.avatarPublisher.map({ $0 ?? AvatarManager.instance.defaultGroupchatAvatar }).receive(on: DispatchQueue.main).assign(to: \.avatar, on: roomAvatarView).store(in: &cancellables);
+        room.descriptionPublisher.receive(on: DispatchQueue.main).assign(to: \.text, on: roomSubjectField).store(in: &cancellables);
+        room.$affiliation.map({ $0 == .admin || $0 == .owner }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
+            guard let that = self else {
+                return;
+            }
+            that.navigationItem.rightBarButtonItem = value ? UIBarButtonItem(barButtonSystemItem: .edit, target: that, action: #selector(MucChatSettingsViewController.editClicked(_:))) : nil;
+        }).store(in: &cancellables);
         pushNotificationsSwitch.isEnabled = false;
         pushNotificationsSwitch.isOn = false;
         if let encryption = room.options.encryption {
             encryptionField.text = encryption == .none ? "None" : "OMEMO";
-        } else if room.isOMEMOCapable {
-            encryptionField.text = (ChatEncryption(rawValue: Settings.messageEncryption.getString() ?? "") ?? ChatEncryption.none) == .none ? "None" : "OMEMO";
+        } else if room.isOMEMOSupported {
+            encryptionField.text = Settings.messageEncryption == .none ? "None" : "OMEMO";
         }
         refresh();
-        refreshPermissions();
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        cancellables.removeAll();
+        super.viewDidDisappear(animated);
     }
     
     @objc func dismissView() {
@@ -63,47 +75,47 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
     func refresh() {
         notificationsField.text = NotificationItem(type: room.options.notifications).description;
         
-        guard let client = XmppService.instance.getClient(forJid: account), let discoveryModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID), let vcardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID) else {
+        guard room.state == .joined, let context = room.context else {
             return;
         }
         showIndicator();
         
         let dispatchGroup = DispatchGroup();
         dispatchGroup.enter();
-        discoveryModule.getInfo(for: room.jid, onInfoReceived: { (node, identities, features) in
+        context.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
             DispatchQueue.main.async {
-                let pushModule: SiskinPushNotificationsModule? = client.modulesManager.getModule(SiskinPushNotificationsModule.ID);
-                self.pushNotificationsSwitch.isEnabled = (pushModule?.isEnabled ?? false) && features.contains("jabber:iq:register");
-                if self.pushNotificationsSwitch.isEnabled {
-                    self.room.checkTigasePushNotificationRegistrationStatus(completionHandler: { (result) in
-                        switch result {
-                        case .failure(_):
-                            DispatchQueue.main.async {
-                                self.pushNotificationsSwitch.isEnabled = false;
-                                dispatchGroup.leave();
+                switch result {
+                case .success(let info):
+                    self.pushNotificationsSwitch.isEnabled = (context.module(.push) as! SiskinPushNotificationsModule).isEnabled && info.features.contains("jabber:iq:register");
+                    if self.pushNotificationsSwitch.isEnabled {
+                        self.room.checkTigasePushNotificationRegistrationStatus(completionHandler: { (result) in
+                            switch result {
+                            case .failure(_):
+                                DispatchQueue.main.async {
+                                    self.pushNotificationsSwitch.isEnabled = false;
+                                    dispatchGroup.leave();
+                                }
+                            case .success(let value):
+                                DispatchQueue.main.async {
+                                    self.pushNotificationsSwitch.isOn = value;
+                                    dispatchGroup.leave();
+                                }
                             }
-                        case .success(let value):
-                            DispatchQueue.main.async {
-                                self.pushNotificationsSwitch.isOn = value;
-                                dispatchGroup.leave();
-                            }
-                        }
-                    })
-                } else {
+                        })
+                    } else {
+                        dispatchGroup.leave();
+                    }
+                case .failure(let error):
+                    self.pushNotificationsSwitch.isEnabled = false;
                     dispatchGroup.leave();
                 }
             }
-        }, onError: { error in
-            DispatchQueue.main.async {
-                self.pushNotificationsSwitch.isEnabled = false;
-                dispatchGroup.leave();
-            }
-        })
+        });
         dispatchGroup.enter();
-        vcardTempModule.retrieveVCard(from: room.jid, completionHandler: { (result) in
+        context.module(.vcardTemp).retrieveVCard(from: JID(room.jid), completionHandler: { (result) in
             switch result {
             case .success(let vcard):
-                XmppService.instance.dbVCardsCache.updateVCard(for: self.room.roomJid, on: self.account, vcard: vcard);
+                DBVCardStore.instance.updateVCard(for: self.room.roomJid, on: self.room.account, vcard: vcard);
                 DispatchQueue.main.async {
                     self.canEditVCard = true;
                     dispatchGroup.leave();
@@ -117,17 +129,6 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         })
         
         dispatchGroup.notify(queue: DispatchQueue.main, execute: self.hideIndicator);
-    }
-    
-    func refreshPermissions() {
-        let presence = self.room.presences[self.room.nickname];
-        let currentAffiliation = presence?.affiliation ?? .none;
-        
-        if currentAffiliation == .admin || currentAffiliation == .owner {
-            self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(editClicked(_:)));
-        } else {
-            self.navigationItem.rightBarButtonItem = nil;
-        }
     }
     
     @IBAction func pushNotificationSwitchChanged(_ sender: UISwitch) {
@@ -163,7 +164,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if indexPath.section == 2 && indexPath.row == 1 && !room.isOMEMOCapable {
+        if indexPath.section == 2 && indexPath.row == 1 && !room.isOMEMOSupported {
             return 0;
         }
         return super.tableView(tableView, heightForRowAt: indexPath);
@@ -182,17 +183,16 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
                 controller.onSelectionChange = { item in
                     self.notificationsField.text = item.description;
                     
-                    let account = self.room.account;
-                    self.room.modifyOptions({ (options) in
+                    self.room.updateOptions({ (options) in
                         options.notifications = (item as! NotificationItem).type;
                     }, completionHandler: {
-                        if let pushModule: SiskinPushNotificationsModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), let pushSettings = pushModule.pushSettings {
+                        if let pushModule = (self.room.context?.module(.push) as? SiskinPushNotificationsModule), let pushSettings = pushModule.pushSettings {
                             pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
                                 switch result {
                                 case .success(_):
                                     break;
                                 case .failure(_):
-                                    AccountSettings.pushHash(account).set(int: 0);
+                                    AccountSettings.pushHash(self.room.account).set(int: 0);
                                 }
                             });
                         }
@@ -209,7 +209,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
                 controller.onSelectionChange = { item in
                     self.encryptionField.text = item.description;
                     
-                    self.room.modifyOptions({ (options) in
+                    self.room.updateOptions({ (options) in
                         options.encryption = (item as! EncryptionItem).type;
                     }, completionHandler: nil);
                 }
@@ -221,8 +221,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "chatShowAttachments" {
             if let attachmentsController = segue.destination as? ChatAttachmentsController {
-                attachmentsController.account = self.account;
-                attachmentsController.jid = self.room.roomJid;
+                attachmentsController.conversation = self.room;
             }
         }
     }
@@ -293,7 +292,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         
         picker.dismiss(animated: true, completion: nil);
 
-        guard let vcardTempModule: VCardTempModule = XmppService.instance.getClient(for: room.account)?.modulesManager.getModule(VCardTempModule.ID) else {
+        guard let vcardTempModule = room.context?.module(.vcardTemp) else {
             hideIndicator();
             return;
         }
@@ -310,7 +309,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
             case .failure(let errorCondition):
                 DispatchQueue.main.async {
                     self.hideIndicator();
-                    self.showError(title: "Error", message: "Could not set group chat avatar. The server responded with an error: \(errorCondition.rawValue)");
+                    self.showError(title: "Error", message: "Could not set group chat avatar. The server responded with an error: \(errorCondition)");
                 }
             }
         });
@@ -324,29 +323,30 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         let nameField = controller.textFields![0];
         controller.addAction(UIAlertAction(title: "Rename", style: .default, handler: { (action) in
             let newName = nameField.text;
-            guard let mucModule: MucModule = XmppService.instance.getClient(for: self.room.account)?.modulesManager.getModule(MucModule.ID) else {
+            guard let mucModule = self.room.context?.module(.muc) else {
                 return;
             }
             self.showIndicator();
-            mucModule.getRoomConfiguration(roomJid: self.room.jid, onSuccess: { (form) in
-                (form.getField(named: "muc#roomconfig_roomname") as? TextSingleField)?.value = newName;
-                mucModule.setRoomConfiguration(roomJid: self.room.jid, configuration: form, onSuccess: {
-                    DispatchQueue.main.async {
-                        self.roomNameField.text = nameField.text;
-                        self.hideIndicator();
-                    }
-                }, onError: { errorCondition in
-                    DispatchQueue.main.async {
-                        self.hideIndicator();
-                        self.showError(title: "Error", message: "Could not rename group chat. The server responded with an error: \((errorCondition ?? ErrorCondition.undefined_condition).rawValue)")
-                    }
-                });
-            }, onError: { errorCondition in
-                DispatchQueue.main.async {
+            mucModule.getRoomConfiguration(roomJid: JID(self.room.jid), completionHandler: { result in
+                switch result {
+                case .success(let form):
+                    (form.getField(named: "muc#roomconfig_roomname") as? TextSingleField)?.value = newName;
+                    mucModule.setRoomConfiguration(roomJid: JID(self.room.jid), configuration: form, completionHandler: { result in
+                        DispatchQueue.main.async {
+                            self.hideIndicator();
+                            switch result {
+                            case .success(_):
+                                self.roomNameField.text = nameField.text;
+                            case .failure(let error):
+                                self.showError(title: "Error", message: "Could not rename group chat. The server responded with an error: \(error)")
+                            }
+                        }
+                    });
+                case .failure(let error):
                     self.hideIndicator();
-                    self.showError(title: "Error", message: "Could not rename group chat. The server responded with an error: \((errorCondition ?? ErrorCondition.undefined_condition).rawValue)")
+                    self.showError(title: "Error", message: "Could not rename group chat. The server responded with an error: \(error)")
                 }
-            })
+            });
         }))
         controller.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
         self.present(controller, animated: true, completion: nil);
@@ -359,7 +359,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         }
         let subjectField = controller.textFields![0];
         controller.addAction(UIAlertAction(title: "Change", style: .default, handler: { (action) in
-            guard let mucModule: MucModule = XmppService.instance.getClient(for: self.room.account)?.modulesManager.getModule(MucModule.ID) else {
+            guard let mucModule = room.context?.module(.muc) else {
                 return;
             }
             mucModule.setRoomSubject(roomJid: self.room.roomJid, newSubject: subjectField.text);

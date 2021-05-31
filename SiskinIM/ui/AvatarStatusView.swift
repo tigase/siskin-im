@@ -22,6 +22,7 @@
 
 import UIKit
 import TigaseSwift
+import Combine
 
 class AvatarStatusView: UIView {
     
@@ -32,6 +33,19 @@ class AvatarStatusView: UIView {
         }
     }
     
+    private var cancellables: Set<AnyCancellable> = [];
+    var displayableId: DisplayableIdProtocol? {
+        didSet {
+            cancellables.removeAll();
+            if let namePublisher = displayableId?.displayNamePublisher, let avatarPublisher = displayableId?.avatarPublisher {
+                namePublisher.combineLatest(avatarPublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] name, image in
+                    self?.avatarImageView.set(name: name, avatar: image);
+                }).store(in: &cancellables);
+            }
+            displayableId?.statusPublisher.map({ AvatarStatusView.getStatusImage($0) }).assign(to: \.image, on: statusImageView).store(in: &cancellables);
+        }
+    }
+    
     override var backgroundColor: UIColor? {
         get {
             return super.backgroundColor;
@@ -39,6 +53,12 @@ class AvatarStatusView: UIView {
         set {
             super.backgroundColor = newValue;
             statusImageView?.backgroundColor = newValue;
+        }
+    }
+    
+    var status: Presence.Show? {
+        didSet {
+            statusImageView.image = AvatarStatusView.getStatusImage(status);
         }
     }
     
@@ -56,16 +76,10 @@ class AvatarStatusView: UIView {
         updateCornerRadius();
     }
     
-    func set(name: String?, avatar: UIImage?, orDefault defAvatar: UIImage) {
-        self.avatarImageView.set(name: name, avatar: avatar, orDefault: defAvatar);
+    func set(name: String?, avatar: UIImage?) {
+        self.avatarImageView.set(name: name, avatar: avatar);
     }
         
-    func setStatus(_ status:Presence.Show?) {
-        let image:UIImage? = AvatarStatusView.getStatusImage(status);
-
-        statusImageView.image = image;
-    }
-    
     static func getStatusImage(_ status: Presence.Show?) -> UIImage? {
         // default color as for offline contact
         var image:UIImage? = UIImage(named: "presence_offline");

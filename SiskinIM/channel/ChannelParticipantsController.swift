@@ -21,19 +21,24 @@
 
 import UIKit
 import TigaseSwift
+import Combine
 
 class ChannelParticipantsController: UITableViewController {
     
-    var channel: DBChannel!;
+    var channel: Channel!;
     
     private var participants: [MixParticipant] = [];
     private var invitationOnly: Bool = false;
     
+    private var dispatcher = QueueDispatcher(label: "ChannelParticipantsController");
+    private var cancellables: Set<AnyCancellable> = [];
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        NotificationCenter.default.addObserver(self, selector: #selector(participantsChanged(_:)), name: MixEventHandler.PARTICIPANTS_CHANGED, object: channel);
-        refreshParticipants();
-        if channel.permissions?.contains(.changeConfig) ?? false, let mixModule: MixModule = XmppService.instance.getClient(for: self.channel.account)?.modulesManager.getModule(MixModule.ID) {
+        channel.participantsPublisher.throttle(for: 0.2, scheduler: dispatcher.queue, latest: true).sink(receiveValue: { [weak self] participants in
+            self?.update(participants: participants);
+        }).store(in: &cancellables);
+        if channel.permissions?.contains(.changeConfig) ?? false, let mixModule = channel.context?.module(.mix) {
             self.operationStarted(message: "Refreshing...");
             mixModule.checkAccessPolicy(of: channel.channelJid, completionHandler: { [weak self] result in
                 DispatchQueue.main.async {
@@ -55,10 +60,10 @@ class ChannelParticipantsController: UITableViewController {
             });
         }
     }
-    
-    override func viewWillDisappear(_ animated: Bool) {
+        
+    override func viewDidDisappear(_ animated: Bool) {
+        cancellables.removeAll();
         super.viewDidDisappear(animated);
-        NotificationCenter.default.removeObserver(self, name: MixEventHandler.PARTICIPANTS_CHANGED, object: channel);
     }
     
     
@@ -90,7 +95,7 @@ class ChannelParticipantsController: UITableViewController {
         }
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { actions -> UIMenu? in
             let block = UIAction(title: "Block participant", image: UIImage(systemName: "hand.raised.fill"), handler: { action in
-                guard let mixModule: MixModule = XmppService.instance.getClient(for: self.channel.account)?.modulesManager.getModule(MixModule.ID) else {
+                guard let mixModule = self.channel.context?.module(.mix) else {
                     return;
                 }
                 
@@ -131,18 +136,19 @@ class ChannelParticipantsController: UITableViewController {
         }
     }
     
-    @objc func participantsChanged(_ notification: Notification) {
-        DispatchQueue.main.async {
-            self.refreshParticipants();
-        }
-    }
-    
-    private func refreshParticipants() {
-        let tmp = Array(channel.participants.values);
-        self.participants = tmp.sorted(by: { (p1, p2) -> Bool in
+    private func update(participants: [MixParticipant]) {
+        let oldParticipants = self.participants;
+        let newParticipants = participants.sorted(by: { (p1,p2) -> Bool in
             return (p1.nickname ?? p1.id).caseInsensitiveCompare(p2.nickname ?? p2.id) == .orderedAscending;
         });
-        self.tableView.reloadData();
+        let changes = newParticipants.calculateChanges(from: oldParticipants);
+        DispatchQueue.main.sync {
+            self.participants = newParticipants;
+            self.tableView?.beginUpdates();
+            self.tableView?.deleteRows(at: changes.removed.map({ IndexPath(row: $0, section: 0)}), with: .fade);
+            self.tableView?.insertRows(at: changes.inserted.map({ IndexPath(row: $0, section: 0)}), with: .fade);
+            self.tableView?.endUpdates();
+        }
     }
     
     func operationStarted(message: String) {
@@ -173,9 +179,9 @@ class ChannelParticipantTableViewCell: UITableViewCell {
         return UIFont(descriptor: fontDescription, size: preferredFont.pointSize);
     }
     
-    func set(participant: MixParticipant, in channel: DBChannel) {
+    func set(participant: MixParticipant, in channel: Channel) {
         let jid = participant.jid ?? BareJID(localPart: "\(participant.id)#\(channel.channelJid.localPart!)", domain: channel.channelJid.domain);
-        avatarView?.image = AvatarManager.instance.avatar(for: jid, on: channel.account) ?? AvatarManager.instance.defaultAvatar
+        avatarView?.set(name: participant.nickname ?? participant.id, avatar: AvatarManager.instance.avatar(for: jid, on: channel.account));
         
         labelView.font = ChannelParticipantTableViewCell.labelViewFont();
         print("labelView.font: \(labelView.font)")

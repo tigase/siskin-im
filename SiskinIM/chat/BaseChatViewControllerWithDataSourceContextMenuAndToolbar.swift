@@ -29,14 +29,6 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
     var contextActions: [ContextAction] = [.copy, .reply, .share, .correct, .retract, .more];
     
     override func viewWillAppear(_ animated: Bool) {
-        if #available(iOS 13.0, *) {
-            
-        } else {
-            var items: [UIMenuItem] = UIMenuController.shared.menuItems ?? [];
-            items.append(UIMenuItem(title: "More..", action: #selector(ChatTableViewCell.actionMore(_:))));
-            UIMenuController.shared.menuItems = items;
-        }
-        
         super.viewWillAppear(animated);
     }
     
@@ -50,39 +42,10 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         super.initialize(tableView: tableView);
         tableView.delegate = self;
     }
-    
-    func tableView(_ tableView: UITableView, canPerformAction action: Selector, forRowAt indexPath: IndexPath, withSender sender: Any?) -> Bool {
-        if #available(iOS 13.0, *) {
-        } else {
-        if action == #selector(UIResponderStandardEditActions.copy(_:)) {
-            return true;
-        }
-//        if customToolbar != nil && action == #selector(ChatTableViewCell.actionMore(_:)) {
-//            return true;
-//        }
-        }
-        return false;
-    }
-    
-    func tableView(_ tableView: UITableView, shouldShowMenuForRowAt indexPath: IndexPath) -> Bool {
-        if #available(iOS 13.0, *) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-    
-    func tableView(_ tableView: UITableView, performAction action: Selector, forRowAt indexPath: IndexPath, withSender sender: Any?) {
-        if action == #selector(UIResponderStandardEditActions.copy(_:)) {
-            conversationLogController?.copyMessageInt(paths: [indexPath]);
-        }
-        conversationLogController?.hideEditToolbar();
-    }
-    
-    @available(iOS 13.0, *)
+            
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         return UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: {
-            let cell = self.tableView(tableView, cellForRowAt: indexPath);
+            let cell = self.conversationLogController!.tableView(tableView, cellForRowAt: indexPath);
             cell.contentView.transform = .identity;
             let view = UIViewController();
             let size = self.conversationLogController!.tableView.rectForRow(at: indexPath).size;
@@ -96,9 +59,8 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         };
     }
     
-    @available(iOS 13.0, *)
     func prepareContextMenu(for indexPath: IndexPath) -> UIMenu? {
-        guard let item = self.conversationLogController?.dataSource.getItem(at: indexPath.row) as? ChatEntry else {
+        guard let item = self.conversationLogController!.dataSource.getItem(at: indexPath.row) else {
             return nil;
         }
         
@@ -121,7 +83,7 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         return UIMenu(title: "", children: items);
     }
     
-    public func executeContext(action: ContextAction, forItem item: ChatEntry, at indexPath: IndexPath) {
+    public func executeContext(action: ContextAction, forItem item: ConversationEntry, at indexPath: IndexPath) {
         switch action {
         case .copy:
             self.conversationLogController?.copyMessageInt(paths: [indexPath]);
@@ -145,11 +107,13 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         case .share:
             self.conversationLogController?.shareMessageInt(paths: [indexPath]);
         case .correct:
-            DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
-                DispatchQueue.main.async {
-                    self?.startMessageCorrection(message: (item as! ChatMessage).message, originId: originId)
-                }
-            });
+            if case .message(let message, _) = item.payload {
+                DBChatHistoryStore.instance.originId(for: item.conversation, id: item.id, completionHandler: { [weak self] originId in
+                    DispatchQueue.main.async {
+                        self?.startMessageCorrection(message: message, originId: originId)
+                    }
+                });
+            }
         case .retract:
             // that is per-chat-type sepecific
             break;
@@ -163,7 +127,7 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         }
     }
     
-    public func canExecuteContext(action: ContextAction, forItem item: ChatEntry, at indexPath: IndexPath) -> Bool {
+    public func canExecuteContext(action: ContextAction, forItem item: ConversationEntry, at indexPath: IndexPath) -> Bool {
         switch action {
         case .copy:
             return true;
@@ -172,13 +136,21 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         case .share:
             return true;
         case .correct:
-            return item.state.direction == .outgoing && item is ChatMessage && !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0 is ChatMessage }, in: 0..<indexPath.row);
+            if item.state.direction == .outgoing, case .message(_,_) = item.payload, !dataSource.isAnyMatching({ it in
+                if it.state.direction == .outgoing, case .message(_,_) = it.payload {
+                    return true;
+                } else {
+                    return false;
+                }
+            }, in: 0..<indexPath.row) {
+                return true;
+            }
+            return false;
         case .retract:
             return false;
         case .more:
             return true;
         }
-        return false;
     }
     
     public enum ContextAction {

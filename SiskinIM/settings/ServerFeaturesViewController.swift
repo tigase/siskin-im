@@ -21,30 +21,26 @@
 
 import UIKit
 import TigaseSwift
+import Combine
 
 class ServerFeaturesViewController: UITableViewController {
 
-    var xmppService: XmppService!;
+    var client: XMPPClient!;
 
-    var account: BareJID!;
-    var features: [Feature] = [];
+    private var features: [Feature] = [];
 
-    override func viewDidLoad() {
-        xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
-    }
-
+    private var cancellables: Set<AnyCancellable> = [];
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
         
         let allFeatures = loadFeatures();
-        if let features: [String] = xmppService.getClient(forJid: account)?.sessionObject.getProperty(DiscoveryModule.SERVER_FEATURES_KEY) {
-            self.features = allFeatures.filter({ (feature) -> Bool in
-                return feature.matches(features);
-            });
-        } else {
-            self.features = [];
-        }
-        self.tableView.reloadData();
+        client.module(.disco).$serverDiscoResult.receive(on: DispatchQueue.main).map({ it -> [Feature] in
+            return allFeatures.filter({ $0.matches(it.features) });
+        }).sink(receiveValue: { [weak self] features in
+            self?.features = features;
+            self?.tableView.reloadData();
+        }).store(in: &cancellables);
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {

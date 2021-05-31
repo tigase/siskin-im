@@ -66,33 +66,33 @@ class MediaSettingsViewController: UITableViewController {
         switch setting {
         case .imageUploadQuality:
             let cell = tableView.dequeueReusableCell(withIdentifier: "ImageQualityTableViewCell", for: indexPath);
-            cell.detailTextLabel?.text = (ImageQuality.current ?? .medium).rawValue.capitalized;
+            cell.detailTextLabel?.text = Settings.imageQuality.rawValue.capitalized;
             return cell;
         case .videoUploadQuality:
             let cell = tableView.dequeueReusableCell(withIdentifier: "VideoQualityTableViewCell", for: indexPath);
-            cell.detailTextLabel?.text = (VideoQuality.current ?? .medium).rawValue.capitalized;
+            cell.detailTextLabel?.text = Settings.videoQuality.rawValue.capitalized;
             return cell;
         case .sharingViaHttpUpload:
             let cell = tableView.dequeueReusableCell(withIdentifier: "SharingViaHttpUploadTableViewCell", for: indexPath ) as! SwitchTableViewCell;
-            cell.switchView.isOn = Settings.SharingViaHttpUpload.getBool();
+            cell.switchView.isOn = Settings.sharingViaHttpUpload;
             cell.valueChangedListener = {(switchView: UISwitch) in
                 if switchView.isOn {
                     let alert = UIAlertController(title: nil, message: "When you share files using HTTP, they are uploaded to HTTP server with unique URL. Anyone who knows the unique URL to the file is able to download it.\nDo you wish to enable?",preferredStyle: .alert);
                     alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
-                        Settings.SharingViaHttpUpload.setValue(true);
+                        Settings.sharingViaHttpUpload = true;
                     }));
                     alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: { (action) in
                         switchView.isOn = false;
                     }));
                     self.present(alert, animated: true, completion: nil);
                 } else {
-                    Settings.SharingViaHttpUpload.setValue(false);
+                    Settings.sharingViaHttpUpload = false;
                 }
             }
             return cell;
         case .maxImagePreviewSize:
             let cell = tableView.dequeueReusableCell(withIdentifier: "MaxImagePreviewSizeTableViewCell", for: indexPath);
-            (cell.contentView.subviews[1] as! UILabel).text = AutoFileDownloadLimit.description(of: Settings.fileDownloadSizeLimit.getInt());
+            (cell.contentView.subviews[1] as! UILabel).text = AutoFileDownloadLimit.description(of: Settings.fileDownloadSizeLimit);
             cell.accessoryType = .disclosureIndicator;
             return cell;
         case .clearDownloadStore:
@@ -107,14 +107,14 @@ class MediaSettingsViewController: UITableViewController {
         case .maxImagePreviewSize:
             let controller = TablePickerViewController(style: .grouped);
             let values: [Int] = [0, 1, 2, 4, 8, 10, 15, 30, 50, Int.max];
-            controller.selected = values.firstIndex(of: Settings.fileDownloadSizeLimit.getInt() ) ?? 0;
+            controller.selected = values.firstIndex(of: Settings.fileDownloadSizeLimit) ?? 0;
             controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
                 return AutoFileDownloadLimit(value: it);
             });
             //controller.selected = 1;
             controller.onSelectionChange = { (_item) -> Void in
                 let item = _item as! AutoFileDownloadLimit;
-                Settings.fileDownloadSizeLimit.setValue(item.value);
+                Settings.fileDownloadSizeLimit = item.value;
                 self.tableView.reloadData();
             };
             self.navigationController?.pushViewController(controller, animated: true);
@@ -139,28 +139,28 @@ class MediaSettingsViewController: UITableViewController {
         case .imageUploadQuality:
             let controller = TablePickerViewController(style: .grouped, message: "Select quality of the image to use for sharing", footer: "Original quality will share image in the format in which it is stored on your phone and it may not be supported by every device.");
             let values: [ImageQuality] = [.original, .highest, .high, .medium, .low];
-            controller.selected = values.firstIndex(of: ImageQuality.current ?? .medium ) ?? 3;
+            controller.selected = values.firstIndex(of: Settings.imageQuality ) ?? 3;
             controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
                 return ImageQualityItem(value: it);
             });
             //controller.selected = 1;
             controller.onSelectionChange = { (_item) -> Void in
                 let item = _item as! ImageQualityItem;
-                Settings.imageQuality.setValue(item.value.rawValue);
+                Settings.imageQuality = item.value;
                 self.tableView.reloadData();
             };
             self.navigationController?.pushViewController(controller, animated: true);
         case .videoUploadQuality:
             let controller = TablePickerViewController(style: .grouped, message: "Select quality of the video to use for sharing", footer: "Original quality will share video in the format in which video is stored on your phone and it may not be supported by every device.");
             let values: [VideoQuality] = [.original, .high, .medium, .low];
-            controller.selected = values.firstIndex(of: VideoQuality.current ?? .medium ) ?? 2;
+            controller.selected = values.firstIndex(of: Settings.videoQuality ) ?? 2;
             controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
                 return VideoQualityItem(value: it);
             });
             //controller.selected = 1;
             controller.onSelectionChange = { (_item) -> Void in
                 let item = _item as! VideoQualityItem;
-                Settings.videoQuality.setValue(item.value.rawValue);
+                Settings.videoQuality = item.value;
                 self.tableView.reloadData();
             };
             self.navigationController?.pushViewController(controller, animated: true);

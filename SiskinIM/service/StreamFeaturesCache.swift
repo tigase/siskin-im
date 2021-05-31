@@ -43,20 +43,21 @@ class StreamFeaturesCache: StreamFeaturesModuleWithPipeliningCacheProtocol {
         try! fileManager.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil);
     }
     
-    func getFeatures(for sessionObject: SessionObject, embeddedStreamNo: Int) -> Element? {
-        if let cached: [Element] = sessionObject.getProperty(StreamFeaturesCache.CACHED_STREAM_FEATURES) {
-            if cached.count > embeddedStreamNo {
-                return cached[embeddedStreamNo];
-            } else {
-                return nil;
-            }
-        }
+    func getFeatures(for context: Context, embeddedStreamNo: Int) -> Element? {
+        // TODO: Add caching if needed
+//        if let cached: [Element] = sessionObject.getProperty(StreamFeaturesCache.CACHED_STREAM_FEATURES) {
+//            if cached.count > embeddedStreamNo {
+//                return cached[embeddedStreamNo];
+//            } else {
+//                return nil;
+//            }
+//        }
         
         guard embeddedStreamNo == 0 else {
             return nil;
         }
         
-        let filePath = path + "/" + sessionObject.userBareJid!.domain;
+        let filePath = path + "/" + context.userBareJid.domain;
         guard fileManager.fileExists(atPath: filePath) else {
             return nil;
         }
@@ -67,7 +68,7 @@ class StreamFeaturesCache: StreamFeaturesModuleWithPipeliningCacheProtocol {
             return nil;
         }
         if let cached = Element.from(string: data)?.getChildren() {
-            sessionObject.setProperty(StreamFeaturesCache.CACHED_STREAM_FEATURES, value: cached);
+//            sessionObject.setProperty(StreamFeaturesCache.CACHED_STREAM_FEATURES, value: cached);
             if cached.count > embeddedStreamNo {
                 return cached[embeddedStreamNo];
             } else {
@@ -77,10 +78,8 @@ class StreamFeaturesCache: StreamFeaturesModuleWithPipeliningCacheProtocol {
         return nil;
     }
     
-    func set(for sessionObject: SessionObject, features: [Element]?) {
-        sessionObject.setProperty(StreamFeaturesCache.CACHED_STREAM_FEATURES, value: nil);
-        
-        let filePath = path + "/" + sessionObject.userBareJid!.domain;
+    func set(for context: Context, features: [Element]?) {
+        let filePath = path + "/" + context.userBareJid.domain;
         if features == nil {
             try? fileManager.removeItem(atPath: filePath);
         } else {

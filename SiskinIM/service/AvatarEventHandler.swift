@@ -21,49 +21,72 @@
 
 import Foundation
 import TigaseSwift
+import Combine
+import os
 
-class AvatarEventHandler: XmppServiceEventHandler {
+class AvatarEventHandler: XmppServiceExtension {
     
-    let events: [Event] = [PresenceModule.ContactPresenceChanged.TYPE, PEPUserAvatarModule.AvatarChangedEvent.TYPE];
+    static let instance = AvatarEventHandler();
     
-    func handle(event: Event) {
-        switch event {
-        case let e as PresenceModule.ContactPresenceChanged:
-            NotificationCenter.default.post(name: XmppService.CONTACT_PRESENCE_CHANGED, object: e);
-            guard let photoId = e.presence.vcardTempPhoto, let from = e.presence.from?.bareJid, let to = e.presence.to?.bareJid else {
+    private let queue = DispatchQueue(label: "AvatarEventHandler");
+
+    private init() {
+    }
+        
+    func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
+        client.module(.presence).presencePublisher.filter({ $0.presence.type != .error }).sink(receiveValue: { [weak client] e in
+            guard let photoId = e.presence.vcardTempPhoto, let to = e.presence.to?.bareJid else {
                 return;
             }
-            if e.presence.findChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") == nil {
-                AvatarManager.instance.avatarHashChanged(for: from, on: to, type: .vcardTemp, hash: photoId);
-            } else {
-                if !AvatarManager.instance.hasAvatar(withHash: photoId) {
-                    XmppService.instance.retrieveVCard(account: to, for: e.presence.from, completionHandler: { result in
-                        switch result {
-                        case .success(let vcard):
-                            if let photo = vcard.photos.first {
-                                AvatarManager.fetchData(photo: photo, completionHandler: { result in
-                                    if let data = result {
-                                        _ = AvatarManager.instance.storeAvatar(data: data);
+            self.queue.async {
+                if e.presence.findChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") == nil {
+                    AvatarManager.instance.avatarHashChanged(for: e.jid.bareJid, on: to, type: .vcardTemp, hash: photoId);
+                } else {
+                    os_log(OSLogType.debug, log: .avatar, "received presence from %s with avaar hash: %{public}s", e.presence.from!.stringValue, photoId);
+                    guard let client = client else {
+                        return;
+                    }
+                    if !AvatarManager.instance.hasAvatar(withHash: photoId) {
+                        os_log(OSLogType.debug, log: .avatar, "querying %s for VCard for avaar hash: %{public}s", e.presence.from!.stringValue, photoId);
+                        client.module(.vcardTemp).retrieveVCard(from: e.jid, completionHandler: { result in
+                            switch result {
+                            case .success(let vcard):
+                                os_log(OSLogType.debug, log: .avatar, "got result %s with %d photos from %s VCard for avaar hash: %{public}s", String(describing: type(of: vcard).self), vcard.photos.count, e.presence.from!.stringValue, photoId);
+                                vcard.photos.forEach({ photo in
+                                    os_log(OSLogType.debug, log: .avatar, "got photo from %s VCard for avaar hash: %{public}s", e.presence.from!.stringValue, photoId);
+                                    self.queue.async {
+                                        AvatarManager.fetchData(photo: photo, completionHandler: { result in
+                                            if let data = result {
+                                                _ = AvatarManager.instance.storeAvatar(data: data);
+                                                AvatarManager.instance.avatarUpdated(hash: photoId, for: e.jid.bareJid, on: to, withNickname: e.jid.resource);
+                                            }
+                                        })
                                     }
                                 })
+                            case .failure(let error):
+                                os_log(OSLogType.debug, log: .avatar, "got error %{public}s from %s VCard for avaar hash: %{public}s", error.description, e.presence.from!.stringValue, photoId);
+                                break;
                             }
-                        case .failure(let error):
-                            print("could not retrieve a vcard from:", e.presence.from as Any, "on:", to, "error:", error);
-                        }
-                    })
+                        })
+                    } else {
+                        AvatarManager.instance.avatarUpdated(hash: photoId, for: e.jid.bareJid, on: to, withNickname: e.jid.resource);
+                    }
                 }
             }
-        case let e as PEPUserAvatarModule.AvatarChangedEvent:
+        }).store(in: &cancellables);
+        client.module(.pepUserAvatar).avatarChangePublisher.sink(receiveValue: { [weak client] e in
+            guard let account = client?.userBareJid else {
+                return;
+            }
             guard let item = e.info.first(where: { info -> Bool in
                 return info.url == nil;
             }) else {
                 return;
             }
-            AvatarManager.instance.avatarHashChanged(for: e.jid.bareJid, on: e.sessionObject.userBareJid!, type: .pepUserAvatar, hash: item.id);
-        default:
-            break;
-        }
+            self.queue.async {
+                AvatarManager.instance.avatarHashChanged(for: e.jid.bareJid, on: account, type: .pepUserAvatar, hash: item.id);
+            }
+        }).store(in: &cancellables);
     }
-    
     
 }

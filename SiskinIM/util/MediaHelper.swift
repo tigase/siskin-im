@@ -25,7 +25,7 @@ import AVKit
 class MediaHelper {
     
     static func askImageQuality(controller: UIViewController, forceQualityQuestion askQuality: Bool, _ completionHandler: @escaping (Result<ImageQuality,ShareError>)->Void) {
-        if let quality = askQuality ? nil : ImageQuality.current {
+        if let quality = askQuality ? nil : Settings.imageQuality {
             completionHandler(.success(quality));
         } else {
             DispatchQueue.main.async {
@@ -46,7 +46,7 @@ class MediaHelper {
     }
     
     static func askVideoQuality(controller: UIViewController, forceQualityQuestion askQuality: Bool, _ completionHandler: @escaping (Result<VideoQuality,ShareError>)->Void) {
-        if let quality = askQuality ? nil : VideoQuality.current {
+        if let quality = askQuality ? nil : Settings.videoQuality {
             completionHandler(.success(quality));
         } else {
             DispatchQueue.main.async {

@@ -21,40 +21,30 @@
 
 import Foundation
 import TigaseSwift
+import Combine
 
-class PresenceRosterEventHandler: XmppServiceEventHandler {
+class PresenceRosterEventHandler: XmppServiceExtension {
     
-    let events: [Event] = [RosterModule.ItemUpdatedEvent.TYPE,PresenceModule.BeforePresenceSendEvent.TYPE, PresenceModule.SubscribeRequestEvent.TYPE];
-        
-    func handle(event: Event) {
-        switch event {
-        case let e as RosterModule.ItemUpdatedEvent:
-            NotificationCenter.default.post(name: DBRosterStore.ITEM_UPDATED, object: e);
-        case let e as PresenceModule.BeforePresenceSendEvent:
-            if XmppService.instance.applicationState == .active {
-                e.presence.show = Presence.Show.online;
-                e.presence.priority = 5;
-            } else {
-                e.presence.show = Presence.Show.away;
-                e.presence.priority = 0;
-            }
-            if let manualShow = Settings.StatusType.getString() {
-                e.presence.show = Presence.Show(rawValue: manualShow);
-            }
-            e.presence.status = Settings.StatusMessage.getString();
-        case let e as PresenceModule.SubscribeRequestEvent:
-            guard let from = e.presence.from else {
-                return;
-            }
-            var info: [String: AnyObject] = [:];
-            info["account"] = e.sessionObject.userBareJid!;
-            info["sender"] = from.bareJid;
-            DispatchQueue.main.async {
-                NotificationCenter.default.post(name: XmppService.PRESENCE_AUTHORIZATION_REQUEST, object: self, userInfo: info);
-            }
-        default:
-            break;
-        }
+    public static let instance = PresenceRosterEventHandler();
+    
+    private init() {
     }
     
+    func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
+        XmppService.instance.expectedStatus.sink(receiveValue: { [weak client] status in
+            client?.module(.presence).setPresence(show: status.show, status: status.message, priority: nil);
+        }).store(in: &cancellables);
+        client.module(.presence).subscriptionPublisher.sink(receiveValue: { [weak client] change in
+            guard let client = client else {
+                return;
+            }
+            switch change.action {
+            case .subscribe:
+                InvitationManager.instance.addPresenceSubscribe(for: client.userBareJid, from: change.jid);
+            default:
+                break;
+            }
+        }).store(in: &cancellables);
+    }
+        
 }

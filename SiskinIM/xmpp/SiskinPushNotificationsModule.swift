@@ -96,7 +96,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         super.init();
     }
     
-    open func registerDeviceAndEnable(deviceId: String, pushkitDeviceId: String?, completionHandler: @escaping (Result<PushSettings,ErrorCondition>)->Void) {
+    open func registerDeviceAndEnable(deviceId: String, pushkitDeviceId: String?, completionHandler: @escaping (Result<PushSettings,XMPPError>)->Void) {
         self.findPushComponent { result in
             switch result {
             case .success(let jid):
@@ -107,24 +107,24 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         }
     }
 
-    private func prepareExtensions(componentSupportsEncryption: Bool, maxSize: Int?) -> [PushNotificationsModuleExtension] {
+    private func prepareExtensions(for context: Context, componentSupportsEncryption: Bool, maxSize: Int?) -> [PushNotificationsModuleExtension] {
         var extensions: [PushNotificationsModuleExtension] = [];
         
-        if !Settings.NotificationsFromUnknown.bool() {
+        if !Settings.notificationsFromUnknown {
             if self.isSupported(extension: TigasePushNotificationsModule.IgnoreUnknown.self) {
                 extensions.append(TigasePushNotificationsModule.IgnoreUnknown());
             }
         }
         
-        let account = self.context.sessionObject.userBareJid!;
+        let account = context.userBareJid;
         
         let groupchatFilter = self.isSupported(extension: TigasePushNotificationsModule.GroupchatFilter.self);
         if groupchatFilter {
-            extensions.append(TigasePushNotificationsModule.GroupchatFilter(rules: provider.groupchatFilterRules(for: account)));
+            extensions.append(TigasePushNotificationsModule.GroupchatFilter(rules: provider.groupchatFilterRules(for: context)));
         }
         let muted = self.isSupported(extension: TigasePushNotificationsModule.Muted.self)
         if muted {
-            extensions.append(TigasePushNotificationsModule.Muted(jids: provider.mutedChats(for: account)));
+            extensions.append(TigasePushNotificationsModule.Muted(jids: provider.mutedChats(for: context)));
         }
                 
         if muted && groupchatFilter {
@@ -137,7 +137,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
             }
         }
         
-        if AccountSettings.PushNotificationsForAway(self.context.sessionObject.userBareJid!).getBool() {
+        if AccountSettings.PushNotificationsForAway(context.userBareJid).getBool() {
             extensions.append(TigasePushNotificationsModule.PushForAway());
         }
         
@@ -148,7 +148,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         return extensions;
     }
     
-    open func registerDeviceAndEnable(deviceId: String, pushkitDeviceId: String? = nil, pushServiceJid: JID, completionHandler: @escaping (Result<PushSettings,ErrorCondition>)->Void) {
+    open func registerDeviceAndEnable(deviceId: String, pushkitDeviceId: String? = nil, pushServiceJid: JID, completionHandler: @escaping (Result<PushSettings,XMPPError>)->Void) {
         self.registerDevice(serviceJid: pushServiceJid, provider: self.providerId, deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, completionHandler: { (result) in
             switch result {
             case .success(let data):
@@ -159,7 +159,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         });
     }
     
-    open func reenable(pushSettings: PushSettings, completionHandler: @escaping (Result<PushSettings,ErrorCondition>)->Void) {
+    open func reenable(pushSettings: PushSettings, completionHandler: @escaping (Result<PushSettings,XMPPError>)->Void) {
         self.enable(serviceJid: pushSettings.jid, node: pushSettings.node, deviceId: pushSettings.deviceId, features: pushSettings.encryption ? [TigasePushNotificationsModule.Encryption.XMLNS] : [], maxSize: pushSettings.maxSize, completionHandler: completionHandler);
     }
     
@@ -175,12 +175,18 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         return hash;
     }
     
-    private func enable(serviceJid: JID, node: String, deviceId: String, pushkitDeviceId: String? = nil, features: [String], maxSize: Int?, publishOptions: JabberDataElement? = nil, completionHandler: @escaping (Result<PushSettings,ErrorCondition>)->Void) {
-        let extensions: [PushNotificationsModuleExtension] = self.prepareExtensions(componentSupportsEncryption: features.contains(TigasePushNotificationsModule.Encryption.XMLNS), maxSize: maxSize);
+    private func enable(serviceJid: JID, node: String, deviceId: String, pushkitDeviceId: String? = nil, features: [String], maxSize: Int?, publishOptions: JabberDataElement? = nil, completionHandler: @escaping (Result<PushSettings,XMPPError>)->Void) {
+        
+        guard let context = self.context else {
+            completionHandler(.failure(.remote_server_timeout));
+            return;
+        }
+        
+        let extensions: [PushNotificationsModuleExtension] = self.prepareExtensions(for: context, componentSupportsEncryption: features.contains(TigasePushNotificationsModule.Encryption.XMLNS), maxSize: maxSize);
         
         let newHash = hash(extensions: extensions);
         if let oldSettings = self.pushSettings {
-            guard newHash != AccountSettings.pushHash(self.context.sessionObject.userBareJid!).int() else {
+            guard newHash != AccountSettings.pushHash(context.userBareJid).int() else {
                 completionHandler(.success(oldSettings));
                 return;
             }
@@ -195,14 +201,14 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         self.enable(serviceJid: serviceJid, node: node, extensions: extensions, completionHandler: { (result) in
             switch result {
             case .success(_):
-                let accountJid = self.context.sessionObject.userBareJid!;
+                let accountJid = context.userBareJid;
                 NotificationEncryptionKeys.set(key: encryption?.key, for: accountJid);
                 AccountSettings.pushHash(accountJid).set(int: newHash);
                 self.pushSettings = settings;
-                if let config = AccountManager.getAccount(for: accountJid) {
+                if var config = AccountManager.getAccount(for: accountJid) {
                     config.pushSettings = settings;
                     config.pushNotifications = true;
-                    _ = AccountManager.save(account: config);
+                    try? AccountManager.save(account: config);
                 }
                 completionHandler(.success(settings));
             case .failure(let err):
@@ -214,16 +220,16 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         });
     }
         
-    public func unregisterDeviceAndDisable(completionHandler: @escaping (Result<Void,ErrorCondition>) -> Void) {
-        if let settings = self.pushSettings {
-            var total: Result<Void, ErrorCondition> = .success(Void());
+    public func unregisterDeviceAndDisable(completionHandler: @escaping (Result<Void,XMPPError>) -> Void) {
+        if let settings = self.pushSettings, let context = self.context {
+            var total: Result<Void, XMPPError> = .success(Void());
             let group = DispatchGroup();
             group.enter();
             group.enter();
             
-            AccountSettings.pushHash(self.context.sessionObject.userBareJid!).set(int: 0);
+            AccountSettings.pushHash(context.userBareJid).set(int: 0);
             
-            let resultHandler: (Result<Void,ErrorCondition>)->Void = {
+            let resultHandler: (Result<Void,XMPPError>)->Void = {
                 result in
                 DispatchQueue.main.async {
                     switch result {
@@ -240,12 +246,12 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
             
             group.notify(queue: DispatchQueue.main) {
                 self.pushSettings = nil;
-                let accountJid = self.context.sessionObject.userBareJid!;
+                let accountJid = context.userBareJid;
                 NotificationEncryptionKeys.set(key: nil, for: accountJid);
-                if let config = AccountManager.getAccount(for: accountJid) {
+                if var config = AccountManager.getAccount(for: accountJid) {
                     config.pushSettings = nil;
                     config.pushNotifications = false;
-                    _ = AccountManager.save(account: config);
+                    try? AccountManager.save(account: config);
                 }
                 completionHandler(total);
             }
@@ -259,10 +265,12 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
                 }
             });
             self.unregisterDevice(serviceJid: settings.jid, provider: self.providerId, deviceId: settings.deviceId, completionHandler: resultHandler);
+        } else {
+            completionHandler(.failure(.remote_server_not_found()));
         }
     }
     
-    func findPushComponent(completionHandler: @escaping (Result<JID,ErrorCondition>)->Void) {
+    func findPushComponent(completionHandler: @escaping (Result<JID,XMPPError>)->Void) {
         self.findPushComponent(requiredFeatures: ["urn:xmpp:push:0", self.providerId], completionHandler: completionHandler);
     }
     
@@ -270,8 +278,8 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
 
 public protocol SiskinPushNotificationsModuleProviderProtocol {
     
-    func mutedChats(for account: BareJID) -> [BareJID];
+    func mutedChats(for context: Context) -> [BareJID];
     
-    func groupchatFilterRules(for account: BareJID) -> [TigasePushNotificationsModule.GroupchatFilter.Rule];
+    func groupchatFilterRules(for context: Context) -> [TigasePushNotificationsModule.GroupchatFilter.Rule];
     
 }

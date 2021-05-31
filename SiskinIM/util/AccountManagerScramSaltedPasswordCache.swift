@@ -27,28 +27,28 @@ open class AccountManagerScramSaltedPasswordCache: ScramSaltedPasswordCacheProto
     public init() {
     }
     
-    public func getSaltedPassword(for sessionObject: SessionObject, id: String) -> [UInt8]? {
-        guard let salted = AccountManager.getAccount(for: sessionObject)?.saltedPassword else {
+    public func getSaltedPassword(for context: Context, id: String) -> [UInt8]? {
+        guard let salted = AccountManager.getAccount(for: context.userBareJid)?.saltedPassword else {
             return nil;
         }
         return salted.id == id ? salted.value : nil;
     }
     
-    public func store(for sessionObject: SessionObject, id: String, saltedPassword: [UInt8]) {
-        setSaltedPassword(AccountManager.SaltEntry(id: id, value: saltedPassword), for: sessionObject);
+    public func store(for context: Context, id: String, saltedPassword: [UInt8]) {
+        setSaltedPassword(AccountManager.SaltEntry(id: id, value: saltedPassword), for: context);
     }
     
-    public func clearCache(for sessionObject: SessionObject) {
-        setSaltedPassword(nil, for: sessionObject)
+    public func clearCache(for context: Context) {
+        setSaltedPassword(nil, for: context)
     }
     
-    fileprivate func setSaltedPassword(_ value: AccountManager.SaltEntry?, for sessionObject: SessionObject) {
-        guard let account = AccountManager.getAccount(for: sessionObject) else {
+    fileprivate func setSaltedPassword(_ value: AccountManager.SaltEntry?, for context: Context) {
+        guard var account = AccountManager.getAccount(for: context.userBareJid) else {
             return;
         }
         
         account.saltedPassword = value;
-        AccountManager.save(account: account);
+        try? AccountManager.save(account: account);
     }
     
 }

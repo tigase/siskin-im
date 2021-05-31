@@ -61,10 +61,10 @@ extension ChatViewInputBar {
 extension BaseChatViewController: URLSessionDelegate {
         
     func checkIfEnabledOrAsk(completionHandler: @escaping ()->Void) -> Bool {
-        guard Settings.SharingViaHttpUpload.getBool() else {
+        guard Settings.sharingViaHttpUpload else {
             let alert = UIAlertController(title: "Question", message: "When you share files, they are uploaded to HTTP server with unique URL. Anyone who knows the unique URL to the file is able to download it.\nDo you wish to proceed?", preferredStyle: .alert);
             alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
-                Settings.SharingViaHttpUpload.setValue(true);
+                Settings.sharingViaHttpUpload = true;
                 completionHandler();
             }));
             alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
@@ -103,22 +103,26 @@ extension BaseChatViewController: URLSessionDelegate {
         self.progressBar?.isHidden = true;
     }
     fileprivate func shouldEncryptUploadedFile() -> Bool {
-        if let chat = self.chat as? DBChat {
-            return (chat.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!) == .omemo;
-        }
-        if let room = self.chat as? DBRoom {
-            let canEncrypt = (room.supportedFeatures?.contains("muc_nonanonymous") ?? false) && (room.supportedFeatures?.contains("muc_membersonly") ?? false);
-            let encryption: ChatEncryption = room.options.encryption ?? (canEncrypt ? (ChatEncryption(rawValue: Settings.messageEncryption.string() ?? "") ?? .none) : .none);
+        switch self.conversation {
+        case let chat as Chat:
+            return chat.options.encryption ?? Settings.messageEncryption == .omemo;
+        case let room as Room:
+            let encryption: ChatEncryption = room.options.encryption ?? (room.isOMEMOSupported ? Settings.messageEncryption : .none);
             
-            guard encryption == .none || canEncrypt else {
+            guard encryption == .none || room.isOMEMOSupported else {
                 return true;
             }
             return encryption == .omemo;
+        default:
+            return false;
         }
-        return false;
     }
 
     func share(filename: String, url: URL, completionHandler: @escaping (HTTPFileUploadHelper.UploadResult)->Void) {
+        guard let context = self.conversation.context else {
+            completionHandler(.failure(.unknownError));
+            return;
+        }
         guard let values = try? url.resourceValues(forKeys: [.fileSizeKey, .typeIdentifierKey]), let size = values.fileSize else {
             completionHandler(.failure(.noFileSizeError));
             return;
@@ -162,7 +166,7 @@ extension BaseChatViewController: URLSessionDelegate {
                 completionHandler(.failure(.noAccessError));
                 return;
             }
-            HTTPFileUploadHelper.upload(forAccount: self.account, filename: filename, inputStream: inputStream, filesize: dataConsumer.size, mimeType: mimeType ?? "application/octet-stream", delegate: self, completionHandler: { result in
+            HTTPFileUploadHelper.upload(for: context, filename: filename, inputStream: inputStream, filesize: dataConsumer.size, mimeType: mimeType ?? "application/octet-stream", delegate: self, completionHandler: { result in
                 // we cannot release dataConsumer before the file is uploaded!
                 var tmp = dataConsumer;
                 switch result {
@@ -189,7 +193,7 @@ extension BaseChatViewController: URLSessionDelegate {
                 completionHandler(.failure(.noAccessError));
                 return;
             }
-            HTTPFileUploadHelper.upload(forAccount: self.account, filename: filename, inputStream: inputStream, filesize: size, mimeType: mimeType ?? "application/octet-stream", delegate: self, completionHandler: { result in
+            HTTPFileUploadHelper.upload(for: context, filename: filename, inputStream: inputStream, filesize: size, mimeType: mimeType ?? "application/octet-stream", delegate: self, completionHandler: { result in
                 switch result {
                 case .success(let getUri):
                     completionHandler(.success(url: getUri, filesize: size, mimeType: mimeType));
@@ -226,7 +230,7 @@ extension BaseChatViewController: URLSessionDelegate {
     
 }
 
-enum ShareError: Error {
+public enum ShareError: Error {
     case unknownError
     case noAccessError
     case noFileSizeError

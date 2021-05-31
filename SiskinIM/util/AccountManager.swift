@@ -24,42 +24,76 @@ import Foundation
 import Security
 import Shared
 import TigaseSwift
-
+import Combine
 
 open class AccountManager {
     
-    public static let ACCOUNT_CHANGED = Notification.Name(rawValue: "accountChanged");
+    private static let dispatcher = QueueDispatcher(label: "AccountManager");
+    private static var accounts: [BareJID: Account] = [:];
+    
+    static let accountEventsPublisher = PassthroughSubject<Event,Never>();
+    static var defaultAccount: BareJID? {
+        get {
+            return BareJID(Settings.defaultAccount);
+        }
+        set {
+            Settings.defaultAccount = newValue?.stringValue;
+        }
+    }
     
     public static let saltedPasswordCache = AccountManagerScramSaltedPasswordCache();
     
-    static func getActiveAccounts() -> [BareJID] {
-        return getAccounts().filter({ jid -> Bool in
-            return AccountManager.getAccount(for: jid)?.active ?? false;
+    static func getActiveAccounts() -> [Account] {
+        return getAccounts().compactMap({ jid -> Account? in
+            guard let account = getAccount(for: jid), account.active else {
+                return nil;
+            }
+            return account;
         });
     }
     
     static func getAccounts() -> [BareJID] {
-        let query = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitAll, String(kSecReturnAttributes) : kCFBooleanTrue as Any, String(kSecAttrService) : "xmpp" ] as [String : Any];
-        var result: CFTypeRef?;
-        
-        guard SecItemCopyMatching(query as CFDictionary, &result) == noErr else {
-            return [];
-        }
-        
-        guard let results = result as? [[String: NSObject]] else {
-            return [];
-        }
-        
-        return results.map { item -> BareJID in
-            return BareJID(item[kSecAttrAccount as String] as! String);
+        self.dispatcher.sync {
+            guard accounts.isEmpty else {
+                return Array(accounts.keys).sorted(by: { (j1, j2) -> Bool in
+                    j1.stringValue.compare(j2.stringValue) == .orderedAscending;
+                });
+            }
+            
+            let query = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitAll, String(kSecReturnAttributes) : kCFBooleanTrue as Any, String(kSecAttrService) : "xmpp" ] as [String : Any];
+            var result: CFTypeRef?;
+
+            guard SecItemCopyMatching(query as CFDictionary, &result) == noErr else {
+                return [];
+            }
+            
+            guard let results = result as? [[String: NSObject]] else {
+                return [];
+            }
+
+            let accounts = results.filter({ $0[kSecAttrAccount as String] != nil}).map { item -> BareJID in
+                return BareJID(item[kSecAttrAccount as String] as! String);
             }.sorted(by: { (j1, j2) -> Bool in
                 j1.stringValue.compare(j2.stringValue) == .orderedAscending
             });
+            
+            for account in accounts {
+                if let item = getAccountInt(for: account) {
+                    self.accounts[account] = item;
+                }
+            }
+            return accounts;
+        }
     }
 
     static func getAccount(for jid: BareJID) -> Account? {
+        return self.dispatcher.sync {
+            return self.accounts[jid];
+        }
+    }
+    
+    private static func getAccountInt(for jid: BareJID) -> Account? {
         let query = AccountManager.getAccountQuery(jid.stringValue);
-        
         var result: CFTypeRef?;
         
         guard SecItemCopyMatching(query as CFDictionary, &result) == noErr else {
@@ -76,13 +110,7 @@ open class AccountManager {
         }
         
         return Account(name: jid, data: dict);
-    }
-    
-    static func getAccount(for sessionObject: SessionObject) -> Account? {
-        guard let jid = sessionObject.userBareJid else {
-            return nil;
-        }
-        return AccountManager.getAccount(for: jid);
+
     }
     
     
@@ -102,74 +130,119 @@ open class AccountManager {
         return String(data: data, encoding: .utf8);
     }
     
-    @discardableResult
-    static func save(account: Account, withPassword: String? = nil) -> Bool {
-        var query = AccountManager.getAccountQuery(account.name.stringValue);
-        query.removeValue(forKey: String(kSecMatchLimit));
-        query.removeValue(forKey: String(kSecReturnAttributes));
+    static func save(account toSave: Account) throws {
+        try self.dispatcher.sync {
+            var account = toSave;
+            var query = AccountManager.getAccountQuery(account.name.stringValue);
+            query.removeValue(forKey: String(kSecMatchLimit));
+            query.removeValue(forKey: String(kSecReturnAttributes));
 
-        var update: [String: Any] = [ kSecAttrGeneric as String: try! NSKeyedArchiver.archivedData(withRootObject: account.data, requiringSecureCoding: false), kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock ];
+            var update: [String: Any] = [ kSecAttrGeneric as String: try! NSKeyedArchiver.archivedData(withRootObject: account.data, requiringSecureCoding: false), kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock ];
 
-        if let password = withPassword {
-            update[kSecValueData as String] = password.data(using: String.Encoding.utf8)!;
-        }
-
-        var result = false;
-        let prevAccount = getAccount(for: account.name);
-        if prevAccount == nil {
-            query.merge(update) { (v1, v2) -> Any in
-                return v1;
+            if let newPassword = account.newPassword {
+                update[kSecValueData as String] = newPassword.data(using: .utf8)!;
             }
-            result = SecItemAdd(query as CFDictionary, nil) == noErr;
-        } else {
-            result = SecItemUpdate(query as CFDictionary, update as CFDictionary) == noErr;
+
+            if getAccount(for: account.name) == nil {
+                query.merge(update) { (v1, v2) -> Any in
+                    return v1;
+                }
+                if let error = AccountManagerError(status: SecItemAdd(query as CFDictionary, nil)) {
+                    throw error;
+                }
+            } else {
+                if let error = AccountManagerError(status: SecItemUpdate(query as CFDictionary, update as CFDictionary)) {
+                    throw error;
+                }
+            }
+            
+            account.newPassword = nil;
+            
+            if defaultAccount == nil {
+                defaultAccount = account.name;
+            }
+                         
+            self.accounts[account.name] = account;
+                        
+            DispatchQueue.main.async {
+                self.accountEventsPublisher.send(account.active ? .enabled(account) : .disabled(account));
+            }
         }
-        
-        // notify about account change only if password or active is changed!
-        if withPassword != nil || ((prevAccount?.active ?? false) != account.active) {
-            AccountManager.accountChanged(account: account);
-        }
-        return result;
     }
 
-    static func deleteAccount(for jid: BareJID) -> Bool {
+    static func deleteAccount(for jid: BareJID) throws {
         guard let account = getAccount(for: jid) else {
-            return false;
+            return;
         }
-        return delete(account: account);
+        try delete(account: account);
     }
     
-    static func delete(account: Account) -> Bool {
-        var query = AccountManager.getAccountQuery(account.name.stringValue);
-        query.removeValue(forKey: String(kSecMatchLimit));
-        query.removeValue(forKey: String(kSecReturnAttributes));
-        
-        guard SecItemDelete(query as CFDictionary) == noErr else {
-            return false;
-        }
-        
-        AccountSettings.removeSettings(for: account.name.stringValue);
-        NotificationEncryptionKeys.set(key: nil, for: account.name);
-        AccountManager.accountChanged(account: account);
-
-        return true;
-    }
-    
-    private static func accountChanged(account: Account) {
-        NotificationCenter.default.post(name: AccountManager.ACCOUNT_CHANGED, object: account);
+    static func delete(account: Account) throws {
+        try dispatcher.sync {
+            var query = AccountManager.getAccountQuery(account.name.stringValue);
+            query.removeValue(forKey: String(kSecMatchLimit));
+            query.removeValue(forKey: String(kSecReturnAttributes));
+            
+            if let error = AccountManagerError(status: SecItemDelete(query as CFDictionary)) {
+                throw error;
+            }
+            
+            self.accounts.removeValue(forKey: account.name);
+            NotificationEncryptionKeys.set(key: nil, for: account.name);
+            DispatchQueue.main.async {
+                self.accountEventsPublisher.send(.removed(account));
+            }        }
     }
     
     fileprivate static func getAccountQuery(_ name:String, withData:CFString = kSecReturnAttributes) -> [String: Any] {
         return [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitOne, String(withData) : kCFBooleanTrue!, String(kSecAttrService) : "xmpp" as NSObject, String(kSecAttrAccount) : name as NSObject ];
     }
     
-    open class Account {
+    enum Event {
+            case enabled(Account)
+            case disabled(Account)
+            case removed(Account)
+        }
+        
+    struct AccountManagerError: LocalizedError, CustomDebugStringConvertible {
+        let status: OSStatus;
+        let message: String?;
+        
+        var errorDescription: String? {
+            return "It was not possible to modify account.\n\(message ?? "Error code: \(status)")";
+        }
+        
+        var failureReason: String? {
+            return message;
+        }
+        
+        var recoverySuggestion: String? {
+            return "Try again. If removal failed, try accessing Keychain to update account credentials manually."
+        }
+        
+        var debugDescription: String {
+            return "AccountManagerError(status: \(status), message: \(message ?? "nil"))";
+        }
+        
+        init?(status: OSStatus) {
+            guard status != noErr else {
+                return nil;
+            }
+            self.status = status;
+            message = SecCopyErrorMessageString(status, nil) as String?;
+        }
+    }
+    
+    struct Account {
+        
+        public var state = CurrentValueSubject<XMPPClient.State,Never>(.disconnected());
         
         fileprivate var data:[String: Any];
+        fileprivate var newPassword: String?;
         
         public let name: BareJID;
         
-        open var active:Bool {
+        public var active:Bool {
             get {
                 return (data["active"] as? Bool) ?? true;
             }
@@ -178,16 +251,19 @@ open class AccountManager {
             }
         }
         
-        open var password:String? {
+        public var password:String? {
             get {
+                guard newPassword == nil else {
+                    return newPassword;
+                }
                 return AccountManager.getAccountPassword(for: name);
             }
             set {
-                AccountManager.save(account: self, withPassword: newValue);
+                self.newPassword = newValue;
             }
         }
         
-        open var nickname: String? {
+        public var nickname: String? {
             get {
                 guard let nick = data["nickname"] as? String, !nick.isEmpty else {
                     return name.localPart;
@@ -203,7 +279,7 @@ open class AccountManager {
             }
         }
         
-        open var server:String? {
+        public var server:String? {
             get {
                 return data["serverHost"] as? String;
             }
@@ -216,7 +292,7 @@ open class AccountManager {
             }
         }
         
-        open var rosterVersion:String? {
+        public var rosterVersion:String? {
             get {
                 return data["rosterVersion"] as? String;
             }
@@ -229,7 +305,7 @@ open class AccountManager {
             }
         }
         
-        open var presenceDescription: String? {
+        public var presenceDescription: String? {
             get {
                 return data["presenceDescription"] as? String;
             }
@@ -242,7 +318,7 @@ open class AccountManager {
             }
         }
         
-        open var pushNotifications: Bool {
+        public var pushNotifications: Bool {
             get {
                 return (data["pushNotifications"] as? Bool) ?? false;
             }
@@ -251,15 +327,9 @@ open class AccountManager {
             }
         }
         
-        open var pushSettings: SiskinPushNotificationsModule.PushSettings? {
+        public var pushSettings: SiskinPushNotificationsModule.PushSettings? {
             get {
-                guard let settings = SiskinPushNotificationsModule.PushSettings(dictionary: data["push"] as? [String: Any]) else {
-                    guard let pushServiceNode = self.pushServiceNode, let deviceId = Settings.DeviceToken.string() else {
-                        return nil;
-                    }
-                    return SiskinPushNotificationsModule.PushSettings(jid: self.pushServiceJid ?? XmppService.pushServiceJid, node: pushServiceNode, deviceId: deviceId, encryption: false, maxSize: nil);
-                }
-                return settings;
+                return SiskinPushNotificationsModule.PushSettings(dictionary: data["push"] as? [String: Any]);
             }
             set {
                 data["push"] = newValue?.dictionary();
@@ -268,46 +338,20 @@ open class AccountManager {
             }
         }
         
-        private var pushServiceJid: JID? {
+        public var serverCertificate: ServerCertificateInfo? {
             get {
-                return JID(data["pushServiceJid"] as? String);
+                return data["serverCert"] as? ServerCertificateInfo;
             }
             set {
                 if newValue != nil {
-                    data["pushServiceJid"] = newValue!.stringValue as AnyObject?;
-                } else {
-                    data.removeValue(forKey: "pushServiceJid");
-                }
-            }
-        }
-        
-        private var pushServiceNode: String? {
-            get {
-                return data["pushServiceNode"] as? String;
-            }
-            set {
-                if newValue != nil {
-                    data["pushServiceNode"] = newValue as AnyObject?;
-                } else {
-                    data.removeValue(forKey: "pushServiceNode");
-                }
-            }
-        }
-        
-        open var serverCertificate: [String: Any]? {
-            get {
-                return data["serverCert"] as? [String: Any];
-            }
-            set {
-                if newValue != nil {
-                    data["serverCert"] = newValue as AnyObject?;
+                    data["serverCert"] = newValue;
                 } else {
                     data.removeValue(forKey: "serverCert");
                 }
             }
         }
         
-        open var saltedPassword: SaltEntry? {
+        public var saltedPassword: SaltEntry? {
             get {
                 return SaltEntry(dict: data["saltedPassword"] as? [String: Any]);
             }
@@ -325,12 +369,12 @@ open class AccountManager {
             self.data = data ?? [String: Any]();
         }
         
-        open func acceptCertificate(_ certData: SslCertificateInfo?) {
-            guard certData != nil else {
+        public mutating func acceptCertificate(_ certData: SslCertificateInfo?) {
+            guard let data = certData else {
                 self.serverCertificate = nil;
                 return;
             }
-            self.serverCertificate = [ "accepted" : true, "cert-hash-sha1" : certData!.details.fingerprintSha1 as Any ];
+            self.serverCertificate = ServerCertificateInfo(sslCertificateInfo: data, accepted: true);
         }
     }
     

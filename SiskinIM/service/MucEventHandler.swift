@@ -22,168 +22,150 @@
 import Foundation
 import TigaseSwift
 import UserNotifications
+import Combine
 
-class MucEventHandler: XmppServiceEventHandler {
-    
-    static let ROOM_STATUS_CHANGED = Notification.Name("roomStatusChanged");
-    static let ROOM_NAME_CHANGED = Notification.Name("roomNameChanged");
-    static let ROOM_OCCUPANTS_CHANGED = Notification.Name("roomOccupantsChanged");
-    
+class MucEventHandler: XmppServiceExtension {
+        
     static let instance = MucEventHandler();
 
-    let events: [Event] = [ SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE, MucModule.OccupantChangedNickEvent.TYPE, MucModule.OccupantChangedPresenceEvent.TYPE, MucModule.OccupantLeavedEvent.TYPE, MucModule.OccupantComesEvent.TYPE, MucModule.PresenceErrorEvent.TYPE, MucModule.InvitationReceivedEvent.TYPE, MucModule.InvitationDeclinedEvent.TYPE, PEPBookmarksModule.BookmarksChangedEvent.TYPE ];
-    
-    func handle(event: Event) {
-        switch event {
-        case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
-            guard !XmppService.instance.isFetch else {
+    func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
+        client.$state.sink(receiveValue: { [weak client] state in
+            guard let client = client, case .connected(let resumed) = state, !resumed else {
                 return;
             }
-            if let client = XmppService.instance.getClient(for: e.sessionObject.userBareJid!), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) {
-                mucModule.roomsManager.getRooms().forEach { (r) in
-                    let room = r as! DBRoom;
-                    // first we need to check if room supports MAM
-                    if let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID), let mamModule: MessageArchiveManagementModule = client.modulesManager.getModule(MessageArchiveManagementModule.ID) {
-                        discoModule.getInfo(for: room.jid, completionHandler: { result in
-                            var mamVersions: [MessageArchiveManagementModule.Version] = [];
-                            switch result {
-                            case .success(_, _, let features):
-                                room.supportedFeatures = features;
-                                mamVersions = features.map({ MessageArchiveManagementModule.Version(rawValue: $0) }).filter({ $0 != nil}).map({ $0! });
-                            default:
-                                room.supportedFeatures = [];
-                                break;
-                            }
-                            if let timestamp = room.lastMessageDate, !mamVersions.isEmpty {
-                                let account = e.sessionObject.userBareJid!;
-                                room.onRoomJoined = { room in
-                                    MessageEventHandler.syncMessages(for: account, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: room.jid, since: timestamp);
-                                }
-                                _ = room.rejoin(skipHistoryFetch: true);
-                                NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
-                            } else {
-                                _ = room.rejoin();
-                                NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
-                            }
-                        });
-                    } else {
-                        _ = room.rejoin();
-                        NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
+            client.module(.muc).roomManager.rooms(for: client).forEach { (room) in
+                // first we need to check if room supports MAM
+                DBChatMarkersStore.instance.awaitingSync(for: room as! Room);
+                client.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
+                    var mamVersions: [MessageArchiveManagementModule.Version] = [];
+                    switch result {
+                    case .success(let info):
+                        mamVersions = info.features.compactMap({ MessageArchiveManagementModule.Version(rawValue: $0) });
+                            (room as! Room).features = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
+                    default:
+                        break;
                     }
-                }
+                    if let timestamp = (room as? Room)?.timestamp {
+                        if !mamVersions.isEmpty {
+                            room.rejoin(fetchHistory: .skip).handle({ result in
+                                guard case .success(let r) = result else {
+                                    return;
+                                }
+                                switch r {
+                                case .created(let room), .joined(let room):
+                                    guard let client = room.context as? XMPPClient else {
+                                        return;
+                                    }
+                                    MessageEventHandler.syncMessages(for: client, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: JID(room.jid), since: timestamp);
+                                }
+                            });
+                        } else {
+                            DBChatMarkersStore.instance.syncCompleted(forAccount: room.account, with: room.jid);
+                            _ = room.rejoin(fetchHistory: .from(timestamp));
+                        }
+                    } else {
+                        DBChatMarkersStore.instance.syncCompleted(forAccount: room.account, with: room.jid);
+                        _ = room.rejoin(fetchHistory: .initial);
+                    }
+                });
             }
-        case let e as MucModule.YouJoinedEvent:
-            guard let room = e.room as? DBRoom else {
-                return;
+        }).store(in: &cancellables);
+        client.module(.muc).messagesPublisher.sink(receiveValue: { e in
+            let room = e.room as! Room;
+            if let subject = e.message.subject {
+                // how can we find room from here?
+                room.subject = subject;
             }
-            NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
-            NotificationCenter.default.post(name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: room.presences[room.nickname]);
-            updateRoomName(room: room);
-        case let e as MucModule.RoomClosedEvent:
-            guard let room = e.room as? DBRoom else {
-                return;
-            }
-            NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
-        case let e as MucModule.MessageReceivedEvent:
-            guard let room = e.room as? DBRoom else {
-                return;
-            }
-            
-            if e.message.findChild(name: "subject") != nil {
-                room.subject = e.message.subject;
-                NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
-            }
-
             if let xUser = XMucUserElement.extract(from: e.message) {
                 if xUser.statuses.contains(104) {
                     self.updateRoomName(room: room);
-                    XmppService.instance.refreshVCard(account: room.account, for: room.roomJid, onSuccess: nil, onError: nil);
+                    VCardManager.instance.refreshVCard(for: room.roomJid, on: room.account, completionHandler: nil);
                 }
             }
-
-            DBChatHistoryStore.instance.append(for: room.account, message: e.message, source: .stream);
-        case let e as MucModule.AbstractOccupantEvent:
-            if let room = e.room as? DBRoom, room.isOMEMOCapable, let jid = e.occupant.jid {
-                if (e.occupant.affiliation == .none || e.occupant.affiliation == .outcast) {
-                    // remove
-                    DispatchQueue.main.async {
-                        if let idx = room.members?.firstIndex(of: jid) {
-                            room.members?.remove(at: idx);
-                        }
-                    }
-                } else {
-                    // ensure exists
-                    DispatchQueue.main.async {
-                        if let members = room.members, !members.contains(jid) {
-                            room.members?.append(jid);
-                        }
-                    }
-                }
-            }
-            NotificationCenter.default.post(name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: e);
-        case let e as MucModule.PresenceErrorEvent:
-            guard let error = MucModule.RoomError.from(presence: e.presence), e.nickname == nil || e.nickname! == e.room.nickname else {
+            DBChatHistoryStore.instance.append(for: room, message: e.message, source: .stream);
+        }).store(in: &cancellables);
+        client.module(.muc).inivitationsPublisher.sink(receiveValue: { [weak client] invitation in
+            guard let client = client, invitation.roomJid.localPart != nil else {
                 return;
             }
-            print("received error from room:", e.room as Any, ", error:", error)
-            
-            let content = UNMutableNotificationContent();
-            content.title = "Room \(e.room.roomJid.stringValue)";
-            content.body = "Could not join room. Reason:\n\(error.reason)";
-            content.sound = .default;
-            if error != .banned && error != .registrationRequired {
-                content.userInfo = ["account": e.sessionObject.userBareJid!.stringValue, "roomJid": e.room.roomJid.stringValue, "nickname": e.room.nickname, "id": "room-join-error"];
-            }
-            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
-            UNUserNotificationCenter.current().add(request) { (error) in
-                print("could not show notification:", error as Any);
-            }
-
-            guard let mucModule: MucModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MucModule.ID) else {
+                
+            let mucModule = client.module(.muc);
+            guard mucModule.roomManager.room(for: client, with: invitation.roomJid) == nil else {
+                mucModule.decline(invitation: invitation, reason: nil);
                 return;
             }
-            mucModule.leave(room: e.room);
-        case let e as MucModule.InvitationReceivedEvent:
-            NotificationCenter.default.post(name: XmppService.MUC_ROOM_INVITATION, object: e);
-            break;
-        case let e as PEPBookmarksModule.BookmarksChangedEvent:
-            guard let client = XmppService.instance.getClient(for: e.sessionObject.userBareJid!), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID), Settings.enableBookmarksSync.bool() else {
+                
+            InvitationManager.instance.addMucInvitation(for: client.userBareJid, roomJid: invitation.roomJid, invitation: invitation);
+        }).store(in: &cancellables);
+        client.module(.pepBookmarks).$currentBookmarks.sink(receiveValue: { [weak client] bookmarks in
+            guard let client = client else {
                 return;
             }
-            
-            e.bookmarks?.items.filter { bookmark in bookmark is Bookmarks.Conference }.map { bookmark in bookmark as! Bookmarks.Conference }.filter { bookmark in
-                return !mucModule.roomsManager.contains(roomJid: bookmark.jid.bareJid);
-                }.forEach({ (bookmark) in
-                    guard let nick = bookmark.nick, bookmark.autojoin else {
+            let mucModule = client.module(.muc);
+            bookmarks.items.compactMap({ $0 as? Bookmarks.Conference }).filter { bookmark in
+                return mucModule.roomManager.room(for: client, with: bookmark.jid.bareJid) == nil;
+            }.forEach({ (bookmark) in
+                guard let nick = bookmark.nick, bookmark.autojoin else {
                         return;
                     }
                     _ = mucModule.join(roomName: bookmark.jid.localPart!, mucServer: bookmark.jid.domain, nickname: nick, password: bookmark.password);
                 });
-        default:
-            break;
-        }
-    }
-    
-    open func sendPrivateMessage(room: DBRoom, recipientNickname: String, body: String) {
-        let message = room.createPrivateMessage(body, recipientNickname: recipientNickname);
-        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: .outgoing, authorNickname: room.nickname, authorJid: nil, recipientNickname: recipientNickname, participantId: nil, type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, encryptionFingerprint: nil, appendix: nil, linkPreviewAction: .auto, completionHandler: nil);
-        room.context.writer?.write(message);
+        }).store(in: &cancellables);
     }
         
-    fileprivate func updateRoomName(room: DBRoom) {
-        guard let client = XmppService.instance.getClient(for: room.account), let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) else {
+    static func showJoinError(_ err: XMPPError, for room: Room) {
+        guard let error = MucModule.RoomError.from(error: err), let context = room.context else {
             return;
         }
-        
-        discoModule.getInfo(for: room.jid, onInfoReceived: { (node, identities, features) in
-            let newName = identities.first(where: { (identity) -> Bool in
-                return identity.category == "conference";
-            })?.name?.trimmingCharacters(in: .whitespacesAndNewlines);
-            room.supportedFeatures = features;
+        print("received error from room:", room, ", error:", error)
             
-            DBChatStore.instance.updateChatName(for: room.account, with: room.roomJid, name: (newName?.isEmpty ?? true) ? nil : newName);
-        }, onError: nil);
+        let content = UNMutableNotificationContent();
+        content.title = "Room \(room.roomJid.stringValue)";
+        content.body = "Could not join room. Reason:\n\(error.reason)";
+        content.sound = .default;
+        if error != .banned && error != .registrationRequired {
+            content.userInfo = ["account": context.userBareJid.stringValue, "roomJid": room.roomJid.stringValue, "nickname": room.nickname, "id": "room-join-error"];
+        }
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
+        UNUserNotificationCenter.current().add(request) { (error) in
+            print("could not show notification:", error as Any);
+        }
+        
+        context.module(.muc).leave(room: room);
     }
+            
+    public func updateRoomName(room: Room) {
+        room.context?.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
+            switch result {
+            case .success(let info):
+                let newName = info.identities.first(where: { (identity) -> Bool in
+                    return identity.category == "conference";
+                })?.name?.trimmingCharacters(in: .whitespacesAndNewlines);
+                
+                room.updateRoom(name: newName);
+            case .failure(_):
+                break;
+            }
+        });
+    }
+}
+
+class CustomMucModule: MucModule {
+    
+    override func join(room: RoomProtocol, fetchHistory: RoomHistoryFetch) -> Future<RoomJoinResult, XMPPError> {
+        return Future({ promise in
+            super.join(room: room, fetchHistory: fetchHistory).handle({ result in
+                switch result {
+                case .success(_):
+                    MucEventHandler.instance.updateRoomName(room: room as! Room);
+                case .failure(_):
+                    break;
+                }
+                promise(result);
+            })
+        });
+    }
+    
 }
 
 extension MucModule.RoomError {

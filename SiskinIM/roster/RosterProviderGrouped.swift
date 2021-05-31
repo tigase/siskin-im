@@ -25,13 +25,10 @@ import TigaseSwift
 
 public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGroupedItem>, RosterProvider {
     
-    fileprivate var items: [String: [RosterProviderGroupedItem]];
+    private var groups = [RosterProviderGroup]();
     
-    var groups = [String]();
-    
-    override init(dbConnection: DBConnection, order: RosterSortingOrder, availableOnly: Bool, displayHiddenGroup: Bool, updateNotificationName: Notification.Name) {
-        self.items = [:];
-        super.init(dbConnection: dbConnection, order: order, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup, updateNotificationName: updateNotificationName);
+    override init(controller: AbstractRosterViewController) {
+        super.init(controller: controller);
     }
     
     func numberOfSections() -> Int {
@@ -39,243 +36,89 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
     }
     
     func numberOfRows(in section: Int) -> Int {
-        let group = groups[section];
-        return items[group]!.count;
+        return groups[section].items.count;
     }
     
     func item(at indexPath: IndexPath) -> RosterProviderItem {
-        let group = groups[indexPath.section];
-        return items[group]![indexPath.row];
+        return groups[indexPath.section].items[indexPath.row];
     }
     
     func sectionHeader(at: Int) -> String? {
-        return groups[at];
+        return groups[at].name;
     }
     
-    override func handle(presenceEvent e: PresenceModule.ContactPresenceChanged) {
-        guard e.presence.from != nil else {
-            return;
-        }
-        if let item = findItemFor(account: e.sessionObject.userBareJid!, jid: e.presence.from!) {
-            let presence = PresenceModule.getPresenceStore(e.sessionObject).getBestPresence(for: e.presence.from!.bareJid);
-//            let changed = order != .alphabetical && item.presence?.show != presence?.show;
-            item.update(presence: presence);
-
-            let fromPos = positionsFor(item: item);
-//            if changed {
-                if updateItems() {
-                    notify(refresh: true);
-                    return;
-                }
-                let toPos = positionsFor(item: item);
-                notify(from: fromPos, to: toPos);
-//            } else {
-//                notify(from: fromPos, to: fromPos);
-//            }
-        }
+    override func newItem(rosterItem item: RosterItem, account: BareJID, presence: Presence?) -> RosterProviderGroupedItem? {
+        let groups = item.groups.isEmpty ? ["Default"] : item.groups;
+        return RosterProviderGroupedItem(account: account, jid: item.jid.bareJid, presence: presence, displayName: item.name ?? item.jid.stringValue, groups: groups);
     }
     
-    override func handle(rosterItemUpdatedEvent e: RosterModule.ItemUpdatedEvent) {
-        let cleared = e.rosterItem == nil;
-        guard !cleared else {
-            return;
-        }
-        let idx = findItemIdxFor(account: e.sessionObject.userBareJid!, jid: e.rosterItem!.jid)
-        switch e.action! {
-        case .removed:
-            guard idx != nil else {
-                return;
-            }
-            let item = self.allItems[idx!];
-            let fromPos = positionsFor(item: item);
-            self.allItems.remove(at: idx!);
-            if updateItems() {
-                notify(refresh: true);
-                return;
-            }
-            if !fromPos.isEmpty {
-                notify(from: fromPos);
-            }
-        default:
-            let item = idx != nil ? self.allItems[idx!] : RosterProviderGroupedItem(account: e.sessionObject.userBareJid!, jid: e.rosterItem!.jid, name: e.rosterItem?.name, presence: nil);
-            let fromPos = positionsFor(item: item);
-
-            item.groups = e.rosterItem!.groups;
-            
-            if idx != nil {
-                item.name = e.rosterItem?.name;
-            } else {
-                self.allItems.append(item);
-            }
-            if updateItems() {
-                notify(refresh: true);
-                return;
-            }
-
-            let toPos = positionsFor(item: item);
-            notify(from: fromPos, to: toPos);
-        }
-    }
-    
-    func filterItems() -> [RosterProviderGroupedItem] {
-        if queryString != nil {
-            return allItems.filter { (item) -> Bool in
-                if item.name?.lowercased().contains(queryString!) ?? false {
-                    return true;
-                }
-                if item.jid.stringValue.lowercased().contains(queryString!) {
-                    return true;
-                }
-                return false;
-            };
-        } else {
-            var items = allItems;
-            if availableOnly {
-                items = items.filter { (item) -> Bool in
-                    item.presence?.show != nil
-                }
-            }
-            if !displayHiddenGroup {
-                items = items.filter { (item) -> Bool in
-                    item.groups.firstIndex(of: "Hidden") == nil
-                }
-            }
-            return items;
-        }
-    }
-    
-    override func updateItems() -> Bool {
-        var groups: Set<String> = [];
-        let items = filterItems();
-        var groupedItems: [String:[RosterProviderGroupedItem]] = [:];
-        items.forEach { item in
-            groups = groups.union(item.groups);
-            item.groups.forEach { group in
-                var groupItems = groupedItems[group] ?? [];
-                groupItems.append(item);
-                groupedItems[group] = groupItems;
-            }
-        }
-        
+    override func updateItems(items: [RosterProviderGroupedItem], order: RosterSortingOrder) {
+        let groupNames = Set(items.flatMap({ $0.groups })).sorted();
+        let newGroups = groupNames.map({ name in RosterProviderGroup(name: name, items: self.sort(items: items.filter({ $0.groups.contains(name) }), order: order))});
         let oldGroups = self.groups;
-        let needToAddDefault = groups.remove("Default") != nil;
-        self.groups = groups.sorted();
-        if needToAddDefault {
-            self.groups.insert("Default", at: 0);
+
+        let removeSections = IndexSet(oldGroups.map({ $0.name }).filter({ !groupNames.contains($0) }).compactMap({ name in oldGroups.firstIndex(where: { $0.name == name })}));
+        let newSections = IndexSet(newGroups.map({ $0.name }).filter({ name in !oldGroups.contains(where: { $0.name == name })}).compactMap({ name in newGroups.firstIndex(where: { $0.name == name }) }));
+        
+        // TODO: calculate items to remove/insert for each section..
+        DispatchQueue.main.async {
+            self.groups = newGroups;
+            self.controller?.tableView.beginUpdates();
+            self.controller?.tableView.deleteSections(removeSections, with: .fade);
+            self.controller?.tableView.insertSections(newSections, with: .fade);
+            self.controller?.tableView.endUpdates();
         }
-        
-        self.groups.forEach { group in
-            var groupItems = groupedItems[group]!;
-            switch order {
-            case .alphabetical:
-                groupItems.sort { (i1, i2) -> Bool in
-                    i1.displayName < i2.displayName;
-                }
-            case .availability:
-                groupItems.sort { (i1, i2) -> Bool in
-                    let s1 = i1.presence?.show?.weight ?? 0;
-                    let s2 = i2.presence?.show?.weight ?? 0;
-                    if s1 == s2 {
-                        return i1.displayName < i2.displayName;
-                    }
-                    return s1 > s2;
-                }
-            }
-            groupedItems[group] = groupItems;
-        }
-        
-        self.items = groupedItems;
-        
-        return oldGroups != self.groups;
     }
     
     func positionsFor(item: RosterProviderGroupedItem) -> [IndexPath] {
         var paths = [IndexPath]();
         
-        item.groups.forEach { group in
-            if let idx = self.items[group]?.firstIndex(where: { $0.jid == item.jid && $0.account == item.account }) {
-                let gidx = groups.firstIndex(of: group);
-                paths.append(IndexPath(row: idx, section: gidx!));
+        for section in 0..<groups.count {
+            if let row = groups[section].items.firstIndex(where: { $0.jid == item.jid && $0.account == item.account }) {
+                paths.append(IndexPath(row: row, section: section));
             }
         }
         
         return paths;
     }
     
-    override func loadItems() -> [RosterProviderGroupedItem] {
-        let items = super.loadItems();
-        
-        var tmp: [BareJID:[JID: [String]]] = [:];
-        try! self.dbConnection.prepareStatement("SELECT ri.account, ri.jid, rg.name AS group_name FROM roster_items ri INNER JOIN roster_items_groups rig ON ri.id = rig.item_id INNER JOIN roster_groups rg ON rg.id = rig.group_id").query() { (it) -> Void in
-            let account: BareJID = it["account"]!;
-            let jid: JID = it["jid"]!;
-            let group: String = it["group_name"]!;
-            
-            var jids = tmp[account] ?? [:];
-            var groups: [String]? = jids[jid];
-            
-            if groups == nil {
-                jids[jid] = [group];
-            } else {
-                groups!.append(group);
-                jids[jid] = groups;
-            }
-            
-            tmp[account] = jids;
-        }
-        
-        items.forEach { (item) in
-            if let groups = tmp[item.account]?[item.jid] {
-                item.groups = groups;
-            }
-        }
-        
-        return items;
+}
+
+public class RosterProviderGroup {
+    
+    public let name: String;
+    public let items: [RosterProviderGroupedItem];
+    
+    init(name: String, items: [RosterProviderGroupedItem]) {
+        self.name = name;
+        self.items = items;
     }
     
-    override func processDBloadQueryResult(it: DBCursor) -> RosterProviderGroupedItem? {
-        let account: BareJID = it["account"]!;
-        if let sessionObject = XmppService.instance.getClient(forJid: account)?.sessionObject {
-            let presenceStore = PresenceModule.getPresenceStore(sessionObject);
-            let jid: JID = it["jid"]!;
-            return RosterProviderGroupedItem(account: account, jid: jid, name: it["name"], presence: presenceStore.getBestPresence(for: jid.bareJid));
-        }
-        return nil;
-    }
 }
 
 public class RosterProviderGroupedItem: RosterProviderItem {
     
+    public static func == (lhs: RosterProviderGroupedItem, rhs: RosterProviderGroupedItem) -> Bool {
+        return lhs.account == rhs.account && lhs.jid == rhs.jid;
+    }
+    
     public let account: BareJID;
-    internal var name: String?;
-    public let jid: JID;
-    fileprivate var presence_: Presence?;
-    public var presence: Presence? {
-        return presence_;
-    }
+    public let jid: BareJID;
+    public let presence: Presence?;
+    public let displayName: String;
+    public let groups: [String];
     
-    public var displayName: String {
-        return name != nil ? name! : jid.stringValue;
-    }
-    
-    fileprivate var groups: [String] {
-        didSet {
-            if groups.isEmpty {
-                groups = ["Default"];
-            }
-        }
-    }
-    
-    public init(account: BareJID, jid: JID, name:String?, presence: Presence?) {
+    init(account: BareJID, jid: BareJID, presence: Presence?, displayName: String, groups: [String]) {
         self.account = account;
         self.jid = jid;
-        self.name = name;
-        self.presence_ = presence;
-        self.groups = ["Default"];
+        self.presence = presence;
+        self.displayName = displayName;
+        self.groups = groups;
     }
     
-    fileprivate func update(presence: Presence?) {
-        self.presence_ = presence;
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(account);
+        hasher.combine(jid);
     }
-    
+
 }

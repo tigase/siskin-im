@@ -29,7 +29,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     
     var conversationLogController: ConversationLogController? {
         didSet {
-            self.conversationLogController?.chat = self.chat;
+            self.conversationLogController?.conversation = self.conversation;
         }
     }
     
@@ -37,15 +37,12 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     
     var sendMessageButton: UIButton?;
     
-    var chat: DBChatProtocol! {
+    var conversation: Conversation! {
         didSet {
-            conversationLogController?.chat = chat;
+            conversationLogController?.conversation = conversation;
         }
     }
         
-    var account:BareJID!;
-    var jid:BareJID!;
-    
     private(set) var correctedMessageOriginId: String?;
     
     var progressBar: UIProgressView?;
@@ -72,7 +69,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        chatViewInputBar.placeholder = "from \(account.stringValue)...";
+        chatViewInputBar.placeholder = "from \(conversation.account.stringValue)...";
 
         navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem;
         navigationItem.leftItemsSupplementBackButton = true;
@@ -134,11 +131,11 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
         super.viewWillAppear(animated);
         
         if self.messageText?.isEmpty ?? true {
-            XmppService.instance.dbChatStore.messageDraft(for: account, with: jid) { (text) in
+            DBChatStore.instance.messageDraft(for: conversation.account, with: conversation.jid, completionHandler: { text in
                 DispatchQueue.main.async {
                     self.messageText = text;
                 }
-            }
+            })
         }
 //        chatViewInputBar.becomeFirstResponder();
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil);
@@ -182,18 +179,19 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated);
-        let accountStr = account.stringValue.lowercased();
-        let jidStr = jid.stringValue.lowercased();
-        UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
-            var toRemove = [String]();
-            for notification in notifications {
-                if (notification.request.content.userInfo["account"] as? String)?.lowercased() == accountStr && (notification.request.content.userInfo["sender"] as? String)?.lowercased() == jidStr {
-                    toRemove.append(notification.request.identifier);
-                }
-            }
-            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
-//            self.xmppService.dbChatHistoryStore.markAsRead(for: self.account, with: self.jid);
-        }
+        // FIXME: we may need to restore that!! or chat history markers will handle that!!
+//        let accountStr = conversation.account.stringValue.lowercased();
+//        let jidStr = conversation.jid.stringValue.lowercased();
+//        UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
+//            var toRemove = [String]();
+//            for notification in notifications {
+//                if (notification.request.content.userInfo["account"] as? String)?.lowercased() == accountStr && (notification.request.content.userInfo["sender"] as? String)?.lowercased() == jidStr {
+//                    toRemove.append(notification.request.identifier);
+//                }
+//            }
+//            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
+////            self.xmppService.dbChatHistoryStore.markAsRead(for: self.account, with: self.jid);
+//        }
         print("size:", chatViewInputBar.intrinsicContentSize, chatViewInputBar.frame.size);
     }
         
@@ -201,9 +199,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil);
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil);
         super.viewWillDisappear(animated);
-        if let account = self.account, let jid = self.jid {
-            XmppService.instance.dbChatStore.storeMessage(draft: messageText, for: account, with: jid);
-        }
+        DBChatStore.instance.storeMessage(draft: messageText, for: conversation.account, with: conversation.jid);
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -315,7 +311,7 @@ class ChatViewInputBar: UIView, UITextViewDelegate, NSTextStorageDelegate {
         view.isScrollEnabled = false;
         view.usesStandardTextScaling = false;
         view.font = Markdown.font(withTextStyle: .body, andTraits: []);
-        if Settings.SendMessageOnReturn.getBool() {
+        if Settings.sendMessageOnReturn {
             view.returnKeyType = .send;
         } else {
             view.returnKeyType = .default;
@@ -447,7 +443,7 @@ class ChatViewInputBar: UIView, UITextViewDelegate, NSTextStorageDelegate {
         //textStorage.setAttributes([.font: self.font!], range: fullRange);
         textStorage.addAttributes([.foregroundColor: UIColor.label], range: fullRange);
         
-        if Settings.EnableMarkdownFormatting.bool() {
+        if Settings.enableMarkdownFormatting {
             Markdown.applyStyling(attributedString: textStorage, defTextStyle: .body, showEmoticons: false);
         }
     }

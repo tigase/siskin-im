@@ -92,7 +92,7 @@ class OMEMOFingerprintsController: UITableViewController {
             guard let identity = self?.otherIdentities[indexPath.row] else {
                 return;
             }
-            guard let omemoModule: OMEMOModule = XmppService.instance.getClient(forJid: account)?.modulesManager.getModule(OMEMOModule.ID) else {
+            guard let omemoModule = XmppService.instance.getClient(for: account)?.module(.omemo) else {
                 return;
             }
             

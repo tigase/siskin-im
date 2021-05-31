@@ -17,9 +17,9 @@ class ChatAttachmentsCellView: UICollectionViewCell, UIDocumentInteractionContro
     private var id: Int {
         return item?.id ?? NSNotFound;
     };
-    private var item: ChatAttachment?;
+    private var item: ConversationEntry?;
     
-    func set(item: ChatAttachment) {
+    func set(item: ConversationEntry) {
         self.item = item;
         
         self.addInteraction(UIContextMenuInteraction(delegate: self));
@@ -51,7 +51,7 @@ class ChatAttachmentsCellView: UICollectionViewCell, UIDocumentInteractionContro
                 self.imageField.image = UIImage.icon(forFile: fileUrl, mimeType: nil);
             }
         } else {
-            if let mimetype = item.appendix.mimetype, let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimetype as CFString, nil)?.takeRetainedValue() as String? {
+            if case .attachment(let url, let appendix) = item.payload, let mimetype = appendix.mimetype, let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimetype as CFString, nil)?.takeRetainedValue() as String? {
                 imageField.image = UIImage.icon(forUTI: uti);
             } else {
                 imageField.image = UIImage.icon(forUTI: "public.content")
@@ -77,7 +77,7 @@ class ChatAttachmentsCellView: UICollectionViewCell, UIDocumentInteractionContro
                     self.open(url: localUrl, preview: true);
                 }),
                 UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc"), handler: { action in
-                    guard let text = self.item?.copyText(withTimestamp: Settings.CopyMessagesWithTimestamps.getBool(), withSender: false) else {
+                    guard let text = self.item?.copyText(withTimestamp: Settings.copyMessagesWithTimestamps, withSender: false) else {
                         return;
                     }
                     UIPasteboard.general.strings = [text];
@@ -90,7 +90,7 @@ class ChatAttachmentsCellView: UICollectionViewCell, UIDocumentInteractionContro
                 UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: [.destructive], handler: { action in
                     print("delete called");
                     DownloadStore.instance.deleteFile(for: "\(item.id)");
-                    DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+                    DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                         appendix.state = .removed;
                     })
                 })

@@ -21,12 +21,22 @@
 
 import Foundation
 import TigaseSwift
+import Combine
 
 open class DNSSrvDiskCache: DNSSrvResolverWithCache.DiskCache {
     
+    private var cancellable: AnyCancellable?;
+    
     public override init(cacheDirectoryName: String) {
         super.init(cacheDirectoryName: cacheDirectoryName);
-        NotificationCenter.default.addObserver(self, selector: #selector(accountChanged(_:)), name: AccountManager.ACCOUNT_CHANGED, object: nil);
+        self.cancellable = AccountManager.accountEventsPublisher.sink(receiveValue: { event in
+            switch event {
+            case .disabled(let account), .removed(let account):
+                self.store(for: account.name.domain, result: nil);
+            case .enabled(_):
+                break;
+            }
+        });
     }
     
     @objc fileprivate func accountChanged(_ notification: Notification) {

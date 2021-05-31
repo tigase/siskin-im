@@ -21,6 +21,7 @@
 
 import UIKit
 import TigaseSwift
+import Combine
 
 class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar {
 
@@ -30,186 +31,58 @@ class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         }
     }
     
-    var channel: DBChannel? {
-        get {
-            return self.chat as? DBChannel;
-        }
-        set {
-            self.chat = newValue;
-        }
+    var channel: Channel {
+        return conversation as! Channel;
     }
     
+    private var cancellables: Set<AnyCancellable> = [];
+    
     override func viewDidLoad() {
-        chat = DBChatStore.instance.getChat(for: account, with: jid);
         super.viewDidLoad();
         
-        navigationItem.title = channel?.name ?? jid.stringValue;
-        titleView?.channel = channel;
-        navigationItem.rightBarButtonItem?.isEnabled = (channel?.state ?? .left) == .joined;
         let recognizer = UITapGestureRecognizer(target: self, action: #selector(channelInfoClicked));
         self.titleView?.isUserInteractionEnabled = true;
         self.navigationController?.navigationBar.addGestureRecognizer(recognizer);
 
         initializeSharing();
-        NotificationCenter.default.addObserver(self, selector: #selector(channelUpdated(_:)), name: DBChatStore.CHAT_UPDATED, object: channel);
-        NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged(_:)), name: AvatarManager.AVATAR_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(accountStateChanged(_:)), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        navigationItem.rightBarButtonItem?.isEnabled = (channel?.state ?? .left) == .joined;
-        titleView?.connected = XmppService.instance.getClient(for: account)?.state ?? .disconnected == .connected;
+        channel.context!.$state.map({ $0 == .connected() }).combineLatest(channel.optionsPublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (connected, options) in
+            self?.titleView?.refresh(connected: connected, options: options);
+            self?.navigationItem.rightBarButtonItem?.isEnabled = options.state == .joined;
+        }).store(in: &cancellables);
+        channel.displayNamePublisher.map({ $0 }).assign(to: \.name, on: (self.titleView as! ChannelTitleView)).store(in: &cancellables);
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        cancellables.removeAll();
+        super.viewDidDisappear(animated);
     }
 
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let dbItem = dataSource.getItem(at: indexPath.row) else {
-            return tableView.dequeueReusableCell(withIdentifier: "ChatTableViewMessageCell", for: indexPath);
-        }
-        
-        var continuation = false;
-        if (indexPath.row + 1) < dataSource.count {
-            if let prevItem = dataSource.getItem(at:  indexPath.row + 1) {
-                continuation = dbItem.isMergeable(with: prevItem);
-            }
-        }
-        
-        switch dbItem {
-        case let item as ChatMessage:
-            if item.message.starts(with: "/me ") {
-                let cell = tableView.dequeueReusableCell(withIdentifier: "ChatTableViewMeCell", for: indexPath) as! ChatTableViewMeCell;
-                cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-                cell.set(item: item, nickname: item.authorNickname);
-                return cell;
-            } else {
-                let id = continuation ? "ChatTableViewMessageContinuationCell" : "ChatTableViewMessageCell";
-                
-                let cell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
-                cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-                //        cell.nicknameLabel?.text = item.nickname;
-                if cell.avatarView != nil {
-                    if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
-                        cell.avatarView?.set(name: item.authorNickname, avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
-                    } else if let participantId = item.participantId {
-                        cell.avatarView?.set(name: item.authorNickname, avatar: AvatarManager.instance.avatar(for: BareJID(localPart: "\(participantId)#\(item.jid.localPart!)", domain: item.jid.domain), on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
-                    } else {
-                        cell.avatarView?.set(name: item.authorNickname, avatar: nil, orDefault: AvatarManager.instance.defaultAvatar);
-                    }
-                }
-                cell.nicknameView?.text = item.authorNickname;
-                
-                cell.set(message: item);
-            return cell;
-            }
-        case let item as ChatAttachment:
-            let id = continuation ? "ChatTableViewAttachmentContinuationCell" : "ChatTableViewAttachmentCell";
-            let cell: AttachmentChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! AttachmentChatTableViewCell;
-            cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-            if cell.avatarView != nil {
-                if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
-                    cell.avatarView?.set(name: item.authorNickname, avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
-                } else if let participantId = item.participantId {
-                    cell.avatarView?.set(name: item.authorNickname, avatar: AvatarManager.instance.avatar(for: BareJID(localPart: "\(participantId)#\(item.jid.localPart!)", domain: item.jid.domain), on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
-                } else {
-                    cell.avatarView?.set(name: item.authorNickname, avatar: nil, orDefault: AvatarManager.instance.defaultAvatar);
-                }
-            }
-            cell.nicknameView?.text = item.authorNickname;
-
-            cell.set(attachment: item);
-            cell.setNeedsUpdateConstraints();
-            cell.updateConstraintsIfNeeded();
-                
-            return cell;
-        case let item as ChatLinkPreview:
-            let id = "ChatTableViewLinkPreviewCell";
-            let cell: LinkPreviewChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! LinkPreviewChatTableViewCell;
-            cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-            cell.set(linkPreview: item);
-            return cell;
-        case let item as SystemMessage:
-            let cell: ChatTableViewSystemCell = tableView.dequeueReusableCell(withIdentifier: "ChatTableViewSystemCell", for: indexPath) as! ChatTableViewSystemCell;
-            cell.set(item: item);
-            cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-            return cell;
-        case let item as ChatInvitation:
-            let id = "ChatTableViewInvitationCell";
-            let cell: InvitationChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! InvitationChatTableViewCell;
-            cell.contentView.transform = dataSource.inverted ? CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0) : CGAffineTransform.identity;
-            if cell.avatarView != nil {
-                if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
-                    cell.avatarView?.set(name: item.authorNickname, avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
-                } else if let participantId = item.participantId {
-                    cell.avatarView?.set(name: item.authorNickname, avatar: AvatarManager.instance.avatar(for: BareJID(localPart: "\(participantId)#\(item.jid.localPart!)", domain: item.jid.domain), on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
-                } else {
-                    cell.avatarView?.set(name: item.authorNickname, avatar: nil, orDefault: AvatarManager.instance.defaultAvatar);
-                }
-            }
-            cell.nicknameView?.text = item.authorNickname;
-            cell.set(invitation: item);
-            return cell;
-        default:
-            return tableView.dequeueReusableCell(withIdentifier: "ChatTableViewMessageCell", for: indexPath);
-        }
-
-    }
-
-    override func canExecuteContext(action: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.ContextAction, forItem item: ChatEntry, at indexPath: IndexPath) -> Bool {
+    override func canExecuteContext(action: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.ContextAction, forItem item: ConversationEntry, at indexPath: IndexPath) -> Bool {
         switch action {
         case .retract:
-            return item.state.direction == .outgoing && XmppService.instance.getClient(for: item.account)?.state ?? .disconnected == .connected && (self.chat as? Channel)?.state ?? .left == .joined;
+            return item.state.direction == .outgoing && channel.context?.state == .connected() && channel.state == .joined;
         default:
             return super.canExecuteContext(action: action, forItem: item, at: indexPath);
         }
     }
     
-    override func executeContext(action: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.ContextAction, forItem item: ChatEntry, at indexPath: IndexPath) {
+    override func executeContext(action: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar.ContextAction, forItem item: ConversationEntry, at indexPath: IndexPath) {
         switch action {
         case .retract:
-            guard let channel = self.chat as? Channel, item.state.direction == .outgoing else {
+            guard item.state.direction == .outgoing else {
                 return;
             }
             
-            DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
-                let message = channel.createMessageRetraction(forMessageWithId: originId);
-                message.id = UUID().uuidString;
-                message.originId = message.id;
-                guard let client = XmppService.instance.getClient(for: item.account), client.state == .connected, channel.state == .joined else {
-                    return;
-                }
-                client.context.writer?.write(message);
-                DBChatHistoryStore.instance.retractMessage(for: item.account, with: item.jid, stanzaId: originId, authorNickname: item.authorNickname, participantId: item.participantId, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
-            })
+            channel.retract(entry: item);
         default:
             super.executeContext(action: action, forItem: item, at: indexPath);
         }
     }
     
-    @objc func accountStateChanged(_ notification: Notification) {
-        let account = BareJID(notification.userInfo!["account"]! as! String);
-        if self.account == account {
-            DispatchQueue.main.async {
-                self.titleView?.connected = XmppService.instance.getClient(for: account)?.state ?? .disconnected == .connected;
-            }
-        }
-    }
-
-    @objc func avatarChanged(_ notification: Notification) {
-        guard ((notification.userInfo?["jid"] as? BareJID) == jid) else {
-            return;
-        }
-        DispatchQueue.main.async {
-            self.conversationLogController?.reloadVisibleItems();
-        }
-    }
-    
-    @objc func channelUpdated(_ notification: Notification) {
-        DispatchQueue.main.async {
-            self.titleView?.refresh();
-            self.navigationItem.rightBarButtonItem?.isEnabled = (self.channel?.state ?? .left) == .joined;
-        }
-    }
-
     @IBAction func sendClicked(_ sender: UIButton) {
         self.sendMessage();
     }
@@ -229,31 +102,25 @@ class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
     }
     
     override func sendMessage() {
-        let text = messageText;
-        guard !(text?.isEmpty != false) else {
+        guard let text = messageText, !text.isEmpty else {
             return;
         }
-        
-        guard channel?.state == .joined else {
+                
+        guard channel.state == .joined else {
             let alert: UIAlertController?  = UIAlertController.init(title: "Warning", message: "You are not joined to the channel.", preferredStyle: .alert);
             alert?.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
             self.present(alert!, animated: true, completion: nil);
             return;
         }
         
-        let msg = self.channel!.createMessage(text);
-        msg.lastMessageCorrectionId = self.correctedMessageOriginId;
-        XmppService.instance.getClient(for: account)?.context.writer?.write(msg);
+        channel.sendMessage(text: text, correctedMessageOriginId: self.correctedMessageOriginId);
         DispatchQueue.main.async {
             self.messageText = nil;
         }
     }
     
     override func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (() -> Void)?) {
-        let msg = self.channel!.createMessage(uploadedUrl);
-        msg.oob = uploadedUrl;
-        XmppService.instance.getClient(for: account)?.context.writer?.write(msg);
-        completionHandler?();
+        channel.sendAttachment(url: uploadedUrl, appendix: appendix, originalUrl: originalUrl, completionHandler: completionHandler);
     }
     
 }
@@ -262,22 +129,16 @@ class ChannelTitleView: UIView {
     
     @IBOutlet var nameView: UILabel!;
     @IBOutlet var statusView: UILabel!;
-
-    var connected: Bool = false {
-        didSet {
-            guard connected != oldValue else {
-                return;
-            }
-            refresh();
+    
+    var name: String? {
+        get {
+            return nameView.text;
+        }
+        set {
+            nameView.text = newValue;
         }
     }
     
-    var channel: DBChannel? {
-        didSet {
-            nameView.text = channel?.name ?? channel?.jid.stringValue ?? "";
-        }
-    }
-   
     override var intrinsicContentSize: CGSize {
         return UIView.layoutFittingExpandedSize
     }
@@ -288,14 +149,14 @@ class ChannelTitleView: UIView {
             NSLayoutConstraint.activate([ self.widthAnchor.constraint(lessThanOrEqualTo: superview.widthAnchor, multiplier: 0.6)]);
         }
     }
-    
-     func refresh() {
+        
+    func refresh(connected: Bool, options: ChannelOptions) {
         if connected {
             let statusIcon = NSTextAttachment();
                 
             var show: Presence.Show?;
             var desc = "Offline";
-            switch channel?.state ?? .left {
+            switch options.state {
             case .joined:
                 show = Presence.Show.online;
                 desc = "Joined";

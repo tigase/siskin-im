@@ -44,16 +44,16 @@ class DownloadManager {
         }
     }
     
-    func downloadInProgress(for item: ChatAttachment) -> Bool {
+    func downloadInProgress(for item: ConversationEntry) -> Bool {
         return dispatcher.sync {
             return self.itemDownloadInProgress.contains(item.id);
         }
     }
     
-    func download(item: ChatAttachment, maxSize: Int64) -> Bool {
+    func download(item: ConversationEntry, url inUrl: String, maxSize: Int64) -> Bool {
         return dispatcher.sync {
-            guard var url = URL(string: item.url) else {
-                DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+            guard var url = URL(string: inUrl) else {
+                DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                     appendix.state = .error;
                 });
                 return false;
@@ -65,20 +65,20 @@ class DownloadManager {
             
             itemDownloadInProgress.append(item.id);
             
-            if let hash = Digest.sha1.digest(toHex: item.url.data(using: .utf8)!), var params = Settings.sharedDefaults!.dictionary(forKey: "upload-\(hash)"), let filename = params["name"] as? String {
+            if let hash = Digest.sha1.digest(toHex: inUrl.data(using: .utf8)!), var params = Settings2.sharedDefaults?.dictionary(forKey: "upload-\(hash)"), let filename = params["name"] as? String {
                 var jids: [BareJID] = (params["jids"] as? [String])?.map({ BareJID($0) }) ?? [];
 
                 let sharedFileUrl = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.siskinim.shared")!.appendingPathComponent("upload", isDirectory: true).appendingPathComponent(hash, isDirectory: false);
 
                 var handled = false;
-                if jids.contains(item.jid) {
+                if jids.contains(item.conversation.jid) {
                     jids = jids.filter({ (j) -> Bool in
-                        return j != item.jid;
+                        return j != item.conversation.jid;
                     });
                     params["jids"] = jids.map({ $0.stringValue });
                     
                     _ = DownloadStore.instance.store(sharedFileUrl, filename: filename, with: "\(item.id)");
-                    DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+                    DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                         appendix.filesize = params["size"] as? Int;
                         appendix.mimetype = params["mimeType"] as? String;
                         appendix.filename = filename;
@@ -88,12 +88,12 @@ class DownloadManager {
                 }
                 
                 if jids.isEmpty || !FileManager.default.fileExists(atPath: sharedFileUrl.path) {
-                    Settings.sharedDefaults?.removeObject(forKey: "upload-\(hash)")
+                    Settings2.sharedDefaults?.removeObject(forKey: "upload-\(hash)")
                     if FileManager.default.fileExists(atPath: sharedFileUrl.path) {
                         try! FileManager.default.removeItem(at: sharedFileUrl);
                     }
                 } else {
-                    Settings.sharedDefaults?.set(params, forKey: "upload-\(hash)");
+                    Settings2.sharedDefaults?.set(params, forKey: "upload-\(hash)");
                 }
                 guard !handled else {
                     self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
@@ -120,7 +120,7 @@ class DownloadManager {
                 case .success(let suggestedFilename, let expectedSize, let mimeType):
                     let isTooBig = expectedSize > maxSize;
                     
-                    DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+                    DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                         appendix.filesize = Int(expectedSize);
                         appendix.mimetype = mimeType;
                         appendix.filename = suggestedFilename;
@@ -170,7 +170,7 @@ class DownloadManager {
                             }
                             //let id = UUID().uuidString;
                             _ = DownloadStore.instance.store(dataConsumer?.url ?? downloadedUrl, filename: filename, with: "\(item.id)");
-                            DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+                            DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                                 appendix.state = .downloaded;
                             });
                             self.dispatcher.sync {
@@ -186,7 +186,7 @@ class DownloadManager {
                             default:
                                 break;
                             }
-                            DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+                            DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                                 appendix.state = statusCode == 404 ? .gone : .error;
                             });
                             self.dispatcher.sync {
@@ -198,7 +198,7 @@ class DownloadManager {
                     });
                     break;
                 case .failure(let statusCode):
-                    DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+                    DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                         appendix.state = statusCode == 404 ? .gone : .error;
                     });
                     self.dispatcher.async {

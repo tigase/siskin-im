@@ -24,30 +24,23 @@ import TigaseSwift
 
 class SiskinPushNotificationsModuleProvider: SiskinPushNotificationsModuleProviderProtocol {
     
-    func mutedChats(for account: BareJID) -> [BareJID] {
-        return DBChatStore.instance.getChats(for: account).filter({ (chat) -> Bool in
-            if let c = chat as? DBChat {
-                return c.options.notifications == .none;
-            }
-            return false;
-        }).map({ (chat) -> BareJID in
-            return chat.jid.bareJid;
-        }).sorted { (j1, j2) -> Bool in
+    func mutedChats(for context: Context) -> [BareJID] {
+        return DBChatStore.instance.chats(for: context).filter({ $0.options.notifications == .none }).map({ $0.jid }).sorted { (j1, j2) -> Bool in
             return j1.stringValue.compare(j2.stringValue) == .orderedAscending;
         }
     }
     
-    func groupchatFilterRules(for account: BareJID) -> [TigasePushNotificationsModule.GroupchatFilter.Rule] {
-        return DBChatStore.instance.getChats(for: account).filter({ (c) -> Bool in
+    func groupchatFilterRules(for context: Context) -> [TigasePushNotificationsModule.GroupchatFilter.Rule] {
+        return DBChatStore.instance.conversations(for: context.userBareJid).filter({ (c) -> Bool in
             switch c {
-            case let channel as DBChannel:
+            case let channel as Channel:
                 switch channel.options.notifications {
                 case .none:
                     return false;
                 case .always, .mention:
                     return true;
                 }
-            case let room as DBRoom:
+            case let room as Room:
                 switch room.options.notifications {
                 case .none:
                     return false;
@@ -59,10 +52,10 @@ class SiskinPushNotificationsModuleProvider: SiskinPushNotificationsModuleProvid
             }
             return false;
         }).sorted(by: { (r1, r2) -> Bool in
-            return r1.jid.bareJid.stringValue.compare(r2.jid.bareJid.stringValue) == .orderedAscending;
+            return r1.jid.stringValue.compare(r2.jid.stringValue) == .orderedAscending;
         }).map({ (c) -> TigasePushNotificationsModule.GroupchatFilter.Rule in
             switch c {
-            case let channel as DBChannel:
+            case let channel as Channel:
                 switch channel.options.notifications {
                 case .none:
                     return .never(room: channel.channelJid);
@@ -71,7 +64,7 @@ class SiskinPushNotificationsModuleProvider: SiskinPushNotificationsModuleProvid
                 case .mention:
                     return .mentioned(room: channel.channelJid, nickname: channel.nickname ?? "");
                 }
-            case let room as DBRoom:
+            case let room as Room:
                 switch room.options.notifications {
                 case .none:
                     return .never(room: room.roomJid);

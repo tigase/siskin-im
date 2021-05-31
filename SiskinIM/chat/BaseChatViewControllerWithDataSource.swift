@@ -21,9 +21,9 @@
 
 import UIKit
 
-class BaseChatViewControllerWithDataSource: BaseChatViewController, UITableViewDataSource, ConversationLogDelegate  {
+class BaseChatViewControllerWithDataSource: BaseChatViewController, ConversationLogDelegate  {
                 
-    private(set) var dataSource: ChatViewDataSource!;
+    private(set) var dataSource: ConversationDataSource!;
     
     override var conversationLogController: ConversationLogController? {
         didSet {
@@ -32,20 +32,7 @@ class BaseChatViewControllerWithDataSource: BaseChatViewController, UITableViewD
         }
     }
     
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return 1;
-    }
-
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return dataSource.count;
-    }
-     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        return UITableViewCell();
-    }
-    
     func initialize(tableView: UITableView) {
-        tableView.dataSource = self;
     }
 
 }

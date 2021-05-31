@@ -32,39 +32,41 @@ class AccountQRCodeController: UIViewController {
         super.viewWillAppear(animated);
         
         if let account = self.account {
-            var dict: [String: String]? = nil;
-            if let vcard = XmppService.instance.dbVCardsCache.getVCard(for: account) {
-                if let fn = vcard.fn {
+            DBVCardStore.instance.vcard(for: account, completionHandler: { vcard in
+                var dict: [String: String]? = nil;
+                if let fn = vcard?.fn {
                     dict = ["name": fn];
                 } else {
-                    if let given = vcard.givenName, !given.isEmpty {
-                        if let surname = vcard.surname, !surname.isEmpty {
+                    if let given = vcard?.givenName, !given.isEmpty {
+                        if let surname = vcard?.surname, !surname.isEmpty {
                             dict = ["name": "\(given) \(surname)"];
                         } else {
                             dict = ["name": given];
                         }
-                    } else if let surname = vcard.surname, !surname.isEmpty {
+                    } else if let surname = vcard?.surname, !surname.isEmpty {
                         dict = ["name": surname];
-                    } else if let nick = vcard.nicknames.first, !nick.isEmpty {
+                    } else if let nick = vcard?.nicknames.first, !nick.isEmpty {
                         dict = ["name": nick];
                     }
                 }
-            }
             
-            if let url = AppDelegate.XmppUri(jid: JID(account), action: nil, dict: dict).toURL()?.absoluteString, let qrCode = QRCode(string: url, scale: 10, foregroundColor: UIColor(named: "qrCodeForeground")!, backgroundColor: UIColor(named: "qrCodeBackground")!) {
-                if let img = UIImage(named: "tigaseLogo") {
-                    let img2 = UIImage(cgImage: qrCode.cgImage);
-                    let renderer = UIGraphicsImageRenderer(size: qrCode.size);
-                    
-                    let rect = CGRect(origin: .zero, size: qrCode.size);
-                    qrCodeView.image = renderer.image(actions: { ctx in
-                        img.draw(in: rect, blendMode: .normal, alpha: 1.0);
-                        img2.draw(in: rect, blendMode: .normal, alpha: 1.0);
-                    })
-                } else {
-                    qrCodeView.image = UIImage(cgImage: qrCode.cgImage);
+                DispatchQueue.main.async {
+                    if let url = AppDelegate.XmppUri(jid: JID(account), action: nil, dict: dict).toURL()?.absoluteString, let qrCode = QRCode(string: url, scale: 10, foregroundColor: UIColor(named: "qrCodeForeground")!, backgroundColor: UIColor(named: "qrCodeBackground")!) {
+                        if let img = UIImage(named: "tigaseLogo") {
+                            let img2 = UIImage(cgImage: qrCode.cgImage);
+                            let renderer = UIGraphicsImageRenderer(size: qrCode.size);
+                            
+                            let rect = CGRect(origin: .zero, size: qrCode.size);
+                            self.qrCodeView.image = renderer.image(actions: { ctx in
+                                img.draw(in: rect, blendMode: .normal, alpha: 1.0);
+                                img2.draw(in: rect, blendMode: .normal, alpha: 1.0);
+                            })
+                        } else {
+                            self.qrCodeView.image = UIImage(cgImage: qrCode.cgImage);
+                        }
+                    }
                 }
-            }
+            });
         }
     }
     

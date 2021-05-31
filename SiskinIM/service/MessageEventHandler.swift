@@ -23,11 +23,20 @@ import Foundation
 import TigaseSwift
 import TigaseSwiftOMEMO
 import os
+import Combine
 
 class MessageEventHandler: XmppServiceEventHandler {
     
+    public static let instance = MessageEventHandler();
+    
     public static let OMEMO_AVAILABILITY_CHANGED = Notification.Name(rawValue: "OMEMOAvailabilityChanged");
-    public static let MESSAGE_SYNCHRONIZATION_FINISHED = Notification.Name(rawValue: "MessageSynchronizationFinished");
+    
+    public static let eventsPublisher = PassthroughSubject<SyncEvent,Never>();
+    
+    enum SyncEvent {
+        case started(account: BareJID, with: BareJID?)
+        case finished(account: BareJID, with: BareJID?)
+    }
     
     static func prepareBody(message: Message, forAccount account: BareJID) -> (String?, MessageEncryption, String?) {
         var encryption: MessageEncryption = .none;
@@ -35,17 +44,26 @@ class MessageEventHandler: XmppServiceEventHandler {
         
         guard (message.type ?? .chat) != .error else {
             guard let body = message.body else {
+                if let delivery = message.messageDelivery {
+                    switch delivery {
+                    case .received(_):
+                        // if our message delivery confirmation is not delivered just drop this info
+                        return (nil, encryption, nil);
+                    default:
+                        break;
+                    }
+                }
                 return (message.to?.resource == nil ? nil : "", encryption, nil);
             }
             return (body, encryption, nil);
         }
         
         var encryptionErrorBody: String?;
-        if var from = message.from?.bareJid, let omemoModule: OMEMOModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(OMEMOModule.ID) {
-            if message.type == .groupchat, let nickname = message.from?.resource, let room = DBChatStore.instance.getChat(for: account, with: from) as? DBRoom, let occupant = room.presences[nickname], occupant.jid != nil {
-                from = occupant.jid!.bareJid;
+        if var from = message.from?.bareJid, let context = XmppService.instance.getClient(for: account) {
+            if message.type == .groupchat, let nickname = message.from?.resource, let occupantJid = DBChatStore.instance.room(for: context, with: from)?.occupant(nickname: nickname)?.jid {
+                from = occupantJid.bareJid;
             }
-            switch omemoModule.decode(message: message, from: from) {
+            switch context.module(.omemo).decode(message: message, from: from) {
             case .successMessage(_, let keyFingerprint):
                 encryption = .decrypted;
                 fingerprint = keyFingerprint
@@ -58,6 +76,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                     encryptionErrorBody = "Message was not encrypted for this device.";
                     encryption = .notForThisDevice;
                 case .duplicateMessage:
+                    // message is a duplicate and was processed before
                     return (nil, .none, nil);
                 case .notEncrypted:
                     encryption = .none;
@@ -68,68 +87,121 @@ class MessageEventHandler: XmppServiceEventHandler {
                 break;
             }
         }
-        
+
         guard let body = message.body ?? message.oob ?? encryptionErrorBody else {
             return (nil, encryption, nil);
         }
         return (body, encryption, fingerprint);
     }
     
-    let events: [Event] = [MessageModule.MessageReceivedEvent.TYPE, MessageDeliveryReceiptsModule.ReceiptEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, DiscoveryModule.AccountFeaturesReceivedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, MessageArchiveManagementModule.ArchivedMessageReceivedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, OMEMOModule.AvailabilityChangedEvent.TYPE];
+    let events: [Event] = [OMEMOModule.AvailabilityChangedEvent.TYPE];
+    
+    private var cancellables: Set<AnyCancellable> = [];
     
     init() {
+        DBChatHistoryStore.instance.markedAsRead.sink(receiveValue: { [weak self] marked in
+            self?.sendDisplayed(marked);
+        }).store(in: &cancellables);
+        MessageEventHandler.eventsPublisher.receive(on: MessageEventHandler.syncSinceQueue).sink(receiveValue: { [weak self] event in
+            self?.syncStateChanged(event);
+        }).store(in: &cancellables);
+    }
+    
+    func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
+        let account = client.userBareJid;
+        client.$state.sink(receiveValue: { [weak client] state in
+            guard case .connected(let resumed) = state, !resumed, let client = client else {
+                return;
+            }
+            MessageEventHandler.scheduleMessageSync(for: client.userBareJid);
+            DBChatHistoryStore.instance.loadUnsentMessage(for: client.userBareJid, completionHandler: { (account, messages) in
+                DispatchQueue.global(qos: .background).async {
+                    for message in messages {
+                        var chat = DBChatStore.instance.conversation(for: account, with: message.jid);
+                        if chat == nil {
+                            switch DBChatStore.instance.createChat(for: client, with: message.jid) {
+                            case .created(let newChat):
+                                chat = newChat;
+                            case .found(let existingChat):
+                                chat = existingChat;
+                            case .none:
+                                return;
+                            }
+                        }
+                        if let dbChat = chat as? Chat {
+                            dbChat.resendMessage(content: message.data, isAttachment: message.type == .attachment, encryption: message.encryption != .none ? .omemo : .none, stanzaId: message.correctionStanzaId ?? message.stanzaId, correctedMessageOriginId: message.correctionStanzaId == nil ? nil : message.stanzaId);
+                        }
+
+                    }
+                }
+            });
+        }).store(in: &cancellables);
+        client.module(.message).messagesPublisher.sink(receiveValue: { e in
+            DBChatHistoryStore.instance.append(for: e.chat as! Chat, message: e.message, source: .stream);
+        }).store(in: &cancellables);
+        client.module(.messageDeliveryReceipts).receiptsPublisher.sink(receiveValue: { receipt in
+            guard let conversation = MessageEventHandler.conversationKey(for: receipt.message, on: account) else {
+                return;
+            }
+            DBChatHistoryStore.instance.updateItemState(for: conversation, stanzaId: receipt.messageId, from: .outgoing(.sent), to: .outgoing(.delivered));
+        }).store(in: &cancellables);
+        client.context.module(.chatMarkers).markersPublisher.sink(receiveValue: { marker in
+            guard let conversation = MessageEventHandler.conversationKey(for: marker.message, on: account), let sender = marker.message.from else {
+                return;
+            }
+
+            let type = ChatMarker.MarkerType.from(chatMarkers: marker.marker);
+            if let idx = sender.localPart?.firstIndex(of: "#"), let localPart = sender.localPart {
+                let participantId = String(localPart[localPart.startIndex..<idx]);
+                let afterIdx = localPart.index(after: idx);
+                if afterIdx != localPart.endIndex {
+                    let channelLocalPart = String(localPart[afterIdx..<localPart.endIndex]);
+                    if let channel = DBChatStore.instance.conversation(for: account, with: BareJID(localPart: channelLocalPart, domain: sender.domain)) as? Channel, channel.participantId == participantId, let nickname = channel.nickname {
+                        DBChatMarkersStore.instance.mark(conversation: conversation, before: marker.marker.id, as: type, by: .participant(id: participantId, nickname: nickname, jid: account))
+                    }
+                    return;
+                }
+            }
+            
+            switch conversation {
+            case is Chat:
+                DBChatMarkersStore.instance.mark(conversation: conversation, before: marker.marker.id, as: type, by: sender.bareJid == account ? .me(conversation: conversation) : .buddy(conversation: conversation));
+            case is Room:
+                if let nickname = sender.resource, sender.bareJid != conversation.account {
+                    DBChatMarkersStore.instance.mark(conversation: conversation, before: marker.marker.id, as: type, by: .occupant(nickname: nickname, jid: nil));
+                }
+            case is Channel:
+                if let mix = marker.message.mix, let id = sender.resource, let nickname = mix.nickname {
+                    DBChatMarkersStore.instance.mark(conversation: conversation, before: marker.marker.id, as: type, by: .participant(id: id, nickname: nickname, jid: mix.jid));
+                }
+            default:
+                break;
+            }
+        }).store(in: &cancellables);
+        client.module(.messageCarbons).carbonsPublisher.sink(receiveValue: { carbon in
+            let conversation: ConversationKey = DBChatStore.instance.conversation(for: account, with: carbon.jid.bareJid) ?? ConversationKeyItem(account: account, jid: carbon.jid.bareJid);
+                        
+            DBChatHistoryStore.instance.append(for: conversation, message: carbon.message, source: .carbons(action: carbon.action));
+        }).store(in: &cancellables);
+        client.module(.mam).$availableVersions.sink(receiveValue: { [weak client] versions in
+            guard !versions.isEmpty, let client = client else {
+                return;
+            }
+            MessageEventHandler.syncMessagesScheduled(for: client);
+        }).store(in: &cancellables);
+        client.module(.mam).archivedMessagesPublisher.sink(receiveValue: { archived in
+            guard let conversation = MessageEventHandler.conversationKey(for: archived.message, on: account) else {
+                return;
+            }
+            DBChatHistoryStore.instance.append(for: conversation, message: archived.message, source: .archive(source: archived.source, version: archived.query.version, messageId: archived.messageId, timestamp: archived.timestamp));
+        }).store(in: &cancellables);
+        client.module(.messageCarbons).$isAvailable.filter({ $0 }).sink(receiveValue: { [weak client] _ in
+            client?.module(.messageCarbons).enable();
+        }).store(in: &cancellables);
     }
  
     func handle(event: Event) {
         switch event {
-        case let e as MessageModule.MessageReceivedEvent:
-            guard e.message.from != nil, let account = e.sessionObject.userBareJid else {
-                return;
-            }
-
-            DBChatHistoryStore.instance.append(for: account, message: e.message, source: .stream);
-        case let e as MessageDeliveryReceiptsModule.ReceiptEvent:
-            guard let from = e.message.from?.bareJid, let account = e.sessionObject.userBareJid else {
-                return;
-            }
-            DBChatHistoryStore.instance.updateItemState(for: account, with: from, stanzaId: e.messageId, from: .outgoing, to: .outgoing_delivered);
-        case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
-            let account = e.sessionObject.userBareJid!;
-            MessageEventHandler.scheduleMessageSync(for: account);
-            sendUnsentMessages(for: account);
-        case let e as StreamManagementModule.ResumedEvent:
-            let account = e.sessionObject.userBareJid!;
-            sendUnsentMessages(for: account);
-        case let e as DiscoveryModule.AccountFeaturesReceivedEvent:
-            if let account = e.sessionObject.userBareJid, let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageArchiveManagementModule.ID), mamModule.isAvailable {
-                MessageEventHandler.syncMessagesScheduled(for: account);
-            }
-        case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
-            guard Settings.enableMessageCarbons.bool() else {
-                return;
-            }
-            guard e.features.contains(MessageCarbonsModule.MC_XMLNS) else {
-                return;
-            }
-            guard let mcModule: MessageCarbonsModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MessageCarbonsModule.ID) else {
-                return;
-            }
-            guard !XmppService.instance.isFetch else {
-                return;
-            }
-            mcModule.enable();
-        case let e as MessageCarbonsModule.CarbonReceivedEvent:
-            guard let account = e.sessionObject.userBareJid, e.message.from != nil, e.message.to != nil else {
-                return;
-            }
-            
-            DBChatHistoryStore.instance.append(for: account, message: e.message, source: .carbons(action: e.action));
-        case let e as MessageArchiveManagementModule.ArchivedMessageReceivedEvent:
-            guard let account = e.sessionObject.userBareJid, e.message.from != nil, e.message.to != nil else {
-                return;
-            }
-            
-            DBChatHistoryStore.instance.append(for: account, message: e.message, source: .archive(source: e.source, version: e.version, messageId: e.messageId, timestamp: e.timestamp));
         case let e as OMEMOModule.AvailabilityChangedEvent:
             NotificationCenter.default.post(name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: e);
         default:
@@ -137,211 +209,155 @@ class MessageEventHandler: XmppServiceEventHandler {
         }
     }
     
-    static func sendAttachment(chat: DBChat, originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (()->Void)?) {
+    func sendDisplayed(_ marked: DBChatHistoryStore.MarkedAsRead) {
+        guard let lastMarkable = marked.messages.last(where: { $0.markableId != nil }), let stanzaId = lastMarkable.markableId else {
+            return;
+        }
+            
+        // maybe we should enqueue displayed as well?
+        DBChatStore.instance.conversation(for: marked.account, with: marked.jid)?.sendChatMarker(.displayed(id: stanzaId), andDeliveryReceipt: false);
+    }
         
-        self.sendMessage(chat: chat, body: nil, url: uploadedUrl, chatAttachmentAppendix: appendix, messageStored: { (msgId) in
-            DispatchQueue.main.async {
-                if originalUrl != nil {
-                    _ = DownloadStore.instance.store(originalUrl!, filename: originalUrl!.lastPathComponent, with: "\(msgId)");
-                }
-                completionHandler?();
-            }
-        })
+    private struct ReadMarkersKey: Hashable {
+        let account: BareJID;
+        let jid: BareJID?;
     }
 
-    static func sendMessage(chat: DBChat, body: String?, url: String?, encrypted: ChatEncryption? = nil, stanzaId: String? = nil, chatAttachmentAppendix: ChatAttachmentAppendix? = nil, correctedMessageOriginId: String? = nil, messageStored: ((Int)->Void)? = nil) {
-        guard let msg = body ?? url else {
+    private class ReadMarkersQueue {
+        private var queue: [Item] = [];
+            
+        func add(for conversation: ConversationKey, timestamp: Date, stanzaId: String) {
+            if let idx = queue.firstIndex(where: { $0.conversation.account == conversation.account && $0.conversation.jid == $0.conversation.jid }) {
+                guard queue[idx].timestamp <= timestamp else {
+                    return;
+                }
+                queue.remove(at: idx);
+            }
+            queue.append(Item(conversation: conversation, timestamp: timestamp, stanzaId: stanzaId));
+        }
+            
+        func sendQueued() {
+            for item in queue {
+                (item.conversation as? Conversation)?.sendChatMarker(.received(id: item.stanzaId), andDeliveryReceipt: false);
+            }
+        }
+            
+        func cancelReceived(for conversation: ConversationKey, before: Date) {
+            queue = queue.filter({ $0.conversation.account != conversation.account || $0.conversation.jid != conversation.jid || $0.timestamp >= before });
+        }
+            
+        struct Item {
+            let conversation: ConversationKey;
+            let timestamp: Date;
+            let stanzaId: String;
+        }
+    }
+        
+    private var readMarkersToSendQueue: [ReadMarkersKey: ReadMarkersQueue] = [:];
+        
+    enum ReceiptType {
+        case deliveryReceipt
+        case chatMarker
+    }
+    
+    func sendReceived(for conversation: ConversationKey, timestamp: Date, stanzaId: String, receipts: [ReceiptType]) {
+        guard !receipts.isEmpty, let conv = (conversation as? Conversation) ?? DBChatStore.instance.conversation(for: conversation.account,    with: conversation.jid) else {
             return;
         }
 
-        let encryption = encrypted ?? chat.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!;
-
-        let message = chat.createMessage(msg);
-        message.id = stanzaId ?? UUID().uuidString;
-        message.messageDelivery = .request;
-        message.lastMessageCorrectionId = correctedMessageOriginId;
-
-        let account = chat.account;
-        let jid = chat.jid.bareJid;
-
-        switch encryption {
-        case .omemo:
-            if stanzaId == nil {
-                if let correctedMessageId = correctedMessageOriginId {
-                    DBChatHistoryStore.instance.correctMessage(for: account, with: jid, stanzaId: correctedMessageId, authorNickname: nil, participantId: nil, data: msg, correctionStanzaId: message.id!, correctionTimestamp: Date(), newState: .outgoing_unsent);
-                } else {
-                    let fingerprint = DBOMEMOStore.instance.identityFingerprint(forAccount: account, andAddress: SignalAddress(name: account.stringValue, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: account)!)));
-                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, authorNickname: nil, authorJid: nil, recipientNickname: nil, participantId: nil, type: url == nil ? .message : .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: msg, encryption: .decrypted, encryptionFingerprint: fingerprint, appendix: chatAttachmentAppendix, linkPreviewAction: .none, completionHandler: messageStored);
-                }
+        if receipts.contains(.chatMarker) {
+            if let queue = readMarkersToSendQueue[.init(account: conv.account, jid: conv.jid)] ?? readMarkersToSendQueue[.init(account: conv.account, jid: nil)] {
+                queue.add(for: conv, timestamp: timestamp, stanzaId: stanzaId);
+            } else {
+                conv.sendChatMarker(.received(id: stanzaId), andDeliveryReceipt: receipts.contains(.deliveryReceipt));
             }
-            XmppService.instance.tasksQueue.schedule(for: jid, task: { (completionHandler) in
-                sendEncryptedMessage(message, from: account, completionHandler: { result in
-                    switch result {
-                    case .success(_):
-                        DBChatHistoryStore.instance.updateItemState(for: account, with: jid, stanzaId: correctedMessageOriginId ?? message.id!, from: .outgoing_unsent, to: .outgoing, withTimestamp: correctedMessageOriginId != nil ? nil : Date());
-                    case .failure(let err):
-                        let condition = (err is ErrorCondition) ? (err as? ErrorCondition) : nil;
-                        guard condition == nil || condition! != .gone else {
-                            completionHandler();
-                            return;
-                        }
-
-                        var errorMessage: String? = nil;
-                        if let encryptionError = err as? SignalError {
-                            switch encryptionError {
-                            case .noSession:
-                                errorMessage = "There is no trusted device to send message to";
-                            default:
-                                errorMessage = "It was not possible to send encrypted message due to encryption error";
-                            }
-                        }
-                        
-                        DBChatHistoryStore.instance.markOutgoingAsError(for: account, with: jid, stanzaId: message.id!, errorCondition: .undefined_condition, errorMessage: errorMessage);
-                    }
-                    completionHandler();
-                });
-            });
-        case .none:
-            message.oob = url;
-            let type: ItemType = url == nil ? .message : .attachment;
-            if stanzaId == nil {
-                if let correctedMessageId = correctedMessageOriginId {
-                    DBChatHistoryStore.instance.correctMessage(for: account, with: jid, stanzaId: correctedMessageId, authorNickname: nil, participantId: nil, data: msg, correctionStanzaId: message.id!, correctionTimestamp: Date(), newState: .outgoing_unsent);
-                } else {
-                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, authorNickname: nil, authorJid: nil, recipientNickname: nil, participantId: nil, type: type, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: msg, encryption: .none, encryptionFingerprint: nil, appendix: chatAttachmentAppendix, linkPreviewAction: .none, completionHandler: messageStored);
-                }
-            }
-            XmppService.instance.tasksQueue.schedule(for: jid, task: { (completionHandler) in
-                sendUnencryptedMessage(message, from: account, completionHandler: { result in
-                    switch result {
-                    case .success(_):
-                        DBChatHistoryStore.instance.updateItemState(for: account, with: jid, stanzaId: correctedMessageOriginId ?? message.id!, from: .outgoing_unsent, to: .outgoing, withTimestamp: correctedMessageOriginId != nil ? nil : Date());
-                    case .failure(let err):
-                        guard let condition = err as? ErrorCondition, condition != .gone else {
-                            completionHandler();
-                            return;
-                        }
-                        DBChatHistoryStore.instance.markOutgoingAsError(for: account, with: jid, stanzaId: message.id!, errorCondition: err as? ErrorCondition ?? .undefined_condition, errorMessage: "Could not send message");
-                    }
-                    completionHandler();
-                });
-            });
+        } else if receipts.contains(.deliveryReceipt) {
+            conv.context?.module(.messageDeliveryReceipts).sendReceived(to: JID(conversation.jid), forStanzaId: stanzaId, type: .chat);
         }
     }
-    
-
-        fileprivate static func sendUnencryptedMessage(_ message: Message, from account: BareJID, completionHandler: @escaping (Result<Void,Error>)->Void) {
-            guard let client = XmppService.instance.getClient(for: account), client.state == .connected else {
-                completionHandler(.failure(ErrorCondition.gone));
-                return;
-            }
-
-            client.context.writer?.write(message);
-
-            completionHandler(.success(Void()));
+        
+    func cancelReceived(for conv: ConversationKey, before: Date) {
+        guard let queue = readMarkersToSendQueue[.init(account: conv.account, jid: conv.jid)] ?? readMarkersToSendQueue[.init(account: conv.account, jid: nil)] else {
+            return;
         }
-
-
-        fileprivate static func sendEncryptedMessage(_ message: Message, from account: BareJID, completionHandler resultHandler: @escaping (Result<Void,Error>)->Void) {
-
-            guard let omemoModule: OMEMOModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(OMEMOModule.ID) else {
-                DBChatHistoryStore.instance.updateItemState(for: account, with: message.to!.bareJid, stanzaId: message.id!, from: .outgoing_unsent, to: .outgoing_error);
-                resultHandler(.failure(ErrorCondition.unexpected_request));
-                return;
-            }
-
-            guard let client = XmppService.instance.getClient(for: account), client.state == .connected else {
-                resultHandler(.failure(ErrorCondition.gone));
-                return;
-            }
-
-            let completionHandler: ((EncryptionResult<Message, SignalError>)->Void)? = { (result) in
-                switch result {
-                case .failure(let error):
-                    resultHandler(.failure(error));
-                case .successMessage(let encryptedMessage, _):
-                    guard let client = XmppService.instance.getClient(for: account) else {
-                        resultHandler(.failure(ErrorCondition.gone));
-                        return;
-                    }
-                    client.context.writer?.write(encryptedMessage);
-                    resultHandler(.success(Void()));
-                }
-            };
-
-            omemoModule.encode(message: message, completionHandler: completionHandler!);
-        }
-
-    fileprivate func sendUnsentMessages(for account: BareJID) {
-        DBChatHistoryStore.instance.loadUnsentMessage(for: account, completionHandler: { (account, jid, data, stanzaId, encryption, correctionStanzaId, type) in
-                
-            var chat = DBChatStore.instance.getChat(for: account, with: jid);
-            if chat == nil {
-                switch DBChatStore.instance.createChat(for: account, jid: JID(jid), thread: nil) {
-                case .success(let dbChat):
-                    chat = dbChat;
-                case .failure(_):
-                    chat = nil;
-                }
-            }
-                
-            if let dbChat = chat as? DBChat {
-                if type == .message {
-                    MessageEventHandler.sendMessage(chat: dbChat, body: data, url: nil, stanzaId: correctionStanzaId == nil ? stanzaId : correctionStanzaId, correctedMessageOriginId: correctionStanzaId == nil ? nil : stanzaId);
-                } else if type == .attachment {
-                    MessageEventHandler.sendMessage(chat: dbChat, body: data, url: data, stanzaId: stanzaId);
-                }
-            }
-        });
+        queue.cancelReceived(for: conv, before: before);
     }
-    
-    static func calculateDirection(direction: MessageDirection, for account: BareJID, with jid: BareJID, authorNickname: String?, authorJid: BareJID?) -> MessageDirection {
-        if let authorJid = authorJid {
-            return account == authorJid ? .outgoing : .incoming;
+        
+    private func syncStateChanged(_ event: SyncEvent) {
+        switch event {
+        case .started(let account, let jid):
+            readMarkersToSendQueue[.init(account: account, jid: jid)] = ReadMarkersQueue();
+        case .finished(let account, let jid):
+            readMarkersToSendQueue.removeValue(forKey: .init(account: account, jid: jid))?.sendQueued();
+        }
+    }
+        
+    static func conversationKey(for message: Message, on account: BareJID) -> ConversationKey? {
+        guard let from = message.from?.bareJid, let to = message.to?.bareJid else {
+            return nil;
         }
         
-        guard let senderNickname = authorNickname else {
+        let jid = account != from ? from : to;
+        
+        return DBChatStore.instance.conversation(for: account, with: jid) ?? ConversationKeyItem(account: account, jid: jid);
+    }
+    
+    static func calculateDirection(for conversation: ConversationKey, direction: MessageDirection, sender: ConversationEntrySender) -> MessageDirection {
+        switch sender {
+        case .none:
+            assert(false, "Cannot calculate direction for sender `.none`")
+            return .outgoing;
+        case .me(_):
+            return .outgoing;
+        case .buddy(_):
+            return .incoming;
+        case .participant(let id, _, let jid):
+            if let senderJid = jid {
+                return senderJid == conversation.account ? .outgoing : .incoming;
+            }
+            if let channel = conversation as? Channel {
+                return channel.participantId == id ? .outgoing : .incoming;
+            }
+            // we were not able to determine if we were senders or not.
+            return direction;
+        case .occupant(let nickname, let jid):
+            if let senderJid = jid {
+                return senderJid == conversation.account ? .outgoing : .incoming;
+            }
+            if let room = conversation as? Room {
+                return room.nickname == nickname ? .outgoing : .incoming;
+            }
+            // we were not able to determine if we were senders or not.
             return direction;
         }
-        
-        if let conversation = DBChatStore.instance.getChat(for: account, with: jid) {
-            switch conversation {
-            case let channel as DBChannel:
-                return channel.participantId == senderNickname ? .outgoing : .incoming;
-            case let room as DBRoom:
-                return room.nickname == senderNickname ? .outgoing : .incoming;
-            default:
-                break;
-            }
-        }
-        return direction;
     }
 
-    static func calculateState(direction: MessageDirection, isError error: Bool, isFromArchive archived: Bool, isMuc: Bool) -> MessageState {
+    static func calculateState(direction: MessageDirection, message: Message, isFromArchive archived: Bool, isMuc: Bool) -> ConversationEntryState {
+        let error = message.type == StanzaType.error;
         let unread = (!archived) || isMuc;
         if direction == .incoming {
             if error {
-                return unread ? .incoming_error_unread : .incoming_error;
+                return .incoming_error(unread ? .received : .displayed, errorMessage: message.errorText ?? message.errorCondition?.rawValue);
             }
-            return unread ? .incoming_unread : .incoming;
+            return .incoming(unread ? .received : .displayed);
         } else {
             if error {
-                return unread ? .outgoing_error_unread : .outgoing_error;
+                return .outgoing_error(unread ? .received : .displayed,errorMessage: message.errorText ?? message.errorCondition?.rawValue);
             }
-            return .outgoing;
+            return .outgoing(.sent);
         }
     }
     
     private static var syncSinceQueue = DispatchQueue(label: "syncSinceQueue");
     private static var syncSince: [BareJID: Date] = [:];
-    
+        
     static func scheduleMessageSync(for account: BareJID) {
         if AccountSettings.messageSyncAuto(account).bool() {
             var syncPeriod = AccountSettings.messageSyncPeriod(account).double();
             if syncPeriod == 0 {
                 syncPeriod = 72;
             }
-            let syncMessagesSince = max(DBChatStore.instance.lastMessageTimestamp(for: account), Date(timeIntervalSinceNow: -1 * syncPeriod * 3600));
+            let syncMessagesSince = max(DBChatHistoryStore.instance.lastMessageTimestamp(for: account), Date(timeIntervalSinceNow: -1 * syncPeriod * 3600));
             // use last "received" stable stanza id for account MAM archive in case of MAM:2?
             syncSinceQueue.async {
                 self.syncSince[account] = syncMessagesSince;
@@ -353,87 +369,117 @@ class MessageEventHandler: XmppServiceEventHandler {
             }
         }
     }
-    
-    static func syncMessagesScheduled(for account: BareJID) {
+        
+    static func syncMessagesScheduled(for client: XMPPClient) {
         syncSinceQueue.async {
-            guard AccountSettings.messageSyncAuto(account).bool(), let syncMessagesSince = syncSince[account] else {
+            guard AccountSettings.messageSyncAuto(client.userBareJid).bool(), let syncMessagesSince = syncSince[client.userBareJid] else {
                 return;
             }
-            syncMessages(for: account, since: syncMessagesSince);
+            syncMessages(for: client, since: syncMessagesSince);
         }
     }
-
-    static func syncMessages(for account: BareJID, version: MessageArchiveManagementModule.Version? = nil, componentJID: JID? = nil, since: Date, rsmQuery: RSM.Query? = nil) {
-        let period = DBChatHistorySyncStore.Period(account: account, component: componentJID?.bareJid, from: since, after: nil);
+        
+    static func syncMessages(for client: XMPPClient, version: MessageArchiveManagementModule.Version? = nil, componentJID: JID? = nil, since: Date, rsmQuery: RSM.Query? = nil) {
+        let period = DBChatHistorySyncStore.Period(account: client.userBareJid, component: componentJID?.bareJid, from: since, after: nil, to: nil);
         DBChatHistorySyncStore.instance.addSyncPeriod(period);
         
-        syncMessagePeriods(for: account, version: version, componentJID: componentJID?.bareJid)
-    }
-    
-    static func syncMessagePeriods(for account: BareJID, version: MessageArchiveManagementModule.Version? = nil, componentJID jid: BareJID? = nil) {
-        guard let first = DBChatHistorySyncStore.instance.loadSyncPeriods(forAccount: account, component: jid).first else {
-            return;
-        }
-        syncSinceQueue.async {
-            syncMessages(forPeriod: first, version: version);
-        }
+        syncMessagePeriods(for: client, version: version, componentJID: componentJID?.bareJid)
     }
         
-    static func syncMessages(forPeriod period: DBChatHistorySyncStore.Period, version: MessageArchiveManagementModule.Version? = nil, rsmQuery: RSM.Query? = nil, retry: Int = 3) {
-        guard let client = XmppService.instance.getClient(for: period.account), let mamModule: MessageArchiveManagementModule = client.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
+    static func syncMessagePeriods(for client: XMPPClient, version: MessageArchiveManagementModule.Version? = nil, componentJID jid: BareJID? = nil) {
+        guard let first = DBChatHistorySyncStore.instance.loadSyncPeriods(forAccount: client.userBareJid, component: jid).first else {
+            if jid != nil {
+                DBChatMarkersStore.instance.syncCompleted(forAccount: client.userBareJid, with: jid!);
+            }
+            eventsPublisher.send(.finished(account: client.userBareJid, with: jid));
             return;
         }
+
+        eventsPublisher.send(.started(account: client.userBareJid, with: jid));
             
+        syncSinceQueue.async {
+            syncMessages(for: client, period: first, version: version);
+        }
+    }
+    
+    static func syncMessages(for client: XMPPClient, period: DBChatHistorySyncStore.Period, version: MessageArchiveManagementModule.Version? = nil, rsmQuery: RSM.Query? = nil, retry: Int = 3) {
         let start = Date();
         let queryId = UUID().uuidString;
-        mamModule.queryItems(version: version, componentJid: period.component == nil ? nil : JID(period.component!), start: period.from, end: period.to, queryId: queryId, rsm: rsmQuery ?? RSM.Query(after: period.after, max: 150), completionHandler: { (result) in
+        let account = client.userBareJid;
+        client.module(.mam).queryItems(version: version, componentJid: period.component == nil ? nil : JID(period.component!), start: period.from, end: period.to, queryId: queryId, rsm: rsmQuery ?? RSM.Query(after: period.after, max: 150), completionHandler: { [weak client] result in
             switch result {
-            case .success(_, let complete, let rsmResponse):
-                if complete || rsmResponse == nil {
+            case .success(let response):
+                if response.complete || response.rsm == nil {
                     DBChatHistorySyncStore.instance.removeSyncPerod(period);
-                    syncMessagePeriods(for: period.account, version: version, componentJID: period.component);
+                    if let client = client {
+                        syncMessagePeriods(for: client, version: version, componentJID: period.component);
+                    }
                 } else {
-                    if let last = rsmResponse?.last, UUID(uuidString: last) != nil {
+                    if let last = response.rsm?.last, UUID(uuidString: last) != nil {
                         DBChatHistorySyncStore.instance.updatePeriod(period, after: last);
                     }
                     DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                        self.syncMessages(forPeriod: period, version: version, rsmQuery: rsmResponse?.next(150));
+                        guard let client = client else {
+                            return;
+                        }
+                        self.syncMessages(for: client, period: period, version: version, rsmQuery: response.rsm?.next(150));
                     }
                 }
                 os_log("for account %s fetch for component %s with id %s executed in %f s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil", queryId, Date().timeIntervalSince(start));
-            case .failure(let errorCondition, let response):
-                guard client.state == .connected, retry > 0 && errorCondition != .feature_not_implemented else {
-                    os_log("for account %s fetch for component %s with id %s could not synchronize message archive for: %{public}s got: %s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil", queryId, errorCondition.rawValue, response?.description ?? "nil");
+            case .failure(let error):
+                guard client?.state ?? .disconnected() == .connected(), retry > 0 && error != .feature_not_implemented else {
+                    os_log("for account %s fetch for component %s with id %s could not synchronize message archive for: %{public}s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil", queryId, error.description);
+                    if period.component != nil {
+                        DBChatMarkersStore.instance.syncCompleted(forAccount: account, with: period.component!);
+                    }
+                    eventsPublisher.send(.finished(account: period.account, with: period.component))
                     return;
                 }
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                    self.syncMessages(forPeriod: period, version: version, rsmQuery: rsmQuery, retry: retry - 1);
+                    guard let client = client else {
+                        return;
+                    }
+                    self.syncMessages(for: client, period: period, version: version, rsmQuery: rsmQuery, retry: retry - 1);
                 }
             }
         });
     }
-    
-    static func extractRealAuthor(from message: Message, for account: BareJID, with jid: JID) -> (String?, BareJID?, String?, String?) {
+
+    static func extractRealAuthor(from message: Message, for conversation: ConversationKey) -> (ConversationEntrySender,ConversationEntryRecipient)? {
         if message.type == .groupchat {
             if let mix = message.mix {
-                let authorNickname = mix.nickname;
-                let authorJid = mix.jid;
-                return (authorNickname, authorJid, nil, jid.resource);
+                if let id = message.from?.resource, let nickname = mix.nickname {
+                    return (.participant(id: id, nickname: nickname, jid: mix.jid), .none);
+                }
+                // invalid sender? what should we do?
+                return nil;
             } else {
                 // in this case it is most likely MUC groupchat message..
-                return (message.from?.resource, nil, nil, nil);
+                if let nickname = message.from?.resource {
+                    return (.occupant(nickname: nickname, jid: nil), .none);
+                }
+                // invalid sender? what should we do?
+                return nil;
             }
         } else {
             // this can be 1-1 message from MUC..
-            if let room = DBChatStore.instance.getChat(for: account, with: jid.bareJid) as? DBRoom {
-                if room.nickname == message.from?.resource {
-                    return (message.from?.resource, nil, message.to?.resource, nil);
+            if let room = conversation as? Room, message.findChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") != nil {
+                if conversation.account == message.from?.bareJid {
+                    // outgoing message!
+                    if let recipientNickname = message.to?.resource {
+                        return (.occupant(nickname: room.nickname, jid: nil), .occupant(nickname: recipientNickname));
+                    }
                 } else {
-                    return (message.from?.resource, nil, message.to?.resource, nil);
+                    // incoming message!
+                    if let senderNickname = message.from?.resource {
+                        return (.occupant(nickname: senderNickname, jid: nil), .occupant(nickname: room.nickname));
+                    }
                 }
+                // invalid sender? what should we do?
+                return nil;
             }
         }
-        return (nil, nil, nil, nil);
+        return (conversation.account == message.from?.bareJid ? .me(conversation: conversation) : .buddy(conversation: conversation), .none);
     }
     
     static func itemType(fromMessage message: Message) -> ItemType {
@@ -444,5 +490,4 @@ class MessageEventHandler: XmppServiceEventHandler {
         }
         return .message;
     }
-
 }

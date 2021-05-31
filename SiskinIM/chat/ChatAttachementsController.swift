@@ -8,30 +8,44 @@
 
 import UIKit
 import TigaseSwift
+import Combine
 
 class ChatAttachmentsController: UICollectionViewController, UICollectionViewDelegateFlowLayout {
 
-    private var items: [ChatAttachment] = [];
+    private var items: [ConversationEntry] = [];
     
-    var account: BareJID?;
-    var jid: BareJID?;
-    
+    var conversation: Conversation!;
+        
     private var loaded: Bool = false;
+    
+    private var cancellables: Set<AnyCancellable> = [];
     
     override func viewDidLoad() {
         super.viewDidLoad();
-        if #available(iOS 13.0, *) {
-        } else {
-            self.view.addGestureRecognizer(UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(gesture:))));
-        }
-        NotificationCenter.default.addObserver(self, selector: #selector(messageUpdated), name: DBChatHistoryStore.MESSAGE_UPDATED, object: nil);
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        if let account = self.account, let jid = self.jid, !loaded {
+        let conversation = self.conversation!;
+        DBChatHistoryStore.instance.events.compactMap({ it -> ConversationEntry? in
+            if case .updated(let item) = it {
+                return item;
+            }
+            return nil;
+        }).filter({ item in
+            if case .attachment(_, _) = item.payload, item.conversation.account == conversation.account && item.conversation.jid == conversation.jid {
+                return true;
+            }
+            return false;
+        }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
+            if let idx = self?.items.firstIndex(where: { $0.id == value.id }) {
+                self?.items[idx] = value;
+                self?.collectionView.reloadItems(at: [IndexPath(row: idx, section: 0)]);
+            }
+        }).store(in: &cancellables);
+        if !loaded {
             self.loaded = true;
-            DBChatHistoryStore.instance.loadAttachments(for: account, with: jid, completionHandler: { attachments in
+            DBChatHistoryStore.instance.loadAttachments(for: conversation, completionHandler: { attachments in
                 DispatchQueue.main.async {
                     self.items = attachments.filter({ (attachment) -> Bool in
                         return DownloadStore.instance.url(for: "\(attachment.id)") != nil;
@@ -40,6 +54,10 @@ class ChatAttachmentsController: UICollectionViewController, UICollectionViewDel
                 }
             });
         }
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated);
     }
     
     override func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -72,43 +90,6 @@ class ChatAttachmentsController: UICollectionViewController, UICollectionViewDel
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let width = (self.view.bounds.width - 2 * 2.0) / 3.0;
         return CGSize(width: width, height: width);
-    }
-
-    @objc func messageUpdated(_ notification: Notification) {
-        DispatchQueue.main.async {
-            guard let attachment = notification.object as? ChatAttachment, attachment.account == self.account, attachment.jid == self.jid else {
-                return;
-            }
-            
-            guard let idx = self.items.firstIndex(where: { (att) -> Bool in
-                return att.id == attachment.id;
-            }) else {
-                return;
-            }
-            
-            self.items.remove(at: idx);
-            self.collectionView.deleteItems(at: [IndexPath(item: idx, section: 0)]);
-        }
-    }
-    
-    var documentController: UIDocumentInteractionController?;
-    
-    @objc func handleLongPress(gesture: UILongPressGestureRecognizer) {
-        guard gesture.state == .recognized else {
-            return;
-        }
-        
-        let p = gesture.location(in: self.collectionView);
-        if let indexPath = self.collectionView.indexPathForItem(at: p), let layoutAttributes = self.collectionView.layoutAttributesForItem(at: indexPath) {
-            let item = self.items[indexPath.row];
-            if let url = DownloadStore.instance.url(for: "\(item.id)") {
-                let documentController = UIDocumentInteractionController(url: url);
-                //documentController.delegate = self;
-                if documentController.presentOptionsMenu(from: collectionView.convert(layoutAttributes.frame, to: collectionView.superview), in: self.collectionView, animated: true) {
-                    self.documentController = documentController;
-                }
-            }
-        }
     }
 
 }

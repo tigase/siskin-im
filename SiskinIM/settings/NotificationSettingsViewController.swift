@@ -20,8 +20,11 @@
 //
 
 import UIKit
+import Combine
 
 class NotificationSettingsViewController: UITableViewController {
+    
+    private var cancellables: Set<AnyCancellable> = [];
     
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1;
@@ -36,10 +39,9 @@ class NotificationSettingsViewController: UITableViewController {
         switch setting {
         case .notificationsFromUnknown:
             let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationsFromUnknownTableViewCell", for: indexPath) as! SwitchTableViewCell;
-            cell.switchView.isOn = Settings.NotificationsFromUnknown.getBool();
-            cell.valueChangedListener = {(switchView: UISwitch) in
-            Settings.NotificationsFromUnknown.setValue(switchView.isOn);
-            }
+            cell.switchView.isOn = Settings.notificationsFromUnknown;
+            cancellables.removeAll();
+            cell.switchView.publisher(for: \.isOn).assign(to: \.notificationsFromUnknown, on: Settings).store(in: &cancellables);
             return cell;
         }
     }

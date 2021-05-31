@@ -84,7 +84,7 @@ class AccountsTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let account = accounts[indexPath.row];
         selected = account;
-        delegate!.accountSelection(account: account);
+//        delegate!.accountSelection(account: account);
         navigationController?.popViewController(animated: true);
     }
 }

@@ -33,7 +33,13 @@ class AvatarView: UIImageView {
             } else {
                 self.initials = nil;
             }
-            self.setNeedsDisplay();
+            self.updateImage();
+        }
+    }
+    
+    var avatar: UIImage? {
+        didSet {
+            updateImage();
         }
     }
     
@@ -66,22 +72,25 @@ class AvatarView: UIImageView {
 //    }
     fileprivate(set) var initials: String?;
     
-    func set(name: String?, avatar: UIImage?, orDefault defAvatar: UIImage) {
-        self.name = name;
+    private func updateImage() {
         if avatar != nil {
-            self.image = avatar;
-        } else if self.name != nil {
-            if self.name != name {
-                self.name = name;
-            }
-            if let initials = self.initials {
-                self.image = self.prepareInitialsAvatar(for: initials);
-            } else {
-                 self.image = defAvatar;
-            }
+            // workaround to properly handle appearance
+//            if self.avatar! == AvatarManager.instance.defaultGroupchatAvatar {
+                self.image = self.avatar;
+//            } else {
+//                self.image = avatar?.square(max(self.frame.size.width, self.frame.size.height));
+//            }
+        } else if let initials = self.initials {
+            self.image = self.prepareInitialsAvatar(for: initials);
         } else {
-             self.image = defAvatar;
+            self.image = AvatarManager.instance.defaultAvatar;
         }
+    }
+    
+    func set(name: String?, avatar: UIImage?) {
+        self.name = name;
+        self.avatar = avatar;
+        self.setNeedsDisplay();
     }
         
     func prepareInitialsAvatar(for text: String) -> UIImage {
