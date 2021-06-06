@@ -39,11 +39,13 @@ public class Avatar {
 
     public var hash: String? {
         didSet {
+            print("settings avatar \(hash) for \(key)")
             if let hash = hash {
                 AvatarManager.instance.avatar(withHash: hash, completionHandler: { result in
                     guard hash == self.hash else {
                         return;
                     }
+                    print("loaded avatar \(result) for \(self.key)")
                     switch result {
                     case .success(let avatar):
                         self.avatarSubject.send(.ready(avatar));
@@ -77,10 +79,14 @@ public class Avatar {
         AvatarManager.instance.releasePublisher(for: key);
     }
     
-    struct Key: Hashable {
+    struct Key: Hashable, CustomStringConvertible {
         let account: BareJID;
         let jid: BareJID;
         let mucNickname: String?;
+        
+        var description: String {
+            return "Key(account: \(account), jid: \(jid), nick: \(mucNickname ?? ""))";
+        }
     }
 
 }
@@ -128,6 +134,7 @@ class AvatarManager {
     
     open func releasePublisher(for key: Avatar.Key) {
         dispatcher.async(flags: .barrier) {
+            print("releasing avatar for \(key)")
             self.avatars.removeValue(forKey: key);
         }
     }
@@ -224,6 +231,7 @@ class AvatarManager {
 
     
     @objc func vcardUpdated(_ notification: Notification) {
+        print("received avatar notification \(notification)")
         guard let vcardItem = notification.object as? DBVCardStore.VCardItem else {
             return;
         }

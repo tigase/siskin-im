@@ -63,6 +63,7 @@ class AbstractRosterViewController: UITableViewController, UISearchResultsUpdati
         case .grouped:
             roster = RosterProviderGrouped(controller: self);
         }
+        self.tableView.reloadData();
     }
     
     override func viewWillDisappear(_ animated: Bool) {

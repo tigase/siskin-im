@@ -386,8 +386,9 @@ class ContactViewController: UITableViewController {
             sender.isOn = !sender.isOn;
             return;
         }
+        let newValue = sender.isOn;
         chat?.updateOptions({ (options) in
-            options.notifications = sender.isOn ? .none : .always;
+            options.notifications = newValue ? .none : .always;
         }, completionHandler: {
             if let pushModule = XmppService.instance.getClient(for: account)?.module(.push) as? SiskinPushNotificationsModule, let pushSettings = pushModule.pushSettings {
                 pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in

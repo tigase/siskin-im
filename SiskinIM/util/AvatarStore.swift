@@ -83,6 +83,7 @@ open class AvatarStore {
             if let image = UIImage(contentsOfFile: self.cacheDirectory.appendingPathComponent(hash).path) {
                 self.cache.setObject(image, forKey: hash as NSString);
                 completionHandler(.success(image));
+                return;
             }
             completionHandler(.failure(.conflict))
         }

@@ -130,14 +130,19 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
     }
     
 
+    private var avatar: Avatar?;
+    
     func set(item: ConversationEntry) {
         cancellables.removeAll();
         
-        if let avatarView = self.avatarView, let avatarPublisher = item.sender.avatar(for: item.conversation)?.avatarPublisher {
+        if let avatarView = self.avatarView, let avatar = item.sender.avatar(for: item.conversation) {
             let name = item.sender.nickname;
-            avatarPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { image in
+            avatar.avatarPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { image in
                 avatarView.set(name: name, avatar: image);
             }).store(in: &cancellables);
+            self.avatar = avatar;
+        } else {
+            self.avatar = nil;
         }
         
         if nicknameView != nil {

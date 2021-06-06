@@ -23,12 +23,15 @@ import Foundation
 import Shared
 import TigaseSwift
 import Combine
+import UIKit
 
 public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>, RosterProvider {
     
     private var items: [RosterProviderFlatItem] = [];
     
     private var cancellables: Set<AnyCancellable> = [];
+    
+    private var initialized: Bool = false;
     
     override init(controller: AbstractRosterViewController) {
         self.items = [];
@@ -63,10 +66,15 @@ public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>,
         
         DispatchQueue.main.sync {
             self.items = newItems;
-            self.controller?.tableView.beginUpdates();
-            self.controller?.tableView.deleteRows(at: diff.removed.map({ IndexPath(row: $0, section: 0) }), with: .fade);
-            self.controller?.tableView.insertRows(at: diff.inserted.map({ IndexPath(row: $0, section: 0) }), with: .fade);
-            self.controller?.tableView.endUpdates();
+            if !initialized {
+                initialized = true;
+                self.controller?.tableView.reloadData();
+            } else {
+                self.controller?.tableView.beginUpdates();
+                self.controller?.tableView.deleteRows(at: diff.removed.map({ IndexPath(row: $0, section: 0) }), with: .fade);
+                self.controller?.tableView.insertRows(at: diff.inserted.map({ IndexPath(row: $0, section: 0) }), with: .fade);
+                self.controller?.tableView.endUpdates();
+            }
         }
 
     }

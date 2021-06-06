@@ -27,6 +27,8 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
     
     private var groups = [RosterProviderGroup]();
     
+    private var initialized = true;//false;
+    
     override init(controller: AbstractRosterViewController) {
         super.init(controller: controller);
     }
@@ -60,14 +62,41 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
         let removeSections = IndexSet(oldGroups.map({ $0.name }).filter({ !groupNames.contains($0) }).compactMap({ name in oldGroups.firstIndex(where: { $0.name == name })}));
         let newSections = IndexSet(newGroups.map({ $0.name }).filter({ name in !oldGroups.contains(where: { $0.name == name })}).compactMap({ name in newGroups.firstIndex(where: { $0.name == name }) }));
         
+        let rowChanges = calculateChanges(newGroups: newGroups, oldGroups: oldGroups);
+        
         // TODO: calculate items to remove/insert for each section..
         DispatchQueue.main.async {
             self.groups = newGroups;
-            self.controller?.tableView.beginUpdates();
-            self.controller?.tableView.deleteSections(removeSections, with: .fade);
-            self.controller?.tableView.insertSections(newSections, with: .fade);
-            self.controller?.tableView.endUpdates();
+            if !self.initialized {
+                self.initialized = true;
+                self.controller?.tableView.reloadData();
+            } else {
+                self.controller?.tableView.beginUpdates();
+                self.controller?.tableView.deleteSections(removeSections, with: .fade);
+                for changes in rowChanges {
+                    self.controller?.tableView.deleteRows(at: changes.removed, with: .fade);
+                    self.controller?.tableView.insertRows(at: changes.inserted, with: .fade);
+                }
+                self.controller?.tableView.insertSections(newSections, with: .fade);
+                self.controller?.tableView.endUpdates();
+            }
         }
+    }
+    
+    struct GroupChanges {
+        let inserted: [IndexPath];
+        let removed: [IndexPath];
+    }
+    
+    private func calculateChanges(newGroups: [RosterProviderGroup], oldGroups: [RosterProviderGroup]) -> [GroupChanges] {
+        var results: [GroupChanges] = [];
+        for newGroup in newGroups {
+            if let oldGroup = oldGroups.first(where: { $0.name == newGroup.name }) {
+                let diff = newGroup.items.calculateChanges(from: oldGroup.items);
+                results.append(GroupChanges(inserted: diff.inserted.map({ [results.count, $0] }), removed: diff.removed.map({ [results.count, $0] })));
+            }
+        }
+        return results;
     }
     
     func positionsFor(item: RosterProviderGroupedItem) -> [IndexPath] {
@@ -96,7 +125,7 @@ public class RosterProviderGroup {
     
 }
 
-public class RosterProviderGroupedItem: RosterProviderItem {
+public class RosterProviderGroupedItem: RosterProviderItem, Hashable {
     
     public static func == (lhs: RosterProviderGroupedItem, rhs: RosterProviderGroupedItem) -> Bool {
         return lhs.account == rhs.account && lhs.jid == rhs.jid;

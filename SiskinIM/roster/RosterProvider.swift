@@ -66,13 +66,13 @@ public class RosterProviderAbstract<Item: RosterProviderItem> {
         DBRosterStore.instance.$items.combineLatest(Settings.$rosterAvailableOnly, PresenceStore.instance.$bestPresences, Settings.$rosterDisplayHiddenGroup).throttle(for: 0.1, scheduler: dispatcher.queue, latest: true).sink(receiveValue: { [weak self] items, available, presences, displayHidden in
             self?.updateItems(items: Array(items), presences: presences, available: available, displayHidden: displayHidden);
         }).store(in: &cancellables);
-        self.$allItems.combineLatest(self.$queryString).map({ items, query in
+        self.$allItems.drop(while: { $0.isEmpty }).combineLatest(self.$queryString).map({ items, query in
             if let query = query, !query.isEmpty {
                 return items.filter({ $0.displayName.lowercased().contains(query) || $0.jid.stringValue.lowercased().contains(query) });
             } else {
                 return items;
             }
-        }).combineLatest(Settings.$rosterItemsOrder).sink(receiveValue: { [weak self] (items, order) in self?.updateItems(items: items, order: order)
+        }).combineLatest(Settings.$rosterItemsOrder).receive(on: self.dispatcher.queue).sink(receiveValue: { [weak self] (items, order) in self?.updateItems(items: items, order: order)
         }).store(in: &cancellables);
     }
     

@@ -71,7 +71,9 @@ class AccountSettingsViewController: UITableViewController {
         updateView();
         
         DBVCardStore.instance.vcard(for: account, completionHandler: { vcard in
-            self.update(vcard: vcard);
+            DispatchQueue.main.async {
+                self.update(vcard: vcard);
+            }
         })
 
         //avatarView.sizeToFit();

@@ -39,7 +39,7 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
         availabilityFilterSelector = UISegmentedControl(items: ["All", "Available"]);
         navigationItem.titleView = availabilityFilterSelector;
         if let selector = availabilityFilterSelector {
-            Settings.$rosterAvailableOnly.map({ $0 ? 0 : 1 }).receive(on: DispatchQueue.main).assign(to: \.selectedSegmentIndex, on: selector).store(in: &cancellables);
+            Settings.$rosterAvailableOnly.map({ $0 ? 1 : 0 }).receive(on: DispatchQueue.main).assign(to: \.selectedSegmentIndex, on: selector).store(in: &cancellables);
         }
         availabilityFilterSelector?.addTarget(self, action: #selector(RosterViewController.availabilityFilterChanged), for: .valueChanged);
         
@@ -104,7 +104,7 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
         if let item = roster?.item(at: indexPath) {
             cell.nameLabel.text = item.displayName;
             cell.statusLabel.text = item.presence?.status ?? item.jid.stringValue;
-            cell.avatarStatusView.set(name: item.displayName, avatar: AvatarManager.instance.avatar(for: item.jid, on: item.account));
+            cell.avatarStatusView.displayableId = ContactManager.instance.contact(for: .init(account: item.account, jid: item.jid, type: .buddy));
         }
         
         return cell;
