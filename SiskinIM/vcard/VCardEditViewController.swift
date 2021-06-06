@@ -200,8 +200,6 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
             return indexPath.row < vcard.emails.count;
         case .addresses:
             return indexPath.row < vcard.addresses.count;
-        default:
-            return false;
         }
     }
     
@@ -264,8 +262,6 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                 vcard.addresses.append(VCard.Address(types: [.home]));
                 tableView.reloadData();
             }
-            return;
-        default:
             return;
         }
     }

@@ -25,7 +25,7 @@ import Combine
 
 class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar {
 
-    var titleView: ChannelTitleView? {
+    var titleView: ChannelTitleView! {
         get {
             return self.navigationItem.titleView as? ChannelTitleView
         }
@@ -53,7 +53,7 @@ class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             self?.titleView?.refresh(connected: connected, options: options);
             self?.navigationItem.rightBarButtonItem?.isEnabled = options.state == .joined;
         }).store(in: &cancellables);
-        channel.displayNamePublisher.map({ $0 }).assign(to: \.name, on: (self.titleView as! ChannelTitleView)).store(in: &cancellables);
+        channel.displayNamePublisher.map({ $0 }).assign(to: \.name, on: self.titleView).store(in: &cancellables);
     }
     
     override func viewDidDisappear(_ animated: Bool) {

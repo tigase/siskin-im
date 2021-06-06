@@ -291,7 +291,7 @@ open class XmppService {
 //            client.connectionConfiguration.resource = (val == nil || val!.isEmpty) ? nil : val;
 //        }
         
-        if let pushModule: SiskinPushNotificationsModule = client.modulesManager.getModule(SiskinPushNotificationsModule.ID) {
+        if let pushModule = client.module(.push) as? SiskinPushNotificationsModule {
             pushModule.pushSettings = account.pushSettings;
             pushModule.shouldEnable = account.pushNotifications;
         }
@@ -437,9 +437,7 @@ open class XmppService {
         didSet {
             dispatcher.sync {
                 clients.values.forEach { (client) in
-                    if let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID) {
-                        presenceModule.initialPresence = !isFetch;
-                    }
+                    client.module(.presence).initialPresence = !isFetch;
                 }
             }
         }
@@ -549,7 +547,7 @@ open class XmppService {
         //_ = client.modulesManager.register(StreamFeaturesModule());
         _ = client.modulesManager.register(ResourceBinderModule());
         _ = client.modulesManager.register(SessionEstablishmentModule());
-        _ = client.modulesManager.register(DiscoveryModule(identity: DiscoveryModule.Identity(category: "client", type: "pc", name: Bundle.main.infoDictionary!["CFBundleName"] as! String)));
+        _ = client.modulesManager.register(DiscoveryModule(identity: DiscoveryModule.Identity(category: "client", type: "pc", name: (Bundle.main.infoDictionary!["CFBundleName"] as! String))));
         _ = client.modulesManager.register(SoftwareVersionModule(version: SoftwareVersionModule.SoftwareVersion(name: Bundle.main.infoDictionary!["CFBundleName"] as! String, version: Bundle.main.infoDictionary!["CFBundleVersion"] as! String, os: UIDevice.current.systemName)));
 
         _ = client.modulesManager.register(RosterModule(rosterManager: RosterManagerBase(store: DBRosterStore.instance)));

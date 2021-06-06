@@ -82,24 +82,26 @@ class OMEMOFingerprintsController: UITableViewController {
         }
     }
     
-    override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+    override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         guard indexPath.section == 1 else {
             return nil;
         }
         
         let account = self.account!;
-        return [.init(style: .destructive, title: "Delete", handler: { [weak self] (action, indexPath) in
-            guard let identity = self?.otherIdentities[indexPath.row] else {
-                return;
-            }
-            guard let omemoModule = XmppService.instance.getClient(for: account)?.module(.omemo) else {
-                return;
-            }
-            
-            omemoModule.removeDevices(withIds: [identity.address.deviceId]);
-            self?.otherIdentities.remove(at: indexPath.row);
-            self?.tableView.reloadData();
-        })]
+        let identity = self.otherIdentities[indexPath.row];
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
+            return UIMenu(title: "", children: [
+                UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive, handler: { [weak self] action in
+                    guard let omemoModule = XmppService.instance.getClient(for: account)?.module(.omemo) else {
+                        return;
+                    }
+                                
+                    omemoModule.removeDevices(withIds: [identity.address.deviceId]);
+                    self?.otherIdentities.remove(at: indexPath.row);
+                    self?.tableView.reloadData();
+                })
+            ])
+        });
     }
     
     func preetify(fingerprint tmp: String?) -> String? {

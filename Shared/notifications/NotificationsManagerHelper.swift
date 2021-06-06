@@ -71,7 +71,7 @@ public class NotificationsManagerHelper {
             let uid = generateMessageUID(account: account, sender: sender, body: body)!;
             content.threadIdentifier = "account=\(account.stringValue)|sender=\(sender.stringValue)";
             provider.conversationNotificationDetails(for: account, with: sender, completionHandler: { details in
-                os_log("%{public}@", log: OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SiskinPush"), "Found: name: \(details.name ?? ""), type: \(String(describing: details.type.rawValue))");
+                os_log("%{public}@", log: OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SiskinPush"), "Found: name: \(details.name), type: \(String(describing: details.type.rawValue))");
 
                 switch details.type {
                 case .chat:

@@ -184,7 +184,6 @@ class ChannelParticipantTableViewCell: UITableViewCell {
         avatarView?.set(name: participant.nickname ?? participant.id, avatar: AvatarManager.instance.avatar(for: jid, on: channel.account));
         
         labelView.font = ChannelParticipantTableViewCell.labelViewFont();
-        print("labelView.font: \(labelView.font)")
         labelView?.text = participant.nickname;
         jidView?.text = participant.jid?.stringValue ?? participant.id
     }

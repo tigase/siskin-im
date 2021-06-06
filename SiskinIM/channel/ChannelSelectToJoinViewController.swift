@@ -114,7 +114,7 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
         self.queryRemote = searchController.searchBar.text;
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: { [weak self] in
             guard let that = self, let remoteQuery = that.queryRemote, let client = that.client, let text = searchController.searchBar.text, remoteQuery == text else {
-                print("remote query", self?.queryRemote, "text:", searchController.searchBar.text)
+                print("remote query \(self?.queryRemote as Any) , text: \(searchController.searchBar.text as Any)");
                 return;
             }
             that.queryRemote = nil;

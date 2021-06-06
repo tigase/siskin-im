@@ -28,7 +28,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
 
     static let MENTION_OCCUPANT = Notification.Name("groupchatMentionOccupant");
     
-    var titleView: MucTitleView? {
+    var titleView: MucTitleView! {
         get {
             return self.navigationItem.titleView as? MucTitleView;
         }
@@ -56,7 +56,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             self?.titleView?.refresh(connected: connected, state: state);
             self?.navigationItem.rightBarButtonItem?.isEnabled = state == .joined;
         }).store(in: &cancellables);
-        room.displayNamePublisher.map({ $0 }).assign(to: \.name, on: (self.titleView as! MucTitleView)).store(in: &cancellables);
+        room.displayNamePublisher.map({ $0 }).assign(to: \.name, on: self.titleView).store(in: &cancellables);
     }
 
     override func viewDidDisappear(_ animated: Bool) {
