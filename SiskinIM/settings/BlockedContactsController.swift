@@ -19,9 +19,7 @@ class BlockedContactsController: UITableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
 
-        let clients = XmppService.instance.getClients().filter({ (client) -> Bool in
-            return client.state == .connected;
-        });
+        let clients = XmppService.instance.connectedClients;
         var items: [Item] = [];
         if !clients.isEmpty {
             showIndicator();
@@ -29,24 +27,20 @@ class BlockedContactsController: UITableViewController {
             for client in clients {
                 group.enter();
                 DispatchQueue.global().async {
-                    if let blockingModule: BlockingCommandModule = client.modulesManager.getModule(BlockingCommandModule.ID) {
-                        let account = client.sessionObject.userBareJid!;
-                        blockingModule.retrieveBlockedJids(completionHandler: { result in
-                            DispatchQueue.main.async {
-                                switch result {
-                                case .success(let jids):
-                                    items.append(contentsOf: jids.map({ jid -> Item in
-                                        return Item(account: account, jid: jid);
-                                    }));
-                                case .failure(_):
-                                    break;
-                                }
+                    let account = client.userBareJid;
+                    client.module(.blockingCommand).retrieveBlockedJids(completionHandler: { result in
+                        DispatchQueue.main.async {
+                            switch result {
+                            case .success(let jids):
+                                items.append(contentsOf: jids.map({ jid -> Item in
+                                    return Item(account: account, jid: jid);
+                                }));
+                            case .failure(_):
+                                break;
                             }
-                            group.leave();
-                        });
-                    } else {
+                        }
                         group.leave();
-                    }
+                    });
                 }
             }
             group.notify(queue: DispatchQueue.main, execute: {
@@ -80,19 +74,27 @@ class BlockedContactsController: UITableViewController {
         return cell;
     }
     
-    override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+    override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         guard items.count > 0 else {
             return nil;
         }
-        let unblock = UITableViewRowAction(style: .destructive, title: "Unblock", handler: { action, indexPath in
-            self.unblock(at: indexPath);
-        })
-        return [unblock];
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { suggestedActions -> UIMenu? in
+            return UIMenu(title: "", children: [
+                UIAction(title: "Unblock", image: UIImage(systemName: "hand.raised.slash"), attributes: [.destructive], handler: { action in
+                    self.unblock(at: indexPath);
+                })
+            ]);
+        };
     }
     
     func unblock(at indexPath: IndexPath) {
         let item = items[indexPath.row];
-        guard let client = XmppService.instance.getClient(for: item.account), client.state == .connected, let blockingModule: BlockingCommandModule = client.modulesManager.getModule(BlockingCommandModule.ID), blockingModule.isAvailable else {
+        guard let client = XmppService.instance.getClient(for: item.account), client.state == .connected() else {
+            return;
+        }
+        
+        let blockingModule = client.module(.blockingCommand);
+        guard blockingModule.isAvailable else {
             return;
         }
         
@@ -140,7 +142,7 @@ class BlockedContactsController: UITableViewController {
         if activityIndicator != nil {
             hideIndicator();
         }
-        activityIndicator = UIActivityIndicatorView(style: .gray);
+        activityIndicator = UIActivityIndicatorView(style: .medium);
         activityIndicator?.center = CGPoint(x: view.frame.width/2, y: view.frame.height/2);
         activityIndicator!.isHidden = false;
         activityIndicator!.startAnimating();

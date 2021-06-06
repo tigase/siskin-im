@@ -31,8 +31,8 @@ class ChannelJoinViewController: UITableViewController {
     @IBOutlet var nicknameField: UITextField!;
     @IBOutlet var passwordField: UITextField!;
     
-    var account: BareJID?;
-    var channelJid: BareJID?;
+    var client: XMPPClient!;
+    var channelJid: BareJID!;
     var name: String?;
     var componentType: ChannelsHelper.ComponentType = .mix;
     var passwordRequired: Bool = false;
@@ -62,28 +62,26 @@ class ChannelJoinViewController: UITableViewController {
         self.nameField.text = name;
         self.jidField.text = channelJid?.stringValue;
         self.passwordField.text = password
-        if let account = self.account {
-            self.nicknameField.text = AccountManager.getAccount(for: account)?.nickname;
-        }
+        self.nicknameField.text = AccountManager.getAccount(for: self.client.userBareJid)?.nickname;
                 
         switch action {
         case .join:
-            if componentType == .muc, let discoModule: DiscoveryModule = XmppService.instance.getClient(for: account!)?.modulesManager.getModule(DiscoveryModule.ID) {
+            if componentType == .muc {
                 operationStarted(message: "Checking...");
-                discoModule.getInfo(for: JID(channelJid!), node: nil, completionHandler: { result in
+                client.module(.disco).getInfo(for: JID(channelJid), node: nil, completionHandler: { result in
                     switch result {
-                    case .success(_, let identities, let features):
+                    case .success(let info):
                         DispatchQueue.main.async {
-                            if let name = identities.first?.name {
+                            if let name = info.identities.first?.name {
                                 self.nameField.text = name;
                             }
-                            self.roomFeatures = features;
-                            self.passwordRequired = features.contains("muc_passwordprotected");
+                            self.roomFeatures = info.features;
+                            self.passwordRequired = info.features.contains("muc_passwordprotected");
                             self.tableView.reloadData();
                             self.updateJoinButtonStatus();
                             self.operationEnded();
                         }
-                    case .failure(_, _):
+                    case .failure(_):
                         DispatchQueue.main.async {
                             self.roomFeatures = [];
                             self.updateJoinButtonStatus();
@@ -109,15 +107,15 @@ class ChannelJoinViewController: UITableViewController {
     @IBAction func joinClicked(_ sender: Any) {
         let nick = self.nicknameField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "";
         let password = (passwordField?.text?.isEmpty ?? true) ? nil : passwordField.text;
-        guard let account = self.account, !nick.isEmpty else {
+        guard !nick.isEmpty else {
             return;
         }
         
         switch action {
         case .join:
-            self.join(account: account, channelJid: self.channelJid!, componentType: componentType, nick: nick, password: password);
+            self.join(nick: nick, password: password);
         case .create(let isPublic, let invitationOnly, let description, let avatar):
-            self.create(account: account, channelJid: self.channelJid!, componentType: componentType, name: name!, description: description, nick: nick, isPublic: isPublic, invitationOnly: invitationOnly, avatar: avatar);
+            self.create(name: name!, description: description, nick: nick, isPublic: isPublic, invitationOnly: invitationOnly, avatar: avatar);
         }
      }
     
@@ -174,16 +172,11 @@ class ChannelJoinViewController: UITableViewController {
         self.joinButton.isEnabled = (!nick.isEmpty) && ((!passwordRequired) || (!(passwordField.text?.isEmpty ?? true)));
     }
     
-    private func create(account: BareJID, channelJid: BareJID, componentType: ChannelsHelper.ComponentType, name: String, description: String?, nick: String, isPublic: Bool, invitationOnly: Bool, avatar: UIImage?) {
+    private func create(name: String, description: String?, nick: String, isPublic: Bool, invitationOnly: Bool, avatar: UIImage?) {
+        let client = self.client!;
         switch componentType {
         case .mix:
-            guard let client = XmppService.instance.getClient(for: account) else {
-                return;
-            }
-            
-            guard let mixModule: MixModule = client.modulesManager.getModule(MixModule.ID), let avatarModule: PEPUserAvatarModule = client.modulesManager.getModule(PEPUserAvatarModule.ID) else {
-                return;
-            }
+            let mixModule = client.module(.mix);
             self.operationStarted(message: "Creating channel...")
                 
             mixModule.create(channel: channelJid.localPart, at: BareJID(domain: channelJid.domain), completionHandler: { [weak self] result in
@@ -198,12 +191,12 @@ class ChannelJoinViewController: UITableViewController {
                                 DispatchQueue.main.async {
                                     self?.dismiss(animated: true, completion: nil);
                                 }
-                            case .failure(let errorCondition, _):
+                            case .failure(let error):
                                 DispatchQueue.main.async {
                                     guard let that = self else {
                                         return;
                                     }
-                                    let alert = UIAlertController(title: "Error occurred", message: "Could not join newly created channel '\(channelJid)' on the server. Got following error: \(errorCondition.rawValue)", preferredStyle: .alert);
+                                    let alert = UIAlertController(title: "Error occurred", message: "Could not join newly created channel '\(channelJid)' on the server. Got following error: \(error)", preferredStyle: .alert);
                                     alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
                                     that.present(alert, animated: true, completion: nil);
                                 }
@@ -211,7 +204,7 @@ class ChannelJoinViewController: UITableViewController {
                         })
                         mixModule.publishInfo(for: channelJid, info: ChannelInfo(name: name, description: description, contact: []), completionHandler: nil);
                         if let avatarData = avatar?.scaled(maxWidthOrHeight: 512.0)?.jpegData(compressionQuality: 0.8) {
-                            avatarModule.publishAvatar(at: channelJid, data: avatarData, mimeType: "image/jpeg", completionHandler: { result in
+                            client.module(.pepUserAvatar).publishAvatar(at: channelJid, data: avatarData, mimeType: "image/jpeg", completionHandler: { result in
                                 print("avatar publication result:", result);
                             });
                         }
@@ -220,13 +213,13 @@ class ChannelJoinViewController: UITableViewController {
                                 print("changed channel access policy:", result);
                             })
                         }
-                    case .failure(let errorCondition):
+                    case .failure(let error):
                         DispatchQueue.main.async {
                             self?.operationEnded();
                             guard let that = self else {
                                 return;
                             }
-                            let alert = UIAlertController(title: "Error occurred", message: "Could not create channel on the server. Got following error: \(errorCondition.rawValue)", preferredStyle: .alert);
+                            let alert = UIAlertController(title: "Error occurred", message: "Could not create channel on the server. Got following error: \(error)", preferredStyle: .alert);
                             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
                             that.present(alert, animated: true, completion: nil);
                         }
@@ -234,119 +227,104 @@ class ChannelJoinViewController: UITableViewController {
                 })
                 break;
         case .muc:
-            guard let client = XmppService.instance.getClient(for: account), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) else {
-                return;
-            }
-            let supportedFeatures = self.roomFeatures ?? [];
+            let mucModule = client.module(.muc);
+            let priv = !isPublic;
             let roomName = isPublic ? channelJid.localPart! : UUID().uuidString;
-            _ = mucModule.join(roomName: roomName, mucServer: channelJid.domain, nickname: nick, ifCreated: { room in
-                mucModule.getRoomConfiguration(roomJid: room.jid, onSuccess: { (config) in
-                    if let roomNameField: TextSingleField = config.getField(named: "muc#roomconfig_roomname") {
-                        roomNameField.value = name;
-                    }
-                    if let membersOnlyField: BooleanField = config.getField(named: "muc#roomconfig_membersonly") {
-                        membersOnlyField.value = invitationOnly;
-                        if invitationOnly {
-                            if let anonimityField: ListSingleField = config.getField(named: "muc#roomconfig_anonymity") {
-                                anonimityField.value = "nonanonymous";
+
+            let form = JabberDataElement(type: .submit);
+            form.addField(TextSingleField(name: "muc#roomconfig_roomname", value: name));
+            form.addField(BooleanField(name: "muc#roomconfig_membersonly", value: priv));
+            form.addField(BooleanField(name: "muc#roomconfig_publicroom", value: !priv));
+//            form.addField(TextSingleField(name: "muc#roomconfig_roomdesc", value: channelDescription));
+            form.addField(TextSingleField(name: "muc#roomconfig_whois", value: priv ? "anyone" : "moderators"))
+            mucModule.setRoomConfiguration(roomJid: JID(channelJid), configuration: form, completionHandler: { creationResult in
+                switch creationResult {
+                case .success(_):
+                    mucModule.join(roomName: roomName, mucServer: self.channelJid.domain, nickname: nick).handle({ joinResult in
+                        switch joinResult {
+                        case .success(let r):
+                            switch r {
+                            case .created(let room), .joined(let room):
+                                var features = Set<Room.Feature>();
+                                features.insert(.nonAnonymous);
+                                if priv {
+                                    features.insert(.membersOnly);
+                                }
+                                (room as! Room).features = features;
+                                let vcard = VCard();
+                                if let binval = avatar?.scaled(maxWidthOrHeight: 512.0)?.jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
+                                    vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
+                                }
+                                client.module(.vcardTemp).publishVCard(vcard, to: room.jid, completionHandler: nil);
+                                if description != nil {
+                                    mucModule.setRoomSubject(roomJid: room.jid, newSubject: description);
+                                }
                             }
+                        case .failure(let error):
+                            break;
                         }
-                    }
-                    if let whoisField: ListSingleField = config.getField(named: "muc#roomconfig_whois") {
-                        if invitationOnly && whoisField.options.contains(where: { $0.value == "anyone" }) {
-                            whoisField.value = "anyone";
-                        }
-                        if !invitationOnly && whoisField.options.contains(where: { $0.value == "moderators" }) {
-                            whoisField.value = "moderators";
-                        }
-                    }
-                    if let persistantField: BooleanField = config.getField(named: "muc#roomconfig_persistentroom") {
-                        persistantField.value = true;
-                    }
-                    if let publicallySeachableField: BooleanField = config.getField(named: "muc#roomconfig_publicroom") {
-                        publicallySeachableField.value = isPublic;
-                    }
-                    mucModule.setRoomConfiguration(roomJid: room.jid, configuration: config, onSuccess: {
-                        print("unlocked room", room.jid);
-//                        participants.forEach({ (participant) in
-//                            mucModule.invite(to: room, invitee: participant, reason: "You are invied to join conversation \(roomName) at \(room.roomJid)");
-//                        })
-                        PEPBookmarksModule.updateOrAdd(for: account, bookmark: Bookmarks.Conference(name: roomName, jid: room.jid, autojoin: true, nick: nick, password: nil));
-                    }, onError: nil);
-                }, onError: nil);
-            }, onJoined: { room in
-                DispatchQueue.main.async { [weak self] in
-                    (room as! DBRoom).supportedFeatures = supportedFeatures;
-                    self?.dismiss(animated: true, completion: nil);
+                    })
+                case .failure(let error):
+                    break;
                 }
-                if let vCardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID) {
-                    let vcard = VCard();
-                    if let binval = avatar?.scaled(maxWidthOrHeight: 512.0)?.jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
-                        vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
-                    }
-                    vCardTempModule.publishVCard(vcard, to: room.roomJid);
-                }
-                if description != nil {
-                    mucModule.setRoomSubject(roomJid: room.roomJid, newSubject: description);
-                }
-                room.registerForTigasePushNotification(true, completionHandler: { (result) in
-                    print("automatically enabled push for:", room.roomJid, "result:", result);
-                })
-            });
+            })
         }
     }
     
-    private func join(account: BareJID, channelJid: BareJID, componentType: ChannelsHelper.ComponentType, nick: String, password: String?) {
+    private func join(nick: String, password: String?) {
+        let client = self.client!;
         guard (!passwordRequired) || (password != nil) else {
             return;
         }
         
         switch componentType {
-         case .mix:
-             guard let channelJid = self.channelJid, let mixModule: MixModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MixModule.ID) else {
-                 return;
-             }
-             self.operationStarted(message: "Joining...");
-             mixModule.join(channel: channelJid, withNick: nick, invitation: mixInvitation, completionHandler: { result in
-                 switch result {
-                 case .success(_):
-                     // we have joined, so all what we need to do is close this window
-                     DispatchQueue.main.async {
-                         self.operationEnded();
-                         self.dismiss(animated: true, completion: nil);
-                     }
-                 case .failure(let errorCondition, let response):
-                     DispatchQueue.main.async { [weak self] in
-                         self?.operationEnded();
-                         let alert = UIAlertController(title: "Could not join", message: "It was not possible to join a channel. The server returned an error: \(response?.errorText ?? errorCondition.rawValue)", preferredStyle: .alert);
-                         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
-                         self?.present(alert, animated: true, completion: nil);
-                     }
-                 }
-             });
-         case .muc:
-            guard let client = XmppService.instance.getClient(for: account), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID), let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) else {
-                 return;
-             }
-             let room = channelJid;
-            _ = mucModule.join(roomName: room.localPart!, mucServer: room.domain, nickname: nick, password: password, onJoined: { room in
-                discoModule.getInfo(for: room.jid, node: nil, completionHandler: { result in
-                    switch result {
-                    case .success(_, let identities, let features):
-                        (room as! DBRoom).supportedFeatures = features;
-                    case .failure(_, _):
-                        break;
+        case .mix:
+            self.operationStarted(message: "Joining...");
+            client.module(.mix).join(channel: channelJid, withNick: nick, invitation: mixInvitation, completionHandler: { result in
+                switch result {
+                case .success(_):
+                    // we have joined, so all what we need to do is close this window
+                    DispatchQueue.main.async {
+                        self.operationEnded();
+                        self.dismiss(animated: true, completion: nil);
                     }
-                });
-                room.registerForTigasePushNotification(true, completionHandler: { (result) in
-                    print("automatically enabled push for:", room.roomJid, "result:", result);
-                })
+                case .failure(let error):
+                    DispatchQueue.main.async { [weak self] in
+                        self?.operationEnded();
+                        let alert = UIAlertController(title: "Could not join", message: "It was not possible to join a channel. The server returned an error: \(error)", preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                        self?.present(alert, animated: true, completion: nil);
+                    }
+                }
+             });
+        case .muc:
+            let room = channelJid!;
+            client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nick, password: password).handle({ result in
+                switch result {
+                case .success(let joinResult):
+                    switch joinResult {
+                    case .created(let room), .joined(let room):
+                        client.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
+                            switch result {
+                            case .success(let info):
+                                (room as! Room).features = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
+                            case .failure(_):
+                                break;
+                            }
+                        });
+                        (room as! Room).registerForTigasePushNotification(true, completionHandler: { (result) in
+                            print("automatically enabled push for:", room.jid, "result:", result);
+                        })
+                    }
+                    PEPBookmarksModule.updateOrAdd(for: client.userBareJid, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nick, password: password));
+                    DispatchQueue.main.async {
+                        self.dismiss(animated: true, completion: nil);
+                    }
+                case .failure(let error):
+                    break;
+                }
             });
-             PEPBookmarksModule.updateOrAdd(for: account, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nick, password: password));
-             DispatchQueue.main.async {
-                 self.dismiss(animated: true, completion: nil);
-             }
-         }
+        }
     }
     
     enum Action {

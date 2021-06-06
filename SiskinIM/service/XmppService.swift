@@ -85,13 +85,11 @@ open class XmppService {
 //            }
 //        }
 //    }
-//    open var onCall: Bool = false {
-//        didSet {
-//            if oldValue != onCall {
-//                applicationStateChanged();
-//            }
-//        }
-//    }
+    open var onCall: Bool = false {
+        didSet {
+            // FIXME: handle this properly!!
+        }
+    }
     
     var clients: [BareJID: XMPPClient] {
         get {
@@ -401,7 +399,7 @@ open class XmppService {
         clients.forEach(task);
     }
     
-//    open func backgroundTaskFinished() {
+    open func backgroundTaskFinished() {
 //        guard applicationState != .active else {
 //            return;
 //        }
@@ -430,7 +428,7 @@ open class XmppService {
 //            }
 //        }
 //        group.wait();
-//    }
+    }
     
     fileprivate var fetchGroup: DispatchGroup? = nil;
     fileprivate var fetchCompletionHandler: ((UIBackgroundFetchResult)->Void)? = nil;
@@ -449,7 +447,7 @@ open class XmppService {
     
 //    fileprivate var fetchingFor: [BareJID] = [];
 //
-//    open func preformFetch(completionHandler: @escaping (UIBackgroundFetchResult)->Void) {
+    open func preformFetch(completionHandler: @escaping (UIBackgroundFetchResult)->Void) {
 //        guard applicationState != .active else {
 //            print("skipping background fetch as application is active");
 //            completionHandler(.newData);
@@ -488,9 +486,12 @@ open class XmppService {
 //                completionHandler(.newData);
 //            }
 //        }
-//    }
-//
-//    open func performFetchExpired() {
+        // FIXME: this should not be in here!!
+        completionHandler(.newData);
+    }
+
+    
+    open func performFetchExpired() {
 //        guard applicationState == .inactive, self.fetchGroup != nil else {
 //            return;
 //        }
@@ -504,7 +505,7 @@ open class XmppService {
 //                }
 //            }
 //        }
-//    }
+    }
 //
 //    fileprivate func fetchEnded(for account: BareJID) {
 //        dispatcher.async {

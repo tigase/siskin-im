@@ -23,7 +23,7 @@ import TigaseSwift
 
 class ChannelBlockedUsersController: UITableViewController {
 
-    var channel: DBChannel!;
+    var channel: Channel!;
     
     private var jids: [BareJID] = [] {
         didSet {
@@ -32,7 +32,7 @@ class ChannelBlockedUsersController: UITableViewController {
     }
 
     override func viewWillAppear(_ animated: Bool) {
-        if let mixModule: MixModule = XmppService.instance.getClient(for: channel.account)?.modulesManager.getModule(MixModule.ID) {
+        if let mixModule = channel.context?.module(.mix) {
             self.operationStarted(message: "Refreshing...");
             mixModule.retrieveBanned(for: channel.channelJid, completionHandler: { [weak self] result in
                 DispatchQueue.main.async {
@@ -63,12 +63,11 @@ class ChannelBlockedUsersController: UITableViewController {
         return cell;
     }
     
-    @available(iOS 13.0, *)
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         let jid = jids[indexPath.row];
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { menu -> UIMenu? in
             let unblock = UIAction(title: "Unblock", image: UIImage(systemName: "trash"), handler: { action in
-                if let mixModule: MixModule = XmppService.instance.getClient(for: self.channel.account)?.modulesManager.getModule(MixModule.ID) {
+                if let mixModule = self.channel.context?.module(.mix) {
                     self.operationStarted(message: "Updating...");
                     mixModule.denyAccess(to: self.channel.channelJid, for: jid, value: false, completionHandler: { [weak self] result in
                         DispatchQueue.main.async {

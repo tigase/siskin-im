@@ -19,7 +19,7 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 
-import Foundation
+import UIKit
 import TigaseSwift
 import Combine
 
@@ -434,10 +434,32 @@ public enum Settings2: String {
 //    }
 }
 
-enum Appearance: String {
+enum Appearance: String, CustomStringConvertible {
     case auto
     case light
     case dark
+    
+    var description: String {
+        switch self {
+        case .auto:
+            return "Auto"
+        case .light:
+            return "Light";
+        case .dark:
+            return "Dark";
+        }
+    }
+    
+    var value: UIUserInterfaceStyle {
+        switch self {
+        case .auto:
+            return .unspecified;
+        case .light:
+            return .light;
+        case .dark:
+            return .dark;
+        }
+    }
 }
 
 public enum AccountSettings {

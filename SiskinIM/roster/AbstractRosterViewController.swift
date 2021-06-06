@@ -24,21 +24,9 @@ import TigaseSwift
 
 class AbstractRosterViewController: UITableViewController, UISearchResultsUpdating, UISearchBarDelegate {
     
-    fileprivate static let UPDATE_NOTIFICATION_NAME = Notification.Name("ROSTER_UPDATE");
-    
     var searchController: UISearchController!;
     
-    var roster: RosterProvider? {
-        didSet {
-            if let value = oldValue {
-                NotificationCenter.default.removeObserver(value);
-            }
-            if let roster = self.roster {
-                NotificationCenter.default.addObserver(roster, selector: #selector(RosterProviderAbstractBase.contactPresenceChanged(_:)), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
-                NotificationCenter.default.addObserver(roster, selector: #selector(RosterProviderAbstractBase.rosterItemUpdated(_:)), name: DBRosterStore.ITEM_UPDATED, object: nil);
-            }
-        }
-    }
+    var roster: RosterProvider?;
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -64,22 +52,16 @@ class AbstractRosterViewController: UITableViewController, UISearchResultsUpdati
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        NotificationCenter.default.addObserver(self, selector: #selector(RosterViewController.rowUpdated), name: RosterViewController.UPDATE_NOTIFICATION_NAME, object: nil);
         initializeRosterProvider();
-        reloadData();
-        NotificationCenter.default.addObserver(self, selector: #selector(RosterViewController.reloadData), name: AvatarManager.AVATAR_CHANGED, object: nil);
         super.viewWillAppear(animated);
     }
         
-    func initializeRosterProvider(availableOnly: Bool = false, sortOrder: RosterSortingOrder = .alphabetical) {
-        let rosterType = RosterType(rawValue: Settings.RosterType.getString() ?? "") ?? RosterType.flat;
-        let displayHiddenGroup = Settings.RosterDisplayHiddenGroup.getBool();
-        let dbConnection = (UIApplication.shared.delegate as! AppDelegate).dbConnection!;
-        switch rosterType {
+    func initializeRosterProvider() {
+        switch Settings.rosterType {
         case .flat:
-            roster = RosterProviderFlat(dbConnection: dbConnection, order: sortOrder, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup,  updateNotificationName: RosterViewController.UPDATE_NOTIFICATION_NAME);
+            roster = RosterProviderFlat(controller: self);
         case .grouped:
-            roster = RosterProviderGrouped(dbConnection: dbConnection, order: sortOrder, availableOnly: availableOnly, displayHiddenGroup: displayHiddenGroup, updateNotificationName: RosterViewController.UPDATE_NOTIFICATION_NAME);
+            roster = RosterProviderGrouped(controller: self);
         }
     }
     
@@ -108,8 +90,7 @@ class AbstractRosterViewController: UITableViewController, UISearchResultsUpdati
         if let item = roster?.item(at: indexPath) {
             cell.nameLabel.text = item.displayName;
             cell.statusLabel.text = item.account.stringValue;
-            cell.avatarStatusView.setStatus(item.presence?.show);
-            cell.avatarStatusView.set(name: item.displayName, avatar: AvatarManager.instance.avatar(for: item.jid.bareJid, on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
+            cell.avatarStatusView.displayableId = ContactManager.instance.contact(for: .init(account: item.account, jid: item.jid, type: .buddy));
         }
         
         return cell;
@@ -130,64 +111,7 @@ class AbstractRosterViewController: UITableViewController, UISearchResultsUpdati
         roster?.queryItems(contains: searchController.searchBar.text);
         tableView.reloadData();
     }
-
-    func avatarChanged(_ notification: NSNotification) {
-        DispatchQueue.main.async() {
-            //            let jid = notification.userInfo!["jid"] as! BareJID;
-            //            let indexPaths = self.indexPaths(for: jid);
-            //            self.tableView.reloadRows(at: indexPaths, with: .automatic);
-            self.tableView.reloadData();
-        }
-    }
-    
-    @objc func reloadData() {
-        DispatchQueue.main.async() {
-            self.tableView.reloadData();
-        }
-    }
-    
-    @objc func rowUpdated(_ notification: NSNotification) {
-        guard let info = notification.userInfo else {
-            return;
-        }
-        
-        guard !(info["refresh"] as? Bool ?? false) else {
-            self.tableView.reloadData();
-            return;
-        }
-        
-        let from = info["from"] as? [IndexPath];
-        let to = info["to"] as? [IndexPath];
-        
-        if to == nil {
-            self.tableView.deleteRows(at: from!, with: .automatic);
-            return;
-        }
-        if from == nil {
-            self.tableView.insertRows(at: to!, with: .automatic);
-            return;
-        }
-        if from! == to! {
-            self.tableView.reloadRows(at: from!, with: .automatic);
-        } else {
-            self.tableView.beginUpdates();
-            let x = min(from!.count, to!.count)
-            if x < from!.count {
-                let toDelete: [IndexPath] = Array(from![x..<from!.count]);
-                self.tableView.deleteRows(at: toDelete, with: .automatic);
-            }
-            if x < to!.count {
-                let toAdd: [IndexPath] = Array(to![x..<to!.count]);
-                self.tableView.insertRows(at: toAdd, with: .automatic);
-            }
-            for i in 0..<x {
-                self.tableView.moveRow(at: from![i], to: to![i]);
-            }
-            self.tableView.endUpdates();
-            self.tableView.reloadRows(at: to!, with: .automatic);
-        }
-    }
-    
+     
 }
 
 

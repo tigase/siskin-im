@@ -24,22 +24,18 @@ import TigaseSwift
 
 class ChannelsHelper {
     
-    static func findChannels(for account: BareJID, at components: [Component], completionHandler: @escaping ([DiscoveryModule.Item])->Void) {
-        guard let client = XmppService.instance.getClient(for: account), let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) else {
-            completionHandler([]);
-            return;
-        }
+    static func findChannels(for client: XMPPClient, at components: [Component], completionHandler: @escaping ([DiscoveryModule.Item])->Void) {
         var allItems: [DiscoveryModule.Item] = [];
         let group = DispatchGroup();
         for component in components {
             group.enter();
-            discoModule.getItems(for: component.jid, completionHandler: { result in
+            client.module(.disco).getItems(for: component.jid, completionHandler: { result in
                  switch result {
-                 case .success(_, let items):
+                 case .success(let items):
                      DispatchQueue.main.async {
-                        allItems.append(contentsOf: items);
+                        allItems.append(contentsOf: items.items);
                      }
-                 case .failure(_, _):
+                 case .failure(_):
                      break;
                  }
                  group.leave();
@@ -50,16 +46,12 @@ class ChannelsHelper {
         })
     }
     
-    static func findComponents(for account: BareJID, at domain: String, completionHandler: @escaping ([Component])->Void) {
+    static func findComponents(for client: XMPPClient, at domain: String, completionHandler: @escaping ([Component])->Void) {
         let domainJid = JID(domain);
-        guard let client = XmppService.instance.getClient(for: account), let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) else {
-            completionHandler([]);
-            return;
-        }
-        
         var components: [Component] = [];
         let group = DispatchGroup();
         group.enter();
+        let discoModule = client.module(.disco);
         retrieveComponent(from: domainJid, name: nil, discoModule: discoModule, completionHandler: { result in
             switch result {
             case .success(let component):
@@ -70,10 +62,10 @@ class ChannelsHelper {
             case .failure(_):
                 discoModule.getItems(for: domainJid, completionHandler: { result in
                     switch result {
-                    case .success(_, let items):
+                    case .success(let items):
                         // we need to do disco on all components to find out local mix/muc component..
                         // maybe this should be done once for all "views"?
-                        for item in items {
+                        for item in items.items {
                             group.enter();
                             self.retrieveComponent(from: item.jid, name: item.name, discoModule: discoModule, completionHandler: { result in
                                 switch result {
@@ -87,7 +79,7 @@ class ChannelsHelper {
                                 group.leave();
                             });
                         }
-                    case .failure(_, _):
+                    case .failure(_):
                         break;
                     }
                     group.leave();
@@ -100,24 +92,20 @@ class ChannelsHelper {
         })
     }
     
-    static func queryChannel(for account: BareJID, at components: [Component], name: String, completionHandler: @escaping (Result<[DiscoveryModule.Item],ErrorCondition>)->Void) {
-        guard let client = XmppService.instance.getClient(for: account), let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) else {
-            completionHandler(.failure(.item_not_found));
-            return;
-        }
-        
+    static func queryChannel(for client: XMPPClient, at components: [Component], name: String, completionHandler: @escaping (Result<[DiscoveryModule.Item],XMPPError>)->Void) {
         var allItems: [DiscoveryModule.Item] = [];
         let group = DispatchGroup();
+        let discoModule = client.module(.disco);
         for component in components {
             group.enter();
             let channelJid = JID(BareJID(localPart: name, domain: component.jid.domain));
             discoModule.getInfo(for: channelJid, node: nil, completionHandler: { result in
                  switch result {
-                 case .success(_, let identities, let items):
+                 case .success(let info):
                      DispatchQueue.main.async {
-                        allItems.append(DiscoveryModule.Item(jid: channelJid, name: identities.first?.name));
+                        allItems.append(DiscoveryModule.Item(jid: channelJid, name: info.identities.first?.name));
                      }
-                 case .failure(_, _):
+                 case .failure(_):
                      break;
                  }
                  group.leave();
@@ -128,16 +116,16 @@ class ChannelsHelper {
         })
     }
     
-    static func retrieveComponent(from jid: JID, name: String?, discoModule: DiscoveryModule, completionHandler: @escaping (Result<Component,ErrorCondition>)->Void) {
+    static func retrieveComponent(from jid: JID, name: String?, discoModule: DiscoveryModule, completionHandler: @escaping (Result<Component,XMPPError>)->Void) {
         discoModule.getInfo(for: jid, completionHandler: { result in
             switch result {
-            case .success(_, let identities, let features):
-                guard let component = Component(jid: jid, name: name, identities: identities, features: features) else {
+            case .success(let info):
+                guard let component = Component(jid: jid, name: name, identities: info.identities, features: info.features) else {
                     completionHandler(.failure(.item_not_found));
                     return;
                 }
                 completionHandler(.success(component));
-            case .failure(let errorCondition, _):
+            case .failure(let errorCondition):
                 completionHandler(.failure(errorCondition));
             }
         })

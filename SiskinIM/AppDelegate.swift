@@ -25,6 +25,7 @@ import TigaseSwift
 import Shared
 import WebRTC
 import BackgroundTasks
+import Combine
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -32,47 +33,41 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     fileprivate let backgroundRefreshTaskIdentifier = "org.tigase.messenger.mobile.refresh";
     
     var window: UIWindow?
-    var xmppService:XmppService! {
-        return XmppService.instance;
-    }
-    var dbConnection:DBConnection! {
-        return DBConnection.main;
-    }
     
     let notificationCenterDelegate = NotificationCenterDelegate();
     
+    private var cancellables: Set<AnyCancellable> = [];
+    
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        if #available(iOS 13, *) {
-            BGTaskScheduler.shared.register(forTaskWithIdentifier: backgroundRefreshTaskIdentifier, using: nil) { (task) in
-                self.handleAppRefresh(task: task as! BGAppRefreshTask);
-            }
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: backgroundRefreshTaskIdentifier, using: nil) { (task) in
+            self.handleAppRefresh(task: task as! BGAppRefreshTask);
         }
-        try! DBConnection.migrateToGroupIfNeeded();
-        ImageCache.convertToAttachments();
 //        RTCInitFieldTrialDictionary([:]);
         RTCInitializeSSL();
         //RTCSetupInternalTracer();
-        Log.initialize();
-        Settings.initialize();
         AccountSettings.initialize();
-        if #available(iOS 13.0, *) {
-            switch Settings.appearance.string()! {
-            case "light":
-                for window in application.windows {
-                    window.overrideUserInterfaceStyle = .light;
-                }
-            case "dark":
-                for window in application.windows {
-                    window.overrideUserInterfaceStyle = .dark;
-                }
-            default:
-                break;
+        
+        switch Settings.appearance {
+        case .light:
+            for window in application.windows {
+                window.overrideUserInterfaceStyle = .light;
             }
+        case .dark:
+            for window in application.windows {
+                window.overrideUserInterfaceStyle = .dark;
+            }
+        default:
+            break;
         }
+        Settings.$appearance.map({ $0.value }).receive(on: DispatchQueue.main).sink(receiveValue: { value in
+            for window in application.windows {
+                window.overrideUserInterfaceStyle = value;
+            }
+        }).store(in: &cancellables);
         _ = JingleManager.instance;
         UINavigationBar.appearance().tintColor = UIColor(named: "tintColor");
-        NotificationManager.instance.initialize(provider: MainNotificationManagerProvider());
-        xmppService.initialize();
+        _ = NotificationManager.instance;
+        XmppService.instance.initialize();
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
             // sending notifications not granted!
         }
@@ -83,21 +78,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UNUserNotificationCenter.current().setNotificationCategories(Set(categories));
         application.registerForRemoteNotifications();
         CallManager.initializeCallManager();
-        NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.unreadMessagesCountChanged), name: DBChatStore.UNREAD_MESSAGES_COUNT_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.serverCertificateError), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.authenticationFailure), name: XmppService.AUTHENTICATION_FAILURE, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.presenceAuthorizationRequest), name: XmppService.PRESENCE_AUTHORIZATION_REQUEST, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.mucRoomInvitationReceived), name: XmppService.MUC_ROOM_INVITATION, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.pushNotificationRegistrationFailed), name: Notification.Name("pushNotificationsRegistrationFailed"), object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.accountsChanged), name: AccountManager.ACCOUNT_CHANGED, object: nil);
-        updateApplicationIconBadgeNumber(completionHandler: nil);
-        
-        if #available(iOS 13, *) {
-        } else {
-            application.setMinimumBackgroundFetchInterval(UIApplication.backgroundFetchIntervalMinimum);
-        }
-        
+        AccountManager.accountEventsPublisher.sink(receiveValue: { [weak self] _ in
+            self?.accountsChanged();
+        }).store(in: &cancellables);
+                
         (self.window?.rootViewController as? UISplitViewController)?.preferredDisplayMode = .allVisible;
         if AccountManager.getAccounts().isEmpty {
             self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SetupViewController");
@@ -126,7 +112,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
     
-    @objc func accountsChanged(_ notification: Notification) {
+    private func accountsChanged() {
         DispatchQueue.main.async {
             if let rootView = self.window?.rootViewController {
                 let normalMode: Bool = rootView is UISplitViewController;
@@ -153,13 +139,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-        xmppService.applicationState = .inactive;
+        XmppService.instance.applicationState = .inactive;
 
         initiateBackgroundTask();
     }
     
     func initiateBackgroundTask() {
-        guard xmppService.applicationState == .inactive else {
+        guard XmppService.instance.applicationState == .inactive else {
             return;
         }
         let application = UIApplication.shared;
@@ -177,11 +163,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         backgroundTaskId = .invalid;
         print("keep online task expired at", taskId, NSDate());
-        self.xmppService.backgroundTaskFinished();
+        XmppService.instance.backgroundTaskFinished();
         print("keep online calling end background task", taskId, NSDate());
-        if #available(iOS 13, *) {
-            scheduleAppRefresh();
-        }
+        scheduleAppRefresh();
         print("keep online task ended", taskId, NSDate());
         application.endBackgroundTask(taskId);
     }
@@ -206,23 +190,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 return;
             }
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toDiscard)
-            self.updateApplicationIconBadgeNumber(completionHandler: nil);
+            NotificationManager.instance.updateApplicationIconBadgeNumber(completionHandler: nil);
         }
     }
     
     func applicationDidBecomeActive(_ application: UIApplication) {
-        if #available(iOS 13, *) {
-            BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: backgroundRefreshTaskIdentifier);
-        }
+        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: backgroundRefreshTaskIdentifier);
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
         
         // TODO: XmppService::initialize() call in application:willFinishLaunchingWithOptions results in starting a connections while it may not always be desired if ie. app is relauched in the background due to crash
         // Shouldn't it wait for reconnection till it becomes active? or background refresh task is called?
         
-        xmppService.applicationState = .active;
+        XmppService.instance.applicationState = .active;
         applicationKeepOnlineOnAwayFinished(application);
 
-        self.updateApplicationIconBadgeNumber(completionHandler: nil);
+        NotificationManager.instance.updateApplicationIconBadgeNumber(completionHandler: nil);
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
@@ -278,21 +260,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             self.window?.rootViewController?.present(navController, animated: true, completion: nil);
         case .message:
             let alert = UIAlertController(title: "Start chatting", message: "Select account to open chat from", preferredStyle: .alert);
-            let accounts = self.xmppService.getClients().map({ (client) -> BareJID in
-                return client.sessionObject.userBareJid!;
+            
+            let accounts = XmppService.instance.clients.values.map({ (client) -> BareJID in
+                return client.userBareJid;
             }).sorted { (a1, a2) -> Bool in
                 return a1.stringValue.compare(a2.stringValue) == .orderedAscending;
             }
             
             let openChatFn: (BareJID)->Void = { (account) in
-                let xmppClient = self.xmppService.getClient(forJid: account);
-                let messageModule:MessageModule? = xmppClient?.modulesManager.getModule(MessageModule.ID);
-                
-                guard messageModule != nil else {
+                guard let xmppClient = XmppService.instance.getClient(for: account) else {
                     return;
                 }
                 
-                _ = messageModule!.chatManager!.getChatOrCreate(with: xmppUri.jid.withoutResource, thread: nil);
+                var chatToOpen: Chat?;
+                switch DBChatStore.instance.createChat(for: xmppClient, with: xmppUri.jid.bareJid) {
+                case .created(let chat):
+                    chatToOpen = chat;
+                case .found(let chat):
+                    chatToOpen = chat;
+                case .none:
+                    return;
+                }
                 
                 guard let destination = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: "ChatViewNavigationController") as? UINavigationController else {
                     return;
@@ -300,8 +288,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 
                 let chatController = destination.children[0] as! ChatViewController;
                 chatController.hidesBottomBarWhenPushed = true;
-                chatController.account = account;
-                chatController.jid = xmppUri.jid.bareJid;
+                chatController.conversation = chatToOpen;
                 self.window?.rootViewController?.showDetailViewController(destination, sender: self);
             }
             
@@ -355,7 +342,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
-    @available(iOS 13, *)
     func scheduleAppRefresh() {
         let request = BGAppRefreshTaskRequest(identifier: backgroundRefreshTaskIdentifier);
         request.earliestBeginDate = Date(timeIntervalSinceNow: 3500);
@@ -369,7 +355,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var backgroundFetchInProgress = false;
     
-    @available(iOS 13, *)
     func handleAppRefresh(task: BGAppRefreshTask) {
         guard DispatchQueue.main.sync(execute: {
             if self.backgroundFetchInProgress {
@@ -384,7 +369,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.scheduleAppRefresh();
         let fetchStart = Date();
         print("starting fetching", fetchStart);
-        xmppService.preformFetch(completionHandler: {(result) in
+        XmppService.instance.preformFetch(completionHandler: {(result) in
             let fetchEnd = Date();
             let time = fetchEnd.timeIntervalSince(fetchStart);
             print(Date(), "fetched date in \(time) seconds with result = \(result)");
@@ -397,7 +382,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             DispatchQueue.main.sync {
                 self.backgroundFetchInProgress = false;
             }
-            self.xmppService.performFetchExpired();
+            XmppService.instance.performFetchExpired();
             print("task expiration reached, end", Date());
         }
     }
@@ -411,8 +396,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return false;
         }
         
-        print("comparing", baseChatController.account.stringValue, account, baseChatController.jid.stringValue, jid);
-        return (baseChatController.account == BareJID(account)) && (baseChatController.jid == BareJID(jid));
+        print("comparing", baseChatController.conversation.account.stringValue, account, baseChatController.conversation.jid.stringValue, jid);
+        return (baseChatController.conversation.account == BareJID(account)) && (baseChatController.conversation.jid == BareJID(jid));
     }
     
     static func getChatController(visible: Bool) -> BaseChatViewController? {
@@ -451,20 +436,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
-    func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        if #available(iOS 13, *) {
-            completionHandler(.noData);
-        } else {
-            let fetchStart = Date();
-            print(Date(), "OLD: starting fetching data");
-            xmppService.preformFetch(completionHandler: {(result) in
-                completionHandler(result);
-                let fetchEnd = Date();
-                let time = fetchEnd.timeIntervalSince(fetchStart);
-                print(Date(), "OLD: fetched date in \(time) seconds with result = \(result)");
-            });
-        }
-    }
+//    func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+//        if #available(iOS 13, *) {
+//            completionHandler(.noData);
+//        } else {
+//            let fetchStart = Date();
+//            print(Date(), "OLD: starting fetching data");
+//            xmppService.preformFetch(completionHandler: {(result) in
+//                completionHandler(result);
+//                let fetchEnd = Date();
+//                let time = fetchEnd.timeIntervalSince(fetchStart);
+//                print(Date(), "OLD: fetched date in \(time) seconds with result = \(result)");
+//            });
+//        }
+//    }
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let tokenString = deviceToken.reduce("", {$0 + String(format: "%02X", $1)});
@@ -493,16 +478,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let body = userInfo[AnyHashable("body")] as? String;
             
             if let unreadMessages = userInfo[AnyHashable("unread-messages")] as? Int, unreadMessages == 0 && sender == nil && body == nil {
-                let state = self.xmppService.getClient(forJid: account.bareJid)?.state;
+                let state = XmppService.instance.getClient(for: account.bareJid)?.state;
                 print("unread messages retrieved, client state =", state as Any);
-                if state != .connected {
+                if state != .connected() {
                     dismissNewMessageNotifications(for: account) {
                         completionHandler(.newData);
                     }
                     return;
                 }
             } else if body != nil {
-                NotificationManager.instance.notifyNewMessage(account: account.bareJid, sender: sender?.bareJid, type: .unknown, nickname: userInfo[AnyHashable("nickname")] as? String, body: body!);
+                NotificationManager.instance.notifyNewMessage(account: account.bareJid, sender: sender?.bareJid, nickname: userInfo[AnyHashable("nickname")] as? String, body: body!);
             } else {
                 if let encryped = userInfo["encrypted"] as? String, let ivStr = userInfo["iv"] as? String, let key = NotificationEncryptionKeys.key(for: account.bareJid), let data = Data(base64Encoded: encryped), let iv = Data(base64Encoded: ivStr) {
                     print("got encrypted push with known key");
@@ -515,10 +500,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                             // we require `media` to be present (even empty) in incoming push for jingle session initiation,
                             // so we can assume that if `media` is `nil` then this is a push for call termination
                             if let sid = payload.sid, payload.media == nil {
-                                guard CallManager.isAvailable, CallManager.instance?.currentCall?.state ?? .ringing == .ringing else {
+                                guard CallManager.isAvailable else {
+                                    completionHandler(.newData);
                                     return;
                                 }
-                                CallManager.instance?.endCall(on: account.bareJid, sid: sid, completionHandler: {
+                                CallManager.instance?.endCall(on: account.bareJid, with: payload.sender.bareJid, sid: sid, completionHandler: {
                                     print("ended call");
                                     completionHandler(.newData);
                                 })
@@ -533,17 +519,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         completionHandler(.newData);
     }
-        
-    @objc func newMessage(_ notification: NSNotification) {
-        guard let message = notification.object as? ChatMessage else {
-            return;
-        }
-        guard message.state == .incoming_unread || message.state == .incoming_error_unread || message.encryption == .notForThisDevice else {
-            return;
-        }
-        
-        NotificationManager.instance.notifyNewMessage(account: message.account, sender: message.jid, type: message.authorNickname != nil ? .groupchat : .chat, nickname: message.authorNickname, body: message.message);
-    }
     
     func dismissNewMessageNotifications(for account: JID, completionHandler: (()-> Void)?) {
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
@@ -556,31 +531,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 }
             }).map({ (notification) in notification.request.identifier });
             UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
-            self.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
+            NotificationManager.instance.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
         }
-    }
-    
-    @objc func unreadMessagesCountChanged(_ notification: NSNotification) {
-        updateApplicationIconBadgeNumber(completionHandler: nil);
-    }
-    
-    @objc func presenceAuthorizationRequest(_ notification: NSNotification) {
-        let sender = notification.userInfo?["sender"] as? BareJID;
-        let account = notification.userInfo?["account"] as? BareJID;
-        var senderName:String? = nil;
-        if let sessionObject = xmppService.getClient(forJid: account!)?.sessionObject {
-            senderName = RosterModule.getRosterStore(sessionObject).get(for: JID(sender!))?.name;
-        }
-        if senderName == nil {
-            senderName = sender!.stringValue;
-        }
-        
-        let content = UNMutableNotificationContent();
-        content.body = "Received presence subscription request from " + senderName!;
-        content.userInfo = ["sender": sender!.stringValue as NSString, "account": account!.stringValue as NSString, "senderName": senderName! as NSString];
-        content.categoryIdentifier = "SUBSCRIPTION_REQUEST";
-        content.threadIdentifier = "account=" + account!.stringValue + "|sender=" + sender!.stringValue;
-        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
     
     @objc func pushNotificationRegistrationFailed(_ notification: NSNotification) {
@@ -603,32 +555,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
     
-    @objc func mucRoomInvitationReceived(_ notification: Notification) {
-        guard let e = notification.object as? MucModule.InvitationReceivedEvent, let account = e.sessionObject.userBareJid else {
-            return;
-        }
-        
-        let content = UNMutableNotificationContent();
-        content.body = "Invitation to groupchat \(e.invitation.roomJid.stringValue)";
-        if let from = e.invitation.inviter, let name = RosterModule.getRosterStore(e.sessionObject).get(for: from) {
-            content.body = "\(content.body) from \(name)";
-        }
-        content.threadIdentifier = "mucRoomInvitation=" + account.stringValue + "|room=" + e.invitation.roomJid.stringValue;
-        content.categoryIdentifier = "MUC_ROOM_INVITATION";
-        content.userInfo = ["account": account.stringValue, "roomJid": e.invitation.roomJid.stringValue, "password": e.invitation.password as Any];
-        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil), withCompletionHandler: nil);
-    }
-    
-    func updateApplicationIconBadgeNumber(completionHandler: (()->Void)?) {
-        NotificationManager.instance.provider.countBadge(withThreadId: nil, completionHandler: { count in
-            DispatchQueue.main.async {
-                print("setting badge to", count);
-                UIApplication.shared.applicationIconBadgeNumber = count;
-                completionHandler?();
-            }
-        });
-    }
-    
     @objc func serverCertificateError(_ notification: NSNotification) {
         guard let certInfo = notification.userInfo else {
             return;
@@ -639,22 +565,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let content = UNMutableNotificationContent();
         content.body = "Connection to server \(account.domain) failed";
         content.userInfo = certInfo;
-        content.categoryIdentifier = "ERROR";
-        content.threadIdentifier = "account=" + account.stringValue;
-        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
-    }
-    
-    @objc func authenticationFailure(_ notification: NSNotification) {
-        guard let info = notification.userInfo else {
-            return;
-        }
-        
-        let account = BareJID(info["account"] as! String);
-        let type = info["auth-error-type"] as! String;
-        
-        let content = UNMutableNotificationContent();
-        content.body = "Authentication for account \(account) failed: \(type)";
-        content.userInfo = info;
         content.categoryIdentifier = "ERROR";
         content.threadIdentifier = "account=" + account.stringValue;
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));

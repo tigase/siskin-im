@@ -22,20 +22,20 @@
 
 import UIKit
 import TigaseSwift
+import Combine
 
 class SettingsViewController: UITableViewController {
    
-    var statusNames = [
-        "chat" : "Chat",
-        "online" : "Online",
-        "away" : "Away",
-        "xa" : "Extended away",
-        "dnd" : "Do not disturb"
+    var statusNames: [Presence.Show: String] = [
+        .chat : "Chat",
+        .online : "Online",
+        .away : "Away",
+        .xa : "Extended away",
+        .dnd : "Do not disturb"
     ];
     
     override func viewDidLoad() {
         super.viewDidLoad();
-        NotificationCenter.default.addObserver(self, selector: #selector(accountStateChanged), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil);
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -81,6 +81,10 @@ class SettingsViewController: UITableViewController {
         }
     }
     
+    private var statusMessageCancellable: AnyCancellable?;
+    private var statusTypeCancellable1: AnyCancellable?;
+    private var statusTypeCancellable2: AnyCancellable?;
+
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if (indexPath.section == 0) {
             let cellIdentifier = "AccountTableViewCell";
@@ -91,21 +95,8 @@ class SettingsViewController: UITableViewController {
                 cell.avatarStatusView.isHidden = false;
                 let account = AccountManager.getAccount(for: accounts[indexPath.row]);
                 cell.nameLabel.text = account?.name.stringValue;
-                let jid = BareJID(account!.name);
-                cell.avatarStatusView.set(name: nil, avatar: AvatarManager.instance.avatar(for: jid, on: jid), orDefault: AvatarManager.instance.defaultAvatar);
-                if let client = XmppService.instance.getClient(for: jid) {
-                    cell.avatarStatusView.statusImageView.isHidden = false;
-                    var status: Presence.Show? = nil;
-                    switch client.state {
-                    case .connected:
-                        status = .online;
-                    case .connecting, .disconnecting:
-                        status = Presence.Show.xa;
-                    default:
-                        break;
-                    }
-                    cell.avatarStatusView.setStatus(status);
-                } else if AccountSettings.LastError(jid).getString() != nil {
+                cell.set(account: accounts[indexPath.row]);
+                if AccountSettings.LastError(accounts[indexPath.row]).getString() != nil {
                     cell.avatarStatusView.statusImageView.isHidden = false;
                     cell.avatarStatusView.statusImageView.image = UIImage(named: "presence_error")!;
                 } else {
@@ -122,32 +113,37 @@ class SettingsViewController: UITableViewController {
             if indexPath.row == 1 {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "StatusTableViewCell", for: indexPath);
                 let label = cell.viewWithTag(1)! as! UILabel;
-                label.text = Settings.StatusMessage.getString();
+                self.statusMessageCancellable = Settings.$statusMessage.assign(to: \.text, on: label);
                 return cell;
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "StatusTypeSettingsViewCell", for: indexPath);
-                let type = Settings.StatusType.getString();
-                if let image = type != nil ? getStatusIconForActionIcon(named: "presence_\(type!)", size: 55, withBorder: false) : nil {
-                    (cell.contentView.subviews[0] as? UIImageView)?.image = image;
-                    (cell.contentView.subviews[0] as? UIImageView)?.isHidden = false;
-                } else {
-                    (cell.contentView.subviews[0] as? UIImageView)?.isHidden = true;
-                }
-                (cell.contentView.subviews[1] as? UILabel)?.text = type != nil ? self.statusNames[type!] : "Automatic";
+                self.statusTypeCancellable1 = Settings.$statusType.map({ [weak self] v in v == nil ? nil : self?.getStatusIconForActionIcon(named: "presence_\(v!.rawValue)", size: 55, withBorder: false) }).sink(receiveValue: { [weak cell] image in
+                    if image == nil {
+                        (cell?.contentView.subviews[0] as? UIImageView)?.isHidden = true;
+                    } else {
+                        (cell?.contentView.subviews[0] as? UIImageView)?.image = image;
+                        (cell?.contentView.subviews[0] as? UIImageView)?.isHidden = false;
+                    }
+                });
+                self.statusTypeCancellable2 = Settings.$statusType.map({ [weak self] type in
+                    if type == nil {
+                        return "Automatic";
+                    } else {
+                        return self?.statusNames[type!];
+                    }
+                }).sink(receiveValue: { [weak cell] name in
+                    (cell?.contentView.subviews[1] as? UILabel)?.text = name;
+                });
                 cell.accessoryType = .disclosureIndicator;
                 return cell;
             }
         } else {
             switch SettingsGroup.groups[indexPath.row] {
             case .appearance:
-                let cell = tableView.dequeueReusableCell(withIdentifier: "AppearanceViewCell", for: indexPath);
-                if #available(iOS 13.0, *) {
-                    if let style = self.view.window?.overrideUserInterfaceStyle {
-                        cell.detailTextLabel?.text = AppearanceItem.description(of: style);
-                    } else {
-                        cell.detailTextLabel?.text = AppearanceItem.description(of: .unspecified);
-                    }
-                }
+                let cell = tableView.dequeueReusableCell(withIdentifier: "AppearanceViewCell", for: indexPath) as! EnumTableViewCell;
+                cell.bind({ cell in
+                    cell.assign(from: Settings.$appearance.map({ $0.description as String? }).eraseToAnyPublisher());
+                })
                 cell.accessoryType = .disclosureIndicator;
                 return cell;
             case .chat:
@@ -206,17 +202,17 @@ class SettingsViewController: UITableViewController {
                 let account = accounts[indexPath.row];
                 let accountSettingsController = AccountSettingsViewController.instantiate(fromAppStoryboard: .Account);
                 accountSettingsController.hidesBottomBarWhenPushed = true;
-                accountSettingsController.account = BareJID(account);
+                accountSettingsController.account = account;
                 self.navigationController?.pushViewController(accountSettingsController, animated: true);
             }
         } else if indexPath.section == 1 {
             if indexPath.row == 0 {
                 let alert = UIAlertController(title: "Select status", message: nil, preferredStyle: .actionSheet);
-                [nil, "chat", "online", "away", "xa", "dnd"].forEach { (type)->Void in
+                let options: [Presence.Show?] = [nil, .chat, .online, .away, .xa, .dnd];
+                for type in options {
                     let name = type == nil ? "Automatic" : self.statusNames[type!];
                     let action = UIAlertAction(title: name, style: .default) { (a) in
-                        Settings.StatusType.setValue(type);
-                        self.tableView.reloadData();                        
+                        Settings.statusType = type;
                     };
                     if type != nil {
                         action.setValue(getStatusIconForActionIcon(named: "presence_\(type!)", size: 36, withBorder: true), forKey: "image")
@@ -235,10 +231,10 @@ class SettingsViewController: UITableViewController {
             else if indexPath.row == 1 {
                 let alert = UIAlertController(title: "Status", message: "Enter status message", preferredStyle: .alert);
                 alert.addTextField(configurationHandler: { (textField) in
-                    textField.text = Settings.StatusMessage.getString();
+                    textField.text = Settings.statusMessage;
                 })
                 alert.addAction(UIAlertAction(title: "Set", style: .default, handler: { (action) -> Void in
-                    Settings.StatusMessage.setValue((alert.textFields![0] as UITextField).text);
+                    Settings.statusMessage = (alert.textFields![0] as UITextField).text;
                     self.tableView.reloadData();
                 }));
                 self.present(alert, animated: true, completion: nil);
@@ -246,90 +242,23 @@ class SettingsViewController: UITableViewController {
         } else if indexPath.section == 2 {
             switch SettingsGroup.groups[indexPath.row] {
             case .appearance:
-                if #available(iOS 13.0, *) {
-                let controller = TablePickerViewController(style: .grouped);
-                let values: [UIUserInterfaceStyle] = [.unspecified, .light, .dark];
-                controller.selected = values.firstIndex(of: self.view.window?.overrideUserInterfaceStyle ?? .unspecified) ?? 0;
-                controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
-                    return AppearanceItem(value: it);
-                });
-                controller.onSelectionChange = { (_item) -> Void in
-                    let item = _item as! AppearanceItem;
-                    for window in UIApplication.shared.windows {
-                        window.overrideUserInterfaceStyle = item.value;
-                    }
-                    switch item.value {
-                    case .dark:
-                        Settings.appearance.setValue("dark")
-                    case .light:
-                        Settings.appearance.setValue("light")
-                    case .unspecified:
-                        Settings.appearance.setValue("auto")
-                    default:
-                        Settings.appearance.setValue("auto")
-                    }
-                    self.tableView.reloadData();
-                };
+                let controller = TablePickerViewController<Appearance>(style: .grouped, message: "Select appearance", options: [.auto, .light, .dark], value: Settings.appearance);
+                controller.sink(to: \.appearance, on: Settings);
                 self.navigationController?.pushViewController(controller, animated: true);
-                }
             default:
                 break;
             }
         }
     }
     
-    @available(iOS 13.0, *)
-    class AppearanceItem: TablePickerViewItemsProtocol {
-    
-    public static func description(of value: UIUserInterfaceStyle) -> String {
-        switch value {
-        case .unspecified:
-            return "Auto";
-        case .light:
-            return "Light";
-        case .dark:
-            return "Dark";
-        default:
-            return "Auto";
-        }
-    }
-    
-    let description: String;
-    let value: UIUserInterfaceStyle;
-    
-    init(value: UIUserInterfaceStyle) {
-        self.value = value;
-        self.description = AppearanceItem.description(of: value);
-    }
-        
-    }
-    
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return false;
-    }
-    
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == UITableViewCell.EditingStyle.delete {
-            if indexPath.section == 0 {
-                let accounts = AccountManager.getAccounts();
-                if accounts.count > indexPath.row {
-                    let account = accounts[indexPath.row];
-                    
-                }
-            }
-        }
     }
         
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         (segue.destination as? UINavigationController)?.visibleViewController?.hidesBottomBarWhenPushed = true;
     }
-        
-    @objc func accountStateChanged(_ notification: Notification) {
-        DispatchQueue.main.async() {
-            self.tableView.reloadData();
-        }
-    }
-    
+            
     func showAddAccount(register: Bool) {
         // show add account dialog
         if !register {

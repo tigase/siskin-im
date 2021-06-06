@@ -77,7 +77,7 @@ class InvitationChatTableViewCell: BaseChatTableViewCell {
         }
         
         let controller = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelJoinViewController") as! ChannelJoinViewController;
-        controller.account = account;
+        controller.client = XmppService.instance.getClient(for: account);
         controller.componentType = .mix
         controller.mixInvitation = mixInvitation;
         

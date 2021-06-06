@@ -20,12 +20,15 @@
 //
 
 import UIKit
+import Combine
 
 class SwitchTableViewCell: UITableViewCell {
 
     @IBOutlet var switchView: UISwitch!
     
     var valueChangedListener: ((UISwitch) -> Void)?;
+    
+    private var cancellables: Set<AnyCancellable> = [];
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -40,5 +43,26 @@ class SwitchTableViewCell: UITableViewCell {
 
     @IBAction func valueChanged(_ sender: UISwitch) {
         valueChangedListener?(sender);
+    }
+    
+    func reset() {
+        cancellables.removeAll();
+    }
+    
+    func assign(from publisher: AnyPublisher<Bool,Never>) {
+        publisher.assign(to: \.isOn, on: switchView).store(in: &cancellables);
+    }
+
+    func sink<Root>(to keyPath: ReferenceWritableKeyPath<Root, Bool>, on object: Root) {
+        switchView.publisher(for: \.isOn).assign(to: keyPath, on: object).store(in: &cancellables);
+    }
+
+    func sink<Root,T>(map: @escaping (Bool)->T, to keyPath: ReferenceWritableKeyPath<Root, T>, on object: Root) {
+        switchView.publisher(for: \.isOn).map(map).assign(to: keyPath, on: object).store(in: &cancellables);
+    }
+    
+    func bind(_ fn: (SwitchTableViewCell)->Void) {
+        reset();
+        fn(self);
     }
 }

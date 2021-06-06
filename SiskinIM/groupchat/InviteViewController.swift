@@ -26,8 +26,8 @@ class InviteViewController: AbstractRosterViewController {
 
     var room: Room!;
     
-    var onNext: (([JID])->Void)? = nil;
-    var selected: [JID] = [];
+    var onNext: (([BareJID])->Void)? = nil;
+    var selected: [BareJID] = [];
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
@@ -70,7 +70,7 @@ class InviteViewController: AbstractRosterViewController {
             return;
         }
 
-        room.invite(item.jid, reason: "You are invied to join conversation at \(room.roomJid)");
+        room.invite(JID(item.jid), reason: "You are invied to join conversation at \(room.roomJid)");
         
         self.navigationController?.dismiss(animated: true, completion: nil);
     }

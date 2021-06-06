@@ -22,6 +22,7 @@
 import UIKit
 import TigaseSwift
 import Combine
+import Shared
 
 class MucChatSettingsViewController: UITableViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
@@ -55,11 +56,8 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         }).store(in: &cancellables);
         pushNotificationsSwitch.isEnabled = false;
         pushNotificationsSwitch.isOn = false;
-        if let encryption = room.options.encryption {
-            encryptionField.text = encryption == .none ? "None" : "OMEMO";
-        } else if room.isOMEMOSupported {
-            encryptionField.text = Settings.messageEncryption == .none ? "None" : "OMEMO";
-        }
+        room.optionsPublisher.map({ $0.encryption?.description ?? "Default" }).receive(on: DispatchQueue.main).assign(to: \.text, on: encryptionField).store(in: &cancellables);
+        room.optionsPublisher.map({ MucChatSettingsViewController.labelFor(conversationNotification: $0.notifications) }).receive(on: DispatchQueue.main).assign(to: \.text, on: notificationsField).store(in: &cancellables);
         refresh();
     }
     
@@ -73,8 +71,6 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
     }
     
     func refresh() {
-        notificationsField.text = NotificationItem(type: room.options.notifications).description;
-        
         guard room.state == .joined, let context = room.context else {
             return;
         }
@@ -149,7 +145,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         if activityIndicator != nil {
             hideIndicator();
         }
-        activityIndicator = UIActivityIndicatorView(style: .gray);
+        activityIndicator = UIActivityIndicatorView(style: .medium);
         activityIndicator?.center = CGPoint(x: view.frame.width/2, y: view.frame.height/2);
         activityIndicator!.isHidden = false;
         activityIndicator!.startAnimating();
@@ -175,44 +171,35 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         
         if indexPath.section == 2 {
             if indexPath.row == 0 {
-                let controller = TablePickerViewController();
-                controller.items = [NotificationItem(type: .always), NotificationItem(type: .mention), NotificationItem(type: .none)];
-                controller.selected = controller.items.firstIndex(where: { (item) -> Bool in
-                    return (item as! NotificationItem).type == room.options.notifications;
-                })!;
-                controller.onSelectionChange = { item in
-                    self.notificationsField.text = item.description;
-                    
-                    self.room.updateOptions({ (options) in
-                        options.notifications = (item as! NotificationItem).type;
+                let controller = TablePickerViewController<ConversationNotification>(options: [.always, .mention, .none], value: room.notifications, labelFn: MucChatSettingsViewController.labelFor(conversationNotification: ));
+                controller.sink(receiveValue: { [weak self] value in
+                    guard let room = self?.room else {
+                        return;
+                    }
+                    room.updateOptions({ (options) in
+                        options.notifications = value;
                     }, completionHandler: {
-                        if let pushModule = (self.room.context?.module(.push) as? SiskinPushNotificationsModule), let pushSettings = pushModule.pushSettings {
+                        if let pushModule = (room.context?.module(.push) as? SiskinPushNotificationsModule), let pushSettings = pushModule.pushSettings {
                             pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
                                 switch result {
                                 case .success(_):
                                     break;
                                 case .failure(_):
-                                    AccountSettings.pushHash(self.room.account).set(int: 0);
+                                    AccountSettings.pushHash(room.account).set(int: 0);
                                 }
                             });
                         }
                     });
-                }
+                });
                 self.navigationController?.pushViewController(controller, animated: true);
             }
             if indexPath.row == 1 {
-                let controller = TablePickerViewController();
-                controller.items = [EncryptionItem(type: .none), EncryptionItem(type: .omemo)];
-                controller.selected = controller.items.firstIndex(where: { (item) -> Bool in
-                    return (item as! EncryptionItem).type == (room.options.encryption ?? .none);
-                })!;
-                controller.onSelectionChange = { item in
-                    self.encryptionField.text = item.description;
-                    
+                let controller = TablePickerViewController<ConversationEncryption>(options: [.none, .omemo], value: room.options.encryption ?? .none);
+                controller.sink(receiveValue: { value in
                     self.room.updateOptions({ (options) in
-                        options.encryption = (item as! EncryptionItem).type;
+                        options.encryption = value;
                     }, completionHandler: nil);
-                }
+                });
                 self.navigationController?.pushViewController(controller, animated: true);
             }
         }
@@ -358,12 +345,12 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
             textField.text = self.room.subject ?? "";
         }
         let subjectField = controller.textFields![0];
-        controller.addAction(UIAlertAction(title: "Change", style: .default, handler: { (action) in
-            guard let mucModule = room.context?.module(.muc) else {
+        controller.addAction(UIAlertAction(title: "Change", style: .default, handler: { [weak self] (action) in
+            guard let room = self?.room, let mucModule = self?.room.context?.module(.muc) else {
                 return;
             }
-            mucModule.setRoomSubject(roomJid: self.room.roomJid, newSubject: subjectField.text);
-            self.roomSubjectField.text = subjectField.text;
+            mucModule.setRoomSubject(roomJid: room.roomJid, newSubject: subjectField.text);
+            self?.roomSubjectField.text = subjectField.text;
         }));
         controller.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
         self.present(controller, animated: true, completion: nil);
@@ -399,47 +386,15 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         return squared;
     }
     
-    class EncryptionItem: TablePickerViewItemsProtocol {
-        
-        let type: ChatEncryption;
-        
-        var description: String {
-            get {
-                switch type {
-                case .none:
-                    return "None";
-                case .omemo:
-                    return "OMEMO";
-                }
-            }
+    static func labelFor(conversationNotification type: ConversationNotification) -> String {
+        switch type {
+        case .none:
+            return "Muted";
+        case .mention:
+            return "When mentioned";
+        case .always:
+            return "Always";
         }
-        
-        init(type: ChatEncryption) {
-            self.type = type;
-        }
-        
     }
 
-    class NotificationItem: TablePickerViewItemsProtocol {
-        
-        let type: ConversationNotification;
-        
-        var description: String {
-            get {
-                switch type {
-                case .none:
-                    return "Muted";
-                case .mention:
-                    return "When mentioned";
-                case .always:
-                    return "Always";
-                }
-            }
-        }
-        
-        init(type: ConversationNotification) {
-            self.type = type;
-        }
-        
-    }
 }

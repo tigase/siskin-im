@@ -21,6 +21,8 @@
 
 import UIKit
 import TigaseSwift
+import Combine
+import Shared
 
 class ChannelSettingsViewController: UITableViewController {
     
@@ -29,21 +31,25 @@ class ChannelSettingsViewController: UITableViewController {
     @IBOutlet var channelDescriptionField: UILabel!;
     @IBOutlet var notificationsField: UILabel!;
         
-    
-    var channel: DBChannel!;
+    var channel: Channel!;
 
-    private var needRefresh = true;
+    private var cancellables: Set<AnyCancellable> = [];
     
     override func viewWillAppear(_ animated: Bool) {
-        channelNameField.text = channel.name ?? channel.channelJid.stringValue;
+        channel.displayNamePublisher.map({ $0 }).assign(to: \.text, on: channelNameField!).store(in: &cancellables);
         channelAvatarView.layer.cornerRadius = channelAvatarView.frame.width / 2;
         channelAvatarView.layer.masksToBounds = true;
-//        roomAvatarView.widthAnchor.constraint(equalTo: roomAvatarView.heightAnchor).isActive = true;
-        channelAvatarView.set(name: nil, avatar: self.squared(image: AvatarManager.instance.avatar(for: channel.channelJid, on: channel.account)), orDefault: AvatarManager.instance.defaultGroupchatAvatar);
-        channelDescriptionField.text = channel.description ?? "";
+        channel.avatarPublisher.replaceNil(with: AvatarManager.instance.defaultGroupchatAvatar).assign(to: \.avatar, on: channelAvatarView).store(in: &cancellables);
+        channel.descriptionPublisher.assign(to: \.text, on: channelDescriptionField).store(in: &cancellables);
+        channel.optionsPublisher.map({ ChannelSettingsViewController.labelFor(conversationNotification: $0.notifications) as String? }).assign(to: \.text, on: notificationsField!).store(in: &cancellables);
         
         refresh();
         refreshPermissions();
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        self.cancellables.removeAll();
+        super.viewDidDisappear(animated)
     }
     
     @IBAction func dismissView() {
@@ -51,9 +57,7 @@ class ChannelSettingsViewController: UITableViewController {
     }
     
     func refresh() {
-        notificationsField.text = NotificationItem(type: channel.options.notifications).description;
-        
-        guard needRefresh, let client = XmppService.instance.getClient(forJid: channel.account), let mixModule: MixModule = client.modulesManager.getModule(MixModule.ID) else {
+        guard let mixModule = channel.context?.module(.mix) else {
             return;
         }
         operationStarted(message: "Checking...");
@@ -115,19 +119,13 @@ class ChannelSettingsViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true);
         
         if indexPath.section == 1 && indexPath.row == 0 {
-            let controller = TablePickerViewController();
-            controller.items = [NotificationItem(type: .always), NotificationItem(type: .mention), NotificationItem(type: .none)];
-            controller.selected = controller.items.firstIndex(where: { (item) -> Bool in
-                return (item as! NotificationItem).type == channel.options.notifications;
-            })!;
-            controller.onSelectionChange = { item in
-                self.notificationsField.text = item.description;
-                
-                let account = self.channel.account;
-                self.channel.modifyOptions({ (options) in
-                    options.notifications = (item as! NotificationItem).type;
+            let controller = TablePickerViewController<ConversationNotification>(options: [.always, .mention, .none], value: channel.options.notifications, labelFn: ChannelSettingsViewController.labelFor(conversationNotification: ));
+
+            controller.sink(receiveValue: { [weak self] value in
+                self?.channel.updateOptions({ options in
+                    options.notifications = value;
                 }, completionHandler: {
-                    if let pushModule: SiskinPushNotificationsModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), let pushSettings = pushModule.pushSettings {
+                    if let account = self?.channel.account, let pushModule = self?.channel.context?.module(.push) as? SiskinPushNotificationsModule, let pushSettings = pushModule.pushSettings {
                         pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
                             switch result {
                             case .success(_):
@@ -137,14 +135,14 @@ class ChannelSettingsViewController: UITableViewController {
                             }
                         });
                     }
-                });
-            }
+                })
+            });
             self.navigationController?.pushViewController(controller, animated: true);
         }
         if indexPath.section == 3 && indexPath.row == 0, let channel = self.channel {
             let alertController = UIAlertController(title: "Delete channel?", message: "All messages will be deleted and all participants will be kicked out. Are you sure?", preferredStyle: .actionSheet);
             alertController.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { action in
-                guard let mixModule: MixModule = XmppService.instance.getClient(for: channel.account)?.modulesManager.getModule(MixModule.ID) else {
+                guard let mixModule = channel.context?.module(.mix) else {
                     return;
                 }
                 // -- handle this properly!!
@@ -153,11 +151,11 @@ class ChannelSettingsViewController: UITableViewController {
                         switch result {
                         case .success(_):
                             self?.dismiss(animated: true, completion: nil);
-                        case .failure(let errorCondition):
+                        case .failure(let error):
                             guard let that = self else {
                                 return;
                             }
-                            let alert = UIAlertController(title: "Channel destruction failed!", message: "It was not possible to destroy channel \(channel.name ?? channel.channelJid.stringValue). Server returned an error: \(errorCondition.rawValue)", preferredStyle: .alert);
+                            let alert = UIAlertController(title: "Channel destruction failed!", message: "It was not possible to destroy channel \(channel.name ?? channel.channelJid.stringValue). Server returned an error: \(error)", preferredStyle: .alert);
                             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
                             that.present(alert, animated: true, completion: nil);
                         }
@@ -174,8 +172,7 @@ class ChannelSettingsViewController: UITableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "chatShowAttachments" {
             if let attachmentsController = segue.destination as? ChatAttachmentsController {
-                attachmentsController.account = self.channel.account;
-                attachmentsController.jid = self.channel.channelJid;
+                attachmentsController.conversation = self.channel;
             }
         }
         if let destination = segue.destination as? ChannelEditInfoController {
@@ -213,26 +210,15 @@ class ChannelSettingsViewController: UITableViewController {
         return squared;
     }
     
-    class NotificationItem: TablePickerViewItemsProtocol {
-        
-        let type: ConversationNotification;
-        
-        var description: String {
-            get {
-                switch type {
-                case .none:
-                    return "Muted";
-                case .mention:
-                    return "When mentioned";
-                case .always:
-                    return "Always";
-                }
-            }
+    static func labelFor(conversationNotification type: ConversationNotification) -> String {
+        switch type {
+        case .none:
+            return "Muted";
+        case .mention:
+            return "When mentioned";
+        case .always:
+            return "Always";
         }
-        
-        init(type: ConversationNotification) {
-            self.type = type;
-        }
-        
     }
+    
 }

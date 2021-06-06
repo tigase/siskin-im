@@ -21,12 +21,21 @@
 
 
 import UIKit
+import TigaseSwift
+import Combine
 
 class AccountTableViewCell: UITableViewCell {
 
     @IBOutlet var avatarStatusView: AvatarStatusView!
     @IBOutlet var nameLabel: UILabel!
 
+    private var cancellables: Set<AnyCancellable> = [];
+    private var avatarObj: Avatar? {
+        didSet {
+            avatarObj?.avatarPublisher.receive(on: DispatchQueue.main).assign(to: \.avatar, on: avatarStatusView.avatarImageView).store(in: &cancellables);
+        }
+    }
+    
     override var backgroundColor: UIColor? {
         get {
             return super.backgroundColor;
@@ -42,4 +51,20 @@ class AccountTableViewCell: UITableViewCell {
         // Initialization code
     }
 
+    func set(account accountJid: BareJID) {
+        cancellables.removeAll();
+        avatarObj = AvatarManager.instance.avatarPublisher(for: .init(account: accountJid, jid: accountJid, mucNickname: nil));
+        if let acc = AccountManager.getAccount(for: accountJid) {
+            acc.state.map({ value -> Presence.Show? in
+                switch value {
+                case .connected(_):
+                    return .online
+                case .connecting, .disconnecting:
+                    return .xa
+                default:
+                    return nil;
+                }
+            }).receive(on: DispatchQueue.main).assign(to: \.status, on: avatarStatusView).store(in: &cancellables);
+        }
+    }
 }

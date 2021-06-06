@@ -24,6 +24,7 @@ import UserNotifications
 import Shared
 import TigaseSwift
 import os.log
+import TigaseSQLite3
 
 class NotificationService: UNNotificationServiceExtension {
 
@@ -45,7 +46,7 @@ class NotificationService: UNNotificationServiceExtension {
 
             if let account = BareJID(bestAttemptContent.userInfo["account"] as? String) {
                 DispatchQueue.main.async {
-                    NotificationManager.instance.initialize(provider: ExtensionNotificationManagerProvider());
+                    let provider = ExtensionNotificationManagerProvider();
                     self.debug("push for account:", account);
                     if let encryped = bestAttemptContent.userInfo["encrypted"] as? String, let ivStr = bestAttemptContent.userInfo["iv"] as? String {
                         if let key = NotificationEncryptionKeys.key(for: account), let data = Data(base64Encoded: encryped), let iv = Data(base64Encoded: ivStr) {
@@ -56,7 +57,7 @@ class NotificationService: UNNotificationServiceExtension {
                                 self.debug("got decrypted data:", String(data: decoded, encoding: .utf8) as Any);
                                 if let payload = try? JSONDecoder().decode(Payload.self, from: decoded) {
                                     self.debug("decoded payload successfully!");
-                                    NotificationManager.instance.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: payload.sender.bareJid, type: payload.type, nickname: payload.nickname, body: payload.message, completionHandler: { content in
+                                    NotificationsManagerHelper.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: payload.sender.bareJid, nickname: payload.nickname, body: payload.message, provider: provider, completionHandler: { content in
                                         DispatchQueue.main.async {
                                             contentHandler(content);
                                         }
@@ -68,7 +69,7 @@ class NotificationService: UNNotificationServiceExtension {
                         contentHandler(bestAttemptContent)
                     } else {
                         self.debug("got plain push with", bestAttemptContent.userInfo[AnyHashable("sender")] as? String as Any, bestAttemptContent.userInfo[AnyHashable("body")] as? String as Any, bestAttemptContent.userInfo[AnyHashable("unread-messages")] as? Int as Any, bestAttemptContent.userInfo[AnyHashable("nickname")] as? String as Any);
-                        NotificationManager.instance.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: JID(bestAttemptContent.userInfo[AnyHashable("sender")] as? String)?.bareJid, type: .unknown, nickname: bestAttemptContent.userInfo[AnyHashable("nickname")] as? String, body: bestAttemptContent.userInfo[AnyHashable("body")] as? String, completionHandler: { content in
+                        NotificationsManagerHelper.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: JID(bestAttemptContent.userInfo[AnyHashable("sender")] as? String)?.bareJid, nickname: bestAttemptContent.userInfo[AnyHashable("nickname")] as? String, body: bestAttemptContent.userInfo[AnyHashable("body")] as? String, provider: provider, completionHandler: { content in
                             DispatchQueue.main.async {
                                 contentHandler(content);
                             }
@@ -136,8 +137,6 @@ class NotificationService: UNNotificationServiceExtension {
 
 }
 
-import TigaseSQLite3
-
 extension Database {
     
     private static var mainReaderInstance: DatabaseReader?;
@@ -151,23 +150,39 @@ extension Database {
     
 }
 
+extension Query {
+    
+    static let buddyName = Query("select name from roster_items where account = :account and jid = :jid");
+    static let conversationNotificationDetails = Query("SELECT c.type as type, c.options as options FROM chats c WHERE c.account = :account AND c.jid = :jid")
+    static let listUnreadThreads = Query("select c.account, c.jid from chats c inner join chat_history ch where ch.account = c.account and ch.jid = c.jid and ch.state in (2,6,7) group by c.account, c.jid");
+    
+}
+
 class ExtensionNotificationManagerProvider: NotificationManagerProvider {
     
-    static let GET_NAME_QUERY = "select name, 0 as type from roster_items where account = :account and jid = :jid union select name, 1 as type from chats where account = :account and jid = :jid and type > 0 order by type desc";
-
-    static let GET_UNREAD_CHATS = "select c.account, c.jid from chats c inner join chat_history ch where ch.account = c.account and ch.jid = c.jid and ch.state in (2,6,7) group by c.account, c.jid";
+    static let GET_UNREAD_CHATS = "s";
     
-    func getChatNameAndType(for account: BareJID, with jid: BareJID, completionHandler: @escaping (String?, Payload.Kind) -> Void) {
-        let tmp = try? Database.mainReader().select(ExtensionNotificationManagerProvider.GET_NAME_QUERY, cached: false, params: ["account": account, "jid": jid]).mapFirst({ return ($0.string(for: "name"), $0.int(for: "type")!) })
-
-        completionHandler(tmp?.0, tmp?.1 == 0 ? .chat : .groupchat);
+    func conversationNotificationDetails(for account: BareJID, with jid: BareJID, completionHandler: @escaping (ConversationNotificationDetails)->Void) {
+        let (type, options) = try! Database.mainReader().select(query: .conversationNotificationDetails, cached: false, params: ["account": account, "jid": jid]).mapFirst({ cursor -> (ConversationType, ConversationOptions) in
+            let type = ConversationType(rawValue: cursor.int(for: "type")!) ?? .chat;
+            let options: ConversationOptions = cursor.object(for: "options") ?? ConversationOptions();
+            
+            return (type, options);
+        }) ?? (.chat, ConversationOptions());
+        
+        switch type {
+        case .chat:
+            completionHandler(ConversationNotificationDetails(name: try! Database.mainReader().select(query: .buddyName, cached: false, params: ["account": account, "jid": jid]).mapFirst({ $0.string(for: "name") }) ?? jid.stringValue, notifications: options.notifications ?? .always, type: type, nick: nil));
+        case .channel, .room:
+            completionHandler(ConversationNotificationDetails(name: options.name ?? jid.stringValue, notifications: options.notifications ?? .always, type: type, nick: options.nick));
+        }
     }
     
     func countBadge(withThreadId: String?, completionHandler: @escaping (Int) -> Void) {
-        NotificationManager.unreadChatsThreadIds { (result) in
+        NotificationsManagerHelper.unreadChatsThreadIds { (result) in
             var unreadChats = result;
 
-            try? Database.mainReader().select(ExtensionNotificationManagerProvider.GET_UNREAD_CHATS, cached: false, params: []).mapAll({ cursor in
+            try? Database.mainReader().select(query: .listUnreadThreads, cached: false, params: []).mapAll({ cursor in
                 if let account = cursor.bareJid(for: "account"), let jid = cursor.bareJid(for: "jid") {
                     return "account=\(account.stringValue)|sender=\(jid.stringValue)"
                 }
@@ -187,6 +202,50 @@ class ExtensionNotificationManagerProvider: NotificationManagerProvider {
     func shouldShowNotification(account: BareJID, sender: BareJID?, body: String?, completionHandler: @escaping (Bool)->Void) {
         completionHandler(true);
     }
+}
+
+class Provider {
+    
+
+    
+}
+
+public struct ConversationOptions: Codable {
+    
+    var name: String?;
+    var nick: String?;
+    var notifications: ConversationNotification?;
+    
+    init(name: String? = nil, nick: String? = nil, notifications: ConversationNotification? = nil) {
+        self.name = name;
+        self.nick = nick;
+        self.notifications = notifications;
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self);
+        name = try container.decodeIfPresent(String.self, forKey: .name);
+        nick = try container.decode(String.self, forKey: .nick);
+        if let notificationsString = try container.decodeIfPresent(String.self, forKey: .notifications) {
+            notifications = ConversationNotification(rawValue: notificationsString);
+        } else {
+            notifications = nil;
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self);
+        try container.encodeIfPresent(name, forKey: .name);
+        try container.encodeIfPresent(nick, forKey: .nick);
+        try container.encodeIfPresent(notifications?.rawValue, forKey: .notifications);
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case name = "name";
+        case notifications = "notifications";
+        case nick = "nick";
+    }
+
 }
 
 

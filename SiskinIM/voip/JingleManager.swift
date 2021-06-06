@@ -54,7 +54,7 @@ class JingleManager: JingleSessionManager {
         }
     }
         
-    func open(for context: Context, with jid: JID, sid: String, role: Jingle.Content.Creator, initiationType: JingleSessionInitiationType) -> Session? {
+    func open(for context: Context, with jid: JID, sid: String, role: Jingle.Content.Creator, initiationType: JingleSessionInitiationType) -> Session {
         return dispatcher.sync {
             let session = Session(context: context, jid: jid, sid: sid, role: role, initiationType: initiationType);
             self.connections.append(session);
@@ -237,7 +237,10 @@ class JingleManager: JingleSessionManager {
             let media = descriptions.map({ Call.Media.from(string: $0.media) }).filter({ $0 != nil }).map({ $0! });
             // FIXME: Is this correct??
             let call = Call(account: context.userBareJid, with: jid.bareJid, sid: id, direction: .incoming, media: media);
-            CallManager.instance.reportIncomingCall(call, completionHandler: { result in
+            guard let callManager = CallManager.instance else {
+                throw XMPPError.feature_not_implemented;
+            }
+            callManager.reportIncomingCall(call, completionHandler: { result in
                 switch result {
                 case .success(_):
                     // nothing to do as manager will call us back..
@@ -274,17 +277,19 @@ class JingleManager: JingleSessionManager {
         if let session = session(for: context, with: jid, sid: sid) {
             session.initiated(contents: contents, bundle: bundle);
         } else {
-            guard let session = open(for: context, with: jid, sid: sid, role: .responder, initiationType: .iq) else {
-                return;
+            let session = open(for: context, with: jid, sid: sid, role: .responder, initiationType: .iq);
+            session.initiated(contents: contents, bundle: bundle);
+            
+            guard let callManager = CallManager.instance else {
+                throw XMPPError.feature_not_implemented;
             }
             
-            session.initiated(contents: contents, bundle: bundle);
-            CallManager.instance?.reportIncomingCall(call, completionHandler: { result in
+            callManager.reportIncomingCall(call, completionHandler: { result in
                 switch result {
                 case .success(_):
                     break;
                 case .failure(_):
-                    _ = session.terminate();
+                    session.terminate();
                 }
             })
         }

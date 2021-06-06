@@ -24,6 +24,7 @@ import TigaseSwift
 import TigaseSwiftOMEMO
 import UIKit
 import Combine
+import Shared
 
 public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conversation, RoomWithPushSupportProtocol {
         

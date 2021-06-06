@@ -23,6 +23,7 @@ import Foundation
 import TigaseSwift
 import TigaseSQLite3
 import Combine
+import Shared
 
 extension Query {
     static let chatInsert = Query("INSERT INTO chats (account, jid, timestamp, type, options) VALUES (:account, :jid, :timestamp, :type, :options)");
@@ -51,6 +52,8 @@ open class DBChatStore: ContextLifecycleAware {
     @Published
     fileprivate(set) var unreadMessagesCount: Int = 0;
 
+    public let conversationsEventsPublisher = PassthroughSubject<ConversationEvent,Never>();
+    
     private var cancellables: Set<AnyCancellable> = [];
     
     public init() {
@@ -111,6 +114,7 @@ open class DBChatStore: ContextLifecycleAware {
             self.conversationDispatcher.async {
                 self.conversations.append(conversation);
             }
+            self.conversationsEventsPublisher.send(.created(conversation));
             return conversation;
         }) as? T {
             return conversation;
@@ -236,6 +240,7 @@ open class DBChatStore: ContextLifecycleAware {
         conversationsDispatcher.async {
             self.conversations.removeAll(where: { $0 === conversation })
         }
+        conversationsEventsPublisher.send(.destroyed(conversation));
         try! Database.main.writer({ database in
             try database.delete(query: .chatDelete, params: ["id": conversation.id]);
         });
@@ -384,4 +389,8 @@ open class DBChatStore: ContextLifecycleAware {
         }
     }
     
+    public enum ConversationEvent {
+        case created(Conversation)
+        case destroyed(Conversation)
+    }
 }

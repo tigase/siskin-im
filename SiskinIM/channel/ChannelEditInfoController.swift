@@ -21,6 +21,7 @@
 
 import UIKit
 import TigaseSwift
+import Combine
 
 class ChannelEditInfoController: UITableViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
@@ -28,18 +29,21 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
     @IBOutlet var nameField: UITextField!;
     @IBOutlet var descriptionField: UITextField!;
     
-    var channel: DBChannel!;
+    var channel: Channel!;
     
     private var avatarData: Data?;
     private var infoData: ChannelInfo?;
+    private var cancellables: Set<AnyCancellable> = [];
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
         
-        avatarView.set(name: nil, avatar: AvatarManager.instance.avatar(for: channel.channelJid, on: channel.account), orDefault: AvatarManager.instance.defaultGroupchatAvatar);
-        nameField.text = channel.name;
         avatarView.contentMode = .scaleAspectFill;
-        descriptionField.text = channel.description;
+        channel.displayNamePublisher.map({ $0 as String? }).receive(on: DispatchQueue.main).assign(to: \.text, on: nameField).store(in: &cancellables);
+        channel.avatarPublisher.map({ $0 ?? AvatarManager.instance.defaultGroupchatAvatar }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] avatar in
+            self?.avatarView.set(name: nil, avatar: avatar);
+        }).store(in: &cancellables);
+        channel.descriptionPublisher.receive(on: DispatchQueue.main).assign(to: \.text, on: descriptionField).store(in: &cancellables);
         
         refresh();
     }
@@ -53,7 +57,7 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
     }
     
     @IBAction func saveClicked(_ sender: Any) {
-        guard let client = XmppService.instance.getClient(for: channel.account), let mixModule: MixModule = client.modulesManager.getModule(MixModule.ID), let avatarModule: PEPUserAvatarModule = client.modulesManager.getModule(PEPUserAvatarModule.ID) else {
+        guard let mixModule = channel.context?.module(.mix), let avatarModule = channel.context?.module(.pepUserAvatar) else {
             return;
         }
 
@@ -70,7 +74,7 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
                 case .failure(let err):
                     DispatchQueue.main.async {
                         error = true;
-                        let alert = UIAlertController(title: "Could not update channel details", message: "Remote server returned an error: \(err.rawValue)", preferredStyle: .alert);
+                        let alert = UIAlertController(title: "Could not update channel details", message: "Remote server returned an error: \(err)", preferredStyle: .alert);
                         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
                         self?.present(alert, animated: true, completion: nil);
                     }
@@ -82,12 +86,12 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
             group.enter();
             avatarModule.publishAvatar(at: channel.channelJid, data: avatarData, mimeType: "image/jpeg", completionHandler: { [weak self] result in
                 switch result {
-                case .success(_, _, _):
+                case .success(_):
                     break;
-                case .failure(let errorCondition, _, _):
+                case .failure(let err):
                     DispatchQueue.main.async {
                         error = true;
-                        let alert = UIAlertController(title: "Could not update channel details", message: "Remote server returned an error: \(errorCondition.rawValue)", preferredStyle: .alert);
+                        let alert = UIAlertController(title: "Could not update channel details", message: "Remote server returned an error: \(err)", preferredStyle: .alert);
                         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
                         self?.present(alert, animated: true, completion: nil);
                     }
@@ -105,7 +109,7 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
     }
     
     private func refresh() {
-        guard let mixModule: MixModule = XmppService.instance.getClient(for: channel.account)?.modulesManager.getModule(MixModule.ID) else {
+        guard let mixModule = channel.context?.module(.mix) else {
             return;
         }
         self.operationStarted(message: "Refreshing...");

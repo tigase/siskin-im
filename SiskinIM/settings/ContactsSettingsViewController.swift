@@ -53,24 +53,24 @@ class ContactsSettingsViewController: UITableViewController {
         switch setting {
         case .rosterType:
             let cell = tableView.dequeueReusableCell(withIdentifier: "RosterTypeTableViewCell", for: indexPath ) as! SwitchTableViewCell;
-            cell.switchView.isOn = Settings.RosterType.getString() == RosterType.grouped.rawValue;
-            cell.valueChangedListener = {(switchView: UISwitch) in
-                Settings.RosterType.setValue((switchView.isOn ? RosterType.grouped : RosterType.flat).rawValue);
-            }
+            cell.bind({ cell in
+                cell.assign(from: Settings.$rosterType.map({ $0 == .grouped ? true : false }).eraseToAnyPublisher());
+                cell.sink(map: { $0 ? .grouped : .flat }, to: \.rosterType, on: Settings);
+            })
             return cell;
         case .rosterDisplayHiddenGroup:
             let cell = tableView.dequeueReusableCell(withIdentifier: "RosterHiddenGroupTableViewCell", for: indexPath) as! SwitchTableViewCell;
-            cell.switchView.isOn = Settings.RosterDisplayHiddenGroup.getBool();
-            cell.valueChangedListener = {(switchView: UISwitch) in
-                Settings.RosterDisplayHiddenGroup.setValue(switchView.isOn);
-            }
+            cell.bind({ cell in
+                cell.assign(from: Settings.$rosterDisplayHiddenGroup);
+                cell.sink(to: \.rosterDisplayHiddenGroup, on: Settings);
+            })
             return cell;
         case .autoSubscribeOnAcceptedSubscriptionRequest:
             let cell = tableView.dequeueReusableCell(withIdentifier: "AutoSubscribeOnAcceptedSubscriptionRequestTableViewCell", for: indexPath) as! SwitchTableViewCell;
-            cell.switchView.isOn = Settings.AutoSubscribeOnAcceptedSubscriptionRequest.getBool();
-            cell.valueChangedListener = {(switchView: UISwitch) in
-                Settings.AutoSubscribeOnAcceptedSubscriptionRequest.setValue(switchView.isOn);
-            }
+            cell.bind({ cell in
+                cell.assign(from: Settings.$autoSubscribeOnAcceptedSubscriptionRequest);
+                cell.sink(to: \.autoSubscribeOnAcceptedSubscriptionRequest, on: Settings);
+            });
             return cell;
         case .blockedContacts:
             return tableView.dequeueReusableCell(withIdentifier: "BlockedContactsTableViewCell", for: indexPath);

@@ -65,15 +65,22 @@ class MediaSettingsViewController: UITableViewController {
         let setting = tree[indexPath.section][indexPath.row];
         switch setting {
         case .imageUploadQuality:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "ImageQualityTableViewCell", for: indexPath);
-            cell.detailTextLabel?.text = Settings.imageQuality.rawValue.capitalized;
+            let cell = tableView.dequeueReusableCell(withIdentifier: "ImageQualityTableViewCell", for: indexPath) as! EnumTableViewCell;
+            cell.bind({ cell in
+                cell.assign(from: Settings.$imageQuality.map({ $0.rawValue.capitalized as String? }).eraseToAnyPublisher());
+            })
             return cell;
         case .videoUploadQuality:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "VideoQualityTableViewCell", for: indexPath);
-            cell.detailTextLabel?.text = Settings.videoQuality.rawValue.capitalized;
+            let cell = tableView.dequeueReusableCell(withIdentifier: "VideoQualityTableViewCell", for: indexPath) as! EnumTableViewCell;
+            cell.bind({ cell in
+                cell.assign(from: Settings.$videoQuality.map({ $0.rawValue.capitalized as String? }).eraseToAnyPublisher());
+            })
             return cell;
         case .sharingViaHttpUpload:
             let cell = tableView.dequeueReusableCell(withIdentifier: "SharingViaHttpUploadTableViewCell", for: indexPath ) as! SwitchTableViewCell;
+            cell.bind({ cell in
+                cell.assign(from: Settings.$sharingViaHttpUpload);
+            })
             cell.switchView.isOn = Settings.sharingViaHttpUpload;
             cell.valueChangedListener = {(switchView: UISwitch) in
                 if switchView.isOn {
@@ -91,8 +98,12 @@ class MediaSettingsViewController: UITableViewController {
             }
             return cell;
         case .maxImagePreviewSize:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "MaxImagePreviewSizeTableViewCell", for: indexPath);
-            (cell.contentView.subviews[1] as! UILabel).text = AutoFileDownloadLimit.description(of: Settings.fileDownloadSizeLimit);
+            let cell = tableView.dequeueReusableCell(withIdentifier: "MaxImagePreviewSizeTableViewCell", for: indexPath) as! EnumTableViewCell;
+            cell.bind({ cell in
+                cell.assign(from: Settings.$fileDownloadSizeLimit.map({ value in
+                    return value == Int.max ? "Unlimited" : "\(value) MB";
+                }).eraseToAnyPublisher());
+            })
             cell.accessoryType = .disclosureIndicator;
             return cell;
         case .clearDownloadStore:
@@ -105,18 +116,10 @@ class MediaSettingsViewController: UITableViewController {
         let setting = tree[indexPath.section][indexPath.row];
         switch setting {
         case .maxImagePreviewSize:
-            let controller = TablePickerViewController(style: .grouped);
-            let values: [Int] = [0, 1, 2, 4, 8, 10, 15, 30, 50, Int.max];
-            controller.selected = values.firstIndex(of: Settings.fileDownloadSizeLimit) ?? 0;
-            controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
-                return AutoFileDownloadLimit(value: it);
+            let controller = TablePickerViewController<Int>(style: .grouped, options: [0, 1, 2, 4, 8, 10, 15, 30, 50, Int.max], value: Settings.fileDownloadSizeLimit, labelFn: { value in
+                return value == Int.max ? "Unlimited" : "\(value) MB";
             });
-            //controller.selected = 1;
-            controller.onSelectionChange = { (_item) -> Void in
-                let item = _item as! AutoFileDownloadLimit;
-                Settings.fileDownloadSizeLimit = item.value;
-                self.tableView.reloadData();
-            };
+            controller.sink(to: \.fileDownloadSizeLimit, on: Settings);
             self.navigationController?.pushViewController(controller, animated: true);
         case .clearDownloadStore:
             let alert = UIAlertController(title: "Download storage", message: "We are using \(DownloadStore.instance.size/(1024*1014)) MB of storage.", preferredStyle: .actionSheet);
@@ -137,32 +140,12 @@ class MediaSettingsViewController: UITableViewController {
             self.present(alert, animated: true, completion: nil);
             break;
         case .imageUploadQuality:
-            let controller = TablePickerViewController(style: .grouped, message: "Select quality of the image to use for sharing", footer: "Original quality will share image in the format in which it is stored on your phone and it may not be supported by every device.");
-            let values: [ImageQuality] = [.original, .highest, .high, .medium, .low];
-            controller.selected = values.firstIndex(of: Settings.imageQuality ) ?? 3;
-            controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
-                return ImageQualityItem(value: it);
-            });
-            //controller.selected = 1;
-            controller.onSelectionChange = { (_item) -> Void in
-                let item = _item as! ImageQualityItem;
-                Settings.imageQuality = item.value;
-                self.tableView.reloadData();
-            };
+            let controller = TablePickerViewController<ImageQuality>(style: .grouped, message: "Select quality of the image to use for sharing", footer: "Original quality will share image in the format in which it is stored on your phone and it may not be supported by every device.", options: [.original, .highest, .high, .medium, .low], value: Settings.imageQuality, labelFn: { $0.rawValue.capitalized });
+            controller.sink(to: \.imageQuality, on: Settings);
             self.navigationController?.pushViewController(controller, animated: true);
         case .videoUploadQuality:
-            let controller = TablePickerViewController(style: .grouped, message: "Select quality of the video to use for sharing", footer: "Original quality will share video in the format in which video is stored on your phone and it may not be supported by every device.");
-            let values: [VideoQuality] = [.original, .high, .medium, .low];
-            controller.selected = values.firstIndex(of: Settings.videoQuality ) ?? 2;
-            controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
-                return VideoQualityItem(value: it);
-            });
-            //controller.selected = 1;
-            controller.onSelectionChange = { (_item) -> Void in
-                let item = _item as! VideoQualityItem;
-                Settings.videoQuality = item.value;
-                self.tableView.reloadData();
-            };
+            let controller = TablePickerViewController<VideoQuality>(style: .grouped, message: "Select quality of the video to use for sharing", footer: "Original quality will share video in the format in which video is stored on your phone and it may not be supported by every device.", options: [.original, .high, .medium, .low], value: Settings.videoQuality, labelFn: { $0.rawValue.capitalized });
+            controller.sink(to: \.videoQuality, on: Settings);
             self.navigationController?.pushViewController(controller, animated: true);
         default:
             break;
@@ -177,26 +160,6 @@ class MediaSettingsViewController: UITableViewController {
         case videoUploadQuality
     }
     
-    internal class AutoFileDownloadLimit: TablePickerViewItemsProtocol {
-        
-        public static func description(of value: Int) -> String {
-            if value == Int.max {
-                return "Unlimited";
-            } else {
-                return "\(value) MB";
-            }
-        }
-        
-        let description: String;
-        let value: Int;
-        
-        init(value: Int) {
-            self.value = value;
-            self.description = AutoFileDownloadLimit.description(of: value);
-        }
-        
-    }
-
     internal class ImageQualityItem: TablePickerViewItemsProtocol {
         
         public static func description(of value: ImageQuality) -> String {

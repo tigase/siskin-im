@@ -23,6 +23,7 @@ import Foundation
 import TigaseSQLite3
 import TigaseSwift
 import Combine
+import Shared
 
 public protocol Conversation: ConversationProtocol, ConversationKey, DisplayableIdWithKeyProtocol {
         
@@ -80,12 +81,6 @@ extension Conversation {
     }
 }
 
-public enum ConversationType: Int {
-    case chat = 0
-    case room = 1
-    case channel = 2
-}
-
 public typealias LastConversationActivity = LastChatActivity
 
 public enum LastChatActivity {
@@ -115,9 +110,18 @@ public enum LastChatActivity {
 
 typealias ConversationEncryption = ChatEncryption
 
-public enum ChatEncryption: String, Codable {
+public enum ChatEncryption: String, Codable, CustomStringConvertible {
     case none = "none";
     case omemo = "omemo";
+    
+    public var description: String {
+        switch self {
+        case .none:
+            return "None";
+        case .omemo:
+            return "OMEMO";
+        }
+    }
 }
 
 public protocol ChatOptionsProtocol: DatabaseConvertibleStringValue {
@@ -127,12 +131,6 @@ public protocol ChatOptionsProtocol: DatabaseConvertibleStringValue {
     var confirmMessages: Bool { get }
     
     func equals(_ options: ChatOptionsProtocol) -> Bool
-}
-
-public enum ConversationNotification: String {
-    case none
-    case mention
-    case always
 }
 
 public struct ChatMarker: Hashable {

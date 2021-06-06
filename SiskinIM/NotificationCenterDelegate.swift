@@ -187,7 +187,7 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
                 
         let controller = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelJoinViewController") as! ChannelJoinViewController;
     
-        controller.account = account;
+        controller.client = XmppService.instance.getClient(for: account);
         controller.channelJid = roomJid;
         controller.componentType = .muc;
         controller.password = password;
@@ -212,27 +212,26 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         }
         
         guard let senderJid = BareJID(userInfo["sender"] as? String) else {
-            (UIApplication.shared.delegate as? AppDelegate)?.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
+            NotificationManager.instance.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
             return;
         }
 
         if response.actionIdentifier == UNNotificationDismissActionIdentifier {
             if userInfo[AnyHashable("uid")] as? String != nil {
-                DBChatHistoryStore.instance.markAsRead(for: accountJid, with: senderJid, before: response.notification.date, completionHandler: {
-                    let threadId = response.notification.request.content.threadIdentifier;
-                    let date = response.notification.date;
-                    UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
-                        let toRemove = notifications.filter({ (notification) -> Bool in
-                            notification.request.content.threadIdentifier == threadId && notification.date < date;
-                        }).map({ (notification) -> String in
-                            return notification.request.identifier;
-                        });
-                        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
-                        DispatchQueue.main.async {
-                            (UIApplication.shared.delegate as? AppDelegate)?.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
-                        }
+                let date = response.notification.date;
+                let threadId = response.notification.request.content.threadIdentifier;
+                DBChatHistoryStore.instance.markAsRead(for: accountJid, with: senderJid, before: date, sendMarkers: false);
+                UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
+                    let toRemove = notifications.filter({ (notification) -> Bool in
+                        notification.request.content.threadIdentifier == threadId && notification.date < date;
+                    }).map({ (notification) -> String in
+                        return notification.request.identifier;
+                    });
+                    UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
+                    DispatchQueue.main.async {
+                        NotificationManager.instance.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
                     }
-                });
+                }
             } else {
                 completionHandler();
             }
@@ -264,8 +263,7 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
             let destination = navigationController.visibleViewController ?? controller;
             
             if let baseChatViewController = destination as? BaseChatViewController {
-                baseChatViewController.account = account;
-                baseChatViewController.jid = jid;
+                baseChatViewController.conversation = conversation;
             }
             destination.hidesBottomBarWhenPushed = true;
             

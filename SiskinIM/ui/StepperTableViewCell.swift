@@ -20,6 +20,7 @@
 //
 
 import UIKit
+import Combine
 
 class StepperTableViewCell: UITableViewCell {
     
@@ -28,6 +29,8 @@ class StepperTableViewCell: UITableViewCell {
     
     var valueChangedListener: ((UIStepper) -> Void)?;
     var updateLabel: ((Double)->String?)?;
+    
+    private var cancellables: Set<AnyCancellable> = [];
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -51,4 +54,36 @@ class StepperTableViewCell: UITableViewCell {
             labelView.text = updateLabel!(value);
         }
     }
+
+    func reset() {
+        cancellables.removeAll();
+    }
+    
+    func assign(from publisher: AnyPublisher<Double,Never>, labelGenerator: ((Double)->String)? = nil) {
+        publisher.assign(to: \.value, on: stepperView).store(in: &cancellables);
+        if labelGenerator != nil {
+            publisher.map(labelGenerator!).assign(to: \.text, on: labelView).store(in: &cancellables);
+        }
+    }
+
+    func assign(from publisher: AnyPublisher<Int,Never>, labelGenerator: ((Int)->String)? = nil) {
+        publisher.map({ Double($0) }).assign(to: \.value, on: stepperView).store(in: &cancellables);
+        if labelGenerator != nil {
+            publisher.map(labelGenerator!).assign(to: \.text, on: labelView).store(in: &cancellables);
+        }
+    }
+
+    func sink<Root>(to keyPath: ReferenceWritableKeyPath<Root, Double>, on object: Root) {
+        stepperView.publisher(for: \.value).assign(to: keyPath, on: object).store(in: &cancellables);
+    }
+
+    func sink<Root>(to keyPath: ReferenceWritableKeyPath<Root, Int>, on object: Root) {
+        stepperView.publisher(for: \.value).map({ Int($0) }).assign(to: keyPath, on: object).store(in: &cancellables);
+    }
+    
+    func bind(_ fn: (StepperTableViewCell)->Void) {
+        reset();
+        fn(self);
+    }
+
 }

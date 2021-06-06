@@ -102,6 +102,7 @@
 		FE4071E621E262D900F09B58 /* VoIP.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE4071E521E262D900F09B58 /* VoIP.storyboard */; };
 		FE4071E821E2653700F09B58 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4071E721E2653700F09B58 /* RoundButton.swift */; };
 		FE43E43823BF3DE80079BD9B /* ChatAttachementsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE43E43723BF3DE80079BD9B /* ChatAttachementsController.swift */; };
+		FE4A94AA26679D65000A96E5 /* EnumTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4A94A926679D65000A96E5 /* EnumTableViewCell.swift */; };
 		FE4DDF561F39E0B500A4CE5A /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4DDF551F39E0B500A4CE5A /* ShareViewController.swift */; };
 		FE4DDF591F39E0B500A4CE5A /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE4DDF571F39E0B500A4CE5A /* MainInterface.storyboard */; };
 		FE4DDF5D1F39E0B500A4CE5A /* Siskin IM - Share.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = FE4DDF531F39E0B500A4CE5A /* Siskin IM - Share.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -133,7 +134,6 @@
 		FE65D62822E9F8EB0065DEA5 /* Markdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE65D62722E9F8EB0065DEA5 /* Markdown.swift */; };
 		FE719E762271B2BA007CEEC9 /* OpenSSL_AES_GCM_Engine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE719E752271B2BA007CEEC9 /* OpenSSL_AES_GCM_Engine.swift */; };
 		FE719E782271B439007CEEC9 /* MessageEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE719E772271B439007CEEC9 /* MessageEncryption.swift */; };
-		FE719E7A227307D0007CEEC9 /* OMEMOEncryptionSwitchTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE719E79227307D0007CEEC9 /* OMEMOEncryptionSwitchTableViewCell.swift */; };
 		FE719E7C22730DC3007CEEC9 /* OMEMOIdentityTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE719E7B22730DC3007CEEC9 /* OMEMOIdentityTableViewCell.swift */; };
 		FE719E7E2274D20D007CEEC9 /* OMEMOFingerprintsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE719E7D2274D20D007CEEC9 /* OMEMOFingerprintsController.swift */; };
 		FE74D510234A4E1F001A925B /* ChatTableViewSystemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE74D50F234A4E1F001A925B /* ChatTableViewSystemCell.swift */; };
@@ -157,7 +157,6 @@
 		FE759FF523741527001E78D9 /* db-schema-8.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE759FF423741527001E78D9 /* db-schema-8.sql */; };
 		FE759FF923742AC1001E78D9 /* NotificationCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE759FF823742AC1001E78D9 /* NotificationCategory.swift */; };
 		FE759FFC23742CE5001E78D9 /* NotificationCenterDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE759FFA23742C48001E78D9 /* NotificationCenterDelegate.swift */; };
-		FE75A00323743A5C001E78D9 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE75A00223743A5C001E78D9 /* NotificationManager.swift */; };
 		FE75A006237475E2001E78D9 /* MainNotificationManagerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE75A004237475CD001E78D9 /* MainNotificationManagerProvider.swift */; };
 		FE75A008237585DC001E78D9 /* NotificationEncryptionKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE75A007237585DC001E78D9 /* NotificationEncryptionKeys.swift */; };
 		FE75A0102375F338001E78D9 /* PushEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE75A00E2375F324001E78D9 /* PushEventHandler.swift */; };
@@ -213,6 +212,11 @@
 		FEDC6790238B05E4005C0FAB /* BlockedContactsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDC678F238B05E4005C0FAB /* BlockedContactsController.swift */; };
 		FEDCBF671D9C3EE700AE9129 /* RosterProviderFlat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDCBF661D9C3EE700AE9129 /* RosterProviderFlat.swift */; };
 		FEDCBF691D9C53BA00AE9129 /* RosterProviderGrouped.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDCBF681D9C53BA00AE9129 /* RosterProviderGrouped.swift */; };
+		FEDE0093266BCA450019CC1C /* ConversationNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE0092266BCA450019CC1C /* ConversationNotifications.swift */; };
+		FEDE0098266BCD7A0019CC1C /* ConversationType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE0097266BCD7A0019CC1C /* ConversationType.swift */; };
+		FEDE009D266BE3BD0019CC1C /* NotificationsManagerHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE009C266BE3BD0019CC1C /* NotificationsManagerHelper.swift */; };
+		FEDE00A8266BE4740019CC1C /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE75A00223743A5C001E78D9 /* NotificationManager.swift */; };
+		FEDE00B4266CC7B80019CC1C /* InvitationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE00AF266CC7850019CC1C /* InvitationsManager.swift */; };
 		FEDE93871D07564F00CA60A9 /* SwitchTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE93861D07564F00CA60A9 /* SwitchTableViewCell.swift */; };
 		FEDE93891D081C3D00CA60A9 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE93881D081C3D00CA60A9 /* Settings.swift */; };
 		FEDE938C1D08AFE800CA60A9 /* VCardEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE938B1D08AFE800CA60A9 /* VCardEditViewController.swift */; };
@@ -225,7 +229,6 @@
 		FEE097621F1FCE1800B1CEAB /* TablePicketViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE097611F1FCE1800B1CEAB /* TablePicketViewController.swift */; };
 		FEE49DCC2424C03200900BBB /* Conversation.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEE49DCB2424C03200900BBB /* Conversation.storyboard */; };
 		FEE49DCE2424C1F800900BBB /* ConversationLogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE49DCD2424C1F800900BBB /* ConversationLogController.swift */; };
-		FEE49DD02426485500900BBB /* DBConnection_main.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE49DCF2426485500900BBB /* DBConnection_main.swift */; };
 		FEE49DD52426886500900BBB /* MIX.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEE49DD42426886500900BBB /* MIX.storyboard */; };
 		FEE49DD7242688E100900BBB /* ChannelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE49DD6242688E100900BBB /* ChannelViewController.swift */; };
 		FEE9608A22F191980009B191 /* MucChatSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE9608922F191980009B191 /* MucChatSettingsViewController.swift */; };
@@ -400,6 +403,7 @@
 		FE4071E721E2653700F09B58 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		FE43E43723BF3DE80079BD9B /* ChatAttachementsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAttachementsController.swift; sourceTree = "<group>"; };
 		FE4496C31F87911C009F649C /* db-schema-3.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-3.sql"; sourceTree = "<group>"; };
+		FE4A94A926679D65000A96E5 /* EnumTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnumTableViewCell.swift; sourceTree = "<group>"; };
 		FE4DDF531F39E0B500A4CE5A /* Siskin IM - Share.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Siskin IM - Share.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE4DDF551F39E0B500A4CE5A /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		FE4DDF581F39E0B500A4CE5A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
@@ -436,7 +440,6 @@
 		FE719E732271AF88007CEEC9 /* db-schema-5.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-5.sql"; sourceTree = "<group>"; };
 		FE719E752271B2BA007CEEC9 /* OpenSSL_AES_GCM_Engine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSSL_AES_GCM_Engine.swift; sourceTree = "<group>"; };
 		FE719E772271B439007CEEC9 /* MessageEncryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEncryption.swift; sourceTree = "<group>"; };
-		FE719E79227307D0007CEEC9 /* OMEMOEncryptionSwitchTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OMEMOEncryptionSwitchTableViewCell.swift; sourceTree = "<group>"; };
 		FE719E7B22730DC3007CEEC9 /* OMEMOIdentityTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OMEMOIdentityTableViewCell.swift; sourceTree = "<group>"; };
 		FE719E7D2274D20D007CEEC9 /* OMEMOFingerprintsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OMEMOFingerprintsController.swift; sourceTree = "<group>"; };
 		FE74D50F234A4E1F001A925B /* ChatTableViewSystemCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatTableViewSystemCell.swift; sourceTree = "<group>"; };
@@ -515,6 +518,10 @@
 		FEDC678F238B05E4005C0FAB /* BlockedContactsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedContactsController.swift; sourceTree = "<group>"; };
 		FEDCBF661D9C3EE700AE9129 /* RosterProviderFlat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterProviderFlat.swift; sourceTree = "<group>"; };
 		FEDCBF681D9C53BA00AE9129 /* RosterProviderGrouped.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterProviderGrouped.swift; sourceTree = "<group>"; };
+		FEDE0092266BCA450019CC1C /* ConversationNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationNotifications.swift; sourceTree = "<group>"; };
+		FEDE0097266BCD7A0019CC1C /* ConversationType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationType.swift; sourceTree = "<group>"; };
+		FEDE009C266BE3BD0019CC1C /* NotificationsManagerHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsManagerHelper.swift; sourceTree = "<group>"; };
+		FEDE00AF266CC7850019CC1C /* InvitationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationsManager.swift; sourceTree = "<group>"; };
 		FEDE93861D07564F00CA60A9 /* SwitchTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwitchTableViewCell.swift; sourceTree = "<group>"; };
 		FEDE93881D081C3D00CA60A9 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		FEDE938B1D08AFE800CA60A9 /* VCardEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VCardEditViewController.swift; sourceTree = "<group>"; };
@@ -527,7 +534,6 @@
 		FEE097611F1FCE1800B1CEAB /* TablePicketViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TablePicketViewController.swift; sourceTree = "<group>"; };
 		FEE49DCB2424C03200900BBB /* Conversation.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Conversation.storyboard; sourceTree = "<group>"; };
 		FEE49DCD2424C1F800900BBB /* ConversationLogController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationLogController.swift; sourceTree = "<group>"; };
-		FEE49DCF2426485500900BBB /* DBConnection_main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBConnection_main.swift; sourceTree = "<group>"; };
 		FEE49DD42426886500900BBB /* MIX.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MIX.storyboard; sourceTree = "<group>"; };
 		FEE49DD6242688E100900BBB /* ChannelViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelViewController.swift; sourceTree = "<group>"; };
 		FEE9608922F191980009B191 /* MucChatSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MucChatSettingsViewController.swift; sourceTree = "<group>"; };
@@ -739,7 +745,6 @@
 				FE7F645A1D281B1C00B9DF56 /* DBCapabilitiesCache.swift */,
 				FED353882270C1D000B69C53 /* DBOMEMOStore.swift */,
 				FEC79194241ABEF4007BE572 /* MessageState.swift */,
-				FEE49DCF2426485500900BBB /* DBConnection_main.swift */,
 				FEBC12F324C70E2900689475 /* DBChatHistorySyncStore.swift */,
 				FE11D32226623C2F00CC883F /* DBChatMarkersStore.swift */,
 				FE11D32726623C7700CC883F /* DBChatStore+ChannelStore.swift */,
@@ -810,6 +815,7 @@
 				FE65D62722E9F8EB0065DEA5 /* Markdown.swift */,
 				FE3E38892429364D00D3A8E8 /* UIImage.swift */,
 				FEF8255424BA0AFE00820108 /* MessageTextView.swift */,
+				FE4A94A926679D65000A96E5 /* EnumTableViewCell.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -844,6 +850,7 @@
 				FE11D3D926639D1600CC883F /* ContactManager.swift */,
 				FE11D3E526639DEA00CC883F /* VCardManager.swift */,
 				FE1FA7152663AFFD0010333E /* CurrentDatePublisher.swift */,
+				FEDE00AF266CC7850019CC1C /* InvitationsManager.swift */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -907,6 +914,7 @@
 			isa = PBXGroup;
 			children = (
 				FE11D2E926616F0100CC883F /* Database.swift */,
+				FEDE0097266BCD7A0019CC1C /* ConversationType.swift */,
 			);
 			path = database;
 			sourceTree = "<group>";
@@ -914,8 +922,9 @@
 		FE759FFF237435A0001E78D9 /* notifications */ = {
 			isa = PBXGroup;
 			children = (
-				FE75A00223743A5C001E78D9 /* NotificationManager.swift */,
 				FE75A007237585DC001E78D9 /* NotificationEncryptionKeys.swift */,
+				FEDE0092266BCA450019CC1C /* ConversationNotifications.swift */,
+				FEDE009C266BE3BD0019CC1C /* NotificationsManagerHelper.swift */,
 			);
 			path = notifications;
 			sourceTree = "<group>";
@@ -950,6 +959,7 @@
 		FE94E5231CCBA74F00FAE755 /* SiskinIM */ = {
 			isa = PBXGroup;
 			children = (
+				FEDE00A1266BE4300019CC1C /* notifications */,
 				FE11D38F26623E8200CC883F /* conversation */,
 				FEE49DD3242687D800900BBB /* chats */,
 				FEE49DD22426879500900BBB /* channel */,
@@ -1005,6 +1015,14 @@
 			path = service;
 			sourceTree = "<group>";
 		};
+		FEDE00A1266BE4300019CC1C /* notifications */ = {
+			isa = PBXGroup;
+			children = (
+				FE75A00223743A5C001E78D9 /* NotificationManager.swift */,
+			);
+			path = notifications;
+			sourceTree = "<group>";
+		};
 		FEDE938A1D08A4DD00CA60A9 /* vcard */ = {
 			isa = PBXGroup;
 			children = (
@@ -1025,7 +1043,6 @@
 				FEDE93961D0C202600CA60A9 /* ContactViewController.swift */,
 				FEDE93981D0C207100CA60A9 /* ContactBasicTableViewCell.swift */,
 				FEDE939A1D0C38B000CA60A9 /* ContactFormTableViewCell.swift */,
-				FE719E79227307D0007CEEC9 /* OMEMOEncryptionSwitchTableViewCell.swift */,
 				FE719E7B22730DC3007CEEC9 /* OMEMOIdentityTableViewCell.swift */,
 			);
 			path = contacts;
@@ -1366,12 +1383,14 @@
 			files = (
 				FE75A008237585DC001E78D9 /* NotificationEncryptionKeys.swift in Sources */,
 				FE11D3C72662AB8900CC883F /* SSLProcessor.swift in Sources */,
-				FE75A00323743A5C001E78D9 /* NotificationManager.swift in Sources */,
 				FE11D3C82662AB8900CC883F /* SSLContext.swift in Sources */,
+				FEDE0098266BCD7A0019CC1C /* ConversationType.swift in Sources */,
 				FE11D3C92662AB8900CC883F /* SSLCertificate.swift in Sources */,
+				FEDE009D266BE3BD0019CC1C /* NotificationsManagerHelper.swift in Sources */,
 				FE759FDB2370B384001E78D9 /* Cipher+AES.swift in Sources */,
 				FE11D2EA26616F0100CC883F /* Database.swift in Sources */,
 				FE759FF923742AC1001E78D9 /* NotificationCategory.swift in Sources */,
+				FEDE0093266BCA450019CC1C /* ConversationNotifications.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1384,7 +1403,6 @@
 				FE3E387E2427A09A00D3A8E8 /* ChannelSelectToJoinViewController.swift in Sources */,
 				FEF19F162348E781005CFE9A /* BaseChatViewControllerWithDataSource.swift in Sources */,
 				FEF19F0223473B9E005CFE9A /* XmppServiceEventHandler.swift in Sources */,
-				FEE49DD02426485500900BBB /* DBConnection_main.swift in Sources */,
 				FEDE93971D0C202600CA60A9 /* ContactViewController.swift in Sources */,
 				FEE49DCE2424C1F800900BBB /* ConversationLogController.swift in Sources */,
 				FE1AC8F7216B8AB700D4CDAB /* NewFeaturesDetector.swift in Sources */,
@@ -1475,6 +1493,7 @@
 				FE31DDE4201261A200C2AB1D /* DNSSrvDiskCache.swift in Sources */,
 				FE233CDD21EA062E00099281 /* AboutController.swift in Sources */,
 				FE2D481C24518C2800C13CE5 /* RTCCameraVideoCapturer_Format.swift in Sources */,
+				FE4A94AA26679D65000A96E5 /* EnumTableViewCell.swift in Sources */,
 				FE11D2E526616B7300CC883F /* DatabaseMigrator.swift in Sources */,
 				FE4071E421E2605900F09B58 /* VideoCallController.swift in Sources */,
 				FE9E13731F260B33005C0EE5 /* StepperTableViewCell.swift in Sources */,
@@ -1493,6 +1512,7 @@
 				FE11D3BA2662849E00CC883F /* ServerCertificateInfo.swift in Sources */,
 				FE94E5251CCBA74F00FAE755 /* AppDelegate.swift in Sources */,
 				FEF80DB21CDBBBFE005645A7 /* AccountSettingsViewController.swift in Sources */,
+				FEDE00A8266BE4740019CC1C /* NotificationManager.swift in Sources */,
 				FEA303AB24694447004A3B3E /* VCardAvatarEditCell.swift in Sources */,
 				FE11D35626623D6800CC883F /* ConversationAttachment.swift in Sources */,
 				FE6545621E9E7FDE006A14AC /* AccountDomainTableViewCell.swift in Sources */,
@@ -1538,11 +1558,11 @@
 				FE11D39826623EC500CC883F /* ConversationDataSource.swift in Sources */,
 				FE11D35E26623D6D00CC883F /* ConversationBase.swift in Sources */,
 				FE11D35D26623D6D00CC883F /* Channel.swift in Sources */,
+				FEDE00B4266CC7B80019CC1C /* InvitationsManager.swift in Sources */,
 				FE507A1D1CDB7B3B001A015C /* RosterItemTableViewCell.swift in Sources */,
 				FE11D38226623D7700CC883F /* DBChatStore+ChatStore.swift in Sources */,
 				FE2809832167CF1B002F5BD0 /* ServerFeaturesViewController.swift in Sources */,
 				FEC514281CEB82E9003AF765 /* MucChatViewController.swift in Sources */,
-				FE719E7A227307D0007CEEC9 /* OMEMOEncryptionSwitchTableViewCell.swift in Sources */,
 				FE3024321CE2036A00466497 /* DBVCardsCache.swift in Sources */,
 				FE1A07482525EDD4004F38A0 /* ExternalServiceDiscovery_Service_extension.swift in Sources */,
 				FE74D510234A4E1F001A925B /* ChatTableViewSystemCell.swift in Sources */,

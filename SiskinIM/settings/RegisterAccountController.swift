@@ -181,12 +181,16 @@ class RegisterAccountController: DataFormController {
     }
     
     func saveAccount(acceptedCertificate: SslCertificateInfo?) {
-        let account = AccountManager.getAccount(for: self.account!) ?? AccountManager.Account(name: self.account!);
+        var account = AccountManager.getAccount(for: self.account!) ?? AccountManager.Account(name: self.account!);
         account.acceptCertificate(acceptedCertificate);
-        AccountManager.save(account: account);
-        account.password = self.password!;
-        
-        onAccountAdded?();
+        do {
+            account.password = self.password!;
+            try AccountManager.save(account: account);
+            onAccountAdded?();
+        } catch {
+            let alert = UIAlertController(title: "Error", message: "It was not possible to save account details", preferredStyle: .alert);
+            self.present(alert, animated: true, completion: nil);
+        }
     }
     
     func retrieveRegistrationForm(domain: String) {
@@ -204,7 +208,7 @@ class RegisterAccountController: DataFormController {
             }
         };
         let client: XMPPClient? = nil;
-        self.task = InBandRegistrationModule.AccountRegistrationTask(client: client, domainName: domain, preauth: self.preauth, onForm: onForm, sslCertificateValidator: SslCertificateValidator.validateSslCertificate, onCertificateValidationError: self.onCertificateError, completionHandler: { result in
+        self.task = InBandRegistrationModule.AccountRegistrationTask(client: client, domainName: domain, preauth: self.preauth, onForm: onForm, sslCertificateValidator: nil, onCertificateValidationError: self.onCertificateError, completionHandler: { result in
             switch result {
             case .success:
                 print("account registered!");
@@ -213,46 +217,45 @@ class RegisterAccountController: DataFormController {
                     self.saveAccount(acceptedCertificate: certData);
                     self.dismissView();
                 }
-            case .failure(let errorCondition, let errorText):
-                self.onRegistrationError(errorCondition: errorCondition, message: errorText);
+            case .failure(let error):
+                self.onRegistrationError(error);
             }
         });
     }
     
-    func onRegistrationError(errorCondition: ErrorCondition?, message: String?) {
+    func onRegistrationError(_ error: XMPPError) {
         DispatchQueue.main.async {
             self.nextButton.isEnabled = true;
             self.hideIndicator();
         }
-        print("account registration failed", errorCondition?.rawValue ?? "nil", "with message =", message as Any);
-        var msg = message;
+        print("account registration failed: \(error)");
         
-        if errorCondition == nil {
-            msg = "Server did not respond on registration request";
-        } else {
-            if msg == nil || msg == "Unsuccessful registration attempt" {
-                switch errorCondition! {
-                case .feature_not_implemented:
-                    msg = "Registration is not supported by this server";
-                case .not_acceptable, .not_allowed:
-                    msg = "Provided values are not acceptable";
-                case .conflict:
-                    msg = "User with provided username already exists";
-                case .service_unavailable:
-                    msg = "Service is not available at this time."
-                default:
-                    msg = "Server returned error: \(errorCondition!.rawValue)";
-                }
+        var msg = error.message;
+        if msg == nil || msg == "Unsuccessful registration attempt" {
+            switch error.errorCondition {
+            case .feature_not_implemented:
+                msg = "Registration is not supported by this server";
+            case .not_acceptable, .not_allowed:
+                msg = "Provided values are not acceptable";
+            case .conflict:
+                msg = "User with provided username already exists";
+            case .service_unavailable:
+                msg = "Service is not available at this time."
+            default:
+                msg = "Server returned error: \(error)";
             }
         }
         var handler: ((UIAlertAction?)->Void)? = nil;
         
-        if errorCondition == ErrorCondition.feature_not_implemented || errorCondition == ErrorCondition.service_unavailable {
+        switch error {
+        case .feature_not_implemented, .service_unavailable(_):
             handler = {(action)->Void in
                 self.dismissView();
             };
+        default:
+            break;
         }
-        
+                
         let alert = UIAlertController(title: "Registration failure", message: msg, preferredStyle: .alert);
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: handler));
         
@@ -300,7 +303,7 @@ class RegisterAccountController: DataFormController {
         if activityIndicator != nil {
             hideIndicator();
         }
-        activityIndicator = UIActivityIndicatorView(style: .gray);
+        activityIndicator = UIActivityIndicatorView(style: .medium);
         activityIndicator?.center = CGPoint(x: view.frame.width/2, y: view.frame.height/2);
         activityIndicator!.isHidden = false;
         activityIndicator!.startAnimating();

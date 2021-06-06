@@ -37,12 +37,14 @@ class ChannelSelectAccountAndComponentController: UITableViewController, UIPicke
         accountPicker.dataSource = self;
         accountPicker.delegate = self;
         accountField.inputView = accountPicker;
-        accountField.text = delegate?.account?.stringValue;
+        accountField.text = delegate?.client?.userBareJid.stringValue;
         componentField?.text = delegate?.domain;
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        delegate?.account = BareJID(accountField!.text!);
+        if let account = BareJID(accountField!.text), let client = XmppService.instance.getClient(for: account) {
+            delegate?.client = client;
+        }
         let val = componentField.text?.trimmingCharacters(in: .whitespacesAndNewlines);
         delegate?.domain = (val?.isEmpty ?? true) ? nil : val;
         super.viewWillDisappear(animated);
@@ -57,7 +59,7 @@ class ChannelSelectAccountAndComponentController: UITableViewController, UIPicke
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return AccountManager.getActiveAccounts()[row].stringValue;
+        return AccountManager.getActiveAccounts()[row].name.stringValue;
     }
     
     func  pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
@@ -67,6 +69,6 @@ class ChannelSelectAccountAndComponentController: UITableViewController, UIPicke
 }
 
 protocol ChannelSelectAccountAndComponentControllerDelgate: class {
-    var account: BareJID? { get set }
+    var client: XMPPClient? { get set }
     var domain: String? { get set }
 }

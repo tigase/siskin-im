@@ -23,6 +23,7 @@ import Foundation
 import TigaseSwift
 import UIKit
 import Combine
+import Shared
 
 public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hashable, DisplayableIdWithKeyProtocol {
     

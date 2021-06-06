@@ -62,7 +62,7 @@ open class PushEventHandler: XmppServiceExtension {
     var deviceId: String?;
     var pushkitDeviceId: String?;
     
-    let events: [Event] = [DiscoveryModule.AccountFeaturesReceivedEvent.TYPE];
+    private var cancellables: Set<AnyCancellable> = [];
     
     public func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
         client.module(.disco).$accountDiscoResult.sink(receiveValue: { [weak client, weak self] features in
@@ -75,18 +75,16 @@ open class PushEventHandler: XmppServiceExtension {
 
     
     init() {
-        NotificationCenter.default.addObserver(self, selector: #selector(chatDestroyed(_:)), name: DBChatStore.CHAT_CLOSED, object: nil);
+        DBChatStore.instance.conversationsEventsPublisher.sink(receiveValue: { [weak self] event in
+            switch event {
+            case .destroyed(let conversation):
+                self?.conversationDestroyed(conversation);
+            case .created(let conversation):
+                break;
+            }
+        }).store(in: &cancellables);
     }
-    
-    public func handle(event: Event) {
-        switch event {
-        case let e as DiscoveryModule.AccountFeaturesReceivedEvent:
-            updatePushRegistration(for: e.sessionObject.userBareJid!, features: e.features);
-        default:
-            break;
-        }
-    }
-    
+        
     func updatePushRegistration(for account: BareJID, features: [String]) {
         guard let client = XmppService.instance.getClient(for: account) else {
             return;
@@ -140,21 +138,17 @@ open class PushEventHandler: XmppServiceExtension {
         }
     }
     
-    @objc func chatDestroyed(_ notification: Notification) {
-        guard let c = notification.object as? DBChatProtocol else {
-            return;
-        }
-        
+    private func conversationDestroyed(_ c: Conversation) {
         switch c {
-        case is DBChat:
+        case is Chat:
             // nothing to do for now...
             break;
-        case let room as DBRoom:
+        case let room as Room:
             guard room.options.notifications != .none else {
                 return;
             }
             self.updateAccountPushSettings(for: room.account);
-        case let channel as DBChannel:
+        case let channel as Channel:
             guard channel.options.notifications != .none else {
                 return;
             }
@@ -168,7 +162,7 @@ open class PushEventHandler: XmppServiceExtension {
         guard AccountSettings.pushHash(account).int() != 0 else {
             return;
         }
-        if let client = XmppService.instance.getClient(for: account), client.state == .connected, let pushModule: SiskinPushNotificationsModule = client.modulesManager.getModule(SiskinPushNotificationsModule.ID), let pushSettings = pushModule.pushSettings {
+        if let client = XmppService.instance.getClient(for: account), client.state == .connected(), let pushModule = client.module(.push) as? SiskinPushNotificationsModule, let pushSettings = pushModule.pushSettings {
             pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
                 print("updating account push settings finished", result);
             })

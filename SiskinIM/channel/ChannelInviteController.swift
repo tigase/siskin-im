@@ -24,14 +24,14 @@ import TigaseSwift
 
 class ChannelInviteController: AbstractRosterViewController {
 
-    var channel: DBChannel!;
+    var channel: Channel!;
         
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
     }
     
     @IBAction func addClicked(_ sender: UIBarButtonItem) {
-        guard let client = XmppService.instance.getClient(for: channel.account), let mixModule: MixModule = client.modulesManager.getModule(MixModule.ID), let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) else {
+        guard let channel = self.channel, let mixModule = channel.context?.module(.mix) else {
             return;
         }
         guard let items = self.tableView.indexPathsForSelectedRows?.map({ self.roster?.item(at: $0) }).filter({ $0 != nil}).map({ $0! }), !items.isEmpty else {
@@ -43,15 +43,17 @@ class ChannelInviteController: AbstractRosterViewController {
         self.operationStarted(message: "Sending invitations...");
         for item in items {
             group.enter();
-            mixModule.allowAccess(to: channel.channelJid, for: item.jid.bareJid, completionHandler: { result in
+            mixModule.allowAccess(to: channel.channelJid, for: item.jid, completionHandler: { result in
                 switch result {
                 case .success(_):
                     let body = "Invitation to channel: \(channelJid.stringValue)";
-                    let mixInvitation = MixInvitation(inviter: self.channel.account, invitee: item.jid.bareJid, channel: channelJid, token: nil);
+                    let mixInvitation = MixInvitation(inviter: channel.account, invitee: item.jid, channel: channelJid, token: nil);
                     let message = mixModule.createInvitation(mixInvitation, message: body);
                     message.messageDelivery = .request;
-                    DBChatHistoryStore.instance.appendItem(for: item.account, with: item.jid.bareJid, state: .outgoing, authorNickname: nil, authorJid: nil, recipientNickname: nil, participantId: nil, type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, encryptionFingerprint: nil, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), linkPreviewAction: .none, completionHandler: nil);
-                    messageModule.context.writer?.write(message);
+                    let conversationKey: ConversationKey = DBChatStore.instance.conversation(for: channel.account, with: item.jid) ?? ConversationKeyItem(account: channel.account, jid: item.jid);
+                    let options = ConversationEntry.Options(recipient: .none, encryption: .none, isMarkable: false);
+                    DBChatHistoryStore.instance.appendItem(for: conversationKey, state: .outgoing(.sent), sender: .me(conversation: conversationKey), type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), options: options, linkPreviewAction: .none, completionHandler: nil);
+                    mixModule.write(message);
                 case .failure(_):
                     break;
                 }
@@ -80,7 +82,7 @@ class ChannelInviteController: AbstractRosterViewController {
         if let item = roster?.item(at: indexPath) {
             cell.textLabel?.text = item.displayName;
             cell.detailTextLabel?.text = item.jid.stringValue;
-            (cell.imageView as? AvatarView)?.set(name: item.displayName, avatar: AvatarManager.instance.avatar(for: item.jid.bareJid, on: item.account), orDefault: AvatarManager.instance.defaultAvatar);
+            (cell.imageView as? AvatarView)?.set(name: item.displayName, avatar: AvatarManager.instance.avatar(for: item.jid, on: item.account));
         }
         cell.accessoryType = (tableView.indexPathsForSelectedRows?.contains(indexPath) ?? false) ? .checkmark : .none;
         return cell;

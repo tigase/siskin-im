@@ -33,11 +33,6 @@ class ContactViewController: UITableViewController {
         }
     }
     
-    var encryption: ChatEncryption? {
-        get {
-            return chat?.options.encryption;
-        }
-    }
     var chat: Chat?;
     var omemoIdentities: [Identity] = [];
     
@@ -57,19 +52,15 @@ class ContactViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-//        if self.chat == nil {
-//            chat = DBChatStore.instance.getChat(for: account, with: jid) as? DBChat;
-//        }
-        
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
-        vcard = XmppService.instance.dbVCardsCache.getVCard(for: jid);
-        if vcard == nil {
-            refreshVCard();
-        }
+        DBVCardStore.instance.vcard(for: jid, completionHandler: { vcard in
+            if vcard == nil {
+                self.refreshVCard();
+            } else {
+                DispatchQueue.main.async {
+                    self.vcard = vcard;
+                }
+            }
+        })
         omemoIdentities = DBOMEMOStore.instance.identities(forAccount: account, andName: jid.stringValue);
         tableView.contentInset = UIEdgeInsets(top: -1, left: 0, bottom: 0, right: 0);
         tableView.reloadData();
@@ -90,13 +81,16 @@ class ContactViewController: UITableViewController {
     
     func refreshVCard() {
         DispatchQueue.global(qos: .background).async() {
-            XmppService.instance.refreshVCard(account: self.account, for: self.jid, onSuccess: { (vcard) in
-                DispatchQueue.main.async {
-                    self.vcard = vcard;
+            VCardManager.instance.refreshVCard(for: self.jid, on: self.account, completionHandler: { result in
+                switch result {
+                case .success(let vcard):
+                    DispatchQueue.main.async {
+                        self.vcard = vcard;
+                    }
+                case .failure(_):
+                    break;
                 }
-            }, onError: { (errorCondition) in
-                
-            });
+            })
         }
     }
     
@@ -183,9 +177,9 @@ class ContactViewController: UITableViewController {
             case .block:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "BlockContactCell", for: indexPath);
                 let btn = UISwitch(frame: .zero);
-                if let client = XmppService.instance.getClient(for: account), let blockingModule: BlockingCommandModule = client.modulesManager.getModule(BlockingCommandModule.ID), blockingModule.isAvailable {
-                    btn.isOn = BlockedEventHandler.isBlocked(JID(jid), on: client);
-                    btn.isEnabled = client.state == .connected;
+                if let blockingModule = XmppService.instance.getClient(for: account)?.module(.blockingCommand), blockingModule.isAvailable {
+                    btn.isOn = blockingModule.blockedJids?.contains(JID(jid)) ?? false;
+                    btn.isEnabled = true;
                 } else {
                     btn.isOn = false;
                     btn.isEnabled = false;
@@ -199,14 +193,11 @@ class ContactViewController: UITableViewController {
             return cell;
         case .encryption:
             if indexPath.row == 0 {
-                let cell = tableView.dequeueReusableCell(withIdentifier: "OMEMOEncryptionCell", for: indexPath);
-                if self.encryption != nil {
-                    switch self.encryption! {
-                    case .none:
-                        cell.detailTextLabel?.text = "None";
-                    case .omemo:
-                        cell.detailTextLabel?.text = "OMEMO";
-                    }
+                let cell = tableView.dequeueReusableCell(withIdentifier: "OMEMOEncryptionCell", for: indexPath) as! EnumTableViewCell;
+                if let chat = self.chat {
+                    cell.bind({ cell in
+                        cell.assign(from: chat.optionsPublisher.map({ $0.encryption?.description ?? "Default" }).eraseToAnyPublisher());
+                    })
                 } else {
                     cell.detailTextLabel?.text = "Default";
                 }
@@ -311,29 +302,13 @@ class ContactViewController: UITableViewController {
         case .encryption:
             if indexPath.row == 0 {
                 // handle change of encryption method!
-                let current = self.encryption;
-                let controller = TablePickerViewController(style: .grouped);
-                let values: [ChatEncryption?] = [nil, ChatEncryption.none, ChatEncryption.omemo];
-                controller.selected = current == nil ? 0 : (current! == .omemo ? 2 : 1);
-                controller.items = values.map({ (it)->TablePickerViewItemsProtocol in
-                    return ContactMessageEncryptionItem(value: it);
+                let controller = TablePickerViewController<ChatEncryption>(style: .grouped, options: [.none, .omemo], value: chat?.options.encryption ?? .none);
+                controller.sink(receiveValue: { [weak self] value in
+                    self?.chat?.updateOptions({ options in
+                        options.encryption = value;
+                    })
                 });
-                //controller.selected = 1;
-                controller.onSelectionChange = { (_item) -> Void in
-                    guard let item = _item as? ContactMessageEncryptionItem, let chat = self.chat else {
-                        return;
-                    }
-                    
-                    chat.modifyOptions({ (options) in
-                        options.encryption = item.value;
-                    }) {
-                        DispatchQueue.main.async {
-                            self.reloadData();
-                        }
-                    }
-                };
                 self.navigationController?.pushViewController(controller, animated: true);
-
             }
         case .phones:
             if let url = URL(string: "tel:" + phones[indexPath.row].number!) {
@@ -365,8 +340,7 @@ class ContactViewController: UITableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "chatShowAttachments" {
             if let attachmentsController = segue.destination as? ChatAttachmentsController {
-                attachmentsController.account = self.account;
-                attachmentsController.jid = self.jid;
+                attachmentsController.conversation = self.chat;
             }
         }
     }
@@ -381,7 +355,7 @@ class ContactViewController: UITableViewController {
     }
     
     @objc func blockContactChanged(_ sender: UISwitch) {
-        guard let client = XmppService.instance.getClient(for: account), let blockingModule: BlockingCommandModule = client.modulesManager.getModule(BlockingCommandModule.ID) else {
+        guard let blockingModule = XmppService.instance.getClient(for: account)?.module(.blockingCommand) else {
             sender.isOn = !sender.isOn;
             return;
         }
@@ -412,10 +386,10 @@ class ContactViewController: UITableViewController {
             sender.isOn = !sender.isOn;
             return;
         }
-        chat?.modifyOptions({ (options) in
+        chat?.updateOptions({ (options) in
             options.notifications = sender.isOn ? .none : .always;
         }, completionHandler: {
-            if let client = XmppService.instance.getClient(for: account), let pushModule: SiskinPushNotificationsModule = client.modulesManager.getModule(SiskinPushNotificationsModule.ID), let pushSettings = pushModule.pushSettings {
+            if let pushModule = XmppService.instance.getClient(for: account)?.module(.push) as? SiskinPushNotificationsModule, let pushSettings = pushModule.pushSettings {
                 pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
                     switch result {
                     case .success(_):

@@ -20,19 +20,25 @@
 //
 
 import UIKit
+import Combine
 
-class TablePickerViewController: UITableViewController {
+class TablePickerViewController<Value>: UITableViewController {
 
-    var selected: Int = 0;
-    var items = [TablePickerViewItemsProtocol]();
-    var onSelectionChange: ((TablePickerViewItemsProtocol)->Void)?;
+    @Published
+    private var selected: Int = 0;
+    private let options: [Value];
+    private let optionLabels: [String];
     
-    var message: String?;
-    var footer: String?;
+    private var message: String?;
+    private var footer: String?;
     
-    init(style: UITableView.Style = .grouped, message: String? = nil, footer: String? = nil) {
+    private var cancellables: Set<AnyCancellable> = [];
+    
+    init(style: UITableView.Style = .grouped, message: String? = nil, footer: String? = nil, options: [Value], value: Value, labelFn: (Value)->String) {
         self.message = message;
         self.footer = footer;
+        self.options = options;
+        self.optionLabels = options.map(labelFn);
         super.init(style: style);
     }
     
@@ -57,12 +63,12 @@ class TablePickerViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return items.count;
+        return options.count;
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "item", for: indexPath);
-        cell.textLabel!.text = items[indexPath.row].description;
+        cell.textLabel!.text = optionLabels[indexPath.row];
         cell.accessoryType = indexPath.row == selected ? .checkmark : .none;
         return cell;
     }
@@ -72,12 +78,25 @@ class TablePickerViewController: UITableViewController {
         if selected != indexPath.row {
             selected = indexPath.row;
             tableView.reloadData();
-            onSelectionChange?(items[selected]);
         }
     }
     
+    func sink<Root>(to keyPath: ReferenceWritableKeyPath<Root, Value>, on object: Root) {
+        $selected.map({ self.options[$0] }).assign(to: keyPath, on: object).store(in: &cancellables);
+    }
+    
+    func sink(receiveValue: @escaping (Value)->Void) {
+        $selected.map({ self.options[$0] }).sink(receiveValue: receiveValue).store(in: &cancellables);
+    }
 }
 
+extension TablePickerViewController where Value : CustomStringConvertible {
+        
+    convenience init(style: UITableView.Style = .grouped, message: String? = nil, footer: String? = nil, options: [Value], value: Value) {
+        self.init(style: style, message: message, footer: footer, options: options, value: value, labelFn: { v in v.description });
+    }
+}
+    
 protocol TablePickerViewItemsProtocol {
     
     var description: String { get };

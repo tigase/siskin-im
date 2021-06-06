@@ -24,8 +24,6 @@ import TigaseSwift
 
 class RosterItemEditViewController: UITableViewController, UIPickerViewDataSource, UIPickerViewDelegate {
 
-    var xmppService:XmppService!
-    
     @IBOutlet var accountTextField: UITextField!
     @IBOutlet var jidTextField: UITextField!
     @IBOutlet var nameTextField: UITextField!
@@ -37,7 +35,6 @@ class RosterItemEditViewController: UITableViewController, UIPickerViewDataSourc
     var preauth: String?;
     
     override func viewDidLoad() {
-        xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
         super.viewDidLoad()
 
         // Do any additional setup after loading the view
@@ -51,17 +48,14 @@ class RosterItemEditViewController: UITableViewController, UIPickerViewDataSourc
         self.accountTextField.text = account?.stringValue;
         self.sendPresenceUpdatesSwitch.isOn = true;
         self.receivePresenceUpdatesSwitch.isOn = true;//Settings.AutoSubscribeOnAcceptedSubscriptionRequest.getBool();
-        if account != nil && jid != nil {
+        if let account = account, let jid = jid {
             self.jidTextField.isEnabled = false;
             self.accountTextField.isEnabled = false;
-            
-            if let sessionObject = xmppService.getClient(forJid: account!)?.sessionObject {
-                let rosterStore: RosterStore = RosterModule.getRosterStore(sessionObject)
-                if let rosterItem = rosterStore.get(for: jid!) {
-                    self.nameTextField.text = rosterItem.name;
-                    self.sendPresenceUpdatesSwitch.isOn = rosterItem.subscription.isFrom;
-                    self.receivePresenceUpdatesSwitch.isOn = rosterItem.subscription.isTo;
-                }
+
+            if let rosterItem = DBRosterStore.instance.item(for: account, jid: jid) {
+                self.nameTextField.text = rosterItem.name;
+                self.sendPresenceUpdatesSwitch.isOn = rosterItem.subscription.isFrom;
+                self.receivePresenceUpdatesSwitch.isOn = rosterItem.subscription.isTo;
             }
         } else {
             if account == nil && !AccountManager.getAccounts().isEmpty {
@@ -127,46 +121,49 @@ class RosterItemEditViewController: UITableViewController, UIPickerViewDataSourc
         }
         jid = JID(jidTextField.text!);
         account = BareJID(accountTextField.text!);
-        let client = xmppService.getClient(forJid: account!);
-        guard client?.state == SocketConnector.State.connected else {
+        guard let client = XmppService.instance.getClient(for: account!) else {
+            return;
+        }
+        guard case .connected(_) = client.state else {
             let alert = UIAlertController.init(title: "Warning", message: "Before changing roster you need to connect to server. Do you wish to do this now?", preferredStyle: .alert);
             alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: {(alertAction) in
                 _ = self.navigationController?.popViewController(animated: true);
             }));
             alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(alertAction) in
-                if let account = AccountManager.getAccount(for: self.account!) {
+                if var account = AccountManager.getAccount(for: self.account!) {
                     account.active = true;
-                    AccountManager.save(account: account);
+                    try? AccountManager.save(account: account);
                 }
             }));
             self.present(alert, animated: true, completion: nil);
             return;
         }
         
-        let onSuccess = {(stanza:Stanza)->Void in
-            self.updateSubscriptions(client: client!);
-            DispatchQueue.main.async {
-                self.dismissView();
+        let resultHandler = { (result: Result<Iq, XMPPError>) in
+            switch result {
+            case .success(_):
+                self.updateSubscriptions(client: client)
+                DispatchQueue.main.async {
+                    self.dismissView();
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    let alert = UIAlertController.init(title: "Failure", message: "Server returned error: \(error)", preferredStyle: .alert);
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                    self.present(alert, animated: true, completion: nil);
+                }
             }
         };
-        let onError = {(errorCondition:ErrorCondition?)->Void in
-            DispatchQueue.main.async {
-                let alert = UIAlertController.init(title: "Failure", message: "Server returned error: " + (errorCondition?.rawValue ?? "Operation timed out"), preferredStyle: .alert);
-                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
-                self.present(alert, animated: true, completion: nil);
-            }
-        };
-
-        let rosterModule:RosterModule = client!.modulesManager.getModule(RosterModule.ID)!;
-        if let rosterItem = rosterModule.rosterStore.get(for: jid!) {
+        
+        if let rosterItem = DBRosterStore.instance.item(for: client, jid: jid!) {
             if rosterItem.name == nameTextField.text {
-                updateSubscriptions(client: client!);
+                updateSubscriptions(client: client);
                 self.dismissView();
             } else {
-                rosterModule.rosterStore.update(item: rosterItem, name: nameTextField.text, onSuccess: onSuccess, onError: onError);
+                client.module(.roster).updateItem(jid: jid!, name: nameTextField.text, groups: rosterItem.groups, completionHandler: resultHandler);
             }
         } else {
-            rosterModule.rosterStore.add(jid: jid!, name: nameTextField.text, onSuccess: onSuccess, onError: onError);
+            client.module(.roster).addItem(jid: jid!, name: nameTextField.text, groups: [], completionHandler: resultHandler);
         }
     }
     
@@ -175,24 +172,22 @@ class RosterItemEditViewController: UITableViewController, UIPickerViewDataSourc
     }
     
     fileprivate func updateSubscriptions(client: XMPPClient) {
-        let rosterModule:RosterModule = client.modulesManager.getModule(RosterModule.ID)!;
-        if let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID) {
-            guard let rosterItem = rosterModule.rosterStore.get(for: self.jid!) else {
-                return;
+        guard let rosterItem = DBRosterStore.instance.item(for: client, jid: jid!) else {
+            return;
+        }
+        let presenceModule = client.module(.presence);
+        DispatchQueue.main.async {
+            if self.receivePresenceUpdatesSwitch.isOn && !rosterItem.subscription.isTo {
+                presenceModule.subscribe(to: self.jid!, preauth: self.preauth);
             }
-            DispatchQueue.main.async {
-                if self.receivePresenceUpdatesSwitch.isOn && !rosterItem.subscription.isTo {
-                    presenceModule.subscribe(to: self.jid!, preauth: self.preauth);
-                }
-                if !self.receivePresenceUpdatesSwitch.isOn && rosterItem.subscription.isTo {
-                    presenceModule.unsubscribe(from: self.jid!);
-                }
-                if self.sendPresenceUpdatesSwitch.isOn && !rosterItem.subscription.isFrom {
-                    presenceModule.subscribed(by: self.jid!);
-                }
-                if !self.sendPresenceUpdatesSwitch.isOn && rosterItem.subscription.isFrom {
-                    presenceModule.unsubscribed(by: self.jid!);
-                }
+            if !self.receivePresenceUpdatesSwitch.isOn && rosterItem.subscription.isTo {
+                presenceModule.unsubscribe(from: self.jid!);
+            }
+            if self.sendPresenceUpdatesSwitch.isOn && !rosterItem.subscription.isFrom {
+                presenceModule.subscribed(by: self.jid!);
+            }
+            if !self.sendPresenceUpdatesSwitch.isOn && rosterItem.subscription.isFrom {
+                presenceModule.unsubscribed(by: self.jid!);
             }
         }
     }

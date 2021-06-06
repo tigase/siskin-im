@@ -66,7 +66,7 @@ class ChatAttachmentsCellView: UICollectionViewCell, UIDocumentInteractionContro
     }
     
     func prepareContextMenu() -> UIMenu {
-        guard let item = self.item else {
+        guard let item = self.item, case .attachment(let url, _) = item.payload else {
             return UIMenu(title: "");
         }
         
@@ -77,11 +77,8 @@ class ChatAttachmentsCellView: UICollectionViewCell, UIDocumentInteractionContro
                     self.open(url: localUrl, preview: true);
                 }),
                 UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc"), handler: { action in
-                    guard let text = self.item?.copyText(withTimestamp: Settings.copyMessagesWithTimestamps, withSender: false) else {
-                        return;
-                    }
-                    UIPasteboard.general.strings = [text];
-                    UIPasteboard.general.string = text;
+                    UIPasteboard.general.strings = [url];
+                    UIPasteboard.general.string = url;
                 }),
                 UIAction(title: "Share..", image: UIImage(systemName: "square.and.arrow.up"), handler: { action in
                     print("share called");

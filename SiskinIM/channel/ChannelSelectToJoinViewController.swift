@@ -27,12 +27,13 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
     @IBOutlet var joinButton: UIBarButtonItem!;
     @IBOutlet var statusView: ChannelJoinStatusView!;
     
-    var account: BareJID? {
+    weak var client: XMPPClient? {
         didSet {
-            statusView.account = account;
+            statusView.account = client?.userBareJid;
             needRefresh = true;
         }
     }
+    
     var domain: String? {
         didSet {
             statusView.server = domain;
@@ -71,8 +72,10 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        if account == nil {
-            self.account = AccountManager.getActiveAccounts().first;
+        if client == nil {
+            if let account = AccountManager.getActiveAccounts().first?.name {
+                client = XmppService.instance.getClient(for: account);
+            }
         }
         if needRefresh {
             self.refreshItems();
@@ -110,13 +113,13 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
         updateItems();
         self.queryRemote = searchController.searchBar.text;
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: { [weak self] in
-            guard let that = self, let remoteQuery = that.queryRemote, let account = that.account, let text = searchController.searchBar.text, remoteQuery == text else {
+            guard let that = self, let remoteQuery = that.queryRemote, let client = that.client, let text = searchController.searchBar.text, remoteQuery == text else {
                 print("remote query", self?.queryRemote, "text:", searchController.searchBar.text)
                 return;
             }
             that.queryRemote = nil;
             print("executing query for:", text);
-            ChannelsHelper.queryChannel(for: account, at: that.components, name: text, completionHandler: { result in
+            ChannelsHelper.queryChannel(for: client, at: that.components, name: text, completionHandler: { result in
                 switch result {
                 case .success(let items):
                     print("got items:", items);
@@ -155,7 +158,7 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
             destination.delegate = self;
         }
         if let destination = segue.destination as? ChannelJoinViewController {
-            destination.account = self.account;
+            destination.client = self.client;
             if let selected = tableView.indexPathForSelectedRow {
                 let item = self.items[selected.row];
                 destination.channelJid = item.jid.bareJid;
@@ -184,22 +187,22 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
     }
 
     private func refreshItems() {
-        guard let account = self.account else {
+        guard let client = self.client else {
             return;
         }
-        let domain = self.domain ?? account.domain;
+        let domain = self.domain ?? client.userBareJid.domain;
         self.operationStarted();
-        ChannelsHelper.findComponents(for: account, at: domain, completionHandler: { [weak self] components in
-            guard let that = self, that.account == account else {
+        ChannelsHelper.findComponents(for: client, at: domain, completionHandler: { [weak self] components in
+            guard let that = self, that.client?.userBareJid == client.userBareJid else {
                 return;
             }
-            let currDomain = that.domain ?? account.domain;
+            let currDomain = that.domain ?? client.userBareJid.domain;
             guard currDomain == domain else {
                 return;
             }
             that.components = components;
             if let data = that.joinConversation, let name = data.0.localPart {
-                ChannelsHelper.queryChannel(for: account, at: that.components, name: name, completionHandler: { result in
+                ChannelsHelper.queryChannel(for: client, at: that.components, name: name, completionHandler: { result in
                     switch result {
                     case .success(let items):
                         print("got items:", items);
@@ -224,11 +227,11 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
                     }
                 })
             } else {
-                ChannelsHelper.findChannels(for: account, at: components, completionHandler: { [weak self] allItems in
-                    guard let that = self, that.account == account else {
+                ChannelsHelper.findChannels(for: client, at: components, completionHandler: { [weak self] allItems in
+                    guard let that = self, that.client?.userBareJid == client.userBareJid else {
                         return;
                     }
-                    let currDomain = that.domain ?? account.domain;
+                    let currDomain = that.domain ?? client.userBareJid.domain;
                     guard currDomain == domain else {
                         return;
                     }

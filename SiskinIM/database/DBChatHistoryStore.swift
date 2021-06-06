@@ -444,7 +444,7 @@ class DBChatHistoryStore {
                 return database.changes;
             })
             if updated > 0 {
-                markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)]));
+                markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)], before: oldItem.timestamp));
 
                 let newMessageState: ConversationEntryState = (oldItem.state.direction == .incoming) ? (oldItem.state.isUnread ? .incoming(.displayed) : .incoming(newState.isUnread ? .received : .displayed)) : (.outgoing(.sent));
                 DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: oldItem.timestamp, itemType: .message, message: data, state: newMessageState, completionHandler: {
@@ -481,7 +481,7 @@ class DBChatHistoryStore {
                 return database.changes;
             })
             if updated > 0 {
-                markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)]));
+                markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)], before: oldItem.timestamp));
 
                 // what should be sent to "newMessage" how to reatract message from there??
                 let activity: LastChatActivity = DBChatStore.instance.lastActivity(for: conversation.account, jid: conversation.jid) ?? .message("", direction: .incoming, sender: nil);
@@ -512,6 +512,20 @@ class DBChatHistoryStore {
                 return self.itemFrom(cursor: cursor, for: conversation);
             });
         });
+    }
+    
+    private func conversation(withId msgId: Int) -> Conversation? {
+        guard let (account, jid) = try! Database.main.writer({ database -> (BareJID, BareJID)? in
+            return try database.select(query: .messageFind, params: ["id": msgId]).mapFirst({ cursor -> (BareJID,BareJID)? in
+                guard let account = cursor.bareJid(for: "account"), let jid = cursor.bareJid(for: "jid") else {
+                    return nil;
+                }
+                return (account, jid);
+            });
+        }) else {
+            return nil;
+        }
+        return DBChatStore.instance.conversation(for: account, with: jid);
     }
 
     private func generatePreviews(forItem masterId: Int, conversation: ConversationKey, state: ConversationEntryState, action: PreviewActon) {
@@ -594,6 +608,7 @@ class DBChatHistoryStore {
         let account: BareJID;
         let jid: BareJID;
         let messages: [Message];
+        let before: Date;
         
         struct Message {
             let id: Int;
@@ -612,7 +627,7 @@ class DBChatHistoryStore {
         
         if !updatedRecords.isEmpty {
             DBChatStore.instance.markAsRead(for: account, with: jid, count: updatedRecords.count);
-            markedAsRead.send(MarkedAsRead(account: account, jid: jid, messages: updatedRecords));
+            markedAsRead.send(MarkedAsRead(account: account, jid: jid, messages: updatedRecords, before: before));
             DispatchQueue.main.async {
                 NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGES_MARKED_AS_READ, object: self, userInfo: ["account": account, "jid": jid]);
             }
@@ -725,6 +740,13 @@ class DBChatHistoryStore {
         default:
             return;
         }
+    }
+    
+    open func updateItem(id: Int, updateAppendix updateFn: @escaping (inout ChatAttachmentAppendix)->Void) {
+        guard let conversation = self.conversation(withId: id) else {
+            return;
+        }
+        updateItem(for: conversation, id: id, updateAppendix: updateFn);
     }
 
     func loadUnsentMessage(for account: BareJID, completionHandler: @escaping (BareJID,[UnsentMessage])->Void) {

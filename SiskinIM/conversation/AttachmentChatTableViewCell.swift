@@ -140,7 +140,7 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                 customView.topAnchor.constraint(equalTo: attachmentInfo.topAnchor),
                 customView.bottomAnchor.constraint(equalTo: attachmentInfo.bottomAnchor)
             ])
-            attachmentInfo.set(item: item);
+            attachmentInfo.set(item: item, url: url, appendix: appendix);
 
             switch appendix.state {
             case .new:
@@ -166,7 +166,7 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
     }
     
     func prepareContextMenu() -> UIMenu {
-        guard let item = self.item else {
+        guard let item = self.item, case .attachment(let url, _) = item.payload else {
             return UIMenu(title: "");
         }
         
@@ -177,11 +177,8 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                     self.open(url: localUrl, preview: true);
                 }),
                 UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc"), handler: { action in
-                    guard let text = self.item?.copyText(withTimestamp: Settings.copyMessagesWithTimestamps, withSender: false) else {
-                        return;
-                    }
-                    UIPasteboard.general.strings = [text];
-                    UIPasteboard.general.string = text;
+                    UIPasteboard.general.strings = [url];
+                    UIPasteboard.general.string = url;
                 }),
                 UIAction(title: "Share..", image: UIImage(systemName: "square.and.arrow.up"), handler: { action in
                     print("share called");
@@ -202,11 +199,8 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
         } else {
             let items = [
                 UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc"), handler: { action in
-                    guard let text = self.item?.copyText(withTimestamp: Settings.copyMessagesWithTimestamps, withSender: false) else {
-                        return;
-                    }
-                    UIPasteboard.general.strings = [text];
-                    UIPasteboard.general.string = text;
+                    UIPasteboard.general.strings = [url];
+                    UIPasteboard.general.string = url;
                 }),
                 UIAction(title: "Download", image: UIImage(systemName: "square.and.arrow.down"), handler: { action in
                     print("download called");
@@ -435,7 +429,7 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
             super.draw(rect);
         }
         
-        func set(item: ChatAttachment) {
+        func set(item: ConversationEntry, url: String, appendix: ChatAttachmentAppendix) {
             if let fileUrl = DownloadStore.instance.url(for: "\(item.id)") {
                 filename.text = fileUrl.lastPathComponent;
                 let fileSize = fileSizeToString(try! FileManager.default.attributesOfItem(atPath: fileUrl.path)[.size] as? UInt64);
@@ -447,22 +441,22 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                         iconView.image = UIImage(contentsOfFile: fileUrl.path)!;
                     } else {
                         self.viewType = .file;
-                        iconView.image = UIImage.icon(forFile: fileUrl, mimeType: item.appendix.mimetype);
+                        iconView.image = UIImage.icon(forFile: fileUrl, mimeType: appendix.mimetype);
                     }
                 } else {
                     details.text = fileSize;
-                    iconView.image = UIImage.icon(forFile: fileUrl, mimeType: item.appendix.mimetype);
+                    iconView.image = UIImage.icon(forFile: fileUrl, mimeType: appendix.mimetype);
                     self.viewType = .file;
                 }
             } else {
-                let filename = item.appendix.filename ?? URL(string: item.url)?.lastPathComponent ?? "";
+                let filename = appendix.filename ?? URL(string: url)?.lastPathComponent ?? "";
                 if filename.isEmpty {
                     self.filename.text =  "Unknown file";
                 } else {
                     self.filename.text = filename;
                 }
-                if let size = item.appendix.filesize {
-                    if let mimetype = item.appendix.mimetype, let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimetype as CFString, nil)?.takeRetainedValue(), let typeName = UTTypeCopyDescription(uti)?.takeRetainedValue() as String? {
+                if let size = appendix.filesize {
+                    if let mimetype = appendix.mimetype, let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimetype as CFString, nil)?.takeRetainedValue(), let typeName = UTTypeCopyDescription(uti)?.takeRetainedValue() as String? {
                         let fileSize = size >= 0 ? fileSizeToString(UInt64(size)) : "";
                         details.text = "\(typeName) - \(fileSize)";
                         iconView.image = UIImage.icon(forUTI: uti as String);
@@ -486,7 +480,7 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
             }
             
             if show {
-                let view = UIActivityIndicatorView(style: .gray);
+                let view = UIActivityIndicatorView(style: .medium);
                 view.translatesAutoresizingMaskIntoConstraints = false;
                 self.addSubview(view);
                 NSLayoutConstraint.activate([

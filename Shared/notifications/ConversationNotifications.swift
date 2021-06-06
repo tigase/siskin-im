@@ -1,8 +1,8 @@
 //
-// OMEMOEncryptionSwitchTableViewCell.swift
+// ConversationNotifications.swift
 //
 // Siskin IM
-// Copyright (C) 2019 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2021 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,17 +19,10 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 
-import UIKit
+import Foundation
 
-class OMEMOEncryptionSwitchTableViewCell: UITableViewCell {
-    
-    @IBOutlet var titleLabel: UILabel!
-    
-    @IBOutlet var encryptionSwitch: UISwitch!
-    
-    var valueChangedListener: ((UISwitch) -> Void)?;
-    
-    @IBAction func valueChanged(_ sender: UISwitch) {
-        valueChangedListener?(sender);
-    }
+public enum ConversationNotification: String {
+    case none
+    case mention
+    case always
 }

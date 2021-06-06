@@ -26,7 +26,6 @@ import TigaseSwift
 import Combine
 
 class ChatsListViewController: UITableViewController {
-    var xmppService:XmppService!;
     
     @IBOutlet var addMucButton: UIBarButtonItem!
     
@@ -35,7 +34,6 @@ class ChatsListViewController: UITableViewController {
     private var cancellables: Set<AnyCancellable> = [];
     
     override func viewDidLoad() {
-        xmppService = (UIApplication.shared.delegate as! AppDelegate).xmppService;
         dataSource = ChatsDataSource(controller: self);
         super.viewDidLoad();
         

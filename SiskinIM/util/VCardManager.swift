@@ -63,4 +63,33 @@ class VCardManager {
     fileprivate func retrieveVCard(module: VCardModuleProtocol, for jid: JID?, on account: BareJID, completionHandler: @escaping (Result<VCard,XMPPError>)->Void) {
         module.retrieveVCard(from: jid, completionHandler: completionHandler);
     }
+    
+    open func fetchPhoto(photo: VCard.Photo, completionHandler: @escaping (Result<Data,Error>)->Void) {
+        if let binval = photo.binval {
+            guard let data = Data(base64Encoded: binval, options: NSData.Base64DecodingOptions.ignoreUnknownCharacters) else {
+                completionHandler(.failure(XMPPError.not_acceptable("Unable to decode base64 data")));
+                return;
+            }
+            completionHandler(.success(data));
+        } else if let uri = photo.uri {
+            if uri.hasPrefix("data:image") && uri.contains(";base64,") {
+                guard let idx = uri.firstIndex(of: ","), let data = Data(base64Encoded: String(uri.suffix(from: uri.index(after: idx))), options: NSData.Base64DecodingOptions.ignoreUnknownCharacters) else {
+                    completionHandler(.failure(XMPPError.not_acceptable("Unable to decode image URI")));
+                    return;
+                }
+                completionHandler(.success(data));
+            } else if let url = URL(string: uri) {
+                let task = URLSession.shared.dataTask(with: url) { (data, response, err) in
+                    if let error = err {
+                        completionHandler(.failure(error));
+                    } else {
+                        completionHandler(.success(data!));
+                    }
+                };
+                task.resume();
+            }
+        } else {
+            completionHandler(.failure(XMPPError.item_not_found));
+        }
+    }
 }

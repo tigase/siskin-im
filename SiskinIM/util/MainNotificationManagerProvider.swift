@@ -25,33 +25,32 @@ import Shared
 
 class MainNotificationManagerProvider: NotificationManagerProvider {
     
-    func getChatNameAndType(for account: BareJID, with jid: BareJID, completionHandler: @escaping (String?, Payload.Kind) -> Void) {
-        if let item = DBChatStore.instance.getChat(for: account, with: jid) {
+    func conversationNotificationDetails(for account: BareJID, with jid: BareJID, completionHandler: @escaping (ConversationNotificationDetails)->Void) {
+        if let item = DBChatStore.instance.conversation(for: account, with: jid) {
             switch item {
-            case let room as DBRoom:
-                completionHandler(room.name, .groupchat);
+            case let room as Room:
+                completionHandler(ConversationNotificationDetails(name: room.displayName, notifications: item.notifications, type: .room, nick: room.nickname));
                 return;
-            case let channel as DBChannel:
-                completionHandler(channel.name, .groupchat);
+            case let channel as Channel:
+                completionHandler(ConversationNotificationDetails(name: channel.displayName, notifications: channel.notifications, type: .channel, nick: channel.nickname));
                 return;
+            case let chat as Chat:
+                completionHandler(ConversationNotificationDetails(name: chat.displayName, notifications: chat.notifications, type: .chat, nick: nil));
             default:
                 break;
             }
         }
-        let client = XmppService.instance.getClient(for: account);
-        let rosterModule: RosterModule? = client?.modulesManager.getModule(RosterModule.ID);
-        let item = rosterModule?.rosterStore.get(for: JID(jid));
-        completionHandler(item?.name, .chat);
+        completionHandler(ConversationNotificationDetails(name: DBRosterStore.instance.item(for: account, jid: JID(jid))?.name ?? jid.stringValue, notifications: .always, type: .chat, nick: nil));
     }
     
     func countBadge(withThreadId: String?, completionHandler: @escaping (Int) -> Void) {
-        NotificationManager.unreadChatsThreadIds() { result in
+        NotificationsManagerHelper.unreadChatsThreadIds() { result in
             var unreadChats = result;
         
-            DBChatStore.instance.getChats().filter({ chat -> Bool in
+            DBChatStore.instance.conversations.filter({ chat -> Bool in
                 return chat.unread > 0;
             }).forEach { (chat) in
-                unreadChats.insert("account=" + chat.account.stringValue + "|sender=" + chat.jid.bareJid.stringValue)
+                unreadChats.insert("account=" + chat.account.stringValue + "|sender=" + chat.jid.stringValue)
             }
         
             if let threadId = withThreadId {
@@ -68,9 +67,9 @@ class MainNotificationManagerProvider: NotificationManagerProvider {
             return;
         }
         
-        if let conv = DBChatStore.instance.getChat(for: account, with: sender) {
+        if let conv = DBChatStore.instance.conversation(for: account, with: sender) {
             switch conv {
-            case let room as DBRoom:
+            case let room as Room:
                 switch room.options.notifications {
                 case .none:
                     completionHandler(false);
@@ -79,21 +78,20 @@ class MainNotificationManagerProvider: NotificationManagerProvider {
                 case .mention:
                     completionHandler(body.contains(room.nickname));
                 }
-            case let chat as DBChat:
+            case let chat as Chat:
                 switch chat.options.notifications {
                 case .none:
                     completionHandler(false);
                 default:
-                    if Settings.NotificationsFromUnknown.bool() {
+                    if Settings.notificationsFromUnknown {
                         completionHandler(true);
                     } else {
-                        let rosterModule: RosterModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(RosterModule.ID);
-                        let known = rosterModule?.rosterStore.get(for: JID(sender)) != nil;
+                        let known = DBRosterStore.instance.item(for: account, jid: JID(sender)) != nil;
                     
                         completionHandler(known)
                     }
                 }
-            case let channel as DBChannel:
+            case let channel as Channel:
                 switch channel.options.notifications {
                 case .none:
                     completionHandler(false);

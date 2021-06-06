@@ -21,6 +21,7 @@
 
 import UIKit
 import TigaseSwift
+import Combine
 
 class MainTabBarController: CustomTabBarController, UITabBarControllerDelegate {
     
@@ -28,29 +29,27 @@ class MainTabBarController: CustomTabBarController, UITabBarControllerDelegate {
     public static let ROSTER_TAB = 1;
     public static let MORE_TAB = 2;
     
+    private var cancellables: Set<AnyCancellable> = [];
+    
     override func viewDidLoad() {
         super.viewDidLoad();
         
         self.delegate = self;
         
-        NotificationCenter.default.addObserver(self, selector: #selector(updateMoreBadge), name: XmppService.ACCOUNT_STATE_CHANGED, object: nil);        
+        XmppService.instance.$connectedClients.map({ (XmppService.instance.clients.count - $0.count) + AccountManager.getAccounts().filter({(name)->Bool in
+            return AccountSettings.LastError(name).getString() != nil
+        }).count }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
+            self?.updateMoreBadge(count: value);
+        }).store(in: &cancellables);
     }
     
-    @objc func updateMoreBadge(notification: Notification) {
-        let xmppService = (notification.object as! XmppService);
-        let count = xmppService.getClients(filter: {(client)->Bool in
-            return client.state != .connected;
-        }).count + AccountManager.getAccounts().filter({(name)->Bool in
-            return AccountSettings.LastError(BareJID(name)).getString() != nil
-        }).count;
-        DispatchQueue.main.async {
-            self.tabBar.items![MainTabBarController.MORE_TAB].badgeValue = count == 0 ? nil : count.description;
-            if count == 0 {
-                (UIApplication.shared.delegate as? AppDelegate)?.updateApplicationIconBadgeNumber(completionHandler: nil);
-            }
+    private func updateMoreBadge(count: Int) {
+        self.tabBar.items![MainTabBarController.MORE_TAB].badgeValue = count == 0 ? nil : count.description;
+        if count == 0 {
+            NotificationManager.instance.updateApplicationIconBadgeNumber(completionHandler: nil);
         }
     }
-    
+        
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
         guard viewController.restorationIdentifier == "SettingsNavigationControllerDummy" else {
             return true;

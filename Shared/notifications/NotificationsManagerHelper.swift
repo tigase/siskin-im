@@ -1,5 +1,5 @@
 //
-// NotificationManager.swift
+// NotificationsManagerHelper.swift
 //
 // Siskin IM
 // Copyright (C) 2019 "Tigase, Inc." <office@tigase.com>
@@ -24,15 +24,21 @@ import TigaseSwift
 import UserNotifications
 import os
 
-public class NotificationManager {
+public struct ConversationNotificationDetails {
+    public let name: String;
+    public let notifications: ConversationNotification;
+    public let type: ConversationType;
+    public let nick: String?;
     
-    public static let instance: NotificationManager = NotificationManager();
-    
-    public private(set) var provider: NotificationManagerProvider!;
-    
-    public func initialize(provider: NotificationManagerProvider) {
-        self.provider = provider;
+    public init(name: String, notifications: ConversationNotification, type: ConversationType, nick: String?) {
+        self.name = name;
+        self.notifications = notifications;
+        self.type = type;
+        self.nick = nick;
     }
+}
+
+public class NotificationsManagerHelper {
     
     public static func unreadChatsThreadIds(completionHandler: @escaping (Set<String>)->Void) {
         unreadThreadIds(for: [.MESSAGE], completionHandler: completionHandler);
@@ -51,66 +57,32 @@ public class NotificationManager {
         }
     }
     
-    public func notifyNewMessage(account: BareJID, sender: BareJID?, type kind: Payload.Kind, nickname: String?, body: String) {
-    
-        shouldShowNotification(account: account, sender: sender, body: body, completionHandler: { (result) in
-            guard result else {
-                return;
-            }
-            self.intNotifyNewMessage(account: account, sender: sender, type: kind, nickname: nickname, body: body);
-        });
+    public static func generateMessageUID(account: BareJID, sender: BareJID?, body: String?) -> String? {
+        if let sender = sender, let body = body {
+            return Digest.sha256.digest(toHex: "\(account)|\(sender)|\(body)".data(using: .utf8));
+        }
+        return nil;
+    }
         
-    }
-    
-    public func shouldShowNotification(account: BareJID, sender: BareJID?, body: String?, completionHandler: @escaping (Bool)->Void) {
-        provider.shouldShowNotification(account: account, sender: sender, body: body) { (result) in
-            if result {
-                if let uid = self.generateMessageUID(account: account, sender: sender, body: body) {
-                    UNUserNotificationCenter.current().getDeliveredNotifications(completionHandler: { notifications in
-                        let should = !notifications.contains(where: { (notification) -> Bool in
-                            guard let nuid = notification.request.content.userInfo["uid"] as? String else {
-                                return false;
-                            }
-                            return nuid == uid;
-                        });
-                        completionHandler(should);
-                    });
-                    return;
-                }
-            }
-            completionHandler(result);
-        }
-    }
-    
-    private func intNotifyNewMessage(account: BareJID, sender: BareJID?, type kind: Payload.Kind, nickname: String?, body: String) {
-        let id = UUID().uuidString;
-        let content = UNMutableNotificationContent();
-        prepareNewMessageNotification(content: content, account: account, sender: sender, type: kind, nickname: nickname, body: body) { (content) in
-            UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil)) { (error) in
-                print("message notification error", error as Any);
-            }
-        }
-    }
-    
-    public func prepareNewMessageNotification(content: UNMutableNotificationContent, account: BareJID, sender jid: BareJID?, type kind: Payload.Kind, nickname: String?, body msg: String?, completionHandler: @escaping (UNMutableNotificationContent)->Void) {
-        content.sound = .default;
+    public static func prepareNewMessageNotification(content: UNMutableNotificationContent, account: BareJID, sender jid: BareJID?, nickname: String?, body msg: String?, provider: NotificationManagerProvider, completionHandler: @escaping (UNMutableNotificationContent)->Void) {
+        content.sound = .default;        
         content.categoryIdentifier = NotificationCategory.MESSAGE.rawValue;
         if let sender = jid, let body = msg {
             let uid = generateMessageUID(account: account, sender: sender, body: body)!;
             content.threadIdentifier = "account=\(account.stringValue)|sender=\(sender.stringValue)";
-            self.provider.getChatNameAndType(for: account, with: sender, completionHandler: { (name, type) in
-                os_log("%{public}@", log: OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SiskinPush"), "Found: name: \(name ?? ""), type: \(type.rawValue)");
-                switch type {
+            provider.conversationNotificationDetails(for: account, with: sender, completionHandler: { details in
+                os_log("%{public}@", log: OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SiskinPush"), "Found: name: \(details.name ?? ""), type: \(String(describing: details.type.rawValue))");
+
+                switch details.type {
                 case .chat:
-                    content.title = name ?? sender.stringValue;
+                    content.title = details.name;
                     if body.starts(with: "/me ") {
                         content.body = String(body.dropFirst(4));
                     } else {
                         content.body = body;
                     }
-                    content.userInfo = ["account": account.stringValue, "sender": sender.stringValue, "uid": uid];
-                case .groupchat:
-                    content.title = "\(name ?? sender.stringValue)";
+                case .channel, .room:
+                    content.title = details.name
                     if body.starts(with: "/me ") {
                         if let nickname = nickname {
                             content.body = "\(nickname) \(body.dropFirst(4))";
@@ -123,36 +95,27 @@ public class NotificationManager {
                             content.subtitle = nickname;
                         }
                     }
-                    content.userInfo = ["account": account.stringValue, "sender": sender.stringValue, "uid": uid];
-                default:
-                    break;
                 }
-                self.provider.countBadge(withThreadId: content.threadIdentifier, completionHandler: { count in
+                content.userInfo = ["account": account.stringValue, "sender": sender.stringValue, "uid": uid];
+                provider.countBadge(withThreadId: content.threadIdentifier, completionHandler: { count in
                     content.badge = count as NSNumber;
                     completionHandler(content);
                 });
-            });
+            })
         } else {
             content.threadIdentifier = "account=\(account.stringValue)";
             content.body = "New message!";
-            self.provider.countBadge(withThreadId: content.threadIdentifier, completionHandler: { count in
+            provider.countBadge(withThreadId: content.threadIdentifier, completionHandler: { count in
                 content.badge = count as NSNumber;
                 completionHandler(content);
             });
         }
     }
-    
-    func generateMessageUID(account: BareJID, sender: BareJID?, body: String?) -> String? {
-        if let sender = sender, let body = body {
-            return Digest.sha256.digest(toHex: "\(account)|\(sender)|\(body)".data(using: .utf8));
-        }
-        return nil;
-    }
 }
 
 public protocol NotificationManagerProvider {
     
-    func getChatNameAndType(for account: BareJID, with jid: BareJID, completionHandler: @escaping (String?, Payload.Kind)->Void);
+    func conversationNotificationDetails(for account: BareJID, with jid: BareJID, completionHandler: @escaping (ConversationNotificationDetails)->Void);
  
     func countBadge(withThreadId: String?, completionHandler: @escaping (Int)->Void);
     

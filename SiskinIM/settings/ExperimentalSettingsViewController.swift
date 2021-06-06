@@ -36,44 +36,38 @@ class ExperimentalSettingsViewController: UITableViewController {
         switch setting {
         case .notificationsFromUnknown:
             let cell = tableView.dequeueReusableCell(withIdentifier: "XmppPipeliningTableViewCell", for: indexPath) as! SwitchTableViewCell;
-            cell.switchView.isOn = Settings.XmppPipelining.getBool();
-            cell.valueChangedListener = {(switchView: UISwitch) in
-                Settings.XmppPipelining.setValue(switchView.isOn);
-            }
+            cell.bind({ cell in
+                cell.assign(from: Settings.$xmppPipelining);
+                cell.sink(to: \.xmppPipelining, on: Settings);
+            })
             return cell;
         case .enableBookmarksSync:
             let cell = tableView.dequeueReusableCell(withIdentifier: "EnableBookmarksSyncTableViewCell", for: indexPath) as! SwitchTableViewCell;
-            cell.switchView.isOn = Settings.enableBookmarksSync.getBool();
-            cell.valueChangedListener = {(switchView: UISwitch) in
-                Settings.enableBookmarksSync.setValue(switchView.isOn);
-            }
+            cell.bind({ cell in
+                cell.assign(from: Settings.$enableBookmarksSync);
+                cell.sink(to: \.enableBookmarksSync, on: Settings);
+            })
             return cell;
         case .enableMarkdown:
             let cell = tableView.dequeueReusableCell(withIdentifier: "EnableMarkdownTableViewCell", for: indexPath) as! SwitchTableViewCell;
-            cell.switchView.isOn = Settings.EnableMarkdownFormatting.getBool();
-            cell.valueChangedListener = {(switchView: UISwitch) in
-                Settings.EnableMarkdownFormatting.setValue(switchView.isOn);
-                if !switchView.isOn {
-                    Settings.ShowEmoticons.setValue(false);
-                }
-                self.tableView.reloadData();
-            }
+            cell.bind({ cell in
+                cell.assign(from: Settings.$enableMarkdownFormatting);
+                cell.sink(to: \.enableMarkdownFormatting, on: Settings);
+            })
             return cell;
         case .showEmoticons:
             let cell = tableView.dequeueReusableCell(withIdentifier: "EnableEmoticonsTableViewCell", for: indexPath) as! SwitchTableViewCell;
-            cell.switchView.isOn = Settings.ShowEmoticons.getBool();
-            cell.switchView.isEnabled = Settings.EnableMarkdownFormatting.getBool();
-            cell.valueChangedListener = {(switchView: UISwitch) in
-                Settings.ShowEmoticons.setValue(switchView.isOn);
-            }
+            cell.bind({ cell in
+                cell.assign(from: Settings.$showEmoticons);
+                cell.sink(to: \.showEmoticons, on: Settings);
+            })
             return cell;
         case .usePublicStunServers:
             let cell = tableView.dequeueReusableCell(withIdentifier: "PublicStunServersTableViewCell", for: indexPath) as! SwitchTableViewCell;
-            cell.switchView.isOn = Settings.usePublicStunServers.getBool();
-            cell.switchView.isEnabled = true;
-            cell.valueChangedListener = {(switchView: UISwitch) in
-                Settings.usePublicStunServers.setValue(switchView.isOn);
-            }
+            cell.bind({ cell in
+                cell.assign(from: Settings.$usePublicStunServers);
+                cell.sink(to: \.usePublicStunServers, on: Settings);
+            })
             return cell;
         }
     }

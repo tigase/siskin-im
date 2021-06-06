@@ -29,9 +29,9 @@ class ChannelCreateViewController: UITableViewController, ChannelSelectAccountAn
     @IBOutlet var channelNameField: UITextField!;
     @IBOutlet var channelIdField: UITextField!;
     
-    var account: BareJID? {
+    var client: XMPPClient? {
         didSet {
-            statusView.account = account;
+            statusView.account = client?.userBareJid;
             needRefresh = true;
         }
     }
@@ -58,8 +58,10 @@ class ChannelCreateViewController: UITableViewController, ChannelSelectAccountAn
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        if account == nil {
-            self.account = AccountManager.getActiveAccounts().first;
+        if client == nil {
+            if let account = AccountManager.getActiveAccounts().first?.name {
+                client = XmppService.instance.getClient(for: account);
+            }
         }
         if needRefresh {
             self.refresh();
@@ -142,7 +144,7 @@ class ChannelCreateViewController: UITableViewController, ChannelSelectAccountAn
         }
         if let destination = segue.destination as? ChannelJoinViewController {
             destination.action = .create(isPublic: kind == .stable, invitationOnly: invitationOnly, description: nil, avatar: nil);
-            destination.account = self.account;
+            destination.client = self.client;
             let component = self.components.first(where: { $0.type == (useMix ? .mix : .muc) })!;
             destination.channelJid = BareJID(domain: component.jid.domain);
             if kind == .stable {
@@ -184,12 +186,12 @@ class ChannelCreateViewController: UITableViewController, ChannelSelectAccountAn
     }
 
     private func refresh() {
-        guard let account = self.account else {
+        guard let client = self.client else {
             return;
         }
-        let domain = self.domain ?? account.domain;
+        let domain = self.domain ?? client.userBareJid.domain;
         self.operationStarted(message: "Checking...");
-        ChannelsHelper.findComponents(for: account, at: domain, completionHandler: { components in
+        ChannelsHelper.findComponents(for: client, at: domain, completionHandler: { components in
             DispatchQueue.main.async {
                 self.components = components;
                 let types = Set(components.map({ $0.type }));

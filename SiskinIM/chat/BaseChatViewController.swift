@@ -22,6 +22,7 @@
 import UIKit
 import UserNotifications
 import TigaseSwift
+import Combine
 
 class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInputBarDelegate {
 
@@ -62,6 +63,8 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     }
         
     let chatViewInputBar = ChatViewInputBar();
+    
+    private var cancellables: Set<AnyCancellable> = [];
     
     func conversationTableViewDelegate() -> UITableViewDelegate? {
         return nil;
@@ -112,7 +115,16 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
         chatViewInputBar.addBottomButton(sendMessageButton);
         
         setColors();
-        NotificationCenter.default.addObserver(self, selector: #selector(chatClosed(_:)), name: DBChatStore.CHAT_CLOSED, object: chat);
+        DBChatStore.instance.conversationsEventsPublisher.sink(receiveValue: { [weak self] event in
+            switch event {
+            case .destroyed(let conversation):
+                DispatchQueue.main.async {
+                    self?.closed(conversation: conversation);
+                }
+            case .created(_):
+                break;
+            }
+        }).store(in: &cancellables);
     }
 
     override func didReceiveMemoryWarning() {
@@ -145,20 +157,18 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
         
     }
     
-    @objc func chatClosed(_ notification: Notification) {
-        DispatchQueue.main.async {
-            if let navigationController = self.navigationController {
-                if navigationController.viewControllers.count == 1 {
-                    self.showDetailViewController(UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "emptyDetailViewController"), sender: self);
-                } else {
-                    navigationController.popToRootViewController(animated: true);
-                }
+    private func closed(conversation: Conversation) {
+        if let navigationController = self.navigationController {
+            if navigationController.viewControllers.count == 1 {
+                self.showDetailViewController(UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "emptyDetailViewController"), sender: self);
             } else {
-                self.dismiss(animated: true, completion: nil);
+                navigationController.popToRootViewController(animated: true);
             }
+        } else {
+            self.dismiss(animated: true, completion: nil);
         }
     }
-    
+        
     private func animate() {
         guard let coordinator = self.transitionCoordinator else {
             return;

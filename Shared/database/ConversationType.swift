@@ -1,8 +1,8 @@
 //
-// DBConnection_main.swift
+// ConversationType.swift
 //
 // Siskin IM
-// Copyright (C) 2020 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2021 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,16 +20,9 @@
 //
 
 import Foundation
-import Shared
 
-extension DBConnection {
-    public static let main: DBConnection = {
-        let dbURL = mainDbURL();
-
-        if (!FileManager.default.fileExists(atPath: dbURL.path)) && (!createIfNotExist)  {
-            return try! DBConnection.initialize(dbPath: ":memory:");
-        } else {
-            return try! DBConnection.initialize(dbPath: dbURL.path);
-        }
-    }();
+public enum ConversationType: Int {
+    case chat = 0
+    case room = 1
+    case channel = 2
 }

@@ -26,61 +26,86 @@ import UserNotifications
 import os
 //import CallKit
 
-public class VideoCallController: UIViewController, CallManagerDelegate {
-
-    #if targetEnvironment(simulator)
-    func callDidStart(_ sender: CallManager) {
-    }
-    func callDidEnd(_ sender: CallManager) {
-    }
-    func callManager(_ sender: CallManager, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack) {
-    }
-    func callManager(_ sender: CallManager, didReceiveLocalVideoCapturer localCapturer: RTCCameraVideoCapturer) {
-    }
-    func callStateChanged(_ sender: CallManager) {
-    }
-    #else
-
-    func callDidStart(_ sender: CallManager) {
-        DispatchQueue.main.async {
-            self.call = sender.currentCall;
-            self.localVideoCapturer = sender.localCapturer;
-            if self.localVideoCapturer != nil && self.localVideoView != nil {
-                self.localVideoView.captureSession = self.localVideoCapturer?.captureSession;
+public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDelegate {
+    
+    private var call: Call?;
+    
+    fileprivate var localVideoTrack: RTCVideoTrack? {
+        willSet {
+            if localVideoTrack != nil && localVideoView != nil {
+                localVideoTrack!.remove(localVideoView!);
             }
-            self.updateTitleLabel();
-            self.updateAvatar();
+        }
+        didSet {
+            if localVideoTrack != nil && localVideoView != nil {
+                localVideoTrack!.add(localVideoView!);
+            }
+        }
+    }
+    fileprivate var remoteVideoTrack: RTCVideoTrack? {
+        willSet {
+            if remoteVideoTrack != nil && remoteVideoView != nil {
+                remoteVideoTrack!.remove(remoteVideoView);
+                self.updateAvatarVisibility();
+            }
+        }
+        didSet {
+            if remoteVideoTrack != nil && remoteVideoView != nil {
+                remoteVideoTrack!.add(remoteVideoView);
+                self.updateAvatarVisibility();
+            }
         }
     }
     
-    func callDidEnd(_ sender: CallManager) {
+    public func videoView(_ videoView: RTCVideoRenderer, didChangeVideoSize size: CGSize) {
+        // lets do not do anything for now...
+//        DispatchQueue.main.async {
+//            if videoView === self.localVideoView! {
+//                self.lo
+//            }
+//        }
+    }
+    
+    func callDidStart(_ sender: Call) {
+        self.call = sender;
+        self.updateAvatarView();
+        self.updateStateLabel();
+    }
+    
+    func callDidEnd(_ sender: Call) {
+        self.call = nil;
+        self.dismiss(animated: true, completion: nil);
+    }
+    
+    func callStateChanged(_ sender: Call) {
+        self.updateStateLabel();
+    }
+    
+    func call(_ sender: Call, didReceiveLocalVideoTrack localTrack: RTCVideoTrack) {
         DispatchQueue.main.async {
-            self.call = nil;
-            self.dismiss(animated: true, completion: nil);
+            self.localVideoTrack = localTrack;
         }
     }
     
-    func callManager(_ sender: CallManager, didReceiveLocalVideoCapturer localCapturer: RTCCameraVideoCapturer) {
-        DispatchQueue.main.async {
-            self.localVideoCapturer = localCapturer;
-            self.localVideoView.isHidden = false;
-            self.localVideoView.captureSession = localCapturer.captureSession;
-        }
+    func call(_ sender: Call, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack) {
+        self.remoteVideoTrack = remoteTrack;
     }
     
-    func callManager(_ sender: CallManager, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack) {
-        DispatchQueue.main.async {
-            self.remoteVideoTrack = remoteTrack;
-        }
-    }
-    
-    func callStateChanged(_ sender: CallManager) {
-        DispatchQueue.main.async {
-            self.updateTitleLabel();
-            self.updateAvatarVisibility();
-        }
-    }
-    
+
+//    #if targetEnvironment(simulator)
+//    func callDidStart(_ sender: CallManager) {
+//    }
+//    func callDidEnd(_ sender: CallManager) {
+//    }
+//    func callManager(_ sender: CallManager, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack) {
+//    }
+//    func callManager(_ sender: CallManager, didReceiveLocalVideoCapturer localCapturer: RTCCameraVideoCapturer) {
+//    }
+//    func callStateChanged(_ sender: CallManager) {
+//    }
+//    #else
+
+        
     static func checkMediaAvailability(forCall call: Call, completionHandler: @escaping (Result<Void,Error>)->Void) {
         var errors: Bool = false;
         let group = DispatchGroup();
@@ -152,7 +177,7 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
         
         let continueCall = {
             // we do not know "internal id" of a session
-            let call = Call(account: account, with: jid, sid: UUID().uuidString, direction: .outgoing, media: media, sessionId: nil);
+            let call = Call(account: account, with: jid, sid: UUID().uuidString, direction: .outgoing, media: media);
                 
             checkMediaAvailability(forCall: call, completionHandler: { result in
                 switch result {
@@ -186,63 +211,33 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
         
     }
 
-    fileprivate let hasMetal = MTLCreateSystemDefaultDevice() != nil;
-    
     @IBOutlet var titleLabel: UILabel?;
     
     @IBOutlet var remoteVideoView: RTCMTLVideoView!;
-    @IBOutlet var localVideoView: CameraPreviewView!;
+    @IBOutlet var localVideoView: RTCMTLVideoView!;
     
     @IBOutlet fileprivate var avatar: AvatarView?;
     @IBOutlet fileprivate var avatarWidthConstraint: NSLayoutConstraint!;
     @IBOutlet fileprivate var avatarHeightConstraint: NSLayoutConstraint!;
         
     private var localVideoCapturer: RTCCameraVideoCapturer?;
-    private var remoteVideoTrack: RTCVideoTrack? {
-        willSet {
-            if remoteVideoTrack != nil && remoteVideoView != nil && hasMetal {
-                remoteVideoTrack!.remove(remoteVideoView);
-                self.updateAvatarVisibility();
-            }
-        }
-        didSet {
-            if remoteVideoTrack != nil && remoteVideoView != nil && hasMetal {
-                remoteVideoTrack!.add(remoteVideoView);
-                self.updateAvatarVisibility();
-            }
-        }
-    }
     
-    private var call: Call?;
-            
     public override func viewDidLoad() {
         super.viewDidLoad();
 
-        self.updateTitleLabel();
-        self.updateAvatar();
+        self.updateStateLabel();
+        self.updateAvatarView();
         
         let mtkview = self.view.subviews.last!;
         self.view.sendSubviewToBack(mtkview);
 //        remoteVideoView.delegate = self;
         NotificationCenter.default.addObserver(self, selector: #selector(orientationChanged), name: UIDevice.orientationDidChangeNotification, object: nil)
-        if CallManager.isAvailable {
-            CallManager.instance?.delegate = self;
-        }
     }
-    
-    private func updateAvatar() {
-        if let call = self.call, let avatar = self.avatar {
-            let rosterModule: RosterModule? = XmppService.instance.getClient(for: call.account)?.modulesManager.getModule(RosterModule.ID);
-            
-            let contactName: String = rosterModule?.rosterStore.get(for: JID(call.jid))?.name ?? call.jid.stringValue;
-            avatar.set(name: contactName, avatar: AvatarManager.instance.avatar(for: call.jid, on: call.account), orDefault: AvatarManager.instance.defaultAvatar);
-        }
-    }
-    
+        
 //    var timer: Foundation.Timer?;
     
     public override func viewWillAppear(_ animated: Bool) {
-        self.updateAvatar();
+        self.updateAvatarView();
         super.viewWillAppear(animated);
         self.orientationChanged();
         NotificationCenter.default.addObserver(self, selector: #selector(audioRouteChanged), name: AVAudioSession.routeChangeNotification, object: nil)
@@ -256,9 +251,9 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
     public override func viewWillDisappear(_ animated: Bool) {
 //        timer?.invalidate();
 //        timer = nil;
-        remoteVideoTrack = nil;
-        localVideoView.captureSession = nil;
-        localVideoCapturer = nil;
+//        remoteVideoTrack = nil;
+//        localVideoView.captureSession = nil;
+//        localVideoCapturer = nil;
         super.viewWillDisappear(animated);
     }
     
@@ -301,9 +296,7 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
 //    }
     
     @IBAction func switchCamera(_ sender: UIButton) {
-        if let instance = CallManager.instance {
-            instance.switchCameraDevice();
-        }
+        call?.switchCameraDevice();
     }
     
     fileprivate var muted: Bool = false;
@@ -335,10 +328,18 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
         self.avatar?.isHidden = remoteVideoTrack != nil && (call?.state ?? .new) == .connected;
     }
     
-    fileprivate func updateTitleLabel() {
+    private func updateAvatarView() {
+        if let call = self.call {
+            avatar?.set(name: DBRosterStore.instance.item(for: call.account, jid: JID(call.jid))?.name ?? call.jid.stringValue, avatar: AvatarManager.instance.avatar(for: call.jid, on: call.account));
+        } else {
+            avatar?.set(name: nil, avatar: nil);
+        }
+    }
+    
+    fileprivate func updateStateLabel() {
         switch call?.state ?? .new {
         case .new:
-            self.titleLabel?.text = "New call...";
+            self.titleLabel?.text = "New call";
         case .ringing:
             self.titleLabel?.text = "Ringing...";
         case .connecting:
@@ -349,7 +350,7 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
             self.titleLabel?.text = "Call ended";
         }
     }
-    #endif
+//    #endif
     
     static var peerConnectionFactory: RTCPeerConnectionFactory {
         return JingleManager.instance.connectionFactory;
@@ -359,7 +360,7 @@ public class VideoCallController: UIViewController, CallManagerDelegate {
     
     static func initiatePeerConnection(iceServers servers: [RTCIceServer], withDelegate delegate: RTCPeerConnectionDelegate) -> RTCPeerConnection {
         
-        let iceServers = (servers.isEmpty && Settings.usePublicStunServers.bool()) ? [ RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302","stun:stun3.l.google.com:19302","stun:stun4.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478"]) ] : servers;
+        let iceServers = (servers.isEmpty && Settings.usePublicStunServers) ? [ RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302","stun:stun3.l.google.com:19302","stun:stun4.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478"]) ] : servers;
         os_log("using ICE servers: %s", log: .jingle, type: .debug, iceServers.map({ $0.urlStrings.description }).description);
 
         let configuration = RTCConfiguration();

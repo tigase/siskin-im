@@ -22,6 +22,8 @@
 
 import UIKit
 import TigaseSwift
+import Combine
+import Shared
 
 class AddAccountController: UITableViewController, UITextFieldDelegate {
     
@@ -114,13 +116,18 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         guard let jid = BareJID(jidTextField.text) else {
             return;
         }
-        let account = AccountManager.getAccount(for: jid) ?? AccountManager.Account(name: jid);
+        var account = AccountManager.getAccount(for: jid) ?? AccountManager.Account(name: jid);
         account.acceptCertificate(acceptedCertificate);
-        AccountManager.save(account: account);
         account.password = passwordTextField.text!;
-
-        onAccountAdded?();
-        dismissView();
+        do {
+            try AccountManager.save(account: account);
+            onAccountAdded?();
+            dismissView();
+        } catch {
+            let alert = UIAlertController(title: "Error", message: "It was not possible to save account details: \(error)", preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: "OK", style: .default));
+            self.present(alert, animated: true, completion: nil);
+        }
     }
     
     @IBAction func cancelClicked(_ sender: UIBarButtonItem) {
@@ -164,14 +171,15 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         return false;
     }
     
-    func handleResult(condition errorCondition: ErrorCondition?) {
+    func handleResult(result: Result<Void,ErrorCondition>) {
         self.hideIndicator();
         let acceptedCertificate = accountValidatorTask?.acceptedCertificate;
         self.accountValidatorTask = nil;
-        if errorCondition != nil {
+        switch result {
+        case .failure(let errorCondition):
             self.saveButton.isEnabled = true;
             var error = "";
-            switch errorCondition! {
+            switch errorCondition {
             case .not_authorized:
                 error = "Login and password do not match.";
             default:
@@ -180,7 +188,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
             let alert = UIAlertController(title: "Error", message:  error, preferredStyle: .alert);
             alert.addAction(UIAlertAction(title: "Close", style: .cancel, handler: nil));
             self.present(alert, animated: true, completion: nil);
-        } else {
+        case .success(_):
             self.saveAccount(acceptedCertificate: acceptedCertificate);
         }
     }
@@ -189,7 +197,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         if activityInditcator != nil {
             hideIndicator();
         }
-        activityInditcator = UIActivityIndicatorView(style: .gray);
+        activityInditcator = UIActivityIndicatorView(style: .medium);
         activityInditcator?.center = CGPoint(x: view.frame.width/2, y: view.frame.height/2);
         activityInditcator!.isHidden = false;
         activityInditcator!.startAnimating();
@@ -205,21 +213,24 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     
     class AccountValidatorTask: EventHandler {
         
+        private var cancellables: Set<AnyCancellable> = [];
         var client: XMPPClient? {
             willSet {
                 if newValue != nil {
-                    newValue?.eventBus.register(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE);
+                    newValue?.eventBus.register(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE);
                 }
             }
             didSet {
+                cancellables.removeAll();
                 if oldValue != nil {
-                    oldValue?.disconnect(true);
-                    oldValue?.eventBus.unregister(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE);
+                    _ = oldValue?.disconnect(true);
+                    oldValue?.eventBus.unregister(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE);
                 }
+                client?.$state.sink(receiveValue: { [weak self] state in self?.changedState(state) }).store(in: &cancellables);
             }
         }
         
-        var callback: ((ErrorCondition?)->Void)? = nil;
+        var callback: ((Result<Void,ErrorCondition>)->Void)? = nil;
         weak var controller: UIViewController?;
         var dispatchQueue = DispatchQueue(label: "accountValidatorSync");
         
@@ -235,50 +246,78 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
             _ = client?.modulesManager.register(StreamFeaturesModule());
             _ = client?.modulesManager.register(SaslModule());
             _ = client?.modulesManager.register(AuthModule());
-            SslCertificateValidator.registerSslCertificateValidator(client!.sessionObject);
         }
         
-        public func check(account: BareJID, password: String, callback: @escaping (ErrorCondition?)->Void) {
+        public func check(account: BareJID, password: String, callback: @escaping (Result<Void,ErrorCondition>)->Void) {
             self.callback = callback;
-            client?.connectionConfiguration.setUserJID(account);
-            client?.connectionConfiguration.setUserPassword(password);
+            client?.connectionConfiguration.userJid = account;
+            client?.connectionConfiguration.credentials = .password(password: password, authenticationName: nil, cache: nil);
             client?.login();
         }
         
         public func handle(event: Event) {
             dispatchQueue.sync {
-                let callback = self.callback;
+                guard let callback = self.callback else {
+                    return;
+                }
                 var param: ErrorCondition? = nil;
                 switch event {
                 case is SaslModule.SaslAuthSuccessEvent:
                     param = nil;
                 case is SaslModule.SaslAuthFailedEvent:
                     param = ErrorCondition.not_authorized;
-                case let e as SocketConnector.CertificateErrorEvent:
-                    self.callback = nil;
-                    let certData = SslCertificateInfo(trust: e.trust);
-                    let alert = CertificateErrorAlert.create(domain: self.client!.sessionObject.userBareJid!.domain, certData: certData, onAccept: {
-                        self.acceptedCertificate = certData;
-                        SslCertificateValidator.setAcceptedSslCertificate(self.client!.sessionObject, fingerprint: certData.details.fingerprintSha1);
-                        self.callback = callback;
-                        self.client?.login();
-                    }, onDeny: {
-                        self.finish();
-                        callback?(ErrorCondition.service_unavailable);
-                    })
-                    DispatchQueue.main.async {
-                        self.controller?.present(alert, animated: true, completion: nil);
-                    }
-                    return;
                 default:
                     param = ErrorCondition.service_unavailable;
                 }
                 
-                if (callback != nil) {
-                    self.finish();
-                    DispatchQueue.main.async {
-                        callback?(param);
+                DispatchQueue.main.async {
+                    if let error = param {
+                        callback(.failure(error));
+                    } else {
+                        callback(.success(Void()));
                     }
+                }
+                self.finish();
+            }
+        }
+        
+        func changedState(_ state: XMPPClient.State) {
+            dispatchQueue.sync {
+                guard let callback = self.callback else {
+                    return;
+                }
+                
+                switch state {
+                case .disconnected(let reason):
+                    switch reason {
+                    case .sslCertError(let trust):
+                        self.callback = nil;
+                        let certData = SslCertificateInfo(trust: trust);
+                        let alert = CertificateErrorAlert.create(domain: self.client!.sessionObject.userBareJid!.domain, certData: certData, onAccept: {
+                            self.acceptedCertificate = certData;
+                            self.client?.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
+                                options.networkProcessorProviders.append(SSLProcessorProvider());
+                                options.sslCertificateValidation = .fingerprint(certData.details.fingerprintSha1);
+                            });
+                            self.callback = callback;
+                            self.client?.login();
+                        }, onDeny: {
+                            self.finish();
+                            callback(.failure(ErrorCondition.service_unavailable));
+                        })
+                        DispatchQueue.main.async {
+                            self.controller?.present(alert, animated: true, completion: nil);
+                        }
+                        return;
+                    default:
+                        break;
+                    }
+                    DispatchQueue.main.async {
+                        callback(.failure(.service_unavailable));
+                    }
+                    self.finish();
+                default:
+                    break;
                 }
             }
         }
