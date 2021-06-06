@@ -217,6 +217,8 @@
 		FEDE009D266BE3BD0019CC1C /* NotificationsManagerHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE009C266BE3BD0019CC1C /* NotificationsManagerHelper.swift */; };
 		FEDE00A8266BE4740019CC1C /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE75A00223743A5C001E78D9 /* NotificationManager.swift */; };
 		FEDE00B4266CC7B80019CC1C /* InvitationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE00AF266CC7850019CC1C /* InvitationsManager.swift */; };
+		FEDE00C4266CE1680019CC1C /* db-schema-14.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEDE00C3266CE1680019CC1C /* db-schema-14.sql */; };
+		FEDE00D0266CEF5E0019CC1C /* ChatTableViewMarkerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE00C8266CEF270019CC1C /* ChatTableViewMarkerCell.swift */; };
 		FEDE93871D07564F00CA60A9 /* SwitchTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE93861D07564F00CA60A9 /* SwitchTableViewCell.swift */; };
 		FEDE93891D081C3D00CA60A9 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE93881D081C3D00CA60A9 /* Settings.swift */; };
 		FEDE938C1D08AFE800CA60A9 /* VCardEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE938B1D08AFE800CA60A9 /* VCardEditViewController.swift */; };
@@ -522,6 +524,8 @@
 		FEDE0097266BCD7A0019CC1C /* ConversationType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationType.swift; sourceTree = "<group>"; };
 		FEDE009C266BE3BD0019CC1C /* NotificationsManagerHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsManagerHelper.swift; sourceTree = "<group>"; };
 		FEDE00AF266CC7850019CC1C /* InvitationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationsManager.swift; sourceTree = "<group>"; };
+		FEDE00C3266CE1680019CC1C /* db-schema-14.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-14.sql"; sourceTree = "<group>"; };
+		FEDE00C8266CEF270019CC1C /* ChatTableViewMarkerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatTableViewMarkerCell.swift; sourceTree = "<group>"; };
 		FEDE93861D07564F00CA60A9 /* SwitchTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwitchTableViewCell.swift; sourceTree = "<group>"; };
 		FEDE93881D081C3D00CA60A9 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		FEDE938B1D08AFE800CA60A9 /* VCardEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VCardEditViewController.swift; sourceTree = "<group>"; };
@@ -653,6 +657,7 @@
 				FE7D293523BB5E0A001A877D /* LinkPreviewChatTableViewCell.swift */,
 				FECEF29C23B7C36F007EC323 /* AttachmentChatTableViewCell.swift */,
 				FE2332E0242CCDB400008ED4 /* InvitationChatTableViewCell.swift */,
+				FEDE00C8266CEF270019CC1C /* ChatTableViewMarkerCell.swift */,
 			);
 			path = conversation;
 			sourceTree = "<group>";
@@ -898,6 +903,7 @@
 				FEC79198241BE89E007BE572 /* db-schema-11.sql */,
 				FE3BA0BF24B61583000C80D4 /* db-schema-12.sql */,
 				FEBC12F124C70DE000689475 /* db-schema-13.sql */,
+				FEDE00C3266CE1680019CC1C /* db-schema-14.sql */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -1297,6 +1303,7 @@
 				FECEF29823B7B838007EC323 /* db-schema-9.sql in Resources */,
 				FE3BA0C024B61583000C80D4 /* db-schema-12.sql in Resources */,
 				FE759FF02371F21C001E78D9 /* db-schema-4.sql in Resources */,
+				FEDE00C4266CE1680019CC1C /* db-schema-14.sql in Resources */,
 				FE759FF32371F21C001E78D9 /* db-schema-7.sql in Resources */,
 				FE759FF12371F21C001E78D9 /* db-schema-5.sql in Resources */,
 				FE759FF523741527001E78D9 /* db-schema-8.sql in Resources */,
@@ -1491,6 +1498,7 @@
 				FE0E30E42535BA520030F8C5 /* HTTPFileUploadHelper.swift in Sources */,
 				FE507A171CDB7B3B001A015C /* ChatTableViewCell.swift in Sources */,
 				FE31DDE4201261A200C2AB1D /* DNSSrvDiskCache.swift in Sources */,
+				FEDE00D0266CEF5E0019CC1C /* ChatTableViewMarkerCell.swift in Sources */,
 				FE233CDD21EA062E00099281 /* AboutController.swift in Sources */,
 				FE2D481C24518C2800C13CE5 /* RTCCameraVideoCapturer_Format.swift in Sources */,
 				FE4A94AA26679D65000A96E5 /* EnumTableViewCell.swift in Sources */,

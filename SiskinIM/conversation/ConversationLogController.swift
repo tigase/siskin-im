@@ -64,6 +64,7 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
             newestVisibleDateSubject.onlyGreater().throttledSink(for: 0.5, scheduler: DispatchQueue.main, receiveValue: { date in
                 DBChatHistoryStore.instance.markAsRead(for: conversation, before: date);
             });
+            dataSource.loadItems(.unread(overhead: 50));
         }
         
         super.viewWillAppear(animated);
@@ -89,8 +90,14 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
             cell.contentView.transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0);
             return cell;
         case .messageRetracted:
-            // FIXME: add support for retracted messages!!
-            return tableView.dequeueReusableCell(withIdentifier: "ChatTableViewCellIncoming", for: indexPath);
+            let id = isContinuation(at: indexPath.row, for: item) ? "ChatTableViewMessageContinuationCell" : "ChatTableViewMessageCell";
+            let cell: ChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
+            cell.contentView.transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0);
+            cell.setRetracted(item: item);
+//            cell.setNeedsUpdateConstraints();
+//            cell.updateConstraintsIfNeeded();
+        
+            return cell;
         case .message(let message, let correctionTimestamp):
             if message.starts(with: "/me") {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "ChatTableViewMeCell", for: indexPath) as! ChatTableViewMeCell;
@@ -129,8 +136,10 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
             cell.set(item: item, message: message, appendix: appendix);
             return cell;
         case .marker(let type, let senders):
-            // FIXME: add support for read markers!!
-            return tableView.dequeueReusableCell(withIdentifier: "ChatTableViewCellIncoming", for: indexPath);
+            let cell = tableView.dequeueReusableCell(withIdentifier: "ChatTableViewMarkerCell", for: indexPath) as! ChatTableViewMarkerCell;
+            cell.set(item: item, type: type, senders: senders);
+            cell.contentView.transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0);
+            return cell;
         default:
             return tableView.dequeueReusableCell(withIdentifier: "ChatTableViewCellIncoming", for: indexPath);
         }

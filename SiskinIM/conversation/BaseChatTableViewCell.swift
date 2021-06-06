@@ -51,8 +51,6 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
     @IBOutlet var nicknameView: UILabel?;
     @IBOutlet var timestampView: UILabel?
     @IBOutlet var stateView: UILabel?;
-                    
-    var originalTimestampColor: UIColor!;
     
     private var cancellables: Set<AnyCancellable> = [];
         
@@ -107,7 +105,7 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
             avatarView!.layer.masksToBounds = true;
             avatarView!.layer.cornerRadius = avatarView!.frame.height / 2;
         }
-        originalTimestampColor = timestampView?.textColor;
+        stateView?.textColor = UIColor.secondaryLabel;
         nicknameView?.textColor = UIColor.secondaryLabel;
         nicknameView?.font = UIFontMetrics(forTextStyle: .footnote).scaledFont(for: UIFont(descriptor: UIFont.preferredFont(forTextStyle: .footnote).fontDescriptor.withSymbolicTraits(.traitBold)!, size: 0));
     }
@@ -167,7 +165,7 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
             CurrentTimePublisher.publisher.map({ now in BaseChatTableViewCell.formatTimestamp(timestamp, now, prefix: timestampPrefix) }).assign(to: \.text, on: timestampView).store(in: &cancellables);
         }
 
-        if stateView == nil {
+        if stateView != nil {
             switch item.state {
             case .none:
                 self.stateView?.text = nil;
@@ -213,8 +211,8 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
             self.tintColor = stateView?.tintColor;
         }
         
-        self.stateView?.textColor = item.state.isError && item.state.direction == .incoming ? UIColor.red : originalTimestampColor;
-        self.timestampView?.textColor = item.state.isError && item.state.direction == .incoming ? UIColor.red : originalTimestampColor;
+        self.stateView?.textColor = item.state.isError && item.state.direction == .incoming ? UIColor.red : UIColor.secondaryLabel;
+        self.timestampView?.textColor = item.state.isError && item.state.direction == .incoming ? UIColor.red : UIColor.secondaryLabel;
     }
     
     @objc func actionMore(_ sender: UIMenuController) {

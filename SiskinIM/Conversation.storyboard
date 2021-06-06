@@ -43,8 +43,40 @@
                                     <outlet property="messageView" destination="V6M-WP-Vfp" id="8I5-kr-ei9"/>
                                 </connections>
                             </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="ChatTableViewSystemCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChatTableViewMarkerCell" id="l2v-p0-tGZ" customClass="ChatTableViewMarkerCell" customModule="Siskin" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="61" width="414" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="l2v-p0-tGZ" id="OLw-mJ-ome">
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" ambiguous="YES" distribution="fillEqually" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="giz-nD-0Fy">
+                                            <rect key="frame" x="336" y="0.0" width="33" height="36"/>
+                                        </stackView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="twg-Vx-EgF">
+                                            <rect key="frame" x="373" y="11" width="31" height="14.5"/>
+                                            <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                            <color key="textColor" systemColor="secondaryLabelColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="trailing" secondItem="twg-Vx-EgF" secondAttribute="trailing" constant="10" id="35J-1N-BdK"/>
+                                        <constraint firstItem="twg-Vx-EgF" firstAttribute="centerY" secondItem="giz-nD-0Fy" secondAttribute="centerY" id="Q8f-NI-bGt"/>
+                                        <constraint firstItem="twg-Vx-EgF" firstAttribute="top" relation="greaterThanOrEqual" secondItem="OLw-mJ-ome" secondAttribute="top" id="Sme-Q7-LzF"/>
+                                        <constraint firstItem="giz-nD-0Fy" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="OLw-mJ-ome" secondAttribute="leading" constant="20" id="YhZ-82-ziy"/>
+                                        <constraint firstItem="twg-Vx-EgF" firstAttribute="leading" secondItem="giz-nD-0Fy" secondAttribute="trailing" constant="4" id="a3n-ZY-m78"/>
+                                        <constraint firstItem="giz-nD-0Fy" firstAttribute="centerY" secondItem="OLw-mJ-ome" secondAttribute="centerY" constant="-4" id="kB8-VP-AgH"/>
+                                        <constraint firstItem="giz-nD-0Fy" firstAttribute="top" secondItem="OLw-mJ-ome" secondAttribute="top" id="xYZ-KM-DkY"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="avatars" destination="giz-nD-0Fy" id="aRX-k8-Q8v"/>
+                                    <outlet property="label" destination="twg-Vx-EgF" id="OMu-hQ-OII"/>
+                                </connections>
+                            </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="ChatTableViewMeCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChatTableViewMeCell" rowHeight="33" id="1fK-7e-aGk" customClass="ChatTableViewMeCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="61" width="414" height="33"/>
+                                <rect key="frame" x="0.0" y="105" width="414" height="33"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="1fK-7e-aGk" id="rAU-Uh-tvV">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="33"/>
@@ -70,7 +102,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="ChatTableViewCellContinuation" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChatTableViewMessageContinuationCell" id="uYD-DG-v0E" customClass="ChatTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="94" width="414" height="44"/>
+                                <rect key="frame" x="0.0" y="138" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="uYD-DG-v0E" id="NEY-YF-0Rw">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -108,7 +140,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChatTableViewLinkPreviewCell" rowHeight="71" id="StV-wk-lQt" customClass="LinkPreviewChatTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="138" width="414" height="71"/>
+                                <rect key="frame" x="0.0" y="182" width="414" height="71"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="StV-wk-lQt" id="s9f-j8-qlY">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="71"/>
@@ -116,7 +148,7 @@
                                 </tableViewCellContentView>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChatTableViewAttachmentContinuationCell" rowHeight="71" id="yJR-vm-Aye" customClass="AttachmentChatTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="209" width="414" height="71"/>
+                                <rect key="frame" x="0.0" y="253" width="414" height="71"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="yJR-vm-Aye" id="TRq-2V-4Hc">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="71"/>
@@ -150,7 +182,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="ChatTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChatTableViewMessageCell" id="pKb-bZ-pz4" customClass="ChatTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="280" width="414" height="44"/>
+                                <rect key="frame" x="0.0" y="324" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="pKb-bZ-pz4" id="2iM-vb-6En">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -218,7 +250,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChatTableViewAttachmentCell" rowHeight="71" id="fFK-Mc-l1d" customClass="AttachmentChatTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="324" width="414" height="71"/>
+                                <rect key="frame" x="0.0" y="368" width="414" height="71"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="fFK-Mc-l1d" id="MFB-B5-QfG">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="71"/>
@@ -283,7 +315,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChatTableViewInvitationCell" rowHeight="78" id="KT9-Jo-wYK" customClass="InvitationChatTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="395" width="414" height="78"/>
+                                <rect key="frame" x="0.0" y="439" width="414" height="78"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="KT9-Jo-wYK" id="MsO-zv-aOM">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="78"/>

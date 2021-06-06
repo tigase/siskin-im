@@ -35,6 +35,15 @@ class ChatTableViewCell: BaseChatTableViewCell, UITextViewDelegate {
         }
     }
         
+    func setRetracted(item: ConversationEntry) {
+        set(item: item);
+        
+        
+        let msg = NSAttributedString(string: "(this message has been removed)", attributes: [.font: Markdown.font(withTextStyle: .body, andTraits: [.traitItalic, .traitBold]), .foregroundColor: UIColor.secondaryLabel]);
+                
+        self.messageTextView.attributedText = msg;
+    }
+    
     override func set(item: ConversationEntry) {
         super.set(item: item);
         id = item.id;
