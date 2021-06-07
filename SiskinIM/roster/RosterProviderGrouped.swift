@@ -27,7 +27,7 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
     
     private var groups = [RosterProviderGroup]();
     
-    private var initialized = true;//false;
+    private var initialized = false;
     
     override init(controller: AbstractRosterViewController) {
         super.init(controller: controller);

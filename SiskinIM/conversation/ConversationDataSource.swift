@@ -221,11 +221,15 @@ class ConversationDataSource {
             self.entriesCount = entriesCount;
             self.oldestEntry = oldestEntry;
             completionHandler?();
-            self.delegate?.update({ delegate in
-                // it looks like insert/removed are not detected at all!
-                delegate.itemsRemoved(at: changes.removed);
-                delegate.itemsAdded(at: changes.inserted, initial: initial);
-            })
+            if initial {
+                delegate?.itemsReloaded()
+            } else {
+                self.delegate?.update({ delegate in
+                    // it looks like insert/removed are not detected at all!
+                    delegate.itemsRemoved(at: changes.removed);
+                    delegate.itemsAdded(at: changes.inserted, initial: initial);
+                })
+            }
             
             if let scrollToIdx = scrollToIdx {
                 self.delegate?.scrollRowToVisible(scrollToIdx);
