@@ -66,25 +66,9 @@ open class XmppService {
 
     fileprivate let eventHandlers: [XmppServiceEventHandler] = [MessageEventHandler.instance];
     
-//    #if targetEnvironment(simulator)
-//    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), PushEventHandler.instance, BlockedEventHandler.instance, MixEventHandler.instance];
-//
-//    #else
-//    fileprivate let eventHandlers: [XmppServiceEventHandler] = [NewFeaturesDetector(), MessageEventHandler(), MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), DiscoEventHandler(), PushEventHandler.instance, JingleManager.instance, BlockedEventHandler.instance, MixEventHandler.instance];
-//    #endif
-    
     @Published
-    open var applicationState: ApplicationState = .inactive;
-//    {
-//        didSet {
-//            if oldValue != applicationState {
-//                applicationStateChanged();
-//            }
-//            if applicationState != .active {
-//                AvatarManager.instance.clearCache();
-//            }
-//        }
-//    }
+    open private(set) var applicationState: ApplicationState = .suspended;
+
     open var onCall: Bool = false {
         didSet {
             // FIXME: handle this properly!!
@@ -103,12 +87,12 @@ open class XmppService {
     fileprivate let dispatcher: QueueDispatcher = QueueDispatcher(label: "xmpp_service");
         
     @Published
-    var status: Status = Status(show: .online, message: nil);
+    var status: Status = Status(show: nil, message: nil, shouldConnect: true);
     
-    public let expectedStatus = CurrentValueSubject<Status,Never>(Status(show: nil, message: nil));
+    public let expectedStatus = CurrentValueSubject<Status,Never>(Status(show: nil, message: nil, shouldConnect: false));
     
     @Published
-    fileprivate(set) var currentStatus: Status = Status(show: nil, message: nil);
+    fileprivate(set) var currentStatus: Status = Status(show: nil, message: nil, shouldConnect: false);
         
     @Published
     public private(set) var connectedClients: Set<XMPPClient> = [];
@@ -124,10 +108,14 @@ open class XmppService {
         self.dnsSrvResolverCache = DNSSrvResolverWithCache.InMemoryCache(store: DNSSrvDiskCache(cacheDirectoryName: "dns-cache"));
         self.dnsSrvResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: self.dnsSrvResolverCache);
         self.streamFeaturesCache = StreamFeaturesCache();
-        self.applicationState = UIApplication.shared.applicationState == .active ? .active : .inactive;
+        //self.applicationState = UIApplication.shared.applicationState == .active ? .active : .inactive;
                         
+        Settings.$statusType.combineLatest(Settings.$statusMessage, { type, messsage in
+            Status(show: type, message: (messsage?.isEmpty ?? true) ? nil : messsage, shouldConnect: true);
+        }).assign(to: \.status, on: self).store(in: &cancellables);
+        
         expectedStatus.map({ status in
-            return status.show != nil
+            return status.shouldConnect
         }).removeDuplicates().sink(receiveValue: { [weak self] available in
             if available {
                 self?.connectClients(ignoreCheck: true);
@@ -179,15 +167,15 @@ open class XmppService {
             _ = self.register(client: client, for: account);
         }
         self.$status.combineLatest($applicationState, { (status, state) -> Status in
-            if state == .inactive && status.show != nil {
-                return status.with(show: .xa);
+            if status.show == nil && state != .suspended {
+                return status.with(show: state == .inactive ? .xa : .online);
             }
             return status;
-        }).combineLatest(NetworkMonitor.shared.$isNetworkAvailable, { (status, networkAvailble) -> Status in
-            if networkAvailble {
+        }).combineLatest(NetworkMonitor.shared.$isNetworkAvailable, self.$isFetch, self.$applicationState, { (status, networkAvailble, isFetch, appState) -> Status in
+            if networkAvailble && ((appState != .suspended) || isFetch) {
                 return status;
             } else {
-                return status.with(show: nil);
+                return status.with(shouldConnect: false);
             }
         }).assign(to: \.value, on: expectedStatus).store(in: &cancellables);
     }
@@ -200,6 +188,20 @@ open class XmppService {
                 }
             }
         }
+    }
+    
+    open func updateApplicationState(_ state: ApplicationState) {
+        //dispatcher.async {
+            switch state {
+            case .active, .inactive:
+                self.applicationState = state;
+            case .suspended:
+                guard self.applicationState == .inactive else {
+                    return;
+                }
+                self.applicationState = state;
+            }
+        //}
     }
 
     open func getClient(for account:BareJID) -> XMPPClient? {
@@ -232,38 +234,9 @@ open class XmppService {
         }
     }
     
-//    fileprivate func applicationStateChanged() {
-//        forEachClient { (client) in
-//            if client.state == .connected {
-//                let csiModule: ClientStateIndicationModule? = client.modulesManager.getModule(ClientStateIndicationModule.ID);
-//                if csiModule != nil && csiModule!.available {
-//                    _ = csiModule!.setState(self.applicationState == .active);
-//                }
-//                else if let mobileModeModule: MobileModeModule = client.modulesManager.getModule(MobileModeModule.ID) {
-//                    _ = mobileModeModule.setState(self.applicationState == .inactive);
-//                }
-//            }
-//        }
-//        if applicationState == .active || onCall {
-//            connectClients();
-//            forEachClient { client in
-//                client.sessionObject.setProperty(XmppService.CONNECTION_RETRY_NO_KEY, value: nil);
-//                if client.state == .connected && self.isFetch {
-//                    if let mcModule: MessageCarbonsModule = client.modulesManager.getModule(MessageCarbonsModule.ID), mcModule.isAvailable && Settings.enableMessageCarbons.bool() {
-//                        mcModule.enable();
-//                    }
-//                }
-////                if client.state == .disconnected { // && client.pushNotificationsEnabled {
-////                    client.login();
-////                    //updateXmppClientInstance(forJid: client.sessionObject.userBareJid!);
-////                }
-//            }
-//        }
-//    }
-    
     private func reconnect(client: XMPPClient, ignoreCheck: Bool = false) {
         self.dispatcher.sync {
-            guard client.state == .disconnected(), let account = AccountManager.getAccount(for: client.userBareJid), account.active, ignoreCheck || ( NetworkMonitor.shared.isNetworkAvailable && self.status.show != nil)  else {
+            guard client.state == .disconnected(), let account = AccountManager.getAccount(for: client.userBareJid), account.active, ignoreCheck || self.status.shouldConnect  else {
                 return;
             }
             
@@ -333,7 +306,7 @@ open class XmppService {
         }
         
         
-        guard self.status.show != nil || !NetworkMonitor.shared.isNetworkAvailable else {
+        guard self.status.shouldConnect else {
             return;
         }
         let retry = client.retryNo;
@@ -372,26 +345,6 @@ open class XmppService {
         }
     }
     
-//    @objc open func settingsChanged(_ notification: NSNotification) {
-//        guard let setting = Settings(rawValue: notification.userInfo!["key"] as! String) else {
-//            return;
-//        }
-//        switch setting {
-//        case .enableMessageCarbons:
-//            let value = setting.getBool();
-//            forEachClient { (client) in
-//                if client.state == .connected {
-//                    let messageCarbonsModule: MessageCarbonsModule? = client.modulesManager.getModule(MessageCarbonsModule.ID);
-//                    messageCarbonsModule?.setState(value, callback: nil);
-//                }
-//            }
-//        case .StatusMessage, .StatusType:
-//            sendAutoPresence();
-//        default:
-//            break;
-//        }
-//    }
-    
     func forEachClient(_ task: @escaping (XMPPClient)->Void) {
         let clients = dispatcher.sync {
             return Array(self.clients.values);
@@ -403,61 +356,32 @@ open class XmppService {
 //        guard applicationState != .active else {
 //            return;
 //        }
-//        let group = DispatchGroup();
-//        group.enter();
-//        let delegate = UIApplication.shared.delegate as? AppDelegate;
-//        DBChatHistoryStore.instance.countUnsentMessages() { unsent in
-//            guard unsent > 0  else {
-//                group.leave();
-//                return;
-//            }
-//
-//            delegate?.notifyUnsentMessages(count: unsent);
-//            group.leave();
-//        }
-//        // we should handle this concurrently!!
-//        dispatcher.sync {
-//            for client in self.clients.values {
-//                group.enter();
-//                self.dispatcher.async {
-//                    self.disconnect(client: client) {
-//                        print("leaving group by", client.sessionObject.userBareJid!);
-//                        group.leave();
-//                    }
-//                }
-//            }
-//        }
-//        group.wait();
+        let delegate = UIApplication.shared.delegate as? AppDelegate;
+        let unsent = DBChatHistoryStore.instance.countUnsentMessages();
+        if unsent > 0 {
+            delegate?.notifyUnsentMessages(count: unsent);
+        }
     }
     
     fileprivate var fetchGroup: DispatchGroup? = nil;
     fileprivate var fetchCompletionHandler: ((UIBackgroundFetchResult)->Void)? = nil;
+
+    @Published
+    private(set) var isFetch: Bool = false;
     
-    fileprivate(set) var isFetch: Bool = false {
-        didSet {
-            dispatcher.sync {
-                clients.values.forEach { (client) in
-                    client.module(.presence).initialPresence = !isFetch;
-                }
-            }
-        }
-    }
-    
-//    fileprivate var fetchingFor: [BareJID] = [];
-//
     open func preformFetch(completionHandler: @escaping (UIBackgroundFetchResult)->Void) {
-//        guard applicationState != .active else {
-//            print("skipping background fetch as application is active");
-//            completionHandler(.newData);
-//            return;
-//        }
-//        guard networkAvailable == true else {
-//            print("skipping background fetch as network is not available");
-//            completionHandler(.failed);
-//            return;
-//        }
-//
-//        isFetch = true;
+        guard applicationState != .active else {
+            print("skipping background fetch as application is active");
+            completionHandler(.newData);
+            return;
+        }
+        guard NetworkMonitor.shared.isNetworkAvailable == true else {
+            print("skipping background fetch as network is not available");
+            completionHandler(.failed);
+            return;
+        }
+
+        isFetch = true;
 //        fetchingFor = [];
 //
 //        fetchGroup = DispatchGroup();
@@ -485,11 +409,12 @@ open class XmppService {
 //            }
 //        }
         // FIXME: this should not be in here!!
-        completionHandler(.newData);
+        //completionHandler(.newData);
     }
 
     
     open func performFetchExpired() {
+        self.isFetch = false;
 //        guard applicationState == .inactive, self.fetchGroup != nil else {
 //            return;
 //        }
@@ -627,7 +552,7 @@ open class XmppService {
             
             client.$state.combineLatest($applicationState).sink(receiveValue: { [weak client] (clientState, applicationState) in
                 if clientState == .connected() {
-                    _ = client?.module(.csi).setState(applicationState != .inactive);
+                    _ = client?.module(.csi).setState(applicationState == .active);
                 }
             }).store(in: &clientCancellables.cancellables);
                     
@@ -688,10 +613,15 @@ open class XmppService {
     public enum ApplicationState {
         case active
         case inactive
+        case suspended
     }
     
     public struct Status: Codable, Equatable {
         public static func == (lhs: XmppService.Status, rhs: XmppService.Status) -> Bool {
+            guard lhs.shouldConnect == rhs.shouldConnect else {
+                return false;
+            }
+            
             if (lhs.show == nil && rhs.show == nil) {
                 return (lhs.message ?? "") == (rhs.message ?? "");
             } else if let ls = lhs.show, let rs = rhs.show {
@@ -703,22 +633,28 @@ open class XmppService {
         
         let show: Presence.Show?;
         let message: String?;
+        let shouldConnect: Bool;
         
-        init(show: Presence.Show?, message: String?) {
+        init(show: Presence.Show?, message: String?, shouldConnect: Bool) {
             self.show = show;
             self.message = message;
+            self.shouldConnect = shouldConnect;
         }
         
         func with(show: Presence.Show?) -> Status {
-            return Status(show: show, message: self.message);
+            return Status(show: show, message: self.message, shouldConnect: shouldConnect);
         }
         
         func with(message: String?) -> Status {
-            return Status(show: self.show, message: message);
+            return Status(show: self.show, message: message, shouldConnect: shouldConnect);
         }
 
         func with(show: Presence.Show?, message: String?) -> Status {
-            return Status(show: show, message: message);
+            return Status(show: show, message: message, shouldConnect: shouldConnect);
+        }
+        
+        func with(shouldConnect: Bool) -> Status {
+            return Status(show: show, message: message, shouldConnect: shouldConnect);
         }
 
         func toDict() -> [String : Any?] {

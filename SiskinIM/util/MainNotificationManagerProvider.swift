@@ -36,6 +36,7 @@ class MainNotificationManagerProvider: NotificationManagerProvider {
                 return;
             case let chat as Chat:
                 completionHandler(ConversationNotificationDetails(name: chat.displayName, notifications: chat.notifications, type: .chat, nick: nil));
+                return;
             default:
                 break;
             }

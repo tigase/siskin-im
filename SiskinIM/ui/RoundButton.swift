@@ -37,7 +37,7 @@ class RoundButton: UIButton {
 }
 
 class RoundedButton: UIButton {
-    
+        
     override func draw(_ rect: CGRect) {
         let offset = rect.height / 2;
         let tmp = CGRect(x: offset, y: offset, width: rect.width - (2 * offset), height: rect.height - (2 * offset));
@@ -47,7 +47,7 @@ class RoundedButton: UIButton {
     override func layoutSubviews() {
         super.layoutSubviews();
         layer.masksToBounds = true;
-        layer.cornerRadius = self.frame.height / 2;
+        layer.cornerRadius = min(self.frame.height, self.frame.width) / 2;
     }
 }
 
@@ -64,6 +64,7 @@ class BadgeButton: RoundedButton {
             } else {
                 NSLayoutConstraint.deactivate([widthConstratint!]);
             }
+            self.layoutSubviews();
         }
     }
     

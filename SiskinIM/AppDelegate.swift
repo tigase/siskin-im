@@ -139,13 +139,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-        XmppService.instance.applicationState = .inactive;
+        XmppService.instance.updateApplicationState(.inactive);
 
         initiateBackgroundTask();
     }
     
     func initiateBackgroundTask() {
-        guard XmppService.instance.applicationState == .inactive else {
+        guard XmppService.instance.applicationState != .active else {
             return;
         }
         let application = UIApplication.shared;
@@ -153,7 +153,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             print("keep online on away background task expired", self.backgroundTaskId);
             self.applicationKeepOnlineOnAwayFinished(application);
         }
-        print("keep online task started", backgroundTaskId, Date());
+        if backgroundTaskId == .invalid {
+            print("failed to start keep online background task", Date());
+            XmppService.instance.updateApplicationState(.suspended);
+        } else {
+            print("keep online task started", backgroundTaskId, Date());
+        }
     }
 
     func applicationKeepOnlineOnAwayFinished(_ application: UIApplication) {
@@ -163,6 +168,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         backgroundTaskId = .invalid;
         print("keep online task expired at", taskId, NSDate());
+        XmppService.instance.updateApplicationState(.suspended);
         XmppService.instance.backgroundTaskFinished();
         print("keep online calling end background task", taskId, NSDate());
         scheduleAppRefresh();
@@ -201,7 +207,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // TODO: XmppService::initialize() call in application:willFinishLaunchingWithOptions results in starting a connections while it may not always be desired if ie. app is relauched in the background due to crash
         // Shouldn't it wait for reconnection till it becomes active? or background refresh task is called?
         
-        XmppService.instance.applicationState = .active;
+        XmppService.instance.updateApplicationState(.active);
         applicationKeepOnlineOnAwayFinished(application);
 
         NotificationManager.instance.updateApplicationIconBadgeNumber(completionHandler: nil);
@@ -487,7 +493,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     return;
                 }
             } else if body != nil {
-                NotificationManager.instance.notifyNewMessage(account: account.bareJid, sender: sender?.bareJid, nickname: userInfo[AnyHashable("nickname")] as? String, body: body!);
+                // FIXME: not sure about this `date`!!
+                NotificationManager.instance.notifyNewMessage(account: account.bareJid, sender: sender?.bareJid, nickname: userInfo[AnyHashable("nickname")] as? String, body: body!, date: Date());
             } else {
                 if let encryped = userInfo["encrypted"] as? String, let ivStr = userInfo["iv"] as? String, let key = NotificationEncryptionKeys.key(for: account.bareJid), let data = Data(base64Encoded: encryped), let iv = Data(base64Encoded: ivStr) {
                     print("got encrypted push with known key");

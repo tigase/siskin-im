@@ -43,7 +43,7 @@
                                     <outlet property="messageView" destination="V6M-WP-Vfp" id="8I5-kr-ei9"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="ChatTableViewSystemCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChatTableViewMarkerCell" id="l2v-p0-tGZ" customClass="ChatTableViewMarkerCell" customModule="Siskin" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="ChatTableViewMarkerCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChatTableViewMarkerCell" id="l2v-p0-tGZ" customClass="ChatTableViewMarkerCell" customModule="Siskin" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="61" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="scaleToFill" tableViewCell="l2v-p0-tGZ" id="OLw-mJ-ome">

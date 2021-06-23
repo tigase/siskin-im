@@ -102,16 +102,6 @@ public class NotificationManager {
             }
         }
     }
-    
-//    private func intNotifyNewMessage(account: BareJID, sender: BareJID?, nickname: String?, body: String) {
-//        let id = UUID().uuidString;
-//        let content = UNMutableNotificationContent();
-//        NotificationsManagerHelper.prepareNewMessageNotification(content: content, account: account, sender: sender, nickname: nickname, body: body, provider: provider) { (content) in
-//            UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil)) { (error) in
-//                print("message notification error", error as Any);
-//            }
-//        }
-//    }
 
     private func markAsRead(on account: BareJID, with jid: BareJID, itemsIds: [Int], before date: Date) {
         if let queue = self.queues[.init(account: account, jid: jid)] {
@@ -154,11 +144,13 @@ public class NotificationManager {
         }
     }
     
-    public func notifyNewMessage(account: BareJID, sender jid: BareJID?, nickname: String?, body: String) {
+    public func notifyNewMessage(account: BareJID, sender jid: BareJID?, nickname: String?, body: String, date: Date) {
         let id = UUID().uuidString;
         let content = UNMutableNotificationContent();
+        let dateComponents = Calendar.current.dateComponents([.year,.month,.day,.minute,.second], from: date);
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false);
         NotificationsManagerHelper.prepareNewMessageNotification(content: content, account: account, sender: jid, nickname: nickname, body: body, provider: provider) { (content) in
-            UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil)) { (error) in
+            UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: trigger)) { (error) in
                 print("message notification error", error as Any);
             }
         }
@@ -173,7 +165,7 @@ public class NotificationManager {
             return;
         }
         
-        notifyNewMessage(account: conversation.account, sender: conversation.jid, nickname: entry.sender.nickname, body: message);
+        notifyNewMessage(account: conversation.account, sender: conversation.jid, nickname: entry.sender.nickname, body: message, date: entry.timestamp);
     }
     
     func updateApplicationIconBadgeNumber(completionHandler: (()->Void)?) {

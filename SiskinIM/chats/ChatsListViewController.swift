@@ -41,14 +41,22 @@ class ChatsListViewController: UITableViewController {
         tableView.estimatedRowHeight = 66.0;
         tableView.dataSource = self;
         setColors();
-        
-        if let tabBarItem = self.navigationController?.tabBarItem {
-            DBChatStore.instance.$unreadMessagesCount.throttle(for: 0.1, scheduler: DispatchQueue.main, latest: true).map({ $0 == 0 ? nil : "\($0)" }).assign(to: \.badgeValue, on: tabBarItem).store(in: &cancellables);
-        }
+
+//        DBChatStore.instance.$unreadMessagesCount.throttle(for: 0.1, scheduler: DispatchQueue.main, latest: true).map({ $0 == 0 ? nil : "\($0)" }).sink(receiveValue: { [weak self] value in
+//            print("setting badge to:", value, "on:", self?.navigationController, ",", self?.navigationController?.tabBarItem);
+//            self?.navigationController?.tabBarItem.badgeValue = value;
+//        }).store(in: &cancellables);//.assign(to: \.badgeValue, on: tabBarItem).store(in: &cancellables);
+//        if let tabBarItem = self.navigationController?.tabBarItem {
+//            
+//        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
+        DBChatStore.instance.$unreadMessagesCount.throttle(for: 0.1, scheduler: DispatchQueue.main, latest: true).map({ $0 == 0 ? nil : "\($0)" }).sink(receiveValue: { [weak self] value in
+            print("setting badge to:", value, "on:", self?.navigationController, ",", self?.navigationController?.tabBarItem);
+            self?.navigationController?.tabBarItem.badgeValue = value;
+        }).store(in: &cancellables);
         animate();
     }
     

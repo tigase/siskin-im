@@ -52,6 +52,7 @@ extension Query {
     static let messageUpdateState = Query("UPDATE chat_history SET state = :newState, timestamp = COALESCE(:newTimestamp, timestamp), error = COALESCE(:error, error) WHERE id = :id AND (:oldState IS NULL OR state = :oldState)");
     static let messageUpdate = Query("UPDATE chat_history SET appendix = :appendix WHERE id = :id");
     static let messagesCountUnread = Query("select count(id) from chat_history where account = :account and jid = :jid and timestamp >= (select min(timestamp) from chat_history where account = :account and jid = :jid and state in (\(ConversationEntryState.incoming(.received).rawValue),\(ConversationEntryState.incoming_error(.received).rawValue),\(ConversationEntryState.outgoing_error(.received).rawValue)))");
+    static let messagesCountUnsent = Query("SELECT count(id) FROM chat_history WHERE state = \(ConversationEntryState.outgoing(.unsent).rawValue)");
 }
 
 class DBChatHistoryStore {
@@ -593,11 +594,17 @@ class DBChatHistoryStore {
         }
         return true;
     }
-
+    
     open func markOutgoingAsError(for conversation: ConversationKey, stanzaId: String, errorCondition: ErrorCondition?, errorMessage: String?) {
         _ = self.processOutgoingError(for: conversation, stanzaId: stanzaId, errorCondition: errorCondition, errorMessage: errorMessage);
     }
-    
+
+    open func countUnsentMessages() -> Int {
+        return try! Database.main.reader({ database in
+            return try database.count(query: .messagesCountUnsent, cached: false, params: []);
+        })
+    }
+
     open func markAsRead(for conversation: Conversation, before: Date) {
         markAsRead(for: conversation.account, with: conversation.jid, before: before, sendMarkers: true);
     }
