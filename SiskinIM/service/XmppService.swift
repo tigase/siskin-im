@@ -363,9 +363,38 @@ open class XmppService {
         }
     }
     
-    fileprivate var fetchGroup: DispatchGroup? = nil;
-    fileprivate var fetchCompletionHandler: ((UIBackgroundFetchResult)->Void)? = nil;
-
+    private class FetchState {
+        private var accountsInProgress: Set<BareJID>;
+        private var completionHandler: (()->Void);
+        var cancellables: Set<AnyCancellable> = [];
+        private let queue = DispatchQueue(label: "FetchStateQueue");
+        
+        init(accountsInProgress: Set<BareJID>, completionHandler: @escaping ()->Void) {
+            self.accountsInProgress = accountsInProgress;
+            self.completionHandler = completionHandler;
+        }
+        
+        func completed(for account: BareJID) {
+            queue.sync {
+                guard accountsInProgress.remove(account) != nil, accountsInProgress.isEmpty else {
+                    return;
+                }
+                completionHandler();
+            }
+        }
+        
+        func expired() {
+            queue.sync {
+                guard !accountsInProgress.isEmpty else {
+                    return;
+                }
+                completionHandler();
+            }
+        }
+    }
+    
+    private var fetchState: FetchState?;
+    
     @Published
     private(set) var isFetch: Bool = false;
     
@@ -381,7 +410,31 @@ open class XmppService {
             return;
         }
 
+        let clients = self.clients.values.filter({ !$0.isConnected });
+        guard !clients.isEmpty else {
+            completionHandler(.noData);
+            return;
+        }
+        
+        let fetchState = FetchState(accountsInProgress: Set(clients.map({ $0.userBareJid })), completionHandler: {
+            self.fetchState = nil;
+            self.isFetch = false;
+            completionHandler(.newData);
+        });
+        self.fetchState = fetchState;
+
+        MessageEventHandler.eventsPublisher.compactMap({ event in
+            guard case .finished(let account, let jid) = event, jid == nil else {
+                return nil;
+            }
+            return account;
+        }).sink(receiveValue: { [weak fetchState] account in
+            fetchState?.completed(for: account);
+        }).store(in: &fetchState.cancellables);
+
+        
         isFetch = true;
+
 //        fetchingFor = [];
 //
 //        fetchGroup = DispatchGroup();
@@ -414,7 +467,7 @@ open class XmppService {
 
     
     open func performFetchExpired() {
-        self.isFetch = false;
+        self.fetchState?.expired();
 //        guard applicationState == .inactive, self.fetchGroup != nil else {
 //            return;
 //        }

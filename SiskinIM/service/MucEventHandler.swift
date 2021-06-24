@@ -29,8 +29,8 @@ class MucEventHandler: XmppServiceExtension {
     static let instance = MucEventHandler();
 
     func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
-        client.$state.sink(receiveValue: { [weak client] state in
-            guard let client = client, case .connected(let resumed) = state, !resumed else {
+        client.$state.combineLatest(XmppService.instance.$isFetch).sink(receiveValue: { [weak client] state, isFetch in
+            guard let client = client, case .connected(let resumed) = state, !resumed, !isFetch else {
                 return;
             }
             client.module(.muc).roomManager.rooms(for: client).forEach { (room) in
