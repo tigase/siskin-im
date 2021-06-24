@@ -106,10 +106,12 @@ class AvatarView: UIImageView {
         let ctx = UIGraphicsGetCurrentContext()!;
         let path = CGPath(ellipseIn: self.bounds, transform: nil);
         ctx.addPath(path);
-        
-        
-        ctx.setFillColor(UIColor.systemGray.cgColor);
-        ctx.fill(CGRect(x: 0, y: 0, width: size.width, height: size.height));
+                
+        let colors = [UIColor.systemGray.adjust(brightness: 0.52).cgColor, UIColor.systemGray.adjust(brightness: 0.48).cgColor];
+        let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors as CFArray, locations: [0.0, 1.0])!;
+        ctx.drawLinearGradient(gradient, start: CGPoint.zero, end: CGPoint(x: 0, y: size.height), options: []);
+//        ctx.setFillColor(UIColor.systemGray.cgColor);
+//        ctx.fill(CGRect(x: 0, y: 0, width: size.width, height: size.height));
         
         let textAttr: [NSAttributedString.Key: Any] = [.foregroundColor: UIColor.white.withAlphaComponent(0.9), .font: UIFont.systemFont(ofSize: size.width * 0.4, weight: .medium)];
         let textSize = text.size(withAttributes: textAttr);
