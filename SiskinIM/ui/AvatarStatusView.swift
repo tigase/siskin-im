@@ -82,67 +82,67 @@ class AvatarStatusView: UIView {
         
     static func getStatusImage(_ status: Presence.Show?) -> UIImage? {
         // default color as for offline contact
-        var image:UIImage? = UIImage(named: "presence_offline");
+        var image:UIImage? = UIImage(systemName: "circle.fill")?.withTintColor(UIColor.systemGray, renderingMode: .alwaysOriginal)
         if status != nil {
             switch status! {
             case .chat:
-                image = UIImage(named: "presence_chat");
+                image = UIImage(systemName: "asterisk.circle.fill")?.withTintColor(UIColor.green, renderingMode: .alwaysOriginal);
             case .online:
-                image = UIImage(named: "presence_online")
+                image = UIImage(systemName: "circle.fill")?.withTintColor(UIColor.systemGreen, renderingMode: .alwaysOriginal)
             case .away:
-                image = UIImage(named: "presence_away");
+                image = UIImage(systemName: "clock.fill")?.withTintColor(UIColor.systemOrange, renderingMode: .alwaysOriginal);
             case .xa:
-                image = UIImage(named: "presence_xa");
+                image = UIImage(systemName: "ellipsis.circle.fill")?.withTintColor(UIColor.systemOrange, renderingMode: .alwaysOriginal)
             case .dnd:
-                image = UIImage(named: "presence_dnd");
+                image = UIImage(systemName: "moon.circle.fill")?.withTintColor(UIColor.systemRed, renderingMode: .alwaysOriginal)
             }
         }
         return image;
     }
     
-    static func drawStatusBorder(backgroundColor: UIColor, status: UIImage) -> UIImage {
-        let scale = UIScreen.main.scale;
-        let size = status.size;
-
-//        if self.contentMode == .redraw || contentMode == .scaleAspectFill || contentMode == .scaleAspectFit || contentMode == .scaleToFill {
-//            size.width = (size.width * scale);
-//            size.height = (size.height * scale);
-//        }
-
-        UIGraphicsBeginImageContextWithOptions(size, false, scale);
-        print("size:", size, "scale:", scale);
-        let ctx = UIGraphicsGetCurrentContext()!;
-
-        let path = CGPath(ellipseIn: CGRect(origin: .zero, size: size), transform: nil);
-        ctx.addPath(path);
-
-        ctx.setFillColor(backgroundColor.cgColor);
-        ctx.fill(CGRect(x: 0, y: 0, width: size.width, height: size.height));
-
-
-        status.draw(in: CGRect(x: 0, y: 0, width: size.width, height: size.height));
-
-        let image = UIGraphicsGetImageFromCurrentImageContext()!;
-        UIGraphicsEndImageContext();
-
-        return image;
-    }
-    
-    func drawStatusIcon(_ size: CGFloat, color:UIColor) -> UIImage {
-        UIGraphicsBeginImageContextWithOptions(CGSize(width: size, height: size), false, 0);
-        let ctx = UIGraphicsGetCurrentContext();
-        ctx!.saveGState();
-        
-        let rect  = CGRect(x: 0, y: 0, width: size, height: size);
-        ctx!.setFillColor(color.cgColor);
-        ctx!.fillEllipse(in: rect);
-        
-        ctx!.restoreGState();
-        let img = UIGraphicsGetImageFromCurrentImageContext();
-        UIGraphicsEndImageContext();
-        
-        return img!;
-    }
+//    static func drawStatusBorder(backgroundColor: UIColor, status: UIImage) -> UIImage {
+//        let scale = UIScreen.main.scale;
+//        let size = status.size;
+//
+////        if self.contentMode == .redraw || contentMode == .scaleAspectFill || contentMode == .scaleAspectFit || contentMode == .scaleToFill {
+////            size.width = (size.width * scale);
+////            size.height = (size.height * scale);
+////        }
+//
+//        UIGraphicsBeginImageContextWithOptions(size, false, scale);
+//        print("size:", size, "scale:", scale);
+//        let ctx = UIGraphicsGetCurrentContext()!;
+//
+//        let path = CGPath(ellipseIn: CGRect(origin: .zero, size: size), transform: nil);
+//        ctx.addPath(path);
+//
+//        ctx.setFillColor(backgroundColor.cgColor);
+//        ctx.fill(CGRect(x: 0, y: 0, width: size.width, height: size.height));
+//
+//
+//        status.draw(in: CGRect(x: 0, y: 0, width: size.width, height: size.height));
+//
+//        let image = UIGraphicsGetImageFromCurrentImageContext()!;
+//        UIGraphicsEndImageContext();
+//
+//        return image;
+//    }
+//    
+//    func drawStatusIcon(_ size: CGFloat, color:UIColor) -> UIImage {
+//        UIGraphicsBeginImageContextWithOptions(CGSize(width: size, height: size), false, 0);
+//        let ctx = UIGraphicsGetCurrentContext();
+//        ctx!.saveGState();
+//        
+//        let rect  = CGRect(x: 0, y: 0, width: size, height: size);
+//        ctx!.setFillColor(color.cgColor);
+//        ctx!.fillEllipse(in: rect);
+//        
+//        ctx!.restoreGState();
+//        let img = UIGraphicsGetImageFromCurrentImageContext();
+//        UIGraphicsEndImageContext();
+//        
+//        return img!;
+//    }
     
     override func layoutSubviews() {
         super.layoutSubviews();

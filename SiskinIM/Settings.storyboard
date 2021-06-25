@@ -155,14 +155,14 @@
                                 <accessibility key="accessibilityConfiguration" identifier="maxImagePreviewSizeTableViewCell"/>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="clearImagePreviewTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ClearDownloadStoreTableViewCell" id="tua-q1-OwE" userLabel="ClearImagePreviewTableViewCell">
-                                <rect key="frame" x="0.0" y="229.5" width="414" height="43.5"/>
+                                <rect key="frame" x="0.0" y="229.5" width="414" height="43"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="tua-q1-OwE" id="Zpy-kb-3zH">
-                                    <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="43"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Clear download cache" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Hu1-2i-RSO">
-                                            <rect key="frame" x="20" y="11" width="374" height="21.5"/>
+                                            <rect key="frame" x="20" y="11" width="374" height="21"/>
                                             <accessibility key="accessibilityConfiguration" identifier="accountName"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
@@ -206,59 +206,69 @@
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="f59-Sg-XOm">
-                                            <rect key="frame" x="8" y="2" width="398" height="40"/>
+                                        <view contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="dhR-eg-W30" customClass="AvatarStatusView" customModule="Siskin" customModuleProvider="target">
+                                            <rect key="frame" x="10" y="4" width="36" height="36"/>
                                             <subviews>
-                                                <view contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="dhR-eg-W30" customClass="AvatarStatusView" customModule="Siskin" customModuleProvider="target">
-                                                    <rect key="frame" x="0.0" y="0.0" width="40" height="40"/>
-                                                    <subviews>
-                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="252" verticalHuggingPriority="252" horizontalCompressionResistancePriority="48" verticalCompressionResistancePriority="48" translatesAutoresizingMaskIntoConstraints="NO" id="hsn-ft-gNs" customClass="AvatarView" customModule="Siskin" customModuleProvider="target">
-                                                            <rect key="frame" x="0.0" y="0.0" width="40" height="40"/>
-                                                            <accessibility key="accessibilityConfiguration" identifier="accountAvatar"/>
-                                                        </imageView>
-                                                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="oP6-iC-Rbi">
-                                                            <rect key="frame" x="30" y="30" width="10" height="10"/>
-                                                            <constraints>
-                                                                <constraint firstAttribute="width" constant="10" id="N7f-eU-X8y"/>
-                                                                <constraint firstAttribute="height" constant="10" id="RMV-ew-Pa7"/>
-                                                            </constraints>
-                                                        </imageView>
-                                                    </subviews>
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="252" verticalHuggingPriority="252" horizontalCompressionResistancePriority="48" verticalCompressionResistancePriority="48" translatesAutoresizingMaskIntoConstraints="NO" id="hsn-ft-gNs" customClass="AvatarView" customModule="Siskin" customModuleProvider="target">
+                                                    <rect key="frame" x="0.0" y="0.0" width="36" height="36"/>
+                                                    <accessibility key="accessibilityConfiguration" identifier="accountAvatar"/>
+                                                </imageView>
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="oP6-iC-Rbi">
+                                                    <rect key="frame" x="26" y="26" width="10" height="10"/>
                                                     <constraints>
-                                                        <constraint firstAttribute="width" priority="750" constant="40" id="6vG-U0-aiu"/>
-                                                        <constraint firstAttribute="bottom" secondItem="hsn-ft-gNs" secondAttribute="bottom" id="7kZ-gr-9pd"/>
-                                                        <constraint firstAttribute="bottom" secondItem="oP6-iC-Rbi" secondAttribute="bottom" id="DDx-f9-LxE"/>
-                                                        <constraint firstAttribute="trailing" secondItem="oP6-iC-Rbi" secondAttribute="trailing" id="Hos-h6-hzE"/>
-                                                        <constraint firstItem="hsn-ft-gNs" firstAttribute="leading" secondItem="dhR-eg-W30" secondAttribute="leading" id="Mmy-d9-0Yo"/>
-                                                        <constraint firstAttribute="trailing" secondItem="hsn-ft-gNs" secondAttribute="trailing" id="cMy-4b-R4d"/>
-                                                        <constraint firstItem="hsn-ft-gNs" firstAttribute="top" secondItem="dhR-eg-W30" secondAttribute="top" id="gVi-j6-45X"/>
-                                                        <constraint firstAttribute="width" secondItem="dhR-eg-W30" secondAttribute="height" multiplier="1:1" id="rjP-GR-yHe"/>
+                                                        <constraint firstAttribute="width" constant="10" id="N7f-eU-X8y"/>
+                                                        <constraint firstAttribute="height" constant="10" id="RMV-ew-Pa7"/>
                                                     </constraints>
-                                                    <connections>
-                                                        <outlet property="avatarImageView" destination="hsn-ft-gNs" id="eK2-Ls-49H"/>
-                                                        <outlet property="statusImageView" destination="oP6-iC-Rbi" id="vVg-jn-YJb"/>
-                                                    </connections>
-                                                </view>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Account name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7ho-Mu-thd">
-                                                    <rect key="frame" x="50" y="0.0" width="348" height="40"/>
+                                                </imageView>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstAttribute="width" priority="750" constant="36" id="6vG-U0-aiu"/>
+                                                <constraint firstAttribute="bottom" secondItem="hsn-ft-gNs" secondAttribute="bottom" id="7kZ-gr-9pd"/>
+                                                <constraint firstAttribute="bottom" secondItem="oP6-iC-Rbi" secondAttribute="bottom" id="DDx-f9-LxE"/>
+                                                <constraint firstAttribute="trailing" secondItem="oP6-iC-Rbi" secondAttribute="trailing" id="Hos-h6-hzE"/>
+                                                <constraint firstItem="hsn-ft-gNs" firstAttribute="leading" secondItem="dhR-eg-W30" secondAttribute="leading" id="Mmy-d9-0Yo"/>
+                                                <constraint firstAttribute="trailing" secondItem="hsn-ft-gNs" secondAttribute="trailing" id="cMy-4b-R4d"/>
+                                                <constraint firstItem="hsn-ft-gNs" firstAttribute="top" secondItem="dhR-eg-W30" secondAttribute="top" id="gVi-j6-45X"/>
+                                                <constraint firstAttribute="width" secondItem="dhR-eg-W30" secondAttribute="height" multiplier="1:1" id="rjP-GR-yHe"/>
+                                            </constraints>
+                                            <connections>
+                                                <outlet property="avatarImageView" destination="hsn-ft-gNs" id="eK2-Ls-49H"/>
+                                                <outlet property="statusImageView" destination="oP6-iC-Rbi" id="vVg-jn-YJb"/>
+                                            </connections>
+                                        </view>
+                                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" alignment="top" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="f59-Sg-XOm">
+                                            <rect key="frame" x="54" y="4" width="352" height="36"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Account name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7ho-Mu-thd">
+                                                    <rect key="frame" x="0.0" y="0.0" width="101" height="18"/>
                                                     <accessibility key="accessibilityConfiguration" identifier="accountName"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <fontDescription key="fontDescription" type="system" weight="medium" pointSize="15"/>
                                                     <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b4V-dp-Rpl">
+                                                    <rect key="frame" x="0.0" y="20" width="33" height="16"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                                    <color key="textColor" systemColor="secondaryLabelColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                             </subviews>
                                         </stackView>
                                     </subviews>
                                     <constraints>
+                                        <constraint firstItem="dhR-eg-W30" firstAttribute="leading" secondItem="ayA-P4-cW2" secondAttribute="leading" constant="10" id="4Ae-Nx-Sd8"/>
                                         <constraint firstAttribute="trailing" secondItem="f59-Sg-XOm" secondAttribute="trailing" constant="8" id="9sA-9z-uYe"/>
-                                        <constraint firstAttribute="bottom" secondItem="f59-Sg-XOm" secondAttribute="bottom" constant="2" id="UW7-NK-jfh"/>
-                                        <constraint firstItem="f59-Sg-XOm" firstAttribute="top" secondItem="ayA-P4-cW2" secondAttribute="top" constant="2" id="VzO-Tm-qL7"/>
-                                        <constraint firstItem="f59-Sg-XOm" firstAttribute="leading" secondItem="ayA-P4-cW2" secondAttribute="leading" constant="8" id="XN6-fs-70J"/>
+                                        <constraint firstItem="dhR-eg-W30" firstAttribute="centerY" secondItem="ayA-P4-cW2" secondAttribute="centerY" id="Dk0-xy-ulc"/>
+                                        <constraint firstItem="f59-Sg-XOm" firstAttribute="leading" secondItem="dhR-eg-W30" secondAttribute="trailing" constant="8" id="EI7-Nq-waY"/>
+                                        <constraint firstItem="dhR-eg-W30" firstAttribute="top" relation="greaterThanOrEqual" secondItem="ayA-P4-cW2" secondAttribute="top" constant="4" id="Pk2-PR-iG9"/>
+                                        <constraint firstAttribute="bottom" secondItem="f59-Sg-XOm" secondAttribute="bottom" constant="4" id="UW7-NK-jfh"/>
+                                        <constraint firstItem="f59-Sg-XOm" firstAttribute="top" secondItem="ayA-P4-cW2" secondAttribute="top" constant="4" id="VzO-Tm-qL7"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="accountCell"/>
                                 <connections>
                                     <outlet property="avatarStatusView" destination="dhR-eg-W30" id="4qy-aW-dOg"/>
+                                    <outlet property="descriptionLabel" destination="b4V-dp-Rpl" id="yg6-dP-IL3"/>
                                     <outlet property="nameLabel" destination="7ho-Mu-thd" id="wrC-Ee-Oxs"/>
                                 </connections>
                             </tableViewCell>
@@ -357,7 +367,7 @@
                                             <rect key="frame" x="336.5" y="12" width="38.5" height="20.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <nil key="textColor"/>
+                                            <color key="textColor" systemColor="secondaryLabelColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>

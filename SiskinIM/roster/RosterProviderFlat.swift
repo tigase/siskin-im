@@ -87,7 +87,7 @@ public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>,
 public class RosterProviderFlatItem: RosterProviderItem, Hashable {
     
     public static func == (lhs: RosterProviderFlatItem, rhs: RosterProviderFlatItem) -> Bool {
-        return lhs.account == rhs.account && lhs.jid == rhs.jid;
+        return lhs.account == rhs.account && lhs.jid == rhs.jid && lhs.displayName == rhs.displayName;
     }
     
     public let account: BareJID;

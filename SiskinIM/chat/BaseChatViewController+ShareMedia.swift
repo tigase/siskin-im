@@ -60,12 +60,8 @@ extension ChatViewInputBar {
         
         override func setup() {
             super.setup();
-            if #available(iOS 13.0, *) {
-                let image = UIImage(systemName: "photo");
-                setImage(image, for: .normal);
-            } else {
-                setImage(UIImage(named: "photo"), for: .normal);
-            }
+            let image = UIImage(systemName: "photo");
+            setImage(image, for: .normal);
         }
     }
     
@@ -82,12 +78,8 @@ extension ChatViewInputBar {
         
         override func setup() {
             super.setup();
-            if #available(iOS 13.0, *) {
-                let image = UIImage(systemName: "camera");
-                setImage(image, for: .normal);
-            } else {
-                setImage(UIImage(named: "camera"), for: .normal);
-            }
+            let image = UIImage(systemName: "camera");
+            setImage(image, for: .normal);
         }
     }
 

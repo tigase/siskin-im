@@ -514,6 +514,7 @@ open class XmppService {
         client.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
             options.dnsResolver = self.dnsSrvResolver;
             options.networkProcessorProviders.append(SSLProcessorProvider());
+            options.connectionTimeout = 15;
         })
         client.connectionConfiguration.userJid = jid;
 

@@ -28,6 +28,7 @@ class AccountTableViewCell: UITableViewCell {
 
     @IBOutlet var avatarStatusView: AvatarStatusView!
     @IBOutlet var nameLabel: UILabel!
+    @IBOutlet var descriptionLabel: UILabel!;
 
     private var cancellables: Set<AnyCancellable> = [];
     private var avatarObj: Avatar? {
@@ -54,7 +55,10 @@ class AccountTableViewCell: UITableViewCell {
     func set(account accountJid: BareJID) {
         cancellables.removeAll();
         avatarObj = AvatarManager.instance.avatarPublisher(for: .init(account: accountJid, jid: accountJid, mucNickname: nil));
+        nameLabel.text = accountJid.stringValue;
+        avatarStatusView.isHidden = false;
         if let acc = AccountManager.getAccount(for: accountJid) {
+            descriptionLabel.text = acc.nickname;
             acc.state.map({ value -> Presence.Show? in
                 switch value {
                 case .connected(_):
@@ -65,6 +69,8 @@ class AccountTableViewCell: UITableViewCell {
                     return nil;
                 }
             }).receive(on: DispatchQueue.main).assign(to: \.status, on: avatarStatusView).store(in: &cancellables);
+        } else {
+            descriptionLabel.text = nil;
         }
     }
 }

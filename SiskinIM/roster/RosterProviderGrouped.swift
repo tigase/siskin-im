@@ -64,7 +64,6 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
         
         let rowChanges = calculateChanges(newGroups: newGroups, oldGroups: oldGroups);
         
-        // TODO: calculate items to remove/insert for each section..
         DispatchQueue.main.async {
             self.groups = newGroups;
             if !self.initialized {
@@ -128,7 +127,7 @@ public class RosterProviderGroup {
 public class RosterProviderGroupedItem: RosterProviderItem, Hashable {
     
     public static func == (lhs: RosterProviderGroupedItem, rhs: RosterProviderGroupedItem) -> Bool {
-        return lhs.account == rhs.account && lhs.jid == rhs.jid;
+        return lhs.account == rhs.account && lhs.jid == rhs.jid && lhs.displayName == rhs.displayName;
     }
     
     public let account: BareJID;

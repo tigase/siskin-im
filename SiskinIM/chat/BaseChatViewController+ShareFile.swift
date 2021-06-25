@@ -32,12 +32,8 @@ extension ChatViewInputBar {
         
         override func setup() {
             super.setup();
-            if #available(iOS 13.0, *) {
-                let image = UIImage(systemName: "arrow.up.doc");
-                setImage(image, for: .normal);
-            } else {
-                setImage(UIImage(named: "arrow.up.doc"), for: .normal);
-            }
+            let image = UIImage(systemName: "arrow.up.doc");
+            setImage(image, for: .normal);
         }
     }
 

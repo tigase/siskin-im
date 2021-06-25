@@ -66,21 +66,10 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
         
         #if targetEnvironment(simulator)
         #else
-//        let jingleSupported = CallManager.isAvailable ? JingleManager.instance.support(for: JID(self.jid), on: self.account) : [];
-//        var count = jingleSupported.contains(.audio) ? 1 : 0;
-//        if jingleSupported.contains(.video) {
-//            count = count + 1;
-//        }
         if CallManager.isAvailable {
-        var buttons: [UIBarButtonItem] = [];
-        //if jingleSupported.contains(.video) {
-            //buttons.append(UIBarButtonItem(image: UIImage(named: "videoCall"), style: .plain, target: self, action: #selector(self.videoCall)));
+            var buttons: [UIBarButtonItem] = [];
             buttons.append(self.smallBarButtinItem(image: UIImage(named: "videoCall")!, action: #selector(self.videoCall)));
-//        }
-//        if jingleSupported.contains(.audio) {
-            //buttons.append(UIBarButtonItem(image: UIImage(named: "audioCall"), style: .plain, target: self, action: #selector(self.audioCall)));
             buttons.append(self.smallBarButtinItem(image: UIImage(named: "audioCall")!, action: #selector(self.audioCall)));
-//        }
         self.navigationItem.rightBarButtonItems = buttons;
         }
         #endif

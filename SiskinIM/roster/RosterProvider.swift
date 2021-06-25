@@ -81,6 +81,9 @@ public class RosterProviderAbstract<Item: RosterProviderItem> {
             guard let account = item.context?.userBareJid else {
                 return nil;
             }
+            guard !item.annotations.contains(where: { $0.type == "mix" }) else {
+                return nil;
+            }
             if !displayHidden {
                 if item.groups.contains("Hidden") {
                     return nil;

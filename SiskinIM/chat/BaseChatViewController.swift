@@ -98,15 +98,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
         
         let sendMessageButton = UIButton(type: .custom);
         sendMessageButton.contentEdgeInsets = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4);
-        if #available(iOS 13.0, *) {
-            sendMessageButton.setImage(UIImage(systemName: "paperplane.fill"), for: .normal);
-        } else {
-            NSLayoutConstraint.activate([
-                sendMessageButton.widthAnchor.constraint(equalTo: sendMessageButton.heightAnchor),
-                sendMessageButton.heightAnchor.constraint(equalToConstant: 24)
-            ]);
-            sendMessageButton.setImage(UIImage(named: "send"), for: .normal);
-        }
+        sendMessageButton.setImage(UIImage(systemName: "paperplane.fill"), for: .normal);
         sendMessageButton.addTarget(self, action: #selector(sendMessageClicked(_:)), for: .touchUpInside);
         sendMessageButton.contentMode = .scaleToFill;
         sendMessageButton.tintColor = UIColor(named: "tintColor");

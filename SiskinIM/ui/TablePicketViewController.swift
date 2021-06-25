@@ -22,7 +22,7 @@
 import UIKit
 import Combine
 
-class TablePickerViewController<Value>: UITableViewController {
+class TablePickerViewController<Value>: UITableViewController where Value: Equatable {
 
     @Published
     private var selected: Int = 0;
@@ -39,6 +39,7 @@ class TablePickerViewController<Value>: UITableViewController {
         self.footer = footer;
         self.options = options;
         self.optionLabels = options.map(labelFn);
+        self.selected = options.firstIndex(where: { $0 == value }) ?? 0;
         super.init(style: style);
     }
     

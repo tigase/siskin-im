@@ -93,20 +93,16 @@ class SettingsViewController: UITableViewController {
             let accounts = AccountManager.getAccounts();
             if accounts.count > indexPath.row {
                 cell.avatarStatusView.isHidden = false;
-                let account = AccountManager.getAccount(for: accounts[indexPath.row]);
-                cell.nameLabel.text = account?.name.stringValue;
                 cell.set(account: accounts[indexPath.row]);
                 if AccountSettings.LastError(accounts[indexPath.row]).getString() != nil {
-                    cell.avatarStatusView.statusImageView.isHidden = false;
-                    cell.avatarStatusView.statusImageView.image = UIImage(named: "presence_error")!;
-                } else {
-                    cell.avatarStatusView.statusImageView.isHidden = true;
+                    cell.avatarStatusView.statusImageView.image = UIImage(systemName: "xmark.circle.fill")!;
                 }
                 cell.avatarStatusView.updateCornerRadius();
             } else {
                 cell.nameLabel.text = "Add account";
-                cell.avatarStatusView.avatarImageView.image = nil;
-                cell.avatarStatusView.isHidden = true;
+                cell.descriptionLabel.text = "Create new or add existing account"
+                cell.avatarStatusView.avatarImageView.image = UIImage(systemName: "plus.circle.fill")?.withTintColor(UIColor(named: "tintColor")!, renderingMode: .alwaysOriginal);
+                cell.avatarStatusView.statusImageView.isHidden = true;
             }
             return cell;
         } else if (indexPath.section == 1) {
@@ -117,7 +113,7 @@ class SettingsViewController: UITableViewController {
                 return cell;
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "StatusTypeSettingsViewCell", for: indexPath);
-                self.statusTypeCancellable1 = Settings.$statusType.map({ [weak self] v in v == nil ? nil : self?.getStatusIconForActionIcon(named: "presence_\(v!.rawValue)", size: 55, withBorder: false) }).sink(receiveValue: { [weak cell] image in
+                self.statusTypeCancellable1 = Settings.$statusType.map({ [weak self] v in self?.getStatusIcon(type: v) }).sink(receiveValue: { [weak cell] image in
                     if image == nil {
                         (cell?.contentView.subviews[0] as? UIImageView)?.isHidden = true;
                     } else {
@@ -215,7 +211,7 @@ class SettingsViewController: UITableViewController {
                         Settings.statusType = type;
                     };
                     if type != nil {
-                        action.setValue(getStatusIconForActionIcon(named: "presence_\(type!)", size: 36, withBorder: true), forKey: "image")
+                        action.setValue(getStatusIcon(type: type!), forKey: "image")
                     }
                     alert.addAction(action);
                 }
@@ -272,46 +268,53 @@ class SettingsViewController: UITableViewController {
         }
     }
     
-    fileprivate func getStatusIconForActionIcon(named: String, size: Int, withBorder: Bool) -> UIImage? {
-        guard var image = UIImage(named: named) else {
+    private func getStatusIcon(type: Presence.Show?) -> UIImage? {
+        guard let show = type else {
             return nil;
         }
-        
-        let boxSize = CGSize(width: size, height: size);
-        let imageSize = CGSize(width: (size*2)/3, height: (size*2)/3);
-        
-        let imageRect = CGRect(origin: CGPoint(x: (boxSize.width - imageSize.width)/2, y: (boxSize.height - imageSize.height)/2), size: imageSize);
-        
-        UIGraphicsBeginImageContextWithOptions(boxSize, false, 0);
-        if withBorder {
-            let ctx = UIGraphicsGetCurrentContext();
-            let path = CGPath(ellipseIn: imageRect, transform: nil);
-            ctx?.addPath(path);
-        
-            ctx?.setFillColor(UIColor.white.cgColor);
-//        ctx?.fill(imageRect);
-            ctx?.fillPath();
-        }
-        image.draw(in: imageRect);
-        image = UIGraphicsGetImageFromCurrentImageContext()!;
-        UIGraphicsEndImageContext();
-        return image.withRenderingMode(.alwaysOriginal);
+        return AvatarStatusView.getStatusImage(show);
     }
-
-    fileprivate func getStatusIconForActionIconOld(named: String) -> UIImage? {
-        guard var image = UIImage(named: named) else {
-            return nil;
-        }
-        let newSize = CGSize(width: image.size.width * 1.5, height: image.size.height * 1.5);
-        UIGraphicsBeginImageContextWithOptions(newSize, false, 0);
-        let ctx = UIGraphicsGetCurrentContext();
-        ctx?.setFillColor(UIColor.white.cgColor);
-        ctx?.fill(CGRect(origin: .zero, size: newSize));
-        image.draw(in: CGRect(origin: CGPoint(x: image.size.width * 0.25, y: image.size.height * 0.25), size: image.size));
-        image = UIGraphicsGetImageFromCurrentImageContext()!;
-        UIGraphicsEndImageContext();
-        return image.withRenderingMode(.alwaysOriginal);
-    }
+    
+//    fileprivate func getStatusIconForActionIcon(named: String, size: Int, withBorder: Bool) -> UIImage? {
+//        guard var image = UIImage(named: named) else {
+//            return nil;
+//        }
+//
+//        let boxSize = CGSize(width: size, height: size);
+//        let imageSize = CGSize(width: (size*2)/3, height: (size*2)/3);
+//
+//        let imageRect = CGRect(origin: CGPoint(x: (boxSize.width - imageSize.width)/2, y: (boxSize.height - imageSize.height)/2), size: imageSize);
+//
+//        UIGraphicsBeginImageContextWithOptions(boxSize, false, 0);
+//        if withBorder {
+//            let ctx = UIGraphicsGetCurrentContext();
+//            let path = CGPath(ellipseIn: imageRect, transform: nil);
+//            ctx?.addPath(path);
+//
+//            ctx?.setFillColor(UIColor.white.cgColor);
+////        ctx?.fill(imageRect);
+//            ctx?.fillPath();
+//        }
+//        image.draw(in: imageRect);
+//        image = UIGraphicsGetImageFromCurrentImageContext()!;
+//        UIGraphicsEndImageContext();
+//        return image.withRenderingMode(.alwaysOriginal);
+//    }
+//
+//    fileprivate func getStatusIconForActionIconOld(named: String) -> UIImage? {
+//        guard var image = UIImage(named: named) else {
+//            return nil;
+//        }
+//        let newSize = CGSize(width: image.size.width * 1.5, height: image.size.height * 1.5);
+//        UIGraphicsBeginImageContextWithOptions(newSize, false, 0);
+//        let ctx = UIGraphicsGetCurrentContext();
+//        ctx?.setFillColor(UIColor.white.cgColor);
+//        ctx?.fill(CGRect(origin: .zero, size: newSize));
+//        image.draw(in: CGRect(origin: CGPoint(x: image.size.width * 0.25, y: image.size.height * 0.25), size: image.size));
+//        image = UIGraphicsGetImageFromCurrentImageContext()!;
+//        UIGraphicsEndImageContext();
+//        return image.withRenderingMode(.alwaysOriginal);
+//    }
  
     @IBAction func closeClicked(_ sender: Any) {
         self.dismiss(animated: true, completion: nil);
