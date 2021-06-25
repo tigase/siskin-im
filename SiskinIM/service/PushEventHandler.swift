@@ -147,12 +147,16 @@ open class PushEventHandler: XmppServiceExtension {
             guard room.options.notifications != .none else {
                 return;
             }
-            self.updateAccountPushSettings(for: room.account);
+            DispatchQueue.global(qos: .background).async {
+                self.updateAccountPushSettings(for: room.account);
+            }
         case let channel as Channel:
             guard channel.options.notifications != .none else {
                 return;
             }
-            self.updateAccountPushSettings(for: channel.account);
+            DispatchQueue.global(qos: .background).async {
+                self.updateAccountPushSettings(for: channel.account);
+            }
         default:
             break;
         }

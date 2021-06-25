@@ -1,5 +1,3 @@
-BEGIN;
-
 ALTER TABLE chats RENAME TO chats_old;
 
 CREATE TABLE IF NOT EXISTS chats (
@@ -147,7 +145,3 @@ DROP TABLE avatars_cache_old;
 CREATE INDEX IF NOT EXISTS avatars_cache_jid_idx on avatars_cache (
     jid
 );
-
-COMMIT;
-
-PRAGMA user_version = 2;

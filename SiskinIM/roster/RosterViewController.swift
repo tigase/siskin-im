@@ -35,7 +35,6 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
         searchController.searchBar.delegate = self;
         searchController.searchBar.scopeButtonTitles = ["By name", "By status"];
         
-        navigationItem.leftBarButtonItem = self.editButtonItem
         availabilityFilterSelector = UISegmentedControl(items: ["All", "Available"]);
         navigationItem.titleView = availabilityFilterSelector;
         if let selector = availabilityFilterSelector {
@@ -153,15 +152,6 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
         }
     }
     
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            guard let item = roster?.item(at: indexPath) else {
-                return;
-            }
-            self.deleteItem(for: item.account, jid: JID(item.jid));
-        }
-    }
-    
     func searchBar(_ searchBar: UISearchBar, selectedScopeButtonIndexDidChange selectedScope: Int) {
         Settings.rosterItemsOrder = selectedScope == 0 ? .alphabetical : .availability;
     }
@@ -169,56 +159,6 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
     @objc func availabilityFilterChanged(_ control: UISegmentedControl) {
         Settings.rosterAvailableOnly = control.selectedSegmentIndex == 1;
     }
-    
-//    @objc func handleLongPress(_ gestureRecognizer:UILongPressGestureRecognizer) {
-//        guard gestureRecognizer.state == .began else {
-//            if gestureRecognizer.state == .ended {
-//                let point = gestureRecognizer.location(in: self.tableView);
-//                if let indexPath = self.tableView.indexPathForRow(at: point) {
-//                    self.tableView.deselectRow(at: indexPath, animated: true);
-//                }
-//            }
-//            return;
-//        }
-//
-//        let point = gestureRecognizer.location(in: self.tableView);
-//        if let indexPath = self.tableView.indexPathForRow(at: point) {
-//            print("long press detected at", indexPath);
-//
-//            guard let item = roster?.item(at: indexPath) else {
-//                return;
-//            }
-//
-//            let alert = UIAlertController(title: item.displayName, message: "using \(item.account.stringValue)", preferredStyle: .actionSheet);
-//            alert.addAction(UIAlertAction(title: "Chat", style: .default, handler: { (action) in
-//                self.tableView(self.tableView, didSelectRowAt: indexPath);
-//            }));
-//            #if targetEnvironment(simulator)
-//            #else
-//            let jingleSupport = JingleManager.instance.support(for: item.jid, on: item.account);
-//            if jingleSupport.contains(.audio) && jingleSupport.contains(.video) {
-//                alert.addAction(UIAlertAction(title: "Video call", style: .default, handler: { (action) in
-//                    VideoCallController.call(jid: item.jid.bareJid, from: item.account, media: [.audio, .video], sender: self);
-//                }));
-//            }
-//            if jingleSupport.contains(.audio) {
-//                alert.addAction(UIAlertAction(title: "Audio call", style: .default, handler: { (action) in
-//                    VideoCallController.call(jid: item.jid.bareJid, from: item.account, media: [.audio], sender: self);
-//                }));
-//            }
-//            #endif
-//            alert.addAction(UIAlertAction(title: "Edit", style: .default, handler: {(action) in
-//                self.openEditItem(for: item.account, jid: item.jid);
-//            }));
-//            alert.addAction(UIAlertAction(title: "Info", style: .default, handler: {(alert) in
-//                self.showItemInfo(for: item.account, jid: item.jid);
-//            }));
-//            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
-//            alert.popoverPresentationController?.sourceView = self.tableView;
-//            alert.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: indexPath);
-//            self.present(alert, animated: true, completion: nil);
-//        }
-//    }
     
     override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         guard let item = roster?.item(at: indexPath) else {
@@ -237,15 +177,12 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
         ];
         #if targetEnvironment(simulator)
         #else
-        let jingleSupport = JingleManager.instance.support(for: item.jid, on: item.account);
-        if jingleSupport.contains(.audio) && jingleSupport.contains(.video) {
-            items.append(UIAction(title: "Video call", image: UIImage(systemName: "video"), handler: { (action) in
-                VideoCallController.call(jid: item.jid.bareJid, from: item.account, media: [.audio, .video], sender: self);
+        if CallManager.isAvailable {
+            items.append(UIAction(title: "Video call", image: UIImage(named: "videoCall"), handler: { (action) in
+                VideoCallController.call(jid: item.jid, from: item.account, media: [.audio, .video], sender: self);
             }));
-        }
-        if jingleSupport.contains(.audio) {
             items.append(UIAction(title: "Audio call", image: UIImage(systemName: "phone"), handler: { (action) in
-                VideoCallController.call(jid: item.jid.bareJid, from: item.account, media: [.audio, .video], sender: self);
+                VideoCallController.call(jid: item.jid, from: item.account, media: [.audio, .video], sender: self);
             }));
         }
         #endif

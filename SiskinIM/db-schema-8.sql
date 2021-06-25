@@ -1,5 +1,3 @@
-BEGIN;
-
 CREATE TABLE IF NOT EXISTS chats_read (
     account TEXT NOT NULL COLLATE NOCASE,
     jid TEXT NOT NULL COLLATE NOCASE,
@@ -7,7 +5,3 @@ CREATE TABLE IF NOT EXISTS chats_read (
 
     UNIQUE (account, jid)
 );
-
-COMMIT;
-
-PRAGMA user_version = 8;

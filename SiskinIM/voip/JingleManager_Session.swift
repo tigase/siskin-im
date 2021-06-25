@@ -76,7 +76,7 @@ extension JingleManager {
                 return;
             }
             
-            for arr in remoteCandidates {
+            for arr in cachedRemoteCandidates {
                 let contentName = arr[0];
                 let sdp = arr[1];
                 guard let lines = self.remoteDescription?.toString(withSid: "0").split(separator: "\r\n").map({ (s) -> String in
@@ -98,7 +98,7 @@ extension JingleManager {
                 print("adding candidate for:", idx, "name:", contentName, "sdp:", sdp)
                 remoteCandidatesSubject.send(RTCIceCandidate(sdp: sdp, sdpMLineIndex: Int32(idx), sdpMid: contentName));
             }
-            remoteCandidates.removeAll();
+            cachedRemoteCandidates.removeAll();
         }
         #endif
                 

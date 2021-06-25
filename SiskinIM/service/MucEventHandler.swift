@@ -97,7 +97,7 @@ class MucEventHandler: XmppServiceExtension {
                 
             InvitationManager.instance.addMucInvitation(for: client.userBareJid, roomJid: invitation.roomJid, invitation: invitation);
         }).store(in: &cancellables);
-        client.module(.pepBookmarks).$currentBookmarks.sink(receiveValue: { [weak client] bookmarks in
+        client.module(.pepBookmarks).$currentBookmarks.drop(while: { it in !Settings.enableBookmarksSync }).sink(receiveValue: { [weak client] bookmarks in
             guard let client = client else {
                 return;
             }

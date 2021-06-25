@@ -56,20 +56,25 @@ class AccountTableViewCell: UITableViewCell {
         cancellables.removeAll();
         avatarObj = AvatarManager.instance.avatarPublisher(for: .init(account: accountJid, jid: accountJid, mucNickname: nil));
         nameLabel.text = accountJid.stringValue;
-        avatarStatusView.isHidden = false;
         if let acc = AccountManager.getAccount(for: accountJid) {
             descriptionLabel.text = acc.nickname;
-            acc.state.map({ value -> Presence.Show? in
-                switch value {
-                case .connected(_):
-                    return .online
-                case .connecting, .disconnecting:
-                    return .xa
-                default:
-                    return nil;
-                }
-            }).receive(on: DispatchQueue.main).assign(to: \.status, on: avatarStatusView).store(in: &cancellables);
+            if acc.active {
+                avatarStatusView.statusImageView.isHidden = false;
+                acc.state.map({ value -> Presence.Show? in
+                    switch value {
+                    case .connected(_):
+                        return .online
+                    case .connecting, .disconnecting:
+                        return .xa
+                    default:
+                        return nil;
+                    }
+                }).receive(on: DispatchQueue.main).assign(to: \.status, on: avatarStatusView).store(in: &cancellables);
+            } else {
+                avatarStatusView.statusImageView.isHidden = true;
+            }
         } else {
+            avatarStatusView.statusImageView.isHidden = false;
             descriptionLabel.text = nil;
         }
     }
