@@ -185,6 +185,7 @@ class CallManager: NSObject, CXProviderDelegate {
             self.callController.request(transaction, completion: { err in
                 guard let error = err else {
                     self.activeCallsByUuid[call.uuid] = call;
+                    call.webrtcSid = String(UInt64.random(in: UInt64.min...UInt64.max));
                     call.changeState(.ringing);
                     completionHandler(.success(Void()));
                     return;

@@ -78,7 +78,9 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
     }
     
     func callStateChanged(_ sender: Call) {
-        self.updateStateLabel();
+        DispatchQueue.main.async {
+            self.updateStateLabel();
+        }
     }
     
     func call(_ sender: Call, didReceiveLocalVideoTrack localTrack: RTCVideoTrack) {
@@ -88,7 +90,9 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
     }
     
     func call(_ sender: Call, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack) {
-        self.remoteVideoTrack = remoteTrack;
+        DispatchQueue.main.async {
+            self.remoteVideoTrack = remoteTrack;
+        }
     }
     
 
@@ -337,6 +341,7 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
     }
     
     fileprivate func updateStateLabel() {
+        self.updateAvatarVisibility();
         switch call?.state ?? .new {
         case .new:
             self.titleLabel?.text = "New call";

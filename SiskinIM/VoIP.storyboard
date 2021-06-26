@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -23,7 +23,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageSizeForAccessibilityContentSizeCategory="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JSs-fW-wDJ" customClass="RoundButton" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="157.5" y="27" width="60" height="60"/>
+                                <rect key="frame" x="157.5" y="587" width="60" height="60"/>
                                 <color key="backgroundColor" name="systemRedColor" catalog="System" colorSpace="catalog"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="JSs-fW-wDJ" secondAttribute="height" multiplier="1:1" id="izj-ML-5HF"/>
@@ -36,11 +36,11 @@
                                     <action selector="disconnectClicked:" destination="sh6-q3-LhK" eventType="touchUpInside" id="CwP-y4-9QG"/>
                                 </connections>
                             </button>
-                            <view contentMode="scaleAspectFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TkT-yH-yAj" customClass="CameraPreviewView" customModule="Siskin" customModuleProvider="target">
+                            <view contentMode="scaleAspectFill" translatesAutoresizingMaskIntoConstraints="NO" id="TkT-yH-yAj" customClass="RTCMTLVideoView">
                                 <rect key="frame" x="0.0" y="471.5" width="110" height="195.5"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DHt-FL-iNf" customClass="RoundButton" customModule="Siskin" customModuleProvider="target">
-                                        <rect key="frame" x="40" y="150.5" width="30" height="45"/>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DHt-FL-iNf" customClass="RoundButton" customModule="Siskin" customModuleProvider="target">
+                                        <rect key="frame" x="40" y="145.5" width="30" height="30"/>
                                         <color key="tintColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                         <state key="normal" image="switchCamera"/>
                                         <connections>
@@ -49,12 +49,13 @@
                                     </button>
                                 </subviews>
                                 <constraints>
+                                    <constraint firstAttribute="height" constant="195.5" id="ZCz-9M-1OH"/>
                                     <constraint firstItem="DHt-FL-iNf" firstAttribute="centerX" secondItem="TkT-yH-yAj" secondAttribute="centerX" id="cwx-s8-yMe"/>
                                     <constraint firstAttribute="width" constant="110" id="ssD-dy-SIb"/>
                                 </constraints>
                             </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nxo-vV-t7I" customClass="RoundButton" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="270" y="27" width="60" height="60"/>
+                                <rect key="frame" x="270" y="587" width="60" height="60"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="nxo-vV-t7I" secondAttribute="height" multiplier="1:1" id="bSj-t1-0y3"/>
@@ -68,13 +69,14 @@
                                 </connections>
                             </button>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="defaultAvatarDark" translatesAutoresizingMaskIntoConstraints="NO" id="clf-Xd-Ao5" customClass="AvatarView" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="150" y="0.0" width="75" height="75"/>
+                                <rect key="frame" x="-46" y="0.0" width="467" height="467"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="clf-Xd-Ao5" secondAttribute="height" multiplier="1:1" id="hzm-ak-F2Y"/>
                                 </constraints>
                             </imageView>
                         </subviews>
-                        <color key="backgroundColor" cocoaTouchSystemColor="scrollViewTexturedBackgroundColor"/>
+                        <viewLayoutGuide key="safeArea" id="yOG-l9-hEB"/>
+                        <color key="backgroundColor" systemColor="scrollViewTexturedBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="i9e-aU-c5F" firstAttribute="top" secondItem="yOG-l9-hEB" secondAttribute="top" id="4DE-FQ-v2x"/>
                             <constraint firstItem="JSs-fW-wDJ" firstAttribute="centerX" secondItem="yOG-l9-hEB" secondAttribute="centerX" id="5yM-zB-pky"/>
@@ -82,7 +84,7 @@
                             <constraint firstItem="yOG-l9-hEB" firstAttribute="bottom" secondItem="JSs-fW-wDJ" secondAttribute="bottom" constant="20" id="Fas-ff-3hZ"/>
                             <constraint firstItem="i9e-aU-c5F" firstAttribute="leading" secondItem="yOG-l9-hEB" secondAttribute="leading" constant="16" id="FdQ-FM-LSt"/>
                             <constraint firstItem="nxo-vV-t7I" firstAttribute="centerY" secondItem="JSs-fW-wDJ" secondAttribute="centerY" id="PuF-3c-1M3"/>
-                            <constraint firstItem="DHt-FL-iNf" firstAttribute="bottom" secondItem="yOG-l9-hEB" secondAttribute="bottom" id="bWM-4D-93B"/>
+                            <constraint firstItem="DHt-FL-iNf" firstAttribute="bottom" secondItem="yOG-l9-hEB" secondAttribute="bottom" constant="-20" id="bWM-4D-93B"/>
                             <constraint firstItem="clf-Xd-Ao5" firstAttribute="width" secondItem="Y9t-qn-5HE" secondAttribute="width" multiplier="0.7" id="c1l-ue-4CS"/>
                             <constraint firstItem="yOG-l9-hEB" firstAttribute="bottom" secondItem="TkT-yH-yAj" secondAttribute="bottom" id="frd-Qz-RWO"/>
                             <constraint firstItem="nxo-vV-t7I" firstAttribute="centerX" secondItem="yOG-l9-hEB" secondAttribute="centerX" multiplier="1.6" id="j0V-v6-9BJ"/>
@@ -91,7 +93,6 @@
                             <constraint firstItem="clf-Xd-Ao5" firstAttribute="centerX" secondItem="yOG-l9-hEB" secondAttribute="centerX" id="sTk-7A-aRF"/>
                             <constraint firstItem="yOG-l9-hEB" firstAttribute="trailing" secondItem="i9e-aU-c5F" secondAttribute="trailing" constant="16" id="uxx-0c-sCR"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="yOG-l9-hEB"/>
                     </view>
                     <connections>
                         <outlet property="avatar" destination="clf-Xd-Ao5" id="ucm-23-yTz"/>
@@ -112,5 +113,8 @@
         <image name="endCall" width="30" height="30"/>
         <image name="mute" width="30" height="30"/>
         <image name="switchCamera" width="30" height="30"/>
+        <systemColor name="scrollViewTexturedBackgroundColor">
+            <color red="0.43529411764705878" green="0.44313725490196082" blue="0.47450980392156861" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
     </resources>
 </document>
