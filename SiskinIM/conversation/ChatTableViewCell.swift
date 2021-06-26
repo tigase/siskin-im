@@ -54,7 +54,7 @@ class ChatTableViewCell: BaseChatTableViewCell, UITextViewDelegate {
         set(item: item);
         
         if correctionTimestamp != nil, case .incoming(_) = item.state {
-            self.stateView?.text = "✏️\(self.stateView!.text!)";
+            self.stateView?.text = "✏️\(self.stateView!.text ?? "")";
         }
        
         let message = messageBody(item: item, message: inMessage);
