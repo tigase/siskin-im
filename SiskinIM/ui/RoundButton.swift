@@ -65,6 +65,7 @@ class BadgeButton: RoundedButton {
                 NSLayoutConstraint.deactivate([widthConstratint!]);
             }
             self.layoutSubviews();
+            self.setNeedsDisplay();
         }
     }
     
