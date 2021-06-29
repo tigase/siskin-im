@@ -65,6 +65,7 @@ public class NotificationsManagerHelper {
     }
         
     public static func prepareNewMessageNotification(content: UNMutableNotificationContent, account: BareJID, sender jid: BareJID?, nickname: String?, body msg: String?, provider: NotificationManagerProvider, completionHandler: @escaping (UNMutableNotificationContent)->Void) {
+        let timestamp = Date();
         content.sound = .default;        
         content.categoryIdentifier = NotificationCategory.MESSAGE.rawValue;
         if let sender = jid, let body = msg {
@@ -96,7 +97,7 @@ public class NotificationsManagerHelper {
                         }
                     }
                 }
-                content.userInfo = ["account": account.stringValue, "sender": sender.stringValue, "uid": uid];
+                content.userInfo = ["account": account.stringValue, "sender": sender.stringValue, "uid": uid, "timestamp": timestamp];
                 provider.countBadge(withThreadId: content.threadIdentifier, completionHandler: { count in
                     content.badge = count as NSNumber;
                     completionHandler(content);

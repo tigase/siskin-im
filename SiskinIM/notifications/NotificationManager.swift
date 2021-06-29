@@ -103,6 +103,20 @@ public class NotificationManager {
         }
     }
 
+    public func dismissAllNotifications(on account: BareJID, with jid: BareJID) {
+        let threadId = "account=\(account.stringValue)|sender=\(jid.stringValue)";
+        UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
+            let toRemove = notifications.filter({ (notification) -> Bool in
+                return notification.request.content.threadIdentifier == threadId;
+            }).map({ (notification) -> String in
+                return notification.request.identifier;
+            });
+                            
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
+            self.updateApplicationIconBadgeNumber(completionHandler: nil);
+        }
+    }
+    
     private func markAsRead(on account: BareJID, with jid: BareJID, itemsIds: [Int], before date: Date) {
         if let queue = self.queues[.init(account: account, jid: jid)] {
             queue.cancel(forIds: itemsIds);
@@ -115,7 +129,13 @@ public class NotificationManager {
         let threadId = "account=\(account.stringValue)|sender=\(jid.stringValue)";
         UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
             let toRemove = notifications.filter({ (notification) -> Bool in
-                notification.request.content.threadIdentifier == threadId && notification.date < date;
+                guard notification.request.content.threadIdentifier == threadId else {
+                    return false;
+                }
+                guard let notificationDate = notification.request.content.userInfo["timestamp"] as? Date else {
+                    return false;
+                }
+                return notificationDate < date;
             }).map({ (notification) -> String in
                 return notification.request.identifier;
             });
@@ -147,10 +167,8 @@ public class NotificationManager {
     public func notifyNewMessage(account: BareJID, sender jid: BareJID?, nickname: String?, body: String, date: Date) {
         let id = UUID().uuidString;
         let content = UNMutableNotificationContent();
-        let dateComponents = Calendar.current.dateComponents([.year,.month,.day,.minute,.second], from: date);
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false);
         NotificationsManagerHelper.prepareNewMessageNotification(content: content, account: account, sender: jid, nickname: nickname, body: body, provider: provider) { (content) in
-            UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: trigger)) { (error) in
+            UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil)) { (error) in
                 print("message notification error", error as Any);
             }
         }

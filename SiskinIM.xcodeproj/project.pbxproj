@@ -990,7 +990,6 @@
 				FEDE938A1D08A4DD00CA60A9 /* vcard */,
 				FE01ADA11E214CEA00FA7E65 /* xmpp */,
 				FE233CDA21EA03DD00099281 /* Info.storyboard */,
-				FE759FFA23742C48001E78D9 /* NotificationCenterDelegate.swift */,
 				FEDC678B238AFB9F005C0FAB /* Settings.storyboard */,
 				FE5146EE2420B900004923A3 /* Account.storyboard */,
 				FEE49DCB2424C03200900BBB /* Conversation.storyboard */,
@@ -1025,6 +1024,7 @@
 			isa = PBXGroup;
 			children = (
 				FE75A00223743A5C001E78D9 /* NotificationManager.swift */,
+				FE759FFA23742C48001E78D9 /* NotificationCenterDelegate.swift */,
 			);
 			path = notifications;
 			sourceTree = "<group>";

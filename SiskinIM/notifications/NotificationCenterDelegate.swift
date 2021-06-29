@@ -217,24 +217,7 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         }
 
         if response.actionIdentifier == UNNotificationDismissActionIdentifier {
-            if userInfo[AnyHashable("uid")] as? String != nil {
-                let date = response.notification.date;
-                let threadId = response.notification.request.content.threadIdentifier;
-                DBChatHistoryStore.instance.markAsRead(for: accountJid, with: senderJid, before: date, sendMarkers: false);
-                UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
-                    let toRemove = notifications.filter({ (notification) -> Bool in
-                        notification.request.content.threadIdentifier == threadId && notification.date < date;
-                    }).map({ (notification) -> String in
-                        return notification.request.identifier;
-                    });
-                    UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
-                    DispatchQueue.main.async {
-                        NotificationManager.instance.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
-                    }
-                }
-            } else {
-                completionHandler();
-            }
+            NotificationManager.instance.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
         } else {
             openChatView(on: accountJid, with: senderJid, completionHandler: completionHandler);
         }

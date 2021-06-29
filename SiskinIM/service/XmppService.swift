@@ -254,6 +254,7 @@ open class XmppService {
             }
         });
 
+        client.connectionConfiguration.resource = UIDevice.current.name;
 //        switch account.resourceType {
 //        case .automatic:
 //            client.connectionConfiguration.resource = nil;

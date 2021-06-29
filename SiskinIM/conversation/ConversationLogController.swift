@@ -65,6 +65,7 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
                 DBChatHistoryStore.instance.markAsRead(for: conversation, before: date);
             });
             dataSource.loadItems(.unread(overhead: 50));
+            NotificationManager.instance.dismissAllNotifications(on: conversation.account, with: conversation.jid);
         }
         
         super.viewWillAppear(animated);
@@ -220,7 +221,7 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
                 self.dataSource.trimStore();
             }
             
-            if let newestVisibleUnreadTimestamp = visibleRows.compactMap({ index -> Date? in
+            if UIApplication.shared.applicationState == .active, let newestVisibleUnreadTimestamp = visibleRows.compactMap({ index -> Date? in
                 guard let item = dataSource.getItem(at: index.row) else {
                     return nil;
                 }
