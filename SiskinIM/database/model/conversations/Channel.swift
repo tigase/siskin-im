@@ -94,7 +94,11 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         return options.state;
     }
     
+    private let creationTimestamp: Date;
     public var lastMessageTimestamp: Date? {
+        guard creationTimestamp == timestamp else {
+            return nil;
+        }
         return timestamp;
     }
     
@@ -141,7 +145,8 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         
     }
     
-    init(dispatcher: QueueDispatcher, context: Context, channelJid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: ChannelOptions) {
+    init(dispatcher: QueueDispatcher, context: Context, channelJid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: ChannelOptions, creationTimestamp: Date) {
+        self.creationTimestamp = creationTimestamp;
         self.displayable = ChannelDisplayableId(displayName: options.name ?? channelJid.stringValue, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: channelJid, mucNickname: nil)), description: options.description);
         super.init(dispatcher: dispatcher, context: context, jid: channelJid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
         context.$state.sink(receiveValue: { [weak self] state in
