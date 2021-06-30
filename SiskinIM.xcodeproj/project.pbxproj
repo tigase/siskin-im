@@ -156,6 +156,8 @@
 		FE7F645B1D281B1C00B9DF56 /* DBCapabilitiesCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7F645A1D281B1C00B9DF56 /* DBCapabilitiesCache.swift */; };
 		FE7F9303200FD5AC004C6195 /* AccountManagerScramSaltedPasswordCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7F9302200FD5AC004C6195 /* AccountManagerScramSaltedPasswordCache.swift */; };
 		FE80BDAB1D953FC4001914B0 /* SetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE80BDAA1D953FC4001914B0 /* SetupViewController.swift */; };
+		FE82A729268C83020049C844 /* ChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE82A728268C83020049C844 /* ChartView.swift */; };
+		FE82A72B268CC0740049C844 /* DeviceMemoryUsageTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE82A72A268CC0740049C844 /* DeviceMemoryUsageTableViewCell.swift */; };
 		FE8DD9C3221B118E0090F5AA /* Groupchat.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE8DD9C2221B118E0090F5AA /* Groupchat.storyboard */; };
 		FE8DD9C5221B153A0090F5AA /* InviteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8DD9C4221B153A0090F5AA /* InviteViewController.swift */; };
 		FE8DD9C7221B15DC0090F5AA /* AbstractRosterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8DD9C6221B15DC0090F5AA /* AbstractRosterViewController.swift */; };
@@ -469,6 +471,8 @@
 		FE7F9302200FD5AC004C6195 /* AccountManagerScramSaltedPasswordCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountManagerScramSaltedPasswordCache.swift; sourceTree = "<group>"; };
 		FE80BDA91D92974C001914B0 /* SiskinIM.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SiskinIM.entitlements; sourceTree = "<group>"; };
 		FE80BDAA1D953FC4001914B0 /* SetupViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SetupViewController.swift; sourceTree = "<group>"; };
+		FE82A728268C83020049C844 /* ChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartView.swift; sourceTree = "<group>"; };
+		FE82A72A268CC0740049C844 /* DeviceMemoryUsageTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMemoryUsageTableViewCell.swift; sourceTree = "<group>"; };
 		FE86C4481F7BFF93009E3CB8 /* SiskinIM-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SiskinIM-Bridging-Header.h"; sourceTree = "<group>"; };
 		FE8DD9C2221B118E0090F5AA /* Groupchat.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Groupchat.storyboard; sourceTree = "<group>"; };
 		FE8DD9C4221B153A0090F5AA /* InviteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteViewController.swift; sourceTree = "<group>"; };
@@ -795,6 +799,7 @@
 				FEDC678F238B05E4005C0FAB /* BlockedContactsController.swift */,
 				FE17808C23EB4C7F00A1EA76 /* AccountQRCodeController.swift */,
 				FE0E31112537288A0030F8C5 /* MediaSettingsVIewController.swift */,
+				FE82A72A268CC0740049C844 /* DeviceMemoryUsageTableViewCell.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -821,6 +826,7 @@
 				FE3E38892429364D00D3A8E8 /* UIImage.swift */,
 				FEF8255424BA0AFE00820108 /* MessageTextView.swift */,
 				FE4A94A926679D65000A96E5 /* EnumTableViewCell.swift */,
+				FE82A728268C83020049C844 /* ChartView.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -1425,6 +1431,7 @@
 				FE11D3B5266241BD00CC883F /* Publisher+OnlyGetter.swift in Sources */,
 				FE7F9303200FD5AC004C6195 /* AccountManagerScramSaltedPasswordCache.swift in Sources */,
 				FE11D3BF2662852A00CC883F /* XMPPClient_extension.swift in Sources */,
+				FE82A729268C83020049C844 /* ChartView.swift in Sources */,
 				FE9625A01D9AE7CB00D07118 /* RosterProvider.swift in Sources */,
 				FEF19F0423473C06005CFE9A /* MessageEventHandler.swift in Sources */,
 				FE137A4C21F75660006B7F7C /* ChatBottomView.swift in Sources */,
@@ -1552,6 +1559,7 @@
 				FE75A0102375F338001E78D9 /* PushEventHandler.swift in Sources */,
 				FEDCBF671D9C3EE700AE9129 /* RosterProviderFlat.swift in Sources */,
 				FE9E136D1F25F5F7005C0EE5 /* ChatSettingsViewController.swift in Sources */,
+				FE82A72B268CC0740049C844 /* DeviceMemoryUsageTableViewCell.swift in Sources */,
 				FE3E387A242765E800D3A8E8 /* MixEventHandler.swift in Sources */,
 				FECEF29623B7B076007EC323 /* DownloadStore.swift in Sources */,
 				FE0E30DF2535B9D20030F8C5 /* BaseChatViewController+Share.swift in Sources */,

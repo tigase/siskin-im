@@ -23,7 +23,6 @@ import Foundation
 import LinkPresentation
 import TigaseSwift
 
-@available(iOS 13.0, *)
 class MetadataCache {
 
     static let instance = MetadataCache();
@@ -33,6 +32,14 @@ class MetadataCache {
     private let dispatcher = QueueDispatcher(label: "MetadataCache");
 
     private var inProgress: [URL: OperationQueue] = [:];
+    
+    var size: Int {
+        guard let enumerator: FileManager.DirectoryEnumerator = FileManager.default.enumerator(at: diskCacheUrl, includingPropertiesForKeys: [.totalFileAllocatedSizeKey, .isRegularFileKey]) else {
+            return 0;
+        }
+
+        return enumerator.map({ $0 as! URL}).filter({ (try? $0.resourceValues(forKeys: [.isRegularFileKey]))?.isRegularFile ?? false}).map({ (try? $0.resourceValues(forKeys: [.totalFileAllocatedSizeKey]))?.totalFileAllocatedSize ?? 0}).reduce(0, +);
+    }
     
     init() {
         diskCacheUrl = try! FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("metadata", isDirectory: true);
@@ -70,6 +77,20 @@ class MetadataCache {
         try? FileManager.default.removeItem(at: diskCacheUrl.appendingPathComponent("\(id).metadata"));
     }
 
+    
+    func clear(olderThan: Date? = nil) {
+        guard let messageDirs = try? FileManager.default.contentsOfDirectory(at: diskCacheUrl, includingPropertiesForKeys: [.creationDateKey], options: .skipsSubdirectoryDescendants) else {
+            return;
+        }
+        for dir in messageDirs {
+            if olderThan == nil || (((try? dir.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? Date()) < olderThan!) {
+                do {
+                    try FileManager.default.removeItem(at: dir);
+                } catch {}
+            }
+        }
+    }
+    
     func generateMetadata(for url: URL, withId id: String, completionHandler: @escaping (LPLinkMetadata?)->Void) {
         dispatcher.async {
             if let queue = self.inProgress[url] {

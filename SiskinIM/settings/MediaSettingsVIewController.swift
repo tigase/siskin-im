@@ -26,7 +26,7 @@ class MediaSettingsViewController: UITableViewController {
     let tree: [[SettingsEnum]] = [
         [SettingsEnum.sharingViaHttpUpload, SettingsEnum.maxImagePreviewSize],
         [SettingsEnum.imageUploadQuality, SettingsEnum.videoUploadQuality],
-        [SettingsEnum.clearDownloadStore]
+        [SettingsEnum.deviceMemoryUsage, SettingsEnum.clearDownloadStore, SettingsEnum.clearMetadataStore]
     ];
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -40,11 +40,11 @@ class MediaSettingsViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch section {
         case 0:
-            return "";
+            return "Sharing";
         case 1:
             return "Quality of uploaded media";
         case 2:
-            return "";
+            return "\(UIDevice.current.localizedModel) memory";
         default:
             return nil;
         }
@@ -55,7 +55,9 @@ class MediaSettingsViewController: UITableViewController {
         case 0:
             return "Limits the size of the files sent to you which may be automatically downloaded";
         case 1:
-            return "Used image and video quality may impact storage and network usage"
+            return "Used image and video quality may impact storage and network usage";
+        case 2:
+            return "Removal of cached attachments may lead to increased usage of network, if attachment may need to be redownloaded, or to lost files, if they are no longer available at the server.";
         default:
             return nil;
         }
@@ -106,8 +108,13 @@ class MediaSettingsViewController: UITableViewController {
             })
             cell.accessoryType = .disclosureIndicator;
             return cell;
+        case .deviceMemoryUsage:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "DeviceMemoryUsageTableViewCell", for: indexPath);
+            return cell;
         case .clearDownloadStore:
             return tableView.dequeueReusableCell(withIdentifier: "ClearDownloadStoreTableViewCell", for: indexPath);
+        case .clearMetadataStore:
+            return tableView.dequeueReusableCell(withIdentifier: "ClearMetadataStoreTableViewCell", for: indexPath);
         }
     }
     
@@ -121,8 +128,19 @@ class MediaSettingsViewController: UITableViewController {
             });
             controller.sink(to: \.fileDownloadSizeLimit, on: Settings);
             self.navigationController?.pushViewController(controller, animated: true);
+        case .imageUploadQuality:
+            let controller = TablePickerViewController<ImageQuality>(style: .grouped, message: "Select quality of the image to use for sharing", footer: "Original quality will share image in the format in which it is stored on your phone and it may not be supported by every device.", options: [.original, .highest, .high, .medium, .low], value: Settings.imageQuality, labelFn: { $0.rawValue.capitalized });
+            controller.sink(to: \.imageQuality, on: Settings);
+            self.navigationController?.pushViewController(controller, animated: true);
+        case .videoUploadQuality:
+            let controller = TablePickerViewController<VideoQuality>(style: .grouped, message: "Select quality of the video to use for sharing", footer: "Original quality will share video in the format in which video is stored on your phone and it may not be supported by every device.", options: [.original, .high, .medium, .low], value: Settings.videoQuality, labelFn: { $0.rawValue.capitalized });
+            controller.sink(to: \.videoQuality, on: Settings);
+            self.navigationController?.pushViewController(controller, animated: true);
         case .clearDownloadStore:
-            let alert = UIAlertController(title: "Download storage", message: "We are using \(DownloadStore.instance.size/(1024*1014)) MB of storage.", preferredStyle: .actionSheet);
+            let formatter = ByteCountFormatter();
+            formatter.allowedUnits = [.useKB,.useMB,.useGB,.useTB];
+            formatter.countStyle = .memory;
+            let alert = UIAlertController(title: "Download storage", message: "We are using\(formatter.string(fromByteCount: Int64(DownloadStore.instance.size))) of storage.", preferredStyle: .actionSheet);
             alert.addAction(UIAlertAction(title: "Flush", style: .destructive, handler: {(action) in
                 DispatchQueue.global(qos: .background).async {
                     DownloadStore.instance.clear();
@@ -139,14 +157,26 @@ class MediaSettingsViewController: UITableViewController {
 
             self.present(alert, animated: true, completion: nil);
             break;
-        case .imageUploadQuality:
-            let controller = TablePickerViewController<ImageQuality>(style: .grouped, message: "Select quality of the image to use for sharing", footer: "Original quality will share image in the format in which it is stored on your phone and it may not be supported by every device.", options: [.original, .highest, .high, .medium, .low], value: Settings.imageQuality, labelFn: { $0.rawValue.capitalized });
-            controller.sink(to: \.imageQuality, on: Settings);
-            self.navigationController?.pushViewController(controller, animated: true);
-        case .videoUploadQuality:
-            let controller = TablePickerViewController<VideoQuality>(style: .grouped, message: "Select quality of the video to use for sharing", footer: "Original quality will share video in the format in which video is stored on your phone and it may not be supported by every device.", options: [.original, .high, .medium, .low], value: Settings.videoQuality, labelFn: { $0.rawValue.capitalized });
-            controller.sink(to: \.videoQuality, on: Settings);
-            self.navigationController?.pushViewController(controller, animated: true);
+        case .clearMetadataStore:
+            let formatter = ByteCountFormatter();
+            formatter.allowedUnits = [.useKB,.useMB,.useGB,.useTB];
+            formatter.countStyle = .memory;
+            let alert = UIAlertController(title: "Metadata storage", message: "We are using \(formatter.string(fromByteCount: Int64(MetadataCache.instance.size))) of storage.", preferredStyle: .actionSheet);
+            alert.addAction(UIAlertAction(title: "Flush", style: .destructive, handler: {(action) in
+                DispatchQueue.global(qos: .background).async {
+                    MetadataCache.instance.clear();
+                }
+            }));
+            alert.addAction(UIAlertAction(title: "Older than 7 days", style: .destructive, handler: {(action) in
+                DispatchQueue.global(qos: .background).async {
+                    MetadataCache.instance.clear(olderThan: Date().addingTimeInterval(7*24*60*60.0*(-1.0)));
+                }
+            }));
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+            alert.popoverPresentationController?.sourceView = self.tableView;
+            alert.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: indexPath);
+
+            self.present(alert, animated: true, completion: nil);
         default:
             break;
         }
@@ -158,6 +188,8 @@ class MediaSettingsViewController: UITableViewController {
         case clearDownloadStore
         case imageUploadQuality
         case videoUploadQuality
+        case deviceMemoryUsage
+        case clearMetadataStore
     }
     
     internal class ImageQualityItem: TablePickerViewItemsProtocol {
