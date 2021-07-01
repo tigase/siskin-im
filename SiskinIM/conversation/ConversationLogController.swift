@@ -70,6 +70,11 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
         
         super.viewWillAppear(animated);
     }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated);
+        hideEditToolbar();
+    }
             
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1;
