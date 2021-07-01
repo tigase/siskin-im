@@ -87,12 +87,12 @@ open class XmppService {
     fileprivate let dispatcher: QueueDispatcher = QueueDispatcher(label: "xmpp_service");
         
     @Published
-    var status: Status = Status(show: nil, message: nil, shouldConnect: true);
+    var status: Status = Status(show: nil, message: nil, shouldConnect: true, sendInitialPresence: false);
     
-    public let expectedStatus = CurrentValueSubject<Status,Never>(Status(show: nil, message: nil, shouldConnect: false));
+    public let expectedStatus = CurrentValueSubject<Status,Never>(Status(show: nil, message: nil, shouldConnect: false, sendInitialPresence: false));
     
     @Published
-    fileprivate(set) var currentStatus: Status = Status(show: nil, message: nil, shouldConnect: false);
+    fileprivate(set) var currentStatus: Status = Status(show: nil, message: nil, shouldConnect: false, sendInitialPresence: false);
         
     @Published
     public private(set) var connectedClients: Set<XMPPClient> = [];
@@ -106,12 +106,12 @@ open class XmppService {
         
     init() {
         self.dnsSrvResolverCache = DNSSrvResolverWithCache.InMemoryCache(store: DNSSrvDiskCache(cacheDirectoryName: "dns-cache"));
-        self.dnsSrvResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: self.dnsSrvResolverCache);
+        self.dnsSrvResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(directTlsEnabled: true), cache: self.dnsSrvResolverCache);
         self.streamFeaturesCache = StreamFeaturesCache();
         //self.applicationState = UIApplication.shared.applicationState == .active ? .active : .inactive;
                         
         Settings.$statusType.combineLatest(Settings.$statusMessage, { type, messsage in
-            Status(show: type, message: (messsage?.isEmpty ?? true) ? nil : messsage, shouldConnect: true);
+            Status(show: type, message: (messsage?.isEmpty ?? true) ? nil : messsage, shouldConnect: true, sendInitialPresence: true);
         }).assign(to: \.status, on: self).store(in: &cancellables);
         
         expectedStatus.map({ status in
@@ -123,7 +123,6 @@ open class XmppService {
                 self?.disconnectClients(force: !NetworkMonitor.shared.isNetworkAvailable);
             }
         }).store(in: &cancellables);
-        expectedStatus.receive(on: self.dispatcher.queue).sink(receiveValue: { [weak self] status in self?.statusUpdated(status) }).store(in: &cancellables);
         expectedStatus.combineLatest($connectedClients.map({ !$0.isEmpty })).map({ status, connected in
             if !connected {
                 return status.with(show: nil);
@@ -139,6 +138,7 @@ open class XmppService {
     private func accountChanged(event: AccountManager.Event) {
         switch event {
         case .enabled(let account):
+            AccountSettings.reconnectionLocation(account.name).set(string: nil);
             if let client = self._clients[account.name] {
                 // if client exists and is connected, then reconnect it..
                 if client.state != .disconnected() {
@@ -166,28 +166,13 @@ open class XmppService {
             let client = self.initializeClient(for: account);
             _ = self.register(client: client, for: account);
         }
-        self.$status.combineLatest($applicationState, { (status, state) -> Status in
-            if status.show == nil && state != .suspended {
-                return status.with(show: state == .inactive ? .xa : .online);
+        self.$status.combineLatest($applicationState, NetworkMonitor.shared.$isNetworkAvailable, self.$isFetch, { (status, appState, networkAvailble, isFetch) -> Status in
+            var newStatus = status;
+            if status.show == nil && appState != .suspended {
+                newStatus = status.with(show: appState == .inactive ? .xa : .online);
             }
-            return status;
-        }).combineLatest(NetworkMonitor.shared.$isNetworkAvailable, self.$isFetch, self.$applicationState, { (status, networkAvailble, isFetch, appState) -> Status in
-            if networkAvailble && ((appState != .suspended) || isFetch) {
-                return status;
-            } else {
-                return status.with(shouldConnect: false);
-            }
+            return newStatus.with(shouldConnect: networkAvailble && ((appState != .suspended) || isFetch), sendInitialPresence: appState != .suspended);
         }).assign(to: \.value, on: expectedStatus).store(in: &cancellables);
-    }
-    
-    private func statusUpdated(_ status: Status) {
-        if let show = status.show {
-            self._clients.values.forEach { client in
-                if client.isConnected {
-                    client.module(.presence).setPresence(show: show, status: status.message, priority: nil);
-                }
-            }
-        }
     }
     
     open func updateApplicationState(_ state: ApplicationState) {
@@ -280,6 +265,7 @@ open class XmppService {
         var connectorEndpoint: ConnectorEndpoint?;
         if let dataStr = AccountSettings.reconnectionLocation(account.name).string()?.data(using: .utf8) {
             connectorEndpoint = try? JSONDecoder().decode(SocketConnectorNetwork.Endpoint.self, from: Data(base64Encoded: dataStr)!)
+            print("for", client.userBareJid.stringValue, "restoring endpoint", (connectorEndpoint as? SocketConnectorNetwork.Endpoint)?.description);
         }
         client.login(lastSeeOtherHost: connectorEndpoint);
     }
@@ -626,6 +612,7 @@ open class XmppService {
             self.dispatcher.async {
                 self.connectedClients.remove(client);
             }
+            AccountSettings.reconnectionLocation(client.userBareJid).set(string: nil);
             switch reason {
             case .sslCertError(let trust):
                 let certData = ServerCertificateInfo(trust: trust);
@@ -646,6 +633,11 @@ open class XmppService {
                     }
                 } else {
                     reportSaslError(on: client.userBareJid, error: .not_authorized);
+                }
+            case .none:
+                if let endpoint = client.connector?.currentEndpoint as? SocketConnectorNetwork.Endpoint, let data = try? JSONEncoder().encode(endpoint) {
+                    print("for", client.userBareJid.stringValue, "storing endpoint", endpoint.description)
+                    AccountSettings.reconnectionLocation(client.userBareJid).set(string: data.base64EncodedString());
                 }
             default:
                 break;
@@ -689,29 +681,31 @@ open class XmppService {
         let show: Presence.Show?;
         let message: String?;
         let shouldConnect: Bool;
+        let sendInitialPresence: Bool;
         
-        init(show: Presence.Show?, message: String?, shouldConnect: Bool) {
+        init(show: Presence.Show?, message: String?, shouldConnect: Bool, sendInitialPresence: Bool) {
             self.show = show;
             self.message = message;
             self.shouldConnect = shouldConnect;
+            self.sendInitialPresence = sendInitialPresence;
         }
         
         func with(show: Presence.Show?) -> Status {
-            return Status(show: show, message: self.message, shouldConnect: shouldConnect);
+            return Status(show: show, message: self.message, shouldConnect: shouldConnect, sendInitialPresence: sendInitialPresence);
         }
         
         func with(message: String?) -> Status {
-            return Status(show: self.show, message: message, shouldConnect: shouldConnect);
+            return Status(show: self.show, message: message, shouldConnect: shouldConnect, sendInitialPresence: sendInitialPresence);
         }
 
         func with(show: Presence.Show?, message: String?) -> Status {
-            return Status(show: show, message: message, shouldConnect: shouldConnect);
+            return Status(show: show, message: message, shouldConnect: shouldConnect, sendInitialPresence: sendInitialPresence);
         }
         
-        func with(shouldConnect: Bool) -> Status {
-            return Status(show: show, message: message, shouldConnect: shouldConnect);
+        func with(shouldConnect: Bool, sendInitialPresence: Bool) -> Status {
+            return Status(show: show, message: message, shouldConnect: shouldConnect, sendInitialPresence: sendInitialPresence);
         }
-
+        
         func toDict() -> [String : Any?] {
             var dict: [String: Any?] = [:];
             if message != nil {

@@ -31,11 +31,10 @@ class PresenceRosterEventHandler: XmppServiceExtension {
     }
     
     func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
-        XmppService.instance.expectedStatus.combineLatest( XmppService.instance.$applicationState).sink(receiveValue: { [weak client] status, appState in
+        XmppService.instance.expectedStatus.sink(receiveValue: { [weak client] status in
             if let presenceModule = client?.module(.presence) {
-                let shouldSendInitialPresence = appState != .suspended;
-                presenceModule.initialPresence = shouldSendInitialPresence;
-                if shouldSendInitialPresence {
+                presenceModule.initialPresence = status.sendInitialPresence;
+                if status.sendInitialPresence {
                     presenceModule.setPresence(show: status.show, status: status.message, priority: nil);
                 }
             }
