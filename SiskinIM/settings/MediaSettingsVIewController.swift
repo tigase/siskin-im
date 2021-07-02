@@ -140,8 +140,8 @@ class MediaSettingsViewController: UITableViewController {
             let formatter = ByteCountFormatter();
             formatter.allowedUnits = [.useKB,.useMB,.useGB,.useTB];
             formatter.countStyle = .memory;
-            let alert = UIAlertController(title: "Download storage", message: "We are using\(formatter.string(fromByteCount: Int64(DownloadStore.instance.size))) of storage.", preferredStyle: .actionSheet);
-            alert.addAction(UIAlertAction(title: "Flush", style: .destructive, handler: {(action) in
+            let alert = UIAlertController(title: "Download storage", message: "We are using \(formatter.string(fromByteCount: Int64(DownloadStore.instance.size))) of storage.", preferredStyle: .actionSheet);
+            alert.addAction(UIAlertAction(title: "Everything", style: .destructive, handler: {(action) in
                 DispatchQueue.global(qos: .background).async {
                     DownloadStore.instance.clear();
                 }
@@ -162,7 +162,7 @@ class MediaSettingsViewController: UITableViewController {
             formatter.allowedUnits = [.useKB,.useMB,.useGB,.useTB];
             formatter.countStyle = .memory;
             let alert = UIAlertController(title: "Metadata storage", message: "We are using \(formatter.string(fromByteCount: Int64(MetadataCache.instance.size))) of storage.", preferredStyle: .actionSheet);
-            alert.addAction(UIAlertAction(title: "Flush", style: .destructive, handler: {(action) in
+            alert.addAction(UIAlertAction(title: "Everything", style: .destructive, handler: {(action) in
                 DispatchQueue.global(qos: .background).async {
                     MetadataCache.instance.clear();
                 }
