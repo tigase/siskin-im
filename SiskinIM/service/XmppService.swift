@@ -620,7 +620,7 @@ open class XmppService {
                     account.active = false;
                     account.serverCertificate = certData;
                     try? AccountManager.save(account: account);
-                    NotificationCenter.default.post(name: XmppService.SERVER_CERTIFICATE_ERROR, object: client.userBareJid);
+                    NotificationCenter.default.post(name: XmppService.SERVER_CERTIFICATE_ERROR, object: client.userBareJid, userInfo: ["account": client.userBareJid.stringValue, "cert-name": certData.details.name, "cert-hash-sha1": certData.details.fingerprintSha1, "issuer-name": certData.issuer?.name, "issuer-hash-sha1": certData.issuer?.fingerprintSha1]);
                 }
             case .authenticationFailure(let err):
                 if let error = err as? SaslError {
