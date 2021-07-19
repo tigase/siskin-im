@@ -24,27 +24,69 @@ import TigaseSwift
 import WebRTC
 import Combine
 
+protocol JingleSessionActionDelegate: AnyObject {
+    
+    func received(action: JingleManager.Session.Action);
+    
+}
+
 extension JingleManager {
 
     class Session: JingleSession {
                 
-        public let id = UUID().uuidString;
-                        
-        private var cachedRemoteCandidates: [[String]] = [];
-        private var remoteCandidatesSubject = PassthroughSubject<RTCIceCandidate,Never>();
-        public let remoteCandidatesPublisher: AnyPublisher<RTCIceCandidate,Never>;
+        private static let queue = DispatchQueue(label: "JingleSessionQueue");
+
+        private weak var delegate: JingleSessionActionDelegate?;
+        private var actionsQueue: [Action] = [];
         
-        @Published
-        private(set) var remoteDescription: SDP?;
+        public enum Action {
+            case contentSet(SDP)
+            case contentApply(Jingle.ContentAction, SDP)
+            case transportAdd(Jingle.Transport.ICEUDPTransport.Candidate, String);
+            
+            var order: Int {
+                switch self {
+                case .contentSet(_):
+                    return 0;
+                case .contentApply(_,_):
+                    return 0;
+                case .transportAdd(_, _):
+                    return 1;
+                }
+            }
+        }
                 
         override init(context: Context, jid: JID, sid: String, role: Jingle.Content.Creator, initiationType: JingleSessionInitiationType) {
-            remoteCandidatesPublisher = remoteCandidatesSubject.makeConnectable().autoconnect().eraseToAnyPublisher();
             super.init(context: context, jid: jid, sid: sid, role: role, initiationType: initiationType);
         }
         
         override func initiated(contents: [Jingle.Content], bundle: [String]?) {
             super.initiated(contents: contents, bundle: bundle)
-            self.remoteDescription = SDP(contents: contents, bundle: bundle);
+            self.received(action: .contentSet(SDP(contents: contents, bundle: bundle)));
+        }
+        
+        private func received(action: Action) {
+            Session.queue.async {
+                if self.delegate == nil {
+                    if let idx = self.actionsQueue.firstIndex(where: { $0.order > action.order }) {
+                        self.actionsQueue.insert(action, at: idx);
+                    } else {
+                        self.actionsQueue.append(action);
+                    }
+                } else {
+                    self.delegate?.received(action: action);
+                }
+            }
+        }
+        
+        public func setDelegate(_ delegate: JingleSessionActionDelegate) {
+            Session.queue.async {
+                self.delegate = delegate;
+                for action in self.actionsQueue {
+                    self.delegate?.received(action: action);
+                }
+                self.actionsQueue.removeAll();
+            }
         }
         
         override func accept() {
@@ -53,86 +95,20 @@ extension JingleManager {
                 
         override func accepted(contents: [Jingle.Content], bundle: [String]?) {
             super.accepted(contents: contents, bundle: bundle)
-            self.remoteDescription = SDP(contents: contents, bundle: bundle);
+            received(action: .contentSet(SDP(contents: contents, bundle: bundle)));
         }
         
         func decline() {
             self.terminate(reason: .decline);
         }
                 
+        open override func contentModified(action: Jingle.ContentAction, contents: [Jingle.Content], bundle: [String]?) {
+            let sdp = SDP(contents: contents, bundle: bundle);
+            received(action: .contentApply(action, sdp));
+        }
+        
         func addCandidate(_ candidate: Jingle.Transport.ICEUDPTransport.Candidate, for contentName: String) {
-            let sdp = candidate.toSDP();
-            
-            cachedRemoteCandidates.append([contentName, sdp]);
-            receivedRemoteCandidates();
-        }
-        
-        #if targetEnvironment(simulator)
-        private func receivedRemoteCandidates() {
-        }
-        #else
-        private func receivedRemoteCandidates() {
-            guard self.remoteDescription != nil else {
-                return;
-            }
-            
-            for arr in cachedRemoteCandidates {
-                let contentName = arr[0];
-                let sdp = arr[1];
-                guard let lines = self.remoteDescription?.toString(withSid: "0").split(separator: "\r\n").map({ (s) -> String in
-                    return String(s);
-                }) else {
-                    return;
-                }
-                
-                let contents = lines.filter { (line) -> Bool in
-                    return line.starts(with: "a=mid:");
-                };
-                
-                let idx = contents.firstIndex(of: "a=mid:\(contentName)") ?? lines.filter({ (line) -> Bool in
-                    return line.starts(with: "m=")
-                }).firstIndex(where: { (line) -> Bool in
-                    return line.starts(with: "m=\(contentName) ");
-                }) ?? 0;
-                
-                print("adding candidate for:", idx, "name:", contentName, "sdp:", sdp)
-                remoteCandidatesSubject.send(RTCIceCandidate(sdp: sdp, sdpMLineIndex: Int32(idx), sdpMid: contentName));
-            }
-            cachedRemoteCandidates.removeAll();
-        }
-        #endif
-                
-        fileprivate func onError(_ errorCondition: ErrorCondition) {
-            
-        }
-        
-        func sendLocalCandidate(_ candidate: RTCIceCandidate, peerConnection: RTCPeerConnection) {
-            print("sending candidate for:", candidate.sdpMid as Any, ", index:", candidate.sdpMLineIndex, "full SDP:", (peerConnection.localDescription?.sdp ?? ""));
-            
-            guard let jingleCandidate = Jingle.Transport.ICEUDPTransport.Candidate(fromSDP: candidate.sdp) else {
-                return;
-            }
-            guard let mid = candidate.sdpMid else {
-                return;
-            }
-            
-            guard let desc = peerConnection.localDescription, let (sdp, sid) = SDP.parse(sdpString: desc.sdp, creator: role) else {
-                return;
-            }
-            
-            guard let content = sdp.contents.first(where: { c -> Bool in
-                return c.name == mid;
-            }), let transport = content.transports.first(where: {t -> Bool in
-                return (t as? Jingle.Transport.ICEUDPTransport) != nil;
-            }) as? Jingle.Transport.ICEUDPTransport else {
-                return;
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                if (!self.transportInfo(contentName: mid, creator: self.role, transport: Jingle.Transport.ICEUDPTransport(pwd: transport.pwd, ufrag: transport.ufrag, candidates: [jingleCandidate]))) {
-                    self.onError(.remote_server_timeout);
-                }
-            }
+            received(action: .transportAdd(candidate, contentName));
         }
                 
     }

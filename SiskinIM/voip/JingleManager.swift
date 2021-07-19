@@ -84,98 +84,6 @@ class JingleManager: JingleSessionManager {
         _ = self.close(for: session.account, with: session.jid, sid: session.sid);
     }
     
-//    func handle(event: Event) {
-//        dispatcher.async {
-//            switch event {
-//            case let e as JingleModule.JingleEvent:
-//                switch e.action! {
-//                case .sessionInitiate:
-//                    self.sessionInitiated(event: e);
-//                case .sessionAccept:
-//                    self.sessionAccepted(event: e);
-//                case .transportInfo:
-//                    self.transportInfo(event: e);
-//                case .sessionTerminate:
-//                    self.sessionTerminated(event: e);
-//                default:
-//                    break;
-//                }
-//                break;
-//            case let e as PresenceModule.ContactPresenceChanged:
-//                if e.availabilityChanged && (e.presence.type ?? .available) == .unavailable, let account = e.sessionObject.userBareJid, let from = e.presence.from {
-//                    let toClose = self.connections.filter({ (session) in
-//                        return session.jid == from && session.account == account;
-//                    });
-//                    toClose.forEach({ (session) in
-//                        self.close(session: session);
-//                    })
-//                    if CallManager.isAvailable, let presenceModule: PresenceModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(PresenceModule.ID), !presenceModule.presenceStore.isAvailable(jid: from.bareJid) {
-//                        CallManager.instance?.terminateCall(for: e.sessionObject.userBareJid!, with: from.bareJid);
-//                    }
-//                }
-//            case let e as JingleModule.JingleMessageInitiationEvent:
-//                switch e.action! {
-//                case .propose(let id, let descriptions):
-//                    guard CallManager.isAvailable, self.session(for: e.sessionObject.userBareJid!, with: e.jid, sid: id) == nil else {
-//                        return;
-//                    }
-//                    if let pushModule: SiskinPushNotificationsModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), pushModule.isEnabled && pushModule.isSupported(extension: TigasePushNotificationsModule.Jingle.self) {
-//                        return;
-//                    }
-//                    guard let session = self.open(for: e.sessionObject, with: e.jid, sid: id, role: .responder, initiationType: .message) else {
-//                        return;
-//                    }
-//
-//                    let media = descriptions.map({ Call.Media.from(string: $0.media) }).filter({ $0 != nil }).map({ $0! });
-//                    let call = Call(account: e.sessionObject.userBareJid!, with: e.jid.bareJid, sid: id, direction: .incoming, media: media, sessionId: session.id);
-//                    CallManager.instance?.reportIncomingCall(call, completionHandler: { result in
-//                        switch result {
-//                        case .success(_):
-//                            break;
-//                        case .failure(_):
-//                            _ = session.decline();
-//                        }
-//                    });
-//                case .retract(let id):
-//                    self.sessionTerminated(account: e.sessionObject.userBareJid!, with: e.jid, sid: id);
-//                case .accept(let id):
-//                    let account = e.sessionObject.userBareJid!;
-//                    self.sessionTerminated(account: account, sid: id);
-//                case .reject(let id):
-//                    let account = e.sessionObject.userBareJid!;
-//                    if CallManager.isAvailable && account != e.jid.bareJid, let session = self.session(for: account, with: e.jid, sid: id) {
-//                        let call = Call(account: e.sessionObject.userBareJid!, with: e.jid.bareJid, sid: id, direction: .incoming, media: [], sessionId: session.id);
-//                        CallManager.instance?.declinedOutgoingCall(call);
-//                    }
-//                    self.sessionTerminated(account: account, sid: id);
-//                case .proceed(let id):
-//                    guard CallManager.isAvailable, let session = self.session(for: e.sessionObject.userBareJid!, with: e.jid, sid: id) else {
-//                        return;
-//                    }
-//                    session.accepted(by: e.jid);
-//                    let call = Call(account: e.sessionObject.userBareJid!, with: e.jid.bareJid, sid: id, direction: .incoming, media: [], sessionId: session.id);
-//                    CallManager.instance?.acceptedOutgoingCall(call, by: e.jid, completionHandler: { result in
-//                        switch result {
-//                        case .success(_):
-//                            break;
-//                        case .failure(_):
-//                            self.sessionTerminated(account: e.sessionObject.userBareJid!, with: e.jid, sid: id);
-//                            break;
-//                        }
-//                    });
-//                default:
-//                    break;
-//                }
-//            case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
-//                if CallManager.isAvailable {
-//                    CallManager.instance?.connectionEstablished(for: e.sessionObject.userBareJid!);
-//                }
-//            default:
-//                break;
-//            }
-//        }
-//    }
-    
     enum ContentType {
         case audio
         case video
@@ -342,6 +250,13 @@ class JingleManager: JingleSessionManager {
         }
     }
     
+    func contentModified(for context: Context, with jid: JID, sid: String, action: Jingle.ContentAction, contents: [Jingle.Content], bundle: [String]?) throws {
+        guard let session = self.session(for: context, with: jid, sid: sid) else {
+            throw XMPPError.item_not_found;
+        }
+        
+        session.contentModified(action: action, contents: contents, bundle: bundle);
+    }
 }
 
 extension JingleManager {

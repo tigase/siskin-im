@@ -78,9 +78,7 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
     }
     
     func callStateChanged(_ sender: Call) {
-        DispatchQueue.main.async {
-            self.updateStateLabel();
-        }
+        self.updateStateLabel();
     }
     
     func call(_ sender: Call, didReceiveLocalVideoTrack localTrack: RTCVideoTrack) {
@@ -89,13 +87,16 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
         }
     }
     
-    func call(_ sender: Call, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack) {
+    func call(_ sender: Call, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack, forStream: String, fromReceiver: String) {
         DispatchQueue.main.async {
             self.remoteVideoTrack = remoteTrack;
         }
     }
     
-
+    func call(_ sender: Call, goneRemoteVideoTrack remoteTrack: RTCVideoTrack, fromReceiver: String) {
+        
+    }
+    
 //    #if targetEnvironment(simulator)
 //    func callDidStart(_ sender: CallManager) {
 //    }
@@ -341,18 +342,20 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
     }
     
     fileprivate func updateStateLabel() {
-        self.updateAvatarVisibility();
-        switch call?.state ?? .new {
-        case .new:
-            self.titleLabel?.text = "New call";
-        case .ringing:
-            self.titleLabel?.text = "Ringing...";
-        case .connecting:
-            self.titleLabel?.text = "Connecting...";
-        case .connected:
-            self.titleLabel?.text = nil;
-        case .ended:
-            self.titleLabel?.text = "Call ended";
+        DispatchQueue.main.async {
+            self.updateAvatarVisibility();
+            switch self.call?.state ?? .new {
+            case .new:
+                self.titleLabel?.text = "New call";
+            case .ringing:
+                self.titleLabel?.text = "Ringing...";
+            case .connecting:
+                self.titleLabel?.text = "Connecting...";
+            case .connected:
+                self.titleLabel?.text = nil;
+            case .ended:
+                self.titleLabel?.text = "Call ended";
+            }
         }
     }
 //    #endif
