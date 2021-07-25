@@ -58,6 +58,7 @@ class AbstractRosterViewController: UITableViewController, UISearchResultsUpdati
     }
         
     func initializeRosterProvider() {
+        self.roster?.release();
         switch Settings.rosterType {
         case .flat:
             roster = RosterProviderFlat(controller: self);

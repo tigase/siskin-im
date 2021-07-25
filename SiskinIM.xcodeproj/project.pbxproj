@@ -10,6 +10,7 @@
 		FE00157D2017617B00490340 /* StreamFeaturesCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE00157C2017617B00490340 /* StreamFeaturesCache.swift */; };
 		FE00157F2019090300490340 /* ExperimentalSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE00157E2019090300490340 /* ExperimentalSettingsViewController.swift */; };
 		FE01ADA91E224CF400FA7E65 /* SiskinPushNotificationsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE01ADA81E224CF400FA7E65 /* SiskinPushNotificationsModule.swift */; };
+		FE0AE0B426A9DD6D0010D2E2 /* SetAccountSettingsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0AE0B326A9DD6D0010D2E2 /* SetAccountSettingsController.swift */; };
 		FE0E30DF2535B9D20030F8C5 /* BaseChatViewController+Share.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30DE2535B9D20030F8C5 /* BaseChatViewController+Share.swift */; };
 		FE0E30E42535BA520030F8C5 /* HTTPFileUploadHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30E32535BA520030F8C5 /* HTTPFileUploadHelper.swift */; };
 		FE0E30E92535BA910030F8C5 /* BaseChatViewController+ShareMedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30E82535BA910030F8C5 /* BaseChatViewController+ShareMedia.swift */; };
@@ -318,6 +319,7 @@
 		FE00157C2017617B00490340 /* StreamFeaturesCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamFeaturesCache.swift; sourceTree = "<group>"; };
 		FE00157E2019090300490340 /* ExperimentalSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperimentalSettingsViewController.swift; sourceTree = "<group>"; };
 		FE01ADA81E224CF400FA7E65 /* SiskinPushNotificationsModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SiskinPushNotificationsModule.swift; sourceTree = "<group>"; };
+		FE0AE0B326A9DD6D0010D2E2 /* SetAccountSettingsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetAccountSettingsController.swift; sourceTree = "<group>"; };
 		FE0E30DE2535B9D20030F8C5 /* BaseChatViewController+Share.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BaseChatViewController+Share.swift"; sourceTree = "<group>"; };
 		FE0E30E32535BA520030F8C5 /* HTTPFileUploadHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPFileUploadHelper.swift; sourceTree = "<group>"; };
 		FE0E30E82535BA910030F8C5 /* BaseChatViewController+ShareMedia.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BaseChatViewController+ShareMedia.swift"; sourceTree = "<group>"; };
@@ -800,6 +802,7 @@
 				FE17808C23EB4C7F00A1EA76 /* AccountQRCodeController.swift */,
 				FE0E31112537288A0030F8C5 /* MediaSettingsVIewController.swift */,
 				FE82A72A268CC0740049C844 /* DeviceMemoryUsageTableViewCell.swift */,
+				FE0AE0B326A9DD6D0010D2E2 /* SetAccountSettingsController.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -1564,6 +1567,7 @@
 				FECEF29623B7B076007EC323 /* DownloadStore.swift in Sources */,
 				FE0E30DF2535B9D20030F8C5 /* BaseChatViewController+Share.swift in Sources */,
 				FE9E13711F2606E9005C0EE5 /* ContactsSettingsViewController.swift in Sources */,
+				FE0AE0B426A9DD6D0010D2E2 /* SetAccountSettingsController.swift in Sources */,
 				FE11D3B4266241BD00CC883F /* Publisher+ThrottledSink.swift in Sources */,
 				FE0E3108253714570030F8C5 /* VideoQuality.swift in Sources */,
 				FE2D481A24505F1600C13CE5 /* CallManager.swift in Sources */,

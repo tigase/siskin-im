@@ -35,6 +35,8 @@ protocol RosterProvider {
     func queryItems(contains: String?);
     
     func sectionHeader(at: Int) -> String?;
+    
+    func release();
 }
 
 public enum RosterSortingOrder: String {
@@ -72,8 +74,14 @@ public class RosterProviderAbstract<Item: RosterProviderItem> {
             } else {
                 return items;
             }
-        }).combineLatest(Settings.$rosterItemsOrder).receive(on: self.dispatcher.queue).sink(receiveValue: { [weak self] (items, order) in self?.updateItems(items: items, order: order)
+        }).combineLatest(Settings.$rosterItemsOrder).receive(on: self.dispatcher.queue).sink(receiveValue: { [weak self] (items, order) in
+            self?.updateItems(items: items, order: order)
         }).store(in: &cancellables);
+    }
+    
+    func release() {
+        controller = nil;
+        cancellables.removeAll();
     }
     
     func updateItems(items: [RosterItem], presences: [PresenceStore.Key: Presence], available: Bool, displayHidden: Bool) {

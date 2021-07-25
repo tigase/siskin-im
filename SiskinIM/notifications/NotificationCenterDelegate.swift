@@ -78,7 +78,7 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
                     certInfo?.accepted = true;
                     account.serverCertificate = certInfo;
                     account.active = true;
-                    AccountSettings.LastError(accountJid).set(string: nil);
+                    AccountSettings.lastError(for: accountJid, value: nil);
                     do {
                         try AccountManager.save(account: account);
                     } catch {

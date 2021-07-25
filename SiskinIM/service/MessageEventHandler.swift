@@ -352,36 +352,26 @@ class MessageEventHandler: XmppServiceEventHandler {
     private static var syncSince: [BareJID: Date] = [:];
         
     static func scheduleMessageSync(for account: BareJID) {
-        if AccountSettings.messageSyncAuto(account).bool() {
-            var syncPeriod = AccountSettings.messageSyncPeriod(account).double();
-            if syncPeriod == 0 {
-                syncPeriod = 72;
-            }
-            let syncMessagesSince = max(DBChatHistoryStore.instance.lastMessageTimestamp(for: account), Date(timeIntervalSinceNow: -1 * syncPeriod * 3600));
+        if let syncMessagesSince = DBChatHistoryStore.instance.lastMessageTimestamp(for: account) {
             // use last "received" stable stanza id for account MAM archive in case of MAM:2?
             syncSinceQueue.async {
                 self.syncSince[account] = syncMessagesSince;
-            }
-        } else {
-            syncSinceQueue.async {
-                syncSince.removeValue(forKey: account);
-                DBChatHistorySyncStore.instance.removeSyncPeriods(forAccount: account);
             }
         }
     }
         
     static func syncMessagesScheduled(for client: XMPPClient) {
         syncSinceQueue.async {
-            guard AccountSettings.messageSyncAuto(client.userBareJid).bool(), let syncMessagesSince = syncSince[client.userBareJid] else {
-                return;
-            }
+            let syncMessagesSince = syncSince.removeValue(forKey: client.userBareJid);
             syncMessages(for: client, since: syncMessagesSince);
         }
     }
         
-    static func syncMessages(for client: XMPPClient, version: MessageArchiveManagementModule.Version? = nil, componentJID: JID? = nil, since: Date, rsmQuery: RSM.Query? = nil) {
-        let period = DBChatHistorySyncStore.Period(account: client.userBareJid, component: componentJID?.bareJid, from: since, after: nil, to: nil);
-        DBChatHistorySyncStore.instance.addSyncPeriod(period);
+    static func syncMessages(for client: XMPPClient, version: MessageArchiveManagementModule.Version? = nil, componentJID: JID? = nil, since: Date? = nil, rsmQuery: RSM.Query? = nil) {
+        if let since = since {
+            let period = DBChatHistorySyncStore.Period(account: client.userBareJid, component: componentJID?.bareJid, from: since, after: nil, to: nil);
+            DBChatHistorySyncStore.instance.addSyncPeriod(period);
+        }
         
         syncMessagePeriods(for: client, version: version, componentJID: componentJID?.bareJid)
     }

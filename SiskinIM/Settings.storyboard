@@ -1095,15 +1095,15 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="notificationsFromUnknownTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="NotificationsFromUnknownTableViewCell" id="9Qc-YH-MOd" userLabel="NotificationsFromUnknownTableViewCell" customClass="SwitchTableViewCell" customModule="Siskin" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="pushNotificationsTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="PushNotificationsTableViewCell" id="9Qc-YH-MOd" userLabel="PushNotificationsTableViewCell" customClass="SwitchTableViewCell" customModule="Siskin" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="49.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="9Qc-YH-MOd" id="WJb-IH-sqx">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Notifications from unknown" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cyb-st-Bmw">
-                                            <rect key="frame" x="20" y="12" width="209" height="20.5"/>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Push notifications" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cyb-st-Bmw">
+                                            <rect key="frame" x="20" y="11.5" width="135.5" height="21"/>
                                             <accessibility key="accessibilityConfiguration" identifier="accountName"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="highlightedColor"/>
@@ -1126,6 +1126,39 @@
                                 <accessibility key="accessibilityConfiguration" identifier="notificationsFromUnknownTableViewCell"/>
                                 <connections>
                                     <outlet property="switchView" destination="F6a-44-qRE" id="yHh-U9-EmR"/>
+                                </connections>
+                            </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="notificationsFromUnknownTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="NotificationsFromUnknownTableViewCell" id="eoW-on-CkP" userLabel="NotificationsFromUnknownTableViewCell" customClass="SwitchTableViewCell" customModule="Siskin" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="93.5" width="414" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="eoW-on-CkP" id="A90-dF-abf">
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Notifications from unknown" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="67H-51-GcY">
+                                            <rect key="frame" x="20" y="12" width="209" height="20.5"/>
+                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qxn-eJ-M2N">
+                                            <rect key="frame" x="345" y="6.5" width="51" height="31"/>
+                                            <connections>
+                                                <action selector="valueChanged:" destination="eoW-on-CkP" eventType="valueChanged" id="Pi6-3Y-dtV"/>
+                                            </connections>
+                                        </switch>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="qxn-eJ-M2N" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="67H-51-GcY" secondAttribute="trailing" constant="8" id="7r6-np-dcJ"/>
+                                        <constraint firstAttribute="leadingMargin" secondItem="67H-51-GcY" secondAttribute="leading" id="KMj-Gy-giZ"/>
+                                        <constraint firstItem="67H-51-GcY" firstAttribute="centerY" secondItem="A90-dF-abf" secondAttribute="centerY" id="Ous-Yc-vje"/>
+                                        <constraint firstItem="qxn-eJ-M2N" firstAttribute="centerY" secondItem="A90-dF-abf" secondAttribute="centerY" id="ab0-hZ-EPe"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="qxn-eJ-M2N" secondAttribute="trailing" id="sD7-p8-VbC"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <accessibility key="accessibilityConfiguration" identifier="notificationsFromUnknownTableViewCell"/>
+                                <connections>
+                                    <outlet property="switchView" destination="qxn-eJ-M2N" id="oWf-hT-nO6"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>

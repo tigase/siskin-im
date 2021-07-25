@@ -37,7 +37,7 @@ class MainTabBarController: CustomTabBarController, UITabBarControllerDelegate {
         self.delegate = self;
         
         XmppService.instance.$connectedClients.map({ (XmppService.instance.clients.count - $0.count) + AccountManager.getAccounts().filter({(name)->Bool in
-            return AccountSettings.LastError(name).getString() != nil
+            return AccountSettings.lastError(for: name) != nil
         }).count }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
             self?.updateMoreBadge(count: value);
         }).store(in: &cancellables);

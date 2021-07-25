@@ -65,7 +65,7 @@ class DownloadManager {
             
             itemDownloadInProgress.append(item.id);
             
-            if let hash = Digest.sha1.digest(toHex: inUrl.data(using: .utf8)!), var params = Settings2.sharedDefaults?.dictionary(forKey: "upload-\(hash)"), let filename = params["name"] as? String {
+            if let hash = Digest.sha1.digest(toHex: inUrl.data(using: .utf8)!), var params = SettingsStore.sharedDefaults.dictionary(forKey: "upload-\(hash)"), let filename = params["name"] as? String {
                 var jids: [BareJID] = (params["jids"] as? [String])?.map({ BareJID($0) }) ?? [];
 
                 let sharedFileUrl = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.siskinim.shared")!.appendingPathComponent("upload", isDirectory: true).appendingPathComponent(hash, isDirectory: false);
@@ -88,12 +88,12 @@ class DownloadManager {
                 }
                 
                 if jids.isEmpty || !FileManager.default.fileExists(atPath: sharedFileUrl.path) {
-                    Settings2.sharedDefaults?.removeObject(forKey: "upload-\(hash)")
+                    SettingsStore.sharedDefaults.removeObject(forKey: "upload-\(hash)")
                     if FileManager.default.fileExists(atPath: sharedFileUrl.path) {
                         try! FileManager.default.removeItem(at: sharedFileUrl);
                     }
                 } else {
-                    Settings2.sharedDefaults?.set(params, forKey: "upload-\(hash)");
+                    SettingsStore.sharedDefaults.set(params, forKey: "upload-\(hash)");
                 }
                 guard !handled else {
                     self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in

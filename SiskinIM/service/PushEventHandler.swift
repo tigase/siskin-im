@@ -65,11 +65,11 @@ open class PushEventHandler: XmppServiceExtension {
     private var cancellables: Set<AnyCancellable> = [];
     
     public func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
-        client.module(.disco).$accountDiscoResult.sink(receiveValue: { [weak client, weak self] features in
+        Settings.$enablePush.map({ $0 ?? false }).combineLatest(client.module(.disco).$accountDiscoResult).sink(receiveValue: { [weak client, weak self] enable, features in
             guard let client = client, client.state == .connected() else {
                 return;
             }
-            self?.updatePushRegistration(for: client, features: features.features);
+            self?.updatePushRegistration(for: client, features: features.features, shouldEnable: enable);
         }).store(in: &cancellables);
     }
 
@@ -84,16 +84,8 @@ open class PushEventHandler: XmppServiceExtension {
             }
         }).store(in: &cancellables);
     }
-        
-    func updatePushRegistration(for account: BareJID, features: [String]) {
-        guard let client = XmppService.instance.getClient(for: account) else {
-            return;
-        }
-        
-        self.updatePushRegistration(for: client, features: features);
-    }
-    
-    func updatePushRegistration(for client: XMPPClient, features: [String]) {
+            
+    func updatePushRegistration(for client: XMPPClient, features: [String], shouldEnable: Bool) {
         guard let deviceId = self.deviceId else {
             return;
         }
@@ -104,7 +96,7 @@ open class PushEventHandler: XmppServiceExtension {
         
         let pushkitDeviceId = hasPushJingle ? self.pushkitDeviceId : nil;
         
-        if hasPush && pushModule.shouldEnable {
+        if hasPush && shouldEnable {
             if let pushSettings = pushModule.pushSettings {
                 if pushSettings.deviceId != deviceId || pushSettings.pushkitDeviceId != pushkitDeviceId {
                     pushModule.unregisterDeviceAndDisable(completionHandler: { result in
@@ -119,7 +111,7 @@ open class PushEventHandler: XmppServiceExtension {
                         }
                     });
                     return;
-                } else if AccountSettings.pushHash(client.userBareJid).int() == 0 {
+                } else if AccountSettings.pushHash(for: client.userBareJid) == 0 {
                     pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
                         print("reenabling device:", result);
                     })
@@ -130,7 +122,7 @@ open class PushEventHandler: XmppServiceExtension {
                 })
             }
         } else {
-            if pushModule.pushSettings != nil, (!hasPush) || (!pushModule.shouldEnable) {
+            if pushModule.pushSettings != nil, (!hasPush) || (!shouldEnable) {
                 pushModule.unregisterDeviceAndDisable(completionHandler: { result in
                     print("automatic deregistration:", result);
                 })
@@ -163,7 +155,7 @@ open class PushEventHandler: XmppServiceExtension {
     }
     
     func updateAccountPushSettings(for account: BareJID) {
-        guard AccountSettings.pushHash(account).int() != 0 else {
+        guard AccountSettings.pushHash(for: account) != 0 else {
             return;
         }
         if let client = XmppService.instance.getClient(for: account), client.state == .connected(), let pushModule = client.module(.push) as? SiskinPushNotificationsModule, let pushSettings = pushModule.pushSettings {
@@ -171,7 +163,7 @@ open class PushEventHandler: XmppServiceExtension {
                 print("updating account push settings finished", result);
             })
         } else {
-            AccountSettings.pushHash(account).set(int: 0);
+            AccountSettings.pushHash(for: account, value: 0);
         }
     }
     

@@ -95,7 +95,7 @@ class DBOMEMOStore {
     }
     
     func localRegistrationId(forAccount account: BareJID) -> UInt32? {
-        return AccountSettings.omemoRegistrationId(account).uint32();
+        return AccountSettings.omemoRegistrationId(for: account);
     }
     
     func save(identity: SignalAddress, key: SignalIdentityKeyProtocol?, forAccount account: BareJID, own: Bool = false) -> Bool {
@@ -449,7 +449,7 @@ class OMEMOStoreWrapper: SignalStorage {
         let hasKeyPair = identityKeyStore.keyPair() != nil;
         if wipe || identityKeyStore.localRegistrationId() == 0 || !hasKeyPair {
             let regId: UInt32 = signalContext.generateRegistrationId();
-            AccountSettings.omemoRegistrationId(context!.sessionObject.userBareJid!).set(uint32: regId);
+            AccountSettings.omemoRegistrationId(for: context!.sessionObject.userBareJid!, value: regId);
 
             print("no identity key pair! generating new one!");
             let keyPair = SignalIdentityKeyPair.generateKeyPair(context: signalContext);

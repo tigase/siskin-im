@@ -76,14 +76,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             UNNotificationCategory(identifier: "MESSAGE", actions: [], intentIdentifiers: [], hiddenPreviewsBodyPlaceholder: "New message", options: [.customDismissAction])
         ];
         UNUserNotificationCenter.current().setNotificationCategories(Set(categories));
-        application.registerForRemoteNotifications();
+        
+        Settings.$enablePush.map({ $0 ?? false }).sink(receiveValue: { value in
+            if value {
+                application.registerForRemoteNotifications();
+            } else {
+                application.unregisterForRemoteNotifications();
+            }
+        }).store(in: &cancellables);
+        
         CallManager.initializeCallManager();
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.serverCertificateError), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.pushNotificationRegistrationFailed), name: Notification.Name("pushNotificationsRegistrationFailed"), object: nil);
-        AccountManager.accountEventsPublisher.sink(receiveValue: { [weak self] _ in
-            self?.accountsChanged();
+        AccountManager.accountEventsPublisher.sink(receiveValue: { [weak self] action in
+            guard case .removed(_) = action else {
+                return;
+            }
+            if AccountManager.getAccounts().isEmpty {
+                self?.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SetupViewController");
+            }
         }).store(in: &cancellables);
-                
+
         (self.window?.rootViewController as? UISplitViewController)?.preferredDisplayMode = .allVisible;
         if AccountManager.getAccounts().isEmpty {
             self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SetupViewController");
@@ -112,11 +125,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
     
-    private func accountsChanged() {
+    func showSetup(value: Bool) {
         DispatchQueue.main.async {
             if let rootView = self.window?.rootViewController {
                 let normalMode: Bool = rootView is UISplitViewController;
-                let expNormalMode = !AccountManager.getAccounts().isEmpty;
+                let expNormalMode = !value;
                 if normalMode != expNormalMode {
                     if expNormalMode {
                         (UIApplication.shared.delegate as? AppDelegate)?.hideSetupGuide();
@@ -127,6 +140,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
     }
+    
 
     func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
@@ -469,6 +483,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("Failed to register:", error);
         PushEventHandler.instance.deviceId = nil;
+        Settings.enablePush = false;
 //        Settings.DeviceToken.setValue(nil);
     }
     

@@ -72,10 +72,9 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
     }
     
     open var pushSettings: PushSettings?;
-    open var shouldEnable: Bool = false;
     
     open var isEnabled: Bool {
-        return pushSettings != nil && shouldEnable;
+        return pushSettings != nil;
     }
     
     open func isEnabled(for deviceId: String) -> Bool {
@@ -137,7 +136,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
             }
         }
         
-        if AccountSettings.PushNotificationsForAway(context.userBareJid).getBool() {
+        if AccountSettings.pushNotificationsForAway(for: context.userBareJid) {
             extensions.append(TigasePushNotificationsModule.PushForAway());
         }
         
@@ -186,7 +185,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         
         let newHash = hash(extensions: extensions);
         if let oldSettings = self.pushSettings {
-            guard newHash != AccountSettings.pushHash(context.userBareJid).int() else {
+            guard newHash != AccountSettings.pushHash(for: context.userBareJid) else {
                 completionHandler(.success(oldSettings));
                 return;
             }
@@ -203,7 +202,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
             case .success(_):
                 let accountJid = context.userBareJid;
                 NotificationEncryptionKeys.set(key: encryption?.key, for: accountJid);
-                AccountSettings.pushHash(accountJid).set(int: newHash);
+                AccountSettings.pushHash(for: accountJid, value: newHash);
                 self.pushSettings = settings;
                 if var config = AccountManager.getAccount(for: accountJid) {
                     config.pushSettings = settings;
@@ -227,7 +226,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
             group.enter();
             group.enter();
             
-            AccountSettings.pushHash(context.userBareJid).set(int: 0);
+            AccountSettings.pushHash(for: context.userBareJid, value: 0);
             
             let resultHandler: (Result<Void,XMPPError>)->Void = {
                 result in

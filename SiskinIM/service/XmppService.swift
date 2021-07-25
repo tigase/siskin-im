@@ -62,7 +62,7 @@ open class XmppService {
     fileprivate var fetchClientsWaitingForReconnection: [BareJID] = [];
     fileprivate var fetchStart = NSDate();
         
-    let extensions: [XmppServiceExtension] = [BlockedEventHandler.instance, PresenceRosterEventHandler.instance, AvatarEventHandler.instance, MixEventHandler.instance, MucEventHandler.instance];
+    let extensions: [XmppServiceExtension] = [BlockedEventHandler.instance, PresenceRosterEventHandler.instance, AvatarEventHandler.instance, MixEventHandler.instance, MucEventHandler.instance, NewFeaturesDetector.instance, PushEventHandler.instance];
 
     fileprivate let eventHandlers: [XmppServiceEventHandler] = [MessageEventHandler.instance];
     
@@ -138,7 +138,7 @@ open class XmppService {
     private func accountChanged(event: AccountManager.Event) {
         switch event {
         case .enabled(let account):
-            AccountSettings.reconnectionLocation(account.name).set(string: nil);
+            AccountSettings.reconnectionLocation(for: account.name, value: nil);
             if let client = self._clients[account.name] {
                 // if client exists and is connected, then reconnect it..
                 if client.state != .disconnected() {
@@ -252,7 +252,6 @@ open class XmppService {
         
         if let pushModule = client.module(.push) as? SiskinPushNotificationsModule {
             pushModule.pushSettings = account.pushSettings;
-            pushModule.shouldEnable = account.pushNotifications;
         }
         
         // for push notifications this needs to be far lower value, ie. 60-90 seconds
@@ -262,11 +261,7 @@ open class XmppService {
             streamFeaturesModule.enabled = Settings.xmppPipelining;
         }
         
-        var connectorEndpoint: ConnectorEndpoint?;
-        if let dataStr = AccountSettings.reconnectionLocation(account.name).string()?.data(using: .utf8) {
-            connectorEndpoint = try? JSONDecoder().decode(SocketConnectorNetwork.Endpoint.self, from: Data(base64Encoded: dataStr)!)
-            print("for", client.userBareJid.stringValue, "restoring endpoint", (connectorEndpoint as? SocketConnectorNetwork.Endpoint)?.description);
-        }
+        let connectorEndpoint: ConnectorEndpoint? = AccountSettings.reconnectionLocation(for: account.name);
         client.login(lastSeeOtherHost: connectorEndpoint);
     }
         
@@ -612,7 +607,7 @@ open class XmppService {
             self.dispatcher.async {
                 self.connectedClients.remove(client);
             }
-            AccountSettings.reconnectionLocation(client.userBareJid).set(string: nil);
+            AccountSettings.reconnectionLocation(for: client.userBareJid, value: nil);
             switch reason {
             case .sslCertError(let trust):
                 let certData = ServerCertificateInfo(trust: trust);
@@ -635,10 +630,7 @@ open class XmppService {
                     reportSaslError(on: client.userBareJid, error: .not_authorized);
                 }
             case .none:
-                if let endpoint = client.connector?.currentEndpoint as? SocketConnectorNetwork.Endpoint, let data = try? JSONEncoder().encode(endpoint) {
-                    print("for", client.userBareJid.stringValue, "storing endpoint", endpoint.description)
-                    AccountSettings.reconnectionLocation(client.userBareJid).set(string: data.base64EncodedString());
-                }
+                AccountSettings.reconnectionLocation(for: client.userBareJid, value: client.connector?.currentEndpoint);
             default:
                 break;
             }

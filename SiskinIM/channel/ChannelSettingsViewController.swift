@@ -131,7 +131,7 @@ class ChannelSettingsViewController: UITableViewController {
                             case .success(_):
                                 break;
                             case .failure(_):
-                                AccountSettings.pushHash(account).set(int: 0);
+                                AccountSettings.pushHash(for: account, value: 0);
                             }
                         });
                     }

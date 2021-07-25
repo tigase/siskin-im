@@ -21,328 +21,163 @@
 
 import UIKit
 import TigaseSwift
+import Combine
 
-// FIXME: needs to be reattached!!
-class NewFeaturesDetector: XmppServiceEventHandler {
+enum ServerFeature: String {
+    case mam
+    case push
     
-    let events: [Event] = [DiscoveryModule.AccountFeaturesReceivedEvent.TYPE];
+    public static func from(info: DiscoveryModule.DiscoveryInfoResult) -> [ServerFeature] {
+        return from(features: info.features);
+    }
     
-    let suggestions: [NewFeaturesDetectorSuggestion] = [
-        //MAMSuggestion(),
-        PushSuggestion()
-    ];
+    public static func from(features: [String]) -> [ServerFeature] {
+        var serverFeatures: [ServerFeature] = [];
+        if features.contains(MessageArchiveManagementModule.MAM_XMLNS) || features.contains(MessageArchiveManagementModule.MAM2_XMLNS) {
+            serverFeatures.append(.mam);
+        }
+        if features.contains(PushNotificationsModule.PUSH_NOTIFICATIONS_XMLNS) {
+            serverFeatures.append(.push);
+        }
+        return serverFeatures;
+    }
+}
+
+class NewFeaturesDetector: XmppServiceExtension {
     
-    fileprivate var allControllers: [NewFeatureSuggestionView] = [];
-    fileprivate var inProgress: Bool = false;
+    public static let instance = NewFeaturesDetector();
     
-    func showNext() {
+    private init() {}
+    
+    private struct QueueItem {
+        let account: BareJID;
+        let newFeatures: [ServerFeature];
+        let features: [ServerFeature];
+    }
+    
+    private let queue = DispatchQueue(label: "NewFeaturesDetector");
+    private var actionsQueue: [QueueItem] = [];
+    private var inProgress: Bool = false;
+        
+    func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
+        let account = client.userBareJid;
+        client.module(.disco).$accountDiscoResult.receive(on: queue).filter({ !$0.features.isEmpty }).map({ ServerFeature.from(info: $0) }).sink(receiveValue: { [weak self] newFeatures in
+            self?.newFeatures(newFeatures, for: account);
+        }).store(in: &cancellables);
+        client.module(.disco).$accountDiscoResult.receive(on: queue).filter({ $0.features.isEmpty && $0.identities.isEmpty }).sink(receiveValue: { [weak self] _ in
+            self?.removeFeatures(for: account);
+        }).store(in: &cancellables);
+    }
+    
+    private func newFeatures(_ newFeatures: [ServerFeature], for account: BareJID) {
+        let oldFeatures = AccountSettings.knownServerFeatures(for: account);
+        let change = newFeatures.filter({ !oldFeatures.contains($0) });
+        
+        guard !change.isEmpty else {
+            return;
+        }
+
+        self.removeFeatures(for: account);
+        actionsQueue.append(.init(account: account, newFeatures: change, features: newFeatures));
+        showNext();
+    }
+    
+    private func removeFeatures(for account: BareJID) {
+        actionsQueue.removeAll(where: { $0.account == account});
+    }
+    
+    private var navController: UINavigationController?;
+    
+    func showNext(fromController: Bool = false) {
         DispatchQueue.main.async {
-            guard !self.allControllers.isEmpty else {
-                self.inProgress = false;
-                return;
-            }
-            let controller = self.allControllers.remove(at: 0)
-            UIApplication.shared.keyWindow?.rootViewController?.present(controller, animated: true, completion: nil);
-        }
-    }
-    
-    func completionHandler(controllers: [NewFeatureSuggestionView]) {
-        DispatchQueue.main.async {
-            self.allControllers.append(contentsOf: controllers);
-            guard !self.inProgress else {
-                return;
-            }
-            self.inProgress = true;
-            self.showNext();
-        }
-    }
-    
-    func handle(event: Event) {
-        switch event {
-        case let e as DiscoveryModule.AccountFeaturesReceivedEvent:
-            guard let account = e.sessionObject.userBareJid else {
-                return;
-            }
-            guard DispatchQueue.main.sync(execute: { return UIApplication.shared.applicationState == .active }) else {
-                return;
-            }
-
-            let knownFeatures: [String] = AccountSettings.KnownServerFeatures(account).getStrings() ?? [];
-            let newFeatures = e.features.filter { (feature) -> Bool in
-                return !knownFeatures.contains(feature);
-            };
-            
-            suggestions.forEach { suggestion in
-                suggestion.handle(account: account, newServerFeatures: newFeatures, onNext: self.showNext, completionHandler: self.completionHandler);
-            }
-            
-            let newKnownFeatures = e.features.filter { feature -> Bool in
-                return suggestions.contains(where: { (suggestion) -> Bool in
-                    return suggestion.isCapable(feature);
-                })
-            }
-            
-            AccountSettings.KnownServerFeatures(account).set(strings: newKnownFeatures);
-            
-            break;
-        default:
-            break;
-        }
-    }
-    
-//    class MAMSuggestion: NewFeaturesDetectorSuggestion {
-//
-//        let feature = MessageArchiveManagementModule.MAM_XMLNS;
-//
-//        func isCapable(_ feature: String) -> Bool {
-//            return self.feature == feature;
-//        }
-//
-//        func handle(account: BareJID, newServerFeatures features: [String], onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
-//            guard features.contains(feature) else {
-//                completionHandler([]);
-//                return;
-//            }
-//
-//            askToEnableMAM(account: account, onNext: onNext, completionHandler: completionHandler);
-//        }
-//
-//        fileprivate func askToEnableMAM(account: BareJID, onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
-//            guard let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
-//                completionHandler([]);
-//                return;
-//            }
-//
-//            mamModule.retrieveSettings(completionHandler: { result in
-//                switch result {
-//                case .success(let defValue, let always, let never):
-//                    if defValue == .never {
-//                        DispatchQueue.main.async {
-//                            let controller = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(withIdentifier: "NewFeatureSuggestionView") as! NewFeatureSuggestionView;
-//
-//                            _ = controller.view;
-//
-//                            controller.titleField.text = "Message Archiving";
-//                            controller.iconField.image = UIImage(named: "messageArchiving")
-//                            controller.descriptionField.text = """
-//                            Your server for account \(account) supports message archiving.
-//
-//                            When it is enabled your XMPP server will archive all messages which you exchange. This will allow any XMPP client which you use and which supports message archiving to query this archive and show you message history even if messages were sent using different XMPP client.
-//                            """;
-//                            controller.onSkip = {
-//                                controller.dismiss(animated: true, completion: onNext);
-//                            }
-//                            controller.onEnable = { (handler) in
-//                                mamModule.updateSettings(defaultValue: .always, always: always, never: never, completionHandler: { result in
-//                                    switch result {
-//                                    case .success(_, _, _):
-//                                        DispatchQueue.main.async {
-//                                            handler();
-//                                            self.askToEnableMessageSync(account: account, onNext: onNext, completionHandler: { subcontrollers in
-//                                                guard let toShow = subcontrollers.first else {
-//                                                    controller.dismiss(animated: true, completion: onNext);
-//                                                    return;
-//                                                }
-//                                                controller.dismiss(animated: true, completion: {
-//                                                    UIApplication.shared.keyWindow?.rootViewController?.present(toShow, animated: true, completion: nil);
-//                                                })
-//                                            });
-//                                        }
-//                                    case .failure(_, _):
-//                                        DispatchQueue.main.async {
-//                                            handler();
-//                                            self.showError(title: "Message Archiving Error", message: "Server \(account.domain) returned an error on the request to enable archiving. You can try to enable this feature later on from the account settings.");
-//                                        }
-//                                    }
-//                                });
-//                            };
-//
-//                            completionHandler([controller]);
-//                        }
-//                    } else {
-//                        self.askToEnableMessageSync(account: account, onNext: onNext, completionHandler: completionHandler);
-//                    }
-//                case .failure(_, _):
-//                    completionHandler([]);
-//                }
-//            });
-//
-//        }
-//
-//        fileprivate func askToEnableMessageSync(account: BareJID, onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
-//            guard !AccountSettings.messageSyncAuto(account).getBool() else {
-//                completionHandler([]);
-//                return;
-//            }
-//
-//            DispatchQueue.main.async {
-//                let controller = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(withIdentifier: "NewFeatureSuggestionView") as! NewFeatureSuggestionView;
-//
-//                _ = controller.view;
-//
-//                controller.titleField.text = "Message Synchronization";
-//                controller.iconField.image = UIImage(named: "messageArchiving")
-//                controller.descriptionField.text = """
-//Would you like to enable automatic message synchronization?
-//
-//Have it enabled will keep synchronized copy of your messages exchanged using \(account.domain) from the last week on this device and allow you to easily view your converstation history.
-//""";
-//                controller.onSkip = {
-//                    controller.dismiss(animated: true, completion: onNext);
-//                }
-//                controller.onEnable = { (handler) in
-//                    AccountSettings.messageSyncPeriod(account).set(double: 24 * 7);
-//                    AccountSettings.messageSyncAuto(account).set(bool: true);
-//
-//                    MessageEventHandler.syncMessages(for: account, since: Date().addingTimeInterval(-1 * 24 * 7 * 60 * 60));
-//
-//                    controller.dismiss(animated: true, completion: onNext);
-//                }
-//
-//                completionHandler([controller]);
-//            }
-//        }
-//    }
-    
-    class PushSuggestion: NewFeaturesDetectorSuggestion {
-        
-        let feature = PushNotificationsModule.PUSH_NOTIFICATIONS_XMLNS;
-        
-        func isCapable(_ feature: String) -> Bool {
-            return self.feature == feature;
-        }
-        
-        func handle(account: BareJID, newServerFeatures features: [String], onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void) {
-            guard features.contains(feature) else {
-                completionHandler([]);
+            guard UIApplication.shared.applicationState == .active else {
+                self.navController?.dismiss(animated: true, completion: nil);
+                self.navController = nil;
                 return;
             }
             
-            guard let _: SiskinPushNotificationsModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), PushEventHandler.instance.deviceId != nil else {
-                completionHandler([]);
-                return;
-            }
-            
-            guard !(AccountManager.getAccount(for: account)?.pushNotifications ?? true) else {
-                completionHandler([]);
-                return;
-            }
-            
-            DispatchQueue.main.async {
-                let controller = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(withIdentifier: "NewFeatureSuggestionView") as! NewFeatureSuggestionView;
-                
-                _ = controller.view;
-
-                controller.titleField.text = "Push Notifications";
-                controller.iconField.image = UIImage(named: "pushNotifications")
-                controller.descriptionField.text = """
-Your server for account \(account) supports push notifications.
-                
-With this feature enabled Siskin IM can be automatically notified about new messages when it is in background or stopped. Notifications about new messages will be forwarded to our push component and delivered to the device. These notifications will contain message senders jid and part of a message.
-""";
-                controller.onSkip = {
-                    controller.dismiss(animated: true, completion: onNext);
+            guard let item: QueueItem = self.queue.sync(execute: {
+                guard !self.inProgress || fromController else {
+                    return nil;
                 }
-                controller.onEnable = { (handler) in
-                    self.enablePush(account: account, operationFinished: handler, completionHandler: {
-                        controller.dismiss(animated: true, completion: onNext);
-                    });
-                };
-                
-                completionHandler([controller]);
-            }
-        }
-        
-        func enablePush(account accountJid: BareJID, operationFinished: @escaping ()->Void, completionHandler: @escaping ()->Void) {
-            guard let pushModule: SiskinPushNotificationsModule = XmppService.instance.getClient(for: accountJid)?.modulesManager.getModule(SiskinPushNotificationsModule.ID), let deviceId = PushEventHandler.instance.deviceId else {
-                completionHandler();
+            
+                let it = self.actionsQueue.first;
+                if it != nil {
+                    self.actionsQueue.remove(at: 0);
+                    self.inProgress = true;
+                }
+                return it;
+            }) else {
+                self.navController?.dismiss(animated: true, completion: nil);
+                self.navController = nil;
                 return;
             }
-            
-            
-            pushModule.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: PushEventHandler.instance.pushkitDeviceId) { (result) in
-                switch result {
-                case .success(_):
-                    DispatchQueue.main.async {
-                        operationFinished();
-                        completionHandler();
+        
+            guard let client = XmppService.instance.getClient(for: item.account) else {
+                self.queue.sync {
+                    self.inProgress = false;
+                }
+                self.showNext();
+                return;
+            }
+
+            let next: ()->Void = {
+                if let navController = self.ensureNavController() {
+                    let controller = navController.visibleViewController as! SetAccountSettingsController;
+                    controller.client = client;
+                
+                    if item.newFeatures.contains(.mam) {
+                        controller.sections.append(.mamEnable);
+                        controller.sections.append(.mamSyncInitial);
                     }
-                case .failure(_):
-                    DispatchQueue.main.async {
-                        operationFinished();
-                        self.showError(title: "Push Notifications Error", message: "Server \(accountJid.domain) returned an error on the request to enable push notifications. You can try to enable this feature later on from the account settings.");
+                
+                    controller.completionHandler = {
+                        AccountSettings.knownServerFeatures(for: item.account, value: item.features);
+                    }
+                    
+                    controller.tableView.reloadData();
+                } else {
+                    self.queue.sync {
+                        self.inProgress = false;
                     }
                 }
             }
-        }
-        
-    }
-}
-
-protocol NewFeaturesDetectorSuggestion: class {
-    
-    func handle(account: BareJID, newServerFeatures features: [String], onNext: @escaping ()->Void, completionHandler: @escaping ([NewFeatureSuggestionView])->Void);
-    
-    func isCapable(_ feature: String) -> Bool;
-    
-}
-
-extension NewFeaturesDetectorSuggestion {
-    
-    func showError(title: String, message: String) {
-        DispatchQueue.main.async {
-            let alert = UIAlertController(title: title, message: message, preferredStyle: UIAlertController.Style.alert);
             
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
-            
-            let rootViewController = UIApplication.shared.keyWindow?.rootViewController;
-            self.visibleViewController(rootViewController: rootViewController)?.present(alert, animated: true, completion: nil);
+            if item.newFeatures.contains(.push) && Settings.enablePush == nil {
+                self.showPushQuestion(completionHandler: item.newFeatures.count == 1 ? { self.showNext(fromController: true) } : next);
+            } else {
+                next();
+            }
         }
     }
     
-    func visibleViewController(rootViewController: UIViewController?) -> UIViewController? {
-        guard let presentedViewController = rootViewController?.presentedViewController else {
-            return rootViewController;
+    private func ensureNavController() -> UINavigationController? {
+        guard let navController = self.navController else {
+            let navController = UIStoryboard(name: "Account", bundle: nil).instantiateViewController(withIdentifier: "SetAccountSettingsNavController") as! UINavigationController;
+            self.navController = navController;
+            navController.modalPresentationStyle = .pageSheet;
+            visibleController()?.present(navController, animated: true, completion: nil);
+            return self.navController;
         }
-        if let navController = presentedViewController as? UINavigationController {
-            return navController.viewControllers.last;
-        } else if let tabController = presentedViewController as? UITabBarController {
-            return tabController.selectedViewController;
-        } else {
-            return visibleViewController(rootViewController: presentedViewController);
-        }
+        return navController;
     }
     
-}
-
-class NewFeatureSuggestionView: UIViewController {
-    
-    @IBOutlet var titleField: UILabel!;
-    @IBOutlet var iconField: UIImageView!;
-    @IBOutlet var descriptionField: UILabel!;
-    @IBOutlet var enableButton: UIButton!;
-    @IBOutlet var cancelButton: UIButton!;
-    @IBOutlet var progressIndicator: UIActivityIndicatorView!;
-    
-    var onEnable: ((@escaping ()->Void)->Void)?;
-    var onSkip: (()->Void)?;
- 
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated);
+    private func visibleController() -> UIViewController? {
+        let window = UIApplication.shared.windows.first(where: { $0.isKeyWindow });
+        return window?.rootViewController?.presentedViewController ?? window?.rootViewController;
     }
     
-    @IBAction func enableClicked(_ sender: UIButton) {
-        self.progressIndicator.startAnimating();
-        self.enableButton.isEnabled = false;
-        onEnable!(self.onCompleted);
+    private func showPushQuestion(completionHandler: @escaping ()->Void) {
+        let alert = UIAlertController(title: "Push Notifications", message: "If enabled, you will receive notifications of new messages or calls even if SiskinIM is in background. SiskinIM servers will forward those notifications for you from XMPP servers.", preferredStyle: .alert);
+        alert.addAction(UIAlertAction(title: "Enable", style: .default, handler: { _ in
+            Settings.enablePush = true;
+            completionHandler();
+        }));
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+            Settings.enablePush = false;
+            completionHandler();
+        }))
+        visibleController()?.present(alert, animated: true, completion: nil);
     }
     
-    @IBAction func skipClicked(_ sender: UIButton) {
-        onSkip!();
-    }
-    
-    func onCompleted() {
-        self.enableButton.isEnabled = true;
-        self.progressIndicator.stopAnimating();
-    }
 }

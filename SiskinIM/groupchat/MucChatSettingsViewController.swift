@@ -185,7 +185,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
                                 case .success(_):
                                     break;
                                 case .failure(_):
-                                    AccountSettings.pushHash(room.account).set(int: 0);
+                                    AccountSettings.pushHash(for: room.account, value: 0);
                                 }
                             });
                         }

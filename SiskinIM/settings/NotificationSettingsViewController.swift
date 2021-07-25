@@ -26,17 +26,47 @@ class NotificationSettingsViewController: UITableViewController {
     
     private var cancellables: Set<AnyCancellable> = [];
     
+    private var items: [[SettingsEnum]] = [[.pushNotifications],[.notificationsFromUnknown]];
+    
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 1;
+        return items.count;
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1;
+        return items[section].count;
     }
     
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+        switch section {
+        case 0:
+            if UIApplication.shared.isRegisteredForRemoteNotifications {
+                return "If enabled, you will receive notifications of new messages or calls even if SiskinIM is in background. SiskinIM servers will forward those notifications for you from XMPP servers.";
+            } else {
+                return "You need to allow application to show notifications and for background refresh."
+            }
+        case 1:
+            return "Show notifications from people not in your contact list";
+        default:
+            return nil;
+        }
+    }
+        
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let setting = SettingsEnum(rawValue: indexPath.row)!;
-        switch setting {
+        let item = items[indexPath.section][indexPath.row];
+        switch item {
+        case .pushNotifications:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "PushNotificationsTableViewCell", for: indexPath) as! SwitchTableViewCell;
+            if anyAccountHasPush() && UIApplication.shared.isRegisteredForRemoteNotifications {
+                cell.switchView.isEnabled = true;
+                cell.bind({ c in
+                    c.assign(from: Settings.$enablePush.map({ $0 ?? false}).eraseToAnyPublisher());
+                    c.sink(map: { $0 as Bool? }, to: \.enablePush, on: Settings);
+                })
+            } else {
+                cell.switchView.isOn = UIApplication.shared.isRegisteredForRemoteNotifications ? (Settings.enablePush ?? false) : false;
+                cell.switchView.isEnabled = false;
+            }
+            return cell;
         case .notificationsFromUnknown:
             let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationsFromUnknownTableViewCell", for: indexPath) as! SwitchTableViewCell;
             cell.switchView.isOn = Settings.notificationsFromUnknown;
@@ -50,7 +80,13 @@ class NotificationSettingsViewController: UITableViewController {
         tableView.deselectRow(at: indexPath as IndexPath, animated: true);
     }
     
-    internal enum SettingsEnum: Int {
-        case notificationsFromUnknown = 0
+    private func anyAccountHasPush() -> Bool {
+        return !AccountManager.getAccounts().filter({ AccountSettings.knownServerFeatures(for: $0).contains(.push) }).isEmpty;
     }
+    
+    internal enum SettingsEnum {
+        case pushNotifications
+        case notificationsFromUnknown
+    }
+    
 }

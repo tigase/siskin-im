@@ -777,9 +777,9 @@ class DBChatHistoryStore {
         NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_REMOVED, object: entry);
     }
 
-    func lastMessageTimestamp(for account: BareJID) -> Date {
+    func lastMessageTimestamp(for account: BareJID) -> Date? {
         return try! Database.main.reader({ database in
-            return try database.select(query: .messagesLastTimestampForAccount, cached: false, params: ["account": account]).mapFirst({ $0.date(for: "timestamp") }) ?? Date(timeIntervalSince1970: 0);
+            return try database.select(query: .messagesLastTimestampForAccount, cached: false, params: ["account": account]).mapFirst({ $0.date(for: "timestamp") });
         });
     }
 

@@ -94,7 +94,7 @@ class SettingsViewController: UITableViewController {
             if accounts.count > indexPath.row {
                 cell.avatarStatusView.isHidden = false;
                 cell.set(account: accounts[indexPath.row]);
-                if AccountSettings.LastError(accounts[indexPath.row]).getString() != nil {
+                if AccountSettings.lastError(for :accounts[indexPath.row]) != nil {
                     cell.avatarStatusView.statusImageView.image = UIImage(systemName: "xmark.circle.fill")!;
                 }
                 cell.avatarStatusView.updateCornerRadius();

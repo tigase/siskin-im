@@ -43,7 +43,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     
     var accountValidatorTask: AccountValidatorTask?;
     
-    var onAccountAdded: (() -> Void)?;
+//    var onAccountAdded: (() -> Void)?;
     
     override func viewDidLoad() {
         super.viewDidLoad();
@@ -77,7 +77,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        onAccountAdded = nil;
+//        onAccountAdded = nil;
         super.viewWillDisappear(animated);
     }
     
@@ -119,11 +119,15 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         var account = AccountManager.getAccount(for: jid) ?? AccountManager.Account(name: jid);
         account.acceptCertificate(acceptedCertificate);
         account.password = passwordTextField.text!;
+
+        var cancellables: Set<AnyCancellable> = [];
         do {
             try AccountManager.save(account: account);
-            onAccountAdded?();
-            dismissView();
+            self.dismissView();
+            (UIApplication.shared.delegate as? AppDelegate)?.showSetup(value: false);
         } catch {
+            self.hideIndicator();
+            cancellables.removeAll();
             let alert = UIAlertController(title: "Error", message: "It was not possible to save account details: \(error)", preferredStyle: .alert);
             alert.addAction(UIAlertAction(title: "OK", style: .default));
             self.present(alert, animated: true, completion: nil);
@@ -136,7 +140,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     
     func dismissView() {
         let dismiss = self.view.window?.rootViewController is SetupViewController;
-        onAccountAdded = nil;
+//        onAccountAdded = nil;
         accountValidatorTask?.finish();
         accountValidatorTask = nil;
         
@@ -172,11 +176,11 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     }
     
     func handleResult(result: Result<Void,ErrorCondition>) {
-        self.hideIndicator();
         let acceptedCertificate = accountValidatorTask?.acceptedCertificate;
         self.accountValidatorTask = nil;
         switch result {
         case .failure(let errorCondition):
+            self.hideIndicator();
             self.saveButton.isEnabled = true;
             var error = "";
             switch errorCondition {

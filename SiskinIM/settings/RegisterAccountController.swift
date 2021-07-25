@@ -22,6 +22,7 @@ import Foundation
 
 import UIKit
 import TigaseSwift
+import Combine
 
 class RegisterAccountController: DataFormController {
     
@@ -181,13 +182,21 @@ class RegisterAccountController: DataFormController {
     }
     
     func saveAccount(acceptedCertificate: SslCertificateInfo?) {
-        var account = AccountManager.getAccount(for: self.account!) ?? AccountManager.Account(name: self.account!);
+        guard let jid = self.account else {
+            return;
+        }
+        
+        var account = AccountManager.getAccount(for: jid) ?? AccountManager.Account(name: jid);
         account.acceptCertificate(acceptedCertificate);
+        var cancellables: Set<AnyCancellable> = [];
         do {
             account.password = self.password!;
             try AccountManager.save(account: account);
-            onAccountAdded?();
+            self.onAccountAdded?();
+            self.dismissView();
+            (UIApplication.shared.delegate as? AppDelegate)?.showSetup(value: false);
         } catch {
+            cancellables.removeAll();
             let alert = UIAlertController(title: "Error", message: "It was not possible to save account details", preferredStyle: .alert);
             self.present(alert, animated: true, completion: nil);
         }
