@@ -283,7 +283,7 @@ class CallManager: NSObject, CXProviderDelegate {
             switch result {
             case .success(_):
                 action.fulfill(withDateStarted: Date());
-            case .failure(let err):
+            case .failure(_):
                 action.fail();
                 call.reset();
             }
@@ -352,7 +352,7 @@ class CallManager: NSObject, CXProviderDelegate {
     }
     
     private func showCallController(completionHandler: (VideoCallController)->Void) {
-        var topController = UIApplication.shared.keyWindow?.rootViewController;
+        var topController = UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.rootViewController;
         while (topController?.presentedViewController != nil) {
             topController = topController?.presentedViewController;
         }
@@ -904,7 +904,7 @@ class Call: NSObject, JingleSessionActionDelegate {
 
 }
 
-protocol CallDelegate: class {
+protocol CallDelegate: AnyObject {
     
     func callDidStart(_ sender: Call);
     func callDidEnd(_ sender: Call);

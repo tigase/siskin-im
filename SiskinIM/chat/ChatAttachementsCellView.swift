@@ -51,7 +51,7 @@ class ChatAttachmentsCellView: UICollectionViewCell, UIDocumentInteractionContro
                 self.imageField.image = UIImage.icon(forFile: fileUrl, mimeType: nil);
             }
         } else {
-            if case .attachment(let url, let appendix) = item.payload, let mimetype = appendix.mimetype, let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimetype as CFString, nil)?.takeRetainedValue() as String? {
+            if case .attachment(_, let appendix) = item.payload, let mimetype = appendix.mimetype, let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimetype as CFString, nil)?.takeRetainedValue() as String? {
                 imageField.image = UIImage.icon(forUTI: uti);
             } else {
                 imageField.image = UIImage.icon(forUTI: "public.content")

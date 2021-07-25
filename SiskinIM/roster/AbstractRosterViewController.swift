@@ -31,7 +31,6 @@ class AbstractRosterViewController: UITableViewController, UISearchResultsUpdati
     override func viewDidLoad() {
         super.viewDidLoad()
         searchController = UISearchController(searchResultsController: nil);
-        searchController.dimsBackgroundDuringPresentation = false;
         searchController.obscuresBackgroundDuringPresentation = false;
         searchController.hidesNavigationBarDuringPresentation = false;
         searchController.searchResultsUpdater = self;

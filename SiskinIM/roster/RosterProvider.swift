@@ -152,7 +152,7 @@ public class RosterProviderAbstract<Item: RosterProviderItem> {
     
 }
 
-public protocol RosterProviderItem: class {
+public protocol RosterProviderItem: AnyObject {
     
     var account: BareJID { get }
     var jid: BareJID { get }

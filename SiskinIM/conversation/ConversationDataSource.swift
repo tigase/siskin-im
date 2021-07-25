@@ -23,7 +23,7 @@ import Foundation
 import Combine
 import TigaseSwift
 
-protocol ConversationDataSourceDelegate: class {
+protocol ConversationDataSourceDelegate: AnyObject {
     
     var conversation: Conversation! { get }
     

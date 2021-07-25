@@ -117,7 +117,6 @@ class Markdown {
                         
                         
                         msg.enumerateAttribute(.font, in: NSRange(location: boldStart!, length: (nidx+1) - boldStart!), options: .init()) { (attr, range: NSRange, stop) -> Void in
-                            let font = attr as? UIFont;
                             let boldFont = Markdown.font(withTextStyle: defTextStyle, andTraits: .traitBold);
                             msg.addAttribute(.font, value: boldFont, range: range);
                         }
@@ -136,7 +135,6 @@ class Markdown {
                         msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: idx, length: 1));
                         
                         msg.enumerateAttribute(.font, in: NSRange(location: italicStart!, length: (idx+1) - italicStart!), options: .init()) { (attr, range: NSRange, stop) -> Void in
-                            let font = attr as? UIFont;
                             let italicFont = Markdown.font(withTextStyle: defTextStyle, andTraits: .traitItalic)
                             msg.addAttribute(.font, value: italicFont, range: range);
                         }

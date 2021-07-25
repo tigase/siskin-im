@@ -402,7 +402,7 @@ extension ConversationLogController {
     }
 }
 
-protocol ConversationLogDelegate: class {
+protocol ConversationLogDelegate: AnyObject {
  
     var navigationItem: UINavigationItem { get }
     var navigationController: UINavigationController? { get }

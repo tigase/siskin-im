@@ -58,8 +58,6 @@ extension Query {
 class DBChatHistoryStore {
 
     static let MESSAGE_NEW = Notification.Name("messageAdded");
-    // TODO: it looks like it is not working as expected. We should remove this notification in the future
-    static let MESSAGES_MARKED_AS_READ = Notification.Name("messagesMarkedAsRead");
     static let MESSAGE_UPDATED = Notification.Name("messageUpdated");
     static let MESSAGE_REMOVED = Notification.Name("messageRemoved");
     static var instance: DBChatHistoryStore = DBChatHistoryStore.init();
@@ -109,7 +107,7 @@ class DBChatHistoryStore {
                 print("converting for:", item.conversation, "previews:", previews);
                 if previews.count == 1 {
                     switch item.payload {
-                    case .message(let message, let correctionTimestamp):
+                    case .message(let message, _):
                         let isAttachmentOnly = URL(string: message) != nil;
                         
                         if isAttachmentOnly {
@@ -432,7 +430,6 @@ class DBChatHistoryStore {
         _ = self.correctMessageSync(for: conversation, stanzaId: stanzaId, sender: sender, data: data, correctionStanzaId: correctionStanzaId, correctionTimestamp: timestamp, serverMsgId: nil, remoteMsgId: nil, newState: newState);
     }
 
-    // TODO: Is it not "the same" as message retraction? Maybe we should unify?
     private func correctMessageSync(for conversation: ConversationKey, stanzaId: String, sender: ConversationEntrySender, data: String, correctionStanzaId: String?, correctionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?, newState: ConversationEntryState) -> Bool {
         // we need to check participant-id/sender nickname to make it work correctly
         // moreover, stanza-id should be checked with origin-id for MUC/MIX (not message id)
@@ -635,9 +632,6 @@ class DBChatHistoryStore {
         if !updatedRecords.isEmpty {
             DBChatStore.instance.markAsRead(for: account, with: jid, count: updatedRecords.count);
             markedAsRead.send(MarkedAsRead(account: account, jid: jid, messages: updatedRecords, before: before));
-            DispatchQueue.main.async {
-                NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGES_MARKED_AS_READ, object: self, userInfo: ["account": account, "jid": jid]);
-            }
         }
     }
 
@@ -804,14 +798,12 @@ class DBChatHistoryStore {
     }
 
     open func searchHistory(for account: BareJID? = nil, with jid: JID? = nil, search: String, completionHandler: @escaping ([ConversationEntry])->Void) {
-        // TODO: Remove this dispatch. async is OK but it is not needed to be done in a blocking maner
         let tokens = search.unicodeScalars.split(whereSeparator: { (c) -> Bool in
             return CharacterSet.punctuationCharacters.contains(c) || CharacterSet.whitespacesAndNewlines.contains(c);
         }).map({ (s) -> String in
             return String(s) + "*";
         });
         let query = tokens.joined(separator: " + ");
-        print("searching for:", tokens, "query:", query);
         let items = try! Database.main.reader({ database in
             try database.select(query: .messageSearchHistory, params: ["account": account, "jid": jid, "query": query]).mapAll({ cursor -> ConversationEntry? in
                 guard let account: BareJID = cursor["account"], let jid: BareJID = cursor["jid"] else {
@@ -824,7 +816,6 @@ class DBChatHistoryStore {
     }
 
     public func loadAttachments(for conversation: ConversationKey, completionHandler: @escaping ([ConversationEntry])->Void) {
-        // TODO: Why it is done in async manner but on a single thread? what is the point here?
         let params: [String: Any?] = ["account": conversation.account, "jid": conversation.jid];
         let attachments = try! Database.main.reader({ database in
             return try database.select(query: .messagesFindChatAttachments, cached: false, params: params).mapAll({ cursor -> ConversationEntry? in

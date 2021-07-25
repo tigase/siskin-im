@@ -38,17 +38,6 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
         }
     }
     
-    // FIXME: Should we restore this?
-//    override var conversationLogController: ConversationLogController? {
-//        didSet {
-//            if conversationLogController != nil {
-//                let refreshControl = UIRefreshControl();
-//                refreshControl.addTarget(self, action: #selector(ChatViewController.refreshChatHistory), for: UIControl.Event.valueChanged);
-//                self.conversationLogController?.refreshControl = refreshControl;
-//            }
-//        }
-//    }
-    
     private var cancellables: Set<AnyCancellable> = [];
     
     override func conversationTableViewDelegate() -> UITableViewDelegate? {
@@ -109,26 +98,6 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-  
-    // FIXME: Should we restore this?
-//    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-//        let count = super.tableView(tableView, numberOfRowsInSection: section);
-//        if count == 0 {
-//            if self.conversationLogController!.tableView.backgroundView == nil {
-//                let label = UILabel(frame: CGRect(x: 0, y:0, width: self.view.bounds.size.width, height: self.view.bounds.size.height));
-//                label.text = "No messages available. Pull up to refresh message history.";
-//                label.font = UIFont.systemFont(ofSize: UIFont.systemFontSize + 2, weight: .medium);
-//                label.numberOfLines = 0;
-//                label.textAlignment = .center;
-//                label.transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0);
-//                label.sizeToFit();
-//                self.conversationLogController!.tableView.backgroundView = label;
-//            }
-//        } else {
-//            self.conversationLogController!.tableView.backgroundView = nil;
-//        }
-//        return count;
-//    }
     
     func tableView(_ tableView: UITableView, accessoryButtonTappedForRowWith indexPath: IndexPath) {
         print("accessory button cliecked at", indexPath)
@@ -197,44 +166,6 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
         VideoCallController.call(jid: self.conversation.jid, from: self.conversation.account, media: [.audio, .video], sender: self);
     }
     #endif
-    
-    // FIXME: Should we restore this?
-//    @objc func refreshChatHistory() {
-//        let syncPeriod = AccountSettings.messageSyncPeriod(account).getDouble();
-//        guard syncPeriod != 0 else {
-//            self.conversationLogController?.refreshControl?.endRefreshing();
-//            return;
-//        }
-//
-//        let date = Date().addingTimeInterval(syncPeriod * -60.0 * 60);
-//        syncHistory(start: date);
-//    }
-//
-//    func syncHistory(start: Date, rsm rsmQuery: RSM.Query? = nil) {
-//        guard let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(forJid: self.account)?.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
-//            self.conversationLogController?.refreshControl?.endRefreshing();
-//            return;
-//        }
-//
-//        mamModule.queryItems(with: JID(jid), start: start, queryId: "sync-2", rsm: rsmQuery ?? RSM.Query(lastItems: 100), completionHandler: { result in
-//            switch result {
-//            case .success(let queryId, let complete, let rsmResponse):
-//                self.log("received items from archive", queryId, complete, rsmResponse);
-//                if rsmResponse != nil && rsmResponse!.index != 0 && rsmResponse?.first != nil {
-//                    self.syncHistory(start: start, rsm: rsmResponse?.previous(100));
-//                } else {
-//                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
-//                        self.conversationLogController?.refreshControl?.endRefreshing();
-//                    }
-//                }
-//            case .failure(let errorCondition, let response):
-//                self.log("failed to retrieve items from archive", errorCondition, response);
-//                DispatchQueue.main.async {
-//                    self.conversationLogController?.refreshControl?.endRefreshing();
-//                }
-//            }
-//        });
-//    }
     
     @IBAction func sendClicked(_ sender: UIButton) {
         sendMessage();

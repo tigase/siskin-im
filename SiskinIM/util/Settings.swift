@@ -167,7 +167,6 @@ class SettingsStore {
     var sharingViaHttpUpload: Bool;
     @UserDefaultsSetting(key: "fileDownloadSizeLimit", defaultValue: 4)
     var fileDownloadSizeLimit: Int;
-    // TODO: Convert from "MessageDeliveryReceiptsEnabled"
     @UserDefaultsSetting(key: "confirmMessages", defaultValue: true)
     var confirmMessages: Bool;
     @UserDefaultsSetting(key: "SendMessageOnReturn", defaultValue: true)
@@ -209,6 +208,13 @@ class SettingsStore {
         UserDefaults.standard.removeObject(forKey: "DeviceToken");
         UserDefaults.standard.removeObject(forKey: "RecentsOrder");
         UserDefaults.standard.removeObject(forKey: "AppearanceTheme");
+        
+        if UserDefaults.standard.value(forKey: "confirmMessages") == nil {
+            if let value = UserDefaults.standard.value(forKey: "MessageDeliveryReceiptsEnabled") as? Bool {
+                Settings.confirmMessages = value;
+                UserDefaults.standard.removeObject(forKey: "MessageDeliveryReceiptsEnabled");
+            }
+        }
         
         DispatchQueue.global(qos: .background).async {
             let removeOlder = Date().addingTimeInterval(7 * 24 * 60 * 60 * (-1.0));

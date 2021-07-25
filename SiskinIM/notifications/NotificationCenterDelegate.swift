@@ -64,6 +64,15 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
             completionHandler();
         }
      }
+    
+    func topController() -> UIViewController? {
+        var controler: UIViewController? = UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.rootViewController;
+        while (controler?.presentedViewController != nil) {
+            controler = controler?.presentedViewController;
+        }
+        
+        return controler;
+    }
 
     func didReceive(error content: UNNotificationContent, withCompletionHandler completionHandler: @escaping () -> Void) {
         let userInfo = content.userInfo;
@@ -84,21 +93,11 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
                     } catch {
                         let alert = UIAlertController(title: "Error", message: "It was not possible to save account details: \(error) Please try again later.", preferredStyle: .alert);
                         alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
-                        var topController = UIApplication.shared.keyWindow?.rootViewController;
-                        while (topController?.presentedViewController != nil) {
-                            topController = topController?.presentedViewController;
-                        }
-                        
-                        topController?.present(alert, animated: true, completion: nil);
+                        self.topController()?.present(alert, animated: true, completion: nil);
                     }
                 }, onDeny: nil);
                 
-                var topController = UIApplication.shared.keyWindow?.rootViewController;
-                while (topController?.presentedViewController != nil) {
-                    topController = topController?.presentedViewController;
-                }
-                
-                topController?.present(alert, animated: true, completion: nil);
+                topController()?.present(alert, animated: true, completion: nil);
             }
             if let authError = userInfo["auth-error-type"] {
                 let accountJid = BareJID(userInfo["account"] as! String);
@@ -106,22 +105,12 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
                 let alert = UIAlertController(title: "Authentication issue", message: "Authentication for account \(accountJid) failed: \(authError)\nVerify provided account password.", preferredStyle: .alert);
                 alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
                 
-                var topController = UIApplication.shared.keyWindow?.rootViewController;
-                while (topController?.presentedViewController != nil) {
-                    topController = topController?.presentedViewController;
-                }
-                
-                topController?.present(alert, animated: true, completion: nil);
+                topController()?.present(alert, animated: true, completion: nil);
             } else {
                 let alert = UIAlertController(title: content.title, message: content.body, preferredStyle: .alert);
                 alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
-                
-                var topController = UIApplication.shared.keyWindow?.rootViewController;
-                while (topController?.presentedViewController != nil) {
-                    topController = topController?.presentedViewController;
-                }
-                
-                topController?.present(alert, animated: true, completion: nil);
+                                
+                topController()?.present(alert, animated: true, completion: nil);
             }
         completionHandler();
     }
@@ -154,12 +143,7 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
                 }));
                 alert2.addAction(UIAlertAction(title: "Reject", style: .destructive, handler: nil));
                 
-                var topController = UIApplication.shared.keyWindow?.rootViewController;
-                while (topController?.presentedViewController != nil) {
-                    topController = topController?.presentedViewController;
-                }
-                
-                topController?.present(alert2, animated: true, completion: nil);
+                self.topController()?.present(alert2, animated: true, completion: nil);
             }
         }));
         alert.addAction(UIAlertAction(title: "Reject", style: .destructive, handler: {(action) in
@@ -169,12 +153,7 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
             client.module(.presence).unsubscribed(by: JID(senderJid));
         }));
         
-        var topController = UIApplication.shared.keyWindow?.rootViewController;
-        while (topController?.presentedViewController != nil) {
-            topController = topController?.presentedViewController;
-        }
-        
-        topController?.present(alert, animated: true, completion: nil);
+        topController()?.present(alert, animated: true, completion: nil);
         completionHandler();
     }
     
@@ -194,13 +173,9 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
 
         controller.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: controller, action: #selector(ChannelJoinViewController.cancelClicked(_:)));
         
-        var topController = UIApplication.shared.keyWindow?.rootViewController;
-        while (topController?.presentedViewController != nil) {
-            topController = topController?.presentedViewController;
-        }
         let navController = UINavigationController(rootViewController: controller);
         navController.modalPresentationStyle = .formSheet;
-        topController?.present(navController, animated: true, completion: nil);
+        topController()?.present(navController, animated: true, completion: nil);
         completionHandler();
     }
     
@@ -224,9 +199,9 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
     }
     
     private func openChatView(on account: BareJID, with jid: BareJID, completionHandler: @escaping ()->Void) {
-        var topController = UIApplication.shared.keyWindow?.rootViewController;
+        var topController = UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.rootViewController;
         while (topController?.presentedViewController != nil) {
-            if #available(iOS 13.0, *), let tmp = topController?.presentedViewController, tmp.modalPresentationStyle != .none {
+            if let tmp = topController?.presentedViewController, tmp.modalPresentationStyle != .none {
                 tmp.dismiss(animated: true, completion: {
                     self.openChatView(on: account, with: jid, completionHandler: completionHandler);
                 });
@@ -295,11 +270,6 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         let sdp = userInfo["sdpOffer"] as! String;
         let sid = userInfo["sid"] as! String;
         
-        var topController = UIApplication.shared.keyWindow?.rootViewController;
-        while (topController?.presentedViewController != nil) {
-            topController = topController?.presentedViewController;
-        }
-        
         if let session = JingleManager.instance.session(for: accountJid, with: senderJid, sid: sid) {
             // can still can be received!
             let alert = UIAlertController(title: "Incoming call", message: "Incoming call from \(senderName)", preferredStyle: .alert);
@@ -317,15 +287,15 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
 //                VideoCallController.accept(session: session, sdpOffer: sdp, withAudio: true, withVideo: false, sender: topController!);
 //            }));
             alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: { action in
-                _ = session.decline();
+                session.decline();
             }));
-            topController?.present(alert, animated: true, completion: nil);
+            topController()?.present(alert, animated: true, completion: nil);
         } else {
             // call missed...
             let alert = UIAlertController(title: "Missed call", message: "Missed incoming call from \(senderName)", preferredStyle: .alert);
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
             
-            topController?.present(alert, animated: true, completion: nil);
+            topController()?.present(alert, animated: true, completion: nil);
         }
         #endif
         completionHandler();

@@ -421,7 +421,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     static func getChatController(visible: Bool) -> BaseChatViewController? {
-        var topController = UIApplication.shared.keyWindow?.rootViewController;
+        var topController = UIApplication.shared.windows.first(where:{ $0.isKeyWindow })?.rootViewController;
         while (topController?.presentedViewController != nil) {
             topController = topController?.presentedViewController;
         }

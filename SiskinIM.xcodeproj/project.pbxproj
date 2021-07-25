@@ -79,7 +79,6 @@
 		FE2809832167CF1B002F5BD0 /* ServerFeaturesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2809822167CF1B002F5BD0 /* ServerFeaturesViewController.swift */; };
 		FE2D481A24505F1600C13CE5 /* CallManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2D481924505F1600C13CE5 /* CallManager.swift */; };
 		FE2D481C24518C2800C13CE5 /* RTCCameraVideoCapturer_Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2D481B24518C2800C13CE5 /* RTCCameraVideoCapturer_Format.swift */; };
-		FE3024321CE2036A00466497 /* DBVCardsCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3024311CE2036A00466497 /* DBVCardsCache.swift */; };
 		FE31291A22240BEB00A92863 /* PEPBookmarksModule_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31291922240BEB00A92863 /* PEPBookmarksModule_extension.swift */; };
 		FE31291C222C0D1500A92863 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31291B222C0D1500A92863 /* AvatarView.swift */; };
 		FE31DDE4201261A200C2AB1D /* DNSSrvDiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */; };
@@ -181,7 +180,6 @@
 		FEA7BF5D21E50CAB00D9E36C /* JingleManager_Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA7BF5C21E50CAB00D9E36C /* JingleManager_Session.swift */; };
 		FEA8D65D1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8D65C1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift */; };
 		FEA8D6621F30F54B0077C12F /* XmppService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8D6611F30F54B0077C12F /* XmppService.swift */; };
-		FEA8D6641F30F9260077C12F /* XmppService_VCardExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8D6631F30F9260077C12F /* XmppService_VCardExtension.swift */; };
 		FEAC71791CECE50400ABABEF /* MucChatOccupantsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */; };
 		FEAC717B1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */; };
 		FEB5EC9D1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift */; };
@@ -385,7 +383,6 @@
 		FE2A0E8D1F74012D006ADF08 /* db-schema-2.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-2.sql"; sourceTree = "<group>"; };
 		FE2D481924505F1600C13CE5 /* CallManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallManager.swift; sourceTree = "<group>"; };
 		FE2D481B24518C2800C13CE5 /* RTCCameraVideoCapturer_Format.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTCCameraVideoCapturer_Format.swift; sourceTree = "<group>"; };
-		FE3024311CE2036A00466497 /* DBVCardsCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBVCardsCache.swift; sourceTree = "<group>"; };
 		FE31291922240BEB00A92863 /* PEPBookmarksModule_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PEPBookmarksModule_extension.swift; sourceTree = "<group>"; };
 		FE31291B222C0D1500A92863 /* AvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
 		FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSSrvDiskCache.swift; sourceTree = "<group>"; };
@@ -502,7 +499,6 @@
 		FEA7BF5C21E50CAB00D9E36C /* JingleManager_Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager_Session.swift; sourceTree = "<group>"; };
 		FEA8D65C1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VCardEntryTypeAwareTableViewCell.swift; sourceTree = "<group>"; };
 		FEA8D6611F30F54B0077C12F /* XmppService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XmppService.swift; sourceTree = "<group>"; };
-		FEA8D6631F30F9260077C12F /* XmppService_VCardExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XmppService_VCardExtension.swift; sourceTree = "<group>"; };
 		FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatOccupantsTableViewController.swift; sourceTree = "<group>"; };
 		FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MucChatOccupantsTableViewCell.swift; sourceTree = "<group>"; };
 		FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift; sourceTree = "<group>"; };
@@ -752,7 +748,6 @@
 				FE507A061CDB7B3B001A015C /* DBRosterStore.swift */,
 				FE507A031CDB7B3B001A015C /* DBChatHistoryStore.swift */,
 				FE507A041CDB7B3B001A015C /* DBChatStore.swift */,
-				FE3024311CE2036A00466497 /* DBVCardsCache.swift */,
 				FE7F645A1D281B1C00B9DF56 /* DBCapabilitiesCache.swift */,
 				FED353882270C1D000B69C53 /* DBOMEMOStore.swift */,
 				FEC79194241ABEF4007BE572 /* MessageState.swift */,
@@ -1011,7 +1006,6 @@
 			isa = PBXGroup;
 			children = (
 				FEA8D6611F30F54B0077C12F /* XmppService.swift */,
-				FEA8D6631F30F9260077C12F /* XmppService_VCardExtension.swift */,
 				FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */,
 				FE00157C2017617B00490340 /* StreamFeaturesCache.swift */,
 				FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */,
@@ -1483,7 +1477,6 @@
 				FE0E30FE253714050030F8C5 /* MediaHelper.swift in Sources */,
 				FE11D35426623D6800CC883F /* ConversationInvitation.swift in Sources */,
 				FE9E136F1F26049A005C0EE5 /* NotificationSettingsViewController.swift in Sources */,
-				FEA8D6641F30F9260077C12F /* XmppService_VCardExtension.swift in Sources */,
 				FE11D3E126639D3300CC883F /* ContactManager.swift in Sources */,
 				FE31291C222C0D1500A92863 /* AvatarView.swift in Sources */,
 				FE719E7E2274D20D007CEEC9 /* OMEMOFingerprintsController.swift in Sources */,
@@ -1583,7 +1576,6 @@
 				FE11D38226623D7700CC883F /* DBChatStore+ChatStore.swift in Sources */,
 				FE2809832167CF1B002F5BD0 /* ServerFeaturesViewController.swift in Sources */,
 				FEC514281CEB82E9003AF765 /* MucChatViewController.swift in Sources */,
-				FE3024321CE2036A00466497 /* DBVCardsCache.swift in Sources */,
 				FE1A07482525EDD4004F38A0 /* ExternalServiceDiscovery_Service_extension.swift in Sources */,
 				FE74D510234A4E1F001A925B /* ChatTableViewSystemCell.swift in Sources */,
 				FE507A241CDB7B3B001A015C /* GlobalSplitViewController.swift in Sources */,

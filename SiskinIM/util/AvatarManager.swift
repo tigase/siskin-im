@@ -39,13 +39,11 @@ public class Avatar {
 
     public var hash: String? {
         didSet {
-            print("settings avatar \(hash) for \(key)")
             if let hash = hash {
                 AvatarManager.instance.avatar(withHash: hash, completionHandler: { result in
                     guard hash == self.hash else {
                         return;
                     }
-                    print("loaded avatar \(result) for \(self.key)")
                     switch result {
                     case .success(let avatar):
                         self.avatarSubject.send(.ready(avatar));

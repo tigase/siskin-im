@@ -101,7 +101,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
                     } else {
                         dispatchGroup.leave();
                     }
-                case .failure(let error):
+                case .failure(_):
                     self.pushNotificationsSwitch.isEnabled = false;
                     dispatchGroup.leave();
                 }
@@ -116,7 +116,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
                     self.canEditVCard = true;
                     dispatchGroup.leave();
                 }
-            case .failure(let error):
+            case .failure(_):
                 DispatchQueue.main.async {
                     self.canEditVCard = false;
                     dispatchGroup.leave();

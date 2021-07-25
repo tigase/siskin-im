@@ -59,7 +59,6 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
         self.tableView.contentInsetAdjustmentBehavior = .always;
         let searchController = UISearchController(searchResultsController: nil);
         self.navigationItem.hidesSearchBarWhenScrolling = false;
-        searchController.dimsBackgroundDuringPresentation = false;
         searchController.hidesNavigationBarDuringPresentation = false;
         searchController.searchResultsUpdater = self
         searchController.searchBar.searchBarStyle = .prominent;

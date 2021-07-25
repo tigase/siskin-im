@@ -150,7 +150,7 @@ class SetAccountSettingsController: UITableViewController {
                     tmp.defaultValue = self.enableMAM ? .always : .never;
                     client.module(.mam).updateSettings(settings: tmp, completionHandler: { result in
                         switch result {
-                        case .success(let settings):
+                        case .success(_):
                             break;
                         case .failure(let error):
                             errors.append(error);

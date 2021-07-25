@@ -260,11 +260,11 @@ class ChannelJoinViewController: UITableViewController {
                                     mucModule.setRoomSubject(roomJid: room.jid, newSubject: description);
                                 }
                             }
-                        case .failure(let error):
+                        case .failure(_):
                             break;
                         }
                     })
-                case .failure(let error):
+                case .failure(_):
                     break;
                 }
             })
@@ -320,7 +320,7 @@ class ChannelJoinViewController: UITableViewController {
                     DispatchQueue.main.async {
                         self.dismiss(animated: true, completion: nil);
                     }
-                case .failure(let error):
+                case .failure(_):
                     break;
                 }
             });

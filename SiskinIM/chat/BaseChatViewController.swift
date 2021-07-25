@@ -181,19 +181,6 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated);
-        // FIXME: we may need to restore that!! or chat history markers will handle that!!
-//        let accountStr = conversation.account.stringValue.lowercased();
-//        let jidStr = conversation.jid.stringValue.lowercased();
-//        UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
-//            var toRemove = [String]();
-//            for notification in notifications {
-//                if (notification.request.content.userInfo["account"] as? String)?.lowercased() == accountStr && (notification.request.content.userInfo["sender"] as? String)?.lowercased() == jidStr {
-//                    toRemove.append(notification.request.identifier);
-//                }
-//            }
-//            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
-////            self.xmppService.dbChatHistoryStore.markAsRead(for: self.account, with: self.jid);
-//        }
         print("size:", chatViewInputBar.intrinsicContentSize, chatViewInputBar.frame.size);
     }
         
@@ -451,7 +438,7 @@ class ChatViewInputBar: UIView, UITextViewDelegate, NSTextStorageDelegate {
     }
 }
 
-protocol ChatViewInputBarDelegate: class {
+protocol ChatViewInputBarDelegate: AnyObject {
     
     func sendMessage();
     

@@ -54,7 +54,6 @@ class ChatsListViewController: UITableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
         DBChatStore.instance.$unreadMessagesCount.throttle(for: 0.1, scheduler: DispatchQueue.main, latest: true).map({ $0 == 0 ? nil : "\($0)" }).sink(receiveValue: { [weak self] value in
-            print("setting badge to:", value, "on:", self?.navigationController, ",", self?.navigationController?.tabBarItem);
             self?.navigationController?.tabBarItem.badgeValue = value;
         }).store(in: &cancellables);
         animate();

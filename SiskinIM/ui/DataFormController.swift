@@ -200,13 +200,7 @@ class DataFormController: UITableViewController {
                 guard let v = passwordSuggestNew else {
                     return;
                 }
-                if #available(iOS 12.0, *) {
-                    uiTextField?.textContentType = v ? .newPassword : .password;
-                } else if #available(iOS 11.0, *) {
-                    if !v {
-                        uiTextField?.textContentType = .password;
-                    }
-                };
+                uiTextField?.textContentType = v ? .newPassword : .password;
             }
         }
         
@@ -753,7 +747,7 @@ class DataFormController: UITableViewController {
 
 }
 
-protocol FieldCell: class {
+protocol FieldCell: AnyObject {
     
     var field: Field? {
         get set

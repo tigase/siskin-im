@@ -49,10 +49,8 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
             cell.contentView.transform = .identity;
             let view = UIViewController();
             let size = self.conversationLogController!.tableView.rectForRow(at: indexPath).size;
-            print("cell:", (cell as? ChatTableViewCell)?.messageTextView.text);
             view.view = cell.contentView;
             view.preferredContentSize = size;
-            print("view size:", view.preferredContentSize)
             return view;
         }) { suggestedActions -> UIMenu? in
             return self.prepareContextMenu(for: indexPath);

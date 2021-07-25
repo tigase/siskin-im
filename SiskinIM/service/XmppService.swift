@@ -416,78 +416,12 @@ open class XmppService {
 
         
         isFetch = true;
-
-//        fetchingFor = [];
-//
-//        fetchGroup = DispatchGroup();
-//        dispatcher.sync {
-//            for client in clients.values {
-//                // try to send keepalive to ensure connection is valid
-//                // if it fails it will try to resume connection
-//                if client.state != .connected {
-//                    if client.state == .disconnected && AccountSettings.messageSyncAuto(client.sessionObject.userBareJid!).bool() {
-//                        fetchGroup?.enter();
-//                        fetchingFor.append(client.sessionObject.userBareJid!);
-//                        print("reconnecting client:", client.sessionObject.userBareJid!);
-//                        if !self.connect(client: client) {
-//                            self.fetchEnded(for: client.sessionObject.userBareJid!);
-//                        }
-//                    }
-//                } else {
-//                    client.keepalive();
-//                }
-//            }
-//            fetchGroup?.notify(queue: DispatchQueue.main) {
-//                self.isFetch = false;
-//                self.fetchGroup = nil;
-//                completionHandler(.newData);
-//            }
-//        }
-        // FIXME: this should not be in here!!
-        //completionHandler(.newData);
     }
 
     
     open func performFetchExpired() {
         self.fetchState?.expired();
-//        guard applicationState == .inactive, self.fetchGroup != nil else {
-//            return;
-//        }
-//
-//        dispatcher.sync {
-//            for client in clients.values {
-//                if client.state == .connected || client.state == .connecting {
-//                    self.disconnect(client: client) {
-//                        self.fetchEnded(for: client.sessionObject.userBareJid!);
-//                    }
-//                }
-//            }
-//        }
     }
-//
-//    fileprivate func fetchEnded(for account: BareJID) {
-//        dispatcher.async {
-//            if let idx = self.fetchingFor.firstIndex(of: account) {
-//                self.fetchingFor.remove(at: idx);
-//                self.fetchGroup?.leave();
-//            }
-//        }
-//    }
-//
-//    @objc open func messageSynchronizationFinished(_ notification: Notification) {
-//        guard let account = notification.userInfo?["account"] as? BareJID else {
-//            return;
-//        }
-//        print("message synchronization finished for account:", account)
-//        if self.applicationState == .inactive, let client = getClient(for: account) {
-//            disconnect(client: client) {
-//                self.fetchEnded(for: account);
-//            }
-//            return;
-//        } else {
-//            self.fetchEnded(for: account);
-//        }
-//    }
     
     fileprivate func initializeClient(for account: AccountManager.Account) -> XMPPClient {
         let jid = account.name;

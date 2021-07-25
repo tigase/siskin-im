@@ -143,7 +143,7 @@ class JingleManager: JingleSessionManager {
             }
             let session = self.open(for: context, with: jid, sid: id, role: .responder, initiationType: .message);
             let media = descriptions.map({ Call.Media.from(string: $0.media) }).filter({ $0 != nil }).map({ $0! });
-            // FIXME: Is this correct??
+
             let call = Call(account: context.userBareJid, with: jid.bareJid, sid: id, direction: .incoming, media: media);
             guard let callManager = CallManager.instance else {
                 throw XMPPError.feature_not_implemented;

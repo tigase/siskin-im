@@ -299,7 +299,7 @@
                                 <action selector="skipClicked:" destination="hDm-2E-coZ" id="Ajg-br-1bV"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" style="plain" systemItem="done" id="Tz4-7G-89d">
+                        <barButtonItem key="rightBarButtonItem" systemItem="done" id="Tz4-7G-89d">
                             <connections>
                                 <action selector="doneClicked:" destination="hDm-2E-coZ" id="DQh-1E-ess"/>
                             </connections>
@@ -900,17 +900,17 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="PhoneAddCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="PhoneAddCell" id="PkJ-5b-L9A">
-                                <rect key="frame" x="0.0" y="383.66666030883789" width="600" height="49.333332061767578"/>
+                                <rect key="frame" x="0.0" y="383.66666030883789" width="600" height="50"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="PkJ-5b-L9A" id="Kju-6c-Lhj">
-                                    <rect key="frame" x="0.0" y="0.0" width="600" height="49.333332061767578"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="600" height="50"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="contactAdd" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9jf-N5-mdI">
-                                            <rect key="frame" x="20" y="14" width="20" height="22"/>
+                                            <rect key="frame" x="20" y="14.000000000000002" width="20" height="22.666666666666671"/>
                                         </button>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" text="add phone" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jAE-vq-Vfj">
-                                            <rect key="frame" x="48" y="14" width="532" height="21"/>
+                                            <rect key="frame" x="48" y="14.000000000000002" width="532" height="21.666666666666671"/>
                                             <accessibility key="accessibilityConfiguration">
                                                 <accessibilityTraits key="traits" link="YES" staticText="YES"/>
                                             </accessibility>
@@ -931,7 +931,7 @@
                                 </tableViewCellContentView>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="EmailEditCell" rowHeight="44" id="GEd-A7-c44" customClass="VCardEditEmailTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="432.99999237060547" width="600" height="44"/>
+                                <rect key="frame" x="0.0" y="433.66666030883789" width="600" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="GEd-A7-c44" id="3nQ-Uq-yP5">
                                     <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
@@ -971,7 +971,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="EmailAddCell" rowHeight="51.666667938232422" id="l4b-9l-fds">
-                                <rect key="frame" x="0.0" y="476.99999237060547" width="600" height="51.666667938232422"/>
+                                <rect key="frame" x="0.0" y="477.66666030883789" width="600" height="51.666667938232422"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="l4b-9l-fds" id="a6e-BR-Tpz">
                                     <rect key="frame" x="0.0" y="0.0" width="600" height="51.666667938232422"/>
@@ -1002,17 +1002,17 @@
                                 </tableViewCellContentView>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="AddressAddCell" id="mi6-7L-CB9">
-                                <rect key="frame" x="0.0" y="528.66666030883789" width="600" height="49.333332061767578"/>
+                                <rect key="frame" x="0.0" y="529.33332824707031" width="600" height="50"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="mi6-7L-CB9" id="Nkf-ag-U8r">
-                                    <rect key="frame" x="0.0" y="0.0" width="600" height="49.333332061767578"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="600" height="50"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="contactAdd" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cHr-1G-C3e">
-                                            <rect key="frame" x="20" y="14" width="20" height="22"/>
+                                            <rect key="frame" x="20" y="14.000000000000002" width="20" height="22.666666666666671"/>
                                         </button>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" text="add address" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fRX-fN-yOj">
-                                            <rect key="frame" x="48" y="14" width="532" height="21"/>
+                                            <rect key="frame" x="48" y="14.000000000000002" width="532" height="21.666666666666671"/>
                                             <accessibility key="accessibilityConfiguration">
                                                 <accessibilityTraits key="traits" link="YES" staticText="YES"/>
                                             </accessibility>
@@ -1033,7 +1033,7 @@
                                 </tableViewCellContentView>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="AddressEditCell" id="Elb-gV-k9q" customClass="VCardEditAddressTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="577.99999237060547" width="600" height="132.33332824707031"/>
+                                <rect key="frame" x="0.0" y="579.33332824707031" width="600" height="132.33332824707031"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Elb-gV-k9q" id="b8O-NZ-4fp">
                                     <rect key="frame" x="0.0" y="0.0" width="600" height="132.33332824707031"/>

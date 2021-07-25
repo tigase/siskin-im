@@ -53,7 +53,9 @@ class AccountSettingsViewController: UITableViewController {
         AccountManager.accountEventsPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] event in
             switch event {
             case .enabled(let account), .disabled(let account), .removed(let account):
-                self?.updateView();
+                if self?.account == account.name {
+                    self?.updateView();
+                }
             }
         }).store(in: &cancellables);
         
@@ -124,7 +126,6 @@ class AccountSettingsViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: false);
-        let account = self.account!;
         if indexPath.section == 1 && indexPath.row == 3 {
             let controller = UIAlertController(title: "Nickname", message: "Enter default nickname to use in chats", preferredStyle: .alert);
             controller.addTextField(configurationHandler: { textField in
