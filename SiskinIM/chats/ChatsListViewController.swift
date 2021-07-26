@@ -37,8 +37,6 @@ class ChatsListViewController: UITableViewController {
         dataSource = ChatsDataSource(controller: self);
         super.viewDidLoad();
         
-        tableView.rowHeight = UITableView.automaticDimension;
-        tableView.estimatedRowHeight = 66.0;
         tableView.dataSource = self;
         setColors();
 
@@ -55,6 +53,9 @@ class ChatsListViewController: UITableViewController {
         super.viewWillAppear(animated);
         DBChatStore.instance.$unreadMessagesCount.throttle(for: 0.1, scheduler: DispatchQueue.main, latest: true).map({ $0 == 0 ? nil : "\($0)" }).sink(receiveValue: { [weak self] value in
             self?.navigationController?.tabBarItem.badgeValue = value;
+        }).store(in: &cancellables);
+        Settings.$recentsMessageLinesNo.removeDuplicates().receive(on: DispatchQueue.main).sink(receiveValue: { _ in
+            self.tableView.reloadData();
         }).store(in: &cancellables);
         animate();
     }

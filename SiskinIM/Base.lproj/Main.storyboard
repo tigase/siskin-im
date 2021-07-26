@@ -15,12 +15,12 @@
         <scene sceneID="hNz-n2-bh7">
             <objects>
                 <viewController storyboardIdentifier="ChatsListViewController" id="9pv-A4-QxB" customClass="ChatsListViewController" customModule="Siskin" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="90" sectionHeaderHeight="28" sectionFooterHeight="28" id="3ug-3t-4BD">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="3ug-3t-4BD">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="backgroundColor" name="chatslistBackground"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="ChatsListTableViewCellNew" rowHeight="60" id="0IJ-1b-Ma3" customClass="ChatsListTableViewCell" customModule="Siskin" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="ChatsListTableViewCellNew" id="0IJ-1b-Ma3" customClass="ChatsListTableViewCell" customModule="Siskin" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="24.5" width="414" height="60"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <tableViewCellContentView key="contentView" multipleTouchEnabled="YES" contentMode="center" tableViewCell="0IJ-1b-Ma3" id="f45-bS-0LJ">
@@ -69,7 +69,7 @@
                                                 </stackView>
                                             </subviews>
                                         </stackView>
-                                        <view contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="8Re-Fq-Luq" customClass="AvatarStatusView" customModule="Siskin" customModuleProvider="target">
+                                        <view contentMode="scaleAspectFit" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="8Re-Fq-Luq" customClass="AvatarStatusView" customModule="Siskin" customModuleProvider="target">
                                             <rect key="frame" x="10" y="6" width="48" height="48"/>
                                             <subviews>
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="e8L-U4-JYV" customClass="AvatarView" customModule="Siskin" customModuleProvider="target">
@@ -104,6 +104,7 @@
                                     </subviews>
                                     <color key="backgroundColor" name="chatslistBackground"/>
                                     <constraints>
+                                        <constraint firstItem="T3U-9K-htv" firstAttribute="top" relation="greaterThanOrEqual" secondItem="f45-bS-0LJ" secondAttribute="top" constant="2" id="Ad2-CP-STp"/>
                                         <constraint firstItem="8Re-Fq-Luq" firstAttribute="leading" secondItem="f45-bS-0LJ" secondAttribute="leading" constant="10" id="Bxk-an-k7M"/>
                                         <constraint firstItem="T3U-9K-htv" firstAttribute="centerY" secondItem="f45-bS-0LJ" secondAttribute="centerY" id="P4R-bC-VTX"/>
                                         <constraint firstItem="8Re-Fq-Luq" firstAttribute="centerY" secondItem="f45-bS-0LJ" secondAttribute="centerY" id="SMq-hI-Ooa"/>
@@ -123,17 +124,17 @@
                                     <outlet property="timestampLabel" destination="ga8-2K-hxE" id="y01-g8-TkJ"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="ChatsListTableViewCellBig" rowHeight="62" id="S4B-4u-yaC" customClass="ChatsListTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="84.5" width="414" height="62"/>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="ChatsListTableViewCellBig" id="S4B-4u-yaC" customClass="ChatsListTableViewCell" customModule="Siskin" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="84.5" width="414" height="60"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <tableViewCellContentView key="contentView" multipleTouchEnabled="YES" contentMode="center" tableViewCell="S4B-4u-yaC" id="MVZ-Mn-eTj">
-                                    <rect key="frame" x="0.0" y="0.0" width="414" height="62"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="60"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <view contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="mHg-3b-NWM" customClass="AvatarStatusView" customModule="Siskin" customModuleProvider="target">
+                                        <view contentMode="scaleAspectFit" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="mHg-3b-NWM" customClass="AvatarStatusView" customModule="Siskin" customModuleProvider="target">
                                             <rect key="frame" x="10" y="6" width="48" height="48"/>
                                             <subviews>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="clo-VW-qB8" customClass="AvatarView" customModule="Siskin" customModuleProvider="target">
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="clo-VW-qB8" customClass="AvatarView" customModule="Siskin" customModuleProvider="target">
                                                     <rect key="frame" x="0.0" y="0.0" width="48" height="48"/>
                                                 </imageView>
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="first" translatesAutoresizingMaskIntoConstraints="NO" id="WaZ-LK-dhq">
@@ -162,13 +163,13 @@
                                                 <outlet property="statusImageView" destination="WaZ-LK-dhq" id="Wxb-ZC-mEO"/>
                                             </connections>
                                         </view>
-                                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="Env-7g-dFc">
+                                        <stackView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" verticalCompressionResistancePriority="1000" axis="vertical" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="Env-7g-dFc">
                                             <rect key="frame" x="66" y="8" width="338" height="39"/>
                                             <subviews>
-                                                <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="eZM-3k-bfg">
+                                                <stackView opaque="NO" contentMode="scaleToFill" verticalCompressionResistancePriority="1000" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="eZM-3k-bfg">
                                                     <rect key="frame" x="0.0" y="0.0" width="338" height="17"/>
                                                     <subviews>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="Chat with" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pwo-hA-mvf">
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Chat with" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pwo-hA-mvf">
                                                             <rect key="frame" x="0.0" y="0.0" width="271.5" height="17"/>
                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -182,10 +183,10 @@
                                                         </label>
                                                     </subviews>
                                                 </stackView>
-                                                <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="X2S-kj-XM8">
+                                                <stackView opaque="NO" contentMode="scaleToFill" verticalCompressionResistancePriority="1000" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="X2S-kj-XM8">
                                                     <rect key="frame" x="0.0" y="21" width="338" height="18"/>
                                                     <subviews>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="200" horizontalCompressionResistancePriority="749" text="Last message" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fb1-8R-8Ff">
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="200" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="1000" text="Last message" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fb1-8R-8Ff">
                                                             <rect key="frame" x="0.0" y="2" width="299" height="14.5"/>
                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                                             <color key="textColor" name="chatslistItemSecondaryLabel"/>
@@ -208,7 +209,7 @@
                                     <color key="backgroundColor" name="chatslistBackground"/>
                                     <constraints>
                                         <constraint firstItem="Env-7g-dFc" firstAttribute="top" secondItem="mHg-3b-NWM" secondAttribute="top" constant="2" id="8MQ-3y-VET"/>
-                                        <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="mHg-3b-NWM" secondAttribute="bottom" priority="250" constant="6" id="GME-iq-Qt0"/>
+                                        <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="mHg-3b-NWM" secondAttribute="bottom" constant="6" id="GME-iq-Qt0"/>
                                         <constraint firstAttribute="trailing" secondItem="Env-7g-dFc" secondAttribute="trailing" constant="10" id="LVy-DM-zMz"/>
                                         <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Env-7g-dFc" secondAttribute="bottom" constant="6" id="QLR-CF-Drz"/>
                                         <constraint firstItem="Env-7g-dFc" firstAttribute="leading" secondItem="mHg-3b-NWM" secondAttribute="trailing" constant="8" id="Tod-Up-I7p"/>

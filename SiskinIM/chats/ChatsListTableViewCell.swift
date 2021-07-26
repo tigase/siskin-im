@@ -106,6 +106,9 @@ class ChatsListTableViewCell: UITableViewCell {
     }
 
     func update(conversation: Conversation) {
+        lastMessageLabel.numberOfLines = Settings.recentsMessageLinesNo;
+        lastMessageLabel.invalidateIntrinsicContentSize();
+        lastMessageLabel.setNeedsLayout();
         self.conversation = conversation;
     }
 
@@ -165,7 +168,6 @@ class ChatsListTableViewCell: UITableViewCell {
         } else {
             lastMessageLabel.text = nil;
         }
-        lastMessageLabel.numberOfLines = Settings.recentsMessageLinesNo;
     }
     
 }

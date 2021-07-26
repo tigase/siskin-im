@@ -211,7 +211,7 @@ class SettingsStore {
         
         if UserDefaults.standard.value(forKey: "confirmMessages") == nil {
             if let value = UserDefaults.standard.value(forKey: "MessageDeliveryReceiptsEnabled") as? Bool {
-                Settings.confirmMessages = value;
+                UserDefaults.standard.setValue(value, forKey: "confirmMessages");
                 UserDefaults.standard.removeObject(forKey: "MessageDeliveryReceiptsEnabled");
             }
         }
