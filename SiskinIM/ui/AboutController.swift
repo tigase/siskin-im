@@ -24,11 +24,14 @@ import UIKit
 
 class AboutController: UIViewController {
     
+    @IBOutlet var logoView: UIImageView!;
     @IBOutlet var nameLabel: UILabel!
     @IBOutlet var versionLabel: UILabel!;
     @IBOutlet var copyrightTextView: UITextView!;
     
     override func viewDidLoad() {
+        logoView.layer.cornerRadius = 8;
+        logoView.layer.masksToBounds = true;
         versionLabel.text = "Version: \(Bundle.main.infoDictionary!["CFBundleShortVersionString"] as? String ?? "Unknown")";        
     }
     

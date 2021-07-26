@@ -48,7 +48,7 @@ class SettingsViewController: UITableViewController {
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 3;
+        return 4;
     }
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -59,6 +59,8 @@ class SettingsViewController: UITableViewController {
             return "Status";
         case 2:
             return "Settings";
+        case 3:
+            return ""
         default:
             return "";
         }
@@ -76,6 +78,8 @@ class SettingsViewController: UITableViewController {
             return 2;
         case 2:
             return SettingsGroup.groups.count;
+        case 3:
+            return 2;
         default:
             return 0;
         }
@@ -133,7 +137,7 @@ class SettingsViewController: UITableViewController {
                 cell.accessoryType = .disclosureIndicator;
                 return cell;
             }
-        } else {
+        } else if (indexPath.section == 2) {
             switch SettingsGroup.groups[indexPath.row] {
             case .appearance:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "AppearanceViewCell", for: indexPath) as! EnumTableViewCell;
@@ -162,7 +166,13 @@ class SettingsViewController: UITableViewController {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "ExperimentalSettingsViewCell", for: indexPath);
                 cell.accessoryType = .disclosureIndicator;
                 return cell;
-            case .about:
+            }
+        } else {
+            switch AboutGroup.groups[indexPath.row] {
+            case .getInTouch:
+                let cell = tableView.dequeueReusableCell(withIdentifier: "GetInTouchSettingsViewCell", for: indexPath);
+                return cell;
+            case .aboutTheApp:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "AboutSettingsViewCell", for: indexPath);
                 return cell;
             }
@@ -327,14 +337,15 @@ class SettingsViewController: UITableViewController {
         case notifications
         case media
         case experimental
-        case about
+        //case about
         
-        static let groups: [SettingsGroup] = {
-            if #available(iOS 13.0, *) {
-                return [.appearance, .chat, .contacts, .notifications, .media, .experimental, .about]
-            } else {
-                return [.chat, .contacts, .notifications, .experimental, .media, .about]
-            }
-        }()
+        static let groups: [SettingsGroup] = [.appearance, .chat, .contacts, .notifications, .media, .experimental];
+    }
+    
+    enum AboutGroup {
+        case getInTouch
+        case aboutTheApp
+        
+        static let groups: [AboutGroup] = [.getInTouch, .aboutTheApp]
     }
 }

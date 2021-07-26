@@ -267,7 +267,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
-    fileprivate func open(xmppUri: XmppUri, action: XmppUri.Action, then: (()->Void)? = nil) {
+    func open(xmppUri: XmppUri, action: XmppUri.Action, then: (()->Void)? = nil) {
         switch action {
         case .join:
             let navController = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelJoinNavigationViewController") as! UINavigationController;
@@ -277,7 +277,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             
             joinController.hidesBottomBarWhenPushed = true;
             navController.modalPresentationStyle = .formSheet;
-            self.window?.rootViewController?.present(navController, animated: true, completion: nil);
+            window?.rootViewController?.dismiss(animated: true, completion: {
+                self.window?.rootViewController?.present(navController, animated: true, completion: nil);
+            })
         case .message:
             let alert = UIAlertController(title: "Start chatting", message: "Select account to open chat from", preferredStyle: .alert);
             

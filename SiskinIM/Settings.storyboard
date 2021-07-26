@@ -521,31 +521,46 @@
                                     <segue destination="FGQ-GL-dYt" kind="show" id="gsA-2D-Fg6"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="aboutSettingsViewCall" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="AboutSettingsViewCell" id="00j-hl-4km" userLabel="AboutSettingsViewCall">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="getInTouchSettingsViewCell" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="GetInTouchSettingsViewCell" textLabel="91g-qn-FOS" style="IBUITableViewCellStyleDefault" id="00j-hl-4km" userLabel="GetInTouchSettingsViewCell">
                                 <rect key="frame" x="0.0" y="445.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="00j-hl-4km" id="BKo-8a-1ti">
                                     <rect key="frame" x="0.0" y="0.0" width="384.5" height="44"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="About" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3vM-ad-4ap">
-                                            <rect key="frame" x="20" y="11" width="356.5" height="22"/>
-                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                        <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Get in touch" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="91g-qn-FOS">
+                                            <rect key="frame" x="20" y="0.0" width="356.5" height="44"/>
+                                            <autoresizingMask key="autoresizingMask"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
-                                    <constraints>
-                                        <constraint firstItem="3vM-ad-4ap" firstAttribute="top" secondItem="BKo-8a-1ti" secondAttribute="topMargin" id="6jn-RR-Ls6"/>
-                                        <constraint firstItem="3vM-ad-4ap" firstAttribute="leading" secondItem="BKo-8a-1ti" secondAttribute="leadingMargin" id="HmV-iS-Ge2"/>
-                                        <constraint firstAttribute="bottomMargin" secondItem="3vM-ad-4ap" secondAttribute="bottom" id="L9A-ye-Pe4"/>
-                                        <constraint firstAttribute="trailingMargin" secondItem="3vM-ad-4ap" secondAttribute="trailing" id="MiN-rG-tGi"/>
-                                    </constraints>
+                                </tableViewCellContentView>
+                                <accessibility key="accessibilityConfiguration" identifier="getInTouchSettingsViewCell"/>
+                                <connections>
+                                    <segue destination="ldP-3A-ef2" kind="show" id="zui-Ca-apa"/>
+                                </connections>
+                            </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="aboutSettingsViewCall" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="AboutSettingsViewCell" textLabel="9cK-3e-Nqx" style="IBUITableViewCellStyleDefault" id="JXS-R7-2mh" userLabel="AboutSettingsViewCall">
+                                <rect key="frame" x="0.0" y="489.5" width="414" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="JXS-R7-2mh" id="csg-1o-eZ5">
+                                    <rect key="frame" x="0.0" y="0.0" width="384.5" height="44"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="About the app" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="9cK-3e-Nqx">
+                                            <rect key="frame" x="20" y="0.0" width="356.5" height="44"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="aboutSettingsViewCall"/>
                                 <connections>
-                                    <segue destination="5B4-ae-wmU" kind="show" id="JiS-ax-O98"/>
+                                    <segue destination="5B4-ae-wmU" kind="show" id="cQ2-TJ-bKk"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -1022,7 +1037,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="2ZD-h3-ixB" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1146" y="1797"/>
+            <point key="canvasLocation" x="1733" y="1854"/>
         </scene>
         <!--Blocked Contacts Controller-->
         <scene sceneID="nsE-Lr-akt">
@@ -1084,7 +1099,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="457-GN-xTK" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1145" y="2691"/>
+            <point key="canvasLocation" x="1732" y="2656"/>
         </scene>
         <!--Notification settings-->
         <scene sceneID="mUd-RV-MKr">
@@ -1171,7 +1186,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="h70-11-ntf" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2689" y="1685"/>
+            <point key="canvasLocation" x="870" y="1854"/>
         </scene>
         <!--Experimental Settings Scene-->
         <scene sceneID="4hq-he-9by">
@@ -1354,7 +1369,17 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Tlr-f3-jiC" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1839" y="1742"/>
+            <point key="canvasLocation" x="2519" y="1854"/>
+        </scene>
+        <!--GetInTouchViewController-->
+        <scene sceneID="FMI-Eq-DFP">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Info" referencedIdentifier="GetInTouchViewController" id="ldP-3A-ef2" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="B9c-lC-QSW"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="RdE-Wn-ru9" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3242" y="1596"/>
         </scene>
         <!--AboutController-->
         <scene sceneID="5Mf-Za-3AY">
@@ -1364,7 +1389,7 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="f6S-Ox-AWU" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2050" y="2202"/>
+            <point key="canvasLocation" x="3125" y="1477"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
