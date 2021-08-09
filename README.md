@@ -34,6 +34,12 @@ When looking for support, please first search existing issues and pull-requests.
 
 Sikin IM may be downloaded from the [App Store](https://itunes.apple.com/us/app/tigase-messenger/id1153516838).
 
+## TestFlight
+
+**WARNING: Testing version of the Siskin can be unstable and cause data loss, you are using it at your discretion.
+
+To sign up to TestFlight beta testing please use following link: https://testflight.apple.com/join/zDSl1D3s ot join the testing program.
+
 # Using software
 
 After installation of Siskin IM it will suggest you to add or register the XMPP account, which you should do.
