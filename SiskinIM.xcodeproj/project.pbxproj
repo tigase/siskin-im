@@ -12,6 +12,9 @@
 		FE01ADA91E224CF400FA7E65 /* SiskinPushNotificationsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE01ADA81E224CF400FA7E65 /* SiskinPushNotificationsModule.swift */; };
 		FE0AE0B426A9DD6D0010D2E2 /* SetAccountSettingsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0AE0B326A9DD6D0010D2E2 /* SetAccountSettingsController.swift */; };
 		FE0AE0B626AED7870010D2E2 /* GetInTouchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0AE0B526AED7870010D2E2 /* GetInTouchViewController.swift */; };
+		FE0AE13526B575820010D2E2 /* MeetController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0AE13426B575820010D2E2 /* MeetController.swift */; };
+		FE0AE13726B58C4F0010D2E2 /* MeetManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0AE13626B58C4F0010D2E2 /* MeetManager.swift */; };
+		FE0AE13926B7EA770010D2E2 /* MeetEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0AE13826B7EA770010D2E2 /* MeetEventHandler.swift */; };
 		FE0E30DF2535B9D20030F8C5 /* BaseChatViewController+Share.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30DE2535B9D20030F8C5 /* BaseChatViewController+Share.swift */; };
 		FE0E30E42535BA520030F8C5 /* HTTPFileUploadHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30E32535BA520030F8C5 /* HTTPFileUploadHelper.swift */; };
 		FE0E30E92535BA910030F8C5 /* BaseChatViewController+ShareMedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30E82535BA910030F8C5 /* BaseChatViewController+ShareMedia.swift */; };
@@ -159,6 +162,8 @@
 		FE80BDAB1D953FC4001914B0 /* SetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE80BDAA1D953FC4001914B0 /* SetupViewController.swift */; };
 		FE82A729268C83020049C844 /* ChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE82A728268C83020049C844 /* ChartView.swift */; };
 		FE82A72B268CC0740049C844 /* DeviceMemoryUsageTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE82A72A268CC0740049C844 /* DeviceMemoryUsageTableViewCell.swift */; };
+		FE8885EC26BAEAAE0095E25E /* MultiContactSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8885EB26BAEAAE0095E25E /* MultiContactSelectionView.swift */; };
+		FE8885EE26BC6B570095E25E /* CreateMeetingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8885ED26BC6B570095E25E /* CreateMeetingViewController.swift */; };
 		FE8DD9C3221B118E0090F5AA /* Groupchat.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE8DD9C2221B118E0090F5AA /* Groupchat.storyboard */; };
 		FE8DD9C5221B153A0090F5AA /* InviteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8DD9C4221B153A0090F5AA /* InviteViewController.swift */; };
 		FE8DD9C7221B15DC0090F5AA /* AbstractRosterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8DD9C6221B15DC0090F5AA /* AbstractRosterViewController.swift */; };
@@ -167,6 +172,7 @@
 		FE94E52E1CCBA74F00FAE755 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FE94E52D1CCBA74F00FAE755 /* Assets.xcassets */; };
 		FE94E5311CCBA74F00FAE755 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE94E52F1CCBA74F00FAE755 /* LaunchScreen.storyboard */; };
 		FE9625A01D9AE7CB00D07118 /* RosterProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE96259F1D9AE7CB00D07118 /* RosterProvider.swift */; };
+		FE9D4DA526C1375300DD295A /* InviteToMeetingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9D4DA426C1375300DD295A /* InviteToMeetingViewController.swift */; };
 		FE9E136D1F25F5F7005C0EE5 /* ChatSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E136C1F25F5F7005C0EE5 /* ChatSettingsViewController.swift */; };
 		FE9E136F1F26049A005C0EE5 /* NotificationSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E136E1F26049A005C0EE5 /* NotificationSettingsViewController.swift */; };
 		FE9E13711F2606E9005C0EE5 /* ContactsSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E13701F2606E9005C0EE5 /* ContactsSettingsViewController.swift */; };
@@ -320,6 +326,9 @@
 		FE01ADA81E224CF400FA7E65 /* SiskinPushNotificationsModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SiskinPushNotificationsModule.swift; sourceTree = "<group>"; };
 		FE0AE0B326A9DD6D0010D2E2 /* SetAccountSettingsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetAccountSettingsController.swift; sourceTree = "<group>"; };
 		FE0AE0B526AED7870010D2E2 /* GetInTouchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetInTouchViewController.swift; sourceTree = "<group>"; };
+		FE0AE13426B575820010D2E2 /* MeetController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetController.swift; sourceTree = "<group>"; };
+		FE0AE13626B58C4F0010D2E2 /* MeetManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetManager.swift; sourceTree = "<group>"; };
+		FE0AE13826B7EA770010D2E2 /* MeetEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetEventHandler.swift; sourceTree = "<group>"; };
 		FE0E30DE2535B9D20030F8C5 /* BaseChatViewController+Share.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BaseChatViewController+Share.swift"; sourceTree = "<group>"; };
 		FE0E30E32535BA520030F8C5 /* HTTPFileUploadHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPFileUploadHelper.swift; sourceTree = "<group>"; };
 		FE0E30E82535BA910030F8C5 /* BaseChatViewController+ShareMedia.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BaseChatViewController+ShareMedia.swift"; sourceTree = "<group>"; };
@@ -475,6 +484,8 @@
 		FE82A728268C83020049C844 /* ChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartView.swift; sourceTree = "<group>"; };
 		FE82A72A268CC0740049C844 /* DeviceMemoryUsageTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMemoryUsageTableViewCell.swift; sourceTree = "<group>"; };
 		FE86C4481F7BFF93009E3CB8 /* SiskinIM-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SiskinIM-Bridging-Header.h"; sourceTree = "<group>"; };
+		FE8885EB26BAEAAE0095E25E /* MultiContactSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiContactSelectionView.swift; sourceTree = "<group>"; };
+		FE8885ED26BC6B570095E25E /* CreateMeetingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateMeetingViewController.swift; sourceTree = "<group>"; };
 		FE8DD9C2221B118E0090F5AA /* Groupchat.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Groupchat.storyboard; sourceTree = "<group>"; };
 		FE8DD9C4221B153A0090F5AA /* InviteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteViewController.swift; sourceTree = "<group>"; };
 		FE8DD9C6221B15DC0090F5AA /* AbstractRosterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractRosterViewController.swift; sourceTree = "<group>"; };
@@ -487,6 +498,8 @@
 		FE94E5321CCBA74F00FAE755 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FE94E55D1CCCC14E00FAE755 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		FE96259F1D9AE7CB00D07118 /* RosterProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterProvider.swift; sourceTree = "<group>"; };
+		FE9D4DA226BE9EFD00DD295A /* foreman.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = foreman.mp4; sourceTree = "<group>"; };
+		FE9D4DA426C1375300DD295A /* InviteToMeetingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteToMeetingViewController.swift; sourceTree = "<group>"; };
 		FE9E136C1F25F5F7005C0EE5 /* ChatSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatSettingsViewController.swift; sourceTree = "<group>"; };
 		FE9E136E1F26049A005C0EE5 /* NotificationSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NotificationSettingsViewController.swift; sourceTree = "<group>"; };
 		FE9E13701F2606E9005C0EE5 /* ContactsSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactsSettingsViewController.swift; sourceTree = "<group>"; };
@@ -705,6 +718,10 @@
 				FE2D481924505F1600C13CE5 /* CallManager.swift */,
 				FE2D481B24518C2800C13CE5 /* RTCCameraVideoCapturer_Format.swift */,
 				FE1A07472525EDD4004F38A0 /* ExternalServiceDiscovery_Service_extension.swift */,
+				FE0AE13426B575820010D2E2 /* MeetController.swift */,
+				FE0AE13626B58C4F0010D2E2 /* MeetManager.swift */,
+				FE8885ED26BC6B570095E25E /* CreateMeetingViewController.swift */,
+				FE9D4DA426C1375300DD295A /* InviteToMeetingViewController.swift */,
 			);
 			path = voip;
 			sourceTree = "<group>";
@@ -807,6 +824,7 @@
 		FE507A0E1CDB7B3B001A015C /* ui */ = {
 			isa = PBXGroup;
 			children = (
+				FE8885EA26BAEA350095E25E /* suggestions */,
 				FE507A0F1CDB7B3B001A015C /* AvatarStatusView.swift */,
 				FE507A101CDB7B3B001A015C /* CustomTabBarController.swift */,
 				FE507A111CDB7B3B001A015C /* GlobalSplitViewController.swift */,
@@ -928,6 +946,14 @@
 			path = notifications;
 			sourceTree = "<group>";
 		};
+		FE8885EA26BAEA350095E25E /* suggestions */ = {
+			isa = PBXGroup;
+			children = (
+				FE8885EB26BAEAAE0095E25E /* MultiContactSelectionView.swift */,
+			);
+			path = suggestions;
+			sourceTree = "<group>";
+		};
 		FE94E5181CCBA74F00FAE755 = {
 			isa = PBXGroup;
 			children = (
@@ -958,6 +984,7 @@
 		FE94E5231CCBA74F00FAE755 /* SiskinIM */ = {
 			isa = PBXGroup;
 			children = (
+				FE9D4DA226BE9EFD00DD295A /* foreman.mp4 */,
 				FE168ACC1CCD197A003F8B26 /* db-schema-1.sql */,
 				FE2A0E8D1F74012D006ADF08 /* db-schema-2.sql */,
 				FE4496C31F87911C009F649C /* db-schema-3.sql */,
@@ -1022,6 +1049,7 @@
 				FEDC6789238A9F16005C0FAB /* BlockedEventHandler.swift */,
 				FE3E3879242765E700D3A8E8 /* MixEventHandler.swift */,
 				FE11D3BE2662852A00CC883F /* XMPPClient_extension.swift */,
+				FE0AE13826B7EA770010D2E2 /* MeetEventHandler.swift */,
 			);
 			path = service;
 			sourceTree = "<group>";
@@ -1351,7 +1379,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#\"${SRCROOT}/\"trim.sh TigaseSwift\n\"${SRCROOT}/\"trim.sh WebRTC\n";
+			shellScript = "#\"${SRCROOT}/\"trim.sh TigaseSwift\n#\"${SRCROOT}/\"trim.sh WebRTC\n";
 		};
 		FECD0F2A1CDB8B1B00420DF5 /* Mark TODO and FIX ME */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1437,11 +1465,13 @@
 				FE137A4C21F75660006B7F7C /* ChatBottomView.swift in Sources */,
 				FE3E38802427B8A900D3A8E8 /* ChannelsHelper.swift in Sources */,
 				FE3A45CF1CE49D3300C36264 /* RosterItemEditViewController.swift in Sources */,
+				FE0AE13726B58C4F0010D2E2 /* MeetManager.swift in Sources */,
 				FEE49DD7242688E100900BBB /* ChannelViewController.swift in Sources */,
 				FE507A211CDB7B3B001A015C /* SettingsViewController.swift in Sources */,
 				FE11D35526623D6800CC883F /* ConversationEntryRecipient.swift in Sources */,
 				FE507A191CDB7B3B001A015C /* DBChatHistoryStore.swift in Sources */,
 				FEA8D65D1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift in Sources */,
+				FE8885EE26BC6B570095E25E /* CreateMeetingViewController.swift in Sources */,
 				FEBC12F524C70E7F00689475 /* DBChatHistorySyncStore.swift in Sources */,
 				FEDC6790238B05E4005C0FAB /* BlockedContactsController.swift in Sources */,
 				FE2332E1242CCDB400008ED4 /* InvitationChatTableViewCell.swift in Sources */,
@@ -1453,6 +1483,7 @@
 				FE507A1E1CDB7B3B001A015C /* RosterViewController.swift in Sources */,
 				FEDCBF691D9C53BA00AE9129 /* RosterProviderGrouped.swift in Sources */,
 				FEDE938C1D08AFE800CA60A9 /* VCardEditViewController.swift in Sources */,
+				FE0AE13926B7EA770010D2E2 /* MeetEventHandler.swift in Sources */,
 				FEDC678E238B03C1005C0FAB /* AppStoryboard.swift in Sources */,
 				FEA303AD24696604004A3B3E /* VCardTextEditCell.swift in Sources */,
 				FE36B3C821FA52E000D1F037 /* EmptyViewController.swift in Sources */,
@@ -1472,6 +1503,7 @@
 				FE43E43823BF3DE80079BD9B /* ChatAttachementsController.swift in Sources */,
 				FEDE93891D081C3D00CA60A9 /* Settings.swift in Sources */,
 				FECEF29B23B7BC02007EC323 /* BaseChatTableViewCell.swift in Sources */,
+				FE9D4DA526C1375300DD295A /* InviteToMeetingViewController.swift in Sources */,
 				FECEF29E23B7C390007EC323 /* AttachmentChatTableViewCell.swift in Sources */,
 				FED353892270C1D000B69C53 /* DBOMEMOStore.swift in Sources */,
 				FE8DD9C5221B153A0090F5AA /* InviteViewController.swift in Sources */,
@@ -1510,6 +1542,7 @@
 				FE2D481C24518C2800C13CE5 /* RTCCameraVideoCapturer_Format.swift in Sources */,
 				FE4A94AA26679D65000A96E5 /* EnumTableViewCell.swift in Sources */,
 				FE11D2E526616B7300CC883F /* DatabaseMigrator.swift in Sources */,
+				FE0AE13526B575820010D2E2 /* MeetController.swift in Sources */,
 				FE4071E421E2605900F09B58 /* VideoCallController.swift in Sources */,
 				FE9E13731F260B33005C0EE5 /* StepperTableViewCell.swift in Sources */,
 				FE6545601E9E7B85006A14AC /* RegisterAccountController.swift in Sources */,
@@ -1542,6 +1575,7 @@
 				FE80BDAB1D953FC4001914B0 /* SetupViewController.swift in Sources */,
 				FEE097621F1FCE1800B1CEAB /* TablePicketViewController.swift in Sources */,
 				FEDE93941D0AC01200CA60A9 /* VCardEditEmailTableViewCell.swift in Sources */,
+				FE8885EC26BAEAAE0095E25E /* MultiContactSelectionView.swift in Sources */,
 				FEF8255524BA0AFE00820108 /* MessageTextView.swift in Sources */,
 				FE11D38026623D7700CC883F /* DBChatMarkersStore.swift in Sources */,
 				FEDE939B1D0C38B000CA60A9 /* ContactFormTableViewCell.swift in Sources */,
@@ -2030,6 +2064,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 7.0;
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.mobile;
 				PRODUCT_NAME = Siskin;
 				PROVISIONING_PROFILE = "";

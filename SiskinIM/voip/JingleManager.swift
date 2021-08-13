@@ -144,7 +144,7 @@ class JingleManager: JingleSessionManager {
             let session = self.open(for: context, with: jid, sid: id, role: .responder, initiationType: .message);
             let media = descriptions.map({ Call.Media.from(string: $0.media) }).filter({ $0 != nil }).map({ $0! });
 
-            let call = Call(account: context.userBareJid, with: jid.bareJid, sid: id, direction: .incoming, media: media);
+            let call = Call(client: context as! XMPPClient, with: jid.bareJid, sid: id, direction: .incoming, media: media);
             guard let callManager = CallManager.instance else {
                 throw XMPPError.feature_not_implemented;
             }
@@ -179,7 +179,7 @@ class JingleManager: JingleSessionManager {
         let sdp = SDP(contents: contents, bundle: bundle);
 
         let media = sdp.contents.compactMap({ c -> Call.Media? in Call.Media.from(string: c.description?.media) });
-        let call = Call(account: context.userBareJid, with: jid.bareJid, sid: sid, direction: .incoming, media: media);
+        let call = Call(client: context as! XMPPClient, with: jid.bareJid, sid: sid, direction: .incoming, media: media);
         
         
         if let session = session(for: context, with: jid, sid: sid) {

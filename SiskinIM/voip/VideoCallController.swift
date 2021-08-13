@@ -179,10 +179,14 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
             completionHandler(.failure(ErrorCondition.not_allowed))
             return;
         }
+        guard let client = XmppService.instance.getClient(for: account) else {
+            completionHandler(.failure(ErrorCondition.item_not_found));
+            return;
+        }
         
         let continueCall = {
             // we do not know "internal id" of a session
-            let call = Call(account: account, with: jid, sid: UUID().uuidString, direction: .outgoing, media: media);
+            let call = Call(client: client, with: jid, sid: UUID().uuidString, direction: .outgoing, media: media);
                 
             checkMediaAvailability(forCall: call, completionHandler: { result in
                 switch result {
@@ -225,8 +229,6 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
     @IBOutlet fileprivate var avatarWidthConstraint: NSLayoutConstraint!;
     @IBOutlet fileprivate var avatarHeightConstraint: NSLayoutConstraint!;
         
-    private var localVideoCapturer: RTCCameraVideoCapturer?;
-    
     public override func viewDidLoad() {
         super.viewDidLoad();
 

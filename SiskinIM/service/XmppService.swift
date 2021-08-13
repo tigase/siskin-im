@@ -62,7 +62,7 @@ open class XmppService {
     fileprivate var fetchClientsWaitingForReconnection: [BareJID] = [];
     fileprivate var fetchStart = NSDate();
         
-    let extensions: [XmppServiceExtension] = [BlockedEventHandler.instance, PresenceRosterEventHandler.instance, AvatarEventHandler.instance, MixEventHandler.instance, MucEventHandler.instance, NewFeaturesDetector.instance, PushEventHandler.instance];
+    let extensions: [XmppServiceExtension] = [BlockedEventHandler.instance, PresenceRosterEventHandler.instance, AvatarEventHandler.instance, MixEventHandler.instance, MucEventHandler.instance, NewFeaturesDetector.instance, PushEventHandler.instance, MeetEventHandler.instance];
 
     fileprivate let eventHandlers: [XmppServiceEventHandler] = [MessageEventHandler.instance];
     
@@ -480,14 +480,12 @@ open class XmppService {
          _ = client.modulesManager.register(AdHocCommandsModule());
         
         _ = client.modulesManager.register(SiskinPushNotificationsModule(defaultPushServiceJid: XmppService.pushServiceJid, provider: SiskinPushNotificationsModuleProvider()));
-        #if targetEnvironment(simulator)
-        #else
         let jingleModule = client.modulesManager.register(JingleModule(sessionManager: JingleManager.instance));
         jingleModule.register(transport: Jingle.Transport.ICEUDPTransport.self, features: [Jingle.Transport.ICEUDPTransport.XMLNS, "urn:xmpp:jingle:apps:dtls:0"]);
         jingleModule.register(description: Jingle.RTP.Description.self, features: ["urn:xmpp:jingle:apps:rtp:1", "urn:xmpp:jingle:apps:rtp:audio", "urn:xmpp:jingle:apps:rtp:video"]);
         jingleModule.supportsMessageInitiation = true;
         _ = client.modulesManager.register(ExternalServiceDiscoveryModule());
-        #endif
+        client.modulesManager.register(MeetModule());
         _ = client.modulesManager.register(InBandRegistrationModule());
         // TODO: restore support for caching salted password
 //        ScramMechanism.setSaltedPasswordCache(AccountManager.saltedPasswordCache, sessionObject: client.sessionObject);

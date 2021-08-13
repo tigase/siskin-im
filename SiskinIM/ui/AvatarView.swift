@@ -93,13 +93,17 @@ class AvatarView: UIImageView {
         self.setNeedsDisplay();
     }
         
-    func prepareInitialsAvatar(for text: String) -> UIImage {
+    func prepareInitialsAvatar(for text: String) -> UIImage? {
         let scale = UIScreen.main.scale;
         var size = self.bounds.size;
         
         if self.contentMode == .redraw || contentMode == .scaleAspectFill || contentMode == .scaleAspectFit || contentMode == .scaleToFill {
             size.width = (size.width * scale);
             size.height = (size.height * scale);
+        }
+        
+        guard size.width > 0 && size.height > 0 else {
+            return nil;
         }
         
         UIGraphicsBeginImageContextWithOptions(size, false, scale);

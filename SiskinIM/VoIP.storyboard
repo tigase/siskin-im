@@ -5,6 +5,7 @@
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -105,7 +106,59 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="yO6-3f-vJ7" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="280.80000000000001" y="-297.30134932533736"/>
+            <point key="canvasLocation" x="1220" y="-297.30134932533736"/>
+        </scene>
+        <!--Select Account Controller-->
+        <scene sceneID="rRY-gY-tek">
+            <objects>
+                <tableViewController storyboardIdentifier="SelectAccountController" definesPresentationContext="YES" id="91m-Vy-rtU" customClass="SelectAccountController" customModule="Siskin" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="L07-Nj-ZKt">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <sections>
+                            <tableViewSection headerTitle="Account" footerTitle="Select which account should be used to join channel" id="0d6-UW-iX3">
+                                <cells>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" rowHeight="43.5" id="6Kz-gR-WvQ">
+                                        <rect key="frame" x="0.0" y="49.5" width="375" height="43.5"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" ambiguous="YES" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="6Kz-gR-WvQ" id="Q7I-z3-yZw">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="test@example.com" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="9Dn-ee-8WK">
+                                                    <rect key="frame" x="16" y="0.0" width="343" height="44"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="44" id="lng-qs-WDf"/>
+                                                    </constraints>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <textInputTraits key="textInputTraits"/>
+                                                </textField>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstAttribute="bottom" secondItem="9Dn-ee-8WK" secondAttribute="bottom" id="SUa-Q3-5CR"/>
+                                                <constraint firstAttribute="trailingMargin" secondItem="9Dn-ee-8WK" secondAttribute="trailing" id="VlT-d8-bWr"/>
+                                                <constraint firstItem="9Dn-ee-8WK" firstAttribute="top" secondItem="Q7I-z3-yZw" secondAttribute="top" id="ZsH-Pm-Etc"/>
+                                                <constraint firstItem="9Dn-ee-8WK" firstAttribute="leading" secondItem="Q7I-z3-yZw" secondAttribute="leadingMargin" id="w7F-6J-YHp"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
+                        </sections>
+                        <connections>
+                            <outlet property="dataSource" destination="91m-Vy-rtU" id="3ET-X3-qmM"/>
+                            <outlet property="delegate" destination="91m-Vy-rtU" id="g49-ji-cSK"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" id="9sY-pe-cO7"/>
+                    <connections>
+                        <outlet property="accountField" destination="9Dn-ee-8WK" id="b4E-7y-VKW"/>
+                    </connections>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="2bJ-K9-1zv" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-132" y="172.26386806596702"/>
         </scene>
     </scenes>
     <resources>
@@ -115,6 +168,9 @@
         <image name="switchCamera" width="30" height="30"/>
         <systemColor name="scrollViewTexturedBackgroundColor">
             <color red="0.43529411764705878" green="0.44313725490196082" blue="0.47450980392156861" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
     </resources>
 </document>

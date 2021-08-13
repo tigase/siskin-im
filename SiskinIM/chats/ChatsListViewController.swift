@@ -58,6 +58,47 @@ class ChatsListViewController: UITableViewController {
             self.tableView.reloadData();
         }).store(in: &cancellables);
         animate();
+        
+        if #available(iOS 14.0, *) {
+            addMucButton.action = nil;
+            addMucButton.target = nil;
+            addMucButton.primaryAction = nil
+            
+            let newPrivateGC = UIAction(title: "New private group chat", image: nil, handler: { action in
+                let navigation = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelCreateNavigationViewController") as! UINavigationController;
+                (navigation.visibleViewController as? ChannelCreateViewController)?.kind = .adhoc;
+                navigation.modalPresentationStyle = .formSheet;
+                self.present(navigation, animated: true, completion: nil);
+            });
+            
+            let newPublicGC = UIAction(title: "New public group chat", image: nil, handler: { action in
+                let navigation = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelCreateNavigationViewController") as! UINavigationController;
+                (navigation.visibleViewController as? ChannelCreateViewController)?.kind = .stable;
+                navigation.modalPresentationStyle = .formSheet;
+                self.present(navigation, animated: true, completion: nil);
+            });
+            
+            let joinGC = UIAction(title: "Join group chat", image: nil, handler: { action in
+                let navigation = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelJoinNavigationViewController") as! UINavigationController;
+                navigation.modalPresentationStyle = .formSheet;
+                self.present(navigation, animated: true, completion: nil);
+            })
+            
+            let deferedItems = UIDeferredMenuElement({ callback in
+                if CallManager.instance != nil && !MeetEventHandler.instance.supportedAccounts.isEmpty {
+                    callback([
+                        UIAction(title: "Create meeting", image: UIImage(systemName: "person.crop.rectangle"), handler: { action in
+                            let selector = CreateMeetingViewController(style: .plain);
+                            let navController = UINavigationController(rootViewController: selector);
+                            self.present(navController, animated: true, completion: nil);
+                        })
+                    ]);
+                } else {
+                    callback([]);
+                }
+            });
+            addMucButton.menu = UIMenu(title: "", children: [newPrivateGC, newPublicGC, joinGC, deferedItems]);
+        }
     }
     
     private func animate() {
@@ -268,6 +309,14 @@ class ChatsListViewController: UITableViewController {
             navigation.modalPresentationStyle = .formSheet;
             self.present(navigation, animated: true, completion: nil);
         }));
+        
+        if CallManager.instance != nil && !MeetEventHandler.instance.supportedAccounts.isEmpty {
+            controller.addAction(UIAlertAction(title: "Create meeting", style: .default, handler: { action in
+                let selector = CreateMeetingViewController(style: .plain);
+                let navController = UINavigationController(rootViewController: selector);
+                self.present(navController, animated: true, completion: nil);
+            }))
+        }
         
         controller.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
         

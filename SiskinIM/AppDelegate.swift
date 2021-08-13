@@ -101,7 +101,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if AccountManager.getAccounts().isEmpty {
             self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SetupViewController");
         }
-        
+                
 //        let callConfig = CXProviderConfiguration(localizedName: "Tigase Messenger");
 //        self.callProvider = CXProvider(configuration: callConfig);
 //        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 5.0) {

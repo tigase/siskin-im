@@ -23,7 +23,8 @@ import UIKit
 import CallKit
 import PushKit
 import WebRTC
-import TigaseSwift  
+import TigaseSwift
+import TigaseLogging
 import Shared
 import Combine
 
@@ -52,6 +53,8 @@ class CallManager: NSObject, CXProviderDelegate {
             instance = nil;
         }
     }
+    
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "CallManager")
     
     private let pushRegistry: PKPushRegistry;
     
@@ -82,8 +85,8 @@ class CallManager: NSObject, CXProviderDelegate {
     
     private let dispatcher = QueueDispatcher(label: "CallManager");
     @Published
-    private var activeCalls: [Call.Key: Call] = [:];
-    private var activeCallsByUuid: [UUID: Call] = [:];
+    private var activeCalls: [CallBase] = [];
+    private var activeCallsByUuid: [UUID: CallBase] = [:];
     private var cancellables: Set<AnyCancellable> = [];
     
     private override init() {
@@ -125,34 +128,52 @@ class CallManager: NSObject, CXProviderDelegate {
 //        delegate?.callStateChanged(self);
 //    }
     
-    func reportIncomingCall(_ call: Call, completionHandler: @escaping(Result<Void,Error>)->Void) {
+    func reportIncomingCall(_ call: CallBase, completionHandler: @escaping(Result<Void,Error>)->Void) {
         dispatcher.async {
-            guard self.activeCalls[call.key] == nil else {
+            guard self.activeCalls.allSatisfy({ !call.isEqual($0) }) else {
                 completionHandler(.failure(XMPPError.conflict("Call already registered!")));
                 return;
             }
-            self.activeCalls[call.key] = call;
-                    
-            let update = CXCallUpdate();
-            update.remoteHandle = CXHandle(type: .generic, value: call.jid.stringValue);
-            let name = DBRosterStore.instance.item(for: call.account, jid: JID(call.jid))?.name ?? call.jid.stringValue;
-            update.localizedCallerName = name;
-            update.hasVideo = AVCaptureDevice.authorizationStatus(for: .video) == .authorized && call.media.contains(.video);
+            if let c = call as? Call {
+                if let meet = self.activeCalls.compactMap({ m -> Meet? in
+                    guard m.account == c.account && m.jid == c.jid, let meet = m as? Meet else {
+                        return nil;
+                    }
+                    return meet;
+                }).first {
+                    // we have found a meet for this account-jid pair..
+                    self.dispatcher.sync {
+                        c.ringing();
+                    }
+                    meet.setIncomingCall(c);
+                    completionHandler(.success(Void()));
+                    return;
+                }
+            }
             
-            call.session = JingleManager.instance.session(forCall: call);
-            print("reporting incoming call: \(call.uuid)")
+            self.activeCalls.append(call);
+                    
+            #if targetEnvironment(simulator)
+            call.accept(offerMedia: call.media, completionHandler: completionHandler);
+            #else
+            let update = CXCallUpdate();
+            update.remoteHandle = call.remoteHandle;
+            update.localizedCallerName = call.name;
+            update.hasVideo = AVCaptureDevice.authorizationStatus(for: .video) == .authorized && call.media.contains(.video);
+                    
+            self.logger.debug("reporting incoming call: \(call.uuid)")
             self.provider.reportNewIncomingCall(with: call.uuid, update: update, completion: { err in
                 guard let error = err else {
                     self.activeCallsByUuid[call.uuid] = call;
+                    
                     self.dispatcher.sync {
-                        call.webrtcSid = String(UInt64.random(in: UInt64.min...UInt64.max));
-                        call.changeState(.ringing);
+                        call.ringing();
                     }
                     completionHandler(.success(Void()));
                     return;
                 }
 
-                self.activeCalls.removeValue(forKey: call.key);
+                self.callEnded(call);
                 
                 guard AVCaptureDevice.authorizationStatus(for: .audio) == .authorized else {
                     completionHandler(.failure(ErrorCondition.not_authorized));
@@ -165,132 +186,65 @@ class CallManager: NSObject, CXProviderDelegate {
 
                 completionHandler(.failure(error));
             })
+            #endif
         }
     }
     
-    func reportOutgoingCall(_ call: Call, completionHandler: @escaping(Result<Void,Error>)->Void) {
+    func reportOutgoingCall(_ call: CallBase, completionHandler: @escaping(Result<Void,Error>)->Void) {
         dispatcher.async {
-            guard self.activeCalls[call.key] == nil else {
+            guard self.activeCalls.allSatisfy({ !call.isEqual($0) }) else {
                 completionHandler(.failure(XMPPError.conflict("Call already registered!")));
                 return;
             }
-            self.activeCalls[call.key] = call;
+            self.activeCalls.append(call);
 
-            let name = DBRosterStore.instance.item(for: call.account, jid: JID(call.jid))?.name ?? call.jid.stringValue;
-            let startCallAction = CXStartCallAction(call: call.uuid, handle: CXHandle(type: .generic, value: call.jid.stringValue));
+            let startCallAction = CXStartCallAction(call: call.uuid, handle: call.remoteHandle);
             startCallAction.isVideo = call.media.contains(.video);
-            startCallAction.contactIdentifier = name;
+            startCallAction.contactIdentifier = call.name;
             let transaction = CXTransaction(action: startCallAction);
-            print("reporting outgoing call: \(call.uuid)")
+            self.logger.debug("reporting outgoing call: \(call.uuid)")
             self.callController.request(transaction, completion: { err in
                 guard let error = err else {
                     self.activeCallsByUuid[call.uuid] = call;
-                    call.webrtcSid = String(UInt64.random(in: UInt64.min...UInt64.max));
-                    call.changeState(.ringing);
+                    call.ringing();
                     completionHandler(.success(Void()));
                     return;
                 }
+                
+                self.callEnded(call);
+
                 completionHandler(.failure(error));
             });
         }
     }
     
-//    func acceptedOutgoingCall(_ call: Call, by jid: JID, completionHandler: @escaping (Result<Void,ErrorCondition>)->Void) {
-//        call.changeState(.connecting);
-//        if call.session == nil {
-//            call.session = JingleManager.instance.session(forCall: call);
-//        }
-//        generateLocalDescription(completionHandler: { result in
-//            switch result {
-//            case .success(let sdp):
-//                guard let session = self.session else {
-//                    completionHandler(.failure(.item_not_found));
-//                    return
-//                }
-//                session.initiate(contents: sdp.contents, bundle: sdp.bundle, completionHandler: nil);
-//                completionHandler(.success(Void()));
-//            case .failure(let err):
-//                completionHandler(.failure(err));
-//            }
-//        })
-//    }
-//
-//    func declinedOutgoingCall(_ call: Call) {
-//        guard let currentCall = self.currentCall, call.account == currentCall.account && call.jid == currentCall.jid && call.sid == currentCall.sid else {
-//            return;
-//        }
-//        endCall(currentCall);
-//    }
-//
-//    func terminateCall(for account: BareJID, with jid: BareJID) {
-//        guard let currentCall = self.currentCall, account == currentCall.account && jid == currentCall.jid else {
-//            return;
-//        }
-//        endCall(currentCall);
-//    }
-//
-//    private(set) var localVideoSource: RTCVideoSource?;
-//    private(set) var localVideoTrack: RTCVideoTrack?;
-//    private(set) var localAudioTrack: RTCAudioTrack?;
-//    private(set) var localCapturer: RTCCameraVideoCapturer?;
-//    private(set) var localCameraDeviceID: String?;
-    
-//    func reset() {
-//        print("resetting call manager");
-//        DispatchQueue.main.async {
-//            UIApplication.shared.isIdleTimerDisabled = false;
-//        }
-//        currentCall = nil;
-//        currentConnection?.close();
-//        currentConnection = nil;
-//        if localCapturer != nil {
-//            localCameraDeviceID = nil;
-//            localCapturer?.stopCapture(completionHandler: {
-//                self.localCapturer = nil;
-//            })
-//        }
-//        self.localVideoTrack = nil;
-//        self.localAudioTrack = nil;
-//        self.localVideoSource = nil;
-//        self.session = nil;
-//        delegate?.callDidEnd(self);
-//        delegate = nil;
-//        DispatchQueue.main.async {
-//            for session in self.establishingSessions {
-//                _ = session.terminate();
-//            }
-//            self.establishingSessions.removeAll();
-//            (UIApplication.shared.delegate as? AppDelegate)?.initiateBackgroundTask();
-//        }
-//        XmppService.instance.onCall = false;
-//    }
-    
     func providerDidReset(_ provider: CXProvider) {
-        print("provider did reset!");
+        self.logger.debug("provider did reset!");
     }
     
     func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
+        self.logger.debug("starting call: \(action.uuid)")
+
         guard let call = activeCallsByUuid[action.callUUID] else {
             action.fail();
             return;
         }
-        DispatchQueue.main.async {
-            self.showCallController(completionHandler: { controller in
-                call.delegate = controller;
-            });
-        }
-        call.initiateOutgoingCall(completionHandler: { result in
+        
+        call.start(completionHandler: { result in
             switch result {
             case .success(_):
                 action.fulfill(withDateStarted: Date());
             case .failure(_):
                 action.fail();
+                self.callEnded(call);
                 call.reset();
             }
-        })
+        });
     }
     
     func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
+        self.logger.debug("answering call: \(action.uuid)")
+
         guard let call = activeCallsByUuid[action.callUUID] else {
             action.fail();
             return;
@@ -303,11 +257,15 @@ class CallManager: NSObject, CXProviderDelegate {
                     return;
                 }
                 self.accountConnected = nil;
-                call.accept();
-                action.fulfill();
-
-                self.showCallController(completionHandler: { controller in
-                    call.delegate = controller;
+                
+                call.accept(offerMedia: call.media, completionHandler: { result in
+                    switch result {
+                    case .success(_):
+                        action.fulfill();
+                    case .failure(let error):
+                        self.callEnded(call);
+                        action.fail();
+                    }
                 });
             }
             
@@ -324,16 +282,14 @@ class CallManager: NSObject, CXProviderDelegate {
     }
     
     func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
+        self.logger.debug("ending call: \(action.uuid)")
         guard let call = activeCallsByUuid[action.callUUID] else {
             action.fail();
             return;
         }
 
-        if call.state == .new || call.state == .ringing {
-            call.reject();
-        } else {
-            call.reset();
-        }
+        call.end();
+        callEnded(call);
         action.fulfill();
     }
     
@@ -343,15 +299,15 @@ class CallManager: NSObject, CXProviderDelegate {
             return;
         }
 
-        call.muted(value: action.isMuted);
+        call.mute(value: action.isMuted);
         action.fulfill();
     }
     
     func provider(_ provider: CXProvider, timedOutPerforming action: CXAction) {
-        print("operation timed out!");
+        self.logger.debug("operation timed out! for: \(action.uuid)");
     }
     
-    private func showCallController(completionHandler: (VideoCallController)->Void) {
+    static func showCallController(completionHandler: (VideoCallController)->Void) {
         var topController = UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.rootViewController;
         while (topController?.presentedViewController != nil) {
             topController = topController?.presentedViewController;
@@ -371,20 +327,24 @@ class CallManager: NSObject, CXProviderDelegate {
         });
     }
     
-    func endCall(_ call: Call) {
+    func endCall(_ call: CallBase) {
         let endCallAction = CXEndCallAction(call: call.uuid);
         let transaction = CXTransaction(action: endCallAction);
         callController.request(transaction) { error in
             if let error = error {
+                #if targetEnvironment(simulator)
+                call.reset();
+                #else
                 fatalError(error.localizedDescription)
+                #endif
             }
         }
     }
     
-    func endCall(on account: BareJID, with jid: BareJID,  sid: String, completionHandler: @escaping ()->Void) {
+    func endCall(on account: BareJID, with jid: BareJID, sid: String, completionHandler: @escaping ()->Void) {
         print("endCall(on account) called");
         dispatcher.async {
-            guard let call = self.activeCalls[.init(account: account, jid: jid, sid: sid)] else {
+            guard let call = self.activeCalls.first(where: { $0.account == account && $0.jid == jid && $0.sid == sid }) else {
                 completionHandler();
                 return;
             }
@@ -396,35 +356,81 @@ class CallManager: NSObject, CXProviderDelegate {
             }
         }
     }
+    
+    func endCall(on account: BareJID, sid: String, completionHandler: (()->Void)? = nil) {
+        print("endCall(on account) called");
+        dispatcher.async {
+            guard let call = self.activeCalls.first(where: { $0.account == account && $0.sid == sid }) else {
+                completionHandler?();
+                return;
+            }
+            let endCallAction = CXEndCallAction(call: call.uuid);
+            let transaction = CXTransaction(action: endCallAction);
+            self.callController.request(transaction) { error in
+                call.reset();
+                completionHandler?();
+            }
+        }
+    }
 
+    private func callEnded(_ call: CallBase) {
+        self.activeCallsByUuid.removeValue(forKey: call.uuid);
+        if let idx = self.activeCalls.firstIndex(where: { $0 === call }) {
+            self.activeCalls.remove(at: idx);
+        }
+    }
 }
 
-class Call: NSObject, JingleSessionActionDelegate {
-    static func == (lhs: Call, rhs: Call) -> Bool {
-        return lhs.key == rhs.key;
-    }
+protocol CallBase: AnyObject {
     
+    var account: BareJID { get }
+    var jid: BareJID { get }
+    var sid: String { get }
     
-    struct Key: Hashable {
-        let account: BareJID;
-        let jid: BareJID;
-        let sid: String;
-    }
+    var uuid: UUID { get }
     
-    let key: Key;
-    let uuid: UUID;
-    var account: BareJID {
-        return key.account;
-    }
-    var jid: BareJID {
-        return key.jid;
-    }
-    var sid: String {
-        return key.sid;
-    }
+    var name: String { get }
+    
+    var remoteHandle: CXHandle { get }
+    
+    var media: [Call.Media] { get }
+    
+    func isEqual(_ call: CallBase) -> Bool;
+    
+    func reset();
+    
+    func start(completionHandler: @escaping (Result<Void,Error>)->Void);
+    
+    func accept(offerMedia: [Call.Media], completionHandler: @escaping (Result<Void,Error>)->Void);
+    
+    func ringing();
+    
+    func end();
+    
+    func mute(value: Bool);
+}
 
+class Call: NSObject, CallBase, JingleSessionActionDelegate {
+    
+    let uuid = UUID();
+    
+    var name: String {
+        return DBRosterStore.instance.item(for: client, jid: JID(jid))?.name ?? jid.stringValue;
+    }
+    
+    var remoteHandle: CXHandle {
+        return CXHandle(type: .generic, value: jid.stringValue);
+    }
+    
+    let client: XMPPClient;
+    let jid: BareJID;
+    let sid: String;
     let direction: Direction;
     let media: [Media]
+    
+    var account: BareJID {
+        return client.userBareJid;
+    }
     
     private(set) var state: State = .new;
     
@@ -432,7 +438,7 @@ class Call: NSObject, JingleSessionActionDelegate {
     
     private(set) var currentConnection: RTCPeerConnection?;
     
-    fileprivate(set) weak var delegate: CallDelegate? {
+    weak var delegate: CallDelegate? {
         didSet {
             delegate?.callDidStart(self);
         }
@@ -467,16 +473,67 @@ class Call: NSObject, JingleSessionActionDelegate {
     private(set) var localVideoSource: RTCVideoSource?;
     private(set) var localVideoTrack: RTCVideoTrack?;
     private(set) var localAudioTrack: RTCAudioTrack?;
+    #if targetEnvironment(simulator)
+    private(set) var localCapturer: RTCFileVideoCapturer?;
+    #else
     private(set) var localCapturer: RTCCameraVideoCapturer?;
+    #endif
     private(set) var localCameraDeviceID: String?;
     
     private var cancellables: Set<AnyCancellable> = [];
     
-    init(account: BareJID, with jid: BareJID, sid: String, direction: Direction, media: [Media]) {
-        self.key = .init(account: account, jid: jid, sid: sid);
-        self.uuid = UUID();
+    init(client: XMPPClient, with jid: BareJID, sid: String, direction: Direction, media: [Media]) {
+        self.client = client;
+        self.jid = jid;
+        self.sid = sid;
         self.media = media;
         self.direction = direction;
+    }
+    
+    func isEqual(_ call: CallBase) -> Bool {
+        guard let c = call as? Call else {
+            return false;
+        }
+        return c.account == account && c.jid == jid && c.sid == sid;
+    }
+    
+    func start(completionHandler: @escaping (Result<Void,Error>)->Void) {
+        DispatchQueue.main.async {
+            CallManager.showCallController(completionHandler: { controller in
+                self.delegate = controller;
+            });
+        }
+        initiateOutgoingCall(completionHandler: completionHandler);
+    }
+    
+    func accept(offerMedia: [Media], completionHandler: @escaping (Result<Void, Error>) -> Void) {
+        DispatchQueue.main.async {
+            CallManager.showCallController(completionHandler: { controller in
+                self.delegate = controller;
+            });
+        }
+        self.accept(offerMedia: media);
+    }
+    
+    func end() {
+        if self.state == .new || self.state == .ringing {
+            self.reject();
+        } else {
+            self.reset();
+        }
+    }
+    
+    func mute(value: Bool) {
+        self.localAudioTrack?.isEnabled = !value;
+        self.localVideoTrack?.isEnabled = !value;
+    }
+    
+    func ringing() {
+        if direction == .incoming {
+            session = JingleManager.instance.session(forCall: self);
+        }
+        webrtcSid = String(UInt64.random(in: UInt64.min...UInt64.max));
+        changeState(.ringing);
     }
     
     func reset() {
@@ -484,9 +541,14 @@ class Call: NSObject, JingleSessionActionDelegate {
              self.currentConnection?.close();
              self.currentConnection = nil;
              if self.localCapturer != nil {
-                 self.localCapturer?.stopCapture(completionHandler: {
-                     self.localCapturer = nil;
-                 })
+                #if targetEnvironment(simulator)
+                self.localCapturer?.stopCapture();
+                #else
+                print("stopping local capturer:", self.localCapturer)
+                self.localCapturer?.stopCapture(completionHandler: {
+                    self.localCapturer = nil;
+                })
+                #endif
              }
              self.localVideoTrack = nil;
              self.localAudioTrack = nil;
@@ -564,7 +626,7 @@ class Call: NSObject, JingleSessionActionDelegate {
         }
                 
         self.changeState(.ringing);
-        initiateWebRTC(completionHandler: { result in
+        initiateWebRTC(offerMedia: media, completionHandler: { result in
             switch result {
             case .success(_):
                 completionHandler(.success(Void()));
@@ -653,7 +715,7 @@ class Call: NSObject, JingleSessionActionDelegate {
         
     static let VALID_SERVICE_TYPES = ["stun", "stuns", "turn", "turns"];
     
-    func initiateWebRTC(completionHandler: @escaping (Result<Void,Error>)->Void) {
+    func initiateWebRTC(offerMedia media: [Media], completionHandler: @escaping (Result<Void,Error>)->Void) {
         if let module: ExternalServiceDiscoveryModule = XmppService.instance.getClient(for: self.account)?.module(.externalServiceDiscovery), module.isAvailable {
             module.discover(from: nil, type: nil, completionHandler: { result in
                 switch result {
@@ -664,41 +726,63 @@ class Call: NSObject, JingleSessionActionDelegate {
                             servers.append(server);
                         }
                     }
-                    self.initiateWebRTC(iceServers: servers, completionHandler: completionHandler);
+                    self.initiateWebRTC(iceServers: servers, offerMedia: media, completionHandler: completionHandler);
                 case .failure(_):
-                    self.initiateWebRTC(iceServers: [], completionHandler: completionHandler);
+                    self.initiateWebRTC(iceServers: [], offerMedia: media, completionHandler: completionHandler);
                 }
             })
         } else {
-            initiateWebRTC(iceServers: [], completionHandler: completionHandler);
+            initiateWebRTC(iceServers: [], offerMedia: media, completionHandler: completionHandler);
         }
     }
     
-    private func initiateWebRTC(iceServers: [RTCIceServer], completionHandler: @escaping (Result<Void,Error>)->Void) {
+    #if targetEnvironment(simulator)
+//    var repeatingVideoTimer: Timer?;
+    #endif
+    
+    private func initiateWebRTC(iceServers: [RTCIceServer], offerMedia media: [Media], completionHandler: @escaping (Result<Void,Error>)->Void) {
         self.currentConnection = VideoCallController.initiatePeerConnection(iceServers: iceServers, withDelegate: self);
         if self.currentConnection != nil {
-            let avsession = AVAudioSession.sharedInstance()
+            if media.contains(.audio) {
+                let avsession = AVAudioSession.sharedInstance()
+                do {
+                    try avsession.setCategory(.playAndRecord, mode: .videoChat)
+                    try avsession.setPreferredIOBufferDuration(0.005)
+                    try avsession.setPreferredSampleRate(4_410)
+                } catch {
+                    fatalError(error.localizedDescription)
+                }
 
-            do {
-                try avsession.setCategory(.playAndRecord, mode: .videoChat)
-                try avsession.setPreferredIOBufferDuration(0.005)
-                try avsession.setPreferredSampleRate(4_410)
-            } catch {
-                fatalError(error.localizedDescription)
+                self.localAudioTrack = VideoCallController.peerConnectionFactory.audioTrack(withTrackId: "audio-" + UUID().uuidString);
+                if let localAudioTrack = self.localAudioTrack {
+                    self.currentConnection?.add(localAudioTrack, streamIds: ["RTCmS"]);
+                }
             }
-
-            self.localAudioTrack = VideoCallController.peerConnectionFactory.audioTrack(withTrackId: "audio-" + UUID().uuidString);
-            if let localAudioTrack = self.localAudioTrack {
-                self.currentConnection?.add(localAudioTrack, streamIds: ["RTCmS"]);
-            }
-            if self.media.contains(.video) && AVCaptureDevice.authorizationStatus(for: .video) == .authorized {
+            #if targetEnvironment(simulator)
+            let hasAvPermission = true;
+            #else
+            let hasAvPermission = AVCaptureDevice.authorizationStatus(for: .video) == .authorized;
+            #endif
+            if media.contains(.video) && hasAvPermission {
                 let videoSource = VideoCallController.peerConnectionFactory.videoSource();
                 self.localVideoSource = videoSource;
                 let localVideoTrack = VideoCallController.peerConnectionFactory.videoTrack(with: videoSource, trackId: "video-" + UUID().uuidString);
                 self.localVideoTrack = localVideoTrack;
+                #if targetEnvironment(simulator)
+                let localVideoCapturer = RTCFileVideoCapturer(delegate: videoSource)
+                #else
                 let localVideoCapturer = RTCCameraVideoCapturer(delegate: videoSource);
+                #endif
                 self.localCapturer = localVideoCapturer;
                 
+                #if targetEnvironment(simulator)
+                localVideoCapturer.startCapturing(fromFileNamed: "foreman.mp4", onError: { error in
+                                                    print("failed to start video capturer:", error);
+                });
+                self.delegate?.call(self, didReceiveLocalVideoTrack: localVideoTrack);
+                self.currentConnection?.add(localVideoTrack, streamIds: ["RTCmS"]);
+                completionHandler(.success(Void()))
+                #else
                 if let device = RTCCameraVideoCapturer.captureDevices().first(where: { $0.position == .front }), let format = RTCCameraVideoCapturer.format(for: device, preferredOutputPixelFormat: localVideoCapturer.preferredOutputPixelFormat()) {
                     print("starting video capture on:", device, " with:", format, " fps:", RTCCameraVideoCapturer.fps(for: format));
                     self.localCameraDeviceID = device.uniqueID;
@@ -712,6 +796,7 @@ class Call: NSObject, JingleSessionActionDelegate {
                 } else {
                     completionHandler(.failure(ErrorCondition.not_authorized));
                 }
+                #endif
             } else {
                 completionHandler(.success(Void()));
             }
@@ -720,13 +805,13 @@ class Call: NSObject, JingleSessionActionDelegate {
         }
     }
 
-    func accept() {
+    func accept(offerMedia media: [Media]) {
         guard let session = self.session else {
             reset();
             return;
         }
         changeState(.connecting);
-        initiateWebRTC(completionHandler: { result in
+        initiateWebRTC(offerMedia: media, completionHandler: { result in
             switch result {
             case .success(_):
                 guard self.currentConnection != nil else {
@@ -887,12 +972,10 @@ class Call: NSObject, JingleSessionActionDelegate {
         self.state = state;
         self.delegate?.callStateChanged(self);
     }
-
-    func muted(value: Bool) {
-        self.localAudioTrack?.isEnabled = !value;
-    }
     
     func switchCameraDevice() {
+        #if targetEnvironment(simulator)
+        #else
         if let localCapturer = self.localCapturer, let deviceID = self.localCameraDeviceID {
             let position = RTCCameraVideoCapturer.captureDevices().first(where: { $0.uniqueID == deviceID })?.position ?? .front;
             if let newCamera = RTCCameraVideoCapturer.captureDevices().first(where: { $0.position != position }), let format = RTCCameraVideoCapturer.format(for: newCamera, preferredOutputPixelFormat: localCapturer.preferredOutputPixelFormat()) {
@@ -900,6 +983,7 @@ class Call: NSObject, JingleSessionActionDelegate {
                 localCapturer.startCapture(with: newCamera, format: format, fps: RTCCameraVideoCapturer.fps(for: format));
             }
         }
+        #endif
     }
 
 }
@@ -943,7 +1027,7 @@ extension CallManager: PKPushRegistryDelegate {
                                 // we require `media` to be present (even empty) in incoming push for jingle session initiation
                                 if let media = payload.media {
                                     let session = JingleManager.instance.open(for: client, with: sender, sid: payload.sid, role: .responder, initiationType: .message);
-                                    let call = Call(account: account, with: sender.bareJid, sid: payload.sid, direction: .incoming, media: media);
+                                    let call = Call(client: client, with: sender.bareJid, sid: payload.sid, direction: .incoming, media: media);
                                     self.reportIncomingCall(call, completionHandler: { result in
                                         switch result {
                                         case .success(_):
