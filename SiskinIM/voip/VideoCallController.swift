@@ -68,6 +68,7 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
     
     func callDidStart(_ sender: Call) {
         self.call = sender;
+        self.audioSession = AudioSesion(preferSpeaker: true)
         self.updateAvatarView();
         self.updateStateLabel();
     }
@@ -229,6 +230,8 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
     @IBOutlet fileprivate var avatarWidthConstraint: NSLayoutConstraint!;
     @IBOutlet fileprivate var avatarHeightConstraint: NSLayoutConstraint!;
         
+    private var audioSession: AudioSesion?;
+    
     public override func viewDidLoad() {
         super.viewDidLoad();
 
@@ -247,38 +250,10 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
         self.updateAvatarView();
         super.viewWillAppear(animated);
         self.orientationChanged();
-        NotificationCenter.default.addObserver(self, selector: #selector(audioRouteChanged), name: AVAudioSession.routeChangeNotification, object: nil)
-//        timer = Foundation.Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { timer in
-//            CallManager.instance?.currentConnection?.statistics(completionHandler: { report in
-//                print("stats: \(report.statistics.description)");
-//            });
-//        })
     }
 
     public override func viewWillDisappear(_ animated: Bool) {
-//        timer?.invalidate();
-//        timer = nil;
-//        remoteVideoTrack = nil;
-//        localVideoView.captureSession = nil;
-//        localVideoCapturer = nil;
         super.viewWillDisappear(animated);
-    }
-    
-    @objc func audioRouteChanged(_ notification: Notification) {
-        guard let value = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt, let reason = AVAudioSession.RouteChangeReason(rawValue: value) else {
-            return;
-        }
-        switch reason {
-        case .categoryChange:
-            guard !AVAudioSession.sharedInstance().categoryOptions.contains(.defaultToSpeaker) else {
-                return;
-            }
-            var options = AVAudioSession.sharedInstance().categoryOptions;
-            options.update(with: .defaultToSpeaker);
-            try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, options: options);
-        default:
-            break;
-        }
     }
     
     @objc func orientationChanged() {
@@ -292,20 +267,42 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
         }
     }
     
-//    func showAlert(title: String, message: String, completionHandler: @escaping ()->Void) {
-//        DispatchQueue.main.async {
-//            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert);
-//            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in
-//                self.dismiss();
-//            }));
-//            self.present(alert, animated: true, completion: nil);
-//        }
-//    }
-    
     @IBAction func switchCamera(_ sender: UIButton) {
         call?.switchCameraDevice();
     }
     
+    @IBAction func selectAudioDevice(_ sender: UIButton) {
+        let controller = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
+        for audioPort in audioSession?.availableAudioPorts() ?? [] {
+            let action = UIAlertAction(title: audioPort.label, style: .default, handler: { action in
+                self.audioSession?.set(outputMode: audioPort);
+            });
+
+            switch audioPort {
+            case .automatic:
+                break;
+            case .builtin:
+                action.setValue(AVAudioSession.sharedInstance().currentRoute.outputs.contains(where: { $0.portType == .builtInReceiver }), forKey: "checked")
+            case .speaker:
+                action.setValue(AVAudioSession.sharedInstance().currentRoute.outputs.contains(where: { $0.portType == .builtInSpeaker }), forKey: "checked")
+            case .custom(let port):
+                action.setValue(AVAudioSession.sharedInstance().currentRoute.inputs.contains(where: { $0.portType == port.portType }), forKey: "checked");
+            }
+            
+            if let image = audioPort.icon {
+                action.setValue(image.scaled(maxWidthOrHeight: 30, isOpaque: false), forKey: "image");
+            }
+            
+            controller.addAction(action)
+        }
+        
+        controller.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+        
+        controller.popoverPresentationController?.sourceView = sender;
+        controller.popoverPresentationController?.sourceRect = sender.bounds;
+        self.present(controller, animated: true, completion: nil);
+    }
+
     fileprivate var muted: Bool = false;
     
     @IBAction func mute(_ sender: UIButton) {
@@ -332,7 +329,9 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
         
     
     private func updateAvatarVisibility() {
-        self.avatar?.isHidden = remoteVideoTrack != nil && (call?.state ?? .new) == .connected;
+        DispatchQueue.main.async {
+            self.avatar?.isHidden = self.remoteVideoTrack != nil && (self.call?.state ?? .new) == .connected;
+        }
     }
     
     private func updateAvatarView() {

@@ -328,6 +328,9 @@ class CallManager: NSObject, CXProviderDelegate {
     }
     
     func endCall(_ call: CallBase) {
+        guard activeCallsByUuid[call.uuid] != nil else {
+            return;
+        }
         let endCallAction = CXEndCallAction(call: call.uuid);
         let transaction = CXTransaction(action: endCallAction);
         callController.request(transaction) { error in
@@ -740,15 +743,17 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
 //    var repeatingVideoTimer: Timer?;
     #endif
     
+    var audioSession: AudioSesion?;
+    
     private func initiateWebRTC(iceServers: [RTCIceServer], offerMedia media: [Media], completionHandler: @escaping (Result<Void,Error>)->Void) {
         self.currentConnection = VideoCallController.initiatePeerConnection(iceServers: iceServers, withDelegate: self);
         if self.currentConnection != nil {
             if media.contains(.audio) {
                 let avsession = AVAudioSession.sharedInstance()
                 do {
-                    try avsession.setCategory(.playAndRecord, mode: .videoChat)
+                    try avsession.setCategory(.playAndRecord, mode: media.contains(.video) ? .videoChat : .voiceChat, options: [.allowBluetooth,.allowBluetoothA2DP])
                     try avsession.setPreferredIOBufferDuration(0.005)
-                    try avsession.setPreferredSampleRate(4_410)
+                    //try avsession.setPreferredSampleRate(4_410)
                 } catch {
                     fatalError(error.localizedDescription)
                 }
@@ -1206,7 +1211,7 @@ extension Call {
     
     func sessionTerminated() {
         DispatchQueue.main.async {
-            self.reset();
+            CallManager.instance?.endCall(self);
         }
     }
     

@@ -53,15 +53,12 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
 
         initializeSharing();
         
-        #if targetEnvironment(simulator)
-        #else
         if CallManager.isAvailable {
             var buttons: [UIBarButtonItem] = [];
             buttons.append(self.smallBarButtinItem(image: UIImage(named: "videoCall")!, action: #selector(self.videoCall)));
             buttons.append(self.smallBarButtinItem(image: UIImage(named: "audioCall")!, action: #selector(self.audioCall)));
-        self.navigationItem.rightBarButtonItems = buttons;
+            self.navigationItem.rightBarButtonItems = buttons;
         }
-        #endif
     }
     
     @objc func showBuddyInfo(_ button: Any) {
@@ -156,8 +153,6 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
         return UIBarButtonItem(customView: btn);
     }
     
-    #if targetEnvironment(simulator)
-    #else
     @objc func audioCall() {
         VideoCallController.call(jid: self.conversation.jid, from: self.conversation.account, media: [.audio], sender: self);
     }
@@ -165,7 +160,6 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     @objc func videoCall() {
         VideoCallController.call(jid: self.conversation.jid, from: self.conversation.account, media: [.audio, .video], sender: self);
     }
-    #endif
     
     @IBAction func sendClicked(_ sender: UIButton) {
         sendMessage();

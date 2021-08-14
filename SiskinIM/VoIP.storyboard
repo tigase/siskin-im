@@ -5,6 +5,7 @@
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -18,30 +19,16 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Calling John Doe..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i9e-aU-c5F">
-                                <rect key="frame" x="16" y="0.0" width="343" height="21"/>
+                                <rect key="frame" x="16" y="0.0" width="343" height="20.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageSizeForAccessibilityContentSizeCategory="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JSs-fW-wDJ" customClass="RoundButton" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="157.5" y="587" width="60" height="60"/>
-                                <color key="backgroundColor" name="systemRedColor" catalog="System" colorSpace="catalog"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" secondItem="JSs-fW-wDJ" secondAttribute="height" multiplier="1:1" id="izj-ML-5HF"/>
-                                    <constraint firstAttribute="width" constant="60" id="mjk-G9-zXh"/>
-                                </constraints>
-                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <inset key="contentEdgeInsets" minX="10" minY="10" maxX="10" maxY="10"/>
-                                <state key="normal" image="endCall"/>
-                                <connections>
-                                    <action selector="disconnectClicked:" destination="sh6-q3-LhK" eventType="touchUpInside" id="CwP-y4-9QG"/>
-                                </connections>
-                            </button>
                             <view contentMode="scaleAspectFill" translatesAutoresizingMaskIntoConstraints="NO" id="TkT-yH-yAj" customClass="RTCMTLVideoView">
-                                <rect key="frame" x="0.0" y="471.5" width="110" height="195.5"/>
+                                <rect key="frame" x="0.0" y="507" width="100" height="150"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DHt-FL-iNf" customClass="RoundButton" customModule="Siskin" customModuleProvider="target">
-                                        <rect key="frame" x="40" y="145.5" width="30" height="30"/>
+                                        <rect key="frame" x="35" y="110" width="30" height="30"/>
                                         <color key="tintColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                         <state key="normal" image="switchCamera"/>
                                         <connections>
@@ -50,49 +37,81 @@
                                     </button>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="195.5" id="ZCz-9M-1OH"/>
+                                    <constraint firstAttribute="height" constant="150" id="ZCz-9M-1OH"/>
                                     <constraint firstItem="DHt-FL-iNf" firstAttribute="centerX" secondItem="TkT-yH-yAj" secondAttribute="centerX" id="cwx-s8-yMe"/>
-                                    <constraint firstAttribute="width" constant="110" id="ssD-dy-SIb"/>
+                                    <constraint firstAttribute="width" constant="100" id="ssD-dy-SIb"/>
                                 </constraints>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nxo-vV-t7I" customClass="RoundButton" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="270" y="587" width="60" height="60"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" secondItem="nxo-vV-t7I" secondAttribute="height" multiplier="1:1" id="bSj-t1-0y3"/>
-                                    <constraint firstAttribute="width" constant="60" id="tHt-sd-aLa"/>
-                                </constraints>
-                                <color key="tintColor" name="textColor" catalog="System" colorSpace="catalog"/>
-                                <inset key="contentEdgeInsets" minX="10" minY="10" maxX="10" maxY="10"/>
-                                <state key="normal" image="mute"/>
-                                <connections>
-                                    <action selector="mute:" destination="sh6-q3-LhK" eventType="touchUpInside" id="UDP-Lg-cgw"/>
-                                </connections>
-                            </button>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="defaultAvatarDark" translatesAutoresizingMaskIntoConstraints="NO" id="clf-Xd-Ao5" customClass="AvatarView" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="-46" y="0.0" width="467" height="467"/>
+                                <rect key="frame" x="56.5" y="102" width="262.5" height="262.5"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="clf-Xd-Ao5" secondAttribute="height" multiplier="1:1" id="hzm-ak-F2Y"/>
                                 </constraints>
                             </imageView>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="ARx-co-Ug8">
+                                <rect key="frame" x="120" y="597" width="235" height="60"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageSizeForAccessibilityContentSizeCategory="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JSs-fW-wDJ" customClass="RoundButton" customModule="Siskin" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
+                                        <color key="backgroundColor" name="systemRedColor" catalog="System" colorSpace="catalog"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" secondItem="JSs-fW-wDJ" secondAttribute="height" multiplier="1:1" id="izj-ML-5HF"/>
+                                            <constraint firstAttribute="width" constant="60" id="mjk-G9-zXh"/>
+                                        </constraints>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <state key="normal" image="endCall"/>
+                                        <connections>
+                                            <action selector="disconnectClicked:" destination="sh6-q3-LhK" eventType="touchUpInside" id="CwP-y4-9QG"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nxo-vV-t7I" customClass="RoundButton" customModule="Siskin" customModuleProvider="target">
+                                        <rect key="frame" x="87.5" y="0.0" width="60" height="60"/>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" secondItem="nxo-vV-t7I" secondAttribute="height" multiplier="1:1" id="bSj-t1-0y3"/>
+                                            <constraint firstAttribute="width" constant="60" id="tHt-sd-aLa"/>
+                                        </constraints>
+                                        <color key="tintColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                        <state key="normal" image="mute"/>
+                                        <connections>
+                                            <action selector="mute:" destination="sh6-q3-LhK" eventType="touchUpInside" id="UDP-Lg-cgw"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="CJ6-fB-EMv" customClass="RoundButton" customModule="Siskin" customModuleProvider="target">
+                                        <rect key="frame" x="175" y="0.0" width="60" height="60"/>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" secondItem="CJ6-fB-EMv" secondAttribute="height" multiplier="1:1" id="aLR-y1-VxC"/>
+                                            <constraint firstAttribute="width" constant="60" id="eKX-RO-J4N"/>
+                                        </constraints>
+                                        <color key="tintColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                        <state key="normal" image="ellipsis" catalog="system"/>
+                                        <connections>
+                                            <action selector="selectAudioDevice:" destination="sh6-q3-LhK" eventType="touchUpInside" id="ZoX-aT-oiq"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="CJ6-fB-EMv" firstAttribute="width" secondItem="CJ6-fB-EMv" secondAttribute="height" multiplier="1:1" id="6ai-uk-Ea0"/>
+                                </constraints>
+                            </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="yOG-l9-hEB"/>
                         <color key="backgroundColor" systemColor="scrollViewTexturedBackgroundColor"/>
                         <constraints>
+                            <constraint firstItem="ARx-co-Ug8" firstAttribute="leading" secondItem="TkT-yH-yAj" secondAttribute="trailing" constant="20" id="2bY-b4-AIS"/>
                             <constraint firstItem="i9e-aU-c5F" firstAttribute="top" secondItem="yOG-l9-hEB" secondAttribute="top" id="4DE-FQ-v2x"/>
-                            <constraint firstItem="JSs-fW-wDJ" firstAttribute="centerX" secondItem="yOG-l9-hEB" secondAttribute="centerX" id="5yM-zB-pky"/>
                             <constraint firstItem="TkT-yH-yAj" firstAttribute="leading" secondItem="yOG-l9-hEB" secondAttribute="leading" id="Atr-ec-e4K"/>
-                            <constraint firstItem="yOG-l9-hEB" firstAttribute="bottom" secondItem="JSs-fW-wDJ" secondAttribute="bottom" constant="20" id="Fas-ff-3hZ"/>
                             <constraint firstItem="i9e-aU-c5F" firstAttribute="leading" secondItem="yOG-l9-hEB" secondAttribute="leading" constant="16" id="FdQ-FM-LSt"/>
-                            <constraint firstItem="nxo-vV-t7I" firstAttribute="centerY" secondItem="JSs-fW-wDJ" secondAttribute="centerY" id="PuF-3c-1M3"/>
                             <constraint firstItem="DHt-FL-iNf" firstAttribute="bottom" secondItem="yOG-l9-hEB" secondAttribute="bottom" constant="-20" id="bWM-4D-93B"/>
                             <constraint firstItem="clf-Xd-Ao5" firstAttribute="width" secondItem="Y9t-qn-5HE" secondAttribute="width" multiplier="0.7" id="c1l-ue-4CS"/>
-                            <constraint firstItem="yOG-l9-hEB" firstAttribute="bottom" secondItem="TkT-yH-yAj" secondAttribute="bottom" id="frd-Qz-RWO"/>
-                            <constraint firstItem="nxo-vV-t7I" firstAttribute="centerX" secondItem="yOG-l9-hEB" secondAttribute="centerX" multiplier="1.6" id="j0V-v6-9BJ"/>
+                            <constraint firstItem="yOG-l9-hEB" firstAttribute="trailing" secondItem="ARx-co-Ug8" secondAttribute="trailing" constant="20" id="edI-pF-sqn"/>
+                            <constraint firstItem="yOG-l9-hEB" firstAttribute="bottom" secondItem="TkT-yH-yAj" secondAttribute="bottom" constant="10" id="frd-Qz-RWO"/>
                             <constraint firstItem="clf-Xd-Ao5" firstAttribute="centerY" secondItem="yOG-l9-hEB" secondAttribute="centerY" multiplier="0.7" id="jc3-IN-RWn"/>
-                            <constraint firstItem="clf-Xd-Ao5" firstAttribute="height" secondItem="Y9t-qn-5HE" secondAttribute="height" multiplier="0.7" id="ppu-Pl-Ox1"/>
+                            <constraint firstItem="clf-Xd-Ao5" firstAttribute="height" relation="lessThanOrEqual" secondItem="Y9t-qn-5HE" secondAttribute="height" multiplier="0.7" id="ppu-Pl-Ox1"/>
                             <constraint firstItem="clf-Xd-Ao5" firstAttribute="centerX" secondItem="yOG-l9-hEB" secondAttribute="centerX" id="sTk-7A-aRF"/>
                             <constraint firstItem="yOG-l9-hEB" firstAttribute="trailing" secondItem="i9e-aU-c5F" secondAttribute="trailing" constant="16" id="uxx-0c-sCR"/>
+                            <constraint firstItem="ARx-co-Ug8" firstAttribute="bottom" secondItem="TkT-yH-yAj" secondAttribute="bottom" id="yuf-0h-YLG"/>
                         </constraints>
                     </view>
                     <connections>
@@ -163,6 +182,7 @@
     </scenes>
     <resources>
         <image name="defaultAvatarDark" width="75" height="75"/>
+        <image name="ellipsis" catalog="system" width="128" height="37"/>
         <image name="endCall" width="30" height="30"/>
         <image name="mute" width="30" height="30"/>
         <image name="switchCamera" width="30" height="30"/>

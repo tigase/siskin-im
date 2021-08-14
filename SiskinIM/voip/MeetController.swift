@@ -103,6 +103,8 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
     private var remove: Bool = true;
     private var items: [Item] = [];
     
+    private var audioSession: AudioSesion?;
+    
     private var meet: Meet? {
         didSet {
             meet?.$outgoingCall.sink(receiveValue: { [weak self] call in
@@ -126,6 +128,9 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
                 }
                 self?.publisherByMid = dict;
             }).store(in: &cancellables);
+            if meet != nil {
+                self.audioSession = AudioSesion(preferSpeaker: true);
+            }
         }
     }
     
@@ -228,8 +233,11 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
                 }),
                 UIAction(title: "Switch camera", image: UIImage(systemName: "arrow.triangle.2.circlepath.camera.fill"), handler: { action in
                     self.switchCamera();
-                })
-            ]);
+                }),
+                UIMenu(title: "Switch audio", image: UIImage(systemName: "speaker.wave.2"), children: [
+                    switchAudioActions()
+                ])
+            ].reversed());
             moreButton?.showsMenuAsPrimaryAction = true;
         } else {
             moreButton?.addTarget(self, action: #selector(moreTapped(_:)), for: .touchUpInside);
@@ -310,6 +318,11 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
         controller.addAction(UIAlertAction(title: "Switch camera", style: .default, handler: { action in
             self.switchCamera();
         }));
+        controller.addAction(UIAlertAction(title: "Switch audio", style: .default, handler: { action in
+            DispatchQueue.main.async {
+                self.switchAudio(sender);
+            }
+        }))
         controller.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
         
         self.present(controller, animated: true, completion: nil);
@@ -317,6 +330,68 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
     
     func switchCamera() {
         self.meet?.switchCameraDevice();
+    }
+    
+    func switchAudio(_ sender: UIButton) {
+        let controller = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
+        for audioPort in audioSession?.availableAudioPorts() ?? [] {
+            let action = UIAlertAction(title: audioPort.label, style: .default, handler: { action in
+                self.audioSession?.set(outputMode: audioPort);
+            });
+
+            switch audioPort {
+            case .automatic:
+                break;
+            case .builtin:
+                action.setValue(AVAudioSession.sharedInstance().currentRoute.outputs.contains(where: { $0.portType == .builtInReceiver }), forKey: "checked")
+            case .speaker:
+                action.setValue(AVAudioSession.sharedInstance().currentRoute.outputs.contains(where: { $0.portType == .builtInSpeaker }), forKey: "checked")
+            case .custom(let port):
+                action.setValue(AVAudioSession.sharedInstance().currentRoute.inputs.contains(where: { $0.portType == port.portType }), forKey: "checked");
+            }
+            
+            if let image = audioPort.icon {
+                action.setValue(image.scaled(maxWidthOrHeight: 30, isOpaque: false), forKey: "image");
+            }
+            
+            controller.addAction(action)
+        }
+        
+        controller.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+        
+        controller.popoverPresentationController?.sourceView = sender;
+        controller.popoverPresentationController?.sourceRect = sender.bounds;
+        self.present(controller, animated: true, completion: nil);
+    }
+    
+    @available(iOS 14.0, *)
+    func switchAudioActions() -> UIDeferredMenuElement {
+        return UIDeferredMenuElement({ [weak self] completion in
+            var items: [UIMenuElement] = [];
+            
+            for audioPort in self?.audioSession?.availableAudioPorts() ?? [] {
+                var selected = false;
+                
+                switch audioPort {
+                case .automatic:
+                    break;
+                case .builtin:
+                    selected = AVAudioSession.sharedInstance().currentRoute.outputs.contains(where: { $0.portType == .builtInReceiver });
+                case .speaker:
+                    selected = AVAudioSession.sharedInstance().currentRoute.outputs.contains(where: { $0.portType == .builtInSpeaker });
+                case .custom(let port):
+                    selected = AVAudioSession.sharedInstance().currentRoute.inputs.contains(where: { $0.portType == port.portType });
+                }
+                
+                let item = UIAction(title: audioPort.label, image: audioPort.icon, state: selected ? .on : .off, handler: { action in
+                    self?.audioSession?.set(outputMode: audioPort);
+                });
+
+                items.append(item);
+            }
+
+            completion(items.reversed());
+        })
     }
     
     func videoView(_ videoView: RTCVideoRenderer, didChangeVideoSize size: CGSize) {
