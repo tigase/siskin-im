@@ -155,14 +155,14 @@
                                 <accessibility key="accessibilityConfiguration" identifier="maxImagePreviewSizeTableViewCell"/>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="clearImagePreviewTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ClearDownloadStoreTableViewCell" id="tua-q1-OwE" userLabel="ClearImagePreviewTableViewCell">
-                                <rect key="frame" x="0.0" y="223.5" width="414" height="43"/>
+                                <rect key="frame" x="0.0" y="223.5" width="414" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="tua-q1-OwE" id="Zpy-kb-3zH">
-                                    <rect key="frame" x="0.0" y="0.0" width="414" height="43"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Clear download cache" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Hu1-2i-RSO">
-                                            <rect key="frame" x="20" y="11" width="374" height="21"/>
+                                            <rect key="frame" x="20" y="11" width="374" height="21.5"/>
                                             <accessibility key="accessibilityConfiguration" identifier="accountName"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
@@ -179,14 +179,14 @@
                                 <accessibility key="accessibilityConfiguration" identifier="clearImagePreviewTableViewCell"/>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="clearMetadataStoreTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ClearMetadataStoreTableViewCell" id="dp5-Tw-K7m" userLabel="ClearMetadataStoreTableViewCell">
-                                <rect key="frame" x="0.0" y="266.5" width="414" height="43"/>
+                                <rect key="frame" x="0.0" y="267" width="414" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="dp5-Tw-K7m" id="sKm-mV-wFS">
-                                    <rect key="frame" x="0.0" y="0.0" width="414" height="43"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Clear link previews cache" textAlignment="natural" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Zff-Y8-Nz6">
-                                            <rect key="frame" x="20" y="11" width="374" height="21"/>
+                                            <rect key="frame" x="20" y="11" width="374" height="21.5"/>
                                             <accessibility key="accessibilityConfiguration" identifier="accountName"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
@@ -203,7 +203,7 @@
                                 <accessibility key="accessibilityConfiguration" identifier="clearMetadataStoreTableViewCell"/>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="DeviceMemoryUsageTableViewCell" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DeviceMemoryUsageTableViewCell" id="AT2-7Z-eYM" customClass="DeviceMemoryUsageTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="309.5" width="414" height="43.5"/>
+                                <rect key="frame" x="0.0" y="310.5" width="414" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="AT2-7Z-eYM" id="AgB-cf-My2">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
@@ -723,36 +723,28 @@
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="recentsSortTypeTableViewCell"/>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="MessageEncryptionTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="MessageEncryptionTableViewCell" id="Qgt-uJ-dhW" userLabel="MessageEncryptionTableViewCell" customClass="EnumTableViewCell" customModule="Siskin" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="MessageEncryptionTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="MessageEncryptionTableViewCell" textLabel="ZnP-5r-iGO" detailTextLabel="QHQ-RS-Q7a" style="IBUITableViewCellStyleValue1" id="Qgt-uJ-dhW" userLabel="MessageEncryptionTableViewCell" customClass="EnumTableViewCell" customModule="Siskin" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="225.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Qgt-uJ-dhW" id="6ou-SX-w5J">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Encryption" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9Gl-4Z-f2X">
+                                        <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Encryption" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ZnP-5r-iGO">
                                             <rect key="frame" x="20" y="12" width="82" height="20.5"/>
-                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
+                                            <autoresizingMask key="autoresizingMask"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bPa-aU-WFn">
-                                            <rect key="frame" x="353" y="12" width="41" height="20.5"/>
-                                            <accessibility key="accessibilityConfiguration">
-                                                <accessibilityTraits key="traits" staticText="YES" summaryElement="YES"/>
-                                            </accessibility>
+                                        <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Detail" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="QHQ-RS-Q7a">
+                                            <rect key="frame" x="350" y="12" width="44" height="20.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <color key="textColor" systemColor="secondaryLabelColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
-                                    <constraints>
-                                        <constraint firstItem="bPa-aU-WFn" firstAttribute="centerY" secondItem="6ou-SX-w5J" secondAttribute="centerY" id="0C8-lH-APb"/>
-                                        <constraint firstAttribute="trailingMargin" secondItem="bPa-aU-WFn" secondAttribute="trailing" id="K9Q-aj-kJe"/>
-                                        <constraint firstItem="9Gl-4Z-f2X" firstAttribute="centerY" secondItem="6ou-SX-w5J" secondAttribute="centerY" id="NHb-Cw-zUH"/>
-                                        <constraint firstAttribute="leadingMargin" secondItem="9Gl-4Z-f2X" secondAttribute="leading" id="hXW-Zx-KVK"/>
-                                        <constraint firstItem="bPa-aU-WFn" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="9Gl-4Z-f2X" secondAttribute="trailing" constant="8" id="kiE-fB-uRJ"/>
-                                    </constraints>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="MessageEncryptionTableViewCell"/>
                             </tableViewCell>

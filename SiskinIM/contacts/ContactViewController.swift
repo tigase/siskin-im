@@ -196,7 +196,7 @@ class ContactViewController: UITableViewController {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "OMEMOEncryptionCell", for: indexPath) as! EnumTableViewCell;
                 if let chat = self.chat {
                     cell.bind({ cell in
-                        cell.assign(from: chat.optionsPublisher.map({ $0.encryption?.description ?? "Default" }).eraseToAnyPublisher());
+                        cell.assign(from: chat.optionsPublisher.map({ $0.encryption?.description ?? "Default" }).receive(on: DispatchQueue.main).eraseToAnyPublisher());
                     })
                 } else {
                     cell.detailTextLabel?.text = "Default";
@@ -302,7 +302,12 @@ class ContactViewController: UITableViewController {
         case .encryption:
             if indexPath.row == 0 {
                 // handle change of encryption method!
-                let controller = TablePickerViewController<ChatEncryption>(style: .grouped, options: [.none, .omemo], value: chat?.options.encryption ?? .none);
+                let controller = TablePickerViewController<ChatEncryption?>(style: .grouped, options: [nil, ChatEncryption.none, ChatEncryption.omemo], value: chat?.options.encryption, labelFn: { value in
+                    guard let v = value else {
+                        return "Default";
+                    }
+                    return v.description;
+                });
                 controller.sink(receiveValue: { [weak self] value in
                     self?.chat?.updateOptions({ options in
                         options.encryption = value;
