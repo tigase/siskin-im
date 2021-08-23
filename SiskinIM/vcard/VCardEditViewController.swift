@@ -28,7 +28,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
 
     var client: XMPPClient!;
         
-    var vcard: VCard! {
+    var vcard: VCard? {
         didSet {
             tableView.reloadData();
         }
@@ -78,7 +78,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
             case .avatar:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "AvatarEditCell") as! VCardAvatarEditCell;
                 cell.avatarView.set(name: nil, avatar: nil);
-                if let photo = vcard.photos.first {
+                if let photo = vcard?.photos.first {
                     VCardManager.instance.fetchPhoto(photo: photo, completionHandler: { result in
                         switch result {
                         case .success(let data):
@@ -95,50 +95,50 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
             case .givenName:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
                 cell.textField.placeholder = "Given name"
-                cell.textField.text = vcard.givenName;
+                cell.textField.text = vcard?.givenName;
                 cell.textField.delegate = self;
                 cell.textField.tag = indexPath.row;
                 return cell;
             case .familyName:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
                 cell.textField.placeholder = "Family name"
-                cell.textField.text = vcard.surname;
+                cell.textField.text = vcard?.surname;
                 cell.textField.delegate = self;
                 cell.textField.tag = indexPath.row;
                 return cell;
             case .fullName:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
                 cell.textField.placeholder = "Full name"
-                cell.textField.text = vcard.fn;
+                cell.textField.text = vcard?.fn;
                 cell.textField.delegate = self;
                 cell.textField.tag = indexPath.row;
                 return cell;
             case .birthday:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
                 cell.textField.placeholder = "Birthday"
-                cell.textField.text = vcard.bday;
+                cell.textField.text = vcard?.bday;
                 cell.textField.inputView = self.datePicker;
                 cell.textField.tag = indexPath.row;
                 return cell;
             case .organization:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
                 cell.textField.placeholder = "Organization"
-                cell.textField.text = vcard.organizations.first?.name;
+                cell.textField.text = vcard?.organizations.first?.name;
                 cell.textField.delegate = self;
                 cell.textField.tag = indexPath.row;
                 return cell;
             case .organizationRole:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
                 cell.textField.placeholder = "Organization role"
-                cell.textField.text = vcard.role;
+                cell.textField.text = vcard?.role;
                 cell.textField.delegate = self;
                 cell.textField.tag = indexPath.row;
                 return cell;
             }
         case .phones:
-            if indexPath.row < vcard.telephones.count {
+            if indexPath.row < vcard?.telephones.count ?? 0 {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "PhoneEditCell") as! VCardEditPhoneTableViewCell;
-                cell.phone = vcard.telephones[indexPath.row];
+                cell.phone = vcard?.telephones[indexPath.row];
                 return cell;
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "PhoneAddCell");
@@ -152,9 +152,9 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                 return cell!;
             }
         case .emails:
-            if indexPath.row < vcard.emails.count {
+            if indexPath.row < vcard?.emails.count ?? 0 {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "EmailEditCell") as! VCardEditEmailTableViewCell;
-                cell.email = vcard.emails[indexPath.row];
+                cell.email = vcard?.emails[indexPath.row];
                 return cell;
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "EmailAddCell");
@@ -168,9 +168,9 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                 return cell!;
             }
         case .addresses:
-            if indexPath.row < vcard.addresses.count {
+            if indexPath.row < vcard?.addresses.count ?? 0 {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "AddressEditCell") as! VCardEditAddressTableViewCell;
-                cell.address = vcard.addresses[indexPath.row];
+                cell.address = vcard?.addresses[indexPath.row];
                 return cell;
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "AddressAddCell");
@@ -195,11 +195,11 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         case .basic:
             return false;
         case .phones:
-            return indexPath.row < vcard.telephones.count;
+            return indexPath.row < vcard?.telephones.count ?? 0;
         case .emails:
-            return indexPath.row < vcard.emails.count;
+            return indexPath.row < vcard?.emails.count ?? 0;
         case .addresses:
-            return indexPath.row < vcard.addresses.count;
+            return indexPath.row < vcard?.addresses.count ?? 0;
         }
     }
     
@@ -208,11 +208,11 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         case 0:
             return 7;
         case 1:
-            return vcard.telephones.count + 1;
+            return (vcard?.telephones.count ?? 0) + 1;
         case 2:
-            return vcard.emails.count + 1;
+            return (vcard?.emails.count ?? 0) + 1;
         case 3:
-            return vcard.addresses.count + 1;
+            return (vcard?.addresses.count ?? 0) + 1;
         default:
             return 0;
         }
@@ -240,6 +240,9 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true);
+        guard let vcard = self.vcard else {
+            return;
+        }
         switch VCardSections(rawValue: indexPath.section)! {
         case .basic:
             if indexPath.row == VCardBaseSectionRows.avatar.rawValue {
@@ -267,6 +270,9 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        guard let vcard = self.vcard else {
+            return;
+        }
         if editingStyle == UITableViewCell.EditingStyle.delete {
             if indexPath.section == 1 {
                 vcard.telephones.remove(at: indexPath.row);
@@ -314,7 +320,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                             _ = self.navigationController?.popViewController(animated: true);
                         }
                         DBVCardStore.instance.updateVCard(for: self.client.userBareJid, on: self.client.userBareJid, vcard: vcard);
-                        if let photo = self.vcard.photos.first {
+                        if let photo = self.vcard?.photos.first {
                             VCardManager.instance.fetchPhoto(photo: photo, completionHandler: { result in
                                 switch result {
                                 case .success(let data):
@@ -408,7 +414,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         // saving photo
         let data = photo.pngData()
         if data != nil {
-            vcard.photos = [VCard.Photo(type: "image/png", binval: data!.base64EncodedString(options: NSData.Base64EncodingOptions(rawValue: 0)))];
+            vcard?.photos = [VCard.Photo(type: "image/png", binval: data!.base64EncodedString(options: NSData.Base64EncodingOptions(rawValue: 0)))];
         }
         tableView.reloadData();
         picker.dismiss(animated: true, completion: nil);
@@ -454,7 +460,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         if let cell = tableView.cellForRow(at: IndexPath(row: VCardBaseSectionRows.birthday.rawValue, section: VCardSections.basic.rawValue)) as? VCardTextEditCell {
             cell.textField.text = string;
         }
-        vcard.bday = string;
+        vcard?.bday = string;
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
@@ -462,15 +468,15 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         if let row = VCardBaseSectionRows(rawValue: textField.tag) {
             switch row {
             case .givenName:
-                vcard.givenName = text;
+                vcard?.givenName = text;
             case .familyName:
-                vcard.surname = text;
+                vcard?.surname = text;
             case .fullName:
-                vcard.fn = text;
+                vcard?.fn = text;
             case .organization:
-                vcard.organizations = (text?.isEmpty ?? true) ? [] : [VCard.Organization(name: text!, types: [.work])];
+                vcard?.organizations = (text?.isEmpty ?? true) ? [] : [VCard.Organization(name: text!, types: [.work])];
             case .organizationRole:
-                vcard.role = text;
+                vcard?.role = text;
             default:
                 break;
             }
