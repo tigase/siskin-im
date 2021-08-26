@@ -20,12 +20,11 @@
 //
 
 import Foundation
-import Shared
 import TigaseSwift
 
-class HTTPFileUploadHelper {
+open class HTTPFileUploadHelper {
     
-    static func upload(for context: Context, filename: String, inputStream: InputStream, filesize size: Int, mimeType: String, delegate: URLSessionDelegate?, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
+    public static func upload(for context: Context, filename: String, inputStream: InputStream, filesize size: Int, mimeType: String, delegate: URLSessionDelegate?, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
         let httpUploadModule = context.module(.httpFileUpload);
         httpUploadModule.findHttpUploadComponent(completionHandler: { result in
             switch result {
@@ -69,7 +68,7 @@ class HTTPFileUploadHelper {
         })
     }
     
-    enum UploadResult {
+    public enum UploadResult {
         case success(url: URL, filesize: Int, mimeType: String?)
         case failure(ShareError)
     }

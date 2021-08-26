@@ -39,7 +39,29 @@ open class AvatarStore {
     private let cache = NSCache<NSString,UIImage>();
 
     public init() {
-        cacheDirectory = try! FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("avatars", isDirectory: true);
+        cacheDirectory = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.siskinim.shared")!.appendingPathComponent("Library", isDirectory: true).appendingPathComponent("Caches", isDirectory: true).appendingPathComponent("avatars", isDirectory: true);
+
+        let oldCacheDirectory = try! FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("avatars", isDirectory: true);
+
+        if FileManager.default.fileExists(atPath: oldCacheDirectory.path) {
+            if !FileManager.default.fileExists(atPath: cacheDirectory.path) {
+                let parentDir = cacheDirectory.deletingLastPathComponent();
+                
+                // we need to create parent directory if it does not exist
+                if !FileManager.default.fileExists(atPath: parentDir.path) {
+                    try! FileManager.default.createDirectory(at: parentDir, withIntermediateDirectories: true, attributes: nil);
+                }
+                // we need to move cache
+                try! FileManager.default.moveItem(at: oldCacheDirectory, to: cacheDirectory);
+            }
+        } else {
+            // nothing to move, let's check if destinatin exists
+            if !FileManager.default.fileExists(atPath: cacheDirectory.path) {
+                try! FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true, attributes: nil);
+            }
+        }
+                
+        print("avatars cache directory:", cacheDirectory.path);
     }
     
     open func hasAvatarFor(hash: String) -> Bool {

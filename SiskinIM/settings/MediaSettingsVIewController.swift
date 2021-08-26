@@ -20,6 +20,7 @@
 //
 
 import UIKit
+import Shared
 
 class MediaSettingsViewController: UITableViewController {
     

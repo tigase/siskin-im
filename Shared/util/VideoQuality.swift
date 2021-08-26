@@ -1,8 +1,8 @@
 //
-// RecipientTableViewCell.swift
+// VideoQuality.swift
 //
 // Siskin IM
-// Copyright (C) 2017 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2020 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,11 +19,25 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 
-import UIKit
+import Foundation
+import AVKit
 
-class RecipientTableViewCell: UITableViewCell {
+public enum VideoQuality: String {
+    case original
+    case high
+    case medium
+    case low
     
-    @IBOutlet var name: UILabel!;
-    @IBOutlet var jid: UILabel!;
-    
+    public var preset: String {
+        switch self {
+        case .original:
+            return AVAssetExportPresetPassthrough;
+        case .high:
+            return AVAssetExportPresetHighestQuality;
+        case .medium:
+            return AVAssetExportPresetMediumQuality;
+        case .low:
+            return AVAssetExportPresetLowQuality;
+        }
+    }
 }

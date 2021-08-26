@@ -21,8 +21,9 @@
 
 import UIKit
 import AVKit
+import Shared
 
-class MediaHelper {
+extension MediaHelper {
     
     static func askImageQuality(controller: UIViewController, forceQualityQuestion askQuality: Bool, _ completionHandler: @escaping (Result<ImageQuality,ShareError>)->Void) {
         if let quality = askQuality ? nil : Settings.imageQuality {
@@ -63,62 +64,6 @@ class MediaHelper {
                 }))
                 controller.present(alert, animated: true);
             }
-        }
-    }
-    
-    static func compressImage(url: URL, filename: String, quality: ImageQuality, deleteSource: Bool, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
-        guard quality != .original else {
-            completionHandler(.success(url));
-            return;
-        }
-        guard let inData = try? Data(contentsOf: url), let image = UIImage(data: inData) else {
-            if deleteSource {
-                try? FileManager.default.removeItem(at: url);
-            }
-            completionHandler(.failure(.notSupported));
-            return;
-        }
-        if deleteSource {
-            try? FileManager.default.removeItem(at: url);
-        }
-        compressImage(image: image, filename: filename, quality: quality, completionHandler: completionHandler);
-    }
-    
-    static func compressImage(image: UIImage, filename: String, quality: ImageQuality, completionHandler: @escaping(Result<URL,ShareError>)->Void) {
-        let fileUrl = FileManager.default.temporaryDirectory.appendingPathComponent(filename + ".jpg", isDirectory: false);
-        guard let outData = image.scaled(maxWidthOrHeight: quality.size)?.jpegData(compressionQuality: quality.quality) else {
-            return;
-        }
-        do {
-            try outData.write(to: fileUrl);
-            completionHandler(.success(fileUrl));
-        } catch {
-            completionHandler(.failure(.noAccessError));
-            return;
-        }
-    }
-    
-    static func compressMovie(url: URL, filename: String, quality: VideoQuality, deleteSource: Bool, progressCallback: @escaping (Float)->Void, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
-        guard quality != .original else {
-            completionHandler(.success(url));
-            return;
-        }
-        let video = AVAsset(url: url);
-        let exportSession = AVAssetExportSession(asset: video, presetName: quality.preset)!;
-        exportSession.shouldOptimizeForNetworkUse = true;
-        exportSession.outputFileType = .mp4;
-        let fileUrl = FileManager.default.temporaryDirectory.appendingPathComponent(filename + ".mp4", isDirectory: false);
-        exportSession.outputURL = fileUrl;
-        
-        let timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: { _ in
-            progressCallback(exportSession.progress);
-        })
-        exportSession.exportAsynchronously {
-            timer.invalidate();
-            if deleteSource {
-                try? FileManager.default.removeItem(at: url);
-            }
-            completionHandler(.success(fileUrl));
         }
     }
     

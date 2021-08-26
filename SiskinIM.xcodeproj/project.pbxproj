@@ -16,12 +16,9 @@
 		FE0AE13726B58C4F0010D2E2 /* MeetManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0AE13626B58C4F0010D2E2 /* MeetManager.swift */; };
 		FE0AE13926B7EA770010D2E2 /* MeetEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0AE13826B7EA770010D2E2 /* MeetEventHandler.swift */; };
 		FE0E30DF2535B9D20030F8C5 /* BaseChatViewController+Share.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30DE2535B9D20030F8C5 /* BaseChatViewController+Share.swift */; };
-		FE0E30E42535BA520030F8C5 /* HTTPFileUploadHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30E32535BA520030F8C5 /* HTTPFileUploadHelper.swift */; };
 		FE0E30E92535BA910030F8C5 /* BaseChatViewController+ShareMedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30E82535BA910030F8C5 /* BaseChatViewController+ShareMedia.swift */; };
 		FE0E30F12535BB530030F8C5 /* BaseChatViewController+ShareFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30F02535BB530030F8C5 /* BaseChatViewController+ShareFile.swift */; };
 		FE0E30FE253714050030F8C5 /* MediaHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30FD253714050030F8C5 /* MediaHelper.swift */; };
-		FE0E3103253714420030F8C5 /* ImageQuality.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E3102253714420030F8C5 /* ImageQuality.swift */; };
-		FE0E3108253714570030F8C5 /* VideoQuality.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E3107253714570030F8C5 /* VideoQuality.swift */; };
 		FE0E31122537288A0030F8C5 /* MediaSettingsVIewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E31112537288A0030F8C5 /* MediaSettingsVIewController.swift */; };
 		FE11D2E026616A4F00CC883F /* DBRosterStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A061CDB7B3B001A015C /* DBRosterStore.swift */; };
 		FE11D2E426616B7300CC883F /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA518A32661593B00523EF2 /* Database.swift */; };
@@ -52,7 +49,6 @@
 		FE11D3A126623F4100CC883F /* Array+IndexChanges.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE11D39C26623F2300CC883F /* Array+IndexChanges.swift */; };
 		FE11D3B4266241BD00CC883F /* Publisher+ThrottledSink.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE11D3B2266241BD00CC883F /* Publisher+ThrottledSink.swift */; };
 		FE11D3B5266241BD00CC883F /* Publisher+OnlyGetter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE11D3B3266241BD00CC883F /* Publisher+OnlyGetter.swift */; };
-		FE11D3BA2662849E00CC883F /* ServerCertificateInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE11D3B92662849E00CC883F /* ServerCertificateInfo.swift */; };
 		FE11D3BF2662852A00CC883F /* XMPPClient_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE11D3BE2662852A00CC883F /* XMPPClient_extension.swift */; };
 		FE11D3C72662AB8900CC883F /* SSLProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE11D3C42662AB8900CC883F /* SSLProcessor.swift */; };
 		FE11D3C82662AB8900CC883F /* SSLContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE11D3C52662AB8900CC883F /* SSLContext.swift */; };
@@ -96,7 +92,6 @@
 		FE3E38842427E34300D3A8E8 /* ChannelJoinViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E38832427E34300D3A8E8 /* ChannelJoinViewController.swift */; };
 		FE3E38862428C21100D3A8E8 /* OSLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E38852428C21100D3A8E8 /* OSLog.swift */; };
 		FE3E38882428D9DB00D3A8E8 /* ChannelCreateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E38872428D9DB00D3A8E8 /* ChannelCreateViewController.swift */; };
-		FE3E388A2429364E00D3A8E8 /* UIImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E38892429364D00D3A8E8 /* UIImage.swift */; };
 		FE3E388C2429FAC500D3A8E8 /* ChannelSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E388B2429FAC500D3A8E8 /* ChannelSettingsViewController.swift */; };
 		FE3E388E242A251E00D3A8E8 /* ChannelEditInfoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E388D242A251E00D3A8E8 /* ChannelEditInfoController.swift */; };
 		FE3E3890242A98C000D3A8E8 /* ChannelParticipantsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E388F242A98C000D3A8E8 /* ChannelParticipantsController.swift */; };
@@ -108,10 +103,6 @@
 		FE4DDF561F39E0B500A4CE5A /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4DDF551F39E0B500A4CE5A /* ShareViewController.swift */; };
 		FE4DDF591F39E0B500A4CE5A /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE4DDF571F39E0B500A4CE5A /* MainInterface.storyboard */; };
 		FE4DDF5D1F39E0B500A4CE5A /* Siskin IM - Share.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = FE4DDF531F39E0B500A4CE5A /* Siskin IM - Share.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		FE4DDF641F3A181B00A4CE5A /* AccountsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4DDF631F3A181B00A4CE5A /* AccountsTableViewController.swift */; };
-		FE4DDF661F3A207200A4CE5A /* AccountTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4DDF651F3A207200A4CE5A /* AccountTableViewCell.swift */; };
-		FE4DDF681F3A403900A4CE5A /* RecipientsSelectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4DDF671F3A403900A4CE5A /* RecipientsSelectionViewController.swift */; };
-		FE4DDF6A1F3A44AC00A4CE5A /* RecipientTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4DDF691F3A44AC00A4CE5A /* RecipientTableViewCell.swift */; };
 		FE5079F01CD3CA91001A015C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE5079EF1CD3CA91001A015C /* Security.framework */; };
 		FE507A151CDB7B3B001A015C /* ChatsListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5079FE1CDB7B3B001A015C /* ChatsListTableViewCell.swift */; };
 		FE507A161CDB7B3B001A015C /* ChatsListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5079FF1CDB7B3B001A015C /* ChatsListViewController.swift */; };
@@ -243,6 +234,14 @@
 		FEE49DD52426886500900BBB /* MIX.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEE49DD42426886500900BBB /* MIX.storyboard */; };
 		FEE49DD7242688E100900BBB /* ChannelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE49DD6242688E100900BBB /* ChannelViewController.swift */; };
 		FEE9608A22F191980009B191 /* MucChatSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE9608922F191980009B191 /* MucChatSettingsViewController.swift */; };
+		FEF0967126D50ADC001C0454 /* UIColor_mix.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4721F6464D006B7F7C /* UIColor_mix.swift */; };
+		FEF0967926D642EA001C0454 /* MediaHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF0967826D642EA001C0454 /* MediaHelper.swift */; };
+		FEF0967A26D64347001C0454 /* ImageQuality.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E3102253714420030F8C5 /* ImageQuality.swift */; };
+		FEF0967B26D64347001C0454 /* VideoQuality.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E3107253714570030F8C5 /* VideoQuality.swift */; };
+		FEF0967C26D6437D001C0454 /* HTTPFileUploadHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30E32535BA520030F8C5 /* HTTPFileUploadHelper.swift */; };
+		FEF0967D26D6439E001C0454 /* UIImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E38892429364D00D3A8E8 /* UIImage.swift */; };
+		FEF0968226D7A9FB001C0454 /* ServerCertificateInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE11D3B92662849E00CC883F /* ServerCertificateInfo.swift */; };
+		FEF0968326D7AA02001C0454 /* ServerCertificateInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE11D3B92662849E00CC883F /* ServerCertificateInfo.swift */; };
 		FEF19F0223473B9E005CFE9A /* XmppServiceEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF19F0123473B9E005CFE9A /* XmppServiceEventHandler.swift */; };
 		FEF19F0423473C06005CFE9A /* MessageEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF19F0323473C06005CFE9A /* MessageEventHandler.swift */; };
 		FEF19F0A2347619D005CFE9A /* TasksQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF19F092347619D005CFE9A /* TasksQueue.swift */; };
@@ -424,10 +423,6 @@
 		FE4DDF581F39E0B500A4CE5A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
 		FE4DDF5A1F39E0B500A4CE5A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FE4DDF621F3A12AD00A4CE5A /* SiskinIM - Share.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "SiskinIM - Share.entitlements"; sourceTree = "<group>"; };
-		FE4DDF631F3A181B00A4CE5A /* AccountsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountsTableViewController.swift; sourceTree = "<group>"; };
-		FE4DDF651F3A207200A4CE5A /* AccountTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountTableViewCell.swift; sourceTree = "<group>"; };
-		FE4DDF671F3A403900A4CE5A /* RecipientsSelectionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecipientsSelectionViewController.swift; sourceTree = "<group>"; };
-		FE4DDF691F3A44AC00A4CE5A /* RecipientTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecipientTableViewCell.swift; sourceTree = "<group>"; };
 		FE5079EF1CD3CA91001A015C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		FE5079FE1CDB7B3B001A015C /* ChatsListTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatsListTableViewCell.swift; sourceTree = "<group>"; };
 		FE5079FF1CDB7B3B001A015C /* ChatsListViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatsListViewController.swift; sourceTree = "<group>"; };
@@ -561,6 +556,7 @@
 		FEE49DD6242688E100900BBB /* ChannelViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelViewController.swift; sourceTree = "<group>"; };
 		FEE9608922F191980009B191 /* MucChatSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MucChatSettingsViewController.swift; sourceTree = "<group>"; };
 		FEE9608B22F2F8950009B191 /* db-schema-6.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-6.sql"; sourceTree = "<group>"; };
+		FEF0967826D642EA001C0454 /* MediaHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaHelper.swift; sourceTree = "<group>"; };
 		FEF19F0123473B9E005CFE9A /* XmppServiceEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XmppServiceEventHandler.swift; sourceTree = "<group>"; };
 		FEF19F0323473C06005CFE9A /* MessageEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEventHandler.swift; sourceTree = "<group>"; };
 		FEF19F0523474943005CFE9A /* db-schema-7.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-7.sql"; sourceTree = "<group>"; };
@@ -735,10 +731,6 @@
 				FE4DDF551F39E0B500A4CE5A /* ShareViewController.swift */,
 				FE4DDF571F39E0B500A4CE5A /* MainInterface.storyboard */,
 				FE4DDF5A1F39E0B500A4CE5A /* Info.plist */,
-				FE4DDF631F3A181B00A4CE5A /* AccountsTableViewController.swift */,
-				FE4DDF651F3A207200A4CE5A /* AccountTableViewCell.swift */,
-				FE4DDF671F3A403900A4CE5A /* RecipientsSelectionViewController.swift */,
-				FE4DDF691F3A44AC00A4CE5A /* RecipientTableViewCell.swift */,
 				FE258EA91F3B8BC90042CED9 /* Assets.xcassets */,
 			);
 			path = "SiskinIM - Share";
@@ -843,7 +835,6 @@
 				FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */,
 				FE31291B222C0D1500A92863 /* AvatarView.swift */,
 				FE65D62722E9F8EB0065DEA5 /* Markdown.swift */,
-				FE3E38892429364D00D3A8E8 /* UIImage.swift */,
 				FEF8255424BA0AFE00820108 /* MessageTextView.swift */,
 				FE4A94A926679D65000A96E5 /* EnumTableViewCell.swift */,
 				FE82A728268C83020049C844 /* ChartView.swift */,
@@ -855,6 +846,7 @@
 		FE507A121CDB7B3B001A015C /* util */ = {
 			isa = PBXGroup;
 			children = (
+				FE11D3B92662849E00CC883F /* ServerCertificateInfo.swift */,
 				FE9D4DA626C7E87C00DD295A /* AudioSession.swift */,
 				FE11D3B1266241A200CC883F /* combine */,
 				FE719E752271B2BA007CEEC9 /* OpenSSL_AES_GCM_Engine.swift */,
@@ -873,12 +865,8 @@
 				FECEF29523B7B076007EC323 /* DownloadStore.swift */,
 				FE7D293323B919FF001A877D /* DownloadManager.swift */,
 				FE3E38852428C21100D3A8E8 /* OSLog.swift */,
-				FE0E30E32535BA520030F8C5 /* HTTPFileUploadHelper.swift */,
 				FE0E30FD253714050030F8C5 /* MediaHelper.swift */,
-				FE0E3102253714420030F8C5 /* ImageQuality.swift */,
-				FE0E3107253714570030F8C5 /* VideoQuality.swift */,
 				FE11D39C26623F2300CC883F /* Array+IndexChanges.swift */,
-				FE11D3B92662849E00CC883F /* ServerCertificateInfo.swift */,
 				FE11D3D02662B91E00CC883F /* PresenceStore.swift */,
 				FE11D3D926639D1600CC883F /* ContactManager.swift */,
 				FE11D3E526639DEA00CC883F /* VCardManager.swift */,
@@ -912,6 +900,7 @@
 		FE759FC62370B2A4001E78D9 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				FEF0967E26D643A9001C0454 /* ui */,
 				FE759FFF237435A0001E78D9 /* notifications */,
 				FE759FDC23719865001E78D9 /* database */,
 				FE759FD62370B316001E78D9 /* util */,
@@ -926,6 +915,10 @@
 			isa = PBXGroup;
 			children = (
 				FE11D3C32662AB6300CC883F /* crypto */,
+				FEF0967826D642EA001C0454 /* MediaHelper.swift */,
+				FE0E3102253714420030F8C5 /* ImageQuality.swift */,
+				FE0E3107253714570030F8C5 /* VideoQuality.swift */,
+				FE0E30E32535BA520030F8C5 /* HTTPFileUploadHelper.swift */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -1128,6 +1121,14 @@
 				FE5079FF1CDB7B3B001A015C /* ChatsListViewController.swift */,
 			);
 			path = chats;
+			sourceTree = "<group>";
+		};
+		FEF0967E26D643A9001C0454 /* ui */ = {
+			isa = PBXGroup;
+			children = (
+				FE3E38892429364D00D3A8E8 /* UIImage.swift */,
+			);
+			path = ui;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1405,11 +1406,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE4DDF661F3A207200A4CE5A /* AccountTableViewCell.swift in Sources */,
-				FE4DDF681F3A403900A4CE5A /* RecipientsSelectionViewController.swift in Sources */,
 				FE4DDF561F39E0B500A4CE5A /* ShareViewController.swift in Sources */,
-				FE4DDF6A1F3A44AC00A4CE5A /* RecipientTableViewCell.swift in Sources */,
-				FE4DDF641F3A181B00A4CE5A /* AccountsTableViewController.swift in Sources */,
+				FEF0967126D50ADC001C0454 /* UIColor_mix.swift in Sources */,
+				FEF0968326D7AA02001C0454 /* ServerCertificateInfo.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1427,12 +1426,17 @@
 			files = (
 				FE75A008237585DC001E78D9 /* NotificationEncryptionKeys.swift in Sources */,
 				FE11D3C72662AB8900CC883F /* SSLProcessor.swift in Sources */,
+				FEF0967C26D6437D001C0454 /* HTTPFileUploadHelper.swift in Sources */,
 				FE11D3C82662AB8900CC883F /* SSLContext.swift in Sources */,
 				FEDE0098266BCD7A0019CC1C /* ConversationType.swift in Sources */,
 				FE11D3C92662AB8900CC883F /* SSLCertificate.swift in Sources */,
+				FEF0967D26D6439E001C0454 /* UIImage.swift in Sources */,
+				FEF0967A26D64347001C0454 /* ImageQuality.swift in Sources */,
 				FEDE009D266BE3BD0019CC1C /* NotificationsManagerHelper.swift in Sources */,
+				FEF0967926D642EA001C0454 /* MediaHelper.swift in Sources */,
 				FE759FDB2370B384001E78D9 /* Cipher+AES.swift in Sources */,
 				FE11D2EA26616F0100CC883F /* Database.swift in Sources */,
+				FEF0967B26D64347001C0454 /* VideoQuality.swift in Sources */,
 				FE759FF923742AC1001E78D9 /* NotificationCategory.swift in Sources */,
 				FEDE0093266BCA450019CC1C /* ConversationNotifications.swift in Sources */,
 			);
@@ -1453,6 +1457,7 @@
 				FE11D35726623D6800CC883F /* ConversationEntrySender.swift in Sources */,
 				FE17808D23EB4C7F00A1EA76 /* AccountQRCodeController.swift in Sources */,
 				FE11D36726623D7000CC883F /* DisplayableIdProtocol.swift in Sources */,
+				FEF0968226D7A9FB001C0454 /* ServerCertificateInfo.swift in Sources */,
 				FE11D35F26623D6D00CC883F /* Conversation.swift in Sources */,
 				FE719E762271B2BA007CEEC9 /* OpenSSL_AES_GCM_Engine.swift in Sources */,
 				FE11D2E426616B7300CC883F /* Database.swift in Sources */,
@@ -1520,7 +1525,6 @@
 				FE31291C222C0D1500A92863 /* AvatarView.swift in Sources */,
 				FE719E7E2274D20D007CEEC9 /* OMEMOFingerprintsController.swift in Sources */,
 				FE759FFC23742CE5001E78D9 /* NotificationCenterDelegate.swift in Sources */,
-				FE3E388A2429364E00D3A8E8 /* UIImage.swift in Sources */,
 				FE11D37F26623D7700CC883F /* DBVCardStore.swift in Sources */,
 				FEF19F0C23476466005CFE9A /* MucEventHandler.swift in Sources */,
 				FE11D33E26623D6200CC883F /* AppendixProtocol.swift in Sources */,
@@ -1528,7 +1532,6 @@
 				FE7D293623BB5E0A001A877D /* LinkPreviewChatTableViewCell.swift in Sources */,
 				FE11D37E26623D7700CC883F /* DBChatStore+ChannelStore.swift in Sources */,
 				FE6545641E9E8B67006A14AC /* ServerSelectorTableViewCell.swift in Sources */,
-				FE0E3103253714420030F8C5 /* ImageQuality.swift in Sources */,
 				FE31291A22240BEB00A92863 /* PEPBookmarksModule_extension.swift in Sources */,
 				FE00157F2019090300490340 /* ExperimentalSettingsViewController.swift in Sources */,
 				FE2332E3242CE8D600008ED4 /* ChannelBlockedUsersController.swift in Sources */,
@@ -1537,7 +1540,6 @@
 				FE11D3ED26639E0100CC883F /* VCardManager.swift in Sources */,
 				FE0E31122537288A0030F8C5 /* MediaSettingsVIewController.swift in Sources */,
 				FEDE93871D07564F00CA60A9 /* SwitchTableViewCell.swift in Sources */,
-				FE0E30E42535BA520030F8C5 /* HTTPFileUploadHelper.swift in Sources */,
 				FE507A171CDB7B3B001A015C /* ChatTableViewCell.swift in Sources */,
 				FE31DDE4201261A200C2AB1D /* DNSSrvDiskCache.swift in Sources */,
 				FEDE00D0266CEF5E0019CC1C /* ChatTableViewMarkerCell.swift in Sources */,
@@ -1560,7 +1562,6 @@
 				FE507A151CDB7B3B001A015C /* ChatsListTableViewCell.swift in Sources */,
 				FE9EA16B23BF9DB2008C401A /* ChatAttachementsCellView.swift in Sources */,
 				FEF19F102348A046005CFE9A /* PresenceRosterEventHandler.swift in Sources */,
-				FE11D3BA2662849E00CC883F /* ServerCertificateInfo.swift in Sources */,
 				FE94E5251CCBA74F00FAE755 /* AppDelegate.swift in Sources */,
 				FEF80DB21CDBBBFE005645A7 /* AccountSettingsViewController.swift in Sources */,
 				FEDE00A8266BE4740019CC1C /* NotificationManager.swift in Sources */,
@@ -1603,7 +1604,6 @@
 				FE9E13711F2606E9005C0EE5 /* ContactsSettingsViewController.swift in Sources */,
 				FE0AE0B426A9DD6D0010D2E2 /* SetAccountSettingsController.swift in Sources */,
 				FE11D3B4266241BD00CC883F /* Publisher+ThrottledSink.swift in Sources */,
-				FE0E3108253714570030F8C5 /* VideoQuality.swift in Sources */,
 				FE2D481A24505F1600C13CE5 /* CallManager.swift in Sources */,
 				FE3E388C2429FAC500D3A8E8 /* ChannelSettingsViewController.swift in Sources */,
 				FE00157D2017617B00490340 /* StreamFeaturesCache.swift in Sources */,

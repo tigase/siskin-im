@@ -229,37 +229,3 @@ extension BaseChatViewController: URLSessionDelegate {
     }
     
 }
-
-public enum ShareError: Error {
-    case unknownError
-    case noAccessError
-    case noFileSizeError
-    case noMimeTypeError
-    
-    case notSupported
-    case fileTooBig
-    
-    case httpError
-    case invalidResponseCode(url: URL)
-    
-    var message: String {
-        switch self {
-        case .invalidResponseCode:
-            return "Server did not confirm file upload correctly."
-        case .unknownError:
-            return "Please try again later."
-        case .noAccessError:
-            return "It was not possible to access the file."
-        case .noFileSizeError:
-            return "Could not retrieve file size.";
-        case .noMimeTypeError:
-            return "Could not detect MIME type of a file.";
-        case .notSupported:
-            return "Feature not supported by XMPP server";
-        case .fileTooBig:
-            return "File is too big to share";
-        case .httpError:
-            return "Upload to HTTP server failed.";
-        }
-    }
-}

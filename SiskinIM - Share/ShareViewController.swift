@@ -22,369 +22,558 @@ import UIKit
 import Social
 import Shared
 import TigaseSwift
+import TigaseSQLite3
 import MobileCoreServices
+import Combine
 
-class ShareViewController: SLComposeServiceViewController {
+extension Query {
     
-//    var account: String? = nil;
-//    var recipients: [JID] = [];
-//
-//    weak var handler: EventHandler?;
-//
-//    lazy var xmppClient: XMPPClient = {
-//        let client = XMPPClient();
-//        let sslHandler: ((SessionObject, SecTrust)->Bool) = {(sessionObject,secTrust) -> Bool in
-//            return true;
-//        };
-//        client.sessionObject.setProperty(SocketConnector.SSL_CERTIFICATE_VALIDATOR, value: sslHandler);
-//        _ = client.modulesManager.register(AuthModule());
-//        _ = client.modulesManager.register(StreamFeaturesModule());
-//        _ = client.modulesManager.register(SaslModule());
-//        _ = client.modulesManager.register(ResourceBinderModule());
-//        _ = client.modulesManager.register(SessionEstablishmentModule());
-//        _ = client.modulesManager.register(DiscoveryModule());
-//        client.modulesManager.register(PresenceModule()).initialPresence = false;
-//        let messageModule = client.modulesManager.register(MessageModule());
-//        let rosterModule =  client.modulesManager.register(RosterModule());
-//        _ = client.modulesManager.register(HttpFileUploadModule());
-//
-//        let handler = ShareEventHandler();
-//        handler.controller = self;
-//        self.handler = handler;
-//
-//        client.eventBus.register(handler: handler, for: RosterModule.ItemUpdatedEvent.TYPE)
-//        return client;
-//    }();
-//
-//    lazy var accountConfigurationItem: SLComposeSheetConfigurationItem = {
-//        let item = SLComposeSheetConfigurationItem()!;
-//        item.title = "Account";
-//        item.tapHandler = self.showAccountSelection;
-//        return item;
-//    }();
-//
-//    lazy var buddiesConfigurationItem: SLComposeSheetConfigurationItem = {
-//        let item = SLComposeSheetConfigurationItem()!;
-//        item.title = "Recipients";
-//        item.tapHandler = self.showRecipientsSelection;
-//        return item;
-//    }();
+    static let selectRosterItems = Query("SELECT ri.account, ri.jid, ri.name, ri.data FROM roster_items ri");
+    static let selectAvatars = Query("select ac.account, ac.jid, ac.type, ac.hash FROM avatars_cache ac");
+    
+}
 
-//    weak var rosterController: RecipientsSelectionViewController?;
-    
-    var webUrl: URL?;
-    
-    var sharedDefaults = UserDefaults(suiteName: "group.TigaseMessenger.Share");
-    
-//    override func isContentValid() -> Bool {
-//        return account != nil && xmppClient.state == .connected && recipients.count > 0;
-//    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad();
+enum AvatarType: String {
+    case vcardTemp
+    case pepUserAvatar
+}
 
-        let controller = UIAlertController(title: "Sharing is currently not supported with this beta version.", message: nil, preferredStyle: .alert);
-        controller.addAction(UIAlertAction(title: "OK", style: .destructive, handler: { (action) in
-            self.extensionContext?.cancelRequest(withError: ShareError.failure);
-        }))
-        self.present(controller, animated: true, completion: nil);
-//
-//        let dbURL = DBConnection.mainDbURL();
-//        if !FileManager.default.fileExists(atPath: dbURL.path) {
-//            let controller = UIAlertController(title: "Please launch application from the home screen before continuing.", message: nil, preferredStyle: .alert);
-//            controller.addAction(UIAlertAction(title: "OK", style: .destructive, handler: { (action) in
-//                self.extensionContext?.cancelRequest(withError: ShareError.firstRun);
-//            }))
-//            self.present(controller, animated: true, completion: nil);
-//        }
+struct AvatarKey: Hashable {
+    let account: BareJID;
+    let jid: BareJID;
+    let type: AvatarType;
+}
+
+struct RosterItem: Equatable {
+    let account: BareJID;
+    let jid: BareJID;
+    let name: String?;
+    
+    var displayName: String {
+        return name ?? jid.stringValue;
     }
     
-//    override func presentationAnimationDidFinish() {
-//        if !sharedDefaults!.bool(forKey: "SharingViaHttpUpload") {
-//            var error = true;
-//            if let provider = (self.extensionContext!.inputItems.first as? NSExtensionItem)?.attachments?.first {
-//                error = !provider.hasItemConformingToTypeIdentifier(kUTTypeURL as String);
-//            }
-//            if error {
-//                self.showAlert(title: "Failure", message: "Sharing feature with HTTP upload is disabled within application. To use this feature you need to enable sharing with HTTP upload in application");
-//            }
-//        }
-//    }
-    
-//    override func didSelectPost() {
-//        if let provider = (self.extensionContext!.inputItems.first as? NSExtensionItem)?.attachments?.first {
-//            if provider.hasItemConformingToTypeIdentifier(kUTTypeFileURL as String) {
-//                provider.loadItem(forTypeIdentifier: kUTTypeFileURL as String, options: nil, completionHandler: { (item, error) in
-//                    if let localUrl = item as? URL {
-//                        let uti = try? localUrl.resourceValues(forKeys: [.typeIdentifierKey]).typeIdentifier;
-//                        let mimeType = uti != nil ? (UTTypeCopyPreferredTagWithClass(uti! as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as String?) : nil;
-//                        let size = try? FileManager.default.attributesOfItem(atPath: localUrl.path)[FileAttributeKey.size] as? UInt64;
-//                        self.upload(localUrl: localUrl, type: mimeType, handler: {(remoteUrl) in
-//                            guard remoteUrl != nil else {
-//                                self.showAlert(title: "Failure", message: "Please try again later.");
-//                                return;
-//                            }
-//
-//                            if self.sharedDefaults!.integer(forKey: "fileDownloadSizeLimit") > 0 {
-//                                let hash = Digest.sha1.digest(toHex: remoteUrl!.absoluteString.data(using: .utf8)!)!;
-//
-//                                var params: [String: Any] = [
-//                                    "jids": self.recipients.map({ $0.bareJid.stringValue }),
-//                                    "name": localUrl.lastPathComponent,
-//                                    "timestamp": Date()
-//                                ];
-//                                if mimeType != nil {
-//                                    params["mimeType"] = mimeType;
-//                                }
-//                                if size != nil {
-//                                    params["size"] = Int(size!);
-//                                }
-//
-//                                let localUploadDirUrl = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.siskinim.shared")!.appendingPathComponent("upload", isDirectory: true);
-//                                if !FileManager.default.fileExists(atPath: localUploadDirUrl.path) {
-//                                    try? FileManager.default.createDirectory(at: localUploadDirUrl, withIntermediateDirectories: true, attributes: nil);
-//                                }
-//                                do {
-//                                    try FileManager.default.copyItem(at: localUrl, to: localUploadDirUrl.appendingPathComponent(hash, isDirectory: false));
-//                                    self.sharedDefaults!.set(params as Any?, forKey: "upload-\(hash)");
-//                                } catch {
-//                                    print("could not copy a file from:", localUrl, "to:", localUploadDirUrl)
-//                                }
-//                            }
-//                            self.share(url: nil, uploadedFileURL: remoteUrl);
-//                        });
-//                    } else {
-//                        self.showAlert(title: "Failure", message: "Please try again later.");
-//                    }
-//                })
-//            } else if provider.hasItemConformingToTypeIdentifier(kUTTypeURL as String) {
-//                provider.loadItem(forTypeIdentifier: kUTTypeURL as String, options: nil, completionHandler: { (value, error) in
-//                    self.share(url: (value as! URL), uploadedFileURL: nil);
-//                })
-////            } else if provider.hasItemConformingToTypeIdentifier(kUTTypePlainText as String) {
-////                provider.loadItem(forTypeIdentifier: kUTTypePlainText as String, options: nil, completionHandler: { (item, error) in
-////                    self.share(text: item as! String);
-////                });
-////            } else {
-////                self.showAlert(title: "Failure", message: "Please try again later.");
-//            }
-//        }
-//    }
-//
-//    override func didSelectCancel() {
-//        xmppClient.disconnect(true);
-//        super.didSelectCancel();
-//    }
-//
-//    override func configurationItems() -> [Any]! {
-//        return [accountConfigurationItem, buddiesConfigurationItem];
-//    }
-//
-//    func showAlert(title: String, message: String) {
-//        DispatchQueue.main.async {
-//            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert);
-//            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: {(action) in
-//                self.extensionContext?.cancelRequest(withError: ShareError.failure);
-//            }));
-//            self.present(alert, animated: true, completion: nil);
-//        }
-//    }
-//
-//    func showAccountSelection() {
-//        if xmppClient.state != .disconnected {
-//            xmppClient.disconnect(true);
-//        }
-//        let controller = storyboard?.instantiateViewController(withIdentifier: "accountSelectionViewController") as! AccountsTableViewController;
-////        let controller = AccountsTableViewController(style: .plain);
-//        controller.selected = account;
-//        controller.delegate = self;
-//        pushConfigurationViewController(controller);
-//    }
-//
-//    func accountSelection(account: String) {
-//        self.account = account;
-//        self.recipients = [];
-//        validateContent();
-//        self.buddiesConfigurationItem.value = "";
-//        accountConfigurationItem.value = account;
-//        xmppClient.connectionConfiguration.setUserJID(BareJID(account)!);
-//
-//        if let password = getAccountPassword() {
-//            xmppClient.connectionConfiguration.setUserPassword(password);
-//            if let rosterStore: RosterStore = xmppClient.sessionObject.getProperty(RosterModule.ROSTER_STORE_KEY) {
-//                rosterStore.cleared();
-//            }
-//            xmppClient.login();
-//        }
-//    }
-//
-//    func showRecipientsSelection() {
-//        guard account != nil else {
-//            return;
-//        }
-//        let controller = storyboard?.instantiateViewController(withIdentifier: "recipientsSelectionViewController") as! RecipientsSelectionViewController;
-//        controller.selected = recipients;
-//        controller.xmppClient = xmppClient;
-//        controller.delegate = self;
-//        self.rosterController = controller;
-//        pushConfigurationViewController(controller);
-//    }
-//
-//    func recipientsChanged(_ recipients: [JID]) {
-//        self.recipients = recipients;
-//        buddiesConfigurationItem.value = String(recipients.count);
-//        validateContent();
-//    }
-//
-//    func getAccountPassword() -> String? {
-//        guard account != nil else {
-//            return nil;
-//        }
-//        let query: [String: NSObject] = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitOne, String(kSecReturnData) : kCFBooleanTrue, String(kSecAttrService) : "xmpp" as NSObject, String(kSecAttrAccount) : account! as NSObject ];
-//
-//        var result:AnyObject?;
-//
-//        let lastResultCode: OSStatus = withUnsafeMutablePointer(to: &result) {
-//            SecItemCopyMatching(query as CFDictionary, UnsafeMutablePointer($0));
-//        }
-//
-//        if lastResultCode == noErr {
-//            if let data = result as? NSData {
-//                return String(data: data as Data, encoding: String.Encoding.utf8);
-//            }
-//        }
-//        return nil;
-//    }
-//
-//    func upload(localUrl: URL, type: String?, handler: @escaping (URL?)->Void) {
-//        let size = try! FileManager.default.attributesOfItem(atPath: localUrl.path)[FileAttributeKey.size] as! UInt64;
-//        print("trying to upload", localUrl, "size", size, "type", type as Any);
-//        if let httpModule: HttpFileUploadModule = self.xmppClient.modulesManager.getModule(HttpFileUploadModule.ID) {
-//            httpModule.findHttpUploadComponent(onSuccess: { (results) in
-//                guard !results.isEmpty else {
-//                    self.showAlert(title: "Upload failed", message: "Feature not supported by XMPP server");
-//                    return;
-//                }
-//
-//                let compJid = results.filter({ (k,v) -> Bool in
-//                    return v == nil || v! >= Int(size);
-//                }).first?.key;
-//
-//                guard compJid != nil else {
-//                    self.showAlert(title: "Upload failed", message: "Selected object is too big!");
-//                    return;
-//                }
-//
-//                httpModule.requestUploadSlot(componentJid: compJid!, filename: localUrl.pathComponents.last!, size: Int(size), contentType: type ?? "application/octet-stream", onSuccess: {(slot) in
-//                    print("allocated slot", slot.getUri, slot.putUri);
-//                    var request = URLRequest(url: slot.putUri);
-//                    slot.putHeaders.forEach({ (k,v) in
-//                        request.addValue(v, forHTTPHeaderField: k);
-//                    });
-//                    request.httpMethod = "PUT";
-////                    let inputStream = InputStream(url: localUrl);
-////                    request.httpBodyStream = inputStream;
-//                    request.addValue(type ?? "application/octet-stream", forHTTPHeaderField: "Content-Type");
-//
-//                    URLSession.shared.uploadTask(with: request, fromFile: localUrl) { (data, response, error) in
-//                        guard error == nil && ((response as? HTTPURLResponse)?.statusCode ?? 500) == 201 else {
-//                            print(data as Any, error as Any, response as Any);
-//                            self.showAlert(title: "Upload failed", message: "Upload to HTTP server failed.");
-//                            return;
-//                        }
-//                        handler(slot.getUri);
-//                    }.resume();
-//                }, onError: {(errorCondition, message) in
-//                    self.showAlert(title: "Upload failed", message: message ?? "Please try again later.");
-//                });
-//            }, onError: { (error) in
-//                if error != nil && error! == ErrorCondition.item_not_found {
-//                    self.showAlert(title: "Upload failed", message: "Feature not supported by XMPP server");
-//                } else {
-//                    self.showAlert(title: "Upload failed", message: "Please try again later.");
-//                }
-//            })
-//        } else {
-//            showAlert(title: "Upload failure", message: "Upload module not available!");
-//        }
-//    }
-//
-//    func share(text: String? = nil, url: URL? = nil, uploadedFileURL: URL? = nil) {
-//        recipients.forEach { (recipient) in
-//            if !contentText.isEmpty || url != nil {
-//                let message = Message();
-//                message.type = StanzaType.chat;
-//                message.to = recipient;
-//
-//                if let text = text {
-//                    message.body = contentText.isEmpty ? text : "\(contentText!) - \(text)";
-//                } else if let url = url {
-//                    message.body = contentText.isEmpty ? url.description : "\(contentText!) - \(url.description)";
-//                } else {
-//                    message.body = contentText;
-//                }
-//                xmppClient.context.writer?.write(message);
-//            }
-//
-//            if let url = uploadedFileURL {
-//                let message = Message();
-//                message.type = .chat;
-//                message.to = recipient;
-//                message.oob = url.description;
-//                xmppClient.context.writer?.write(message);
-//            }
-//        }
-//
-//        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2, execute: {
-//            self.xmppClient.disconnect();
-//            self.extensionContext?.completeRequest(returningItems: nil, completionHandler: nil);
-//        });
-//
-//    }
-    
-//    func shareText(url: URL?) {
-//        print("sharing", contentText as Any, url);
-//
-//        recipients.forEach { (recipient) in
-//            let message = Message();
-//            message.type = StanzaType.chat;
-//            message.to = recipient;
-//            if let url = url {
-//                message.body = contentText.isEmpty ? url.description : "\(contentText!) - \(url.description)";
-//                message.oob = url.description;
-//            }
-//            xmppClient.context.writer?.write(message);
-//        }
-//
-//        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2, execute: {
-//            self.xmppClient.disconnect();
-//            self.extensionContext?.completeRequest(returningItems: nil, completionHandler: nil);
-//        });
-//    }
-    
-//    class ShareEventHandler: EventHandler {
-//
-//        weak var controller: ShareViewController?;
-//
-//        func handle(event: Event) {
-//            switch event {
-//            case let e as RosterModule.ItemUpdatedEvent:
-//                DispatchQueue.main.async {
-//                    self.controller?.rosterController?.updateItem(item: e.rosterItem!);
-//                }
-//            default:
-//                break;
-//            }
-//        }
-//
-//    }
-//
-    enum ShareError: Error {
-        case firstRun
-        case featureNotAvailable
-        case tooBig
-        case failure
+    var initials: String? {
+        let parts = displayName.uppercased().components(separatedBy: CharacterSet.letters.inverted);
+        let first = parts.first?.first;
+        let last = parts.count > 1 ? parts.last?.first : nil;
+        return (last == nil || first == nil) ? (first == nil ? nil : "\(first!)") : "\(first!)\(last!)";
+    }
+}
 
+struct DBRosterData: Codable, DatabaseConvertibleStringValue {
+    
+    let groups: [String];
+    let annotations: [RosterItemAnnotation];
+        
+}
+
+class ShareViewController: UITableViewController {
+    
+    var recipients: [RosterItem] = [];
+    
+    var sharedDefaults = UserDefaults(suiteName: "group.TigaseMessenger.Share");
+    var avatarCacheUrl: URL?;
+    
+    var avatars: [AvatarKey: String] = [:];
+    var rosterItems: [RosterItem] = [];
+    
+    var imageQuality: ImageQuality {
+        if let valueStr = sharedDefaults?.string(forKey: "imageQuality"), let value = ImageQuality(rawValue: valueStr) {
+            return value;
+        }
+        return .medium;
+    }
+
+    var videoQuality: VideoQuality {
+        if let valueStr = sharedDefaults?.string(forKey: "videoQuality"), let value = VideoQuality(rawValue: valueStr) {
+            return value;
+        }
+        return .medium;
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad();
+        
+        self.navigationItem.title = "Select recipients";
+        self.navigationItem.setLeftBarButton(UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelTapped(_:))), animated: false);
+        self.navigationItem.setRightBarButton(UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneTapped(_:))), animated: false)
+        self.navigationItem.rightBarButtonItem?.isEnabled = false;
+        
+        let dbUrl = Database.mainDatabaseUrl();
+
+        if !FileManager.default.fileExists(atPath: dbUrl.path) {
+            let controller = UIAlertController(title: "Please launch application from the home screen before continuing.", message: nil, preferredStyle: .alert);
+            controller.addAction(UIAlertAction(title: "OK", style: .destructive, handler: { (action) in
+                self.extensionContext?.cancelRequest(withError: ShareError.unknownError);
+            }))
+            self.present(controller, animated: true, completion: nil);
+        }
+        
+        let database = try! Database(path: dbUrl.path, flags: SQLITE_OPEN_WAL | SQLITE_OPEN_READONLY);
+        let accounts = Set(getActiveAccounts());
+        try! database.select(query: .selectAvatars, params: []).forEach({ c in
+            guard let account = c.bareJid(for: "account"), let jid = c.bareJid(for: "jid"), let type = AvatarType(rawValue: c.string(for: "type")!), let hash = c.string(for: "hash") else {
+                return;
+            }
+            
+            avatars[.init(account: account, jid: jid, type: type)] = hash;
+        })
+        rosterItems = try! database.select(query: .selectRosterItems, cached: false, params: []).mapAll({ c -> RosterItem? in
+            guard let account = c.bareJid(for: "account"), accounts.contains(account), let jid = c.bareJid(for: "jid") else {
+                return nil;
+            }
+            
+            if let data: DBRosterData = c.object(for: "data") {
+                guard data.annotations.isEmpty else {
+                    return nil;
+                }
+            }
+            
+            return RosterItem(account: account, jid: jid, name: c.string(for: "name"));
+        }).sorted(by: { r1, r2 -> Bool in
+            return r1.displayName.lowercased() < r2.displayName.lowercased();
+        })
+        
+        avatarCacheUrl = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.siskinim.shared")!.appendingPathComponent("Library", isDirectory: true).appendingPathComponent("Caches", isDirectory: true).appendingPathComponent("avatars", isDirectory: true);
+        for url in try! FileManager.default.contentsOfDirectory(at: FileManager.default.temporaryDirectory, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles]) {
+            try? FileManager.default.removeItem(at: url);
+        }
+    }
+    
+    private var alertController: UIAlertController?;
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated);
+        if !sharedDefaults!.bool(forKey: "SharingViaHttpUpload") {
+            var error = true;
+            if let provider = (self.extensionContext!.inputItems.first as? NSExtensionItem)?.attachments?.first {
+                error = !provider.hasItemConformingToTypeIdentifier(kUTTypeURL as String);
+            }
+            if error {
+                self.showAlert(title: "Failure", message: "Sharing feature with HTTP upload is disabled within application. To use this feature you need to enable sharing with HTTP upload in application");
+            }
+        }
+    }
+    
+    @objc func cancelTapped(_ sender: Any) {
+        let error = NSError(domain: "tigase.siskinim", code: 0, userInfo: [:]);
+        self.extensionContext?.cancelRequest(withError: error);
+    }
+    
+    private var cancellables: Set<AnyCancellable> = [];
+    private var cancelled = false;
+    private var clients: [XMPPClient] = [];
+    
+    @objc func doneTapped(_ sender: Any) {
+        self.navigationItem.rightBarButtonItem?.isEnabled = false;
+        alertController = UIAlertController(title: "", message: nil, preferredStyle: .alert);
+        let activityIndicator = UIActivityIndicatorView(style: .medium);
+        activityIndicator.startAnimating();
+        let label = UILabel(frame: .zero);
+        label.text = "Preparing...";
+        let stack = UIStackView(arrangedSubviews: [activityIndicator, label]);
+        stack.alignment = .center;
+        stack.distribution = .fillProportionally;
+        stack.axis = .horizontal;
+        stack.translatesAutoresizingMaskIntoConstraints = false;
+        stack.spacing = 14;
+        alertController?.view.addSubview(stack);
+        NSLayoutConstraint.activate([
+            stack.centerXAnchor.constraint(equalTo: alertController!.view.centerXAnchor),
+            stack.leadingAnchor.constraint(greaterThanOrEqualTo: alertController!.view.leadingAnchor, constant: 20),
+            stack.topAnchor.constraint(equalTo: alertController!.view.topAnchor, constant: 20),
+            stack.bottomAnchor.constraint(equalTo: alertController!.view.bottomAnchor, constant: -60)
+        ])
+        alertController?.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+            self.cancelled = true;
+            for client in self.clients {
+                _ = client.disconnect();
+            }
+            DispatchQueue.main.async {
+                self.extensionContext?.cancelRequest(withError: ShareError.unknownError);
+            }
+        }));
+        self.present(alertController!, animated: true, completion: nil);
+
+        self.extractAttachments(completionHandler: { result in
+            guard !self.cancelled else {
+                if case let .success(att) = result, case let .file(url) = att {
+                    try? FileManager.default.removeItem(at: url);
+                }
+                return;
+            }
+            switch result {
+            case .failure(let error):
+                DispatchQueue.main.async {
+                self.alertController?.dismiss(animated: true, completion: {
+                    self.navigationItem.rightBarButtonItem?.isEnabled = true;
+                    self.show(error: error);
+                })
+                }
+            case .success(let att):
+                DispatchQueue.main.async {
+                    label.text = "Sending...";
+                }
+                self.share(attachment: att, completionHandler: { errors in
+                    DispatchQueue.main.async {
+                        self.alertController?.dismiss(animated: true, completion: {
+                            self.navigationItem.rightBarButtonItem?.isEnabled = true;
+                            guard let error = errors.first?.error else {
+                                self.extensionContext?.completeRequest(returningItems: [], completionHandler: nil);
+                                return;
+                            }
+                            self.show(error: error);
+                        });
+                    }
+                });
+            }
+        })
+    }
+    
+    private struct ErrorResult {
+        let jid: BareJID;
+        let error: Error;
+    }
+    
+    private func share(attachment: Attachment, completionHandler: @escaping ([ErrorResult])->Void) {
+        let accounts = Set(recipients.map({ $0.account }));
+        let group = DispatchGroup();
+        var errors: [ErrorResult] = [];
+        clients = accounts.compactMap({ account -> XMPPClient? in
+            guard let password = getAccountPassword(for: account) else {
+                return nil;
+            }
+            let client = self.createXmppClient(for: account);
+            var wasConnected = false;
+            client.connectionConfiguration.credentials = .password(password: password, authenticationName: nil, cache: nil);
+            client.$state.dropFirst().sink(receiveValue: { [weak client] newState in
+                switch newState {
+                case .connected(_):
+                    guard let client = client else {
+                        return;
+                    }
+                    wasConnected = true;
+                    let recipients = self.recipients.filter({ $0.account == account });
+                    switch attachment {
+                    case .file(let tempUrl):
+                        self.upload(file: tempUrl, using: client, completionHandler: { result in
+                            try? FileManager.default.removeItem(at: tempUrl);
+                            switch result {
+                            case .success(let url):
+                                self.send(using: client, to: recipients, body: url.absoluteString, oob: url.absoluteString, completionHandler: {
+                                    _ = client.disconnect();
+                                })
+                            case .failure(let err):
+                                DispatchQueue.main.async {
+                                    errors.append(contentsOf: recipients.map({ ErrorResult(jid: $0.jid, error: err)}))
+                                }
+                                _ = client.disconnect();
+                            }
+                        });
+                    case .link(let url):
+                        self.send(using: client, to: recipients, body: url.absoluteString, oob: nil, completionHandler: {
+                            _ = client.disconnect();
+                        })
+                    case .text(let text):
+                        self.send(using: client, to: recipients, body: text, oob: nil, completionHandler: {
+                            _ = client.disconnect();
+                        })
+                    }
+                    break;
+                case .disconnected:
+                    if !wasConnected {
+                        let recipients = self.recipients.filter({ $0.account == account });
+                        DispatchQueue.main.async {
+                            errors.append(contentsOf: recipients.map({ ErrorResult(jid: $0.jid, error: ShareError.unknownError)}))
+                        }
+                    }
+                    group.leave();
+                default:
+                    break;
+                }
+            }).store(in: &cancellables);
+            group.enter();
+            client.login();
+            return client;
+        })
+        group.notify(queue: DispatchQueue.main, execute: {
+            completionHandler(errors);
+        })
+    }
+        
+    private func send(using client: XMPPClient, to recipients: [RosterItem], body: String?, oob: String?, completionHandler: @escaping ()->Void) {
+        let group = DispatchGroup();
+        for recipient in recipients {
+            group.enter();
+            let message = Message(elem: Element(name: "message"));
+            message.type = .chat;
+            message.to = JID(recipient.jid)
+            message.id = UUID().uuidString;
+            message.body = body;
+            message.oob = oob;
+            client.writer.write(message, writeCompleted: { result in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+                    group.leave();
+                })
+            });
+        }
+        group.notify(queue: DispatchQueue.main, execute: completionHandler);
+    }
+    
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return 1;
+    }
+    
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return rosterItems.count;
+    }
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "recipientTableViewCell", for: indexPath);
+        let item = rosterItems[indexPath.row];
+        cell.imageView?.image = avatar(for: item) ?? generateAvatar(for: item);
+        cell.imageView?.layer.cornerRadius = 20;
+        cell.imageView?.layer.masksToBounds = true;
+        cell.textLabel?.text = item.displayName;
+        cell.detailTextLabel?.text = item.jid.stringValue;
+        if recipients.contains(item) {
+            cell.accessoryType = .checkmark;
+        } else {
+            cell.accessoryType = .none;
+        }
+        return cell;
+    }
+    
+    func avatar(for item: RosterItem) -> UIImage? {
+        guard let hash = avatars[.init(account: item.account, jid: item.jid, type: .pepUserAvatar)] ?? avatars[.init(account: item.account, jid: item.jid, type: .vcardTemp)] else {
+            return nil;
+        }
+        
+        guard let path = avatarCacheUrl?.appendingPathComponent(hash).path else {
+            return nil;
+        }
+        
+        return UIImage(contentsOfFile: path)?.scaled(maxWidthOrHeight: 40);
+    }
+    
+    func generateAvatar(for item: RosterItem) -> UIImage? {
+        guard let initials = item.initials else {
+            return nil;
+        }
+        
+        let scale = UIScreen.main.scale;
+        let size = CGSize(width: 40, height: 40);
+        UIGraphicsBeginImageContextWithOptions(size, false, scale);
+        let ctx = UIGraphicsGetCurrentContext()!;
+        let path = CGPath(ellipseIn: CGRect(origin: .zero, size: size), transform: nil);
+        ctx.addPath(path);
+                
+        let colors = [UIColor.systemGray.adjust(brightness: 0.52).cgColor, UIColor.systemGray.adjust(brightness: 0.48).cgColor];
+        let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors as CFArray, locations: [0.0, 1.0])!;
+        ctx.drawLinearGradient(gradient, start: CGPoint.zero, end: CGPoint(x: 0, y: size.height), options: []);
+        
+        let textAttr: [NSAttributedString.Key: Any] = [.foregroundColor: UIColor.white.withAlphaComponent(0.9), .font: UIFont.systemFont(ofSize: size.width * 0.4, weight: .medium)];
+        let textSize = initials.size(withAttributes: textAttr);
+        
+        initials.draw(in: CGRect(x: size.width/2 - textSize.width/2, y: size.height/2 - textSize.height/2, width: textSize.width, height: textSize.height), withAttributes: textAttr);
+        
+        let image = UIGraphicsGetImageFromCurrentImageContext()!;
+        UIGraphicsEndImageContext();
+        
+        return image;
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let item = rosterItems[indexPath.row];
+        if let idx = recipients.firstIndex(of: item) {
+            recipients.remove(at: idx);
+        } else {
+            recipients.append(item);
+        }
+        self.navigationItem.rightBarButtonItem?.isEnabled = !recipients.isEmpty;
+        tableView.reloadData();
+    }
+    
+    private func createXmppClient(for account: BareJID) -> XMPPClient {
+        let client = XMPPClient();
+
+        client.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
+            options.networkProcessorProviders.append(SSLProcessorProvider());
+            options.connectionTimeout = 15;
+            options.sslCertificateValidation = .customValidator({ _ in
+                return true;
+            })
+        })
+        client.connectionConfiguration.userJid = account;
+
+        _ = client.modulesManager.register(AuthModule());
+        _ = client.modulesManager.register(StreamFeaturesModule());
+        _ = client.modulesManager.register(SaslModule());
+        _ = client.modulesManager.register(ResourceBinderModule());
+        _ = client.modulesManager.register(SessionEstablishmentModule());
+        _ = client.modulesManager.register(DiscoveryModule());
+        client.modulesManager.register(PresenceModule()).initialPresence = false;
+        _ = client.modulesManager.register(HttpFileUploadModule());
+
+        return client;
+    }
+    
+    private func upload(file localUrl: URL, using client: XMPPClient, completionHandler: @escaping (Result<URL,Error>)->Void) {
+        let uti = try? localUrl.resourceValues(forKeys: [.typeIdentifierKey]).typeIdentifier;
+        let mimeType = uti != nil ? (UTTypeCopyPreferredTagWithClass(uti! as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as String?) : nil;
+        let size = try! FileManager.default.attributesOfItem(atPath: localUrl.path)[FileAttributeKey.size] as! UInt64;
+      
+        guard let inputStream = InputStream(url: localUrl) else {
+            completionHandler(.failure(ShareError.noAccessError));
+            return;
+        }
+        
+        HTTPFileUploadHelper.upload(for: client, filename: localUrl.pathComponents.last!, inputStream: inputStream, filesize: Int(size), mimeType: mimeType ?? "application/octet-stream", delegate: nil, completionHandler: { result in
+            switch result {
+            case .success(let url):
+                completionHandler(.success(url));
+            case .failure(let error):
+                completionHandler(.failure(error));
+            }
+        })
+    }
+    
+    enum Attachment {
+        case file(URL)
+        case link(URL)
+        case text(String)
+    }
+    
+    private func extractAttachments(completionHandler: @escaping (Result<Attachment,Error>)->Void) {
+        if let provider = (self.extensionContext?.inputItems.first as? NSExtensionItem)?.attachments?.first {
+            if provider.hasItemConformingToTypeIdentifier(kUTTypeVideo as String) {
+                provider.loadFileRepresentation(forTypeIdentifier: kUTTypeVideo as String, completionHandler: { url, error in
+                    guard let url = url else {
+                        completionHandler(.failure(error!));
+                        return;
+                    }
+                    MediaHelper.compressMovie(url: url, filename: url.lastPathComponent, quality: self.videoQuality, progressCallback: { progress in }, completionHandler: { result in
+                        try? FileManager.default.removeItem(at: url);
+                        switch result {
+                        case .success(let url):
+                            completionHandler(.success(.file(url)))
+                        case .failure(let error):
+                            completionHandler(.failure(error));
+                        }
+                    })
+                });
+            } else if provider.hasItemConformingToTypeIdentifier(kUTTypeImage as String) {
+                provider.loadFileRepresentation(forTypeIdentifier: kUTTypeImage as String, completionHandler: { url, error in
+                    guard let url = url else {
+                        completionHandler(.failure(error!));
+                        return;
+                    }
+                    MediaHelper.compressImage(url: url, filename: url.lastPathComponent, quality: self.imageQuality, completionHandler: { result in
+                        try? FileManager.default.removeItem(at: url);
+                        switch result {
+                        case .success(let url):
+                            completionHandler(.success(.file(url)))
+                        case .failure(let error):
+                            completionHandler(.failure(error));
+                        }
+                    })
+                });
+            } else if provider.hasItemConformingToTypeIdentifier(kUTTypeFileURL as String) {
+                provider.loadFileRepresentation(forTypeIdentifier: kUTTypeFileURL as String, completionHandler: { (url, error) in
+                    guard let url = url else {
+                        completionHandler(.failure(error!));
+                        return;
+                    }
+                    let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent(url.lastPathComponent);
+                    do {
+                        try FileManager.default.copyItem(at: url, to: tempUrl);
+                        completionHandler(.success(.file(tempUrl)));
+                    } catch {
+                        completionHandler(.failure(error));
+                    }
+                });
+            } else if provider.hasItemConformingToTypeIdentifier(kUTTypeURL as String) {
+                provider.loadItem(forTypeIdentifier: kUTTypeURL as String, options: nil, completionHandler: { (item, error) in
+                    guard let url = item as? URL else {
+                        completionHandler(.failure(error!));
+                        return;
+                    }
+                    completionHandler(.success(.link(url)));
+                })
+            } else if provider.hasItemConformingToTypeIdentifier(kUTTypeText as String) {
+                provider.loadItem(forTypeIdentifier: kUTTypeText as String, options: nil, completionHandler: { (item, error) in
+                    guard let text = item as? String else {
+                        completionHandler(.failure(error!));
+                        return;
+                    }
+                    completionHandler(.success(.text(text)));
+                })
+            } else {
+                completionHandler(.failure(ShareError.notSupported));
+            }
+        } else {
+            completionHandler(.failure(ShareError.noAccessError));
+        }
+    }
+        
+    func show(error: Error) {
+        showAlert(title: "Failure", message: (error as? ShareError)?.message ?? error.localizedDescription);
+    }
+    
+    func showAlert(title: String, message: String) {
+        DispatchQueue.main.async {
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: {(action) in
+                self.extensionContext?.cancelRequest(withError: ShareError.unknownError);
+            }));
+            self.present(alert, animated: true, completion: nil);
+        }
+    }
+
+    func getActiveAccounts() -> [BareJID] {
+        var accounts = [BareJID]();
+        let query = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitAll, String(kSecReturnAttributes) : kCFBooleanTrue as Any, String(kSecAttrService) : "xmpp" ] as [String : Any];
+        var result:AnyObject?;
+        
+        let lastResultCode: OSStatus = withUnsafeMutablePointer(to: &result) {
+            SecItemCopyMatching(query as CFDictionary, UnsafeMutablePointer($0));
+        }
+        
+        if lastResultCode == noErr {
+            if let results = result as? [[String:NSObject]] {
+                for r in results {
+                    if let name = r[String(kSecAttrAccount)] as? String {
+                        if let data = r[String(kSecAttrGeneric)] as? NSData {
+                            NSKeyedUnarchiver.setClass(ServerCertificateInfo.self, forClassName: "Siskin.ServerCertificateInfo");
+                            let dict = NSKeyedUnarchiver.unarchiveObject(with: data as Data) as? [String:AnyObject];
+                            if dict!["active"] as? Bool ?? false {
+                                accounts.append(BareJID(name));
+                            }
+                        }
+                    }
+                }
+            }
+            
+        }
+        return accounts;
+    }
+
+    func getAccountPassword(for account: BareJID) -> String? {
+        let query: [String: NSObject] = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitOne, String(kSecReturnData) : kCFBooleanTrue, String(kSecAttrService) : "xmpp" as NSObject, String(kSecAttrAccount) : account.stringValue as NSObject ];
+
+        var result:AnyObject?;
+
+        let lastResultCode: OSStatus = withUnsafeMutablePointer(to: &result) {
+            SecItemCopyMatching(query as CFDictionary, UnsafeMutablePointer($0));
+        }
+
+        if lastResultCode == noErr {
+            if let data = result as? NSData {
+                return String(data: data as Data, encoding: String.Encoding.utf8);
+            }
+        }
+        return nil;
     }
     
 }

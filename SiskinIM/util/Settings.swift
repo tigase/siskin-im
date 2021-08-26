@@ -22,6 +22,7 @@
 import UIKit
 import TigaseSwift
 import Combine
+import Shared
 
 @propertyWrapper class UserDefaultsSetting<Value> {
     let key: String;
@@ -194,13 +195,27 @@ class SettingsStore {
     
     @UserDefaultsRawSetting(key: "imageQuality", defaultValue: .medium)
     var imageQuality: ImageQuality
-    @UserDefaultsRawSetting(key: "imageQuality", defaultValue: .medium)
+    @UserDefaultsRawSetting(key: "videoQuality", defaultValue: .medium)
     var videoQuality: VideoQuality
 
     @UserDefaultsSetting(key: "enablePush", defaultValue: nil)
     var enablePush: Bool?;
     
     public static let sharedDefaults = UserDefaults(suiteName: "group.TigaseMessenger.Share")!;
+    
+    private var cancellables: Set<AnyCancellable> = [];
+    
+    fileprivate init() {
+        $sharingViaHttpUpload.sink(receiveValue: { value in
+            SettingsStore.sharedDefaults.setValue(value, forKey: "SharingViaHttpUpload");
+        }).store(in: &cancellables);
+        $imageQuality.sink(receiveValue: { value in
+            SettingsStore.sharedDefaults.setValue(value.rawValue, forKey: "imageQuality");
+        }).store(in: &cancellables);
+        $videoQuality.sink(receiveValue: { value in
+            SettingsStore.sharedDefaults.setValue(value.rawValue, forKey: "videoQuality");
+        }).store(in: &cancellables);
+    }
     
     public static func initialize() {
         UserDefaults.standard.removeObject(forKey: "DeleteChatHistoryOnClose");

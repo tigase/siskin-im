@@ -21,6 +21,7 @@
 
 import UIKit
 import PhotosUI
+import Shared
 
 extension ChatViewInputBar {
         
@@ -219,7 +220,8 @@ extension BaseChatViewController: UIImagePickerControllerDelegate, UINavigationC
             self.askMediaQuality = false;
             switch result {
             case .success(let quality):
-                MediaHelper.compressImage(url: url, filename: filename, quality: quality, deleteSource: true, completionHandler: { result in
+                MediaHelper.compressImage(url: url, filename: filename, quality: quality, completionHandler: { result in
+                    try? FileManager.default.removeItem(at: url);
                     switch result {
                     case .success(let fileUrl):
                         self.uploadFile(url: fileUrl, filename: fileUrl.lastPathComponent, deleteSource: true);
@@ -240,11 +242,12 @@ extension BaseChatViewController: UIImagePickerControllerDelegate, UINavigationC
             case .success(let quality):
                 DispatchQueue.main.async {
                     self.showProgressBar();
-                    MediaHelper.compressMovie(url: url, filename: filename, quality: quality, deleteSource: true, progressCallback: { [weak self] progress in
+                    MediaHelper.compressMovie(url: url, filename: filename, quality: quality, progressCallback: { [weak self] progress in
                         DispatchQueue.main.async {
                             self?.progressBar?.progress = progress;
                         }
                     }, completionHandler: { result in
+                        try? FileManager.default.removeItem(at: url);
                         DispatchQueue.main.async {
                             self.hideProgressBar();
                         }

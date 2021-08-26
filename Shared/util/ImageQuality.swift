@@ -21,14 +21,14 @@
 
 import UIKit
 
-enum ImageQuality: String {
+public enum ImageQuality: String {
     case original
     case highest
     case high
     case medium
     case low
     
-    var size: CGFloat {
+    public var size: CGFloat {
         switch self {
         case .original:
             return CGFloat.greatestFiniteMagnitude;
@@ -43,7 +43,7 @@ enum ImageQuality: String {
         }
     }
     
-    var quality: CGFloat {
+    public var quality: CGFloat {
         switch self {
         case .original:
             return 1;

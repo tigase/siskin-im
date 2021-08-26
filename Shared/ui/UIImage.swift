@@ -22,7 +22,7 @@
 import UIKit
 
 extension UIImage {
-    func scaled(maxWidthOrHeight: CGFloat, isOpaque: Bool = false) -> UIImage? {
+    public func scaled(maxWidthOrHeight: CGFloat, isOpaque: Bool = false) -> UIImage? {
         guard maxWidthOrHeight < size.height || maxWidthOrHeight < size.width else {
             return self;
         }

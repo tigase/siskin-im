@@ -22,26 +22,26 @@
 import Foundation
 import TigaseSwift
 
-class ServerCertificateInfo: SslCertificateInfo {
+open class ServerCertificateInfo: SslCertificateInfo {
     
-    var accepted: Bool;
+    public var accepted: Bool;
     
-    override init(trust: SecTrust) {
+    public override init(trust: SecTrust) {
         self.accepted = false;
         super.init(trust: trust);
     }
     
-    init(sslCertificateInfo: SslCertificateInfo, accepted: Bool) {
+    public init(sslCertificateInfo: SslCertificateInfo, accepted: Bool) {
         self.accepted = accepted;
         super.init(sslCertificateInfo: sslCertificateInfo);
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         accepted = aDecoder.decodeBool(forKey: "accepted");
         super.init(coder: aDecoder);
     }
     
-    override func encode(with aCoder: NSCoder) {
+    public override func encode(with aCoder: NSCoder) {
         aCoder.encode(accepted, forKey: "accepted");
         super.encode(with: aCoder);
     }
