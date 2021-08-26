@@ -28,7 +28,22 @@ open class PushEventHandler: XmppServiceExtension {
     static let instance = PushEventHandler();
 
     public static func unregisterDevice(from pushServiceJid: BareJID, account: BareJID, deviceId: String, completionHandler: @escaping (Result<Void,ErrorCondition>)->Void) {
-        guard let url = URL(string: "https://\(pushServiceJid.stringValue)/unregister-device/\(pushServiceJid.stringValue)") else {
+        unregisterDevice(from: pushServiceJid, path: "", account: account, deviceId: deviceId, completionHandler: { result in
+            switch result {
+            case .success(_):
+                completionHandler(.success(Void()));
+            case .failure(let error):
+                if error == .internal_server_error || error == .service_unavailable {
+                    self.unregisterDevice(from: pushServiceJid, path: "/rest/push", account: account, deviceId: deviceId, completionHandler: completionHandler);
+                } else {
+                    completionHandler(.failure(error));
+                }
+            }
+        })
+    }
+    
+    private static func unregisterDevice(from pushServiceJid: BareJID, path: String, account: BareJID, deviceId: String, completionHandler: @escaping (Result<Void,ErrorCondition>)->Void) {
+        guard let url = URL(string: "https://\(pushServiceJid.stringValue)\(path)/unregister-device/\(pushServiceJid.stringValue)") else {
             completionHandler(.failure(.service_unavailable));
             return;
         }

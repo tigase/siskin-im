@@ -254,6 +254,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         
         public func check(account: BareJID, password: String, callback: @escaping (Result<Void,ErrorCondition>)->Void) {
             self.callback = callback;
+            client?.connectionConfiguration.useSeeOtherHost = false;
             client?.connectionConfiguration.userJid = account;
             client?.connectionConfiguration.credentials = .password(password: password, authenticationName: nil, cache: nil);
             client?.login();
