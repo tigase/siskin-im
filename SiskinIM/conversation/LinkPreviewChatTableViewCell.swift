@@ -24,12 +24,12 @@ import LinkPresentation
 
 class LinkPreviewChatTableViewCell: BaseChatTableViewCell {
     
-    var linkView: UIView? {
+    private var url: URL?;
+    
+    var linkView: LPLinkView? {
         didSet {
             if let value = oldValue {
-                if #available(iOS 13.0, *) {
-                    (value as! LPLinkView).metadata = LPLinkMetadata();
-                }
+                value.metadata = LPLinkMetadata();
                 value.removeFromSuperview();
             }
             if let value = linkView {
@@ -44,40 +44,53 @@ class LinkPreviewChatTableViewCell: BaseChatTableViewCell {
         }
     }
     
+    override func prepareForReuse() {
+        self.url = nil;
+        self.linkView?.metadata = LPLinkMetadata();
+        super.prepareForReuse();
+    }
+        
     func set(item: ConversationEntry, url inUrl: String) {
         super.set(item: item);
-        var metadata = MetadataCache.instance.metadata(for: "\(item.id)");
-        var isNew = false;
+
+        self.contentView.setContentCompressionResistancePriority(.required, for: .vertical);
+        self.contentView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
+        
         let url = URL(string: inUrl)!;
-
-        if (metadata == nil) {
-            metadata = LPLinkMetadata();
-            metadata!.originalURL = url;
-            isNew = true;
-        }
-        //if self.linkView == nil {
-            self.linkView = LPLinkView(url: url);
-            linkView?.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
-            linkView?.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
-            linkView?.translatesAutoresizingMaskIntoConstraints = false;
-        //};
+        self.url = url;
+        
+        guard let metadata = MetadataCache.instance.metadata(for: "\(item.id)") else {
+            setup(linkView: LPLinkView(metadata: createMetadata(url: url)));
             
-        let linkView = self.linkView as! LPLinkView;
-        linkView.metadata = metadata!;
-
-        if isNew {
-            MetadataCache.instance.generateMetadata(for: url, withId: "\(item.id)", completionHandler: { meta1 in
-                guard let meta = meta1 else {
+            MetadataCache.instance.generateMetadata(for: url, withId: "\(item.id)", completionHandler: { meta in
+                guard meta != nil else {
                     return;
                 }
-                DispatchQueue.main.async { [weak linkView] in
-                    guard let linkView = linkView, linkView.metadata.originalURL == url else {
+                DispatchQueue.main.async { [weak self] in
+                    guard let that = self, that.url == url else {
                         return;
                     }
-                    linkView.metadata = meta;
+
+                    NotificationCenter.default.post(name: ConversationLogController.REFRESH_CELL, object: that);
                 }
             })
+            
+            return;
         }
+        
+        setup(linkView: LPLinkView(metadata: metadata));
     }
     
+    private func createMetadata(url: URL) -> LPLinkMetadata {
+        let metadata = LPLinkMetadata();
+        metadata.originalURL = url;
+        return metadata;
+    }
+    
+    private func setup(linkView: LPLinkView) {
+        linkView.setContentCompressionResistancePriority(.required, for: .vertical);
+        linkView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
+        linkView.translatesAutoresizingMaskIntoConstraints = false;
+        self.linkView = linkView;
+    }
 }

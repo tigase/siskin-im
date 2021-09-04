@@ -83,6 +83,7 @@
 		FE31291C222C0D1500A92863 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31291B222C0D1500A92863 /* AvatarView.swift */; };
 		FE31DDE4201261A200C2AB1D /* DNSSrvDiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */; };
 		FE36B3C821FA52E000D1F037 /* EmptyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */; };
+		FE3A427526DA70B700D914CE /* ChatViewInputBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3A427426DA70B700D914CE /* ChatViewInputBar.swift */; };
 		FE3A45CF1CE49D3300C36264 /* RosterItemEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */; };
 		FE3DCCEE1FE18334008B6C8B /* CertificateErrorAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3DCCED1FE18334008B6C8B /* CertificateErrorAlert.swift */; };
 		FE3E387A242765E800D3A8E8 /* MixEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3E3879242765E700D3A8E8 /* MixEventHandler.swift */; };
@@ -398,6 +399,7 @@
 		FE31291B222C0D1500A92863 /* AvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
 		FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSSrvDiskCache.swift; sourceTree = "<group>"; };
 		FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyViewController.swift; sourceTree = "<group>"; };
+		FE3A427426DA70B700D914CE /* ChatViewInputBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewInputBar.swift; sourceTree = "<group>"; };
 		FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterItemEditViewController.swift; sourceTree = "<group>"; };
 		FE3BA0BF24B61583000C80D4 /* db-schema-12.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-12.sql"; sourceTree = "<group>"; };
 		FE3DCCED1FE18334008B6C8B /* CertificateErrorAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificateErrorAlert.swift; sourceTree = "<group>"; };
@@ -748,6 +750,7 @@
 				FEF19F152348E781005CFE9A /* BaseChatViewControllerWithDataSource.swift */,
 				FE43E43723BF3DE80079BD9B /* ChatAttachementsController.swift */,
 				FE9EA16A23BF9DB2008C401A /* ChatAttachementsCellView.swift */,
+				FE3A427426DA70B700D914CE /* ChatViewInputBar.swift */,
 			);
 			path = chat;
 			sourceTree = "<group>";
@@ -1511,6 +1514,7 @@
 				FE43E43823BF3DE80079BD9B /* ChatAttachementsController.swift in Sources */,
 				FEDE93891D081C3D00CA60A9 /* Settings.swift in Sources */,
 				FECEF29B23B7BC02007EC323 /* BaseChatTableViewCell.swift in Sources */,
+				FE3A427526DA70B700D914CE /* ChatViewInputBar.swift in Sources */,
 				FE9D4DA526C1375300DD295A /* InviteToMeetingViewController.swift in Sources */,
 				FECEF29E23B7C390007EC323 /* AttachmentChatTableViewCell.swift in Sources */,
 				FED353892270C1D000B69C53 /* DBOMEMOStore.swift in Sources */,

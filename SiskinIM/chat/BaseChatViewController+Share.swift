@@ -58,6 +58,26 @@ extension ChatViewInputBar {
     
 }
 
+import AVFoundation
+
+extension ChatViewInputBar {
+    class VoiceMessageButton: ShareButton {
+        
+        override func execute(_ sender: Any) {
+            controller?.chatViewInputBar.voiceRecordingView.controller = controller;
+            controller?.chatViewInputBar.startRecordingVoiceMessage(sender);
+        }
+        
+        override func setup() {
+            super.setup();
+            let image = UIImage(systemName: "mic");
+            setImage(image, for: .normal);
+        }
+    }
+    
+}
+
+
 extension BaseChatViewController: URLSessionDelegate {
         
     func checkIfEnabledOrAsk(completionHandler: @escaping ()->Void) -> Bool {
@@ -76,6 +96,9 @@ extension BaseChatViewController: URLSessionDelegate {
     }
     
     func initializeSharing() {
+        if AVAudioSession.sharedInstance().recordPermission != .denied {
+            self.chatViewInputBar.addBottomButton(ChatViewInputBar.VoiceMessageButton(controller: self));
+        }
         self.chatViewInputBar.addBottomButton(ChatViewInputBar.ShareFileButton(controller: self));
         self.chatViewInputBar.addBottomButton(ChatViewInputBar.ShareImageButton(controller: self));
         if UIImagePickerController.isSourceTypeAvailable(.camera) {
@@ -118,7 +141,7 @@ extension BaseChatViewController: URLSessionDelegate {
         }
     }
 
-    func share(filename: String, url: URL, completionHandler: @escaping (HTTPFileUploadHelper.UploadResult)->Void) {
+    func share(filename: String, url: URL, mimeType suggestedMimeType: String? = nil, completionHandler: @escaping (HTTPFileUploadHelper.UploadResult)->Void) {
         guard let context = self.conversation.context else {
             completionHandler(.failure(.unknownError));
             return;
@@ -134,8 +157,12 @@ extension BaseChatViewController: URLSessionDelegate {
 
         var mimeType: String? = nil;
         
-        if let type = values.typeIdentifier {
-            mimeType = UTTypeCopyPreferredTagWithClass(type as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as String?;
+        if suggestedMimeType != nil {
+            mimeType = suggestedMimeType;
+        } else {
+            if let type = values.typeIdentifier {
+                mimeType = UTTypeCopyPreferredTagWithClass(type as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as String?;
+            }
         }
         
         let encrypted = shouldEncryptUploadedFile();

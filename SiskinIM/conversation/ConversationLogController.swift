@@ -24,6 +24,8 @@ import Combine
 
 class ConversationLogController: UIViewController, ConversationDataSourceDelegate, UITableViewDataSource {
     
+    public static let REFRESH_CELL = Notification.Name("ConversationCellRefresh");
+    
     private let firstRowIndexPath = IndexPath(row: 0, section: 0);
 
     @IBOutlet var tableView: UITableView!;
@@ -57,6 +59,7 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
         tableView.dataSource = self;
         
         NotificationCenter.default.addObserver(self, selector: #selector(showEditToolbar), name: NSNotification.Name("tableViewCellShowEditToolbar"), object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(refreshCell(_:)), name: ConversationLogController.REFRESH_CELL, object: nil);
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -243,6 +246,14 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
         }
     }
         
+    @objc func refreshCell(_ notification: Notification) {
+        guard let cell = notification.object as? UITableViewCell, let idx = tableView.indexPath(for: cell) else {
+            return;
+        }
+        
+        tableView.reloadRows(at: [idx], with: .automatic);
+    }
+    
     private var tempRightBarButtonItem: UIBarButtonItem?;
 }
 
