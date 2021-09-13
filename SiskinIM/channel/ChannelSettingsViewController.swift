@@ -200,8 +200,6 @@ class ChannelSettingsViewController: UITableViewController {
         let x = origSize.width > origSize.height ? ((origSize.width - origSize.height)/2) : 0.0;
         let y = origSize.width > origSize.height ? 0.0 : ((origSize.height - origSize.width)/2);
         
-        print("x:", x, "y:", y, "size:", size, "orig:", origSize);
-        
         UIGraphicsBeginImageContextWithOptions(CGSize(width: size, height: size), false, 0);
         image.draw(in: CGRect(x: x * (-1.0), y: y * (-1.0), width: origSize.width, height: origSize.height));
         let squared = UIGraphicsGetImageFromCurrentImageContext();

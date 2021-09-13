@@ -73,7 +73,6 @@ class ChatAttachmentsCellView: UICollectionViewCell, UIDocumentInteractionContro
         if let localUrl = DownloadStore.instance.url(for: "\(item.id)") {
             let items = [
                 UIAction(title: "Preview", image: UIImage(systemName: "eye.fill"), handler: { action in
-                    print("preview called");
                     self.open(url: localUrl, preview: true);
                 }),
                 UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc"), handler: { action in
@@ -81,11 +80,9 @@ class ChatAttachmentsCellView: UICollectionViewCell, UIDocumentInteractionContro
                     UIPasteboard.general.string = url;
                 }),
                 UIAction(title: "Share..", image: UIImage(systemName: "square.and.arrow.up"), handler: { action in
-                    print("share called");
                     self.open(url: localUrl, preview: false);
                 }),
                 UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: [.destructive], handler: { action in
-                    print("delete called");
                     DownloadStore.instance.deleteFile(for: "\(item.id)");
                     DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                         appendix.state = .removed;
@@ -106,11 +103,10 @@ class ChatAttachmentsCellView: UICollectionViewCell, UIDocumentInteractionContro
     }
     
     func open(url: URL, preview: Bool) {
-        print("opening a file:", url, "exists:", FileManager.default.fileExists(atPath: url.path));// "tmp:", tmpUrl);
         let documentController = UIDocumentInteractionController(url: url);
         documentController.delegate = self;
         documentController.name = url.lastPathComponent;
-        print("detected uti:", documentController.uti as Any, "for:", documentController.url as Any);
+
         if preview && documentController.presentPreview(animated: true) {
             self.documentController = documentController;
         } else if documentController.presentOptionsMenu(from: self.superview?.convert(self.frame, to: self.superview?.superview) ?? CGRect.zero, in: self, animated: true) {

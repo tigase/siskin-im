@@ -167,7 +167,6 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
     }
     
     @objc func roomInfoClicked() {
-        print("room info for", conversation as Any, "clicked!");
         guard let settingsController = self.storyboard?.instantiateViewController(withIdentifier: "MucChatSettingsViewController") as? MucChatSettingsViewController else {
             return;
         }

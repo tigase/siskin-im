@@ -258,7 +258,6 @@ class AccountSettingsViewController: UITableViewController {
         pushModule.reenable(pushSettings: pushSettings, completionHandler: { (result) in
             switch result {
             case .success(_):
-                print("PUSH enabled!");
                 DispatchQueue.main.async {
                     guard self.pushNotificationsForAwaySwitch.isOn else {
                         return;

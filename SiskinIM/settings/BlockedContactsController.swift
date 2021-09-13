@@ -129,11 +129,6 @@ class BlockedContactsController: UITableViewController {
     }
     
     func updateItems() {
-//        let val = searchField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased();
-//        print("search field value:", val);
-//        self.items = self.allItems.filter({ it in
-//            return val.isEmpty || it.jid.stringValue.lowercased().contains(val) || it.account.stringValue.lowercased().contains(val);
-//        });
         self.items = allItems;
         tableView.reloadData();
     }

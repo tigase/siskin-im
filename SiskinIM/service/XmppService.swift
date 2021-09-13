@@ -26,6 +26,7 @@ import TigaseSwift
 import TigaseSwiftOMEMO
 import Combine
 import Shared
+import TigaseLogging
 
 extension Presence.Show: Codable {
     
@@ -99,7 +100,7 @@ open class XmppService {
     
     private var cancellables: Set<AnyCancellable> = [];
     
-    
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "XmppService");
     fileprivate let dnsSrvResolverCache: DNSSrvResolverCache;
     fileprivate let dnsSrvResolver: DNSSrvResolver;
     fileprivate let streamFeaturesCache: StreamFeaturesCache;
@@ -269,11 +270,7 @@ open class XmppService {
         var cancellables: Set<AnyCancellable> = [];
     }
 
-    private var clientCancellables: [BareJID:ClientCancellables] = [:] {
-        didSet {
-            print("updated client cancellables to:", clientCancellables);
-        }
-    }
+    private var clientCancellables: [BareJID:ClientCancellables] = [:];
     
     private func disconnected(client: XMPPClient) {
         let accountName = client.sessionObject.userBareJid!;
@@ -382,12 +379,12 @@ open class XmppService {
     
     open func preformFetch(completionHandler: @escaping (UIBackgroundFetchResult)->Void) {
         guard applicationState != .active else {
-            print("skipping background fetch as application is active");
+            logger.debug("skipping background fetch as application is active");
             completionHandler(.newData);
             return;
         }
         guard NetworkMonitor.shared.isNetworkAvailable == true else {
-            print("skipping background fetch as network is not available");
+            logger.debug("skipping background fetch as network is not available");
             completionHandler(.failed);
             return;
         }

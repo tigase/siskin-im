@@ -321,7 +321,6 @@ extension ConversationLogController {
                 
                     let timestampsSwitch = TimestampsBarButtonItem();
                     self.conversationLogDelegate?.navigationController?.toolbar.tintColor = UIColor(named: "tintColor");
-                    print("navigationController:", self.navigationController as Any)
                     let items = [
                         timestampsSwitch,
                         UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
@@ -369,7 +368,6 @@ extension ConversationLogController {
             }
         });
             
-        print("got texts", texts);
         handler?(texts);
     }
 

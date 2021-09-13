@@ -203,7 +203,6 @@ extension BaseChatViewController: URLSessionDelegate {
                     parts.fragment = (iv + key).map({ String(format: "%02x", $0) }).joined();
                     let shareUrl = parts.url!;
                     
-                    print("sending url:", shareUrl.absoluteString);
                     completionHandler(.success(url: shareUrl, filesize: size, mimeType: mimeType));
                 case .failure(let error):
                     completionHandler(.failure(error));

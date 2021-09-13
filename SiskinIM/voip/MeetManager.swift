@@ -52,6 +52,10 @@ class Meet: CallBase {
     
     let media: [Call.Media] = [.audio,.video]
     
+    var description: String {
+        return "Meet[on: \(client.userBareJid), with: \(jid), sid: \(sid), id: \(uuid)]";
+    }
+    
     func isEqual(_ call: CallBase) -> Bool {
         guard let meet = call as? Meet else {
             return false;

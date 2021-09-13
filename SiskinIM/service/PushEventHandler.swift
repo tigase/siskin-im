@@ -22,11 +22,12 @@
 import Foundation
 import TigaseSwift
 import Combine
+import TigaseLogging
 
 open class PushEventHandler: XmppServiceExtension {
     
     static let instance = PushEventHandler();
-
+    
     public static func unregisterDevice(from pushServiceJid: BareJID, account: BareJID, deviceId: String, completionHandler: @escaping (Result<Void,ErrorCondition>)->Void) {
         unregisterDevice(from: pushServiceJid, path: "", account: account, deviceId: deviceId, completionHandler: { result in
             switch result {
@@ -78,6 +79,8 @@ open class PushEventHandler: XmppServiceExtension {
     var pushkitDeviceId: String?;
     
     private var cancellables: Set<AnyCancellable> = [];
+
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "PushEventHandler");
     
     public func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
         Settings.$enablePush.map({ $0 ?? false }).combineLatest(client.module(.disco).$accountDiscoResult).sink(receiveValue: { [weak client, weak self] enable, features in
@@ -118,7 +121,7 @@ open class PushEventHandler: XmppServiceExtension {
                         switch result {
                         case .success(_):
                             pushModule.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, completionHandler: { result2 in
-                                print("reregistration:", result2);
+                                self.logger.debug("reregistration for account: \(client.userBareJid), result: \(result2)");
                             });
                         case .failure(_):
                             // we need to try again later
@@ -128,18 +131,18 @@ open class PushEventHandler: XmppServiceExtension {
                     return;
                 } else if AccountSettings.pushHash(for: client.userBareJid) == 0 {
                     pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
-                        print("reenabling device:", result);
+                        self.logger.debug("reenabling device for account: \(client.userBareJid), result: \(result)");
                     })
                 }
             } else {
                 pushModule.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, completionHandler: { result in
-                    print("automatic registration:", result);
+                    self.logger.debug("automatic registration for account: \(client.userBareJid), result: \(result)");
                 })
             }
         } else {
             if pushModule.pushSettings != nil, (!hasPush) || (!shouldEnable) {
                 pushModule.unregisterDeviceAndDisable(completionHandler: { result in
-                    print("automatic deregistration:", result);
+                    self.logger.debug("automatic deregistration for account: \(client.userBareJid), result: \(result)");
                 })
             }
         }
@@ -175,7 +178,7 @@ open class PushEventHandler: XmppServiceExtension {
         }
         if let client = XmppService.instance.getClient(for: account), client.state == .connected(), let pushModule = client.module(.push) as? SiskinPushNotificationsModule, let pushSettings = pushModule.pushSettings {
             pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
-                print("updating account push settings finished", result);
+                self.logger.debug("updating account push settings finished for account: \(client.userBareJid)");
             })
         } else {
             AccountSettings.pushHash(for: account, value: 0);

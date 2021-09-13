@@ -48,7 +48,6 @@ class InviteViewController: AbstractRosterViewController {
         
         if let onNext = self.onNext {
             self.onNext = nil;
-            print("calling onNext!");
             onNext(selected);
         }
     }

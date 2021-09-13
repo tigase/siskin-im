@@ -21,6 +21,7 @@
 
 import UIKit
 import TigaseSwift
+import TigaseLogging
 
 class ChannelJoinViewController: UITableViewController {
     
@@ -30,6 +31,8 @@ class ChannelJoinViewController: UITableViewController {
     @IBOutlet var jidField: UILabel!;
     @IBOutlet var nicknameField: UITextField!;
     @IBOutlet var passwordField: UITextField!;
+    
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ChannelJoinViewController");
     
     var client: XMPPClient!;
     var channelJid: BareJID!;
@@ -205,12 +208,12 @@ class ChannelJoinViewController: UITableViewController {
                         mixModule.publishInfo(for: channelJid, info: ChannelInfo(name: name, description: description, contact: []), completionHandler: nil);
                         if let avatarData = avatar?.scaled(maxWidthOrHeight: 512.0)?.jpegData(compressionQuality: 0.8) {
                             client.module(.pepUserAvatar).publishAvatar(at: channelJid, data: avatarData, mimeType: "image/jpeg", completionHandler: { result in
-                                print("avatar publication result:", result);
+                                self?.logger.debug("avatar publication result: \(result)");
                             });
                         }
                         if invitationOnly {
                             mixModule.changeAccessPolicy(of: channelJid, isPrivate: invitationOnly, completionHandler: { result in
-                                print("changed channel access policy:", result);
+                                self?.logger.debug("changed channel access policy: \(result)");
                             })
                         }
                     case .failure(let error):
@@ -313,7 +316,7 @@ class ChannelJoinViewController: UITableViewController {
                             }
                         });
                         (room as! Room).registerForTigasePushNotification(true, completionHandler: { (result) in
-                            print("automatically enabled push for:", room.jid, "result:", result);
+                            self.logger.debug("automatically enabled push for: \(room.jid), result: \(result)");
                         })
                     }
                     PEPBookmarksModule.updateOrAdd(for: client.userBareJid, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nick, password: password));

@@ -109,7 +109,6 @@ class AbstractRosterViewController: UITableViewController, UISearchResultsUpdati
     }
     
     func updateSearchResults(for searchController: UISearchController) {
-        print("searching items containing:", searchController.searchBar.text ?? "");
         roster?.queryItems(contains: searchController.searchBar.text);
         tableView.reloadData();
     }

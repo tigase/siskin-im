@@ -56,11 +56,9 @@ extension BaseChatViewController: UIDocumentPickerDelegate {
         guard let url = urls.first else {
             return;
         }
-        print("url:", url);
         controller.dismiss(animated: true, completion: nil);
                     
         guard url.startAccessingSecurityScopedResource() else {
-            print("could not access file:", url);
             url.stopAccessingSecurityScopedResource();
             self.showAlert(shareError: .noAccessError);
             return;
@@ -68,7 +66,6 @@ extension BaseChatViewController: UIDocumentPickerDelegate {
         share(filename: url.lastPathComponent, url: url) { (result) in
             switch result {
             case .success(let uploadedUrl, let filesize, let mimetype):
-                print("file uploaded to:", uploadedUrl);
                 url.stopAccessingSecurityScopedResource();
                 var appendix = ChatAttachmentAppendix()
                 appendix.filename = url.lastPathComponent;

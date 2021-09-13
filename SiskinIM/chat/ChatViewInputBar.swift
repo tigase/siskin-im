@@ -184,7 +184,6 @@ class ChatViewInputBar: UIView, UITextViewDelegate, NSTextStorageDelegate {
         
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         if text == "\n" {
-            print("enter detected");
             if inputTextView.returnKeyType == .send {
                 delegate?.sendMessage();
                 return false;
@@ -550,7 +549,7 @@ class VoiceRecordingView: UIView, AVAudioRecorderDelegate {
     }
     
     func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
-        print("recording finished:", flag);
+
     }
     
     func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: Error?) {

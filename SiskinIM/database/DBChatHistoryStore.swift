@@ -23,6 +23,7 @@
 import Foundation
 import TigaseSwift
 import TigaseSQLite3
+import TigaseLogging
 import Combine
 
 extension Query {
@@ -104,7 +105,6 @@ class DBChatHistoryStore {
             if previews.isEmpty {
                 removePreview(item.id);
             } else {
-                print("converting for:", item.conversation, "previews:", previews);
                 if previews.count == 1 {
                     switch item.payload {
                     case .message(let message, _):
@@ -153,6 +153,8 @@ class DBChatHistoryStore {
     
     public let events = PassthroughSubject<MessageEvent, Never>();
 
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "DBChatHistoryStore");
+    
     public init() {
         previewGenerationQueue.maxConcurrentOperationCount = 1;
     }
@@ -448,7 +450,7 @@ class DBChatHistoryStore {
                 DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: oldItem.timestamp, itemType: .message, message: data, state: newMessageState, completionHandler: {
                 })
 
-                print("correcing previews for master id:", itemId);
+                logger.debug("correcing previews for master id: \(itemId)");
                 self.itemUpdated(withId: itemId, for: conversation);
                 
                 if case .outgoing(let state) = newState, state == .unsent {
@@ -484,7 +486,7 @@ class DBChatHistoryStore {
                 // what should be sent to "newMessage" how to reatract message from there??
                 let activity: LastChatActivity = DBChatStore.instance.lastActivity(for: conversation.account, jid: conversation.jid) ?? .message("", direction: .incoming, sender: nil);
                 DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: oldItem.timestamp, lastActivity: activity, state: oldItem.state.direction == .incoming ? .incoming(.displayed) : .outgoing(.sent), completionHandler: {
-                    print("chat store state updated with message retraction");
+                    self.logger.debug("chat store state updated with message retraction for \(itemId)");
                 })
                 if oldItem.state.isUnread {
                     DBChatStore.instance.markAsRead(for: conversation.account, with: conversation.jid, count: 1);
@@ -550,11 +552,11 @@ class DBChatHistoryStore {
             }
             
             if action != .remove {
-            print("generating previews for master id:", masterId);
+            self.logger.debug("generating previews for master id: \(masterId)");
             // if we may have previews, we should add them here..
             if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue) {
                 let matches = detector.matches(in: data, range: NSMakeRange(0, data.utf16.count));
-                print("adding previews for master id:", masterId);
+                self.logger.debug("adding previews for master id: \(masterId)");
                 let state = entryState == .incoming(.received) ? .incoming(.displayed) : entryState;
                 let newOptions = ConversationEntry.Options(recipient: options.recipient, encryption: .none, isMarkable: false);
                 for match in matches {

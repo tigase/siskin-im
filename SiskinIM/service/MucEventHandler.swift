@@ -117,7 +117,6 @@ class MucEventHandler: XmppServiceExtension {
         guard let error = MucModule.RoomError.from(error: err), let context = room.context else {
             return;
         }
-        print("received error from room:", room, ", error:", error)
             
         let content = UNMutableNotificationContent();
         content.title = "Room \(room.roomJid.stringValue)";
@@ -128,7 +127,6 @@ class MucEventHandler: XmppServiceExtension {
         }
         let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
         UNUserNotificationCenter.current().add(request) { (error) in
-            print("could not show notification:", error as Any);
         }
         
         context.module(.muc).leave(room: room);

@@ -60,7 +60,7 @@ class SwitchTableViewCell: UITableViewCell {
     }
 
     func sink<Root,T>(map: @escaping (Bool)->T, to keyPath: ReferenceWritableKeyPath<Root, T>, on object: Root) {
-        subject.removeDuplicates().map(map).print().assign(to: keyPath, on: object).store(in: &cancellables);
+        subject.removeDuplicates().map(map).assign(to: keyPath, on: object).store(in: &cancellables);
     }
     
     func bind(_ fn: (SwitchTableViewCell)->Void) {

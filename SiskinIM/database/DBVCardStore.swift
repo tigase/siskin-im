@@ -67,7 +67,6 @@ class DBVCardStore {
                     try database.insert(query: .vcardInsert, params: params);
                 }
             })
-            print("posted avatar notification for \(jid) on \(account)")
             NotificationCenter.default.post(name: DBVCardStore.VCARD_UPDATED, object: VCardItem(vcard: vcard, for: jid, on: account));
         }
     }

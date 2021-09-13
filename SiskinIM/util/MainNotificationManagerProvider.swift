@@ -106,7 +106,6 @@ class MainNotificationManagerProvider: NotificationManagerProvider {
                     }
                 }
             default:
-                print("should not happen!");
                 completionHandler(true);
             }
         } else {

@@ -23,6 +23,7 @@
 import UIKit
 import TigaseSwift
 import Combine
+import TigaseLogging
 
 struct AvatarWeakRef {
     weak var avatar: Avatar?;
@@ -103,6 +104,8 @@ class AvatarManager {
         return UIImage(named: "defaultGroupchatAvatar")!;
     }
     
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "AvatarManager");
+    
     fileprivate var dispatcher = QueueDispatcher(label: "avatar_manager", attributes: .concurrent);
 
     public init() {
@@ -132,7 +135,6 @@ class AvatarManager {
     
     open func releasePublisher(for key: Avatar.Key) {
         dispatcher.async(flags: .barrier) {
-            print("releasing avatar for \(key)")
             self.avatars.removeValue(forKey: key);
         }
     }
@@ -229,7 +231,6 @@ class AvatarManager {
 
     
     @objc func vcardUpdated(_ notification: Notification) {
-        print("received avatar notification \(notification)")
         guard let vcardItem = notification.object as? DBVCardStore.VCardItem else {
             return;
         }
@@ -261,7 +262,7 @@ class AvatarManager {
                 self.store.storeAvatar(data: data, for: hash);
                 self.updateAvatar(hash: hash, forType: .pepUserAvatar, forJid: jid, on: account);
             case .failure(let error):
-                print("could not retrieve avatar, got error: \(error)");
+                self.logger.error("could not retrieve avatar from: \(jid), item id: \(hash), got error: \(error.description, privacy: .public)");
             }
         });
     }
@@ -273,7 +274,6 @@ class AvatarManager {
             if uri.hasPrefix("data:image") && uri.contains(";base64,") {
                 let idx = uri.index(uri.firstIndex(of: ",")!, offsetBy: 1);
                 let data = String(uri[idx...]);
-                print("got avatar:", data);
                 completionHandler(Data(base64Encoded: data, options: Data.Base64DecodingOptions.ignoreUnknownCharacters));
             } else {
                 let url = URL(string: uri)!;

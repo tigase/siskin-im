@@ -26,6 +26,7 @@ import Shared
 import WebRTC
 import BackgroundTasks
 import Combine
+import TigaseLogging
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -37,6 +38,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let notificationCenterDelegate = NotificationCenterDelegate();
     
     private var cancellables: Set<AnyCancellable> = [];
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main");
     
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         BGTaskScheduler.shared.register(forTaskWithIdentifier: backgroundRefreshTaskIdentifier, using: nil) { (task) in
@@ -102,26 +104,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SetupViewController");
         }
                 
-//        let callConfig = CXProviderConfiguration(localizedName: "Tigase Messenger");
-//        self.callProvider = CXProvider(configuration: callConfig);
-//        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 5.0) {
-//            let uuid = UUID();
-//            let handle = CXHandle(type: CXHandle.HandleType.generic, value: "andrzej.wojcik@tigase.org");
-//
-//            let startCallAction = CXStartCallAction(call: uuid, handle: handle);
-//            startCallAction.handle = handle;
-//
-//            let transaction = CXTransaction(action: startCallAction);
-//            let callController = CXCallController();
-//            callController.request(transaction, completion: { (error) in
-//                CXErrorCodeRequestTransactionError.invalidAction
-//                print("call request:", error?.localizedDescription);
-//            })
-//            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 30.0, execute: {
-//                print("finished!", callController);
-//            })
-//        }
-//
         return true
     }
     
@@ -164,14 +146,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         let application = UIApplication.shared;
         backgroundTaskId = application.beginBackgroundTask {
-            print("keep online on away background task expired", self.backgroundTaskId);
+            self.logger.debug("keep online on away background task \(self.backgroundTaskId) expired");
             self.applicationKeepOnlineOnAwayFinished(application);
         }
         if backgroundTaskId == .invalid {
-            print("failed to start keep online background task", Date());
+            logger.debug("failed to start keep online background task");
             XmppService.instance.updateApplicationState(.suspended);
         } else {
-            print("keep online task started", backgroundTaskId, Date());
+            let taskId = backgroundTaskId;
+            logger.debug("keep online task \(taskId) started");
         }
     }
 
@@ -181,12 +164,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return;
         }
         backgroundTaskId = .invalid;
-        print("keep online task expired at", taskId, NSDate());
+        logger.debug("keep online task \(taskId) expired");
         XmppService.instance.updateApplicationState(.suspended);
         XmppService.instance.backgroundTaskFinished();
-        print("keep online calling end background task", taskId, NSDate());
+        logger.debug("keep online calling end background task \(taskId)");
         scheduleAppRefresh();
-        print("keep online task ended", taskId, NSDate());
+        logger.debug("keep online task \(taskId) ended");
         application.endBackgroundTask(taskId);
     }
     
@@ -231,7 +214,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
         RTCShutdownInternalTracer();
         RTCCleanupSSL();
-        print(NSDate(), "application terminated!")
+        logger.debug("application terminated!")
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
@@ -239,11 +222,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return false;
         }
         
-        print("got url to open:", components);
+        logger.debug("got url to open: \(components)");
         guard let xmppUri = XmppUri(url: url) else {
             return false;
         }
-        print("got xmpp url with jid:", xmppUri.jid, "action:", xmppUri.action as Any, "params:", xmppUri.dict as Any);
+        logger.debug("got xmpp url with jid: \(xmppUri.jid), action: \(xmppUri.action as Any), params: \(xmppUri.dict as Any)");
 
         if let action = xmppUri.action {
             self.open(xmppUri: xmppUri, action: action);
@@ -371,7 +354,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         do {
             try BGTaskScheduler.shared.submit(request);
         } catch {
-            print("Could not schedule app refresh: \(error)")
+            logger.error("Could not schedule app refresh: \(error)")
         }
     }
     
@@ -390,22 +373,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         self.scheduleAppRefresh();
         let fetchStart = Date();
-        print("starting fetching", fetchStart);
+        logger.debug("starting fetching");
         XmppService.instance.preformFetch(completionHandler: {(result) in
             let fetchEnd = Date();
             let time = fetchEnd.timeIntervalSince(fetchStart);
-            print(Date(), "fetched date in \(time) seconds with result = \(result)");
+            self.logger.debug("fetched data in \(time) seconds with result = \(result)");
             self.backgroundFetchInProgress = false;
             task.setTaskCompleted(success: result != .failed);
         });
         
         task.expirationHandler = {
-            print("task expiration reached, start", Date());
+            self.logger.debug("task expiration reached, start");
             DispatchQueue.main.sync {
                 self.backgroundFetchInProgress = false;
             }
             XmppService.instance.performFetchExpired();
-            print("task expiration reached, end", Date());
+            self.logger.debug("task expiration reached, end");
         }
     }
     
@@ -418,7 +401,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return false;
         }
         
-        print("comparing", baseChatController.conversation.account.stringValue, account, baseChatController.conversation.jid.stringValue, jid);
         return (baseChatController.conversation.account == BareJID(account)) && (baseChatController.conversation.jid == BareJID(jid));
     }
     
@@ -458,43 +440,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
-//    func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-//        if #available(iOS 13, *) {
-//            completionHandler(.noData);
-//        } else {
-//            let fetchStart = Date();
-//            print(Date(), "OLD: starting fetching data");
-//            xmppService.preformFetch(completionHandler: {(result) in
-//                completionHandler(result);
-//                let fetchEnd = Date();
-//                let time = fetchEnd.timeIntervalSince(fetchStart);
-//                print(Date(), "OLD: fetched date in \(time) seconds with result = \(result)");
-//            });
-//        }
-//    }
-    
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let tokenString = deviceToken.reduce("", {$0 + String(format: "%02X", $1)});
         
-        print("Device Token:", tokenString)
-        print("Device Token:", deviceToken.map({ String(format: "%02x", $0 )}).joined());
+        logger.debug("registered for remote notifications, got device token: \(deviceToken.map({ String(format: "%02x", $0 )}).joined(), privacy: .public)");
         PushEventHandler.instance.deviceId = tokenString;
-//        Settings.DeviceToken.setValue(tokenString);
     }
     
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        print("Failed to register:", error);
+        logger.error("failed to register for remote notifications: \(error, privacy: .public)");
         PushEventHandler.instance.deviceId = nil;
         Settings.enablePush = false;
 //        Settings.DeviceToken.setValue(nil);
     }
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any]) {
-        print("Push notification received: \(userInfo)");
+        logger.debug("Push notification received: \(userInfo)");
     }
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        print("Push notification received with fetch request: \(userInfo)");
+        logger.debug("Push notification received with fetch request: \(userInfo)");
         //let fetchStart = Date();
         if let account = JID(userInfo[AnyHashable("account")] as? String) {
             let sender = JID(userInfo[AnyHashable("sender")] as? String);
@@ -502,7 +467,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             
             if let unreadMessages = userInfo[AnyHashable("unread-messages")] as? Int, unreadMessages == 0 && sender == nil && body == nil {
                 let state = XmppService.instance.getClient(for: account.bareJid)?.state;
-                print("unread messages retrieved, client state =", state as Any);
+                logger.debug("unread messages retrieved, client state = \(state, privacy: .public)");
                 if state != .connected() {
                     dismissNewMessageNotifications(for: account) {
                         completionHandler(.newData);
@@ -514,13 +479,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 NotificationManager.instance.notifyNewMessage(account: account.bareJid, sender: sender?.bareJid, nickname: userInfo[AnyHashable("nickname")] as? String, body: body!, date: Date());
             } else {
                 if let encryped = userInfo["encrypted"] as? String, let ivStr = userInfo["iv"] as? String, let key = NotificationEncryptionKeys.key(for: account.bareJid), let data = Data(base64Encoded: encryped), let iv = Data(base64Encoded: ivStr) {
-                    print("got encrypted push with known key");
+                    logger.debug("got encrypted push with known key");
                     let cipher = Cipher.AES_GCM();
                     var decoded = Data();
                     if cipher.decrypt(iv: iv, key: key, encoded: data, auth: nil, output: &decoded) {
-                        print("got decrypted data:", String(data: decoded, encoding: .utf8) as Any);
+                        logger.debug("got decrypted data: \(String(data: decoded, encoding: .utf8) as Any)");
                         if let payload = try? JSONDecoder().decode(Payload.self, from: decoded) {
-                            print("decoded payload successfully!");
+                            logger.debug("decoded payload successfully!");
                             // we require `media` to be present (even empty) in incoming push for jingle session initiation,
                             // so we can assume that if `media` is `nil` then this is a push for call termination
                             if let sid = payload.sid, payload.media == nil {
@@ -529,7 +494,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                     return;
                                 }
                                 CallManager.instance?.endCall(on: account.bareJid, with: payload.sender.bareJid, sid: sid, completionHandler: {
-                                    print("ended call");
+                                    self.logger.debug("ended call");
                                     completionHandler(.newData);
                                 })
                                 return;

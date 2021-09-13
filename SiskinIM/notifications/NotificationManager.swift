@@ -25,6 +25,7 @@ import UserNotifications
 import os
 import Shared
 import Combine
+import TigaseLogging
 
 public class NotificationManager {
 
@@ -36,6 +37,7 @@ public class NotificationManager {
     
     private let dispatcher = QueueDispatcher(label: "NotificationManager");
     private var cancellables: Set<AnyCancellable> = [];
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "NotificationManager");
     
     private init() {
         self.provider = MainNotificationManagerProvider();
@@ -169,7 +171,9 @@ public class NotificationManager {
         let content = UNMutableNotificationContent();
         NotificationsManagerHelper.prepareNewMessageNotification(content: content, account: account, sender: jid, nickname: nickname, body: body, provider: provider) { (content) in
             UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil)) { (error) in
-                print("message notification error", error as Any);
+                if let err = error {
+                    self.logger.error("message notification error \(err.localizedDescription)");
+                }
             }
         }
     }
@@ -189,7 +193,7 @@ public class NotificationManager {
     func updateApplicationIconBadgeNumber(completionHandler: (()->Void)?) {
         provider.countBadge(withThreadId: nil, completionHandler: { count in
             DispatchQueue.main.async {
-                print("setting badge to", count);
+                self.logger.debug("setting badge to: \(count)");
                 UIApplication.shared.applicationIconBadgeNumber = count;
                 completionHandler?();
             }

@@ -171,7 +171,6 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
         if let localUrl = DownloadStore.instance.url(for: "\(item.id)") {
             let items = [
                 UIAction(title: "Preview", image: UIImage(systemName: "eye.fill"), handler: { action in
-                    print("preview called");
                     self.open(url: localUrl, preview: true);
                 }),
                 UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc"), handler: { action in
@@ -179,11 +178,9 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                     UIPasteboard.general.string = url;
                 }),
                 UIAction(title: "Share..", image: UIImage(systemName: "square.and.arrow.up"), handler: { action in
-                    print("share called");
                     self.open(url: localUrl, preview: false);
                 }),
                 UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: [.destructive], handler: { action in
-                    print("delete called");
                     DownloadStore.instance.deleteFile(for: "\(item.id)");
                     DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                         appendix.state = .removed;
@@ -201,7 +198,6 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                     UIPasteboard.general.string = url;
                 }),
                 UIAction(title: "Download", image: UIImage(systemName: "square.and.arrow.down"), handler: { action in
-                    print("download called");
                     self.download(for: item);
                 }),
                 UIAction(title: "More..", image: UIImage(systemName: "ellipsis"), handler: { action in
@@ -246,10 +242,8 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
     }
     
     func open(url: URL, preview: Bool) {
-        print("opening a file:", url, "exists:", FileManager.default.fileExists(atPath: url.path));// "tmp:", tmpUrl);
         let documentController = UIDocumentInteractionController(url: url);
         documentController.delegate = self;
-        print("detected uti:", documentController.uti as Any, "for:", documentController.url as Any);
         if preview && documentController.presentPreview(animated: true) {
             self.documentController = documentController;
         } else if documentController.presentOptionsMenu(from: self.superview?.convert(self.frame, to: self.superview?.superview) ?? CGRect.zero, in: self.self, animated: true) {
@@ -264,20 +258,6 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
         _ = DownloadManager.instance.download(item: item, url: url, maxSize: Int64.max);
         (self.linkView as? AttachmentInfoView)?.progress(show: true);
     }
-    
-//    func documentInteractionControllerViewForPreview(_ controller: UIDocumentInteractionController) -> UIView? {
-//        return self;
-//    }
-    
-//    func documentInteractionControllerDidDismissOptionsMenu(_ controller: UIDocumentInteractionController) {
-//        print("file sharing cancelled!");
-//        self.documentController = nil;
-//    }
-//
-//    func documentInteractionController(_ controller: UIDocumentInteractionController, didEndSendingToApplication application: String?) {
-//        print("file shared with:", application);
-//        self.documentController = nil;
-//    }
     
     private func downloadOrOpen() {
         guard let item = self.item else {
@@ -509,7 +489,6 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                     details.text = "\(typeName) - \(fileSize)";
                     if UTTypeConformsTo(uti, kUTTypeImage) {
                         self.viewType = .imagePreview;
-                        print("preview of:" , fileUrl, fileUrl.path);
                         iconView.image = UIImage(contentsOfFile: fileUrl.path)!;
                     } else if UTTypeConformsTo(uti, kUTTypeAudio) {
                         self.viewType = .audioFile;
@@ -527,7 +506,6 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                                 }
                             }
                         });
-                        print("preview of:" , fileUrl, fileUrl.path);
                         iconView.image = UIImage.icon(forUTI: uti as String) ?? UIImage.icon(forFile: fileUrl, mimeType: appendix.mimetype);
                     } else {
                         self.viewType = .file;
@@ -700,7 +678,6 @@ extension UIImage {
             controller.uti = "public.data";
         }
         let icons = controller.icons;
-        print("got:", icons.last as Any, "for:", url.absoluteString);
         return icons.last;
     }
 
@@ -711,7 +688,6 @@ extension UIImage {
             controller.uti = "public.data";
         }
         let icons = controller.icons;
-        print("got:", icons.last as Any, "for:", utiString);
         return icons.last;
     }
     

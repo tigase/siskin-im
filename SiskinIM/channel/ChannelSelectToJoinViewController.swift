@@ -21,6 +21,7 @@
 
 import UIKit
 import TigaseSwift
+import TigaseLogging
 
 class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsUpdating, ChannelSelectAccountAndComponentControllerDelgate {
     
@@ -53,6 +54,7 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
     private var items: [DiscoveryModule.Item] = [];
     
     private var needRefresh: Bool = false;
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ChannelSelectToJoinViewController");
     
     override func viewDidLoad() {
         super.viewDidLoad();
@@ -113,15 +115,15 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
         self.queryRemote = searchController.searchBar.text;
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: { [weak self] in
             guard let that = self, let remoteQuery = that.queryRemote, let client = that.client, let text = searchController.searchBar.text, remoteQuery == text else {
-                print("remote query \(self?.queryRemote as Any) , text: \(searchController.searchBar.text as Any)");
+                self?.logger.debug("remote query \(self?.queryRemote as Any) , text: \(searchController.searchBar.text as Any)");
                 return;
             }
             that.queryRemote = nil;
-            print("executing query for:", text);
+            that.logger.debug("executing query for: \(text)");
             ChannelsHelper.queryChannel(for: client, at: that.components, name: text, completionHandler: { result in
                 switch result {
                 case .success(let items):
-                    print("got items:", items);
+                    self?.logger.debug("got items: \(items)");
                     DispatchQueue.main.async {
                         guard let that = self else {
                             return;
@@ -138,7 +140,7 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
                         }
                     }
                 case .failure(let err):
-                    print("got error:", err);
+                    self?.logger.debug("got error: \(err.description)");
                 }
             })
         });
@@ -204,7 +206,6 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
                 ChannelsHelper.queryChannel(for: client, at: that.components, name: name, completionHandler: { result in
                     switch result {
                     case .success(let items):
-                        print("got items:", items);
                         DispatchQueue.main.async {
                             guard let that = self else {
                                 return;
@@ -222,7 +223,7 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
                             that.operationFinished();
                         }
                     case .failure(let err):
-                        print("got error:", err);
+                        break;
                     }
                 })
             } else {

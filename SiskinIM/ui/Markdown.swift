@@ -20,6 +20,7 @@
 //
 
 import UIKit
+import TigaseLogging
 
 extension unichar: ExpressibleByUnicodeScalarLiteral {
     public typealias UnicodeScalarLiteralType = UnicodeScalar
@@ -67,6 +68,8 @@ class Markdown {
     static let UNDERSCORE: unichar = "_";
     static let GRAVE_ACCENT: unichar = "`";
     static let CR_SIGN: unichar = "\r";
+    
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "Markdown");
     
     static func applyStyling(attributedString msg: NSMutableAttributedString, defTextStyle: UIFont.TextStyle, showEmoticons: Bool) {
         let stylingColor = UIColor.init(white: 0.5, alpha: 1.0);
@@ -166,7 +169,6 @@ class Markdown {
                             idx = idx + 1;
                         }
                         let codeCount = idx - codeStart;
-                        print("code tag count = ", codeCount);
                         
                         var count = 0;
                         while idx < message.length {
@@ -220,7 +222,7 @@ class Markdown {
                         let range = NSRange(location: wordIdx!, length: idx - wordIdx!);
                         if let emoji = String.emojis[message.substring(with: range)] {
                             let len = message.length;
-                            print("replacing:", range, "for:", emoji, "in:", msg, "range:", NSRange(location: 0, length: msg.length));
+                            logger.debug("replacing: \(range), for: \(emoji), in: \(msg), range: \(NSRange(location: 0, length: msg.length))");
                             msg.replaceCharacters(in: range, with: emoji);
                             message = msg.string as NSString;
                             let diff = message.length - len;
@@ -238,10 +240,10 @@ class Markdown {
                     underlineStart = nil;
                     italicStart = nil
                     if (quoteStart != nil) {
-                        print("quote level:", quoteLevel);
+                        logger.debug("quote level: \(quoteLevel)");
                         if idx < message.length {
                             let range = NSRange(location: quoteStart!, length: idx - quoteStart!);
-                            print("message possibly causing a crash:", message, "range:", range, "length:", message.length);
+                            logger.debug("message possibly causing a crash: \(message), range: \(range), length: \(message.length)");
                             msg.addAttribute(.paragraphStyle, value: Markdown.quoteParagraphStyle, range: range);
                         }
                         quoteStart = nil;

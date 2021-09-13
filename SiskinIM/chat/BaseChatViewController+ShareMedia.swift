@@ -289,7 +289,6 @@ extension BaseChatViewController: UIImagePickerControllerDelegate, UINavigationC
         self.share(filename: filename, url: fileUrl, completionHandler: { result in
             switch result {
             case .success(let uploadedUrl, let filesize, let mimetype):
-                print("file uploaded to:", uploadedUrl);
                 var appendix = ChatAttachmentAppendix()
                 appendix.filename = filename;
                 appendix.filesize = filesize

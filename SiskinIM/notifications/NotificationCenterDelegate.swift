@@ -24,9 +24,12 @@ import Shared
 import WebRTC
 import TigaseSwift
 import UserNotifications
+import TigaseLogging
 
 class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
 
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "NotificationCenterDelegate");
+    
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         
         switch NotificationCategory.from(identifier: notification.request.content.categoryIdentifier) {
@@ -60,7 +63,7 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         case .UNSENT_MESSAGES:
             completionHandler();
         case .UNKNOWN:
-            print("received unknown notification category:", response.notification.request.content.categoryIdentifier);
+            self.logger.error("received unknown notification category: \( response.notification.request.content.categoryIdentifier)");
             completionHandler();
         }
      }
@@ -79,7 +82,6 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
             if userInfo["cert-name"] != nil {
                 let accountJid = BareJID(userInfo["account"] as! String);
                 let alert = CertificateErrorAlert.create(domain: accountJid.domain, certName: userInfo["cert-name"] as! String, certHash: userInfo["cert-hash-sha1"] as! String, issuerName: userInfo["issuer-name"] as? String, issuerHash: userInfo["issuer-hash-sha1"] as? String, onAccept: {
-                    print("accepted certificate!");
                     guard var account = AccountManager.getAccount(for: accountJid) else {
                         return;
                     }
@@ -243,7 +245,7 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
                 topController!.showDetailViewController(controller, sender: self);
             }
         } else {
-            print("No top controller!");
+            self.logger.error("No top controller!");
         }
     }
     

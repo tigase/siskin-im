@@ -112,7 +112,6 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     }
     
     func saveAccount(acceptedCertificate: SslCertificateInfo?) {
-        print("sign in button clicked");
         guard let jid = BareJID(jidTextField.text) else {
             return;
         }

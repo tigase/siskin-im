@@ -21,6 +21,7 @@
 
 import Foundation
 import OpenSSL
+import TigaseLogging
 
 open class Cipher {
     
@@ -29,6 +30,8 @@ open class Cipher {
 extension Cipher {
 
     open class AES_GCM {
+        
+        private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "aesgcm")
         
         public init() {
             
@@ -40,7 +43,7 @@ extension Cipher {
                 return SecRandomCopyBytes(kSecRandomDefault, ofSize/8, ptr.baseAddress!);
             });
             guard result == errSecSuccess else {
-                print("failed to generated AES encryption key:", result)
+                AES_GCM.logger.error("failed to generated AES encryption key: \(result)");
                 return nil;
             }
             return key;
@@ -154,7 +157,7 @@ extension Cipher {
             let ret = EVP_DecryptFinal_ex(ctx, &outbuf, &outbufLen);
             EVP_CIPHER_CTX_free(ctx);
             guard ret >= 0 else {
-                print("authentication of encrypted message failed:", ret);
+                AES_GCM.logger.error("authentication of encrypted message failed: \(ret)");
                 return false;
             }
             

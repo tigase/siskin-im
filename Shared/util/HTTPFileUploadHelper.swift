@@ -21,8 +21,11 @@
 
 import Foundation
 import TigaseSwift
+import TigaseLogging
 
 open class HTTPFileUploadHelper {
+    
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "HTTPFileUploadHelper")
     
     public static func upload(for context: Context, filename: String, inputStream: InputStream, filesize size: Int, mimeType: String, delegate: URLSessionDelegate?, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
         let httpUploadModule = context.module(.httpFileUpload);
@@ -48,7 +51,7 @@ open class HTTPFileUploadHelper {
                         session.dataTask(with: request) { (data, response, error) in
                             let code = (response as? HTTPURLResponse)?.statusCode ?? 500;
                             guard error == nil && (code == 200 || code == 201) else {
-                                print("error:", error as Any, "response:", response as Any)
+                                logger.error("upload of file \(filename) failed, error: \(error as Any), response: \(response as Any)");
                                 completionHandler(.failure(.httpError));
                                 return;
                             }
@@ -59,6 +62,7 @@ open class HTTPFileUploadHelper {
                             }
                         }.resume();
                     case .failure(let error):
+                        logger.error("upload of file \(filename) failed, upload component returned error: \(error as Any)");
                         completionHandler(.failure(.unknownError));
                     }
                 });

@@ -40,13 +40,6 @@ class ChatsListViewController: UITableViewController {
         tableView.dataSource = self;
         setColors();
 
-//        DBChatStore.instance.$unreadMessagesCount.throttle(for: 0.1, scheduler: DispatchQueue.main, latest: true).map({ $0 == 0 ? nil : "\($0)" }).sink(receiveValue: { [weak self] value in
-//            print("setting badge to:", value, "on:", self?.navigationController, ",", self?.navigationController?.tabBarItem);
-//            self?.navigationController?.tabBarItem.badgeValue = value;
-//        }).store(in: &cancellables);//.assign(to: \.badgeValue, on: tabBarItem).store(in: &cancellables);
-//        if let tabBarItem = self.navigationController?.tabBarItem {
-//            
-//        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -286,8 +279,6 @@ class ChatsListViewController: UITableViewController {
     }
 
     @IBAction func addMucButtonClicked(_ sender: UIBarButtonItem) {
-        print("add MUC button clicked");
-        
         let controller = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
         controller.popoverPresentationController?.barButtonItem = sender;
         

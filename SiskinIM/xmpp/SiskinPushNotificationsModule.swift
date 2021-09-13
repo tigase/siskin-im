@@ -212,7 +212,6 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
                 completionHandler(.success(settings));
             case .failure(let err):
                 self.unregisterDevice(serviceJid: serviceJid, provider: self.providerId, deviceId: deviceId, completionHandler: { result in
-                    print("unregistered device:", result);
                     completionHandler(.failure(err));
                 });
             }

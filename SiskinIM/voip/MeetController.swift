@@ -151,7 +151,6 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
             controller.meet = meet;
             controller.modalPresentationStyle = .fullScreen;
             controller.modalTransitionStyle = .coverVertical;
-            print("presenting meet controller:", controller)
             (topController?.presentingViewController ?? topController)?.present(controller, animated: true, completion: nil);//(controller, animated: true, completion: nil);
         }
     }
@@ -421,7 +420,6 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
  
             let spacing = (collectionViewLayout as! UICollectionViewFlowLayout).minimumLineSpacing;
             guard itemsCount > 1 else {
-                print("collection view size:", collectionView.frame.size, "controller:", collectionView.superview?.frame.size)
                 return collectionView.frame.size;
             }
             
@@ -482,7 +480,6 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
             return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
                 let kickOutAction = UIAction(title: "Kick out", image: nil, attributes: .destructive, handler: { action in
                     controller.meet?.deny(jids: [publisher.jid], completionHandler: { result in
-                        print("\(publisher.jid) kicked out from the meeting!");
                     })
                 });
                 return UIMenu(title: "", children: [kickOutAction]);

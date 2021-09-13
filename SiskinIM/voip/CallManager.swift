@@ -61,28 +61,6 @@ class CallManager: NSObject, CXProviderDelegate {
     private let provider: CXProvider;
     private let callController: CXCallController;
     
-//    private(set) var currentCall: Call?;
-//    private(set) var currentConnection: RTCPeerConnection?;
-    
-//    weak var delegate: CallManagerDelegate? {
-//        didSet {
-//            if currentCall != nil {
-//                delegate?.callDidStart(self);
-//                if let peerConnection = self.currentConnection {
-//                    for transceiver in peerConnection.transceivers {
-//                        self.peerConnection(peerConnection, didStartReceivingOn: transceiver);
-//                    }
-//                }
-//            }
-//        }
-//    }
-    
-//    private var establishingSessions: [JingleManager.Session] = [];
-//
-//    private(set) var session: JingleManager.Session?;
-//
-//    private var localCandidates: [RTCIceCandidate] = [];
-    
     private let dispatcher = QueueDispatcher(label: "CallManager");
     @Published
     private var activeCalls: [CallBase] = [];
@@ -345,7 +323,7 @@ class CallManager: NSObject, CXProviderDelegate {
     }
     
     func endCall(on account: BareJID, with jid: BareJID, sid: String, completionHandler: @escaping ()->Void) {
-        print("endCall(on account) called");
+        logger.debug("endCall(on account) called");
         dispatcher.async {
             guard let call = self.activeCalls.first(where: { $0.account == account && $0.jid == jid && $0.sid == sid }) else {
                 completionHandler();
@@ -361,7 +339,7 @@ class CallManager: NSObject, CXProviderDelegate {
     }
     
     func endCall(on account: BareJID, sid: String, completionHandler: (()->Void)? = nil) {
-        print("endCall(on account) called");
+        logger.debug("endCall(on account) called");
         dispatcher.async {
             guard let call = self.activeCalls.first(where: { $0.account == account && $0.sid == sid }) else {
                 completionHandler?();
@@ -384,7 +362,7 @@ class CallManager: NSObject, CXProviderDelegate {
     }
 }
 
-protocol CallBase: AnyObject {
+protocol CallBase: AnyObject, CustomStringConvertible {
     
     var account: BareJID { get }
     var jid: BareJID { get }
@@ -485,6 +463,12 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
     
     private var cancellables: Set<AnyCancellable> = [];
     
+    override var description: String {
+        return "Call[on: \(client.userBareJid), with: \(jid), sid: \(sid), id: \(uuid)]";
+    }
+    
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "voip");
+    
     init(client: XMPPClient, with jid: BareJID, sid: String, direction: Direction, media: [Media]) {
         self.client = client;
         self.jid = jid;
@@ -547,7 +531,7 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
                 #if targetEnvironment(simulator)
                 self.localCapturer?.stopCapture();
                 #else
-                print("stopping local capturer:", self.localCapturer)
+                self.logger.debug("\(self), stopping local capturer: \(self.localCapturer)");
                 self.localCapturer?.stopCapture(completionHandler: {
                     self.localCapturer = nil;
                 })
@@ -782,17 +766,17 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
                 
                 #if targetEnvironment(simulator)
                 localVideoCapturer.startCapturing(fromFileNamed: "foreman.mp4", onError: { error in
-                                                    print("failed to start video capturer:", error);
+                    self.logger.debug("failed to start video capturer: \(error)");
                 });
                 self.delegate?.call(self, didReceiveLocalVideoTrack: localVideoTrack);
                 self.currentConnection?.add(localVideoTrack, streamIds: ["RTCmS"]);
                 completionHandler(.success(Void()))
                 #else
                 if let device = RTCCameraVideoCapturer.captureDevices().first(where: { $0.position == .front }), let format = RTCCameraVideoCapturer.format(for: device, preferredOutputPixelFormat: localVideoCapturer.preferredOutputPixelFormat()) {
-                    print("starting video capture on:", device, " with:", format, " fps:", RTCCameraVideoCapturer.fps(for: format));
+                    self.logger.debug("\(self), starting video capture on: \(device), with: \(format), fps: \(RTCCameraVideoCapturer.fps(for: format))");
                     self.localCameraDeviceID = device.uniqueID;
                     localVideoCapturer.startCapture(with: device, format: format, fps: RTCCameraVideoCapturer.fps(for:  format), completionHandler: { error in
-                        print("video capturer started!");
+                        self.logger.debug("\(self), video capturer started!");
 
                     });
                     self.delegate?.call(self, didReceiveLocalVideoTrack: localVideoTrack);
@@ -874,7 +858,7 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
             self.remoteSessionSemaphore.signal();
             switch result {
             case .failure(let error):
-                print("error setting remote description:", error)
+                self.logger.error("error setting remote description: \(error)");
                 self.reset();
             case .success(let localSDP):
                 if let sdp = localSDP {
@@ -913,7 +897,7 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
     }
     
     private func setRemoteDescription(_ remoteDescription: SDP, peerConnection: RTCPeerConnection, completionHandler: @escaping (Result<SDP?,Error>)->Void) {
-        print("setting remote description", remoteDescription.toString(withSid: ""));
+        logger.debug("\(self), setting remote description: \(remoteDescription.toString(withSid: ""))");
         peerConnection.setRemoteDescription(RTCSessionDescription(type: self.direction == .incoming ? .offer : .answer, sdp: remoteDescription.toString(withSid: self.webrtcSid!)), completionHandler: { err in
             guard let error = err else {
                 self.remoteSessionDescription = remoteDescription;
@@ -936,7 +920,7 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
     }
     
     private func generateOfferAndSet(peerConnection: RTCPeerConnection, completionHandler: @escaping (Result<SDP,Error>)->Void) {
-        print("generating offer");
+        logger.debug("\(self), generating offer");
         peerConnection.offer(for: VideoCallController.defaultCallConstraints, completionHandler: { sdpOffer, err in
             guard let error = err else {
                 self.setLocalDescription(peerConnection: peerConnection, sdp: sdpOffer!, completionHandler: completionHandler);
@@ -947,7 +931,7 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
     };
         
     private func generateAnswerAndSet(peerConnection: RTCPeerConnection, completionHandler: @escaping (Result<SDP,Error>)->Void) {
-        print("generating answer");
+        logger.debug("\(self), generating answer");
         peerConnection.answer(for: VideoCallController.defaultCallConstraints, completionHandler: { sdpAnswer, err in
             guard let error = err else {
                 self.setLocalDescription(peerConnection: peerConnection, sdp: sdpAnswer!, completionHandler: completionHandler);
@@ -958,7 +942,7 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
     }
     
     private func setLocalDescription(peerConnection: RTCPeerConnection, sdp localSDP: RTCSessionDescription, completionHandler: @escaping (Result<SDP,Error>)->Void) {
-        print("setting local description:", localSDP.sdp);
+        logger.debug("\(self), setting local description: \(localSDP.sdp)");
         peerConnection.setLocalDescription(localSDP, completionHandler: { err in
             guard let error = err else {
                 guard let (sdp, _) = SDP.parse(sdpString: localSDP.sdp, creator: .responder) else {
@@ -1011,23 +995,23 @@ extension CallManager: PKPushRegistryDelegate {
     
     func pushRegistry(_ registry: PKPushRegistry, didUpdate pushCredentials: PKPushCredentials, for type: PKPushType) {
         let tokenString = pushCredentials.token.map { String(format: "%02.2hhx", $0) }.joined();
-        print("PKPush TOKEN:", tokenString)
+        logger.info("received PKPush token: \(tokenString)");
         PushEventHandler.instance.pushkitDeviceId = tokenString;
     }
     
     func pushRegistry(_ registry: PKPushRegistry, didReceiveIncomingPushWith payload: PKPushPayload, for type: PKPushType, completion: @escaping () -> Void) {
         // need to redesign that.. it is impossible to cancel a call via pushkit..
         if let account = BareJID(payload.dictionaryPayload["account"] as? String) {
-            print("voip push for account:", account);
+            logger.debug("voip push for account: \(account)");
             if let encryped = payload.dictionaryPayload["encrypted"] as? String, let ivStr = payload.dictionaryPayload["iv"] as? String {
                 if let key = NotificationEncryptionKeys.key(for: account), let data = Data(base64Encoded: encryped), let iv = Data(base64Encoded: ivStr) {
-                    print("got encrypted voip push with known key");
+                    logger.debug("got encrypted voip push with known key");
                     let cipher = Cipher.AES_GCM();
                     var decoded = Data();
                     if cipher.decrypt(iv: iv, key: key, encoded: data, auth: nil, output: &decoded) {
-                        print("got decrypted voip data:", String(data: decoded, encoding: .utf8) as Any);
+                        logger.debug("got decrypted voip data: \(String(data: decoded, encoding: .utf8) as Any)");
                         if let payload = try? JSONDecoder().decode(VoIPPayload.self, from: decoded) {
-                            print("decoded voip payload successfully!");
+                            logger.debug("decoded voip payload successfully!");
                             if let sender = payload.sender, let client = XmppService.instance.getClient(for: account) {
                                 // we require `media` to be present (even empty) in incoming push for jingle session initiation
                                 if let media = payload.media {
@@ -1044,7 +1028,7 @@ extension CallManager: PKPushRegistryDelegate {
                                     });
                                 } else {
                                     self.endCall(on: account, with: sender.bareJid, sid: payload.sid, completionHandler: {
-                                        print("ended call");
+                                        self.logger.debug("ended call");
                                     })
                                 }
                                 return;
@@ -1092,7 +1076,7 @@ extension CallManager: PKPushRegistryDelegate {
 extension Call: RTCPeerConnectionDelegate {
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange stateChanged: RTCSignalingState) {
-        print("signaling state:", stateChanged.rawValue);
+        self.logger.debug("\(self), signaling state: \(stateChanged.rawValue)");
     }
         
     func peerConnection(_ peerConnection: RTCPeerConnection, didAdd stream: RTCMediaStream) {
@@ -1102,7 +1086,7 @@ extension Call: RTCPeerConnectionDelegate {
     }
         
     func peerConnectionShouldNegotiate(_ peerConnection: RTCPeerConnection) {
-        print("negotiation required");
+        self.logger.debug("\(self), negotiation required");
     }
         
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceConnectionState) {
@@ -1170,18 +1154,18 @@ extension Call: RTCPeerConnectionDelegate {
     }
 
     func peerConnection(_ peerConnection: RTCPeerConnection, didAdd rtpReceiver: RTCRtpReceiver, streams mediaStreams: [RTCMediaStream]) {
-        print("added receiver:", rtpReceiver.receiverId)
+        logger.debug("\(self), added receiver: \(rtpReceiver.receiverId)");
         if let track = rtpReceiver.track as? RTCVideoTrack, let stream = mediaStreams.first {
             let mid = peerConnection.transceivers.first(where: { $0.receiver.receiverId == rtpReceiver.receiverId })?.mid;
-            print("added video track:", track, peerConnection.transceivers.map({ "[\($0.mid) - stopped: \($0.isStopped), \($0.receiver.receiverId), \($0.direction.rawValue)]" }).joined(separator: ", "));
+            logger.debug("\(self), added video track: \(track), \(peerConnection.transceivers.map({ "[\($0.mid) - stopped: \($0.isStopped), \($0.receiver.receiverId), \($0.direction.rawValue)]" }).joined(separator: ", "))");
             self.delegate?.call(self, didReceiveRemoteVideoTrack: track, forStream: mid ?? stream.streamId, fromReceiver: rtpReceiver.receiverId);
         }
     }
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove rtpReceiver: RTCRtpReceiver) {
-        print("removed receiver:", rtpReceiver.receiverId)
+        logger.debug("\(self), removed receiver: \(rtpReceiver.receiverId)");
         if let track = rtpReceiver.track as? RTCVideoTrack {
-            print("removed video track:", track);
+            logger.debug("\(self), removed video track: \(track)");
             self.delegate?.call(self, goneRemoteVideoTrack: track, fromReceiver: rtpReceiver.receiverId);
         }
     }
@@ -1189,7 +1173,7 @@ extension Call: RTCPeerConnectionDelegate {
     func peerConnection(_ peerConnection: RTCPeerConnection, didStartReceivingOn transceiver: RTCRtpTransceiver) {
         if transceiver.direction == .recvOnly || transceiver.direction == .sendRecv {
             if transceiver.mediaType == .video {
-                print("got video transceiver");
+                logger.debug("\(self), got video transceiver");
 //                guard let track = transceiver.receiver.track as? RTCVideoTrack else {
 //                    return;
 //                }

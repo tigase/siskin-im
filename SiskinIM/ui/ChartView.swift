@@ -124,7 +124,6 @@ class UsageChartView: UIStackView {
             var x: CGFloat = 0;
             for item in items {
                 let width = rect.width * CGFloat(item.value / totalValue);
-                print("XXXX:", width)
                 let path = UIBezierPath(rect: CGRect(x: x, y: 0, width: width, height: rect.height));
                 item.color.setFill();
                 path.fill();

@@ -340,7 +340,6 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                             alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
                             self.present(alertController, animated: true, completion: nil);
                         }
-                        print("VCard publication failed", errorCondition);
                     }
                 })
             }
@@ -353,7 +352,6 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
             case .success(let void):
                 completionHandler(.success(void));
             case .failure(let error):
-                print("got error:", error as Any);
                 guard let that = self else {
                     completionHandler(.failure(error));
                     return;
@@ -395,7 +393,6 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
 
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         guard var photo = (info[UIImagePickerController.InfoKey.editedImage] as? UIImage) else {
-            print("no image available!");
             return;
         }
         
@@ -427,14 +424,13 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                     pepUserAvatarModule.publishAvatar(data: data!, mimeType: "image/png", completionHandler: { result in
                         switch result {
                         case .success(_):
-                            print("PEP: user avatar published");
+                            break;
                         case .failure(let error):
                             DispatchQueue.main.async {
                                 let alert = UIAlertController(title: "Error", message: "User avatar publication failed.\nReason: \(error)", preferredStyle: .alert);
                                 alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
                                 self.present(alert, animated: true, completion: nil);
                             }
-                            print("PEP: user avatar publication failed: \(error)");
                         }
                     })
                 }));

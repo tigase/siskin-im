@@ -62,7 +62,6 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     }
     
     @objc func showBuddyInfo(_ button: Any) {
-        print("open buddy info!");
         let navigation = storyboard?.instantiateViewController(withIdentifier: "ContactViewNavigationController") as! UINavigationController;
         let contactView = navigation.visibleViewController as! ContactViewController;
         contactView.account = conversation.account;
@@ -97,15 +96,12 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     }
     
     func tableView(_ tableView: UITableView, accessoryButtonTappedForRowWith indexPath: IndexPath) {
-        print("accessory button cliecked at", indexPath)
         guard let item = dataSource.getItem(at: indexPath.row) else {
             return;
         }
 
         let alert = UIAlertController(title: "Details", message: item.state.errorMessage ?? "Unknown error occurred", preferredStyle: .alert);
-        alert.addAction(UIAlertAction(title: "Resend", style: .default, handler: {(action) in
-            //print("resending message with body", item.message);
-            
+        alert.addAction(UIAlertAction(title: "Resend", style: .default, handler: {(action) in            
             switch item.payload {
             case .message(let message, _):
                 self.chat.sendMessage(text: message, correctedMessageOriginId: nil);

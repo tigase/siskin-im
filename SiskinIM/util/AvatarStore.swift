@@ -60,8 +60,6 @@ open class AvatarStore {
                 try! FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true, attributes: nil);
             }
         }
-                
-        print("avatars cache directory:", cacheDirectory.path);
     }
     
     open func hasAvatarFor(hash: String) -> Bool {

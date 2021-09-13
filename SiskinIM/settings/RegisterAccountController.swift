@@ -220,7 +220,6 @@ class RegisterAccountController: DataFormController {
         self.task = InBandRegistrationModule.AccountRegistrationTask(client: client, domainName: domain, preauth: self.preauth, onForm: onForm, sslCertificateValidator: nil, onCertificateValidationError: self.onCertificateError, completionHandler: { result in
             switch result {
             case .success:
-                print("account registered!");
                 let certData: SslCertificateInfo? = self.task?.getAcceptedCertificate();
                 DispatchQueue.main.async {
                     self.saveAccount(acceptedCertificate: certData);
@@ -237,7 +236,6 @@ class RegisterAccountController: DataFormController {
             self.nextButton.isEnabled = true;
             self.hideIndicator();
         }
-        print("account registration failed: \(error)");
         
         var msg = error.message;
         if msg == nil || msg == "Unsuccessful registration attempt" {

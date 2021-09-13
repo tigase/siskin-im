@@ -79,7 +79,6 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
 
         self.view.addSubview(chatViewInputBar);
 
-        print("tableView.constraints:", self.view.constraints)
         if let bottomTableViewConstraint = self.view.constraints.first(where: { $0.firstAnchor == containerView.bottomAnchor || $0.secondAnchor == containerView.bottomAnchor }) {
             bottomTableViewConstraint.isActive = false;
             self.view.removeConstraint(bottomTableViewConstraint);
@@ -181,7 +180,6 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated);
-        print("size:", chatViewInputBar.intrinsicContentSize, chatViewInputBar.frame.size);
     }
         
     override func viewWillDisappear(_ animated: Bool) {
@@ -229,7 +227,6 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     
     var keyboardHeight: CGFloat = 0 {
         didSet {
-            print("setting keyboard height:", keyboardHeight);
             self.view.constraints.first(where: { $0.firstAnchor == self.view.bottomAnchor || $0.secondAnchor == self.view.bottomAnchor })?.constant = keyboardHeight * -1;
         }
     }

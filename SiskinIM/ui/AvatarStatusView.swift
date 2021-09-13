@@ -100,50 +100,6 @@ class AvatarStatusView: UIView {
         return image;
     }
     
-//    static func drawStatusBorder(backgroundColor: UIColor, status: UIImage) -> UIImage {
-//        let scale = UIScreen.main.scale;
-//        let size = status.size;
-//
-////        if self.contentMode == .redraw || contentMode == .scaleAspectFill || contentMode == .scaleAspectFit || contentMode == .scaleToFill {
-////            size.width = (size.width * scale);
-////            size.height = (size.height * scale);
-////        }
-//
-//        UIGraphicsBeginImageContextWithOptions(size, false, scale);
-//        print("size:", size, "scale:", scale);
-//        let ctx = UIGraphicsGetCurrentContext()!;
-//
-//        let path = CGPath(ellipseIn: CGRect(origin: .zero, size: size), transform: nil);
-//        ctx.addPath(path);
-//
-//        ctx.setFillColor(backgroundColor.cgColor);
-//        ctx.fill(CGRect(x: 0, y: 0, width: size.width, height: size.height));
-//
-//
-//        status.draw(in: CGRect(x: 0, y: 0, width: size.width, height: size.height));
-//
-//        let image = UIGraphicsGetImageFromCurrentImageContext()!;
-//        UIGraphicsEndImageContext();
-//
-//        return image;
-//    }
-//    
-//    func drawStatusIcon(_ size: CGFloat, color:UIColor) -> UIImage {
-//        UIGraphicsBeginImageContextWithOptions(CGSize(width: size, height: size), false, 0);
-//        let ctx = UIGraphicsGetCurrentContext();
-//        ctx!.saveGState();
-//        
-//        let rect  = CGRect(x: 0, y: 0, width: size, height: size);
-//        ctx!.setFillColor(color.cgColor);
-//        ctx!.fillEllipse(in: rect);
-//        
-//        ctx!.restoreGState();
-//        let img = UIGraphicsGetImageFromCurrentImageContext();
-//        UIGraphicsEndImageContext();
-//        
-//        return img!;
-//    }
-    
     override func layoutSubviews() {
         super.layoutSubviews();
         updateCornerRadius();

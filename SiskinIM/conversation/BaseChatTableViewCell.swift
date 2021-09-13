@@ -119,7 +119,6 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
                 if view .responds(to: #selector(setHighlighted(_:animated:))) {
                     view.setValue(false, forKey: "highlighted");
                 }
-                print("offset", offset, "view", view);
                 view.backgroundColor = colors[offset];
             }
         } else {

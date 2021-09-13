@@ -153,7 +153,6 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         guard let scaled = (info[UIImagePickerController.InfoKey.editedImage] as? UIImage)?.scaled(maxWidthOrHeight: 512.0), let data = scaled.jpegData(compressionQuality: 0.8) else {
-            print("no image available!");
             return;
         }
         

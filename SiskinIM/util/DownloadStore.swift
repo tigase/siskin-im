@@ -94,16 +94,12 @@ class DownloadStore {
         let linkUrl = diskCacheUrl.appendingPathComponent(id, isDirectory: true).appendingPathComponent(id);
         
         guard let filePath = try? FileManager.default.destinationOfSymbolicLink(atPath: linkUrl.path) else {
-            print("link exists:", linkUrl.path,  FileManager.default.fileExists(atPath: linkUrl.path));
             return nil;
         }
         
         let filename = URL(fileURLWithPath: filePath).lastPathComponent;
         
-//        print("got link:", linkUrl, "path:", linkUrl.resolvingSymlinksInPath().path, "path to file:", filePath, "exists:", FileManager.default.fileExists(atPath: filePath), FileManager.default.fileExists(atPath: diskCacheUrl.appendingPathComponent(id, isDirectory: true).path));
-        let realPathToFile = diskCacheUrl.appendingPathComponent(id, isDirectory: true).appendingPathComponent(filename);
-        print("got link:", linkUrl, "path:", linkUrl.resolvingSymlinksInPath().path, "path to file:", realPathToFile.path, "exists:", FileManager.default.fileExists(atPath: realPathToFile.path), FileManager.default.fileExists(atPath: diskCacheUrl.appendingPathComponent(id, isDirectory: true).path));
-        return realPathToFile;
+        return diskCacheUrl.appendingPathComponent(id, isDirectory: true).appendingPathComponent(filename);
     }
             
     func deleteFile(for id: String) {
