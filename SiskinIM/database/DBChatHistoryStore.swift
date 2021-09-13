@@ -472,7 +472,11 @@ class DBChatHistoryStore {
             }
             return true;
         } else {
-            return false;
+            if let originId = correctionStanzaId {
+                return findItemId(for: conversation, originId: originId, sender: sender) != nil;
+            } else {
+                return false;
+            }
         }
     }
 
