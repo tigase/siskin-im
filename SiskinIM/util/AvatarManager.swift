@@ -275,12 +275,13 @@ class AvatarManager {
                 let idx = uri.index(uri.firstIndex(of: ",")!, offsetBy: 1);
                 let data = String(uri[idx...]);
                 completionHandler(Data(base64Encoded: data, options: Data.Base64DecodingOptions.ignoreUnknownCharacters));
-            } else {
-                let url = URL(string: uri)!;
+            } else if let url = URL(string: uri) {
                 let task = URLSession.shared.dataTask(with: url) { (data, response, err) in
                     completionHandler(data);
                 }
                 task.resume();
+            } else {
+                completionHandler(nil);
             }
         } else {
             completionHandler(nil);
