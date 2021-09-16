@@ -190,10 +190,21 @@ class ChatsListViewController: UITableViewController {
             }))
             if room.affiliation == .owner {
                 actions.append(UIContextualAction(style: .destructive, title: "Destroy", handler: { (action, view, completion) in
-                    PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: JID(room.jid), autojoin: false));
-                    room.context?.module(.muc).destroy(room: room);
-                    self.discardNotifications(for: room);
-                    completion(true);
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(title: "Channel destuction", message: "You are about to destroy channel \(room.roomJid). This will remove the channel on the server, remove remote history archive, and kick out all participants. Are you sure?", preferredStyle: .actionSheet);
+                        alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { action in
+                            PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: JID(room.jid), autojoin: false));
+                            room.context?.module(.muc).destroy(room: room);
+                            self.discardNotifications(for: room);
+                            completion(true);
+                        }));
+                        alert.addAction(UIAlertAction(title: "No", style: .default, handler: { action in
+                            completion(false)
+                        }))
+                        alert.popoverPresentationController?.sourceView = self.view;
+                        alert.popoverPresentationController?.sourceRect = tableView.rectForRow(at: indexPath);
+                        self.present(alert, animated: true, completion: nil);
+                    }
                 }))
             }
         case let chat as Chat:
