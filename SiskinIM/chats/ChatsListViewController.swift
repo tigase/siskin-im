@@ -373,9 +373,15 @@ class ChatsListViewController: UITableViewController {
         init(controller: ChatsListViewController) {
             self.controller = controller;
             
-            DBChatStore.instance.$conversations.throttle(for: 0.1, scheduler: self.dispatcher, latest: true).sink(receiveValue: { [weak self] items in
-                self?.update(items: items);
-            }).store(in: &cancellables);
+            if #available(iOS 13.2, *) {
+                DBChatStore.instance.$conversations.throttle(for: 0.1, scheduler: self.dispatcher, latest: true).sink(receiveValue: { [weak self] items in
+                    self?.update(items: items);
+                }).store(in: &cancellables);
+            } else {
+                DBChatStore.instance.$conversations.throttle(for: 0.1, scheduler: RunLoop.main, latest: true).sink(receiveValue: { [weak self] items in
+                    self?.update(items: items);
+                }).store(in: &cancellables);
+            }
         }
         
         func update(items: [Conversation]) {
@@ -405,7 +411,7 @@ class ChatsListViewController: UITableViewController {
                 return;
             }
             
-            DispatchQueue.main.sync {
+            let updateFn = {
                 self.items = newItems;
                 self.controller?.tableView.beginUpdates();
                 if !removed.isEmpty {
@@ -418,6 +424,14 @@ class ChatsListViewController: UITableViewController {
                     self.controller?.tableView.insertRows(at: inserted.map({ IndexPath(row: $0, section: 0) }), with: .fade);
                 }
                 self.controller?.tableView.endUpdates();
+            }
+
+            if #available(iOS 13.2, *) {
+                DispatchQueue.main.sync {
+                    updateFn();
+                }
+            } else {
+                updateFn();
             }
         }
                 
