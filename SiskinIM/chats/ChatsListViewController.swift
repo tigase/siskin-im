@@ -155,82 +155,157 @@ class ChatsListViewController: UITableViewController {
         return false;
     }
     
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == UITableViewCell.EditingStyle.delete {
-            if indexPath.section == 0 {
-                guard let item = dataSource!.item(at: indexPath)?.chat else {
-                    return;
-                }
-                
-                var discardNotifications = false;
-                switch item {
-                case let room as Room:
-                    if room.affiliation == .owner {
-                        let alert = UIAlertController(title: "Delete group chat?", message: "You are leaving the group chat \(room.name ?? room.roomJid.stringValue)", preferredStyle: .actionSheet);
-                        alert.addAction(UIAlertAction(title: "Leave chat", style: .default, handler: { (action) in
-                            PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: JID(room.jid), autojoin: false));
-                            room.context?.module(.muc).leave(room: room);
-                            self.discardNotifications(for: item);
-                        }))
-                        alert.addAction(UIAlertAction(title: "Delete chat", style: .destructive, handler: { (action) in
-                            PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: JID(room.jid), autojoin: false));
-                            room.context?.module(.muc).destroy(room: room);
-                            self.discardNotifications(for: item);
-                        }));
-                        alert.popoverPresentationController?.sourceView = self.view;
-                        alert.popoverPresentationController?.sourceRect = tableView.rectForRow(at: indexPath);
-                        self.present(alert, animated: true, completion: nil);
-                    } else {
-                        PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: JID(room.jid), autojoin: false));
-                        room.context?.module(.muc).leave(room: room);
-
-                        room.checkTigasePushNotificationRegistrationStatus { (result) in
-                            switch result {
-                            case .failure(_):
-                                break;
-                            case .success(let value):
-                                guard value else {
-                                    return;
-                                }
-                                room.registerForTigasePushNotification(false, completionHandler: { (regResult) in
-                                    DispatchQueue.main.async {
-                                        let alert = UIAlertController(title: "Push notifications", message: "You've left there room \(room.name ?? room.roomJid.stringValue) and push notifications for this room were disabled!\nYou may need to reenable them on other devices.", preferredStyle: .actionSheet);
-                                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
-                                        alert.popoverPresentationController?.sourceView = self.view;
-                                        alert.popoverPresentationController?.sourceRect = tableView.rectForRow(at: indexPath);
-                                        self.present(alert, animated: true, completion: nil);
-                                    }
-                                })
-                            }
-                        }
-
-                        discardNotifications = true;
-                    }
-                case let chat as Chat:
-                    if DBChatStore.instance.close(chat: chat) {
-                        discardNotifications = true;
-                    }
-                case let channel as Channel:
-                    if let mixModule = channel.context?.module(.mix) {
-                        mixModule.leave(channel: channel, completionHandler: { result in
-                            switch result {
-                            case .success(_):
-                                self.discardNotifications(for: item);
-                            case .failure(_):
-                                break;
-                            }
-                        });
-                    }
-                default:
-                    break;
-                }
-                
-                if discardNotifications {
-                    self.discardNotifications(for: item);
-                }
-            }
+    override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        guard let item = dataSource!.item(at: indexPath)?.chat else {
+            return nil;
         }
+        
+        var actions: [UIContextualAction] = [];
+        switch item {
+        case let room as Room:
+            actions.append(UIContextualAction(style: .normal, title: "Leave", handler: { (action, view, completion) in
+                PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: JID(room.jid), autojoin: false));
+                room.context?.module(.muc).leave(room: room);
+                room.checkTigasePushNotificationRegistrationStatus { (result) in
+                    switch result {
+                    case .failure(_):
+                        break;
+                    case .success(let value):
+                        guard value else {
+                            return;
+                        }
+                        room.registerForTigasePushNotification(false, completionHandler: { (regResult) in
+                            DispatchQueue.main.async {
+                                let alert = UIAlertController(title: "Push notifications", message: "You've left there room \(room.name ?? room.roomJid.stringValue) and push notifications for this room were disabled!\nYou may need to reenable them on other devices.", preferredStyle: .actionSheet);
+                                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                                alert.popoverPresentationController?.sourceView = self.view;
+                                alert.popoverPresentationController?.sourceRect = tableView.rectForRow(at: indexPath);
+                                self.present(alert, animated: true, completion: nil);
+                            }
+                        })
+                    }
+                }
+                self.discardNotifications(for: room);
+                completion(true);
+            }))
+            if room.affiliation == .owner {
+                actions.append(UIContextualAction(style: .destructive, title: "Destroy", handler: { (action, view, completion) in
+                    PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: JID(room.jid), autojoin: false));
+                    room.context?.module(.muc).destroy(room: room);
+                    self.discardNotifications(for: room);
+                    completion(true);
+                }))
+            }
+        case let chat as Chat:
+            actions.append(UIContextualAction(style: .normal, title: "Close", handler: { (action, view, completion) in
+                let result = DBChatStore.instance.close(chat: chat);
+                if result {
+                    self.discardNotifications(for: chat);
+                }
+                completion(result);
+            }))
+        case let channel as Channel:
+            actions.append(UIContextualAction(style: .normal, title: "Close", handler: { (action, view, completion) in
+                if let mixModule = channel.context?.module(.mix) {
+                    mixModule.leave(channel: channel, completionHandler: { result in
+                        switch result {
+                        case .success(_):
+                            self.discardNotifications(for: channel);
+                            completion(true);
+                        case .failure(_):
+                            completion(false);
+                            break;
+                        }
+                    });
+                } else {
+                    completion(false);
+                }
+            }))
+        default:
+            return nil;
+        }
+        
+        let config = UISwipeActionsConfiguration(actions: actions);
+        config.performsFirstActionWithFullSwipe = actions.count == 1;
+        return config;
     }
+    
+//    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+//        if editingStyle == UITableViewCell.EditingStyle.delete {
+//            if indexPath.section == 0 {
+//                guard let item = dataSource!.item(at: indexPath)?.chat else {
+//                    return;
+//                }
+//
+//                var discardNotifications = false;
+//                switch item {
+//                case let room as Room:
+//                    if room.affiliation == .owner {
+//                        let alert = UIAlertController(title: "Delete group chat?", message: "You are leaving the group chat \(room.name ?? room.roomJid.stringValue)", preferredStyle: .actionSheet);
+//                        alert.addAction(UIAlertAction(title: "Leave chat", style: .default, handler: { (action) in
+//                            PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: JID(room.jid), autojoin: false));
+//                            room.context?.module(.muc).leave(room: room);
+//                            self.discardNotifications(for: item);
+//                        }))
+//                        alert.addAction(UIAlertAction(title: "Delete chat", style: .destructive, handler: { (action) in
+//                            PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: JID(room.jid), autojoin: false));
+//                            room.context?.module(.muc).destroy(room: room);
+//                            self.discardNotifications(for: item);
+//                        }));
+//                        alert.popoverPresentationController?.sourceView = self.view;
+//                        alert.popoverPresentationController?.sourceRect = tableView.rectForRow(at: indexPath);
+//                        self.present(alert, animated: true, completion: nil);
+//                    } else {
+//                        PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: JID(room.jid), autojoin: false));
+//                        room.context?.module(.muc).leave(room: room);
+//
+//                        room.checkTigasePushNotificationRegistrationStatus { (result) in
+//                            switch result {
+//                            case .failure(_):
+//                                break;
+//                            case .success(let value):
+//                                guard value else {
+//                                    return;
+//                                }
+//                                room.registerForTigasePushNotification(false, completionHandler: { (regResult) in
+//                                    DispatchQueue.main.async {
+//                                        let alert = UIAlertController(title: "Push notifications", message: "You've left there room \(room.name ?? room.roomJid.stringValue) and push notifications for this room were disabled!\nYou may need to reenable them on other devices.", preferredStyle: .actionSheet);
+//                                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+//                                        alert.popoverPresentationController?.sourceView = self.view;
+//                                        alert.popoverPresentationController?.sourceRect = tableView.rectForRow(at: indexPath);
+//                                        self.present(alert, animated: true, completion: nil);
+//                                    }
+//                                })
+//                            }
+//                        }
+//
+//                        discardNotifications = true;
+//                    }
+//                case let chat as Chat:
+//                    if DBChatStore.instance.close(chat: chat) {
+//                        discardNotifications = true;
+//                    }
+//                case let channel as Channel:
+//                    if let mixModule = channel.context?.module(.mix) {
+//                        mixModule.leave(channel: channel, completionHandler: { result in
+//                            switch result {
+//                            case .success(_):
+//                                self.discardNotifications(for: item);
+//                            case .failure(_):
+//                                break;
+//                            }
+//                        });
+//                    }
+//                default:
+//                    break;
+//                }
+//
+//                if discardNotifications {
+//                    self.discardNotifications(for: item);
+//                }
+//            }
+//        }
+//    }
     
     func discardNotifications(for item: Conversation) {
         let accountStr = item.account.stringValue.lowercased();
