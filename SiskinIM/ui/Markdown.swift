@@ -87,6 +87,7 @@ class Markdown {
         
         var wordIdx: Int? = showEmoticons ? 0 : nil;
         
+        msg.removeAttribute(.underlineStyle, range: NSRange(location: 0, length: msg.length));
         msg.removeAttribute(.paragraphStyle, range: NSRange(location: 0, length: msg.length));
         msg.addAttribute(.font, value: font(withTextStyle: defTextStyle, andTraits: []), range: NSRange(location: 0, length: msg.length));
                 
