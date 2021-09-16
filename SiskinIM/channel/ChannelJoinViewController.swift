@@ -240,7 +240,7 @@ class ChannelJoinViewController: UITableViewController {
             form.addField(BooleanField(name: "muc#roomconfig_publicroom", value: !priv));
 //            form.addField(TextSingleField(name: "muc#roomconfig_roomdesc", value: channelDescription));
             form.addField(TextSingleField(name: "muc#roomconfig_whois", value: priv ? "anyone" : "moderators"))
-            mucModule.setRoomConfiguration(roomJid: JID(channelJid), configuration: form, completionHandler: { creationResult in
+            mucModule.setRoomConfiguration(roomJid: JID(BareJID(localPart: roomName, domain: channelJid.domain)), configuration: form, completionHandler: { creationResult in
                 switch creationResult {
                 case .success(_):
                     mucModule.join(roomName: roomName, mucServer: self.channelJid.domain, nickname: nick).handle({ joinResult in
@@ -261,6 +261,9 @@ class ChannelJoinViewController: UITableViewController {
                                 client.module(.vcardTemp).publishVCard(vcard, to: room.jid, completionHandler: nil);
                                 if description != nil {
                                     mucModule.setRoomSubject(roomJid: room.jid, newSubject: description);
+                                }
+                                DispatchQueue.main.async {
+                                    self.dismiss(animated: true, completion: nil);
                                 }
                             }
                         case .failure(_):
