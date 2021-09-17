@@ -107,7 +107,7 @@ class CallManager: NSObject, CXProviderDelegate {
 //    }
     
     func reportIncomingCall(_ call: CallBase, completionHandler: @escaping(Result<Void,Error>)->Void) {
-        dispatcher.async {
+        dispatcher.sync {
             guard self.activeCalls.allSatisfy({ !call.isEqual($0) }) else {
                 completionHandler(.failure(XMPPError.conflict("Call already registered!")));
                 return;
@@ -500,6 +500,7 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
             });
         }
         self.accept(offerMedia: media);
+        completionHandler(.success(Void()));
     }
     
     func end() {

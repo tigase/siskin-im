@@ -138,6 +138,13 @@ class JingleManager: JingleSessionManager {
     func messageInitiation(for context: Context, from jid: JID, action: Jingle.MessageInitiationAction) throws {
         switch action {
         case .propose(let id, let descriptions):
+            if case .connected(_) = context.state {
+                let pushModule = context.module(.push) as! SiskinPushNotificationsModule;
+                guard (!context.module(.disco).accountDiscoResult.features.contains("tigase:push:jingle:0")) && pushModule.isEnabled else {
+                    return;
+                }
+            }
+            
             guard self.session(for: context.userBareJid, with: jid, sid: id) == nil else {
                 return;
             }
