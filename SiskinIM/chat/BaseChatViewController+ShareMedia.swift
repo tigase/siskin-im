@@ -124,14 +124,14 @@ extension BaseChatViewController: PHPickerViewControllerDelegate {
             return;
         }
 
-        guard let (localUrl, filename, _) = copyFileLocally(url: url, defaultSuffix: "jpg") else {
+        guard let localUrl = copyFileLocally(url: url) else {
             DispatchQueue.main.async {
                 self.showAlert(shareError: .unknownError);
             }
             return;
         }
 
-        upload(imageUrl: localUrl, filename: filename);
+        upload(imageUrl: localUrl, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "jpg"));
     }
     
     private func handleLoaded(movieUrl url: URL?, error: Error?) {
@@ -142,14 +142,14 @@ extension BaseChatViewController: PHPickerViewControllerDelegate {
             return;
         }
         
-        guard let (localUrl, filename, _) = copyFileLocally(url: url, defaultSuffix: "mov") else {
+        guard let localUrl = copyFileLocally(url: url) else {
             DispatchQueue.main.async {
                 self.showAlert(shareError: .unknownError);
             }
             return;
         }
 
-        upload(movieUrl: localUrl, filename: filename);
+        upload(movieUrl: localUrl, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "mov"));
     }
     
 }
@@ -174,34 +174,18 @@ extension BaseChatViewController: UIImagePickerControllerDelegate, UINavigationC
     
     @objc func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let movieUrl = info[.mediaURL] as? URL {
-            var filename = movieUrl.lastPathComponent;
-            if let idx = filename.lastIndex(of: ".") {
-                filename = String(filename.prefix(upTo: idx));
-                if filename.hasPrefix("trim.") {
-                    filename = String(filename.dropFirst("trim.".count));
-                }
-            }
-
-            upload(movieUrl: movieUrl, filename: filename);
+            upload(movieUrl: movieUrl, fileInfo: ShareFileInfo.from(url: movieUrl, defaultSuffix: "mov"));
         } else if let imageUrl = info[.imageURL] as? URL {
-            var filename = imageUrl.lastPathComponent;
-            if let idx = filename.lastIndex(of: ".") {
-                filename = String(filename.prefix(upTo: idx));
-                if filename.hasPrefix("trim.") {
-                    filename = String(filename.dropFirst("trim.".count));
-                }
-            }
-
-            upload(imageUrl: imageUrl, filename: filename);
+            upload(imageUrl: imageUrl, fileInfo: ShareFileInfo.from(url: imageUrl, defaultSuffix: "jpg"));
         } else if let image = (info[.editedImage] as? UIImage) ?? (info[.originalImage] as? UIImage) {
             MediaHelper.askImageQuality(controller: self, forceQualityQuestion: self.askMediaQuality, { result in
                 self.askMediaQuality = false;
                 switch result {
                 case .success(let quality):
-                    MediaHelper.compressImage(image: image, filename: UUID().uuidString, quality: quality, completionHandler: { result in
+                    MediaHelper.compressImage(image: image, fileInfo: ShareFileInfo(filename: UUID().uuidString, suffix: "jpg"), quality: quality, completionHandler: { result in
                         switch result {
-                        case .success(let fileUrl):
-                            self.uploadFile(url: fileUrl, filename: fileUrl.lastPathComponent, deleteSource: true);
+                        case .success((let fileUrl, let fileInfo)):
+                            self.uploadFile(url: fileUrl, filename: fileInfo.filenameWithSuffix, deleteSource: true);
                         case .failure(let error):
                             self.showAlert(shareError: error);
                         }
@@ -215,16 +199,16 @@ extension BaseChatViewController: UIImagePickerControllerDelegate, UINavigationC
         picker.dismiss(animated: true, completion: nil);
     }
     
-    func upload(imageUrl url: URL, filename: String) {
+    func upload(imageUrl url: URL, fileInfo: ShareFileInfo) {
         MediaHelper.askImageQuality(controller: self, forceQualityQuestion: self.askMediaQuality, { result in
             self.askMediaQuality = false;
             switch result {
             case .success(let quality):
-                MediaHelper.compressImage(url: url, filename: filename, quality: quality, completionHandler: { result in
+                MediaHelper.compressImage(url: url, fileInfo: fileInfo, quality: quality, completionHandler: { result in
                     try? FileManager.default.removeItem(at: url);
                     switch result {
-                    case .success(let fileUrl):
-                        self.uploadFile(url: fileUrl, filename: fileUrl.lastPathComponent, deleteSource: true);
+                    case .success((let fileUrl, let fileInfo)):
+                        self.uploadFile(url: fileUrl, filename: fileInfo.filenameWithSuffix, deleteSource: true);
                     case .failure(let error):
                         self.showAlert(shareError: error);
                     }
@@ -235,14 +219,14 @@ extension BaseChatViewController: UIImagePickerControllerDelegate, UINavigationC
         });
     }
     
-    func upload(movieUrl url: URL, filename: String) {
+    func upload(movieUrl url: URL, fileInfo: ShareFileInfo) {
         MediaHelper.askVideoQuality(controller: self, forceQualityQuestion: self.askMediaQuality, { result in
             self.askMediaQuality = false;
             switch result {
             case .success(let quality):
                 DispatchQueue.main.async {
                     self.showProgressBar();
-                    MediaHelper.compressMovie(url: url, filename: filename, quality: quality, progressCallback: { [weak self] progress in
+                    MediaHelper.compressMovie(url: url, fileInfo: fileInfo, quality: quality, progressCallback: { [weak self] progress in
                         DispatchQueue.main.async {
                             self?.progressBar?.progress = progress;
                         }
@@ -252,8 +236,8 @@ extension BaseChatViewController: UIImagePickerControllerDelegate, UINavigationC
                             self.hideProgressBar();
                         }
                         switch result {
-                        case .success(let fileUrl):
-                            self.uploadFile(url: fileUrl, filename: fileUrl.lastPathComponent, deleteSource: true);
+                        case .success((let fileUrl, let fileInfo)):
+                            self.uploadFile(url: fileUrl, filename: fileInfo.filenameWithSuffix, deleteSource: true);
                         case .failure(let error):
                             self.showAlert(shareError: error);
                         }
@@ -264,25 +248,17 @@ extension BaseChatViewController: UIImagePickerControllerDelegate, UINavigationC
             }
         });
     }
-    
-    private func copyFileLocally(url: URL, defaultSuffix: String) -> (URL, String, String)? {
-        var filename = url.lastPathComponent;
-        var suffix = defaultSuffix;
-        if let idx = filename.lastIndex(of: ".") {
-            suffix = String(filename.suffix(from: filename.index(after: idx)));
-            filename = String(filename.prefix(upTo: idx));
-            if filename.hasPrefix("trim.") {
-                filename = String(filename.dropFirst("trim.".count));
-            }
-        }
         
-        let tmpUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + "." + suffix, isDirectory: false);
+    private func copyFileLocally(url: URL) -> URL? {
+        var filename = url.lastPathComponent;
+        
+        let tmpUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: false);
         do {
             try FileManager.default.copyItem(at: url, to: tmpUrl);
         } catch {
             return nil;
         }
-        return (tmpUrl, filename, suffix);
+        return tmpUrl;
     }
         
     private func uploadFile(url fileUrl: URL, filename: String, deleteSource: Bool) {
@@ -307,4 +283,3 @@ extension BaseChatViewController: UIImagePickerControllerDelegate, UINavigationC
     }
     
 }
- 

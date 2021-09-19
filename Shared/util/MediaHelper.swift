@@ -22,58 +22,108 @@
 import UIKit
 import AVKit
 
+public struct ShareFileInfo {
+    
+    public let filename: String;
+    public let suffix: String?;
+    
+    public var filenameWithSuffix: String {
+        if let suffix = suffix {
+            return "\(filename).\(suffix)";
+        } else {
+            return filename;
+        }
+    }
+    
+    public init(filename: String, suffix: String?) {
+        self.filename = filename;
+        if suffix?.isEmpty ?? true {
+            self.suffix = nil;
+        } else {
+            self.suffix = suffix;
+        }
+    }
+    
+    public func with(suffix: String?) -> ShareFileInfo {
+        return .init(filename: filename, suffix: suffix);
+    }
+    
+    public func with(filename: String) -> String {
+        if let suffix = self.suffix {
+            return "\(filename).\(suffix)";
+        }
+        return filename;
+    }
+    
+    public static func from(url: URL, defaultSuffix: String?) -> ShareFileInfo {
+        let name = url.lastPathComponent;
+        var startOffset = name.startIndex;
+        if name.hasPrefix("trim.") {
+            startOffset = name.index(startOffset, offsetBy: "trim.".count);
+        }
+        
+        if let idx = name.lastIndex(of: "."), idx > startOffset {
+            return ShareFileInfo(filename: String(name[startOffset..<idx]), suffix: String(name[name.index(after: idx)..<name.endIndex]));
+        } else {
+            return ShareFileInfo(filename: String(name[startOffset..<name.endIndex]), suffix: defaultSuffix);
+        }
+    }
+}
+
 open class MediaHelper {
     
-    public static func compressImage(url: URL, filename: String, quality: ImageQuality, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
+    public static func compressImage(url: URL, fileInfo: ShareFileInfo, quality: ImageQuality, completionHandler: @escaping (Result<(URL,ShareFileInfo),ShareError>)->Void) {
         guard quality != .original else {
-            let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent(url.lastPathComponent);
+            let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent(fileInfo.with(filename: UUID().uuidString));
             do {
                 try  FileManager.default.copyItem(at: url, to: tempUrl);
             } catch {
                 completionHandler(.failure(.noAccessError))
                 return;
             }
-            completionHandler(.success(tempUrl));
+            completionHandler(.success((tempUrl, fileInfo)));
             return;
         }
         guard let inData = try? Data(contentsOf: url), let image = UIImage(data: inData) else {
             completionHandler(.failure(.notSupported));
             return;
         }
-        compressImage(image: image, filename: filename, quality: quality, completionHandler: completionHandler);
+        compressImage(image: image, fileInfo: fileInfo, quality: quality, completionHandler: completionHandler);
     }
     
-    public static func compressImage(image: UIImage, filename: String, quality: ImageQuality, completionHandler: @escaping(Result<URL,ShareError>)->Void) {
-        let fileUrl = FileManager.default.temporaryDirectory.appendingPathComponent(filename + ".jpg", isDirectory: false);
+    public static func compressImage(image: UIImage, fileInfo: ShareFileInfo, quality: ImageQuality, completionHandler: @escaping(Result<(URL,ShareFileInfo),ShareError>)->Void) {
+        let newFileInfo = fileInfo.with(suffix: "jpg");
+        let fileUrl = FileManager.default.temporaryDirectory.appendingPathComponent(newFileInfo.filenameWithSuffix, isDirectory: false);
         guard let outData = image.scaled(maxWidthOrHeight: quality.size)?.jpegData(compressionQuality: quality.quality) else {
             return;
         }
         do {
             try outData.write(to: fileUrl);
-            completionHandler(.success(fileUrl));
+            completionHandler(.success((fileUrl,newFileInfo)));
         } catch {
             completionHandler(.failure(.noAccessError));
             return;
         }
     }
     
-    public static func compressMovie(url: URL, filename: String, quality: VideoQuality, progressCallback: @escaping (Float)->Void, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
+    public static func compressMovie(url: URL, fileInfo: ShareFileInfo, quality: VideoQuality, progressCallback: @escaping (Float)->Void, completionHandler: @escaping (Result<(URL,ShareFileInfo),ShareError>)->Void) {
         guard quality != .original else {
-            let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent(url.lastPathComponent);
+            let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent(fileInfo.with(filename: UUID().uuidString));
             do {
                 try FileManager.default.copyItem(at: url, to: tempUrl);
             } catch {
                 completionHandler(.failure(.noAccessError))
                 return;
             }
-            completionHandler(.success(tempUrl));
+            completionHandler(.success((tempUrl,fileInfo)));
             return;
         }
         let video = AVAsset(url: url);
         let exportSession = AVAssetExportSession(asset: video, presetName: quality.preset)!;
         exportSession.shouldOptimizeForNetworkUse = true;
         exportSession.outputFileType = .mp4;
-        let fileUrl = FileManager.default.temporaryDirectory.appendingPathComponent(filename + ".mp4", isDirectory: false);
+        let newFileInfo = fileInfo.with(suffix: "mp4");
+        let fileUrl = FileManager.default.temporaryDirectory.appendingPathComponent(newFileInfo.filenameWithSuffix, isDirectory: false);
         exportSession.outputURL = fileUrl;
         
         let timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: { _ in
@@ -81,7 +131,7 @@ open class MediaHelper {
         })
         exportSession.exportAsynchronously {
             timer.invalidate();
-            completionHandler(.success(fileUrl));
+            completionHandler(.success((fileUrl,newFileInfo)));
         }
     }
     

@@ -326,7 +326,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
                     super.send(message: message, completionHandler: nil);
                     DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: uploadedUrl, appendix: appendix, options: .init(recipient: .none, encryption: .decrypted(fingerprint: fingerprint), isMarkable: true), linkPreviewAction: .auto, completionHandler: { msgId in
                         if let url = originalUrl {
-                            _ = DownloadStore.instance.store(url, filename: url.lastPathComponent, with: "\(msgId)");
+                            _ = DownloadStore.instance.store(url, filename: appendix.filename ?? url.lastPathComponent, with: "\(msgId)");
                         }
                     });
                 }
@@ -337,7 +337,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
             super.send(message: message, completionHandler: nil);
             DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: uploadedUrl, appendix: appendix, options: .init(recipient: .none, encryption: .none, isMarkable: true), linkPreviewAction: .auto, completionHandler: { msgId in
                 if let url = originalUrl {
-                    _ = DownloadStore.instance.store(url, filename: url.lastPathComponent, with: "\(msgId)");
+                    _ = DownloadStore.instance.store(url, filename: appendix.filename ?? url.lastPathComponent, with: "\(msgId)");
                 }
             });
         }

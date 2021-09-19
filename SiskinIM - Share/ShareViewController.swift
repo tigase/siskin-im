@@ -198,7 +198,7 @@ class ShareViewController: UITableViewController {
 
         self.extractAttachments(completionHandler: { result in
             guard !self.cancelled else {
-                if case let .success(att) = result, case let .file(url) = att {
+                if case let .success(att) = result, case let .file(url, _) = att {
                     try? FileManager.default.removeItem(at: url);
                 }
                 return;
@@ -256,8 +256,8 @@ class ShareViewController: UITableViewController {
                     wasConnected = true;
                     let recipients = self.recipients.filter({ $0.account == account });
                     switch attachment {
-                    case .file(let tempUrl):
-                        self.upload(file: tempUrl, using: client, completionHandler: { result in
+                    case .file(let tempUrl, let fileInfo):
+                        self.upload(file: tempUrl, fileInfo: fileInfo, using: client, completionHandler: { result in
                             try? FileManager.default.removeItem(at: tempUrl);
                             switch result {
                             case .success(let url):
@@ -419,7 +419,7 @@ class ShareViewController: UITableViewController {
         return client;
     }
     
-    private func upload(file localUrl: URL, using client: XMPPClient, completionHandler: @escaping (Result<URL,Error>)->Void) {
+    private func upload(file localUrl: URL, fileInfo: ShareFileInfo, using client: XMPPClient, completionHandler: @escaping (Result<URL,Error>)->Void) {
         let uti = try? localUrl.resourceValues(forKeys: [.typeIdentifierKey]).typeIdentifier;
         let mimeType = uti != nil ? (UTTypeCopyPreferredTagWithClass(uti! as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as String?) : nil;
         let size = try! FileManager.default.attributesOfItem(atPath: localUrl.path)[FileAttributeKey.size] as! UInt64;
@@ -429,7 +429,7 @@ class ShareViewController: UITableViewController {
             return;
         }
         
-        HTTPFileUploadHelper.upload(for: client, filename: localUrl.pathComponents.last!, inputStream: inputStream, filesize: Int(size), mimeType: mimeType ?? "application/octet-stream", delegate: nil, completionHandler: { result in
+        HTTPFileUploadHelper.upload(for: client, filename: fileInfo.filenameWithSuffix, inputStream: inputStream, filesize: Int(size), mimeType: mimeType ?? "application/octet-stream", delegate: nil, completionHandler: { result in
             switch result {
             case .success(let url):
                 completionHandler(.success(url));
@@ -440,7 +440,7 @@ class ShareViewController: UITableViewController {
     }
     
     enum Attachment {
-        case file(URL)
+        case file(URL, ShareFileInfo)
         case link(URL)
         case text(String)
     }
@@ -453,11 +453,11 @@ class ShareViewController: UITableViewController {
                         completionHandler(.failure(error!));
                         return;
                     }
-                    MediaHelper.compressMovie(url: url, filename: url.lastPathComponent, quality: self.videoQuality, progressCallback: { progress in }, completionHandler: { result in
+                    MediaHelper.compressMovie(url: url, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "mov"), quality: self.videoQuality, progressCallback: { progress in }, completionHandler: { result in
                         try? FileManager.default.removeItem(at: url);
                         switch result {
-                        case .success(let url):
-                            completionHandler(.success(.file(url)))
+                        case .success((let url, let fileInfo)):
+                            completionHandler(.success(.file(url, fileInfo)))
                         case .failure(let error):
                             completionHandler(.failure(error));
                         }
@@ -469,11 +469,11 @@ class ShareViewController: UITableViewController {
                         completionHandler(.failure(error!));
                         return;
                     }
-                    MediaHelper.compressImage(url: url, filename: url.lastPathComponent, quality: self.imageQuality, completionHandler: { result in
+                    MediaHelper.compressImage(url: url, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "jpg"), quality: self.imageQuality, completionHandler: { result in
                         try? FileManager.default.removeItem(at: url);
                         switch result {
-                        case .success(let url):
-                            completionHandler(.success(.file(url)))
+                        case .success((let url, let fileInfo)):
+                            completionHandler(.success(.file(url, fileInfo)))
                         case .failure(let error):
                             completionHandler(.failure(error));
                         }
@@ -485,10 +485,10 @@ class ShareViewController: UITableViewController {
                         completionHandler(.failure(error!));
                         return;
                     }
-                    let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent(url.lastPathComponent);
+                    let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString);
                     do {
                         try FileManager.default.copyItem(at: url, to: tempUrl);
-                        completionHandler(.success(.file(tempUrl)));
+                        completionHandler(.success(.file(tempUrl, ShareFileInfo.from(url: url, defaultSuffix: nil))));
                     } catch {
                         completionHandler(.failure(error));
                     }
