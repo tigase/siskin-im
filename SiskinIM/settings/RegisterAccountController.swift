@@ -68,7 +68,7 @@ class RegisterAccountController: DataFormController {
     func updateDomain(_ newValue: String?) {
         if newValue != nil && !newValue!.isEmpty && domain != newValue {
             nextButton.isEnabled = false;
-            nextButton.title = "Register";
+            nextButton.title = NSLocalizedString("Register", comment: "button label");
             let count = self.numberOfSections(in: tableView);
             self.domain = newValue;
             tableView.deleteSections(IndexSet(0..<count), with: .fade);
@@ -119,9 +119,9 @@ class RegisterAccountController: DataFormController {
         guard domain != nil else {
             switch section {
             case 0:
-                return "Preferred domain name";
+                return NSLocalizedString("Preferred domain name", comment: "section label");
             case 1:
-                return "Trusted servers";
+                return NSLocalizedString("Trusted servers", comment: "section label");
             default:
                 return "";
             }
@@ -159,7 +159,7 @@ class RegisterAccountController: DataFormController {
         guard domain != nil else {
             switch section {
             case 0:
-                return "If you don't know any XMPP server domain names, then select one of our trusted servers."
+                return NSLocalizedString("If you don't know any XMPP server domain names, then select one of our trusted servers.", comment: "section footer")
             default:
                 return nil;
             }
@@ -197,7 +197,7 @@ class RegisterAccountController: DataFormController {
             (UIApplication.shared.delegate as? AppDelegate)?.showSetup(value: false);
         } catch {
             cancellables.removeAll();
-            let alert = UIAlertController(title: "Error", message: "It was not possible to save account details", preferredStyle: .alert);
+            let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: NSLocalizedString("It was not possible to save account details", comment: "alert title"), preferredStyle: .alert);
             self.present(alert, animated: true, completion: nil);
         }
     }
@@ -241,15 +241,15 @@ class RegisterAccountController: DataFormController {
         if msg == nil || msg == "Unsuccessful registration attempt" {
             switch error.errorCondition {
             case .feature_not_implemented:
-                msg = "Registration is not supported by this server";
+                msg = NSLocalizedString("Registration is not supported by this server", comment: "account registration error");
             case .not_acceptable, .not_allowed:
-                msg = "Provided values are not acceptable";
+                msg = NSLocalizedString("Provided values are not acceptable", comment: "account registration error");
             case .conflict:
-                msg = "User with provided username already exists";
+                msg = NSLocalizedString("User with provided username already exists", comment: "account registration error");
             case .service_unavailable:
-                msg = "Service is not available at this time."
+                msg = NSLocalizedString("Service is not available at this time.", comment: "account registration error")
             default:
-                msg = "Server returned error: \(error)";
+                msg = String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "account registration error"), error.localizedDescription);
             }
         }
         var handler: ((UIAlertAction?)->Void)? = nil;
@@ -263,8 +263,8 @@ class RegisterAccountController: DataFormController {
             break;
         }
                 
-        let alert = UIAlertController(title: "Registration failure", message: msg, preferredStyle: .alert);
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: handler));
+        let alert = UIAlertController(title: NSLocalizedString("Registration failure", comment: "alert title"), message: msg, preferredStyle: .alert);
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: handler));
         
         DispatchQueue.main.async {
             self.present(alert, animated: true, completion: nil);

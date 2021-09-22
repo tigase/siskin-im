@@ -149,9 +149,9 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
             case .none:
                 self.nicknameView?.text = item.sender.nickname;
             case .occupant(let nickname):
-                let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(item.sender.nickname!) " : "To \(nickname) ");
+                let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "\(NSLocalizedString("From", comment: "conversation log groupchat direction label")) \(item.sender.nickname!) " : "\(NSLocalizedString("To", comment: "conversation log groupchat direction label")) \(nickname) ");
                 let font = UIFontMetrics(forTextStyle: .footnote).scaledFont(for: UIFont(descriptor: UIFont.preferredFont(forTextStyle: .footnote).fontDescriptor.withSymbolicTraits([.traitBold, .traitItalic])!, size: 0));
-                val.append(NSAttributedString(string: " (private message)", attributes: [.font: font, .foregroundColor: UIColor.secondaryLabel]));
+                val.append(NSAttributedString(string: " \(NSLocalizedString("(private message)", comment: "conversation log groupchat direction label"))", attributes: [.font: font, .foregroundColor: UIColor.secondaryLabel]));
                 self.nicknameView?.attributedText = val;
             }
         }

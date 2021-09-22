@@ -114,24 +114,24 @@ class MucChatOccupantsTableViewController: UITableViewController {
         let participant = self.participants[indexPath.row];
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
             var actions: [UIAction] = [];
-            actions.append(UIAction(title: "Private message", handler: { action in
-                let alert = UIAlertController(title: "Send message", message: "Enter message to send to: \(participant.nickname)", preferredStyle: .alert);
+            actions.append(UIAction(title: NSLocalizedString("Private message", comment: "action label"), handler: { action in
+                let alert = UIAlertController(title: NSLocalizedString("Send message", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Enter message to send to: %@", comment: "alert body"), participant.nickname), preferredStyle: .alert);
                 alert.addTextField(configurationHandler: nil);
-                alert.addAction(UIAlertAction(title: "Send", style: .default, handler: { action in
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Send", comment: "button label"), style: .default, handler: { action in
                     guard let text = alert.textFields?.first?.text else {
                         return;
                     }
                     self.room.sendPrivateMessage(to: participant, text: text);
                 }));
-                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
                 self.present(alert, animated: true, completion: nil);
             }));
             if let jid = participant.jid, self.room.affiliation == MucAffiliation.admin {
-                actions.append(UIAction(title: "Ban user", handler: { action in
+                actions.append(UIAction(title: NSLocalizedString("Ban user", comment: "action label"), handler: { action in
                     guard let mucModule = self.room.context?.module(.muc) else {
                         return;
                     }
-                    let alert = UIAlertController(title: "Banning user", message: "Do you want to ban user \(participant.nickname)?", preferredStyle: .alert);
+                    let alert = UIAlertController(title: NSLocalizedString("Banning user", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Do you want to ban user %@?", comment: "alert body"), participant.nickname), preferredStyle: .alert);
                     alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { action in
                         mucModule.setRoomAffiliations(to: self.room, changedAffiliations: [MucModule.RoomAffiliation(jid: jid, affiliation: .outcast)], completionHandler: { result in
                             switch result {
@@ -139,14 +139,14 @@ class MucChatOccupantsTableViewController: UITableViewController {
                                 break;
                             case .failure(let error):
                                 DispatchQueue.main.async {
-                                    let alert = UIAlertController(title: "Banning user \(participant.nickname) failed", message: "Server returned an error: \(error)", preferredStyle: .alert);
-                                    alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
+                                    let alert = UIAlertController(title: String.localizedStringWithFormat(NSLocalizedString("Banning user %@ failed", comment: "alert title"), participant.nickname), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
+                                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .cancel, handler: nil));
                                     self.present(alert, animated: true, completion: nil);
                                 }
                             }
                         });
                     }))
-                    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
                     self.present(alert, animated: true, completion: nil);
                 }));
             }

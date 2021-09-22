@@ -55,11 +55,11 @@ class AudioSesion {
         var label: String {
             switch self {
             case .automatic:
-                return "Automatic";
+                return NSLocalizedString("Automatic", comment: "audio output selection");
             case .builtin:
                 return UIDevice.current.localizedModel;
             case .speaker:
-                return "Speaker";
+                return NSLocalizedString("Speaker", comment: "audio output label");
             case .custom(let port):
                 return port.portName;
             }

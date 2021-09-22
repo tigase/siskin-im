@@ -33,8 +33,8 @@ class InviteToMeetingViewController: MultiContactSelectionViewController {
         
     override func viewDidLoad() {
         super.viewDidLoad();
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(cancelTapped(_:)));
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Invite", style: .done, target: self, action: #selector(inviteTapped(_:)));
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: NSLocalizedString("Cancel", comment: "button label"), style: .plain, target: self, action: #selector(cancelTapped(_:)));
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: NSLocalizedString("Invite", comment: "button label"), style: .done, target: self, action: #selector(inviteTapped(_:)));
 
         $selectedItems.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] items in
             self?.navigationItem.rightBarButtonItem?.isEnabled = (self?.meet != nil) && !items.isEmpty;
@@ -60,8 +60,8 @@ class InviteToMeetingViewController: MultiContactSelectionViewController {
                     }
                     self.dismiss();
                 case .failure(let error):
-                    let alert = UIAlertController(title: "Error", message: "It was not possible to grant selected users access to the meeting. Received an error: \(error)", preferredStyle: .alert);
-                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                    let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to grant selected users access to the meeting. Received an error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: { _ in
                         self.dismiss();
                     }))
                     self.present(alert, animated: true, completion: nil);

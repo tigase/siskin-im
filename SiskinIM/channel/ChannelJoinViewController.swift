@@ -70,7 +70,7 @@ class ChannelJoinViewController: UITableViewController {
         switch action {
         case .join:
             if componentType == .muc {
-                operationStarted(message: "Checking...");
+                operationStarted(message: NSLocalizedString("Checking...", comment: "channel join view operation label"));
                 client.module(.disco).getInfo(for: JID(channelJid), node: nil, completionHandler: { result in
                     switch result {
                     case .success(let info):
@@ -95,9 +95,9 @@ class ChannelJoinViewController: UITableViewController {
             } else {
                 self.updateJoinButtonStatus();
             }
-            joinButton.title = "Join";
+            joinButton.title = NSLocalizedString("Join", comment: "button label");
         default:
-            joinButton.title = "Create";
+            joinButton.title = NSLocalizedString("Create", comment: "button label");
             updateJoinButtonStatus();
             break;
         }
@@ -180,7 +180,7 @@ class ChannelJoinViewController: UITableViewController {
         switch componentType {
         case .mix:
             let mixModule = client.module(.mix);
-            self.operationStarted(message: "Creating channel...")
+            self.operationStarted(message: NSLocalizedString("Creating channel...", comment: "channel join view operation label"))
                 
             mixModule.create(channel: channelJid.localPart, at: BareJID(domain: channelJid.domain), completionHandler: { [weak self] result in
                 switch result {
@@ -199,8 +199,8 @@ class ChannelJoinViewController: UITableViewController {
                                     guard let that = self else {
                                         return;
                                     }
-                                    let alert = UIAlertController(title: "Error occurred", message: "Could not join newly created channel '\(channelJid)' on the server. Got following error: \(error)", preferredStyle: .alert);
-                                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                                    let alert = UIAlertController(title: NSLocalizedString("Error occurred", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not join newly created channel '%@' on the server. Got following error: %@", comment: "alert body"), channelJid.stringValue, error.localizedDescription), preferredStyle: .alert);
+                                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
                                     that.present(alert, animated: true, completion: nil);
                                 }
                             }
@@ -222,8 +222,8 @@ class ChannelJoinViewController: UITableViewController {
                             guard let that = self else {
                                 return;
                             }
-                            let alert = UIAlertController(title: "Error occurred", message: "Could not create channel on the server. Got following error: \(error)", preferredStyle: .alert);
-                            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                            let alert = UIAlertController(title: NSLocalizedString("Error occurred", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not create channel on the server. Got following error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
+                            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
                             that.present(alert, animated: true, completion: nil);
                         }
                     }
@@ -285,7 +285,7 @@ class ChannelJoinViewController: UITableViewController {
         
         switch componentType {
         case .mix:
-            self.operationStarted(message: "Joining...");
+            self.operationStarted(message: NSLocalizedString("Joining...", comment: "channel join view operation label"));
             client.module(.mix).join(channel: channelJid, withNick: nick, invitation: mixInvitation, completionHandler: { result in
                 switch result {
                 case .success(_):
@@ -297,8 +297,8 @@ class ChannelJoinViewController: UITableViewController {
                 case .failure(let error):
                     DispatchQueue.main.async { [weak self] in
                         self?.operationEnded();
-                        let alert = UIAlertController(title: "Could not join", message: "It was not possible to join a channel. The server returned an error: \(error)", preferredStyle: .alert);
-                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                        let alert = UIAlertController(title: NSLocalizedString("Could not join", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a channel. The server returned an error: %@", comment: "alert button"), error.localizedDescription), preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
                         self?.present(alert, animated: true, completion: nil);
                     }
                 }

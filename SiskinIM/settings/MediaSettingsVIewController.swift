@@ -41,11 +41,11 @@ class MediaSettingsViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch section {
         case 0:
-            return "Sharing";
+            return NSLocalizedString("Sharing", comment: "section label");
         case 1:
-            return "Quality of uploaded media";
+            return NSLocalizedString("Quality of uploaded media", comment: "section label");
         case 2:
-            return "\(UIDevice.current.localizedModel) memory";
+            return String.localizedStringWithFormat(NSLocalizedString("%@ memory", comment: "section label, device memory"), UIDevice.current.localizedModel);
         default:
             return nil;
         }
@@ -54,11 +54,11 @@ class MediaSettingsViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
         switch section {
         case 0:
-            return "Limits the size of the files sent to you which may be automatically downloaded";
+            return NSLocalizedString("Limits the size of the files sent to you which may be automatically downloaded", comment: "option description");
         case 1:
-            return "Used image and video quality may impact storage and network usage";
+            return NSLocalizedString("Used image and video quality may impact storage and network usage", comment: "option description");
         case 2:
-            return "Removal of cached attachments may lead to increased usage of network, if attachment may need to be redownloaded, or to lost files, if they are no longer available at the server.";
+            return NSLocalizedString("Removal of cached attachments may lead to increased usage of network, if attachment may need to be redownloaded, or to lost files, if they are no longer available at the server.", comment: "option description");
         default:
             return nil;
         }
@@ -70,13 +70,13 @@ class MediaSettingsViewController: UITableViewController {
         case .imageUploadQuality:
             let cell = tableView.dequeueReusableCell(withIdentifier: "ImageQualityTableViewCell", for: indexPath) as! EnumTableViewCell;
             cell.bind({ cell in
-                cell.assign(from: Settings.$imageQuality.map({ $0.rawValue.capitalized as String? }).eraseToAnyPublisher());
+                cell.assign(from: Settings.$imageQuality.map({ $0.label as String? }).eraseToAnyPublisher());
             })
             return cell;
         case .videoUploadQuality:
             let cell = tableView.dequeueReusableCell(withIdentifier: "VideoQualityTableViewCell", for: indexPath) as! EnumTableViewCell;
             cell.bind({ cell in
-                cell.assign(from: Settings.$videoQuality.map({ $0.rawValue.capitalized as String? }).eraseToAnyPublisher());
+                cell.assign(from: Settings.$videoQuality.map({ $0.label as String? }).eraseToAnyPublisher());
             })
             return cell;
         case .sharingViaHttpUpload:
@@ -87,7 +87,7 @@ class MediaSettingsViewController: UITableViewController {
             cell.switchView.isOn = Settings.sharingViaHttpUpload;
             cell.valueChangedListener = {(switchView: UISwitch) in
                 if switchView.isOn {
-                    let alert = UIAlertController(title: nil, message: "When you share files using HTTP, they are uploaded to HTTP server with unique URL. Anyone who knows the unique URL to the file is able to download it.\nDo you wish to enable?",preferredStyle: .alert);
+                    let alert = UIAlertController(title: nil, message: NSLocalizedString("When you share files using HTTP, they are uploaded to HTTP server with unique URL. Anyone who knows the unique URL to the file is able to download it.\nDo you wish to enable?", comment: "alert body"), preferredStyle: .alert);
                     alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
                         Settings.sharingViaHttpUpload = true;
                     }));
@@ -104,7 +104,7 @@ class MediaSettingsViewController: UITableViewController {
             let cell = tableView.dequeueReusableCell(withIdentifier: "MaxImagePreviewSizeTableViewCell", for: indexPath) as! EnumTableViewCell;
             cell.bind({ cell in
                 cell.assign(from: Settings.$fileDownloadSizeLimit.map({ value in
-                    return value == Int.max ? "Unlimited" : "\(value) MB";
+                    return value == Int.max ? NSLocalizedString("Unlimited", comment: "allowed size of file to download") : "\(value) MB";
                 }).eraseToAnyPublisher());
             })
             cell.accessoryType = .disclosureIndicator;
@@ -125,34 +125,34 @@ class MediaSettingsViewController: UITableViewController {
         switch setting {
         case .maxImagePreviewSize:
             let controller = TablePickerViewController<Int>(style: .grouped, options: [0, 1, 2, 4, 8, 10, 15, 30, 50, Int.max], value: Settings.fileDownloadSizeLimit, labelFn: { value in
-                return value == Int.max ? "Unlimited" : "\(value) MB";
+                return value == Int.max ? NSLocalizedString("Unlimited", comment: "allowed size of file to download") : "\(value) MB";
             });
             controller.sink(to: \.fileDownloadSizeLimit, on: Settings);
             self.navigationController?.pushViewController(controller, animated: true);
         case .imageUploadQuality:
-            let controller = TablePickerViewController<ImageQuality>(style: .grouped, message: "Select quality of the image to use for sharing", footer: "Original quality will share image in the format in which it is stored on your phone and it may not be supported by every device.", options: [.original, .highest, .high, .medium, .low], value: Settings.imageQuality, labelFn: { $0.rawValue.capitalized });
+            let controller = TablePickerViewController<ImageQuality>(style: .grouped, message: NSLocalizedString("Select quality of the image to use for sharing", comment: "selection description"), footer: NSLocalizedString("Original quality will share image in the format in which it is stored on your phone and it may not be supported by every device.", comment: "selection warning"), options: [.original, .highest, .high, .medium, .low], value: Settings.imageQuality, labelFn: { $0.label });
             controller.sink(to: \.imageQuality, on: Settings);
             self.navigationController?.pushViewController(controller, animated: true);
         case .videoUploadQuality:
-            let controller = TablePickerViewController<VideoQuality>(style: .grouped, message: "Select quality of the video to use for sharing", footer: "Original quality will share video in the format in which video is stored on your phone and it may not be supported by every device.", options: [.original, .high, .medium, .low], value: Settings.videoQuality, labelFn: { $0.rawValue.capitalized });
+            let controller = TablePickerViewController<VideoQuality>(style: .grouped, message: NSLocalizedString("Select quality of the video to use for sharing", comment: "selection description"), footer: NSLocalizedString("Original quality will share video in the format in which video is stored on your phone and it may not be supported by every device.", comment: "selection warning"), options: [.original, .high, .medium, .low], value: Settings.videoQuality, labelFn: { $0.label });
             controller.sink(to: \.videoQuality, on: Settings);
             self.navigationController?.pushViewController(controller, animated: true);
         case .clearDownloadStore:
             let formatter = ByteCountFormatter();
             formatter.allowedUnits = [.useKB,.useMB,.useGB,.useTB];
             formatter.countStyle = .memory;
-            let alert = UIAlertController(title: "Download storage", message: "We are using \(formatter.string(fromByteCount: Int64(DownloadStore.instance.size))) of storage.", preferredStyle: .actionSheet);
-            alert.addAction(UIAlertAction(title: "Everything", style: .destructive, handler: {(action) in
+            let alert = UIAlertController(title: NSLocalizedString("Download storage", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("We are using %@ of storage.", comment: "used space label"), formatter.string(fromByteCount: Int64(DownloadStore.instance.size))), preferredStyle: .actionSheet);
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Everything", comment: "option to remove all data from local storage"), style: .destructive, handler: {(action) in
                 DispatchQueue.global(qos: .background).async {
                     DownloadStore.instance.clear();
                 }
             }));
-            alert.addAction(UIAlertAction(title: "Older than 7 days", style: .destructive, handler: {(action) in
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Older than 7 days", comment: "option to remove data older than 7 days"), style: .destructive, handler: {(action) in
                 DispatchQueue.global(qos: .background).async {
                     DownloadStore.instance.clear(olderThan: Date().addingTimeInterval(7*24*60*60.0*(-1.0)));
                 }
             }));
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
             alert.popoverPresentationController?.sourceView = self.tableView;
             alert.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: indexPath);
 
@@ -162,18 +162,18 @@ class MediaSettingsViewController: UITableViewController {
             let formatter = ByteCountFormatter();
             formatter.allowedUnits = [.useKB,.useMB,.useGB,.useTB];
             formatter.countStyle = .memory;
-            let alert = UIAlertController(title: "Metadata storage", message: "We are using \(formatter.string(fromByteCount: Int64(MetadataCache.instance.size))) of storage.", preferredStyle: .actionSheet);
-            alert.addAction(UIAlertAction(title: "Everything", style: .destructive, handler: {(action) in
+            let alert = UIAlertController(title: NSLocalizedString("Metadata storage", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("We are using %@ of storage.", comment: "alert body"), formatter.string(fromByteCount: Int64(MetadataCache.instance.size))), preferredStyle: .actionSheet);
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Everything", comment: "option to remove all data from local storage"), style: .destructive, handler: {(action) in
                 DispatchQueue.global(qos: .background).async {
                     MetadataCache.instance.clear();
                 }
             }));
-            alert.addAction(UIAlertAction(title: "Older than 7 days", style: .destructive, handler: {(action) in
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Older than 7 days", comment: "option to remove all data from local storage"), style: .destructive, handler: {(action) in
                 DispatchQueue.global(qos: .background).async {
                     MetadataCache.instance.clear(olderThan: Date().addingTimeInterval(7*24*60*60.0*(-1.0)));
                 }
             }));
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
             alert.popoverPresentationController?.sourceView = self.tableView;
             alert.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: indexPath);
 
@@ -191,38 +191,6 @@ class MediaSettingsViewController: UITableViewController {
         case videoUploadQuality
         case deviceMemoryUsage
         case clearMetadataStore
-    }
-    
-    internal class ImageQualityItem: TablePickerViewItemsProtocol {
-        
-        public static func description(of value: ImageQuality) -> String {
-            return value.rawValue.capitalized;
-        }
-        
-        let description: String;
-        let value: ImageQuality;
-        
-        init(value: ImageQuality) {
-            self.value = value;
-            self.description = ImageQualityItem.description(of: value);
-        }
-        
-    }
-
-    internal class VideoQualityItem: TablePickerViewItemsProtocol {
-        
-        public static func description(of value: VideoQuality) -> String {
-            return value.rawValue.capitalized;
-        }
-        
-        let description: String;
-        let value: VideoQuality;
-        
-        init(value: VideoQuality) {
-            self.value = value;
-            self.description = VideoQualityItem.description(of: value);
-        }
-        
     }
 
 }

@@ -22,41 +22,6 @@
 import UIKit
 import TigaseSwift
 
-//class TasksQueue {
-//
-//    private let dispatcher = QueueDispatcher(label: "TasksQueue");
-//    private var queue: [(()->Void)->Void] = [];
-//    private var inProgress: Bool = false;
-//
-//    func schedule(task: @escaping (@escaping ()->Void)->Void) {
-//        dispatcher.async {
-//            self.queue.append(task);
-//            self.execute();
-//        }
-//    }
-//
-//    private func execute() {
-//        dispatcher.async {
-//            guard !self.inProgress else {
-//                return;
-//            }
-//            self.inProgress = true;
-//            if !self.queue.isEmpty {
-//                let task = self.queue.removeFirst();
-//                task(self.executed);
-//            }
-//        }
-//    }
-//
-//    private func executed() {
-//        dispatcher.async {
-//            self.inProgress = false;
-//            self.execute();
-//        }
-//    }
-//
-//}
-
 public class KeyedTasksQueue {
     
     private let dispatcher = QueueDispatcher(label: "TasksQueue");

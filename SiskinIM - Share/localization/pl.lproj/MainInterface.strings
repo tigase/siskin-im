@@ -1,0 +1,8 @@
+/* Class = "UILabel"; text = "Title"; ObjectID = "NRE-Us-Gmn"; */
+"NRE-Us-Gmn.text" = "Tytuł";
+
+/* Class = "UITableViewController"; title = "Recipients"; ObjectID = "wpy-g7-270"; */
+"wpy-g7-270.title" = "Odbiorcy";
+
+/* Class = "UILabel"; text = "Subtitle"; ObjectID = "zxl-7g-h2r"; */
+"zxl-7g-h2r.text" = "Subtitle";

@@ -57,7 +57,7 @@ class InvitationChatTableViewCell: BaseChatTableViewCell {
             buttonBottomContraint?.isActive = false;
             defBottomButtonConstraint?.isActive = true;
         }
-        self.messageField.text = message ?? "Invitation to channel \(appendix.channel.stringValue)";
+        self.messageField.text = message ?? String.localizedStringWithFormat(NSLocalizedString("Invitation to channel %@", comment: "conversation log invitation to channel label"), appendix.channel.stringValue);
     }
     
     var viewController: UIViewController? {

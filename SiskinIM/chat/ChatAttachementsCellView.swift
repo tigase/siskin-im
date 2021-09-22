@@ -72,17 +72,17 @@ class ChatAttachmentsCellView: UICollectionViewCell, UIDocumentInteractionContro
         
         if let localUrl = DownloadStore.instance.url(for: "\(item.id)") {
             let items = [
-                UIAction(title: "Preview", image: UIImage(systemName: "eye.fill"), handler: { action in
+                UIAction(title: NSLocalizedString("Preview", comment: "context action"), image: UIImage(systemName: "eye.fill"), handler: { action in
                     self.open(url: localUrl, preview: true);
                 }),
-                UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc"), handler: { action in
+                UIAction(title: NSLocalizedString("Copy", comment: "context action"), image: UIImage(systemName: "doc.on.doc"), handler: { action in
                     UIPasteboard.general.strings = [url];
                     UIPasteboard.general.string = url;
                 }),
-                UIAction(title: "Share..", image: UIImage(systemName: "square.and.arrow.up"), handler: { action in
+                UIAction(title: NSLocalizedString("Share..", comment: "context action"), image: UIImage(systemName: "square.and.arrow.up"), handler: { action in
                     self.open(url: localUrl, preview: false);
                 }),
-                UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: [.destructive], handler: { action in
+                UIAction(title: NSLocalizedString("Delete", comment: "context action"), image: UIImage(systemName: "trash"), attributes: [.destructive], handler: { action in
                     DownloadStore.instance.deleteFile(for: "\(item.id)");
                     DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                         appendix.state = .removed;

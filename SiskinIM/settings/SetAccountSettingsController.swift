@@ -68,11 +68,11 @@ class SetAccountSettingsController: UITableViewController {
         let s = self.sections[section];
         switch s {
         case .accountName:
-            return "For account"
+            return NSLocalizedString("For account", comment: "section label")
         case .mamEnable:
-            return "Message synchronization"
+            return NSLocalizedString("Message synchronization", comment: "section label")
         case .mamSyncInitial:
-            return "Initial synchronization";
+            return NSLocalizedString("Initial synchronization", comment: "section label")
         }
     }
     
@@ -82,9 +82,9 @@ class SetAccountSettingsController: UITableViewController {
         case .accountName:
             return "";
         case .mamEnable:
-            return "Enabling message synchronization will enable message archiving on the server"
+            return NSLocalizedString("Enabling message synchronization will enable message archiving on the server", comment: "option description")
         case .mamSyncInitial:
-            return "Large value may increase inital synchronization time";
+            return NSLocalizedString("Large value may increase inital synchronization time", comment: "option description");
         }
     }
     
@@ -115,7 +115,7 @@ class SetAccountSettingsController: UITableViewController {
         let section = sections[indexPath.section];
         switch section {
         case .mamSyncInitial:
-            let controller = TablePickerViewController<SyncPeriod>(style: .grouped, message: "Select period of messages to be synchronized", options: [.week,.twoWeeks,.month,.quarter,.year], value: initialSyncMAM);
+            let controller = TablePickerViewController<SyncPeriod>(style: .grouped, message: NSLocalizedString("Select period of messages to be synchronized", comment: "selection description"), options: [.week,.twoWeeks,.month,.quarter,.year], value: initialSyncMAM);
             controller.sink(to: \.initialSyncMAM, on: self);
             self.navigationController?.pushViewController(controller, animated: true);
         default:
@@ -207,15 +207,15 @@ class SetAccountSettingsController: UITableViewController {
         var description: String {
             switch self {
             case .week:
-                return "Week"
+                return NSLocalizedString("Week", comment: "synchronization period value")
             case .twoWeeks:
-                return "Two weeks";
+                return NSLocalizedString("Two weeks", comment: "synchronization period value")
             case .month:
-                return "Month";
+                return NSLocalizedString("Month", comment: "synchronization period value")
             case .quarter:
-                return "Quarter";
+                return NSLocalizedString("Quarter", comment: "synchronization period value")
             case .year:
-                return "Year";
+                return NSLocalizedString("Year", comment: "synchronization period value")
             }
         }
         

@@ -322,7 +322,7 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Push notifications" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jMz-qR-fJ6">
-                                                    <rect key="frame" x="16" y="11.5" width="135.5" height="21"/>
+                                                    <rect key="frame" x="20" y="11.5" width="135.5" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
@@ -338,8 +338,8 @@
                                                 <constraint firstItem="Vjt-bn-Nul" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="jMz-qR-fJ6" secondAttribute="trailing" constant="10" id="JKw-SG-kBE"/>
                                                 <constraint firstItem="jMz-qR-fJ6" firstAttribute="centerY" secondItem="R5e-gd-jsF" secondAttribute="centerY" id="QYM-gc-wIA"/>
                                                 <constraint firstItem="Vjt-bn-Nul" firstAttribute="centerY" secondItem="R5e-gd-jsF" secondAttribute="centerY" id="aAL-gy-mll"/>
-                                                <constraint firstItem="jMz-qR-fJ6" firstAttribute="leading" secondItem="R5e-gd-jsF" secondAttribute="leading" constant="16" id="ioh-71-D5r"/>
-                                                <constraint firstAttribute="trailing" secondItem="Vjt-bn-Nul" secondAttribute="trailing" constant="18" id="zeC-Yl-yAx"/>
+                                                <constraint firstItem="jMz-qR-fJ6" firstAttribute="leading" secondItem="R5e-gd-jsF" secondAttribute="leading" constant="20" symbolic="YES" id="ioh-71-D5r"/>
+                                                <constraint firstAttribute="trailing" secondItem="Vjt-bn-Nul" secondAttribute="trailing" constant="20" symbolic="YES" id="zeC-Yl-yAx"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>

@@ -590,41 +590,8 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="deleteChatHistoryOnCloseCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="DeleteChatHistoryOnCloseTableViewCell" id="BMq-v0-65X" userLabel="DeleteChatHistoryOnCloseTableViewCell" customClass="SwitchTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="49.5" width="414" height="44"/>
-                                <autoresizingMask key="autoresizingMask"/>
-                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="BMq-v0-65X" id="fzN-On-aes">
-                                    <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
-                                    <autoresizingMask key="autoresizingMask"/>
-                                    <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Clear chat on close" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ioL-eS-dDk">
-                                            <rect key="frame" x="20" y="12" width="317" height="20.5"/>
-                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                        <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="aw3-x0-z2e">
-                                            <rect key="frame" x="345" y="6.5" width="51" height="31"/>
-                                            <connections>
-                                                <action selector="valueChanged:" destination="BMq-v0-65X" eventType="valueChanged" id="ad3-J1-3l7"/>
-                                            </connections>
-                                        </switch>
-                                    </subviews>
-                                    <constraints>
-                                        <constraint firstAttribute="trailingMargin" secondItem="aw3-x0-z2e" secondAttribute="trailing" id="1m5-Qd-ZDI"/>
-                                        <constraint firstAttribute="leadingMargin" secondItem="ioL-eS-dDk" secondAttribute="leading" id="9gx-E4-6vD"/>
-                                        <constraint firstItem="aw3-x0-z2e" firstAttribute="centerY" secondItem="fzN-On-aes" secondAttribute="centerY" id="QIY-nY-Htm"/>
-                                        <constraint firstItem="ioL-eS-dDk" firstAttribute="centerY" secondItem="fzN-On-aes" secondAttribute="centerY" id="TA0-6J-fCS"/>
-                                        <constraint firstItem="aw3-x0-z2e" firstAttribute="leading" relation="lessThanOrEqual" secondItem="ioL-eS-dDk" secondAttribute="trailing" constant="8" id="YBW-XI-ZOr"/>
-                                    </constraints>
-                                </tableViewCellContentView>
-                                <accessibility key="accessibilityConfiguration" identifier="deleteChatHistoryOnCloseCell"/>
-                                <connections>
-                                    <outlet property="switchView" destination="aw3-x0-z2e" id="Kbw-ko-V3l"/>
-                                </connections>
-                            </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="enableMessageCarbonsCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="EnableMessageCarbonsTableViewCell" id="2FK-Zm-7Tq" userLabel="EnableMessageCarbonsTableViewCell" customClass="SwitchTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="93.5" width="414" height="44"/>
+                                <rect key="frame" x="0.0" y="49.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="2FK-Zm-7Tq" id="DCe-YG-CSn">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -657,7 +624,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="recentsMessageLinesNoTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="RecentsMessageLinesNoTableViewCell" id="TlK-zJ-dab" userLabel="RecentsMessageLinesNoTableViewCell" customClass="StepperTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="137.5" width="414" height="44"/>
+                                <rect key="frame" x="0.0" y="93.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="TlK-zJ-dab" id="by3-zd-4WS">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -691,7 +658,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="recentsSortTypeTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="RecentsSortTypeTableViewCell" id="bH0-Kz-usc" userLabel="RecentsSortTypeTableViewCell">
-                                <rect key="frame" x="0.0" y="181.5" width="414" height="44"/>
+                                <rect key="frame" x="0.0" y="137.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="bH0-Kz-usc" id="gLI-rV-7u9">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -724,7 +691,7 @@
                                 <accessibility key="accessibilityConfiguration" identifier="recentsSortTypeTableViewCell"/>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="MessageEncryptionTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="MessageEncryptionTableViewCell" textLabel="ZnP-5r-iGO" detailTextLabel="QHQ-RS-Q7a" style="IBUITableViewCellStyleValue1" id="Qgt-uJ-dhW" userLabel="MessageEncryptionTableViewCell" customClass="EnumTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="225.5" width="414" height="44"/>
+                                <rect key="frame" x="0.0" y="181.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Qgt-uJ-dhW" id="6ou-SX-w5J">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -749,7 +716,7 @@
                                 <accessibility key="accessibilityConfiguration" identifier="MessageEncryptionTableViewCell"/>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="messageDeliveryReceiptsTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="MessageDeliveryReceiptsTableViewCell" id="hWn-PB-Ith" userLabel="MessageDeliveryReceiptsTableViewCell" customClass="SwitchTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="269.5" width="414" height="44"/>
+                                <rect key="frame" x="0.0" y="225.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="hWn-PB-Ith" id="54O-Lt-0EV">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -783,7 +750,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="simplifiedLinkToFileTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="LinkPreviewsTableViewCell" id="CHa-Jc-woM" userLabel="SimplifiedLinkToFileTableViewCell" customClass="SwitchTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="313.5" width="414" height="44"/>
+                                <rect key="frame" x="0.0" y="269.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="CHa-Jc-woM" id="hJd-r7-bvW">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -817,7 +784,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="sendMessageOnReturnTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="SendMessageOnReturnTableViewCell" id="DbA-o9-zYo" userLabel="SendMessageOnReturnTableViewCell" customClass="SwitchTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="357.5" width="414" height="44"/>
+                                <rect key="frame" x="0.0" y="313.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="DbA-o9-zYo" id="JMZ-WC-CHG">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -851,7 +818,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="mediaSettingsViewCell" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="MediaSettingsViewCell" id="zSo-qs-Yk8" userLabel="MediaSettingsViewCell">
-                                <rect key="frame" x="0.0" y="401.5" width="414" height="44"/>
+                                <rect key="frame" x="0.0" y="357.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="zSo-qs-Yk8" id="m3E-w6-DCC">
                                     <rect key="frame" x="0.0" y="0.0" width="384.5" height="44"/>

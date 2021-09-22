@@ -196,10 +196,10 @@ class ContactViewController: UITableViewController {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "OMEMOEncryptionCell", for: indexPath) as! EnumTableViewCell;
                 if let chat = self.chat {
                     cell.bind({ cell in
-                        cell.assign(from: chat.optionsPublisher.map({ $0.encryption?.description ?? "Default" }).receive(on: DispatchQueue.main).eraseToAnyPublisher());
+                        cell.assign(from: chat.optionsPublisher.map({ $0.encryption?.description ?? NSLocalizedString("Default", comment: "encryption default label") }).receive(on: DispatchQueue.main).eraseToAnyPublisher());
                     })
                 } else {
-                    cell.detailTextLabel?.text = "Default";
+                    cell.detailTextLabel?.text = NSLocalizedString("Default", comment: "encryption default label");
                 }
                 return cell;
             } else {
@@ -304,7 +304,7 @@ class ContactViewController: UITableViewController {
                 // handle change of encryption method!
                 let controller = TablePickerViewController<ChatEncryption?>(style: .grouped, options: [nil, ChatEncryption.none, ChatEncryption.omemo], value: chat?.options.encryption, labelFn: { value in
                     guard let v = value else {
-                        return "Default";
+                        return NSLocalizedString("Default", comment: "encryption default label");
                     }
                     return v.description;
                 });
@@ -353,9 +353,9 @@ class ContactViewController: UITableViewController {
     func getVCardEntryTypeLabel(for type: VCard.EntryType) -> String? {
         switch type {
         case .home:
-            return "Home";
+            return NSLocalizedString("Home", comment: "address type");
         case .work:
-            return "Work";
+            return NSLocalizedString("Work", comment: "address type");
         }
     }
     
@@ -421,13 +421,13 @@ class ContactViewController: UITableViewController {
         
         public static func description(of value: ChatEncryption?) -> String {
             guard value != nil else {
-                return "Default";
+                return NSLocalizedString("Default", comment: "encryption default label");
             }
             switch value! {
             case .omemo:
-                return "OMEMO";
+                return NSLocalizedString("OMEMO", comment: "encryption type");
             case .none:
-                return "None";
+                return NSLocalizedString("None", comment: "encryption type");
             }
         }
         
@@ -455,17 +455,17 @@ class ContactViewController: UITableViewController {
             case .basic:
                 return "";
             case .settings:
-                return "Settings";
+                return NSLocalizedString("Settings", comment: "contact details section");
             case .attachments:
                 return "";
             case .encryption:
-                return "Encryption";
+                return NSLocalizedString("Encryption", comment: "contact details section");
             case .phones:
-                return "Phones";
+                return NSLocalizedString("Phones", comment: "contact details section");
             case .emails:
-                return "Emails";
+                return NSLocalizedString("Emails", comment: "contact details section");
             case .addresses:
-                return "Addresses";
+                return NSLocalizedString("Addresses", comment: "contact details section");
             }
         }
     }

@@ -80,7 +80,7 @@ class BlockedContactsController: UITableViewController {
         }
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { suggestedActions -> UIMenu? in
             return UIMenu(title: "", children: [
-                UIAction(title: "Unblock", image: UIImage(systemName: "hand.raised.slash"), attributes: [.destructive], handler: { action in
+                UIAction(title: NSLocalizedString("Unblock", comment: "button label"), image: UIImage(systemName: "hand.raised.slash"), attributes: [.destructive], handler: { action in
                     self.unblock(at: indexPath);
                 })
             ]);

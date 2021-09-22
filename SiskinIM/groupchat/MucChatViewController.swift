@@ -130,8 +130,8 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         }
         
         guard room.state == .joined else {
-            let alert = UIAlertController.init(title: "Warning", message: "You are not connected to room.\nPlease wait reconnection to room", preferredStyle: .alert);
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+            let alert = UIAlertController.init(title: NSLocalizedString("Warning", comment: "alert title"), message: NSLocalizedString("You are not connected to room.\nPlease wait reconnection to room", comment: "alert body"), preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
             self.present(alert, animated: true, completion: nil);
             return;
         }
@@ -141,7 +141,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         let encryption: ChatEncryption = room.options.encryption ?? Settings.messageEncryption;
         guard encryption == .none || canEncrypt else {
             if encryption == .omemo && !canEncrypt {
-                let alert = UIAlertController(title: "Warning", message: "This room is not capable of sending encrypted messages. Please change encryption settings to be able to send messages", preferredStyle: .alert);
+                let alert = UIAlertController(title: NSLocalizedString("Warning", comment: "alert title"), message: NSLocalizedString("This room is not capable of sending encrypted messages. Please change encryption settings to be able to send messages", comment: "alert body"), preferredStyle: .alert);
                 alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
                 self.present(alert, animated: true, completion: nil);
             }
@@ -212,14 +212,14 @@ class MucTitleView: UIView {
             let statusIcon = NSTextAttachment();
             
             var show: Presence.Show?;
-            var desc = "Offline";
+            var desc = NSLocalizedString("Offline", comment: "muc room status");
             switch state {
             case .joined:
                 show = Presence.Show.online;
-                desc = "Online";
+                desc = NSLocalizedString("Online", comment: "muc room status");
             case .requested:
                 show = Presence.Show.away;
-                desc = "Joining...";
+                desc = NSLocalizedString("Joining...", comment: "muc room status");
             default:
                 break;
             }
@@ -232,7 +232,7 @@ class MucTitleView: UIView {
             statusText.append(NSAttributedString(string: desc));
             statusView.attributedText = statusText;
         } else {
-            statusView.text = "\u{26A0} Not connected!";
+            statusView.text = "\u{26A0} \(NSLocalizedString("Not connected", comment: "muc room status label"))!";
         }
     }
 }

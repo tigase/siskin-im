@@ -56,9 +56,9 @@ class OMEMOFingerprintsController: UITableViewController {
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch section {
         case 0:
-            return "Fingerprint of this device";
+            return NSLocalizedString("Fingerprint of this device", comment: "section label");
         default:
-            return "Other devices fingerprints";
+            return NSLocalizedString("Other devices fingerprints", comment: "section label");
         }
     }
     
@@ -91,7 +91,7 @@ class OMEMOFingerprintsController: UITableViewController {
         let identity = self.otherIdentities[indexPath.row];
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
             return UIMenu(title: "", children: [
-                UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive, handler: { [weak self] action in
+                UIAction(title: NSLocalizedString("Delete", comment: "button label"), image: UIImage(systemName: "trash"), attributes: .destructive, handler: { [weak self] action in
                     guard let omemoModule = XmppService.instance.getClient(for: account)?.module(.omemo) else {
                         return;
                     }

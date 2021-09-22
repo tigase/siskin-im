@@ -94,42 +94,42 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                 return cell;
             case .givenName:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
-                cell.textField.placeholder = "Given name"
+                cell.textField.placeholder = NSLocalizedString("Given name", comment: "vcard field label")
                 cell.textField.text = vcard?.givenName;
                 cell.textField.delegate = self;
                 cell.textField.tag = indexPath.row;
                 return cell;
             case .familyName:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
-                cell.textField.placeholder = "Family name"
+                cell.textField.placeholder = NSLocalizedString("Family name", comment: "vcard field label")
                 cell.textField.text = vcard?.surname;
                 cell.textField.delegate = self;
                 cell.textField.tag = indexPath.row;
                 return cell;
             case .fullName:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
-                cell.textField.placeholder = "Full name"
+                cell.textField.placeholder = NSLocalizedString("Full name", comment: "vcard field label")
                 cell.textField.text = vcard?.fn;
                 cell.textField.delegate = self;
                 cell.textField.tag = indexPath.row;
                 return cell;
             case .birthday:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
-                cell.textField.placeholder = "Birthday"
+                cell.textField.placeholder = NSLocalizedString("Birthday", comment: "vcard field label")
                 cell.textField.text = vcard?.bday;
                 cell.textField.inputView = self.datePicker;
                 cell.textField.tag = indexPath.row;
                 return cell;
             case .organization:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
-                cell.textField.placeholder = "Organization"
+                cell.textField.placeholder = NSLocalizedString("Organization", comment: "vcard field label")
                 cell.textField.text = vcard?.organizations.first?.name;
                 cell.textField.delegate = self;
                 cell.textField.tag = indexPath.row;
                 return cell;
             case .organizationRole:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
-                cell.textField.placeholder = "Organization role"
+                cell.textField.placeholder = NSLocalizedString("Organization role", comment: "vcard field label")
                 cell.textField.text = vcard?.role;
                 cell.textField.delegate = self;
                 cell.textField.tag = indexPath.row;
@@ -223,11 +223,11 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         case .basic:
             return nil;
         case .phones:
-            return "Phones";
+            return NSLocalizedString("Phones", comment: "vcard section label");
         case .emails:
-            return "Emails";
+            return NSLocalizedString("Emails", comment: "vcard section label");
         case .addresses:
-            return "Addresses";
+            return NSLocalizedString("Addresses", comment: "vcard section label");
         }
     }
     
@@ -336,8 +336,8 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                     case .failure(let errorCondition):
                         DispatchQueue.main.async {
                             self.tableView.setEditing(true, animated: true);
-                            let alertController = UIAlertController(title: "Failure", message: "VCard publication failed: \(errorCondition)", preferredStyle: .alert);
-                            alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                            let alertController = UIAlertController(title: NSLocalizedString("Failure", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("VCard publication failed: %@", comment: "alert body"), errorCondition.localizedDescription), preferredStyle: .alert);
+                            alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
                             self.present(alertController, animated: true, completion: nil);
                         }
                     }
@@ -368,13 +368,13 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     @objc func photoClicked() {
         if UIImagePickerController.isSourceTypeAvailable(.camera) {
             let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
-            alert.addAction(UIAlertAction(title: "Take photo", style: .default, handler: { (action) in
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Take photo", comment: "photo selection action"), style: .default, handler: { (action) in
                 self.selectPhoto(.camera);
             }));
-            alert.addAction(UIAlertAction(title: "Select photo", style: .default, handler: { (action) in
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Select photo", comment: "photo selection action"), style: .default, handler: { (action) in
                 self.selectPhoto(.photoLibrary);
             }));
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
             let cell = self.tableView(tableView, cellForRowAt: IndexPath(row: VCardBaseSectionRows.avatar.rawValue, section: VCardSections.basic.rawValue)) as! VCardAvatarEditCell;
             alert.popoverPresentationController?.sourceView = cell.avatarView;
             alert.popoverPresentationController?.sourceRect = cell.avatarView!.bounds;
@@ -419,22 +419,22 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         if data != nil {
             let pepUserAvatarModule = client.module(.pepUserAvatar);
             if pepUserAvatarModule.isPepAvailable {
-                let question = UIAlertController(title: nil, message: "Do you wish to publish this photo as avatar?", preferredStyle: .actionSheet);
-                question.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
+                let question = UIAlertController(title: nil, message: NSLocalizedString("Do you wish to publish this photo as avatar?", comment: "alert body"), preferredStyle: .actionSheet);
+                question.addAction(UIAlertAction(title: NSLocalizedString("Yes", comment: "button label"), style: .default, handler: { (action) in
                     pepUserAvatarModule.publishAvatar(data: data!, mimeType: "image/png", completionHandler: { result in
                         switch result {
                         case .success(_):
                             break;
                         case .failure(let error):
                             DispatchQueue.main.async {
-                                let alert = UIAlertController(title: "Error", message: "User avatar publication failed.\nReason: \(error)", preferredStyle: .alert);
-                                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+                                let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("User avatar publication failed.\nReason: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
+                                alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
                                 self.present(alert, animated: true, completion: nil);
                             }
                         }
                     })
                 }));
-                question.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
+                question.addAction(UIAlertAction(title: NSLocalizedString("No", comment: "button label"), style: .cancel, handler: nil));
                 let cell = self.tableView(tableView, cellForRowAt: IndexPath(row: VCardBaseSectionRows.avatar.rawValue, section: VCardSections.basic.rawValue)) as! VCardAvatarEditCell;
                 question.popoverPresentationController?.sourceView = cell.avatarView;
                 question.popoverPresentationController?.sourceRect = cell.avatarView!.bounds;

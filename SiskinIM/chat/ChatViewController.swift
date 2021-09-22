@@ -100,8 +100,8 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
             return;
         }
 
-        let alert = UIAlertController(title: "Details", message: item.state.errorMessage ?? "Unknown error occurred", preferredStyle: .alert);
-        alert.addAction(UIAlertAction(title: "Resend", style: .default, handler: {(action) in            
+        let alert = UIAlertController(title: NSLocalizedString("Details", comment: "alert title"), message: item.state.errorMessage ?? NSLocalizedString("Unknown error occurred", comment: "alert body"), preferredStyle: .alert);
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Resend", comment: "button label"), style: .default, handler: {(action) in
             switch item.payload {
             case .message(let message, _):
                 self.chat.sendMessage(text: message, correctedMessageOriginId: nil);
@@ -115,7 +115,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
                 break;
             }
         }));
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
         self.present(alert, animated: true, completion: nil);
     }
      
@@ -255,19 +255,19 @@ class ChatTitleView: BaseConversationTitleView {
                 if desc == nil {
                     let show = self.statusShow;
                     if show == nil {
-                        desc = "Offline";
+                        desc = NSLocalizedString("Offline", comment: "user status");
                     } else {
                         switch(show!) {
                         case .online:
-                            desc = "Online";
+                            desc = NSLocalizedString("Online", comment: "user status");
                         case .chat:
-                            desc = "Free for chat";
+                            desc = NSLocalizedString("Free for chat", comment: "user status");
                         case .away:
-                            desc = "Be right back";
+                            desc = NSLocalizedString("Be right back", comment: "user status");
                         case .xa:
-                            desc = "Away";
+                            desc = NSLocalizedString("Away", comment: "user status");
                         case .dnd:
-                            desc = "Do not disturb";
+                            desc = NSLocalizedString("Do not disturb", comment: "user status");
                         }
                     }
                 }
@@ -278,9 +278,9 @@ class ChatTitleView: BaseConversationTitleView {
             } else {
                 switch encryption {
                 case .omemo:
-                    self.statusView.text = "\u{1F512} \u{26A0} Not connected!";
+                    self.statusView.text = "\u{1F512} \u{26A0} \(NSLocalizedString("Not connected", comment: "channel status label"))!";
                 case .none:
-                    self.statusView.text = "\u{26A0} Not connected!";
+                    self.statusView.text = "\u{26A0} \(NSLocalizedString("Not connected", comment: "channel status label"))!";
                 }
             }            
         }

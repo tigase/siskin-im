@@ -29,10 +29,10 @@ class CertificateErrorAlert {
     }
     
     public static func create(domain: String, certName: String, certHash: String, issuerName: String?, issuerHash: String?, onAccept: (()->Void)?, onDeny: (()->Void)?) -> UIAlertController {
-        let issuer = issuerName != nil ? "\nissued by\n\(issuerName!)\n with fingerprint\n\(issuerHash!)" : "";
-        let alert = UIAlertController(title: "Certificate issue", message: "Server for domain \(domain) provided invalid certificate for \(certName)\n with fingerprint\n\(certHash)\(issuer).\nDo you trust this certificate?", preferredStyle: .alert);
-        alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: CertificateErrorAlert.wrapActionHandler(onDeny)));
-        alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: CertificateErrorAlert.wrapActionHandler(onAccept)));
+        let issuer = issuerName != nil ? String.localizedStringWithFormat(NSLocalizedString("\nissued by\n%@\n with fingerprint\n%@", comment: "ssl certificate info - issue part"), issuerName!, issuerHash!) : "";
+        let alert = UIAlertController(title: NSLocalizedString("Certificate issue", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Server for domain %@ provided invalid certificate for %@\n with fingerprint\n%@%@.\nDo you trust this certificate?", comment: "ssl certificate alert dialog body"), domain, certName, certHash, issuer), preferredStyle: .alert);
+        alert.addAction(UIAlertAction(title: NSLocalizedString("No", comment: "button label"), style: .cancel, handler: CertificateErrorAlert.wrapActionHandler(onDeny)));
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Yes", comment: "button label"), style: .destructive, handler: CertificateErrorAlert.wrapActionHandler(onAccept)));
         return alert;
     }
     

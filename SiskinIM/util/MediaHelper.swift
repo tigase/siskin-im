@@ -30,7 +30,7 @@ extension MediaHelper {
             completionHandler(.success(quality));
         } else {
             DispatchQueue.main.async {
-                let alert = UIAlertController(title: "Select quality", message: nil, preferredStyle: .alert);
+                let alert = UIAlertController(title: NSLocalizedString("Select quality", comment: "media quality selection instruction"), message: nil, preferredStyle: .alert);
                 
                 let values: [ImageQuality] = [.original, .highest, .high, .medium, .low];
                 for value in  values {
@@ -38,7 +38,7 @@ extension MediaHelper {
                         completionHandler(.success(value));
                     }));
                 }
-                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: { _ in
                     completionHandler(.failure(.noAccessError));
                 }))
                 controller.present(alert, animated: true);
@@ -51,7 +51,7 @@ extension MediaHelper {
             completionHandler(.success(quality));
         } else {
             DispatchQueue.main.async {
-                let alert = UIAlertController(title: "Select quality", message: nil, preferredStyle: .alert);
+                let alert = UIAlertController(title: NSLocalizedString("Select quality", comment: "media quality selection instruction"), message: nil, preferredStyle: .alert);
                 
                 let values: [VideoQuality] = [.original, .high, .medium, .low];
                 for value in  values {
@@ -59,7 +59,7 @@ extension MediaHelper {
                         completionHandler(.success(value));
                     }));
                 }
-                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: { _ in
                     completionHandler(.failure(.noAccessError));
                 }))
                 controller.present(alert, animated: true);

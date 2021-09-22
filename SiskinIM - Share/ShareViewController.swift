@@ -95,7 +95,7 @@ class ShareViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad();
         
-        self.navigationItem.title = "Select recipients";
+        self.navigationItem.title = NSLocalizedString("Select recipients", comment: "view title");
         self.navigationItem.setLeftBarButton(UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelTapped(_:))), animated: false);
         self.navigationItem.setRightBarButton(UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneTapped(_:))), animated: false)
         self.navigationItem.rightBarButtonItem?.isEnabled = false;
@@ -103,8 +103,8 @@ class ShareViewController: UITableViewController {
         let dbUrl = Database.mainDatabaseUrl();
 
         if !FileManager.default.fileExists(atPath: dbUrl.path) {
-            let controller = UIAlertController(title: "Please launch application from the home screen before continuing.", message: nil, preferredStyle: .alert);
-            controller.addAction(UIAlertAction(title: "OK", style: .destructive, handler: { (action) in
+            let controller = UIAlertController(title: NSLocalizedString("Please launch application from the home screen before continuing.", comment: "alert title"), message: nil, preferredStyle: .alert);
+            controller.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .destructive, handler: { (action) in
                 self.extensionContext?.cancelRequest(withError: ShareError.unknownError);
             }))
             self.present(controller, animated: true, completion: nil);
@@ -151,7 +151,7 @@ class ShareViewController: UITableViewController {
                 error = !provider.hasItemConformingToTypeIdentifier(kUTTypeURL as String);
             }
             if error {
-                self.showAlert(title: "Failure", message: "Sharing feature with HTTP upload is disabled within application. To use this feature you need to enable sharing with HTTP upload in application");
+                self.showAlert(title: NSLocalizedString("Failure", comment: "alert title"), message: NSLocalizedString("Sharing feature with HTTP upload is disabled within application. To use this feature you need to enable sharing with HTTP upload in application", comment: "alert body"));
             }
         }
     }
@@ -171,7 +171,7 @@ class ShareViewController: UITableViewController {
         let activityIndicator = UIActivityIndicatorView(style: .medium);
         activityIndicator.startAnimating();
         let label = UILabel(frame: .zero);
-        label.text = "Preparing...";
+        label.text = NSLocalizedString("Preparing...", comment: "operation label");
         let stack = UIStackView(arrangedSubviews: [activityIndicator, label]);
         stack.alignment = .center;
         stack.distribution = .fillProportionally;
@@ -185,7 +185,7 @@ class ShareViewController: UITableViewController {
             stack.topAnchor.constraint(equalTo: alertController!.view.topAnchor, constant: 20),
             stack.bottomAnchor.constraint(equalTo: alertController!.view.bottomAnchor, constant: -60)
         ])
-        alertController?.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+        alertController?.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: { _ in
             self.cancelled = true;
             for client in self.clients {
                 _ = client.disconnect();
@@ -213,7 +213,7 @@ class ShareViewController: UITableViewController {
                 }
             case .success(let att):
                 DispatchQueue.main.async {
-                    label.text = "Sending...";
+                    label.text = NSLocalizedString("Sending...", comment: "operation label");
                 }
                 self.share(attachment: att, completionHandler: { errors in
                     DispatchQueue.main.async {
@@ -518,13 +518,13 @@ class ShareViewController: UITableViewController {
     }
         
     func show(error: Error) {
-        showAlert(title: "Failure", message: (error as? ShareError)?.message ?? error.localizedDescription);
+        showAlert(title: NSLocalizedString("Failure", comment: "alert title"), message: (error as? ShareError)?.message ?? error.localizedDescription);
     }
     
     func showAlert(title: String, message: String) {
         DispatchQueue.main.async {
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert);
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: {(action) in
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: {(action) in
                 self.extensionContext?.cancelRequest(withError: ShareError.unknownError);
             }));
             self.present(alert, animated: true, completion: nil);

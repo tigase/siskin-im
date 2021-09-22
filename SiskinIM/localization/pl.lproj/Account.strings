@@ -1,0 +1,152 @@
+/* Class = "UILabel"; text = "add email"; ObjectID = "06Y-Cg-0Q3"; */
+"06Y-Cg-0Q3.text" = "dodaj email";
+
+/* Class = "UILabel"; text = "Nickname"; ObjectID = "27D-rn-4zp"; */
+"27D-rn-4zp.text" = "Nick";
+
+/* Class = "UITextField"; placeholder = "Country"; ObjectID = "4hs-GL-9fd"; */
+"4hs-GL-9fd.placeholder" = "Kraj";
+
+/* Class = "UILabel"; text = "Change account settings"; ObjectID = "70p-aF-3x5"; */
+"70p-aF-3x5.text" = "Zmień ustawienia konta";
+
+/* Class = "UITextField"; placeholder = "Required"; ObjectID = "7KN-S3-8XR"; */
+"7KN-S3-8XR.placeholder" = "Wymagane";
+
+/* Class = "UILabel"; text = "Scan QR Code to add me as a buddy"; ObjectID = "7cH-MH-cya"; */
+"7cH-MH-cya.text" = "Zeskanuj kod QR Code aby dodać mnie jako znajomego";
+
+/* Class = "UILabel"; text = "From last"; ObjectID = "7td-ty-azW"; */
+"7td-ty-azW.text" = "Z ostatniego";
+
+/* Class = "UITableViewSection"; headerTitle = "Message Archiving"; ObjectID = "9PW-Rb-rop"; */
+"9PW-Rb-rop.headerTitle" = "Archiwizacja widomości";
+
+/* Class = "UITableViewController"; title = "OMEMO fingerprints"; ObjectID = "A24-eF-tzh"; */
+"A24-eF-tzh.title" = "Odciski OMEMO";
+
+/* Class = "UILabel"; text = "9dfacd3d 410d52bc 35f8e816 c7efc5b6 efe138e5 452a9e96 f30c2839 63b46241 "; ObjectID = "BE2-bI-S0Z"; */
+"BE2-bI-S0Z.text" = "9dfacd3d 410d52bc 35f8e816 c7efc5b6 efe138e5 452a9e96 f30c2839 63b46241 ";
+
+/* Class = "UITextField"; placeholder = "Type"; ObjectID = "Clb-vT-t5A"; */
+"Clb-vT-t5A.placeholder" = "Typ";
+
+/* Class = "UITextField"; placeholder = "City"; ObjectID = "Cmz-iN-c4d"; */
+"Cmz-iN-c4d.placeholder" = "Miasto";
+
+/* Class = "UILabel"; text = "Month"; ObjectID = "E11-00-jW5"; */
+"E11-00-jW5.text" = "Miesiąc";
+
+/* Class = "UITableViewSection"; headerTitle = "Encryption"; ObjectID = "Et5-H6-t7C"; */
+"Et5-H6-t7C.headerTitle" = "Szyfrowanie";
+
+/* Class = "UILabel"; text = "Subtitle"; ObjectID = "FeX-5F-H2m"; */
+"FeX-5F-H2m.text" = "Podtytuł";
+
+/* Class = "UILabel"; text = "Enabled"; ObjectID = "GTa-Ee-HQT"; */
+"GTa-Ee-HQT.text" = "Włączona";
+
+/* Class = "UILabel"; text = "Delete"; ObjectID = "GWw-NK-6oU"; */
+"GWw-NK-6oU.text" = "Usuń";
+
+/* Class = "UILabel"; text = "Detail"; ObjectID = "JkB-3h-A61"; */
+"JkB-3h-A61.text" = "Szczegół";
+
+/* Class = "UITextField"; placeholder = "Street"; ObjectID = "KgL-GY-IFp"; */
+"KgL-GY-IFp.placeholder" = "Ulica";
+
+/* Class = "UITableViewSection"; headerTitle = " Password"; ObjectID = "LO4-Ys-cek"; */
+"LO4-Ys-cek.headerTitle" = "Hasło";
+
+/* Class = "UIButton"; normalTitle = "Change avatar"; ObjectID = "Mo3-sc-7ss"; */
+"Mo3-sc-7ss.normalTitle" = "Zmień avatar";
+
+/* Class = "UITextField"; placeholder = "Type"; ObjectID = "NK4-tE-QSu"; */
+"NK4-tE-QSu.placeholder" = "Typ";
+
+/* Class = "UITextField"; placeholder = "Code"; ObjectID = "NUu-KT-QM5"; */
+"NUu-KT-QM5.placeholder" = "Kod";
+
+/* Class = "UILabel"; text = "Enable"; ObjectID = "P6B-h8-PVB"; */
+"P6B-h8-PVB.text" = "Włącz";
+
+/* Class = "UITableViewSection"; footerTitle = "Receive push notifications when your other clients are connected but in Away/XA/DND state"; ObjectID = "PvC-LX-0Sp"; */
+"PvC-LX-0Sp.footerTitle" = "Otrzymuj powiadomienia push gdy inne klienty są połączone ale w stanie Away/XA/DND";
+
+/* Class = "UITableViewSection"; headerTitle = "Push Notifications"; ObjectID = "PvC-LX-0Sp"; */
+"PvC-LX-0Sp.headerTitle" = "Powiadomienia push";
+
+/* Class = "UIBarButtonItem"; title = "Next"; ObjectID = "R0m-k2-q64"; */
+"R0m-k2-q64.title" = "Dalej";
+
+/* Class = "UIBarButtonItem"; title = "Skip"; ObjectID = "Rto-c0-DcC"; */
+"Rto-c0-DcC.title" = "Pomiń";
+
+/* Class = "UITableViewSection"; footerTitle = "Enter your account JID"; ObjectID = "SKG-bP-NPK"; */
+"SKG-bP-NPK.footerTitle" = "Wprowadź JID konta";
+
+/* Class = "UITableViewSection"; headerTitle = " XMPP ID"; ObjectID = "SKG-bP-NPK"; */
+"SKG-bP-NPK.headerTitle" = "XMPP ID";
+
+/* Class = "UITextField"; placeholder = "Phone number"; ObjectID = "T1r-DU-iqs"; */
+"T1r-DU-iqs.placeholder" = "Numer telefonu";
+
+/* Class = "UITextField"; placeholder = "Type"; ObjectID = "UQ1-rc-tuY"; */
+"UQ1-rc-tuY.placeholder" = "Typ";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "XMr-e2-2o3"; */
+"XMr-e2-2o3.text" = "Tytuł";
+
+/* Class = "UILabel"; text = "When in Away/XA/DND state"; ObjectID = "aKW-CM-bl2"; */
+"aKW-CM-bl2.text" = "Gdy w stanie Away/XA/DND";
+
+/* Class = "UILabel"; text = "John Doe"; ObjectID = "bDD-UG-Fxr"; */
+"bDD-UG-Fxr.text" = "John Doe";
+
+/* Class = "UINavigationItem"; title = "Settings"; ObjectID = "eIR-sl-fh5"; */
+"eIR-sl-fh5.title" = "Ustawienia";
+
+/* Class = "UILabel"; text = "add address"; ObjectID = "fRX-fN-yOj"; */
+"fRX-fN-yOj.text" = "dodaj adres";
+
+/* Class = "UILabel"; text = "OMEMO fingerprint"; ObjectID = "gUr-GY-P3A"; */
+"gUr-GY-P3A.text" = "Odcisk OMEMO";
+
+/* Class = "UINavigationItem"; title = "Account settings"; ObjectID = "gzC-dB-kIF"; */
+"gzC-dB-kIF.title" = "Ustawienia konta";
+
+/* Class = "UILabel"; text = "Address"; ObjectID = "i2f-mN-qTd"; */
+"i2f-mN-qTd.text" = "Adres";
+
+/* Class = "UIBarButtonItem"; title = "Done"; ObjectID = "ijD-Kb-uyj"; */
+"ijD-Kb-uyj.title" = "Gotowe";
+
+/* Class = "UILabel"; text = "add phone"; ObjectID = "jAE-vq-Vfj"; */
+"jAE-vq-Vfj.text" = "dodaj telefon";
+
+/* Class = "UITextField"; placeholder = "user@domain.com"; ObjectID = "qTN-JT-Mcr"; */
+"qTN-JT-Mcr.placeholder" = "user@domain.com";
+
+/* Class = "UILabel"; text = "Server features"; ObjectID = "t3T-uh-mob"; */
+"t3T-uh-mob.text" = "Funkcje serwera";
+
+/* Class = "UITableViewSection"; headerTitle = "General"; ObjectID = "v8B-ee-zAk"; */
+"v8B-ee-zAk.headerTitle" = "Ogólne";
+
+/* Class = "UILabel"; text = "Company, Inc."; ObjectID = "vF4-tE-C74"; */
+"vF4-tE-C74.text" = "Company, Inc.";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "vjD-aw-Ugt"; */
+"vjD-aw-Ugt.text" = "Etykieta";
+
+/* Class = "UITableViewController"; title = "Server Features"; ObjectID = "wW7-3f-Kck"; */
+"wW7-3f-Kck.title" = "Funkcje Serwera";
+
+/* Class = "UILabel"; text = "Enabled"; ObjectID = "wbI-5v-vug"; */
+"wbI-5v-vug.text" = "Włączone";
+
+/* Class = "UITextField"; placeholder = "Email address"; ObjectID = "ynp-RE-XlY"; */
+"ynp-RE-XlY.placeholder" = "Adres e-mail";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "zhp-jp-Aoq"; */
+"zhp-jp-Aoq.text" = "Tytuł";

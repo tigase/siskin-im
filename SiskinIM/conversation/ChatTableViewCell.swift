@@ -39,7 +39,7 @@ class ChatTableViewCell: BaseChatTableViewCell, UITextViewDelegate {
         set(item: item);
         
         
-        let msg = NSAttributedString(string: "(this message has been removed)", attributes: [.font: Markdown.font(withTextStyle: .body, andTraits: [.traitItalic, .traitBold]), .foregroundColor: UIColor.secondaryLabel]);
+        let msg = NSAttributedString(string: NSLocalizedString("(this message has been removed)", comment: "conversation log label"), attributes: [.font: Markdown.font(withTextStyle: .body, andTraits: [.traitItalic, .traitBold]), .foregroundColor: UIColor.secondaryLabel]);
                 
         self.messageTextView.attributedText = msg;
     }

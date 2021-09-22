@@ -43,8 +43,8 @@ class CreateMeetingViewController: MultiContactSelectionViewController {
         changeAccountButton.tintColor = UIColor(named: "tintColor")!;
         self.toolbarItems = [changeAccountButton, statusView];
         self.navigationController?.isToolbarHidden = false;
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(cancelTapped(_:)));
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Create", style: .done, target: self, action: #selector(createTapped(_:)));
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: NSLocalizedString("Cancel", comment: "button label"), style: .plain, target: self, action: #selector(cancelTapped(_:)));
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: NSLocalizedString("Create", comment: "button label"), style: .done, target: self, action: #selector(createTapped(_:)));
 
         $selectedItems.combineLatest($meetComponents).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] items, components in
             self?.navigationItem.rightBarButtonItem?.isEnabled = (!items.isEmpty) && (!components.isEmpty);
@@ -55,11 +55,11 @@ class CreateMeetingViewController: MultiContactSelectionViewController {
         $client.compactMap({ $0 }).sink(receiveValue: { [weak self] client in
             guard case .connected(_) =  client.state else {
                 DispatchQueue.main.async {
-                    let alert = UIAlertController(title: "Error", message: "Default account is not connected. Please select a different account.", preferredStyle: .alert);
-                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                    let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: NSLocalizedString("Default account is not connected. Please select a different account.", comment: "alert body"), preferredStyle: .alert);
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: { _ in
                         self?.showChangeAccount();
                     }));
-                    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: { _ in
                         self?.dismiss();
                     }))
                     self?.present(alert, animated: true, completion: nil);
@@ -76,11 +76,11 @@ class CreateMeetingViewController: MultiContactSelectionViewController {
                         }
                     case .failure(_):
                         DispatchQueue.main.async {
-                            let alert = UIAlertController(title: "Error", message: "Server of selected account does not provide support for hosting meetings. Please select a different account.", preferredStyle: .alert);
-                            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                            let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: NSLocalizedString("Server of selected account does not provide support for hosting meetings. Please select a different account.", comment: "alert body"), preferredStyle: .alert);
+                            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: { _ in
                                 that.showChangeAccount();
                             }));
-                            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+                            alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: { _ in
                                 that.dismiss();
                             }))
                             that.present(alert, animated: true, completion: nil);
@@ -133,8 +133,8 @@ class CreateMeetingViewController: MultiContactSelectionViewController {
                                 }
                             case .failure(let error):
                                 DispatchQueue.main.async {
-                                    let alert = UIAlertController(title: "Error", message: "It was not possible to initiate a call: \(error)", preferredStyle: .alert);
-                                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                                    let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to initiate a call: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
+                                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: { _ in
                                         self.dismiss();
                                     }))
                                     self.present(alert, animated: true, completion: nil);
@@ -145,8 +145,8 @@ class CreateMeetingViewController: MultiContactSelectionViewController {
                 }
             case .failure(let error):
                 DispatchQueue.main.async {
-                    let alert = UIAlertController(title: "Error", message: "It was not possible to create a meeting. Server returned an error: \(error)", preferredStyle: .alert);
-                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                    let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to create a meeting. Server returned an error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: { _ in
                         self.dismiss();
                     }))
                     self.present(alert, animated: true, completion: nil);
@@ -167,8 +167,8 @@ class CreateMeetingViewController: MultiContactSelectionViewController {
     class AccountStatusView: UIBarButtonItem {
         var account: BareJID? {
             didSet {
-                let value = NSMutableAttributedString(string: "Account: ", attributes: [.font: UIFont.preferredFont(forTextStyle: .footnote), .foregroundColor: UIColor.secondaryLabel]);
-                value.append(NSAttributedString(string: account?.stringValue ?? "None", attributes: [.font: UIFont.preferredFont(forTextStyle: .footnote), .foregroundColor: UIColor(named: "tintColor")!]));
+                let value = NSMutableAttributedString(string: "\(NSLocalizedString("Account", comment: "channel join status view label")): ", attributes: [.font: UIFont.preferredFont(forTextStyle: .footnote), .foregroundColor: UIColor.secondaryLabel]);
+                value.append(NSAttributedString(string: account?.stringValue ?? NSLocalizedString("None", comment: "channel join status view label"), attributes: [.font: UIFont.preferredFont(forTextStyle: .footnote), .foregroundColor: UIColor(named: "tintColor")!]));
                 accountLabel.attributedText = value;
             }
         }

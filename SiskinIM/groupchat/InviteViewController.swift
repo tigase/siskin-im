@@ -33,7 +33,7 @@ class InviteViewController: AbstractRosterViewController {
         super.viewWillAppear(animated);
         
         if onNext != nil {
-            self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Create", style: .plain, target: self, action: #selector(selectionFinished(_:)))
+            self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: NSLocalizedString("Create", comment: "button label"), style: .plain, target: self, action: #selector(selectionFinished(_:)))
         } else {
             self.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel(_:)));
         }
@@ -69,7 +69,7 @@ class InviteViewController: AbstractRosterViewController {
             return;
         }
 
-        room.invite(JID(item.jid), reason: "You are invied to join conversation at \(room.roomJid)");
+        room.invite(JID(item.jid), reason: String.localizedStringWithFormat(NSLocalizedString("You are invied to join conversation at %@", comment: "error label"), room.roomJid.stringValue));
         
         self.navigationController?.dismiss(animated: true, completion: nil);
     }

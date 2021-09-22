@@ -31,7 +31,7 @@ class InvitationManager {
     func addPresenceSubscribe(for account: BareJID, from jid: JID) {
         let senderName = DBRosterStore.instance.item(for: account, jid: jid.withoutResource)?.name ?? jid.stringValue;
         let content = UNMutableNotificationContent();
-        content.body = "Received presence subscription request from " + senderName;
+        content.body = String.localizedStringWithFormat(NSLocalizedString("Received presence subscription request from %@", comment: "presence subscription request notification"), senderName);
         content.userInfo = ["sender": jid.stringValue as NSString, "account": account.stringValue as NSString, "senderName": senderName as NSString];
         content.categoryIdentifier = "SUBSCRIPTION_REQUEST";
         content.threadIdentifier = "account=\(account.stringValue)|sender=\(jid.stringValue)";
@@ -40,7 +40,7 @@ class InvitationManager {
     
     func addMucInvitation(for account: BareJID, roomJid: BareJID, invitation: MucModule.Invitation) {
         let content = UNMutableNotificationContent();
-        content.body = "Invitation to groupchat \(roomJid.stringValue)";
+        content.body = String.localizedStringWithFormat(NSLocalizedString("Invitation to groupchat %@", comment: "muc invitation notification"), roomJid.stringValue);
         if let from = invitation.inviter, let name = DBRosterStore.instance.item(for: account, jid: from.withoutResource)?.name {
             content.body = "\(content.body) from \(name)";
         }

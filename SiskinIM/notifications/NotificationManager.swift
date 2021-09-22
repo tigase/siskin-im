@@ -64,7 +64,7 @@ public class NotificationManager {
     
     private func authentication(error: SaslError, on account: BareJID) {
         let content = UNMutableNotificationContent();
-        content.body = "Authentication for account \(account) failed: \(error.rawValue)";
+        content.body = String.localizedStringWithFormat(NSLocalizedString("Authentication for account %@ failed: %@", comment: "notification warning about authentication failure"), account.stringValue, error.rawValue);
         content.userInfo = ["auth-error-type": error.rawValue, "account": account.stringValue];
         content.categoryIdentifier = "ERROR";
         content.threadIdentifier = "account=" + account.stringValue;

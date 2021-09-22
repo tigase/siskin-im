@@ -53,7 +53,7 @@ class ContactBasicTableViewCell: UITableViewCell {
             
             avatarView.image = AvatarManager.instance.avatar(for: jid, on: account) ?? AvatarManager.instance.defaultAvatar;
             jidView.text = jid.stringValue;
-            accountView.text = "using \(account.stringValue)";
+            accountView.text = String.localizedStringWithFormat(NSLocalizedString("using %@", comment: "account info label"), account.stringValue);
         }
     }
     

@@ -32,7 +32,7 @@ class AboutController: UIViewController {
     override func viewDidLoad() {
         logoView.layer.cornerRadius = 8;
         logoView.layer.masksToBounds = true;
-        versionLabel.text = "Version: \(Bundle.main.infoDictionary!["CFBundleShortVersionString"] as? String ?? "Unknown")";        
+        versionLabel.text = String.localizedStringWithFormat(NSLocalizedString("Version: %@", comment: "version of the app"), Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown");        
     }
     
     override func viewWillAppear(_ animated: Bool) {

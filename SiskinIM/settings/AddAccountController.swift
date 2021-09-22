@@ -127,8 +127,8 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         } catch {
             self.hideIndicator();
             cancellables.removeAll();
-            let alert = UIAlertController(title: "Error", message: "It was not possible to save account details: \(error)", preferredStyle: .alert);
-            alert.addAction(UIAlertAction(title: "OK", style: .default));
+            let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to save account details: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default));
             self.present(alert, animated: true, completion: nil);
         }
     }
@@ -184,12 +184,12 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
             var error = "";
             switch errorCondition {
             case .not_authorized:
-                error = "Login and password do not match.";
+                error = NSLocalizedString("Login and password do not match.", comment: "error message");
             default:
-                error = "It was not possible to contact XMPP server and sign in.";
+                error = NSLocalizedString("It was not possible to contact XMPP server and sign in.", comment: "error message");
             }
-            let alert = UIAlertController(title: "Error", message:  error, preferredStyle: .alert);
-            alert.addAction(UIAlertAction(title: "Close", style: .cancel, handler: nil));
+            let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message:  error, preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Close", comment: "button label"), style: .cancel, handler: nil));
             self.present(alert, animated: true, completion: nil);
         case .success(_):
             self.saveAccount(acceptedCertificate: acceptedCertificate);

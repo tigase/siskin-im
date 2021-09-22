@@ -46,10 +46,10 @@ class DeviceMemoryUsageTableViewCell: UITableViewCell {
         let usedByUs = downloadsSize + metadataSize;
         
         chartView.items = [
-            .init(color: .systemYellow, value: Double(downloadsSize), name: "Downloads"),
-            .init(color: .systemGreen, value: Double(metadataSize), name: "Link previews"),
-            .init(color: .lightGray, value: Double(diskSpace.used - usedByUs), name: "Other apps"),
-            .init(color: .systemGray, value: Double(diskSpace.free), name: "Free")
+            .init(color: .systemYellow, value: Double(downloadsSize), name: NSLocalizedString("Downloads", comment: "memory usage label")),
+            .init(color: .systemGreen, value: Double(metadataSize), name: NSLocalizedString("Link previews", comment: "memory usage label")),
+            .init(color: .lightGray, value: Double(diskSpace.used - usedByUs), name: NSLocalizedString("Other apps", comment: "memory usage label")),
+            .init(color: .systemGray, value: Double(diskSpace.free), name: NSLocalizedString("Free", comment: "memory usage label"))
         ]
     }
     

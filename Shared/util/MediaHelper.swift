@@ -152,21 +152,21 @@ public enum ShareError: Error {
     public var message: String {
         switch self {
         case .invalidResponseCode:
-            return "Server did not confirm file upload correctly."
+            return NSLocalizedString("Server did not confirm file upload correctly.", comment: "sharing error")
         case .unknownError:
-            return "Please try again later."
+            return NSLocalizedString("Please try again later.", comment: "sharing error")
         case .noAccessError:
-            return "It was not possible to access the file."
+            return NSLocalizedString("It was not possible to access the file.", comment: "sharing error")
         case .noFileSizeError:
-            return "Could not retrieve file size.";
+            return NSLocalizedString("Could not retrieve file size.", comment: "sharing error")
         case .noMimeTypeError:
-            return "Could not detect MIME type of a file.";
+            return NSLocalizedString("Could not detect MIME type of a file.", comment: "sharing error")
         case .notSupported:
-            return "Feature not supported by XMPP server";
+            return NSLocalizedString("Feature not supported by XMPP server", comment: "sharing error")
         case .fileTooBig:
-            return "File is too big to share";
+            return NSLocalizedString("File is too big to share", comment: "sharing error")
         case .httpError:
-            return "Upload to HTTP server failed.";
+            return NSLocalizedString("Upload to HTTP server failed.", comment: "sharing error")
         }
     }
 }

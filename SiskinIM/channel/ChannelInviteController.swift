@@ -40,7 +40,7 @@ class ChannelInviteController: AbstractRosterViewController {
         
         let channelJid = channel.channelJid;
         let group = DispatchGroup();
-        self.operationStarted(message: "Sending invitations...");
+        self.operationStarted(message: NSLocalizedString("Sending invitations...", comment: "channel invitations view operation"));
         for item in items {
             group.enter();
             mixModule.allowAccess(to: channel.channelJid, for: item.jid, completionHandler: { result in

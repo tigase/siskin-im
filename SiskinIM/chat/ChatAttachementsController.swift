@@ -68,7 +68,7 @@ class ChatAttachmentsController: UICollectionViewController, UICollectionViewDel
         if items.isEmpty {
             if self.collectionView.backgroundView == nil {
                 let label = UILabel(frame: CGRect(x: 0, y:0, width: self.view.bounds.size.width, height: self.view.bounds.size.height));
-                label.text = "No attachments";
+                label.text = NSLocalizedString("No attachments", comment: "attachments view label");
                 label.font = UIFont.systemFont(ofSize: UIFont.systemFontSize + 2, weight: .medium);
                 label.numberOfLines = 0;
                 label.textAlignment = .center;

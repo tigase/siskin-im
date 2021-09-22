@@ -125,11 +125,11 @@ class RosterItemEditViewController: UITableViewController, UIPickerViewDataSourc
             return;
         }
         guard case .connected(_) = client.state else {
-            let alert = UIAlertController.init(title: "Warning", message: "Before changing roster you need to connect to server. Do you wish to do this now?", preferredStyle: .alert);
-            alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: {(alertAction) in
+            let alert = UIAlertController.init(title: NSLocalizedString("Warning", comment: "alert title"), message: NSLocalizedString("Before changing roster you need to connect to server. Do you wish to do this now?", comment: "alert body"), preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: NSLocalizedString("No", comment: "button label"), style: .cancel, handler: {(alertAction) in
                 _ = self.navigationController?.popViewController(animated: true);
             }));
-            alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: {(alertAction) in
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Yes", comment: "button label"), style: .default, handler: {(alertAction) in
                 if var account = AccountManager.getAccount(for: self.account!) {
                     account.active = true;
                     try? AccountManager.save(account: account);
@@ -148,8 +148,8 @@ class RosterItemEditViewController: UITableViewController, UIPickerViewDataSourc
                 }
             case .failure(let error):
                 DispatchQueue.main.async {
-                    let alert = UIAlertController.init(title: "Failure", message: "Server returned error: \(error)", preferredStyle: .alert);
-                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                    let alert = UIAlertController.init(title: NSLocalizedString("Failure", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
                     self.present(alert, animated: true, completion: nil);
                 }
             }

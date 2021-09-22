@@ -121,7 +121,7 @@ class ChatsListTableViewCell: UITableViewCell {
             switch lastActivity {
             case .message(let lastMessage, let direction, let sender):
                 if lastMessage.starts(with: "/me ") {
-                    let nick = sender ?? (direction == .incoming ? (nameLabel.text ?? "") : (AccountManager.getAccount(for: account)?.nickname ?? "Me"));
+                    let nick = sender ?? (direction == .incoming ? (nameLabel.text ?? "") : (AccountManager.getAccount(for: account)?.nickname ?? NSLocalizedString("Me", comment: "me label for conversation log")));
                     let baseFontDescriptor = UIFont.preferredFont(forTextStyle: .subheadline).fontDescriptor;
                     let fontDescriptor = baseFontDescriptor.withSymbolicTraits([.traitBold, .traitItalic]);
                     
@@ -146,7 +146,7 @@ class ChatsListTableViewCell: UITableViewCell {
                 }
             case .invitation(_, _, let sender):
                 let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .subheadline).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: 0);
-                let msg = NSAttributedString(string: "📨 Invitation", attributes: [.font:  font, .foregroundColor: lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
+                let msg = NSAttributedString(string: "📨 \(NSLocalizedString("Invitation", comment: "invitation label for chats list"))", attributes: [.font:  font, .foregroundColor: lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
 
                 if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
                     prefix.append(msg);
@@ -156,7 +156,7 @@ class ChatsListTableViewCell: UITableViewCell {
                 }
             case .attachment(_, _, let sender):
                 let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .subheadline).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: 0);
-                let msg = NSAttributedString(string: "📎 Attachment", attributes: [.font:  font, .foregroundColor: lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
+                let msg = NSAttributedString(string: "📎 \(NSLocalizedString("Attachment", comment: "attachemt label for conversations list"))", attributes: [.font:  font, .foregroundColor: lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
 
                 if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
                     prefix.append(msg);

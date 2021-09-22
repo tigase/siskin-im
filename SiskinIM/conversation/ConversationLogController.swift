@@ -95,7 +95,7 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
         switch item.payload {
         case .unreadMessages:
             let cell: ChatTableViewSystemCell = tableView.dequeueReusableCell(withIdentifier: "ChatTableViewSystemCell", for: indexPath) as! ChatTableViewSystemCell;
-            cell.messageView.text = "Unread messages";
+            cell.messageView.text = NSLocalizedString("Unread messages", comment: "conversation log label");
             cell.contentView.transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0);
             return cell;
         case .messageRetracted:
@@ -400,13 +400,8 @@ extension ConversationLogController {
         }
         
         private func updateTimestampSwitch() {
-            if #available(iOS 13.0, *) {
-                image = UIImage(systemName: value ? "clock.fill" : "clock");
-                title = nil;
-            } else {
-                title = "Timestamps: \(value ? "ON" : "OFF")";
-                image = nil;
-            }
+            image = UIImage(systemName: value ? "clock.fill" : "clock");
+            title = nil;
         }
     }
 }

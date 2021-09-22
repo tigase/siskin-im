@@ -285,11 +285,11 @@ enum Appearance: String, CustomStringConvertible {
     var description: String {
         switch self {
         case .auto:
-            return "Auto"
+            return NSLocalizedString("Auto", comment: "appearance type")
         case .light:
-            return "Light";
+            return NSLocalizedString("Light", comment: "appearance type")
         case .dark:
-            return "Dark";
+            return NSLocalizedString("Dark", comment: "appearance type")
         }
     }
     

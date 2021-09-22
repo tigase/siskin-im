@@ -76,7 +76,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             case .failure(let error):
                 switch error {
                 case .invalidMessage:
-                    encryptionErrorBody = "Message was not encrypted for this device.";
+                    encryptionErrorBody = NSLocalizedString("Message was not encrypted for this device.", comment: "message decryption error");
                     encryption = .notForThisDevice;
                 case .duplicateMessage:
                     // message is a duplicate and was processed before
@@ -84,7 +84,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                 case .notEncrypted:
                     encryption = .none;
                 default:
-                    encryptionErrorBody = "Message decryption failed!";
+                    encryptionErrorBody = NSLocalizedString("Message decryption failed!", comment: "message decryption error");
                     encryption = .decryptionFailed;
                 }
                 break;

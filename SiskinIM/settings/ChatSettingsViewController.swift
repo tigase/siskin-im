@@ -42,11 +42,11 @@ class ChatSettingsViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch section {
         case 0:
-            return "List of messages"
+            return NSLocalizedString("List of messages", comment: "section label")
         case 1:
-            return "Messages";
+            return NSLocalizedString("Messages", comment: "section label")
         case 2:
-            return "Attachments";
+            return NSLocalizedString("Attachments", comment: "section label")
         default:
             return nil;
         }
@@ -59,7 +59,7 @@ class ChatSettingsViewController: UITableViewController {
             let cell = tableView.dequeueReusableCell(withIdentifier: "RecentsMessageLinesNoTableViewCell", for: indexPath ) as! StepperTableViewCell;
             cell.bind({ cell in
                 cell.assign(from: Settings.$recentsMessageLinesNo, labelGenerator: { val in
-                    return val == 1 ? "1 line of preview" : "\(val) lines of preview";
+                    return val == 1 ? NSLocalizedString("1 line of preview", comment: "no. of lines of messages preview label") : String.localizedStringWithFormat(NSLocalizedString("%d lines of preview", comment: "no. of lines of messages preview label"), val);
                 });
                 cell.sink(to: \.recentsMessageLinesNo, on: Settings);
             })
@@ -103,7 +103,7 @@ class ChatSettingsViewController: UITableViewController {
         let setting = tree[indexPath.section][indexPath.row];
         switch setting {
         case .messageEncryption:
-            let controller = TablePickerViewController<ChatEncryption>(style: .grouped, message: "Select default conversation encryption", options: [.none, .omemo], value: Settings.messageEncryption);
+            let controller = TablePickerViewController<ChatEncryption>(style: .grouped, message: NSLocalizedString("Select default conversation encryption", comment: "selection information"), options: [.none, .omemo], value: Settings.messageEncryption);
             controller.sink(to: \.messageEncryption, on: Settings)
             self.navigationController?.pushViewController(controller, animated: true);
 
@@ -121,45 +121,4 @@ class ChatSettingsViewController: UITableViewController {
         case media
     }
     
-//    internal class MessageEncryptionItem: TablePickerViewItemsProtocol {
-//
-//        public static func description(of value: ChatEncryption) -> String {
-//            switch value {
-//            case .omemo:
-//                return "OMEMO";
-//            case .none:
-//                return "None";
-//            }
-//        }
-//
-//        let description: String;
-//        let value: ChatEncryption;
-//
-//        init(value: ChatEncryption) {
-//            self.value = value;
-//            self.description = MessageEncryptionItem.description(of: value);
-//        }
-//
-//    }
-
-//    internal class RecentsSortTypeItem: TablePickerViewItemsProtocol {
-//
-//        public static func description(of value: ChatsListViewController.SortOrder) -> String {
-//            switch value {
-//            case .byTime:
-//                return "By time";
-//            case .byAvailablityAndTime:
-//                return "By availability and time";
-//            }
-//        }
-//
-//        let description: String;
-//        let value: ChatsListViewController.SortOrder;
-//
-//        init(value: ChatsListViewController.SortOrder) {
-//            self.value = value;
-//            self.description = RecentsSortTypeItem.description(of: value);
-//        }
-//
-//    }
 }

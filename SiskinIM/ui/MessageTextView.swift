@@ -80,9 +80,7 @@ public class MessageTextView: UIView {
         textView.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
         textView.font = UIFont.preferredFont(forTextStyle: .subheadline);
         textView.textColor = UIColor(named: "chatMessageText");
-        if #available(iOS 13.0, *) {
-            textView.usesStandardTextScaling = false;
-        }
+        textView.usesStandardTextScaling = false;
         self.addSubview(textView);
         NSLayoutConstraint.activate([
             self.leadingAnchor.constraint(equalTo: textView.leadingAnchor),
@@ -107,22 +105,14 @@ public class MessageTextView: UIView {
                     let glyphRange = self.glyphRange(forCharacterRange: range, actualCharacterRange: nil);
                     let rect = self.boundingRect(forGlyphRange: glyphRange, in: self.textContainers.first!)
                     
-                    if #available(iOS 13.0,  *) {
-                        UIColor.label.withAlphaComponent(0.5).setFill();
-                    } else {
-                        UIColor.black.withAlphaComponent(0.5).setFill();
-                    }
+                    UIColor.label.withAlphaComponent(0.5).setFill();
                     let path = UIBezierPath(rect: CGRect(origin: CGPoint(x: origin.x + rect.origin.x, y: origin.y + rect.origin.y), size: CGSize(width: 2, height: rect.height)));
                     path.fill();
                 } else if paragraph.headIndent != 0 {
                     let glyphRange = self.glyphRange(forCharacterRange: range, actualCharacterRange: nil);
                     let rect = self.boundingRect(forGlyphRange: glyphRange, in: self.textContainers.first!)
                         
-                    if #available(iOS 13.0, *) {
-                        UIColor.label.withAlphaComponent(0.2).setFill();
-                    } else {
-                        UIColor.black.withAlphaComponent(0.2).setFill();
-                    }
+                    UIColor.label.withAlphaComponent(0.2).setFill();
                     let path = UIBezierPath(rect: CGRect(x: (rect.origin.x > paragraph.firstLineHeadIndent) ? 1 + origin.x : rect.origin.x + origin.x, y: rect.origin.y + origin.y, width: 2, height: rect.height));
                     path.fill();
                 }

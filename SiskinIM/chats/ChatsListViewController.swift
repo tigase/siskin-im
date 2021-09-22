@@ -57,21 +57,21 @@ class ChatsListViewController: UITableViewController {
             addMucButton.target = nil;
             addMucButton.primaryAction = nil
             
-            let newPrivateGC = UIAction(title: "New private group chat", image: nil, handler: { action in
+            let newPrivateGC = UIAction(title: NSLocalizedString("New private group chat", comment: "label for chats list new converation action"), image: nil, handler: { action in
                 let navigation = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelCreateNavigationViewController") as! UINavigationController;
                 (navigation.visibleViewController as? ChannelCreateViewController)?.kind = .adhoc;
                 navigation.modalPresentationStyle = .formSheet;
                 self.present(navigation, animated: true, completion: nil);
             });
             
-            let newPublicGC = UIAction(title: "New public group chat", image: nil, handler: { action in
+            let newPublicGC = UIAction(title: NSLocalizedString("New public group chat", comment: "label for chats list new converation action"), image: nil, handler: { action in
                 let navigation = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelCreateNavigationViewController") as! UINavigationController;
                 (navigation.visibleViewController as? ChannelCreateViewController)?.kind = .stable;
                 navigation.modalPresentationStyle = .formSheet;
                 self.present(navigation, animated: true, completion: nil);
             });
             
-            let joinGC = UIAction(title: "Join group chat", image: nil, handler: { action in
+            let joinGC = UIAction(title: NSLocalizedString("Join group chat",  comment: "label for chats list new converation action"), image: nil, handler: { action in
                 let navigation = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelJoinNavigationViewController") as! UINavigationController;
                 navigation.modalPresentationStyle = .formSheet;
                 self.present(navigation, animated: true, completion: nil);
@@ -80,7 +80,7 @@ class ChatsListViewController: UITableViewController {
             let deferedItems = UIDeferredMenuElement({ callback in
                 if CallManager.instance != nil && !MeetEventHandler.instance.supportedAccounts.isEmpty {
                     callback([
-                        UIAction(title: "Create meeting", image: UIImage(systemName: "person.crop.rectangle"), handler: { action in
+                        UIAction(title: NSLocalizedString("Create meeting", comment: "label for chats list new converation action"), image: UIImage(systemName: "person.crop.rectangle"), handler: { action in
                             let selector = CreateMeetingViewController(style: .plain);
                             let navController = UINavigationController(rootViewController: selector);
                             self.present(navController, animated: true, completion: nil);
@@ -163,7 +163,7 @@ class ChatsListViewController: UITableViewController {
         var actions: [UIContextualAction] = [];
         switch item {
         case let room as Room:
-            actions.append(UIContextualAction(style: .normal, title: "Leave", handler: { (action, view, completion) in
+            actions.append(UIContextualAction(style: .normal, title: NSLocalizedString("Leave", comment: "button label"), handler: { (action, view, completion) in
                 PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: JID(room.jid), autojoin: false));
                 room.context?.module(.muc).leave(room: room);
                 room.checkTigasePushNotificationRegistrationStatus { (result) in
@@ -176,8 +176,8 @@ class ChatsListViewController: UITableViewController {
                         }
                         room.registerForTigasePushNotification(false, completionHandler: { (regResult) in
                             DispatchQueue.main.async {
-                                let alert = UIAlertController(title: "Push notifications", message: "You've left there room \(room.name ?? room.roomJid.stringValue) and push notifications for this room were disabled!\nYou may need to reenable them on other devices.", preferredStyle: .actionSheet);
-                                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                                let alert = UIAlertController(title: NSLocalizedString("Push notifications", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("You've left there room %@ and push notifications for this room were disabled!\nYou may need to reenable them on other devices.", comment: "alert body"), room.name ?? room.roomJid.stringValue), preferredStyle: .actionSheet);
+                                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
                                 alert.popoverPresentationController?.sourceView = self.view;
                                 alert.popoverPresentationController?.sourceRect = tableView.rectForRow(at: indexPath);
                                 self.present(alert, animated: true, completion: nil);
@@ -189,16 +189,16 @@ class ChatsListViewController: UITableViewController {
                 completion(true);
             }))
             if room.affiliation == .owner {
-                actions.append(UIContextualAction(style: .destructive, title: "Destroy", handler: { (action, view, completion) in
+                actions.append(UIContextualAction(style: .destructive, title: NSLocalizedString("Destroy", comment: "button label"), handler: { (action, view, completion) in
                     DispatchQueue.main.async {
-                        let alert = UIAlertController(title: "Channel destuction", message: "You are about to destroy channel \(room.roomJid). This will remove the channel on the server, remove remote history archive, and kick out all participants. Are you sure?", preferredStyle: .actionSheet);
-                        alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { action in
+                        let alert = UIAlertController(title: NSLocalizedString("Channel destuction", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("You are about to destroy channel %@. This will remove the channel on the server, remove remote history archive, and kick out all participants. Are you sure?", comment: "alert body"), room.roomJid.stringValue), preferredStyle: .actionSheet);
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("Yes", comment: "button label"), style: .destructive, handler: { action in
                             PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: JID(room.jid), autojoin: false));
                             room.context?.module(.muc).destroy(room: room);
                             self.discardNotifications(for: room);
                             completion(true);
                         }));
-                        alert.addAction(UIAlertAction(title: "No", style: .default, handler: { action in
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("No", comment: "button label"), style: .default, handler: { action in
                             completion(false)
                         }))
                         alert.popoverPresentationController?.sourceView = self.view;
@@ -208,7 +208,7 @@ class ChatsListViewController: UITableViewController {
                 }))
             }
         case let chat as Chat:
-            actions.append(UIContextualAction(style: .normal, title: "Close", handler: { (action, view, completion) in
+            actions.append(UIContextualAction(style: .normal, title: NSLocalizedString("Close", comment: "button label"), handler: { (action, view, completion) in
                 let result = DBChatStore.instance.close(chat: chat);
                 if result {
                     self.discardNotifications(for: chat);
@@ -216,7 +216,7 @@ class ChatsListViewController: UITableViewController {
                 completion(result);
             }))
         case let channel as Channel:
-            actions.append(UIContextualAction(style: .normal, title: "Close", handler: { (action, view, completion) in
+            actions.append(UIContextualAction(style: .normal, title: NSLocalizedString("Close", comment: "button label"), handler: { (action, view, completion) in
                 if let mixModule = channel.context?.module(.mix) {
                     mixModule.leave(channel: channel, completionHandler: { result in
                         switch result {
@@ -240,83 +240,6 @@ class ChatsListViewController: UITableViewController {
         config.performsFirstActionWithFullSwipe = actions.count == 1;
         return config;
     }
-    
-//    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-//        if editingStyle == UITableViewCell.EditingStyle.delete {
-//            if indexPath.section == 0 {
-//                guard let item = dataSource!.item(at: indexPath)?.chat else {
-//                    return;
-//                }
-//
-//                var discardNotifications = false;
-//                switch item {
-//                case let room as Room:
-//                    if room.affiliation == .owner {
-//                        let alert = UIAlertController(title: "Delete group chat?", message: "You are leaving the group chat \(room.name ?? room.roomJid.stringValue)", preferredStyle: .actionSheet);
-//                        alert.addAction(UIAlertAction(title: "Leave chat", style: .default, handler: { (action) in
-//                            PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: JID(room.jid), autojoin: false));
-//                            room.context?.module(.muc).leave(room: room);
-//                            self.discardNotifications(for: item);
-//                        }))
-//                        alert.addAction(UIAlertAction(title: "Delete chat", style: .destructive, handler: { (action) in
-//                            PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: JID(room.jid), autojoin: false));
-//                            room.context?.module(.muc).destroy(room: room);
-//                            self.discardNotifications(for: item);
-//                        }));
-//                        alert.popoverPresentationController?.sourceView = self.view;
-//                        alert.popoverPresentationController?.sourceRect = tableView.rectForRow(at: indexPath);
-//                        self.present(alert, animated: true, completion: nil);
-//                    } else {
-//                        PEPBookmarksModule.remove(from: item.account, bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: JID(room.jid), autojoin: false));
-//                        room.context?.module(.muc).leave(room: room);
-//
-//                        room.checkTigasePushNotificationRegistrationStatus { (result) in
-//                            switch result {
-//                            case .failure(_):
-//                                break;
-//                            case .success(let value):
-//                                guard value else {
-//                                    return;
-//                                }
-//                                room.registerForTigasePushNotification(false, completionHandler: { (regResult) in
-//                                    DispatchQueue.main.async {
-//                                        let alert = UIAlertController(title: "Push notifications", message: "You've left there room \(room.name ?? room.roomJid.stringValue) and push notifications for this room were disabled!\nYou may need to reenable them on other devices.", preferredStyle: .actionSheet);
-//                                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
-//                                        alert.popoverPresentationController?.sourceView = self.view;
-//                                        alert.popoverPresentationController?.sourceRect = tableView.rectForRow(at: indexPath);
-//                                        self.present(alert, animated: true, completion: nil);
-//                                    }
-//                                })
-//                            }
-//                        }
-//
-//                        discardNotifications = true;
-//                    }
-//                case let chat as Chat:
-//                    if DBChatStore.instance.close(chat: chat) {
-//                        discardNotifications = true;
-//                    }
-//                case let channel as Channel:
-//                    if let mixModule = channel.context?.module(.mix) {
-//                        mixModule.leave(channel: channel, completionHandler: { result in
-//                            switch result {
-//                            case .success(_):
-//                                self.discardNotifications(for: item);
-//                            case .failure(_):
-//                                break;
-//                            }
-//                        });
-//                    }
-//                default:
-//                    break;
-//                }
-//
-//                if discardNotifications {
-//                    self.discardNotifications(for: item);
-//                }
-//            }
-//        }
-//    }
     
     func discardNotifications(for item: Conversation) {
         let accountStr = item.account.stringValue.lowercased();
@@ -368,34 +291,34 @@ class ChatsListViewController: UITableViewController {
         let controller = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
         controller.popoverPresentationController?.barButtonItem = sender;
         
-        controller.addAction(UIAlertAction(title: "New private group chat", style: .default, handler: { action in
+        controller.addAction(UIAlertAction(title: NSLocalizedString("New private group chat", comment: "label for chats list new converation action"), style: .default, handler: { action in
             let navigation = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelCreateNavigationViewController") as! UINavigationController;
             (navigation.visibleViewController as? ChannelCreateViewController)?.kind = .adhoc;
             navigation.modalPresentationStyle = .formSheet;
             self.present(navigation, animated: true, completion: nil);
         }));
-        controller.addAction(UIAlertAction(title: "New public group chat", style: .default, handler: { action in
+        controller.addAction(UIAlertAction(title: NSLocalizedString("New public group chat", comment: "label for chats list new converation action"), style: .default, handler: { action in
             let navigation = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelCreateNavigationViewController") as! UINavigationController;
             (navigation.visibleViewController as? ChannelCreateViewController)?.kind = .stable;
             navigation.modalPresentationStyle = .formSheet;
             self.present(navigation, animated: true, completion: nil);
         }));
         
-        controller.addAction(UIAlertAction(title: "Join group chat", style: .default, handler: { action in
+        controller.addAction(UIAlertAction(title: NSLocalizedString("Join group chat", comment: "label for chats list new converation action"), style: .default, handler: { action in
             let navigation = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelJoinNavigationViewController") as! UINavigationController;
             navigation.modalPresentationStyle = .formSheet;
             self.present(navigation, animated: true, completion: nil);
         }));
         
         if CallManager.instance != nil && !MeetEventHandler.instance.supportedAccounts.isEmpty {
-            controller.addAction(UIAlertAction(title: "Create meeting", style: .default, handler: { action in
+            controller.addAction(UIAlertAction(title: NSLocalizedString("Create meeting", comment: "label for chats list new converation action"), style: .default, handler: { action in
                 let selector = CreateMeetingViewController(style: .plain);
                 let navController = UINavigationController(rootViewController: selector);
                 self.present(navController, animated: true, completion: nil);
             }))
         }
         
-        controller.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+        controller.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
         
         self.present(controller, animated: true, completion: nil);
     }

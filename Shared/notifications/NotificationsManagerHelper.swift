@@ -105,7 +105,7 @@ public class NotificationsManagerHelper {
             })
         } else {
             content.threadIdentifier = "account=\(account.stringValue)";
-            content.body = "New message!";
+            content.body = NSLocalizedString("New message!", comment: "new message without content notification");
             provider.countBadge(withThreadId: content.threadIdentifier, completionHandler: { count in
                 content.badge = count as NSNumber;
                 completionHandler(content);

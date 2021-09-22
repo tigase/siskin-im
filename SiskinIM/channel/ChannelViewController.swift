@@ -107,8 +107,8 @@ class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         }
                 
         guard channel.state == .joined else {
-            let alert: UIAlertController?  = UIAlertController.init(title: "Warning", message: "You are not joined to the channel.", preferredStyle: .alert);
-            alert?.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+            let alert: UIAlertController?  = UIAlertController.init(title: NSLocalizedString("Warning", comment: "alert title"), message: NSLocalizedString("You are not joined to the channel.", comment: "alert body"), preferredStyle: .alert);
+            alert?.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
             self.present(alert!, animated: true, completion: nil);
             return;
         }
@@ -155,14 +155,14 @@ class ChannelTitleView: UIView {
             let statusIcon = NSTextAttachment();
                 
             var show: Presence.Show?;
-            var desc = "Offline";
+            var desc = NSLocalizedString("Not connected", comment: "channel status label");
             switch options.state {
             case .joined:
                 show = Presence.Show.online;
-                desc = "Joined";
+                desc = NSLocalizedString("Joined", comment: "channel status label");
             case .left:
                 show = nil;
-                desc = "Not joined";
+                desc = NSLocalizedString("Not joined", comment: "channel status label");
             }
                 
             statusIcon.image = AvatarStatusView.getStatusImage(show);
@@ -173,7 +173,7 @@ class ChannelTitleView: UIView {
             statusText.append(NSAttributedString(string: desc));
             statusView.attributedText = statusText;
         } else {
-            statusView.text = "\u{26A0} Not connected!";
+            statusView.text = "\u{26A0} \(NSLocalizedString("Not connected", comment: "channel status label"))!";
         }
     }
 }

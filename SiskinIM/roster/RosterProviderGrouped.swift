@@ -50,7 +50,7 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
     }
     
     override func newItem(rosterItem item: RosterItem, account: BareJID, presence: Presence?) -> RosterProviderGroupedItem? {
-        let groups = item.groups.isEmpty ? ["Default"] : item.groups;
+        let groups = item.groups.isEmpty ? [NSLocalizedString("Default ", comment: "default roster group")] : item.groups;
         return RosterProviderGroupedItem(account: account, jid: item.jid.bareJid, presence: presence, displayName: item.name ?? item.jid.stringValue, groups: groups);
     }
     

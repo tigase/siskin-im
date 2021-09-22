@@ -73,7 +73,7 @@ class DataFormController: UITableViewController {
         if section == 0 {
             let instructions: [String]? = form?.instructions as? [String];
         
-            return (instructions == nil || instructions!.isEmpty) ? "Please fill this form" : instructions!.joined(separator: "\n");
+            return (instructions == nil || instructions!.isEmpty) ? NSLocalizedString("Please fill this form", comment: "instruction to fill out the form") : instructions!.joined(separator: "\n");
         } else {
             let fieldName = form!.visibleFieldNames[section - 1];
             return form?.getField(named: fieldName)?.label ?? fieldName;
@@ -580,7 +580,7 @@ class DataFormController: UITableViewController {
             if let data = bob.data, let image = UIImage(data: data) {
                 self.mediaView.image = image;
             } else {
-                self.mediaView.image = UIImage(named: "presence_error");
+                self.mediaView.image = UIImage(systemName: "multiply.circle.fill")?.withTintColor(UIColor.systemRed, renderingMode: .alwaysOriginal)
             }
         }
         
@@ -607,7 +607,7 @@ class DataFormController: UITableViewController {
         }
         
         func loadError() {
-            self.mediaView.image = UIImage(named: "presence_error");
+            self.mediaView.image = UIImage(systemName: "multiply.circle.fill")?.withTintColor(UIColor.systemRed, renderingMode: .alwaysOriginal);
         }
         
     }

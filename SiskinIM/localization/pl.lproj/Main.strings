@@ -1,0 +1,167 @@
+/* Class = "UILabel"; text = "Company, Inc."; ObjectID = "0rT-oB-jot"; */
+"0rT-oB-jot.text" = "Company, Inc.";
+
+/* Class = "UILabel"; text = "Your server for account \\(account) supports message archiving. Would you like to enable this feature?"; ObjectID = "1dk-YA-RVu"; */
+"1dk-YA-RVu.text" = "Twój serwer dla konta \\\(account) wspiera archiwizację wiadomości. Czy chcesz włączyć tą funkcjonalność?";
+
+/* Class = "UILabel"; text = "using test@example.com"; ObjectID = "6Zq-Ql-WA0"; */
+"6Zq-Ql-WA0.text" = "użyj test@example.com";
+
+/* Class = "UINavigationItem"; title = "Root View"; ObjectID = "8T3-uF-8vn"; */
+"8T3-uF-8vn.title" = "Root View";
+
+/* Class = "UILabel"; text = "by Tigase, Inc."; ObjectID = "8ba-yZ-XRA"; */
+"8ba-yZ-XRA.text" = "od Tigase, Inc.";
+
+/* Class = "UITextField"; placeholder = "Enter jid"; ObjectID = "BM3-28-huR"; */
+"BM3-28-huR.placeholder" = "Wprowadź JID";
+
+/* Class = "UITextField"; text = "local_user@example.com"; ObjectID = "BM3-28-huR"; */
+"BM3-28-huR.text" = "local_user@example.com";
+
+/* Class = "UINavigationItem"; title = "Attachments"; ObjectID = "C1j-4i-HDP"; */
+"C1j-4i-HDP.title" = "Załączniki";
+
+/* Class = "UILabel"; text = "Message Archiving"; ObjectID = "Ckp-Mb-v0c"; */
+"Ckp-Mb-v0c.text" = "Archiwum wiadomości";
+
+/* Class = "UILabel"; text = "Address"; ObjectID = "DZS-A8-CWS"; */
+"DZS-A8-CWS.text" = "Adres";
+
+/* Class = "UIBarButtonItem"; title = " "; ObjectID = "Dx3-QU-3cN"; */
+"Dx3-QU-3cN.title" = " ";
+
+/* Class = "UILabel"; text = "Attachments"; ObjectID = "EpU-tc-DIx"; */
+"EpU-tc-DIx.text" = "Załączniki";
+
+/* Class = "UILabel"; text = "Last message"; ObjectID = "Fb1-8R-8Ff"; */
+"Fb1-8R-8Ff.text" = "Ostatnia wiadomość";
+
+/* Class = "UITableViewSection"; headerTitle = "Name"; ObjectID = "Kfl-J5-hdD"; */
+"Kfl-J5-hdD.headerTitle" = "Nazwa";
+
+/* Class = "UITableViewSection"; headerTitle = "Account"; ObjectID = "Mfv-HJ-QDO"; */
+"Mfv-HJ-QDO.headerTitle" = "Konto";
+
+/* Class = "UICollectionViewController"; title = "Attachments"; ObjectID = "N9z-ms-iaT"; */
+"N9z-ms-iaT.title" = "Załączniki";
+
+/* Class = "UINavigationController"; title = "Contacts"; ObjectID = "Ndx-if-NHK"; */
+"Ndx-if-NHK.title" = "Kontakty";
+
+/* Class = "UITextField"; placeholder = "Enter display name"; ObjectID = "OGf-mX-8z3"; */
+"OGf-mX-8z3.placeholder" = "Wprowadź nazwę wyświetlaną";
+
+/* Class = "UITextField"; text = "Juliet Capulet"; ObjectID = "OGf-mX-8z3"; */
+"OGf-mX-8z3.text" = "Juliet Capulet";
+
+/* Class = "UITableViewSection"; headerTitle = "PRESENCE"; ObjectID = "Q28-Ig-9NP"; */
+"Q28-Ig-9NP.headerTitle" = "Dostępność";
+
+/* Class = "UITableViewSection"; headerTitle = "JID"; ObjectID = "Qgj-eQ-geg"; */
+"Qgj-eQ-geg.headerTitle" = "JID";
+
+/* Class = "UILabel"; text = "Chat with"; ObjectID = "Qr0-8H-IJq"; */
+"Qr0-8H-IJq.text" = "Chat z";
+
+/* Class = "UILabel"; text = "Jane Done"; ObjectID = "UWL-vQ-lxc"; */
+"UWL-vQ-lxc.text" = "Jane Done";
+
+/* Class = "UILabel"; text = "Siskin IM"; ObjectID = "V18-Iv-6Re"; */
+"V18-Iv-6Re.text" = "Siskin IM";
+
+/* Class = "UITabBarItem"; title = "Contacts"; ObjectID = "W52-LN-wzX"; */
+"W52-LN-wzX.title" = "Kontakty";
+
+/* Class = "UIViewController"; title = "Chat"; ObjectID = "WP2-Cp-7ZE"; */
+"WP2-Cp-7ZE.title" = "Czat";
+
+/* Class = "UIButton"; normalTitle = "Create new XMPP account"; ObjectID = "WyQ-cb-VAl"; */
+"WyQ-cb-VAl.normalTitle" = "Utwórz nowe konto XMPP";
+
+/* Class = "UILabel"; text = "Message encryption"; ObjectID = "XZp-oZ-XpC"; */
+"XZp-oZ-XpC.text" = "Szyfrowanie wiadomości";
+
+/* Class = "UILabel"; text = "Timestamp"; ObjectID = "ZDx-ML-hEZ"; */
+"ZDx-ML-hEZ.text" = "Timestamp";
+
+/* Class = "UIButton"; normalTitle = "Sign in to an existing XMPP account"; ObjectID = "ZzM-t7-zvW"; */
+"ZzM-t7-zvW.normalTitle" = "Zaloguj do istniejącego konta XMPP";
+
+/* Class = "UIButton"; normalTitle = "123"; ObjectID = "aKh-IF-QJS"; */
+"aKh-IF-QJS.normalTitle" = "123";
+
+/* Class = "UITabBarItem"; title = "Chats"; ObjectID = "acW-dT-cKf"; */
+"acW-dT-cKf.title" = "Czaty";
+
+/* Class = "UILabel"; text = "Type"; ObjectID = "agd-7n-AkX"; */
+"agd-7n-AkX.text" = "Typ";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "b03-5W-Imh"; */
+"b03-5W-Imh.text" = "Label";
+
+/* Class = "UINavigationItem"; title = "Informations"; ObjectID = "bNp-S8-ulX"; */
+"bNp-S8-ulX.title" = "Informacje";
+
+/* Class = "UILabel"; text = "Ask for presence updates"; ObjectID = "ffo-7n-Tn2"; */
+"ffo-7n-Tn2.text" = "Poproś o informacje o dostępności";
+
+/* Class = "UILabel"; text = "Mute contact"; ObjectID = "g8N-kr-fax"; */
+"g8N-kr-fax.text" = "Wycisz kontakt";
+
+/* Class = "UITextField"; placeholder = "Select account"; ObjectID = "gXY-yq-Y2K"; */
+"gXY-yq-Y2K.placeholder" = "Wybierz konto";
+
+/* Class = "UITextField"; text = "local_user@example.com"; ObjectID = "gXY-yq-Y2K"; */
+"gXY-yq-Y2K.text" = "local_user@example.com";
+
+/* Class = "UILabel"; text = "Timestamp"; ObjectID = "ga8-2K-hxE"; */
+"ga8-2K-hxE.text" = "Timestamp";
+
+/* Class = "UITabBarItem"; title = "Settings"; ObjectID = "kee-Xk-ORJ"; */
+"kee-Xk-ORJ.title" = "Ustawienia";
+
+/* Class = "UILabel"; text = "John Doe"; ObjectID = "koS-ci-GqT"; */
+"koS-ci-GqT.text" = "John Doe";
+
+/* Class = "UILabel"; text = "Block contact"; ObjectID = "kwQ-p7-cX2"; */
+"kwQ-p7-cX2.text" = "Zablokuj kontakt";
+
+/* Class = "UILabel"; text = "Here I'm again..."; ObjectID = "m0n-Ls-5LF"; */
+"m0n-Ls-5LF.text" = "Here I'm again...";
+
+/* Class = "UITableViewController"; title = "Roster"; ObjectID = "mps-t3-QBq"; */
+"mps-t3-QBq.title" = "Roster";
+
+/* Class = "UILabel"; text = "Chat with"; ObjectID = "pwo-hA-mvf"; */
+"pwo-hA-mvf.text" = "Czat z";
+
+/* Class = "UILabel"; text = "user@example.com"; ObjectID = "rOe-Pg-XBh"; */
+"rOe-Pg-XBh.text" = "user@example.com";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "tRD-rd-7dm"; */
+"tRD-rd-7dm.text" = "Label";
+
+/* Class = "UIButton"; normalTitle = "123"; ObjectID = "uYb-hA-rRS"; */
+"uYb-hA-rRS.normalTitle" = "123";
+
+/* Class = "UILabel"; text = "Disclose my online status"; ObjectID = "upM-mW-rMZ"; */
+"upM-mW-rMZ.text" = "Udostępnij mój status online";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "vEG-as-CLS"; */
+"vEG-as-CLS.text" = "Label";
+
+/* Class = "UILabel"; text = "Detail"; ObjectID = "vIB-ar-uog"; */
+"vIB-ar-uog.text" = "Szczegół";
+
+/* Class = "UILabel"; text = "Last message"; ObjectID = "wE7-Lf-1a4"; */
+"wE7-Lf-1a4.text" = "Ostatnia wiadomość";
+
+/* Class = "UIButton"; normalTitle = "Not now"; ObjectID = "wvT-dz-RVz"; */
+"wvT-dz-RVz.normalTitle" = "Nie teraz";
+
+/* Class = "UIButton"; normalTitle = "Enable"; ObjectID = "yJk-Px-1oo"; */
+"yJk-Px-1oo.normalTitle" = "Włącz";
+
+/* Class = "UILabel"; text = "Type"; ObjectID = "yxF-LM-meS"; */
+"yxF-LM-meS.text" = "Typ";

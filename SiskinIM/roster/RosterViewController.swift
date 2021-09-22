@@ -33,9 +33,9 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
     override func viewDidLoad() {
         super.viewDidLoad()
         searchController.searchBar.delegate = self;
-        searchController.searchBar.scopeButtonTitles = ["By name", "By status"];
+        searchController.searchBar.scopeButtonTitles = [NSLocalizedString("By name", comment: "search bar scope"), NSLocalizedString("By status", comment: "search bar scope")];
         
-        availabilityFilterSelector = UISegmentedControl(items: ["All", "Available"]);
+        availabilityFilterSelector = UISegmentedControl(items: [NSLocalizedString("All", comment: "filter scope"), NSLocalizedString("Available", comment: "filter scope")]);
         navigationItem.titleView = availabilityFilterSelector;
         if let selector = availabilityFilterSelector {
             Settings.$rosterAvailableOnly.map({ $0 ? 1 : 0 }).receive(on: DispatchQueue.main).assign(to: \.selectedSegmentIndex, on: selector).store(in: &cancellables);
@@ -171,29 +171,26 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
     
     func prepareContextMenu(item: RosterProviderItem) -> UIMenu {
         var items = [
-            UIAction(title: "Chat", image: UIImage(systemName: "message"), handler: { action in
+            UIAction(title: NSLocalizedString("Chat", comment: "action label"), image: UIImage(systemName: "message"), handler: { action in
                 self.createChat(for: item);
             })
         ];
-        #if targetEnvironment(simulator)
-        #else
         if CallManager.isAvailable {
-            items.append(UIAction(title: "Video call", image: UIImage(named: "videoCall"), handler: { (action) in
+            items.append(UIAction(title: NSLocalizedString("Video call", comment: "action label"), image: UIImage(named: "videoCall"), handler: { (action) in
                 VideoCallController.call(jid: item.jid, from: item.account, media: [.audio, .video], sender: self);
             }));
-            items.append(UIAction(title: "Audio call", image: UIImage(systemName: "phone"), handler: { (action) in
+            items.append(UIAction(title: NSLocalizedString("Audio call", comment: "action label"), image: UIImage(systemName: "phone"), handler: { (action) in
                 VideoCallController.call(jid: item.jid, from: item.account, media: [.audio, .video], sender: self);
             }));
         }
-        #endif
         items.append(contentsOf: [
-            UIAction(title: "Edit", image: UIImage(systemName: "pencil"), handler: {(action) in
+            UIAction(title: NSLocalizedString("Edit", comment: "action label"), image: UIImage(systemName: "pencil"), handler: {(action) in
                 self.openEditItem(for: item.account, jid: JID(item.jid));
             }),
-            UIAction(title: "Info", image: UIImage(systemName: "info.circle"), handler: { action in
+            UIAction(title: NSLocalizedString("Info", comment: "action label"), image: UIImage(systemName: "info.circle"), handler: { action in
                 self.showItemInfo(for: item.account, jid: JID(item.jid));
             }),
-            UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive, handler: { action in
+            UIAction(title: NSLocalizedString("Delete", comment: "action label"), image: UIImage(systemName: "trash"), attributes: .destructive, handler: { action in
                 self.deleteItem(for: item.account, jid: JID(item.jid));
             })
         ]);
@@ -210,8 +207,8 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
                 switch result {
                 case .failure(let errorCondition):
                     DispatchQueue.main.async {
-                        let alert = UIAlertController(title: "Failure", message: "Server returned error: \(errorCondition)", preferredStyle: .alert);
-                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                        let alert = UIAlertController(title: NSLocalizedString("Failure", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert body"), errorCondition.localizedDescription), preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
                         self.present(alert, animated: true, completion: nil);
                     }
                 case .success(_):

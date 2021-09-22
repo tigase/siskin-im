@@ -209,7 +209,7 @@ open class AccountManager {
         let message: String?;
         
         var errorDescription: String? {
-            return "It was not possible to modify account.\n\(message ?? "Error code: \(status)")";
+            return "\(NSLocalizedString("It was not possible to modify account.", comment: "error description message"))\n\(message ?? "\(NSLocalizedString("Error code", comment: "error description message - detail")): \(status)")";
         }
         
         var failureReason: String? {
@@ -217,7 +217,7 @@ open class AccountManager {
         }
         
         var recoverySuggestion: String? {
-            return "Try again. If removal failed, try accessing Keychain to update account credentials manually."
+            return NSLocalizedString("Try again. If removal failed, try accessing Keychain to update account credentials manually.", comment: "error recovery suggestion");
         }
         
         var debugDescription: String {

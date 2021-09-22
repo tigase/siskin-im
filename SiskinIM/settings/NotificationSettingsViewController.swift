@@ -40,12 +40,12 @@ class NotificationSettingsViewController: UITableViewController {
         switch section {
         case 0:
             if UIApplication.shared.isRegisteredForRemoteNotifications {
-                return "If enabled, you will receive notifications of new messages or calls even if SiskinIM is in background. SiskinIM servers will forward those notifications for you from XMPP servers.";
+                return NSLocalizedString("If enabled, you will receive notifications of new messages or calls even if SiskinIM is in background. SiskinIM servers will forward those notifications for you from XMPP servers.", comment: "push notifications option description");
             } else {
-                return "You need to allow application to show notifications and for background refresh."
+                return NSLocalizedString("You need to allow application to show notifications and for background refresh.", comment: "push notifications not allowed warning")
             }
         case 1:
-            return "Show notifications from people not in your contact list";
+            return NSLocalizedString("Show notifications from people not in your contact list", comment: "notifications from unknown description");
         default:
             return nil;
         }

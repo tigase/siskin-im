@@ -54,12 +54,7 @@ class ChatTableViewMarkerCell: UITableViewCell {
         
         let prefix = senders.count > 3 ? "+\(senders.count - 3) " : "";
         
-        switch type {
-        case .displayed:
-            self.label?.text = "\(prefix)Displayed";
-        case .received:
-            self.label?.text = "\(prefix)Received";
-        }
+        self.label?.text = "\(prefix)\(type.label)";
     }
     
     

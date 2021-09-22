@@ -82,12 +82,12 @@ extension BaseChatViewController: URLSessionDelegate {
         
     func checkIfEnabledOrAsk(completionHandler: @escaping ()->Void) -> Bool {
         guard Settings.sharingViaHttpUpload else {
-            let alert = UIAlertController(title: "Question", message: "When you share files, they are uploaded to HTTP server with unique URL. Anyone who knows the unique URL to the file is able to download it.\nDo you wish to proceed?", preferredStyle: .alert);
-            alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
+            let alert = UIAlertController(title: NSLocalizedString("Question", comment: "alert title"), message: NSLocalizedString("When you share files, they are uploaded to HTTP server with unique URL. Anyone who knows the unique URL to the file is able to download it.\nDo you wish to proceed?", comment: "alert body"), preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Yes", comment: "button label"), style: .default, handler: { (action) in
                 Settings.sharingViaHttpUpload = true;
                 completionHandler();
             }));
-            alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
+            alert.addAction(UIAlertAction(title: NSLocalizedString("No", comment: "button label"), style: .cancel, handler: nil));
             present(alert, animated: true, completion: nil);
 
             return false;
@@ -234,14 +234,14 @@ extension BaseChatViewController: URLSessionDelegate {
     }
             
     func showAlert(shareError: ShareError) {
-        self.showAlert(title: "Upload failed", message: shareError.message);
+        self.showAlert(title: NSLocalizedString("Upload failed", comment: "alert title"), message: shareError.message);
     }
     
     func showAlert(title: String, message: String) {
         DispatchQueue.main.async {
             self.hideProgressBar();
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert);
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
             self.present(alert, animated: true, completion: nil);
         }
     }

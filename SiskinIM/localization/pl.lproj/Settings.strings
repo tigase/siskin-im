@@ -1,0 +1,155 @@
+/* Class = "UINavigationController"; title = "Settings"; ObjectID = "15C-WY-qrp"; */
+"15C-WY-qrp.title" = "Ustawienia";
+
+/* Class = "UILabel"; text = "Chat markers & receipts"; ObjectID = "32B-bc-CHX"; */
+"32B-bc-CHX.text" = "Znaczniki i potwierdzenia odbioru";
+
+/* Class = "UILabel"; text = "Show emoticons"; ObjectID = "3a8-1d-3PR"; */
+"3a8-1d-3PR.text" = "Pokaż emotikony";
+
+/* Class = "UILabel"; text = "Notifications"; ObjectID = "3pd-ay-sAI"; */
+"3pd-ay-sAI.text" = "Powiadomienia";
+
+/* Class = "UILabel"; text = "Notifications from unknown"; ObjectID = "67H-51-GcY"; */
+"67H-51-GcY.text" = "Powiadomienia od nieznanych";
+
+/* Class = "UILabel"; text = "Account name"; ObjectID = "7ho-Mu-thd"; */
+"7ho-Mu-thd.text" = "Nazwa konta";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "7tC-Eh-kK5"; */
+"7tC-Eh-kK5.text" = "Tytuł";
+
+/* Class = "UILabel"; text = "Media"; ObjectID = "8G3-tm-sCO"; */
+"8G3-tm-sCO.text" = "Media";
+
+/* Class = "UILabel"; text = "Enable markdown"; ObjectID = "8K5-bS-ddh"; */
+"8K5-bS-ddh.text" = "Włącz markdown";
+
+/* Class = "UILabel"; text = "Get in touch"; ObjectID = "91g-qn-FOS"; */
+"91g-qn-FOS.text" = "Kontakt";
+
+/* Class = "UILabel"; text = "About the app"; ObjectID = "9cK-3e-Nqx"; */
+"9cK-3e-Nqx.text" = "O aplikacji";
+
+/* Class = "UILabel"; text = "No blocked contacts"; ObjectID = "Aki-gv-qus"; */
+"Aki-gv-qus.text" = "Brak zablokowanych kontaktów";
+
+/* Class = "UILabel"; text = "Use public STUN servers"; ObjectID = "BSa-RZ-M7L"; */
+"BSa-RZ-M7L.text" = "Używaj publicznych serwerów STUN";
+
+/* Class = "UILabel"; text = "Contacts in groups"; ObjectID = "BSk-tI-BDM"; */
+"BSk-tI-BDM.text" = "Grupuj kontaktu";
+
+/* Class = "UILabel"; text = "Send message on return"; ObjectID = "Bd4-qf-OsU"; */
+"Bd4-qf-OsU.text" = "Wyślij wiadomość po return";
+
+/* Class = "UITableViewController"; title = "Experimental"; ObjectID = "FGQ-GL-dYt"; */
+"FGQ-GL-dYt.title" = "Eksperymentalne";
+
+/* Class = "UIBarButtonItem"; title = "Close"; ObjectID = "G2W-rB-KuE"; */
+"G2W-rB-KuE.title" = "Zamknij";
+
+/* Class = "UITableViewController"; title = "Notification settings"; ObjectID = "GfS-6V-cuc"; */
+"GfS-6V-cuc.title" = "Ustawienia powiadomień";
+
+/* Class = "UILabel"; text = "Clear download cache"; ObjectID = "Hu1-2i-RSO"; */
+"Hu1-2i-RSO.text" = "Wyczyść cache pobierania";
+
+/* Class = "UILabel"; text = "Light"; ObjectID = "L2t-Ud-Fkc"; */
+"L2t-Ud-Fkc.text" = "Jasny";
+
+/* Class = "UILabel"; text = "By presence and time"; ObjectID = "LAc-oF-22z"; */
+"LAc-oF-22z.text" = "Sortuj po dostępnośći i czasie";
+
+/* Class = "UILabel"; text = "Auto-authorize contacts"; ObjectID = "MGl-L6-Fs3"; */
+"MGl-L6-Fs3.text" = "Automatycznie autoryzuj kontakty";
+
+/* Class = "UILabel"; text = "Blocked contacts"; ObjectID = "MJ0-kw-1Kl"; */
+"MJ0-kw-1Kl.text" = "Zablokowane kontakty";
+
+/* Class = "UILabel"; text = "\"Hidden\" group"; ObjectID = "P82-B8-768"; */
+"P82-B8-768.text" = "Grupa \"Hidden\"";
+
+/* Class = "UILabel"; text = "Detail"; ObjectID = "QHQ-RS-Q7a"; */
+"QHQ-RS-Q7a.text" = "Szczegóły";
+
+/* Class = "UILabel"; text = "Groupchats bookmarks sync"; ObjectID = "Tbt-L3-jpa"; */
+"Tbt-L3-jpa.text" = "Synchronizacja zakładek czatów grupowych";
+
+/* Class = "UILabel"; text = "20 MB"; ObjectID = "UuL-li-3gA"; */
+"UuL-li-3gA.text" = "20 MB";
+
+/* Class = "UILabel"; text = "Sorting"; ObjectID = "Y0J-o4-ADK"; */
+"Y0J-o4-ADK.text" = "Sortowanie";
+
+/* Class = "UILabel"; text = "Status Type"; ObjectID = "Y3q-SX-IhN"; */
+"Y3q-SX-IhN.text" = "Typ statusu";
+
+/* Class = "UILabel"; text = "Experimental"; ObjectID = "YDd-q8-r7f"; */
+"YDd-q8-r7f.text" = "Eksperymentalne";
+
+/* Class = "UILabel"; text = "Clear link previews cache"; ObjectID = "Zff-Y8-Nz6"; */
+"Zff-Y8-Nz6.text" = "Wyczyść cache podglądu łączy";
+
+/* Class = "UILabel"; text = "Encryption"; ObjectID = "ZnP-5r-iGO"; */
+"ZnP-5r-iGO.text" = "Szyfrowanie";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "b4V-dp-Rpl"; */
+"b4V-dp-Rpl.text" = "Etykiety";
+
+/* Class = "UILabel"; text = "Videos quality"; ObjectID = "bKW-ln-Kez"; */
+"bKW-ln-Kez.text" = "Jakość wideo";
+
+/* Class = "UILabel"; text = "Photos quality"; ObjectID = "bbT-7s-6ph"; */
+"bbT-7s-6ph.text" = "Jakość zdjęć";
+
+/* Class = "UILabel"; text = "File download limit"; ObjectID = "bj6-vP-3A7"; */
+"bj6-vP-3A7.text" = "Limit pobierania pliku";
+
+/* Class = "UILabel"; text = "Push notifications"; ObjectID = "cyb-st-Bmw"; */
+"cyb-st-Bmw.text" = "Powiadomienia push";
+
+/* Class = "UILabel"; text = "XMPP Quickstart / Pipelining"; ObjectID = "dbq-Tl-d6b"; */
+"dbq-Tl-d6b.text" = "XMPP Quickstart / Pipelining";
+
+/* Class = "UILabel"; text = "File sharing via HTTP"; ObjectID = "eZJ-fR-LPh"; */
+"eZJ-fR-LPh.text" = "Udostępnianie plików przez HTTP";
+
+/* Class = "UILabel"; text = "Chats"; ObjectID = "etv-3w-9lA"; */
+"etv-3w-9lA.text" = "Czaty";
+
+/* Class = "UILabel"; text = "Subtitle"; ObjectID = "fB5-hb-x8m"; */
+"fB5-hb-x8m.text" = "Podtytuł";
+
+/* Class = "UILabel"; text = "Appearance"; ObjectID = "fxY-aA-n0i"; */
+"fxY-aA-n0i.text" = "Wygląd";
+
+/* Class = "UILabel"; text = "2 lines"; ObjectID = "g4v-o5-nXZ"; */
+"g4v-o5-nXZ.text" = "2 linie";
+
+/* Class = "UILabel"; text = "Contacts"; ObjectID = "hGX-FI-YNj"; */
+"hGX-FI-YNj.text" = "Kontakty";
+
+/* Class = "UILabel"; text = "Media"; ObjectID = "ieE-mK-uEm"; */
+"ieE-mK-uEm.text" = "Media";
+
+/* Class = "UINavigationItem"; title = "Settings"; ObjectID = "jeY-X9-tWB"; */
+"jeY-X9-tWB.title" = "Ustawienia";
+
+/* Class = "UITableViewController"; title = "Chat settings"; ObjectID = "pFo-ox-4gT"; */
+"pFo-ox-4gT.title" = "Ustawienia czatów";
+
+/* Class = "UILabel"; text = "Medium"; ObjectID = "tqu-Xn-F0Z"; */
+"tqu-Xn-F0Z.text" = "Średnia";
+
+/* Class = "UILabel"; text = "Medium"; ObjectID = "u45-W8-GP0"; */
+"u45-W8-GP0.text" = "Średnia";
+
+/* Class = "UITableViewController"; title = "Contacts settings"; ObjectID = "xRS-v5-T5C"; */
+"xRS-v5-T5C.title" = "Ustawienia kontaktów";
+
+/* Class = "UILabel"; text = "Show link previews"; ObjectID = "ybc-mt-hVG"; */
+"ybc-mt-hVG.text" = "Pokaż podgląd łączy";
+
+/* Class = "UILabel"; text = "Message carbons"; ObjectID = "zwR-jn-5u6"; */
+"zwR-jn-5u6.text" = "Message carbons";

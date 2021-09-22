@@ -75,7 +75,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         UNUserNotificationCenter.current().delegate = self.notificationCenterDelegate;
         let categories = [
-            UNNotificationCategory(identifier: "MESSAGE", actions: [], intentIdentifiers: [], hiddenPreviewsBodyPlaceholder: "New message", options: [.customDismissAction])
+            UNNotificationCategory(identifier: "MESSAGE", actions: [], intentIdentifiers: [], hiddenPreviewsBodyPlaceholder: NSLocalizedString("New message", comment: "notification of incoming message on locked screen"), options: [.customDismissAction])
         ];
         UNUserNotificationCenter.current().setNotificationCategories(Set(categories));
         
@@ -233,17 +233,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return true;
         } else {
             DispatchQueue.main.async {
-                let alert = UIAlertController(title: "Open URL", message: "What do you want to do with \(url)?", preferredStyle: .alert);
-                alert.addAction(UIAlertAction(title: "Open chat", style: .default, handler: { (action) in
+                let alert = UIAlertController(title: NSLocalizedString("Open URL", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("What do you want to do with %@?", comment: "alert body"), url.description), preferredStyle: .alert);
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Open chat", comment: "action label"), style: .default, handler: { (action) in
                     self.open(xmppUri: xmppUri, action: .message);
                 }))
-                alert.addAction(UIAlertAction(title: "Join room", style: .default, handler: { (action) in
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Join room", comment: "action label"), style: .default, handler: { (action) in
                     self.open(xmppUri: xmppUri, action: .join);
                 }))
-                alert.addAction(UIAlertAction(title: "Add contact", style: .default, handler: { (action) in
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Add contact", comment: "action label"), style: .default, handler: { (action) in
                     self.open(xmppUri: xmppUri, action: .roster);
                 }))
-                alert.addAction(UIAlertAction(title: "Nothing", style: .cancel, handler: nil));
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Nothing", comment: "action label"), style: .cancel, handler: nil));
                 self.window?.rootViewController?.present(alert, animated: true, completion: nil);
             }
             return false;
@@ -264,7 +264,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 self.window?.rootViewController?.present(navController, animated: true, completion: nil);
             })
         case .message:
-            let alert = UIAlertController(title: "Start chatting", message: "Select account to open chat from", preferredStyle: .alert);
+            let alert = UIAlertController(title: NSLocalizedString("Start chatting", comment: "alert title"), message: NSLocalizedString("Select account to open chat from", comment: "alert body"), preferredStyle: .alert);
             
             let accounts = XmppService.instance.clients.values.map({ (client) -> BareJID in
                 return client.userBareJid;
@@ -333,8 +333,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 itemEditController?.preauth = xmppUri.dict?["preauth"];
             });
         case .register:
-            let alert = UIAlertController(title: "Registering account", message: xmppUri.jid.localPart == nil ? "Do you wish to register a new account at \(xmppUri.jid.domain!)?" : "Do you wish to register a new account \(xmppUri.jid.stringValue)?", preferredStyle: .alert);
-            alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { action in
+            let alert = UIAlertController(title: NSLocalizedString("Registering account", comment: "alert title"), message: xmppUri.jid.localPart == nil ? String.localizedStringWithFormat(NSLocalizedString("Do you wish to register a new account at %@?", comment: "alert body"), xmppUri.jid.domain!) : String.localizedStringWithFormat(NSLocalizedString("Do you wish to register a new account %@?", comment: "alert body"), xmppUri.jid.stringValue), preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Yes", comment: "button label"), style: .default, handler: { action in
                 let registerAccountController = RegisterAccountController.instantiate(fromAppStoryboard: .Account);
                 registerAccountController.hidesBottomBarWhenPushed = true;
                 registerAccountController.account = xmppUri.jid.bareJid;
@@ -342,7 +342,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 registerAccountController.onAccountAdded = then;
                 self.window?.rootViewController?.showDetailViewController(UINavigationController(rootViewController: registerAccountController), sender: self);
             }));
-            alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
+            alert.addAction(UIAlertAction(title: NSLocalizedString("No", comment: "button label"), style: .cancel, handler: nil));
             self.window?.rootViewController?.present(alert, animated: true, completion: nil);
         }
     }
@@ -530,13 +530,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let content = UNMutableNotificationContent();
         switch errorCondition {
         case .remote_server_timeout:
-            content.body = "It was not possible to contact push notification component.\nTry again later."
+            content.body = NSLocalizedString("It was not possible to contact push notification component.\nTry again later.", comment: "push notifications registration failure message")
         case .remote_server_not_found:
-            content.body = "It was not possible to contact push notification component."
+            content.body = NSLocalizedString("It was not possible to contact push notification component.", comment: "push notifications registration failure message")
         case .service_unavailable:
-            content.body = "Push notifications not available";
+            content.body = NSLocalizedString("Push notifications not available", comment: "push notifications registration failure message")
         default:
-            content.body = "It was not possible to contact push notification component: \(errorCondition.rawValue)";
+            content.body = String.localizedStringWithFormat(NSLocalizedString("It was not possible to contact push notification component: %@", comment: "push notifications registration failure message"), errorCondition.rawValue);
         }
         content.threadIdentifier = "account=" + account!.stringValue;
         content.categoryIdentifier = "ERROR";
@@ -552,7 +552,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let account = BareJID(certInfo["account"] as! String);
         
         let content = UNMutableNotificationContent();
-        content.body = "Connection to server \(account.domain) failed";
+        content.body = String.localizedStringWithFormat(NSLocalizedString("Connection to server %@ failed", comment: "error notification message"), account.domain);
         content.userInfo = certInfo;
         content.categoryIdentifier = "ERROR";
         content.threadIdentifier = "account=" + account.stringValue;
@@ -561,7 +561,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func notifyUnsentMessages(count: Int) {
         let content = UNMutableNotificationContent();
-        content.body = "It was not possible to send \(count) messages. Open the app to retry";
+        content.body = String.localizedStringWithFormat(NSLocalizedString("It was not possible to send %d messages. Open the app to retry", comment: "unsent messages notification"), count);
         content.categoryIdentifier = "UNSENT_MESSAGES";
         content.threadIdentifier = "unsent-messages";
         content.sound = .default;

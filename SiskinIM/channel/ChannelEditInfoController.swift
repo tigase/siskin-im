@@ -61,7 +61,7 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
             return;
         }
 
-        self.operationStarted(message: "Updating...");
+        self.operationStarted(message: NSLocalizedString("Updating...", comment: "channel edit info operation"));
         let group = DispatchGroup();
         var error: Bool = false;
         let infoData = ChannelInfo(name: nameField.text, description: descriptionField.text, contact: self.infoData?.contact ?? []);
@@ -74,8 +74,8 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
                 case .failure(let err):
                     DispatchQueue.main.async {
                         error = true;
-                        let alert = UIAlertController(title: "Could not update channel details", message: "Remote server returned an error: \(err)", preferredStyle: .alert);
-                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                        let alert = UIAlertController(title: NSLocalizedString("Could not update channel details", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Remote server returned an error: %@", comment: "alert body"), err.localizedDescription), preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
                         self?.present(alert, animated: true, completion: nil);
                     }
                 }
@@ -91,8 +91,8 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
                 case .failure(let err):
                     DispatchQueue.main.async {
                         error = true;
-                        let alert = UIAlertController(title: "Could not update channel details", message: "Remote server returned an error: \(err)", preferredStyle: .alert);
-                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                        let alert = UIAlertController(title: NSLocalizedString("Could not update channel details", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Remote server returned an error: %@", comment: "alert body"), err.localizedDescription), preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
                         self?.present(alert, animated: true, completion: nil);
                     }
                 }
@@ -112,7 +112,7 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
         guard let mixModule = channel.context?.module(.mix) else {
             return;
         }
-        self.operationStarted(message: "Refreshing...");
+        self.operationStarted(message: NSLocalizedString("Refreshing...", comment: "channel edit info operation"));
         mixModule.retrieveInfo(for: channel.channelJid, completionHandler: { [weak self] result in
             DispatchQueue.main.async {
                 switch result {

@@ -162,17 +162,17 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         var title: String {
             switch self {
             case .copy:
-                return "Copy";
+                return NSLocalizedString("Copy", comment: "context action label");
             case .reply:
-                return "Reply..";
+                return NSLocalizedString("Reply..", comment: "context action label");
             case .share:
-                return "Share..";
+                return NSLocalizedString("Share..", comment: "context action label");
             case .correct:
-                return "Correct..";
+                return NSLocalizedString("Correct..", comment: "context action label");
             case .retract:
-                return "Retract";
+                return NSLocalizedString("Retract", comment: "context action label");
             case .more:
-                return "More..";
+                return NSLocalizedString("More..", comment: "context action label");
             }
         }
         

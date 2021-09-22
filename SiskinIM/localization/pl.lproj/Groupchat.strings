@@ -1,0 +1,62 @@
+/* Class = "UILabel"; text = "Notifications"; ObjectID = "02f-aw-3Zd"; */
+"02f-aw-3Zd.text" = "Powiadomienia";
+
+/* Class = "UITableViewSection"; headerTitle = " "; ObjectID = "2ZD-5S-4hK"; */
+"2ZD-5S-4hK.headerTitle" = " ";
+
+/* Class = "UILabel"; text = "Offline"; ObjectID = "54Z-E5-MZp"; */
+"54Z-E5-MZp.text" = "Rozłączony";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "BJz-HA-uv6"; */
+"BJz-HA-uv6.text" = "Label";
+
+/* Class = "UILabel"; text = "Encryption"; ObjectID = "DQk-sn-hKj"; */
+"DQk-sn-hKj.text" = "Szyfrowanie";
+
+/* Class = "UITableViewController"; title = "Room details"; ObjectID = "IGA-uE-mHb"; */
+"IGA-uE-mHb.title" = "Szczegóły pokoju";
+
+/* Class = "UILabel"; text = "When the value of this property is false, the queue actively starts operations that are in the queue and ready to execute."; ObjectID = "NK6-IG-GRa"; */
+"NK6-IG-GRa.text" = "When the value of this property is false, the queue actively starts operations that are in the queue and ready to execute.";
+
+/* Class = "UITableViewController"; title = "Invite to chat"; ObjectID = "SOJ-3n-8YB"; */
+"SOJ-3n-8YB.title" = "Zaproś do kanału";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "WaG-aF-FTg"; */
+"WaG-aF-FTg.text" = "Label";
+
+/* Class = "UILabel"; text = "None"; ObjectID = "YT2-1I-RlM"; */
+"YT2-1I-RlM.text" = "Brak";
+
+/* Class = "UILabel"; text = "Room name"; ObjectID = "az1-E9-Dy7"; */
+"az1-E9-Dy7.text" = "Nazwa pokoju";
+
+/* Class = "UITableViewSection"; footerTitle = "Push notification support depends on the XMPP server which you are using and may not work in some cases even if it's supported and enabled on the group chat"; ObjectID = "bRu-vo-fpu"; */
+"bRu-vo-fpu.footerTitle" = "Wsparcie dla powiadomień push zależy od serwera XMPP którego używasz i może nie działać mimo, iż jest włączone dla tego kanału.";
+
+/* Class = "UITableViewSection"; headerTitle = " Settings"; ObjectID = "bRu-vo-fpu"; */
+"bRu-vo-fpu.headerTitle" = "Ustawienia";
+
+/* Class = "UILabel"; text = "When mentioned"; ObjectID = "exK-ZH-jpA"; */
+"exK-ZH-jpA.text" = "Gdy wspomniano";
+
+/* Class = "UITableViewSection"; headerTitle = "Subject"; ObjectID = "iYv-zL-tZT"; */
+"iYv-zL-tZT.headerTitle" = "Temat";
+
+/* Class = "UILabel"; text = "Push notifications"; ObjectID = "jMz-qR-fJ6"; */
+"jMz-qR-fJ6.text" = "Powiadomienia push";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "kFB-wJ-yDE"; */
+"kFB-wJ-yDE.text" = "Label";
+
+/* Class = "UILabel"; text = "Room name"; ObjectID = "lEG-rf-VV5"; */
+"lEG-rf-VV5.text" = "Nazwa pokoju";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "t0j-TN-qOY"; */
+"t0j-TN-qOY.text" = "Label";
+
+/* Class = "UIViewController"; title = "Room Controller"; ObjectID = "uV2-vL-T54"; */
+"uV2-vL-T54.title" = "Room Controller";
+
+/* Class = "UILabel"; text = "Attachments"; ObjectID = "wBw-1J-Xau"; */
+"wBw-1J-Xau.text" = "Załączniki";

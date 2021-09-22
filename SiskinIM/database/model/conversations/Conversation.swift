@@ -117,9 +117,9 @@ public enum ChatEncryption: String, Codable, CustomStringConvertible {
     public var description: String {
         switch self {
         case .none:
-            return "None";
+            return NSLocalizedString("None", comment: "encyption option");
         case .omemo:
-            return "OMEMO";
+            return NSLocalizedString("OMEMO", comment: "encryption option");
         }
     }
 }
@@ -142,6 +142,15 @@ public struct ChatMarker: Hashable {
         case received = 0
         case displayed = 1
 
+        public var label: String {
+            switch self {
+            case .received:
+                return NSLocalizedString("Received", comment: "label for chat marker")
+            case .displayed:
+                return NSLocalizedString("Displayed", comment: "label for chat marker")
+            }
+        }
+        
         public static func < (lhs: MarkerType, rhs: MarkerType) -> Bool {
             return lhs.rawValue < rhs.rawValue;
         }

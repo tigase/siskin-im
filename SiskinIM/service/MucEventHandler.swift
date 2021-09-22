@@ -119,8 +119,8 @@ class MucEventHandler: XmppServiceExtension {
         }
             
         let content = UNMutableNotificationContent();
-        content.title = "Room \(room.roomJid.stringValue)";
-        content.body = "Could not join room. Reason:\n\(error.reason)";
+        content.title = String.localizedStringWithFormat(NSLocalizedString("Room %@", comment: "alert title"), room.roomJid.stringValue);
+        content.body = String.localizedStringWithFormat(NSLocalizedString("Could not join room. Reason:\n%@", comment: "alert body"), error.reason);
         content.sound = .default;
         if error != .banned && error != .registrationRequired {
             content.userInfo = ["account": context.userBareJid.stringValue, "roomJid": room.roomJid.stringValue, "nickname": room.nickname, "id": "room-join-error"];
@@ -171,19 +171,19 @@ extension MucModule.RoomError {
     var reason: String {
         switch self {
         case .banned:
-            return "User is banned";
+            return NSLocalizedString("User is banned", comment: "muc error reason");
         case .invalidPassword:
-            return "Invalid password";
+            return NSLocalizedString("Invalid password", comment: "muc error reason");
         case .maxUsersExceeded:
-            return "Maximum number of users exceeded";
+            return NSLocalizedString("Maximum number of users exceeded", comment: "muc error reason");
         case .nicknameConflict:
-            return "Nickname already in use";
+            return NSLocalizedString("Nickname already in use", comment: "muc error reason");
         case .nicknameLockedDown:
-            return "Nickname is locked down";
+            return NSLocalizedString("Nickname is locked down", comment: "muc error reason");
         case .registrationRequired:
-            return "Membership is required to access the room";
+            return NSLocalizedString("Membership is required to access the room", comment: "muc error reason");
         case .roomLocked:
-            return "Room is locked";
+            return NSLocalizedString("Room is locked", comment: "muc error reason");
         }
     }
     

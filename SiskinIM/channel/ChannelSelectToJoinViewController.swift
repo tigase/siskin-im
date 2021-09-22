@@ -66,7 +66,7 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
         searchController.searchBar.searchBarStyle = .prominent;
         searchController.searchBar.isOpaque = false;
         searchController.searchBar.isTranslucent = true;
-        searchController.searchBar.placeholder = "Search channels";
+        searchController.searchBar.placeholder = NSLocalizedString("Search channels", comment: "search bar placeholder");
         self.navigationItem.searchController = searchController;
 //        definesPresentationContext = true;
     }
@@ -175,7 +175,7 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
             return;
         }
         self.tableView.refreshControl = UIRefreshControl();
-        self.tableView.refreshControl?.attributedTitle = NSAttributedString(string: "Updating...");
+        self.tableView.refreshControl?.attributedTitle = NSAttributedString(string: NSLocalizedString("Updating...", comment: "refresh conrol label"));
         self.tableView.refreshControl?.isHidden = false;
         self.tableView.refreshControl?.layoutIfNeeded();
         self.tableView.setContentOffset(CGPoint(x: 0, y: tableView.contentOffset.y - self.tableView.refreshControl!.frame.height), animated: true)
@@ -261,15 +261,15 @@ class ChannelJoinStatusView: UIBarButtonItem {
     
     var account: BareJID? {
         didSet {
-            let value = NSMutableAttributedString(string: "Account: ", attributes: [.font: UIFont.preferredFont(forTextStyle: .caption1), .foregroundColor: UIColor.secondaryLabel]);
-            value.append(NSAttributedString(string: account?.stringValue ?? "None", attributes: [.font: UIFont.preferredFont(forTextStyle: .caption1), .foregroundColor: UIColor(named: "tintColor")!]));
+            let value = NSMutableAttributedString(string: "\(NSLocalizedString("Account", comment: "channel join status view label")): ", attributes: [.font: UIFont.preferredFont(forTextStyle: .caption1), .foregroundColor: UIColor.secondaryLabel]);
+            value.append(NSAttributedString(string: account?.stringValue ?? NSLocalizedString("None", comment: "channel join status view label"), attributes: [.font: UIFont.preferredFont(forTextStyle: .caption1), .foregroundColor: UIColor(named: "tintColor")!]));
             accountLabel.attributedText = value;
         }
     }
     var server: String? {
         didSet {
-            let value = NSMutableAttributedString(string: "Component: ", attributes: [.font: UIFont.preferredFont(forTextStyle: .caption1), .foregroundColor: UIColor.secondaryLabel]);
-            value.append(NSAttributedString(string: server ?? "Automatic", attributes: [.font: UIFont.preferredFont(forTextStyle: .caption1), .foregroundColor: UIColor(named: "tintColor")!]));
+            let value = NSMutableAttributedString(string: "\(NSLocalizedString("Component", comment: "channel join status view label")): ", attributes: [.font: UIFont.preferredFont(forTextStyle: .caption1), .foregroundColor: UIColor.secondaryLabel]);
+            value.append(NSAttributedString(string: server ?? NSLocalizedString("Automatic", comment: "channel join status view label"), attributes: [.font: UIFont.preferredFont(forTextStyle: .caption1), .foregroundColor: UIColor(named: "tintColor")!]));
             serverLabel.attributedText = value;
         }
     }
@@ -294,7 +294,7 @@ class ChannelJoinStatusView: UIBarButtonItem {
         accountLabel.isUserInteractionEnabled = false;
         accountLabel.font = UIFont.systemFont(ofSize: UIFont.smallSystemFontSize);
         accountLabel.translatesAutoresizingMaskIntoConstraints = false;
-        accountLabel.text = "Account: None";
+        accountLabel.text = "\(NSLocalizedString("Account", comment: "channel join status view label")): \(NSLocalizedString("None", comment: "channel join status view label"))";
         self.serverLabel = UILabel();
         serverLabel.isUserInteractionEnabled = false;
         serverLabel.font = UIFont.systemFont(ofSize: UIFont.smallSystemFontSize);
@@ -304,7 +304,7 @@ class ChannelJoinStatusView: UIBarButtonItem {
             serverLabel.textColor = UIColor.darkGray;
         }
         serverLabel.translatesAutoresizingMaskIntoConstraints = false;
-        serverLabel.text = "Component: Automatic";
+        serverLabel.text = "\(NSLocalizedString("Component", comment: "channel join status view label")): \(NSLocalizedString("Automatic", comment: "channel join status view label"))";
         view.addSubview(accountLabel);
         view.addSubview(serverLabel);
         

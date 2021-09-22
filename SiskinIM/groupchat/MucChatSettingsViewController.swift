@@ -56,7 +56,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         }).store(in: &cancellables);
         pushNotificationsSwitch.isEnabled = false;
         pushNotificationsSwitch.isOn = false;
-        room.optionsPublisher.map({ $0.encryption?.description ?? "Default" }).receive(on: DispatchQueue.main).assign(to: \.text, on: encryptionField).store(in: &cancellables);
+        room.optionsPublisher.map({ $0.encryption?.description ?? NSLocalizedString("Default", comment: "encryption setting value") }).receive(on: DispatchQueue.main).assign(to: \.text, on: encryptionField).store(in: &cancellables);
         room.optionsPublisher.map({ MucChatSettingsViewController.labelFor(conversationNotification: $0.notifications) }).receive(on: DispatchQueue.main).assign(to: \.text, on: notificationsField).store(in: &cancellables);
         refresh();
     }
@@ -215,20 +215,20 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
     
     @objc func editClicked(_ sender: UIBarButtonItem) {
         let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
-        alertController.addAction(UIAlertAction(title: "Rename chat", style: .default, handler: { (action) in
+        alertController.addAction(UIAlertAction(title: NSLocalizedString("Rename chat", comment: "button label"), style: .default, handler: { (action) in
             self.renameChat();
         }));
         if canEditVCard {
-            alertController.addAction(UIAlertAction(title: "Change avatar", style: .default, handler: { (action) in
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Change avatar", comment: "button label"), style: .default, handler: { (action) in
                 if UIImagePickerController.isSourceTypeAvailable(.camera) {
                     let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
-                    alert.addAction(UIAlertAction(title: "Take photo", style: .default, handler: { (action) in
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("Take photo", comment: "button label"), style: .default, handler: { (action) in
                         self.selectPhoto(.camera);
                     }));
-                    alert.addAction(UIAlertAction(title: "Select photo", style: .default, handler: { (action) in
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("Select photo", comment: "button label"), style: .default, handler: { (action) in
                         self.selectPhoto(.photoLibrary);
                     }));
-                    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
                     alert.popoverPresentationController?.barButtonItem = sender;
                     self.present(alert, animated: true, completion: nil);
                 } else {
@@ -236,10 +236,10 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
                 }
             }));
         }
-        alertController.addAction(UIAlertAction(title: "Change subject", style: .default, handler: { (action) in
+        alertController.addAction(UIAlertAction(title: NSLocalizedString("Change subject", comment: "button label"), style: .default, handler: { (action) in
             self.changeSubject();
         }));
-        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+        alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
         alertController.popoverPresentationController?.barButtonItem = sender;
         self.present(alertController, animated: true, completion: nil);
     }
@@ -295,19 +295,19 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
             case .failure(let errorCondition):
                 DispatchQueue.main.async {
                     self.hideIndicator();
-                    self.showError(title: "Error", message: "Could not set group chat avatar. The server responded with an error: \(errorCondition)");
+                    self.showError(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not set group chat avatar. The server responded with an error: %@", comment: "alert body"), errorCondition.localizedDescription));
                 }
             }
         });
     }
     
     private func renameChat() {
-        let controller = UIAlertController(title: "Rename chat", message: "Enter new name for group chat", preferredStyle: .alert);
+        let controller = UIAlertController(title: NSLocalizedString("Rename chat", comment: "alert title"), message: NSLocalizedString("Enter new name for group chat", comment: "alert body"), preferredStyle: .alert);
         controller.addTextField { (textField) in
             textField.text = self.room.name ?? "";
         }
         let nameField = controller.textFields![0];
-        controller.addAction(UIAlertAction(title: "Rename", style: .default, handler: { (action) in
+        controller.addAction(UIAlertAction(title: NSLocalizedString("Rename", comment: "button label"), style: .default, handler: { (action) in
             let newName = nameField.text;
             guard let mucModule = self.room.context?.module(.muc) else {
                 return;
@@ -324,40 +324,40 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
                             case .success(_):
                                 self.roomNameField.text = nameField.text;
                             case .failure(let error):
-                                self.showError(title: "Error", message: "Could not rename group chat. The server responded with an error: \(error)")
+                                self.showError(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not rename group chat. The server responded with an error: %@", comment: "alert body"), error.localizedDescription))
                             }
                         }
                     });
                 case .failure(let error):
                     self.hideIndicator();
-                    self.showError(title: "Error", message: "Could not rename group chat. The server responded with an error: \(error)")
+                    self.showError(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not rename group chat. The server responded with an error: %@", comment: "alert body"), error.localizedDescription))
                 }
             });
         }))
-        controller.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+        controller.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
         self.present(controller, animated: true, completion: nil);
     }
     
     private func changeSubject() {
-        let controller = UIAlertController(title: "Change subject", message: "Enter new subject for group chat", preferredStyle: .alert);
+        let controller = UIAlertController(title: NSLocalizedString("Change subject", comment: "alert title"), message: NSLocalizedString("Enter new subject for group chat", comment: "alert body"), preferredStyle: .alert);
         controller.addTextField { (textField) in
             textField.text = self.room.subject ?? "";
         }
         let subjectField = controller.textFields![0];
-        controller.addAction(UIAlertAction(title: "Change", style: .default, handler: { [weak self] (action) in
+        controller.addAction(UIAlertAction(title: NSLocalizedString("Change", comment: "button label"), style: .default, handler: { [weak self] (action) in
             guard let room = self?.room, let mucModule = self?.room.context?.module(.muc) else {
                 return;
             }
             mucModule.setRoomSubject(roomJid: room.roomJid, newSubject: subjectField.text);
             self?.roomSubjectField.text = subjectField.text;
         }));
-        controller.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+        controller.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
         self.present(controller, animated: true, completion: nil);
     }
     
     private func showError(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert);
-        alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .cancel, handler: nil));
         self.present(alert, animated: true, completion: nil);
     }
     
@@ -386,11 +386,11 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
     static func labelFor(conversationNotification type: ConversationNotification) -> String {
         switch type {
         case .none:
-            return "Muted";
+            return NSLocalizedString("Muted", comment: "conversation notifications status");
         case .mention:
-            return "When mentioned";
+            return NSLocalizedString("When mentioned", comment: "conversation notifications status");
         case .always:
-            return "Always";
+            return NSLocalizedString("Always", comment: "conversation notifications status");
         }
     }
 

@@ -88,9 +88,9 @@ class VCardEntryTypeAwareTableViewCell: UITableViewCell, UIPickerViewDelegate, U
         }
         switch type! {
         case .home:
-            return "Home";
+            return NSLocalizedString("Home", comment: "address type label");
         case .work:
-            return "Work";
+            return NSLocalizedString("Work", comment: "address type label");
         }
     }
 }

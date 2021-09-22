@@ -33,8 +33,8 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
     
     func callDidEnd(_ sender: Call) {
         DispatchQueue.main.async {
-            let alert = UIAlertController(title: "Meeting ended", message: "Meeting has ended", preferredStyle: .alert);
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+            let alert = UIAlertController(title: NSLocalizedString("Meeting ended", comment: "alert title"), message: NSLocalizedString("Meeting has ended", comment: "alert body"), preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: { _ in
                 self.endCall(self);
             }));
             self.present(alert, animated: true, completion: nil);
@@ -227,13 +227,13 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
         
         if #available(iOS 14.0, *) {
             moreButton?.menu = UIMenu(title: "", children: [
-                UIAction(title: "Invite...", image: UIImage(systemName: "person.fill.badge.plus"), handler: { action in
+                UIAction(title: NSLocalizedString("Invite...", comment: "button label"), image: UIImage(systemName: "person.fill.badge.plus"), handler: { action in
                     self.inviteToCallClicked(action);
                 }),
-                UIAction(title: "Switch camera", image: UIImage(systemName: "arrow.triangle.2.circlepath.camera.fill"), handler: { action in
+                UIAction(title: NSLocalizedString("Switch camera", comment: "button label"), image: UIImage(systemName: "arrow.triangle.2.circlepath.camera.fill"), handler: { action in
                     self.switchCamera();
                 }),
-                UIMenu(title: "Switch audio", image: UIImage(systemName: "speaker.wave.2"), children: [
+                UIMenu(title: NSLocalizedString("Switch audio", comment: "button label"), image: UIImage(systemName: "speaker.wave.2"), children: [
                     switchAudioActions()
                 ])
             ].reversed());
@@ -311,18 +311,18 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
         controller.popoverPresentationController?.sourceView = sender;
         controller.popoverPresentationController?.sourceRect = sender.bounds;
         
-        controller.addAction(UIAlertAction(title: "Invite...", style: .default, handler: { action in
+        controller.addAction(UIAlertAction(title: NSLocalizedString("Invite...", comment: "button label"), style: .default, handler: { action in
             self.inviteToCallClicked(sender);
         }))
-        controller.addAction(UIAlertAction(title: "Switch camera", style: .default, handler: { action in
+        controller.addAction(UIAlertAction(title: NSLocalizedString("Switch camera", comment: "button label"), style: .default, handler: { action in
             self.switchCamera();
         }));
-        controller.addAction(UIAlertAction(title: "Switch audio", style: .default, handler: { action in
+        controller.addAction(UIAlertAction(title: NSLocalizedString("Switch audio", comment: "button label"), style: .default, handler: { action in
             DispatchQueue.main.async {
                 self.switchAudio(sender);
             }
         }))
-        controller.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+        controller.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
         
         self.present(controller, animated: true, completion: nil);
     }
@@ -356,7 +356,7 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
             controller.addAction(action)
         }
         
-        controller.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+        controller.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
         
         controller.popoverPresentationController?.sourceView = sender;
         controller.popoverPresentationController?.sourceRect = sender.bounds;
@@ -478,7 +478,7 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
             }
             
             return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
-                let kickOutAction = UIAction(title: "Kick out", image: nil, attributes: .destructive, handler: { action in
+                let kickOutAction = UIAction(title: NSLocalizedString("Kick out", comment: "button label"), image: nil, attributes: .destructive, handler: { action in
                     controller.meet?.deny(jids: [publisher.jid], completionHandler: { result in
                     })
                 });

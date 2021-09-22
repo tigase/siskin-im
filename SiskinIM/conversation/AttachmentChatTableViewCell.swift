@@ -170,37 +170,37 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
         
         if let localUrl = DownloadStore.instance.url(for: "\(item.id)") {
             let items = [
-                UIAction(title: "Preview", image: UIImage(systemName: "eye.fill"), handler: { action in
+                UIAction(title: NSLocalizedString("Preview", comment: "attachment cell context action"), image: UIImage(systemName: "eye.fill"), handler: { action in
                     self.open(url: localUrl, preview: true);
                 }),
-                UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc"), handler: { action in
+                UIAction(title: NSLocalizedString("Copy", comment: "attachment cell context action"), image: UIImage(systemName: "doc.on.doc"), handler: { action in
                     UIPasteboard.general.strings = [url];
                     UIPasteboard.general.string = url;
                 }),
-                UIAction(title: "Share..", image: UIImage(systemName: "square.and.arrow.up"), handler: { action in
+                UIAction(title: NSLocalizedString("Share..", comment: "attachment cell context action"), image: UIImage(systemName: "square.and.arrow.up"), handler: { action in
                     self.open(url: localUrl, preview: false);
                 }),
-                UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: [.destructive], handler: { action in
+                UIAction(title: NSLocalizedString("Delete", comment: "attachment cell context action"), image: UIImage(systemName: "trash"), attributes: [.destructive], handler: { action in
                     DownloadStore.instance.deleteFile(for: "\(item.id)");
                     DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                         appendix.state = .removed;
                     })
                 }),
-                UIAction(title: "More..", image: UIImage(systemName: "ellipsis"), handler: { action in
+                UIAction(title: NSLocalizedString("More..", comment: "attachment cell context action"), image: UIImage(systemName: "ellipsis"), handler: { action in
                     NotificationCenter.default.post(name: Notification.Name("tableViewCellShowEditToolbar"), object: self);
                 })
             ];
             return UIMenu(title: "", image: nil, identifier: nil, options: [], children: items);
         } else {
             let items = [
-                UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc"), handler: { action in
+                UIAction(title: NSLocalizedString("Copy", comment: "attachment cell context action"), image: UIImage(systemName: "doc.on.doc"), handler: { action in
                     UIPasteboard.general.strings = [url];
                     UIPasteboard.general.string = url;
                 }),
-                UIAction(title: "Download", image: UIImage(systemName: "square.and.arrow.down"), handler: { action in
+                UIAction(title: NSLocalizedString("Download", comment: "attachment cell context action"), image: UIImage(systemName: "square.and.arrow.down"), handler: { action in
                     self.download(for: item);
                 }),
-                UIAction(title: "More..", image: UIImage(systemName: "ellipsis"), handler: { action in
+                UIAction(title: NSLocalizedString("More..", comment: "attachment cell context action"), image: UIImage(systemName: "ellipsis"), handler: { action in
                     NotificationCenter.default.post(name: Notification.Name("tableViewCellShowEditToolbar"), object: self);
                 })
             ];
@@ -268,11 +268,11 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
 //            try? FileManager.default.copyItem(at: localUrl, to: tmpUrl);
             open(url: localUrl, preview: true);
         } else {
-            let alert = UIAlertController(title: "Download", message: "File is not available locally. Should it be downloaded?", preferredStyle: .alert);
-            alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
+            let alert = UIAlertController(title: NSLocalizedString("Download", comment: "confirmation dialog title"), message: NSLocalizedString("File is not available locally. Should it be downloaded?", comment: "confirmation dialog body"), preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Yes", comment: "button label"), style: .default, handler: { (action) in
                 self.download(for: item);
             }))
-            alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil));
+            alert.addAction(UIAlertAction(title: NSLocalizedString("No", comment: "button label"), style: .cancel, handler: nil));
             if let controller = (UIApplication.shared.delegate as? AppDelegate)?.window?.rootViewController {
                 controller.present(alert, animated: true, completion: nil);
             }
@@ -516,14 +516,14 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                     iconView.image = UIImage.icon(forUTI: uti as String) ?? UIImage.icon(forFile: fileUrl, mimeType: appendix.mimetype);
                     self.viewType = .file;
                 } else {
-                    details.text = "File - \(fileSize)";
+                    details.text = String.localizedStringWithFormat(NSLocalizedString("File - %@", comment: "file size label"), fileSize);
                     iconView.image = UIImage.icon(forFile: fileUrl, mimeType: appendix.mimetype);
                     self.viewType = .file;
                 }
             } else {
                 let filename = appendix.filename ?? URL(string: url)?.lastPathComponent ?? "";
                 if filename.isEmpty {
-                    self.filename.text =  "Unknown file";
+                    self.filename.text = NSLocalizedString("Unknown file", comment: "unknown file label");
                 } else {
                     self.filename.text = filename;
                 }
@@ -533,7 +533,7 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                         details.text = "\(typeName) - \(fileSize)";
                         iconView.image = UIImage.icon(forUTI: uti as String);
                     } else {
-                        details.text = "File - \(fileSizeToString(UInt64(size)))";
+                        details.text = String.localizedStringWithFormat(NSLocalizedString("File - %@", comment: "file size label"),fileSizeToString(UInt64(size)));
                         iconView.image = UIImage.icon(forUTI: "public.content");
                     }
                 } else {

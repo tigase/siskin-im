@@ -93,8 +93,8 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
                     do {
                         try AccountManager.save(account: account);
                     } catch {
-                        let alert = UIAlertController(title: "Error", message: "It was not possible to save account details: \(error) Please try again later.", preferredStyle: .alert);
-                        alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
+                        let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to save account details: %@ Please try again later.", comment: "alert title body"), error.localizedDescription), preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button lable"), style: .cancel, handler: nil));
                         self.topController()?.present(alert, animated: true, completion: nil);
                     }
                 }, onDeny: nil);
@@ -104,13 +104,13 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
             if let authError = userInfo["auth-error-type"] {
                 let accountJid = BareJID(userInfo["account"] as! String);
                 
-                let alert = UIAlertController(title: "Authentication issue", message: "Authentication for account \(accountJid) failed: \(authError)\nVerify provided account password.", preferredStyle: .alert);
-                alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
+                let alert = UIAlertController(title: NSLocalizedString("Authentication issue", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Authentication for account %@ failed: %@\nVerify provided account password.", comment: "alert title body"), accountJid.stringValue, String(describing: authError)), preferredStyle: .alert);
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .cancel, handler: nil));
                 
                 topController()?.present(alert, animated: true, completion: nil);
             } else {
                 let alert = UIAlertController(title: content.title, message: content.body, preferredStyle: .alert);
-                alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil));
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .cancel, handler: nil));
                                 
                 topController()?.present(alert, animated: true, completion: nil);
             }
@@ -125,8 +125,8 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         if senderName != senderJid.stringValue {
             senderName = "\(senderName) (\(senderJid.stringValue))";
         }
-        let alert = UIAlertController(title: "Subscription request", message: "Received presence subscription request from\n\(senderName)\non account \(accountJid.stringValue)", preferredStyle: .alert);
-        alert.addAction(UIAlertAction(title: "Accept", style: .default, handler: {(action) in
+        let alert = UIAlertController(title: NSLocalizedString("Subscription request", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Received presence subscription request from\n%@\non account %@", comment: "alert title body"), senderName, accountJid.stringValue), preferredStyle: .alert);
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Accept", comment: "button label"), style: .default, handler: {(action) in
             guard let client = XmppService.instance.getClient(for: accountJid) else {
                 return;
             }
@@ -139,16 +139,16 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
             if Settings.autoSubscribeOnAcceptedSubscriptionRequest {
                 presenceModule.subscribe(to: JID(senderJid));
             } else {
-                let alert2 = UIAlertController(title: "Subscribe to " + senderName, message: "Do you wish to subscribe to \n\(senderName)\non account \(accountJid.stringValue)", preferredStyle: .alert);
-                alert2.addAction(UIAlertAction(title: "Accept", style: .default, handler: {(action) in
+                let alert2 = UIAlertController(title: String.localizedStringWithFormat(NSLocalizedString("Subscribe to %@", comment: "alert title"), senderName), message: String.localizedStringWithFormat(NSLocalizedString("Do you wish to subscribe to \n%@\non account %@", comment: "alert body"), senderName, accountJid.stringValue), preferredStyle: .alert);
+                alert2.addAction(UIAlertAction(title: NSLocalizedString("Accept", comment: "button label"), style: .default, handler: {(action) in
                     presenceModule.subscribe(to: JID(senderJid));
                 }));
-                alert2.addAction(UIAlertAction(title: "Reject", style: .destructive, handler: nil));
+                alert2.addAction(UIAlertAction(title: NSLocalizedString("Reject", comment: "button label"), style: .destructive, handler: nil));
                 
                 self.topController()?.present(alert2, animated: true, completion: nil);
             }
         }));
-        alert.addAction(UIAlertAction(title: "Reject", style: .destructive, handler: {(action) in
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Reject", comment: "button label"), style: .destructive, handler: {(action) in
             guard let client = XmppService.instance.getClient(for: accountJid) else {
                 return;
             }
@@ -274,7 +274,7 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         
         if let session = JingleManager.instance.session(for: accountJid, with: senderJid, sid: sid) {
             // can still can be received!
-            let alert = UIAlertController(title: "Incoming call", message: "Incoming call from \(senderName)", preferredStyle: .alert);
+            let alert = UIAlertController(title: NSLocalizedString("Incoming call", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Incoming call from %@", comment: "alert body"), senderName), preferredStyle: .alert);
             switch AVCaptureDevice.authorizationStatus(for: .video) {
             case .denied, .restricted:
                 break;
@@ -288,14 +288,14 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
 //            alert.addAction(UIAlertAction(title: "Audio call", style: .default, handler: { action in
 //                VideoCallController.accept(session: session, sdpOffer: sdp, withAudio: true, withVideo: false, sender: topController!);
 //            }));
-            alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: { action in
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Dismiss", comment: "button label"), style: .cancel, handler: { action in
                 session.decline();
             }));
             topController()?.present(alert, animated: true, completion: nil);
         } else {
             // call missed...
-            let alert = UIAlertController(title: "Missed call", message: "Missed incoming call from \(senderName)", preferredStyle: .alert);
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+            let alert = UIAlertController(title: NSLocalizeString("Missed call", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Missed incoming call from %@", comment: "alert body"), senderName), preferredStyle: .alert);
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
             
             topController()?.present(alert, animated: true, completion: nil);
         }

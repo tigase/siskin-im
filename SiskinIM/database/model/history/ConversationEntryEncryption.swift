@@ -45,9 +45,9 @@ public enum ConversationEntryEncryption: Hashable {
         case .none, .decrypted(_):
             return nil;
         case .decryptionFailed:
-            return "Message decryption failed!";
+            return NSLocalizedString("Message decryption failed!", comment: "message encryption failure");
         case .notForThisDevice:
-            return "Message was not encrypted for this devices";
+            return NSLocalizedString("Message was not encrypted for this device", comment: "message encryption failure");
         }
     }
     

@@ -27,11 +27,11 @@ import Combine
 class SettingsViewController: UITableViewController {
    
     var statusNames: [Presence.Show: String] = [
-        .chat : "Chat",
-        .online : "Online",
-        .away : "Away",
-        .xa : "Extended away",
-        .dnd : "Do not disturb"
+        .chat : NSLocalizedString("Chat", comment: "presence status"),
+        .online : NSLocalizedString("Online", comment: "presence status"),
+        .away : NSLocalizedString("Away", comment: "presence status"),
+        .xa : NSLocalizedString("Extended away", comment: "presence status"),
+        .dnd : NSLocalizedString("Do not disturb", comment: "presence status"),
     ];
     
     override func viewDidLoad() {
@@ -54,11 +54,11 @@ class SettingsViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch section {
         case 0:
-            return "Accounts";
+            return NSLocalizedString("Accounts", comment: "section label");
         case 1:
-            return "Status";
+            return NSLocalizedString("Status", comment: "section label");
         case 2:
-            return "Settings";
+            return NSLocalizedString("Settings", comment: "section label");
         case 3:
             return ""
         default:
@@ -103,8 +103,8 @@ class SettingsViewController: UITableViewController {
                 }
                 cell.avatarStatusView.updateCornerRadius();
             } else {
-                cell.nameLabel.text = "Add account";
-                cell.descriptionLabel.text = "Create new or add existing account"
+                cell.nameLabel.text = NSLocalizedString("Add account", comment: "cell label");
+                cell.descriptionLabel.text = NSLocalizedString("Create new or add existing account", comment: "cell sublabel");
                 cell.avatarStatusView.avatarImageView.image = UIImage(systemName: "plus.circle.fill")?.withTintColor(UIColor(named: "tintColor")!, renderingMode: .alwaysOriginal);
                 cell.avatarStatusView.statusImageView.isHidden = true;
             }
@@ -127,7 +127,7 @@ class SettingsViewController: UITableViewController {
                 });
                 self.statusTypeCancellable2 = Settings.$statusType.map({ [weak self] type in
                     if type == nil {
-                        return "Automatic";
+                        return NSLocalizedString("Automatic ", comment: "presence status");
                     } else {
                         return self?.statusNames[type!];
                     }
@@ -192,13 +192,13 @@ class SettingsViewController: UITableViewController {
             let accounts = AccountManager.getAccounts();
             if indexPath.row == accounts.count {
                 let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
-                alert.addAction(UIAlertAction(title: "Create new", style: .default, handler: { (action) in
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Create new", comment: "button label"), style: .default, handler: { (action) in
                     self.showAddAccount(register: true);
                 }));
-                alert.addAction(UIAlertAction(title: "Add existing", style: .default, handler: { (action) in
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Add existing", comment: "button label"), style: .default, handler: { (action) in
                     self.showAddAccount(register: false);
                 }));
-                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil));
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
                 alert.popoverPresentationController?.sourceView = self.tableView;
                 alert.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: indexPath);
 
@@ -213,10 +213,10 @@ class SettingsViewController: UITableViewController {
             }
         } else if indexPath.section == 1 {
             if indexPath.row == 0 {
-                let alert = UIAlertController(title: "Select status", message: nil, preferredStyle: .actionSheet);
+                let alert = UIAlertController(title: NSLocalizedString("Select status", comment: "alert title"), message: nil, preferredStyle: .actionSheet);
                 let options: [Presence.Show?] = [nil, .chat, .online, .away, .xa, .dnd];
                 for type in options {
-                    let name = type == nil ? "Automatic" : self.statusNames[type!];
+                    let name = type == nil ? NSLocalizedString("Automatic ", comment: "presence automatic") : self.statusNames[type!];
                     let action = UIAlertAction(title: name, style: .default) { (a) in
                         Settings.statusType = type;
                     };
@@ -226,7 +226,7 @@ class SettingsViewController: UITableViewController {
                     alert.addAction(action);
                 }
             
-                let action = UIAlertAction(title: "Cancel", style: .cancel, handler: nil);
+                let action = UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil);
                 alert.addAction(action);
                 
                 alert.popoverPresentationController?.sourceView = self.tableView;
@@ -235,11 +235,11 @@ class SettingsViewController: UITableViewController {
                 self.present(alert, animated: true, completion: nil);
             }
             else if indexPath.row == 1 {
-                let alert = UIAlertController(title: "Status", message: "Enter status message", preferredStyle: .alert);
+                let alert = UIAlertController(title: NSLocalizedString("Status", comment: "alert title"), message: NSLocalizedString("Enter status message", comment: "alert body"), preferredStyle: .alert);
                 alert.addTextField(configurationHandler: { (textField) in
                     textField.text = Settings.statusMessage;
                 })
-                alert.addAction(UIAlertAction(title: "Set", style: .default, handler: { (action) -> Void in
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Set", comment: "button label"), style: .default, handler: { (action) -> Void in
                     Settings.statusMessage = (alert.textFields![0] as UITextField).text;
                     self.tableView.reloadData();
                 }));
@@ -248,7 +248,7 @@ class SettingsViewController: UITableViewController {
         } else if indexPath.section == 2 {
             switch SettingsGroup.groups[indexPath.row] {
             case .appearance:
-                let controller = TablePickerViewController<Appearance>(style: .grouped, message: "Select appearance", options: [.auto, .light, .dark], value: Settings.appearance);
+                let controller = TablePickerViewController<Appearance>(style: .grouped, message: NSLocalizedString("Select appearance", comment: "selection information"), options: [.auto, .light, .dark], value: Settings.appearance);
                 controller.sink(to: \.appearance, on: Settings);
                 self.navigationController?.pushViewController(controller, animated: true);
             default:
@@ -284,47 +284,6 @@ class SettingsViewController: UITableViewController {
         }
         return AvatarStatusView.getStatusImage(show);
     }
-    
-//    fileprivate func getStatusIconForActionIcon(named: String, size: Int, withBorder: Bool) -> UIImage? {
-//        guard var image = UIImage(named: named) else {
-//            return nil;
-//        }
-//
-//        let boxSize = CGSize(width: size, height: size);
-//        let imageSize = CGSize(width: (size*2)/3, height: (size*2)/3);
-//
-//        let imageRect = CGRect(origin: CGPoint(x: (boxSize.width - imageSize.width)/2, y: (boxSize.height - imageSize.height)/2), size: imageSize);
-//
-//        UIGraphicsBeginImageContextWithOptions(boxSize, false, 0);
-//        if withBorder {
-//            let ctx = UIGraphicsGetCurrentContext();
-//            let path = CGPath(ellipseIn: imageRect, transform: nil);
-//            ctx?.addPath(path);
-//
-//            ctx?.setFillColor(UIColor.white.cgColor);
-////        ctx?.fill(imageRect);
-//            ctx?.fillPath();
-//        }
-//        image.draw(in: imageRect);
-//        image = UIGraphicsGetImageFromCurrentImageContext()!;
-//        UIGraphicsEndImageContext();
-//        return image.withRenderingMode(.alwaysOriginal);
-//    }
-//
-//    fileprivate func getStatusIconForActionIconOld(named: String) -> UIImage? {
-//        guard var image = UIImage(named: named) else {
-//            return nil;
-//        }
-//        let newSize = CGSize(width: image.size.width * 1.5, height: image.size.height * 1.5);
-//        UIGraphicsBeginImageContextWithOptions(newSize, false, 0);
-//        let ctx = UIGraphicsGetCurrentContext();
-//        ctx?.setFillColor(UIColor.white.cgColor);
-//        ctx?.fill(CGRect(origin: .zero, size: newSize));
-//        image.draw(in: CGRect(origin: CGPoint(x: image.size.width * 0.25, y: image.size.height * 0.25), size: image.size));
-//        image = UIGraphicsGetImageFromCurrentImageContext()!;
-//        UIGraphicsEndImageContext();
-//        return image.withRenderingMode(.alwaysOriginal);
-//    }
  
     @IBAction func closeClicked(_ sender: Any) {
         self.dismiss(animated: true, completion: nil);
