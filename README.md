@@ -38,7 +38,7 @@ Sikin IM may be downloaded from the [App Store](https://itunes.apple.com/us/app/
 
 **WARNING: Testing version of the Siskin can be unstable and cause data loss, you are using it at your discretion.
 
-To sign up to TestFlight beta testing please use following link: https://testflight.apple.com/join/zDSl1D3s ot join the testing program.
+To sign up to TestFlight beta testing please use following link: https://testflight.apple.com/join/zDSl1D3s to join the testing program.
 
 # Using software
 
