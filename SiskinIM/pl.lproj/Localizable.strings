@@ -1016,3 +1016,6 @@
 /* presence automatic
    presence status */
 "Automatic " = "Automatyczny";
+
+/* alert title */
+"Missed call" = "Nieodebrane połączenie";
