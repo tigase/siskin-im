@@ -76,17 +76,15 @@ open class XmppService {
         }
     }
     
-    var clients: [BareJID: XMPPClient] {
-        get {
-            return dispatcher.sync {
-                return _clients;
-            }
-        }
+    @Published
+    public private(set) var clients: [BareJID: XMPPClient] = [:];
+    
+    private func client(for account: BareJID) -> XMPPClient? {
+        return clients[account];
     }
     
-    fileprivate var _clients = [BareJID: XMPPClient]();
     fileprivate let dispatcher: QueueDispatcher = QueueDispatcher(label: "xmpp_service");
-        
+    
     @Published
     var status: Status = Status(show: nil, message: nil, shouldConnect: true, sendInitialPresence: false);
     
@@ -140,7 +138,7 @@ open class XmppService {
         switch event {
         case .enabled(let account):
             AccountSettings.reconnectionLocation(for: account.name, value: nil);
-            if let client = self._clients[account.name] {
+            if let client = self.client(for: account.name) {
                 // if client exists and is connected, then reconnect it..
                 if client.state != .disconnected() {
                     _ = client.disconnect();
@@ -151,7 +149,7 @@ open class XmppService {
                 self.connect(client: client, for: account);
             }
         case .disabled(let account), .removed(let account):
-            if let client = self._clients[account.name] {
+            if let client = self.client(for: account.name) {
                 let prevState = client.state;
                 _ = client.disconnect();
                 if prevState == .disconnected() && client.state == .disconnected() {
@@ -192,13 +190,13 @@ open class XmppService {
 
     open func getClient(for account:BareJID) -> XMPPClient? {
         return dispatcher.sync {
-            return self._clients[account];
+            return self.client(for: account);
         }
     }
     
     private func connectClients(ignoreCheck: Bool) {
         dispatcher.async {
-            self._clients.values.forEach { client in
+            self.clients.values.forEach { client in
                 self.reconnect(client: client, ignoreCheck: ignoreCheck);
             }
         }
@@ -206,7 +204,7 @@ open class XmppService {
     
     private func disconnectClients(force: Bool = false) {
         dispatcher.async {
-            self._clients.values.forEach { client in
+            self.clients.values.forEach { client in
                 _ = client.disconnect(force);
             }
         }
@@ -214,7 +212,7 @@ open class XmppService {
     
     fileprivate func sendKeepAlive() {
         dispatcher.async {
-            self._clients.values.forEach { client in
+            self.clients.values.forEach { client in
                 client.keepalive();
             }
         }
@@ -304,7 +302,7 @@ open class XmppService {
     private func unregisterClient(_ client: XMPPClient, removed: Bool = false) {
         dispatcher.sync {
             let accountName = client.sessionObject.userBareJid!;
-            guard let client = self._clients.removeValue(forKey: accountName) else {
+            guard let client = self.clients.removeValue(forKey: accountName) else {
                 return;
             }
 
@@ -521,7 +519,7 @@ open class XmppService {
                 }
             }).store(in: &clientCancellables.cancellables);
                     
-            self._clients[account.name] = client;
+            self.clients[account.name] = client;
             return client;
         }
     }

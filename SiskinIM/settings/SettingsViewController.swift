@@ -126,10 +126,10 @@ class SettingsViewController: UITableViewController {
                     }
                 });
                 self.statusTypeCancellable2 = Settings.$statusType.map({ [weak self] type in
-                    if type == nil {
-                        return NSLocalizedString("Automatic ", comment: "presence status");
+                    if let value = type {
+                        return self?.statusNames[value];
                     } else {
-                        return self?.statusNames[type!];
+                        return NSLocalizedString("Automatic ", comment: "presence status");
                     }
                 }).sink(receiveValue: { [weak cell] name in
                     (cell?.contentView.subviews[1] as? UILabel)?.text = name;
