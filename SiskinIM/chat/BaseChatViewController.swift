@@ -170,11 +170,12 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     }
     
     private func setColors() {
-        if #available(iOS 13.0, *) {
-            navigationController?.navigationBar.barTintColor = UIColor.systemBackground;
-        } else {
-            navigationController?.navigationBar.barTintColor = UIColor.white;
-        }
+        let appearance = UINavigationBarAppearance();
+        appearance.configureWithDefaultBackground();
+        appearance.backgroundEffect = UIBlurEffect.init(style: .systemMaterial);
+        navigationController?.navigationBar.standardAppearance = appearance;
+        navigationController?.navigationBar.scrollEdgeAppearance = appearance;
+        navigationController?.navigationBar.barTintColor = UIColor.systemBackground;
         navigationController?.navigationBar.tintColor = UIColor(named: "tintColor");
     }
     

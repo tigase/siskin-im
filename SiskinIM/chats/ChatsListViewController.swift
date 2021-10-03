@@ -104,6 +104,12 @@ class ChatsListViewController: UITableViewController {
     }
     
     private func setColors() {
+        let appearance = UINavigationBarAppearance();
+        appearance.configureWithDefaultBackground();
+        appearance.backgroundColor = UIColor(named: "chatslistSemiBackground");
+        appearance.backgroundEffect = UIBlurEffect(style: .systemMaterial);
+        navigationController?.navigationBar.standardAppearance = appearance;
+        navigationController?.navigationBar.scrollEdgeAppearance = appearance;
         navigationController?.navigationBar.barTintColor = UIColor(named: "chatslistBackground");
         navigationController?.navigationBar.tintColor = UIColor.white;
     }
