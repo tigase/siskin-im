@@ -93,7 +93,7 @@ open class DBChatStore: ContextLifecycleAware {
         
         if result {
             if conversation.unread > 0 && !self.isMuted(conversation: conversation) {
-                self.unreadMessagesCount = self.unreadMessagesCount - conversation.unread;
+                self.unreadMessagesCount = max(self.unreadMessagesCount - conversation.unread, 0);
 
                 DBChatHistoryStore.instance.markAsRead(for: conversation, before: Date());
             }
@@ -168,10 +168,12 @@ open class DBChatStore: ContextLifecycleAware {
         dispatcher.async {
             if let conversation = self.conversation(for: account, with: jid) {
                 let unread = lastActivity != nil && state.isUnread;
-                if conversation.update(lastActivity: lastActivity, timestamp: timestamp, isUnread: unread) {
-                    if unread && !self.isMuted(conversation: conversation) {
-                        self.unreadMessagesCount = self.unreadMessagesCount + 1;
-                    }
+                let updated = conversation.update(lastActivity: lastActivity, timestamp: timestamp, isUnread: unread);
+                if unread && !self.isMuted(conversation: conversation) {
+                    self.unreadMessagesCount = self.unreadMessagesCount + 1;
+                }
+
+                if updated {
                     if let chat = conversation as? Chat {
                         if remoteChatState != nil {
                             chat.update(remoteChatState: remoteChatState);
@@ -194,7 +196,7 @@ open class DBChatStore: ContextLifecycleAware {
                 let unread = conversation.unread;
                 if conversation.markAsRead(count: count ?? unread) {
                     if !self.isMuted(conversation: conversation) {
-                        self.unreadMessagesCount = self.unreadMessagesCount - (count ?? unread);
+                        self.unreadMessagesCount = max(self.unreadMessagesCount - (count ?? unread), 0);
                     }
                 }
             }
@@ -357,7 +359,7 @@ open class DBChatStore: ContextLifecycleAware {
             }
             
             if unread > 0 {
-                self.unreadMessagesCount = self.unreadMessagesCount - unread;
+                self.unreadMessagesCount = max(self.unreadMessagesCount - unread, 0);
             }
         }
     }
@@ -382,7 +384,7 @@ open class DBChatStore: ContextLifecycleAware {
                 if change {
                     self.unreadMessagesCount = self.unreadMessagesCount + conversation.unread;
                 } else {
-                    self.unreadMessagesCount = self.unreadMessagesCount - conversation.unread;
+                    self.unreadMessagesCount = max(self.unreadMessagesCount - conversation.unread, 0);
                 }
             }
         }
