@@ -238,6 +238,7 @@
                             </connections>
                         </barButtonItem>
                     </navigationItem>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <nil key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="addMucButton" destination="AHa-0l-wJt" id="bMf-ys-7CM"/>
@@ -286,16 +287,16 @@
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <stackView opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="749" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="vls-oU-dVk">
-                                    <rect key="frame" x="0.0" y="2" width="390" height="36.5"/>
+                                    <rect key="frame" x="0.0" y="4.5" width="390" height="31.5"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Jane Done" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UWL-vQ-lxc">
-                                            <rect key="frame" x="0.0" y="0.0" width="390" height="20.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="390" height="17"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="Here I'm again..." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="m0n-Ls-5LF">
-                                            <rect key="frame" x="0.0" y="20.5" width="390" height="16"/>
+                                            <rect key="frame" x="0.0" y="17" width="390" height="14.5"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                             <color key="textColor" systemColor="secondaryLabelColor"/>
                                             <nil key="highlightedColor"/>
@@ -444,15 +445,15 @@
         <scene sceneID="Lw1-4q-gz0">
             <objects>
                 <tabBarController id="lx9-0R-yhg" customClass="MainTabBarController" customModule="Siskin" customModuleProvider="target" sceneMemberID="viewController">
-                    <tabBar key="tabBar" contentMode="scaleToFill" id="MWg-yL-VNP">
+                    <tabBar key="tabBar" contentMode="scaleToFill" barStyle="black" id="MWg-yL-VNP">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="49"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="barTintColor" name="chatslistBackground"/>
                         <color key="selectedImageTintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <tabBarAppearance key="standardAppearance" backgroundEffect="systemMaterial">
+                        <tabBarAppearance key="standardAppearance" backgroundEffect="systemUltraThinMaterialDark">
                             <color key="backgroundColor" name="chatslistSemiBackground"/>
                         </tabBarAppearance>
-                        <tabBarAppearance key="scrollEdgeAppearance" backgroundEffect="systemMaterial">
+                        <tabBarAppearance key="scrollEdgeAppearance" backgroundEffect="systemUltraThinMaterialDark">
                             <color key="backgroundColor" name="chatslistSemiBackground"/>
                         </tabBarAppearance>
                     </tabBar>
@@ -1305,7 +1306,7 @@
             <color white="0.82300001382827759" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </namedColor>
         <namedColor name="chatslistSemiBackground">
-            <color red="0.36862745098039218" green="0.36862745098039218" blue="0.54117647058823526" alpha="0.5" colorSpace="custom" customColorSpace="displayP3"/>
+            <color red="0.36899998784065247" green="0.36899998784065247" blue="0.54100000858306885" alpha="0.5" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <namedColor name="tintColor">
             <color red="0.33000001311302185" green="0.33000001311302185" blue="0.48800000548362732" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>

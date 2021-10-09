@@ -66,7 +66,7 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
         let appearance = UINavigationBarAppearance();
         appearance.configureWithDefaultBackground();
         appearance.backgroundColor = UIColor(named: "chatslistSemiBackground");
-        appearance.backgroundEffect = UIBlurEffect(style: .systemMaterial);
+        appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialDark);
         navigationController?.navigationBar.standardAppearance = appearance;
         navigationController?.navigationBar.scrollEdgeAppearance = appearance;
         searchController.searchBar.barStyle = .black;
