@@ -235,6 +235,8 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
     public override func viewDidLoad() {
         super.viewDidLoad();
 
+        localVideoView.layer.cornerRadius = 5;
+        
         self.updateStateLabel();
         self.updateAvatarView();
         
