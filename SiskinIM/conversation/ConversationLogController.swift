@@ -39,6 +39,8 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
     var refreshControl: UIRefreshControl?;
 
     private let newestVisibleDateSubject = PassthroughSubject<Date,Never>();
+
+    private var cancellables: Set<AnyCancellable> = [];
     
     override func viewDidLoad() {
         super.viewDidLoad();
@@ -64,6 +66,9 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
     
     override func viewWillAppear(_ animated: Bool) {
         if let conversation = self.conversation {
+            XmppService.instance.$applicationState.filter({ $0 == .active }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] _ in
+                self?.markAsReadUpToNewestVisibleRow();
+            }).store(in: &cancellables);
             newestVisibleDateSubject.onlyGreater().throttledSink(for: 0.5, scheduler: DispatchQueue.main, receiveValue: { date in
                 DBChatHistoryStore.instance.markAsRead(for: conversation, before: date);
             });
@@ -77,6 +82,11 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated);
         hideEditToolbar();
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated);
+        self.markAsReadUpToNewestVisibleRow();
     }
             
     func numberOfSections(in tableView: UITableView) -> Int {
