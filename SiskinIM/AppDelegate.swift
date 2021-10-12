@@ -27,6 +27,7 @@ import WebRTC
 import BackgroundTasks
 import Combine
 import TigaseLogging
+import Intents
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -216,7 +217,74 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         RTCCleanupSSL();
         logger.debug("application terminated!")
     }
-
+    
+    func application(_ application: UIApplication, continue activity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
+        
+        print("handling user activity", activity);
+        
+        guard let intent = activity.interaction?.intent as? INSendMessageIntent else {
+            return false;
+        }
+        
+        guard let account = BareJID(intent.sender?.personHandle?.value), AccountManager.getAccount(for: account)?.active ?? false else {
+            return false;
+        }
+        
+        guard let recipient = BareJID(intent.recipients?.first?.personHandle?.value) else {
+            return false;
+        }
+        
+        guard let xmppClient = XmppService.instance.getClient(for: account) else {
+            return false;
+        }
+        
+        var chatToOpen: Chat?;
+        switch DBChatStore.instance.createChat(for: xmppClient, with: recipient) {
+        case .created(let chat):
+            chatToOpen = chat;
+        case .found(let chat):
+            chatToOpen = chat;
+        case .none:
+            return false;
+        }
+        
+        guard let destination = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: "ChatViewNavigationController") as? UINavigationController else {
+            return false;
+        }
+        
+        let chatController = destination.children[0] as! ChatViewController;
+        chatController.hidesBottomBarWhenPushed = true;
+        chatController.conversation = chatToOpen;
+        self.window?.rootViewController?.showDetailViewController(destination, sender: self);
+        
+        return true;
+    }
+    
+//    func application(_ application: UIApplication, handlerFor intent: INIntent) -> Any? {
+//        guard let sendMessageIntent = intent as? INSendMessageIntent, sendMessageIntent.content == nil else {
+//            return nil;
+//        }
+//
+//        return SendMessageIntentHandler();
+//    }
+//
+//    class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
+//
+//        func handle(intent: INSendMessageIntent, completion: @escaping (INSendMessageIntentResponse) -> Void) {
+//            guard let account = BareJID(intent.sender?.personHandle?.value) else {
+//                completion(.init(code: .failure, userActivity: nil));
+//                return;
+//            }
+//            guard let recipient = BareJID(intent.recipients?.first?.personHandle?.value) else {
+//                completion(.init(code: .failure, userActivity: nil));
+//                return;
+//            }
+//        }
+//
+//    }
+    
+    
+    
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
         guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
             return false;
