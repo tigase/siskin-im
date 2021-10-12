@@ -23,6 +23,8 @@ import Foundation
 import TigaseSwift
 import UserNotifications
 import os
+import Intents
+import UIKit
 
 public struct ConversationNotificationDetails {
     public let name: String;
@@ -64,7 +66,7 @@ public class NotificationsManagerHelper {
         return nil;
     }
         
-    public static func prepareNewMessageNotification(content: UNMutableNotificationContent, account: BareJID, sender jid: BareJID?, nickname: String?, body msg: String?, provider: NotificationManagerProvider, completionHandler: @escaping (UNMutableNotificationContent)->Void) {
+    public static func prepareNewMessageNotification(content: UNMutableNotificationContent, account: BareJID, sender jid: BareJID?, nickname: String?, body msg: String?, provider: NotificationManagerProvider, completionHandler: @escaping (UNNotificationContent)->Void) {
         let timestamp = Date();
         content.sound = .default;        
         content.categoryIdentifier = NotificationCategory.MESSAGE.rawValue;
@@ -74,6 +76,8 @@ public class NotificationsManagerHelper {
             provider.conversationNotificationDetails(for: account, with: sender, completionHandler: { details in
                 os_log("%{public}@", log: OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SiskinPush"), "Found: name: \(details.name), type: \(String(describing: details.type.rawValue))");
 
+                var senderId: String = sender.stringValue;
+                var group: INSpeakableString?;
                 switch details.type {
                 case .chat:
                     content.title = details.name;
@@ -84,6 +88,7 @@ public class NotificationsManagerHelper {
                     }
                 case .channel, .room:
                     content.title = details.name
+                    group = INSpeakableString(spokenPhrase: details.name);
                     if body.starts(with: "/me ") {
                         if let nickname = nickname {
                             content.body = "\(nickname) \(body.dropFirst(4))";
@@ -94,13 +99,36 @@ public class NotificationsManagerHelper {
                         content.body = body;
                         if let nickname = nickname {
                             content.subtitle = nickname;
+                            senderId = sender.with(resource: nickname).stringValue;
                         }
                     }
                 }
+                
                 content.userInfo = ["account": account.stringValue, "sender": sender.stringValue, "uid": uid, "timestamp": timestamp];
                 provider.countBadge(withThreadId: content.threadIdentifier, completionHandler: { count in
                     content.badge = count as NSNumber;
-                    completionHandler(content);
+                    if #available(iOS 15.0, *) {
+                        do {
+                            let recipient = INPerson(personHandle: INPersonHandle(value: account.stringValue, type: .unknown), nameComponents: nil, displayName: nil, image: nil, contactIdentifier: nil, customIdentifier: nil, isMe: true, suggestionType: .none);
+                            let avatar = provider.avatar(on: account, for: sender);
+                            let sender = INPerson(personHandle: INPersonHandle(value: senderId, type: .unknown), nameComponents: nil, displayName: group == nil ? details.name : nickname, image: avatar, contactIdentifier: nil, customIdentifier: senderId, isMe: false, suggestionType: .instantMessageAddress);
+                            let intent = INSendMessageIntent(recipients: group == nil ? [recipient] : [recipient, sender], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: group, conversationIdentifier: content.threadIdentifier, serviceName: "Siskin IM", sender: sender, attachments: nil);
+                            if details.type == .chat {
+                                intent.setImage(avatar, forParameterNamed: \.sender);
+                            } else {
+                                intent.setImage(avatar, forParameterNamed: \.speakableGroupName);
+                            }
+                            let interaction = INInteraction(intent: intent, response: nil);
+                            interaction.direction = .incoming;
+                            interaction.donate(completion: nil);
+                            completionHandler(try content.updating(from: intent));
+                        } catch {
+                            // some error happened
+                            completionHandler(content);
+                        }
+                    } else {
+                        completionHandler(content);
+                    }
                 });
             })
         } else {
@@ -121,6 +149,8 @@ public protocol NotificationManagerProvider {
     func countBadge(withThreadId: String?, completionHandler: @escaping (Int)->Void);
     
     func shouldShowNotification(account: BareJID, sender: BareJID?, body: String?, completionHandler: @escaping (Bool)->Void);
+    
+    func avatar(on account: BareJID, for sender: BareJID) -> INImage?;
     
 }
 

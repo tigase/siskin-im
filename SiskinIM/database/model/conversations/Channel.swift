@@ -24,6 +24,7 @@ import TigaseSwift
 import UIKit
 import Combine
 import Shared
+import Intents
 
 public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtocol, Conversation, LastMessageTimestampAware {
     
@@ -185,6 +186,14 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         let message = self.createMessage(text: text);
         message.lastMessageCorrectionId = correctedMessageOriginId;
         self.send(message: message, completionHandler: nil);
+        if #available(iOS 15.0, *) {
+            let sender = INPerson(personHandle: INPersonHandle(value: self.account.stringValue, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.stringValue, isMe: true, suggestionType: .instantMessageAddress);
+            let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.stringValue, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.stringValue, isMe: false, suggestionType: .instantMessageAddress);
+            let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.stringValue)|sender=\(self.jid.stringValue)", serviceName: "Siskin IM", sender: sender, attachments: nil);
+            let interaction = INInteraction(intent: intent, response: nil);
+            interaction.direction = .outgoing;
+            interaction.donate(completion: nil);
+        }
     }
     
     public func prepareAttachment(url originalURL: URL, completionHandler: (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
@@ -200,6 +209,14 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         let message = self.createMessage(text: uploadedUrl);
         message.oob = uploadedUrl;
         send(message: message, completionHandler: nil)
+        if #available(iOS 15.0, *) {
+            let sender = INPerson(personHandle: INPersonHandle(value: self.account.stringValue, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.stringValue, isMe: true, suggestionType: .instantMessageAddress);
+            let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.stringValue, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.stringValue, isMe: false, suggestionType: .instantMessageAddress);
+            let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.stringValue)|sender=\(self.jid.stringValue)", serviceName: "Siskin IM", sender: sender, attachments: nil);
+            let interaction = INInteraction(intent: intent, response: nil);
+            interaction.direction = .outgoing;
+            interaction.donate(completion: nil);
+        }
         completionHandler?();
     }
     

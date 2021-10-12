@@ -21,10 +21,12 @@
 
 import BackgroundTasks
 import UserNotifications
+import UIKit
 import Shared
 import TigaseSwift
 import os.log
 import TigaseSQLite3
+import Intents
 
 class NotificationService: UNNotificationServiceExtension {
 
@@ -155,12 +157,22 @@ extension Query {
     static let buddyName = Query("select name from roster_items where account = :account and jid = :jid");
     static let conversationNotificationDetails = Query("SELECT c.type as type, c.options as options FROM chats c WHERE c.account = :account AND c.jid = :jid")
     static let listUnreadThreads = Query("select c.account, c.jid from chats c inner join chat_history ch where ch.account = c.account and ch.jid = c.jid and ch.state in (2,6,7) group by c.account, c.jid");
+    static let findAvatar = Query("select ac.hash FROM avatars_cache ac WHERE ac.account = :account AND ac.jid = :jid ORDER BY ac.type ASC");
     
 }
 
 class ExtensionNotificationManagerProvider: NotificationManagerProvider {
     
     static let GET_UNREAD_CHATS = "s";
+    
+    func avatar(on account: BareJID, for sender: BareJID) -> INImage? {
+        guard let hash = try? Database.mainReader().select(query: .findAvatar, params: ["account": account, "jid": sender]).mapFirst({ $0.string(for: "hash") }) else {
+            return nil;
+        }
+        
+        let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.siskinim.shared")!.appendingPathComponent("Library", isDirectory: true).appendingPathComponent("Caches", isDirectory: true).appendingPathComponent("avatars", isDirectory: true).appendingPathComponent(hash);
+        return UIImage(contentsOfFile: url.path)?.inImage();
+    }
     
     func conversationNotificationDetails(for account: BareJID, with jid: BareJID, completionHandler: @escaping (ConversationNotificationDetails)->Void) {
         let (type, options) = try! Database.mainReader().select(query: .conversationNotificationDetails, cached: false, params: ["account": account, "jid": jid]).mapFirst({ cursor -> (ConversationType, ConversationOptions) in

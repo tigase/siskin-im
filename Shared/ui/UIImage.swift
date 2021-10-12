@@ -20,6 +20,7 @@
 //
 
 import UIKit
+import Intents
 
 extension UIImage {
     public func scaled(maxWidthOrHeight: CGFloat, isOpaque: Bool = false) -> UIImage? {
@@ -41,5 +42,12 @@ extension UIImage {
 //            UIGraphicsEndImageContext();
 //        }
 //        return  UIGraphicsGetImageFromCurrentImageContext();
+    }
+    
+    public func inImage() -> INImage? {
+        guard let data = self.jpegData(compressionQuality: 0.7) else {
+            return nil;
+        }
+        return INImage(imageData: data);
     }
 }

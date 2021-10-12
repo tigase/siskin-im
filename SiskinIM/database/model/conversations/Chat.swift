@@ -25,6 +25,7 @@ import TigaseSwiftOMEMO
 import UIKit
 import Combine
 import Shared
+import Intents
 
 public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conversation {
     
@@ -209,6 +210,16 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
             message.oob = content
         }
         message.lastMessageCorrectionId = correctedMessageOriginId;
+        
+        if #available(iOS 15.0, *) {
+            let sender = INPerson(personHandle: INPersonHandle(value: account.stringValue, type: .unknown), nameComponents: nil, displayName: AccountManager.getAccount(for: self.account)?.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: account.stringValue, isMe: true, suggestionType: .instantMessageAddress);
+            let recipient = INPerson(personHandle: INPersonHandle(value: jid.stringValue, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: jid.stringValue, isMe: false, suggestionType: .instantMessageAddress);
+            let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: nil, conversationIdentifier: "account=\(account.stringValue)|sender=\(jid.stringValue)", serviceName: "Siskin IM", sender: sender, attachments: nil);
+            let interaction = INInteraction(intent: intent, response: nil);
+            interaction.direction = .outgoing;
+            interaction.donate(completion: nil);
+        }
+        
         send(message: message, encryption: encryption, completionHandler: { result in
             switch result {
             case .success(_):

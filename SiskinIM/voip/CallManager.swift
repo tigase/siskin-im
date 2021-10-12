@@ -27,6 +27,7 @@ import TigaseSwift
 import TigaseLogging
 import Shared
 import Combine
+import Intents
 
 class CallManager: NSObject, CXProviderDelegate {    
     
@@ -129,6 +130,14 @@ class CallManager: NSObject, CXProviderDelegate {
                 }
             }
             
+            if #available(iOS 15.0, *) {
+                let sender = INPerson(personHandle: INPersonHandle(value: call.jid.stringValue, type: .unknown), nameComponents: nil, displayName: call.name, image: AvatarManager.instance.avatar(for: call.jid, on: call.account)?.inImage(), contactIdentifier: nil, customIdentifier: call.jid.stringValue, isMe: false, suggestionType: .instantMessageAddress);
+                let intent = INStartCallIntent(callRecordFilter: nil, callRecordToCallBack: nil, audioRoute: .unknown, destinationType: .unknown, contacts: [sender], callCapability: AVCaptureDevice.authorizationStatus(for: .video) == .authorized && call.media.contains(.video) ? .videoCall : .audioCall)
+                let interaction = INInteraction(intent: intent, response: nil);
+                interaction.direction = .incoming;
+                interaction.donate(completion: nil);
+            }
+            
             self.activeCalls.append(call);
                     
             #if targetEnvironment(simulator)
@@ -176,6 +185,14 @@ class CallManager: NSObject, CXProviderDelegate {
             }
             self.activeCalls.append(call);
 
+            if #available(iOS 15.0, *) {
+                let recipient = INPerson(personHandle: INPersonHandle(value: call.jid.stringValue, type: .unknown), nameComponents: nil, displayName: call.name, image: AvatarManager.instance.avatar(for: call.jid, on: call.account)?.inImage(), contactIdentifier: nil, customIdentifier: call.jid.stringValue, isMe: false, suggestionType: .instantMessageAddress);
+                let intent = INStartCallIntent(callRecordFilter: nil, callRecordToCallBack: nil, audioRoute: .unknown, destinationType: .unknown, contacts: [recipient], callCapability: AVCaptureDevice.authorizationStatus(for: .video) == .authorized && call.media.contains(.video) ? .videoCall : .audioCall)
+                let interaction = INInteraction(intent: intent, response: nil);
+                interaction.direction = .incoming;
+                interaction.donate(completion: nil);
+            }
+            
             let startCallAction = CXStartCallAction(call: call.uuid, handle: call.remoteHandle);
             startCallAction.isVideo = call.media.contains(.video);
             startCallAction.contactIdentifier = call.name;

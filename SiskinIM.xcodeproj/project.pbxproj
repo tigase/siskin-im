@@ -172,6 +172,7 @@
 		FEA308D01F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA308CF1F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift */; };
 		FEA518B1266159B900523EF2 /* TigaseSQLite3 in Frameworks */ = {isa = PBXBuildFile; productRef = FEA518B0266159B900523EF2 /* TigaseSQLite3 */; };
 		FEA518C2266165A100523EF2 /* TigaseLogging in Frameworks */ = {isa = PBXBuildFile; productRef = FEA518C1266165A100523EF2 /* TigaseLogging */; };
+		FEA6DCB627148D420079DBEC /* AvatarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB62C4F1DA80956001500D5 /* AvatarStore.swift */; };
 		FEA7BF5B21E50C5800D9E36C /* JingleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA7BF5A21E50C5800D9E36C /* JingleManager.swift */; };
 		FEA7BF5D21E50CAB00D9E36C /* JingleManager_Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA7BF5C21E50CAB00D9E36C /* JingleManager_Session.swift */; };
 		FEA8D65D1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8D65C1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift */; };
@@ -179,7 +180,6 @@
 		FEAC71791CECE50400ABABEF /* MucChatOccupantsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC71781CECE50400ABABEF /* MucChatOccupantsTableViewController.swift */; };
 		FEAC717B1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAC717A1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift */; };
 		FEB5EC9D1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB5EC9C1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift */; };
-		FEB62C501DA80956001500D5 /* AvatarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB62C4F1DA80956001500D5 /* AvatarStore.swift */; };
 		FEBA82F926F76A8000347D89 /* VoIP.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEBA82FB26F76A8000347D89 /* VoIP.storyboard */; };
 		FEBA82FC26F76A8700347D89 /* Groupchat.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEBA82FE26F76A8700347D89 /* Groupchat.storyboard */; };
 		FEBA82FF26F76A8D00347D89 /* Info.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEBA830126F76A8D00347D89 /* Info.storyboard */; };
@@ -861,6 +861,7 @@
 		FE507A121CDB7B3B001A015C /* util */ = {
 			isa = PBXGroup;
 			children = (
+				FEB62C4F1DA80956001500D5 /* AvatarStore.swift */,
 				FE11D3B92662849E00CC883F /* ServerCertificateInfo.swift */,
 				FE9D4DA626C7E87C00DD295A /* AudioSession.swift */,
 				FE11D3B1266241A200CC883F /* combine */,
@@ -868,7 +869,6 @@
 				FE507A131CDB7B3B001A015C /* AccountManager.swift */,
 				FE507A141CDB7B3B001A015C /* AvatarManager.swift */,
 				FEDE93881D081C3D00CA60A9 /* Settings.swift */,
-				FEB62C4F1DA80956001500D5 /* AvatarStore.swift */,
 				FE7F9302200FD5AC004C6195 /* AccountManagerScramSaltedPasswordCache.swift */,
 				FE137A4721F6464D006B7F7C /* UIColor_mix.swift */,
 				FE719E772271B439007CEEC9 /* MessageEncryption.swift */,
@@ -1521,7 +1521,6 @@
 				FE2332E1242CCDB400008ED4 /* InvitationChatTableViewCell.swift in Sources */,
 				FE3E38862428C21100D3A8E8 /* OSLog.swift in Sources */,
 				FECEF29423B7933A007EC323 /* MetadataCache.swift in Sources */,
-				FEB62C501DA80956001500D5 /* AvatarStore.swift in Sources */,
 				FE7D293423B919FF001A877D /* DownloadManager.swift in Sources */,
 				FE137A4821F6464D006B7F7C /* UIColor_mix.swift in Sources */,
 				FE507A1E1CDB7B3B001A015C /* RosterViewController.swift in Sources */,
@@ -1651,6 +1650,7 @@
 				FE11D35E26623D6D00CC883F /* ConversationBase.swift in Sources */,
 				FE11D35D26623D6D00CC883F /* Channel.swift in Sources */,
 				FEDE00B4266CC7B80019CC1C /* InvitationsManager.swift in Sources */,
+				FEA6DCB627148D420079DBEC /* AvatarStore.swift in Sources */,
 				FE507A1D1CDB7B3B001A015C /* RosterItemTableViewCell.swift in Sources */,
 				FE11D38226623D7700CC883F /* DBChatStore+ChatStore.swift in Sources */,
 				FE2809832167CF1B002F5BD0 /* ServerFeaturesViewController.swift in Sources */,

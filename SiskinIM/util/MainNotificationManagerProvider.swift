@@ -19,11 +19,19 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 
-import Foundation
+import UIKit
 import TigaseSwift
 import Shared
+import Intents
 
 class MainNotificationManagerProvider: NotificationManagerProvider {
+    
+    func avatar(on account: BareJID, for sender: BareJID) -> INImage? {
+        guard let data = AvatarManager.instance.avatar(for: sender, on: account)?.jpegData(compressionQuality: 0.7) else {
+            return nil;
+        }
+        return INImage(imageData: data);
+    }
     
     func conversationNotificationDetails(for account: BareJID, with jid: BareJID, completionHandler: @escaping (ConversationNotificationDetails)->Void) {
         if let item = DBChatStore.instance.conversation(for: account, with: jid) {
