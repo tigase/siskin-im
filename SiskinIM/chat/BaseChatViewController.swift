@@ -72,7 +72,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        chatViewInputBar.placeholder = "from \(conversation.account.stringValue)...";
+        chatViewInputBar.placeholder = String.localizedStringWithFormat(NSLocalizedString("from %@...", comment: "conversation view input field placeholder"), conversation.account.stringValue);
 
         navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem;
         navigationItem.leftItemsSupplementBackButton = true;
@@ -105,6 +105,15 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
         self.sendMessageButton = sendMessageButton;
         chatViewInputBar.addBottomButton(sendMessageButton);
         
+        let locationButton = UIButton(type: .custom);
+        locationButton.contentEdgeInsets = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4);
+        locationButton.setImage(UIImage(systemName: "location"), for: .normal);
+        locationButton.addTarget(self, action: #selector(sendMessageClicked(_:)), for: .touchUpInside);
+        locationButton.contentMode = .scaleToFill;
+        locationButton.tintColor = UIColor(named: "tintColor");
+        locationButton.addTarget(self, action: #selector(shareLocation(_:)), for: .touchUpInside);
+        chatViewInputBar.addBottomButton(locationButton);
+        
         setColors();
         DBChatStore.instance.conversationsEventsPublisher.sink(receiveValue: { [weak self] event in
             switch event {
@@ -117,7 +126,15 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
             }
         }).store(in: &cancellables);
     }
-
+    
+    @objc func shareLocation(_ sender: Any) {
+        let controller = ShareLocationController();
+        controller.conversation = self.conversation;
+        let navController = UINavigationController(rootViewController: controller);
+        navController.modalPresentationStyle = .pageSheet;
+        self.present(navController, animated: true, completion: nil);
+    }
+    
     override func didReceiveMemoryWarning() {
         
         super.didReceiveMemoryWarning()

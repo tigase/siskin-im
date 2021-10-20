@@ -21,6 +21,8 @@
 
 import UIKit
 import Combine
+import CoreLocation
+import MapKit
 
 class ConversationLogController: UIViewController, ConversationDataSourceDelegate, UITableViewDataSource {
     
@@ -133,6 +135,12 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
             
                 return cell;
             }
+        case .location(let location):
+            let id = "ChatTableViewLocationCell";
+            let cell: LocationChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! LocationChatTableViewCell;
+            cell.contentView.transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0);
+            cell.set(item: item, location: location);
+            return cell;
         case .linkPreview(let url):
             let id = "ChatTableViewLinkPreviewCell";
             let cell: LinkPreviewChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! LinkPreviewChatTableViewCell;
@@ -279,6 +287,19 @@ extension ConversationLogController {
         hideEditToolbar();
     }
     
+    func showMap(item: ConversationEntry) {
+        guard case let .location(coordinate) = item.payload else {
+            return;
+        }
+        let placemark = MKPlacemark(coordinate: coordinate);
+        let region = MKCoordinateRegion(center: coordinate, latitudinalMeters: 2000, longitudinalMeters: 2000);
+        let item = MKMapItem(placemark: placemark);
+        item.openInMaps(launchOptions: [
+            MKLaunchOptionsMapCenterKey: NSValue(mkCoordinate: region.center),
+            MKLaunchOptionsMapSpanKey: NSValue(mkCoordinateSpan: region.span)
+        ])
+    }
+    
     func copySelectedMessages() {
         copyMessageInt(paths: tableView.indexPathsForSelectedRows ?? []);
         hideEditToolbar();
@@ -372,6 +393,13 @@ extension ConversationLogController {
                     return "\(formatter.string(from: it.timestamp)) \(prefix)\(message)"
                 } else {
                     return "\(prefix)\(message)"
+                }
+            case .location(let location):
+                let prefix = withoutPrefix ? "" : "\(it.sender.nickname ?? "") ";
+                if withTimestamps {
+                    return "\(formatter.string(from: it.timestamp)) \(prefix)\(location.geoUri)"
+                } else {
+                    return "\(prefix)\(location.geoUri)"
                 }
             default:
                 return nil;

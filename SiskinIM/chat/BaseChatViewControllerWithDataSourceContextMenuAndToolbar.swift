@@ -26,7 +26,7 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
 
     fileprivate weak var timestampsSwitch: UIBarButtonItem? = nil;
     
-    var contextActions: [ContextAction] = [.copy, .reply, .share, .correct, .retract, .more];
+    var contextActions: [ContextAction] = [.showMap, .copy, .reply, .share, .correct, .retract, .more];
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
@@ -83,6 +83,8 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
     
     public func executeContext(action: ContextAction, forItem item: ConversationEntry, at indexPath: IndexPath) {
         switch action {
+        case .showMap:
+            self.conversationLogController?.showMap(item: item);
         case .copy:
             self.conversationLogController?.copyMessageInt(paths: [indexPath]);
         case .reply:
@@ -127,6 +129,11 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
     
     public func canExecuteContext(action: ContextAction, forItem item: ConversationEntry, at indexPath: IndexPath) -> Bool {
         switch action {
+        case .showMap:
+            guard case .location(_) = item.payload else {
+                return false;
+            }
+            return true;
         case .copy:
             return true;
         case .reply:
@@ -158,9 +165,12 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         case correct
         case retract
         case more
+        case showMap
         
         var title: String {
             switch self {
+            case .showMap:
+                return NSLocalizedString("Show map", comment: "context action label");
             case .copy:
                 return NSLocalizedString("Copy", comment: "context action label");
             case .reply:
@@ -177,10 +187,9 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         }
         
         var image: UIImage? {
-            guard #available(iOS 13.0, *) else {
-                return  nil;
-            }
             switch self {
+            case .showMap:
+                return UIImage(systemName: "map")
             case .copy:
                 return UIImage(systemName: "doc.on.doc");
             case .reply:

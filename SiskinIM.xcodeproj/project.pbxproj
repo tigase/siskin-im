@@ -173,6 +173,9 @@
 		FEA518B1266159B900523EF2 /* TigaseSQLite3 in Frameworks */ = {isa = PBXBuildFile; productRef = FEA518B0266159B900523EF2 /* TigaseSQLite3 */; };
 		FEA518C2266165A100523EF2 /* TigaseLogging in Frameworks */ = {isa = PBXBuildFile; productRef = FEA518C1266165A100523EF2 /* TigaseLogging */; };
 		FEA6DCB627148D420079DBEC /* AvatarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB62C4F1DA80956001500D5 /* AvatarStore.swift */; };
+		FEA6DCB8271890090079DBEC /* ShareLocationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA6DCB7271890090079DBEC /* ShareLocationController.swift */; };
+		FEA6DCBA2719DF230079DBEC /* ShareLocationSearchResultsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA6DCB92719DF230079DBEC /* ShareLocationSearchResultsController.swift */; };
+		FEA6DCBC271A01770079DBEC /* LocationChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA6DCBB271A01770079DBEC /* LocationChatTableViewCell.swift */; };
 		FEA7BF5B21E50C5800D9E36C /* JingleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA7BF5A21E50C5800D9E36C /* JingleManager.swift */; };
 		FEA7BF5D21E50CAB00D9E36C /* JingleManager_Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA7BF5C21E50CAB00D9E36C /* JingleManager_Session.swift */; };
 		FEA8D65D1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8D65C1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift */; };
@@ -506,6 +509,9 @@
 		FEA308CF1F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavigationControllerWrappingSegue.swift; sourceTree = "<group>"; };
 		FEA518A32661593B00523EF2 /* Database.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
 		FEA518B82661618D00523EF2 /* DatabaseMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseMigrator.swift; sourceTree = "<group>"; };
+		FEA6DCB7271890090079DBEC /* ShareLocationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareLocationController.swift; sourceTree = "<group>"; };
+		FEA6DCB92719DF230079DBEC /* ShareLocationSearchResultsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareLocationSearchResultsController.swift; sourceTree = "<group>"; };
+		FEA6DCBB271A01770079DBEC /* LocationChatTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationChatTableViewCell.swift; sourceTree = "<group>"; };
 		FEA7BF5A21E50C5800D9E36C /* JingleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager.swift; sourceTree = "<group>"; };
 		FEA7BF5C21E50CAB00D9E36C /* JingleManager_Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager_Session.swift; sourceTree = "<group>"; };
 		FEA8D65C1F2F6AF60077C12F /* VCardEntryTypeAwareTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VCardEntryTypeAwareTableViewCell.swift; sourceTree = "<group>"; };
@@ -687,6 +693,7 @@
 				FECEF29C23B7C36F007EC323 /* AttachmentChatTableViewCell.swift */,
 				FE2332E0242CCDB400008ED4 /* InvitationChatTableViewCell.swift */,
 				FEDE00C8266CEF270019CC1C /* ChatTableViewMarkerCell.swift */,
+				FEA6DCBB271A01770079DBEC /* LocationChatTableViewCell.swift */,
 			);
 			path = conversation;
 			sourceTree = "<group>";
@@ -763,6 +770,8 @@
 				FE43E43723BF3DE80079BD9B /* ChatAttachementsController.swift */,
 				FE9EA16A23BF9DB2008C401A /* ChatAttachementsCellView.swift */,
 				FE3A427426DA70B700D914CE /* ChatViewInputBar.swift */,
+				FEA6DCB7271890090079DBEC /* ShareLocationController.swift */,
+				FEA6DCB92719DF230079DBEC /* ShareLocationSearchResultsController.swift */,
 			);
 			path = chat;
 			sourceTree = "<group>";
@@ -1546,6 +1555,7 @@
 				FE43E43823BF3DE80079BD9B /* ChatAttachementsController.swift in Sources */,
 				FEDE93891D081C3D00CA60A9 /* Settings.swift in Sources */,
 				FECEF29B23B7BC02007EC323 /* BaseChatTableViewCell.swift in Sources */,
+				FEA6DCBC271A01770079DBEC /* LocationChatTableViewCell.swift in Sources */,
 				FE3A427526DA70B700D914CE /* ChatViewInputBar.swift in Sources */,
 				FE9D4DA526C1375300DD295A /* InviteToMeetingViewController.swift in Sources */,
 				FECEF29E23B7C390007EC323 /* AttachmentChatTableViewCell.swift in Sources */,
@@ -1591,6 +1601,7 @@
 				FEFB63AD1F31E4EE00EFB3E7 /* MainTabBarController.swift in Sources */,
 				FE11D35B26623D6D00CC883F /* AccountConversations.swift in Sources */,
 				FE65D62822E9F8EB0065DEA5 /* Markdown.swift in Sources */,
+				FEA6DCBA2719DF230079DBEC /* ShareLocationSearchResultsController.swift in Sources */,
 				FE11D3D52662B94500CC883F /* PresenceStore.swift in Sources */,
 				FE507A201CDB7B3B001A015C /* AddAccountController.swift in Sources */,
 				FE2332DB242B9C2300008ED4 /* ChannelInviteController.swift in Sources */,
@@ -1621,6 +1632,7 @@
 				FEDE939B1D0C38B000CA60A9 /* ContactFormTableViewCell.swift in Sources */,
 				FEDE93991D0C207100CA60A9 /* ContactBasicTableViewCell.swift in Sources */,
 				FE0E30F12535BB530030F8C5 /* BaseChatViewController+ShareFile.swift in Sources */,
+				FEA6DCB8271890090079DBEC /* ShareLocationController.swift in Sources */,
 				FE507A251CDB7B3B001A015C /* AccountManager.swift in Sources */,
 				FE11D35C26623D6D00CC883F /* Room.swift in Sources */,
 				FEC79195241ABEF4007BE572 /* MessageState.swift in Sources */,

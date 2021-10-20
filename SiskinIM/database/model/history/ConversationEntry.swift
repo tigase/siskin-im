@@ -21,6 +21,7 @@
 
 import UIKit
 import TigaseSwift
+import CoreLocation
 
 public enum ConversationEntryPayload: Hashable {
     case message(message: String, correctionTimestamp: Date?)
@@ -31,7 +32,33 @@ public enum ConversationEntryPayload: Hashable {
     case deleted
     case unreadMessages
     case marker(type: ChatMarker.MarkerType, senders: [ConversationEntrySender])
+    case location(location: CLLocationCoordinate2D)
     
+//    var itemType: ItemType {
+//        switch self {
+//        case .message(_, _):
+//            return .message;
+//        case .attachment(_, _):
+//            return .attachment;
+//        case .linkPreview(_):
+//            return .linkPreview;
+//        case .messageRetracted:
+//            return .messageRetracted;
+//        case .invitation(_, _):
+//            return .invitation;
+//        case .deleted:
+//            assertionFailure("Unsupported converstion from ConversationEntryPayload.deleted to ItemType");
+//            return .message;
+//        case .unreadMessages:
+//            assertionFailure("Unsupported converstion from ConversationEntryPayload.unreadMessages to ItemType");
+//            return .message;
+//        case .marker(_, _):
+//            assertionFailure("Unsupported converstion from ConversationEntryPayload.marker to ItemType");
+//            return .message;
+//        case .location(_):
+//            return .location;
+//        }
+//    }
 }
 
 public final class ConversationEntry: Hashable {

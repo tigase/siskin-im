@@ -1019,3 +1019,21 @@
 
 /* alert title */
 "Missed call" = "Nieodebrane połączenie";
+
+/* context action label */
+"Show map" = "Pokaż na mapie";
+
+/* attachemt label for conversations list */
+"Location" = "Położenie";
+
+/* placeholder for location selection search bar */
+"Search for places" = "Szukaj miejsc";
+
+/* location selection window title */
+"Select location" = "Wybierz położenie";
+
+/* search location pin label */
+"Your location" = "Twoje położenie";
+
+/* conversation view input field placeholder */
+"from %@..." = "używając %@...";

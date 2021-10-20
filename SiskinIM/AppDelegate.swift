@@ -219,9 +219,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func application(_ application: UIApplication, continue activity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-        
-        print("handling user activity", activity);
-        
+         
         guard let intent = activity.interaction?.intent as? INSendMessageIntent else {
             return false;
         }

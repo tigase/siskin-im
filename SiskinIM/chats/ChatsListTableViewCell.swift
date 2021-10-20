@@ -164,6 +164,16 @@ class ChatsListTableViewCell: UITableViewCell {
                 } else {
                     lastMessageLabel.attributedText = msg;
                 }
+            case .location(_, _, let sender):
+                let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .subheadline).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: 0);
+                let msg = NSAttributedString(string: "📍 \(NSLocalizedString("Location", comment: "attachemt label for conversations list"))", attributes: [.font:  font, .foregroundColor: lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
+
+                if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                    prefix.append(msg);
+                    lastMessageLabel.attributedText = prefix;
+                } else {
+                    lastMessageLabel.attributedText = msg;
+                }
             }
         } else {
             lastMessageLabel.text = nil;

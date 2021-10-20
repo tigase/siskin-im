@@ -182,12 +182,12 @@ public class NotificationManager {
         guard let conversation = entry.conversation as? Conversation else {
             return;
         }
-        
-        guard case .message(let message, _) = entry.payload else {
+                
+        guard let body = entry.notificationContent else {
             return;
         }
         
-        notifyNewMessage(account: conversation.account, sender: conversation.jid, nickname: entry.sender.nickname, body: message, date: entry.timestamp);
+        notifyNewMessage(account: conversation.account, sender: conversation.jid, nickname: entry.sender.nickname, body: body, date: entry.timestamp);
     }
     
     func updateApplicationIconBadgeNumber(completionHandler: (()->Void)?) {
@@ -238,31 +238,32 @@ extension ConversationEntry {
             return false;
         }
         
-        guard case .message(let message, _) = payload else {
-            return false;
-        }
-
-        switch conversation.notifications {
-        case .none:
-            return false;
-        case .mention:
-            if let nickname = (conversation as? Room)?.nickname ?? (conversation as? Channel)?.nickname {
-                if !message.contains(nickname) {
-//                    let keywords = Settings.markKeywords;
-//                    if !keywords.isEmpty {
-//                        if  keywords.first(where: { message.contains($0) }) == nil {
-//                            return false;
-//                        }
-//                    } else {
-//                        return false;
-//                    }
+        switch payload {
+        case .message(let message, _):
+            switch conversation.notifications {
+            case .none:
+                return false;
+            case .mention:
+                if let nickname = (conversation as? Room)?.nickname ?? (conversation as? Channel)?.nickname {
+                    if !message.contains(nickname) {
+                        return false;
+                    }
+                } else {
                     return false;
                 }
-            } else {
+            default:
+                break;
+            }
+        case .location(_):
+            guard conversation.notifications == .always else {
+                return false;
+            }
+        case .attachment(_, _):
+            guard conversation.notifications == .always else {
                 return false;
             }
         default:
-            break;
+            return false;
         }
         
         if conversation is Chat {
@@ -274,4 +275,18 @@ extension ConversationEntry {
         return true;
     }
     
+    var notificationContent: String? {
+        switch self.payload {
+        case .message(let message, _):
+            return message;
+        case .invitation(_, _):
+            return "📨 \(NSLocalizedString("Invitation", comment: "invitation label for chats list"))"
+        case .location(_):
+            return "📍 \(NSLocalizedString("Location", comment: "attachemt label for conversations list"))";
+        case .attachment(_, _):
+            return "📎 \(NSLocalizedString("Attachment", comment: "attachemt label for conversations list"))";
+        default:
+            return nil;
+        }
+    }
 }
