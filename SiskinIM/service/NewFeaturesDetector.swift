@@ -164,7 +164,27 @@ class NewFeaturesDetector: XmppServiceExtension {
     
     private func visibleController() -> UIViewController? {
         let window = UIApplication.shared.windows.first(where: { $0.isKeyWindow });
-        return window?.rootViewController?.presentedViewController ?? window?.rootViewController;
+        if let controller = window?.rootViewController {
+            return visibleController(parent: controller);
+        } else {
+            return nil;
+        }
+    }
+    
+    private func visibleController(parent: UIViewController) -> UIViewController {
+        guard let presented = parent.presentedViewController else {
+            return parent;
+        }
+        
+        if let navController = presented as? UINavigationController, let visible = navController.visibleViewController {
+            return visibleController(parent: visible);
+        }
+        
+        if let tabController = presented as? UITabBarController, let visible = tabController.selectedViewController {
+            return visibleController(parent: visible);
+        }
+        
+        return presented;
     }
     
     private func showPushQuestion(completionHandler: @escaping ()->Void) {

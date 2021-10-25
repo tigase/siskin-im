@@ -223,7 +223,6 @@ class RegisterAccountController: DataFormController {
                 let certData: SslCertificateInfo? = self.task?.getAcceptedCertificate();
                 DispatchQueue.main.async {
                     self.saveAccount(acceptedCertificate: certData);
-                    self.dismissView();
                 }
             case .failure(let error):
                 self.onRegistrationError(error);
