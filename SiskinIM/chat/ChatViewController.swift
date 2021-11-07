@@ -52,13 +52,6 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
         self.navigationController?.navigationBar.addGestureRecognizer(recognizer);
 
         initializeSharing();
-        
-        if CallManager.isAvailable {
-            var buttons: [UIBarButtonItem] = [];
-            buttons.append(self.smallBarButtinItem(image: UIImage(named: "videoCall")!, action: #selector(self.videoCall)));
-            buttons.append(self.smallBarButtinItem(image: UIImage(named: "audioCall")!, action: #selector(self.audioCall)));
-            self.navigationItem.rightBarButtonItems = buttons;
-        }
     }
     
     @objc func showBuddyInfo(_ button: Any) {
@@ -77,6 +70,13 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
         
+        if CallManager.isAvailable {
+            var buttons: [UIBarButtonItem] = [];
+            buttons.append(self.smallBarButtinItem(image: UIImage(named: "videoCall")!, action: #selector(self.videoCall)));
+            buttons.append(self.smallBarButtinItem(image: UIImage(named: "audioCall")!, action: #selector(self.audioCall)));
+            self.navigationItem.rightBarButtonItems = buttons;
+        }
+
         conversation.context?.$state.map({ $0 == .connected() }).receive(on: DispatchQueue.main).assign(to: \.connected, on: self.titleView).store(in: &cancellables);
         conversation.displayNamePublisher.map({ $0 }).assign(to: \.name, on: self.titleView).store(in: &cancellables);
         conversation.statusPublisher.combineLatest(conversation.descriptionPublisher, chat.optionsPublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (show, description, options) in

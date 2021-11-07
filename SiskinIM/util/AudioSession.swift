@@ -32,7 +32,7 @@ class AudioSesion {
     init(preferSpeaker: Bool) {
         self.preferSpeaker = preferSpeaker;
         self.hasLoudSpeaker = UIDevice.current.model.lowercased().contains("iphone");
-        NotificationCenter.default.addObserver(self, selector: #selector(audioRouteChanged), name: AVAudioSession.routeChangeNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(audioRouteChanged), name: AVAudioSession.routeChangeNotification, object: AVAudioSession.sharedInstance())
         set(outputMode: .automatic)
     }
     
@@ -46,7 +46,7 @@ class AudioSesion {
         case videoChat
     }
     
-    enum AudioOutputMode {
+    enum AudioOutputMode: Equatable {
         case automatic
         case builtin
         case speaker
@@ -111,13 +111,22 @@ class AudioSesion {
             return;
         }
         
-        switch reason {
-        case .categoryChange, .oldDeviceUnavailable:
-            self.outputMode = .automatic;
-        default:
-            break;
+        DispatchQueue.main.async { [weak self] in
+            guard let that = self else {
+                return;
+            }
+            
+            let prevMode = that.outputMode;
+            switch reason {
+            case .newDeviceAvailable, .oldDeviceUnavailable:
+                that.outputMode = .automatic;
+            default:
+                break;
+            }
+            if prevMode != that.outputMode {
+                try? that.updateCurrentAudioRoute();
+            }
         }
-        try? updateCurrentAudioRoute();
     }
     
     func updateCurrentAudioRoute() throws {
