@@ -49,6 +49,8 @@ open class DBChatStore: ContextLifecycleAware {
     public private(set) var conversations: [Conversation] = [];
     private let conversationsDispatcher = QueueDispatcher(label: "conversationsDispatcher");
 
+    public let conversationsLifecycleQueue = QueueDispatcher(label: "conversationsLifecycle");
+
     @Published
     fileprivate(set) var unreadMessagesCount: Int = 0;
 

@@ -36,6 +36,7 @@ extension DBChatStore: ChatStore {
     }
     
     public func createChat(for context: Context, with jid: BareJID) -> ConversationCreateResult<Chat> {
+        self.conversationsLifecycleQueue.sync {
         if let chat = chat(for: context, with: jid) {
             return .found(chat);
         }
@@ -54,6 +55,7 @@ extension DBChatStore: ChatStore {
             return .none;
         }
         return .created(chat);
+        }
     }
     
     public func close(chat: Chat) -> Bool {

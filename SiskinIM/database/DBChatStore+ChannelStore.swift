@@ -34,6 +34,7 @@ extension DBChatStore: ChannelStore {
     }
     
     public func createChannel(for context: Context, with channelJid: BareJID, participantId: String, nick: String?, state: ChannelState) -> ConversationCreateResult<Channel> {
+        self.conversationsLifecycleQueue.sync {
         if let channel = channel(for: context, with: channelJid) {
             return .found(channel);
         }
@@ -54,6 +55,7 @@ extension DBChatStore: ChannelStore {
             return .none;
         }
         return .created(channel);
+        }
     }
     
     public func close(channel: Channel) -> Bool {
