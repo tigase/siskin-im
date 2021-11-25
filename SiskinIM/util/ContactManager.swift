@@ -120,23 +120,25 @@ public class ContactManager {
     }
     
     public func update(name: String?, for key: Contact.Key) {
-        guard let contact = existingContact(for: key) else {
-            return;
-        }
-        
-        DispatchQueue.main.async {
-            contact.displayName = name ?? key.jid.stringValue;
+        dispatcher.async {
+            guard let contact = self.items[key]?.contact else {
+                return;
+            }
+            DispatchQueue.main.async {
+                contact.displayName = name ?? key.jid.stringValue;
+            }
         }
     }
     
     public func update(presence: Presence?, for key: Contact.Key) {
-        guard let contact = existingContact(for: key) else {
-            return;
-        }
-        
-        DispatchQueue.main.async {
-            contact.status = presence?.show;
-            contact.description = presence?.status;
+        dispatcher.async {
+            guard let contact = self.items[key]?.contact else {
+                return;
+            }
+            DispatchQueue.main.async {
+                contact.status = presence?.show;
+                contact.description = presence?.status;
+            }
         }
     }
     
