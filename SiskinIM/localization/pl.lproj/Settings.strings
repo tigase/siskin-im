@@ -76,9 +76,6 @@
 /* Class = "UILabel"; text = "Groupchats bookmarks sync"; ObjectID = "Tbt-L3-jpa"; */
 "Tbt-L3-jpa.text" = "Synchronizacja zakładek czatów grupowych";
 
-/* Class = "UILabel"; text = "20 MB"; ObjectID = "UuL-li-3gA"; */
-"UuL-li-3gA.text" = "20 MB";
-
 /* Class = "UILabel"; text = "Sorting"; ObjectID = "Y0J-o4-ADK"; */
 "Y0J-o4-ADK.text" = "Sortowanie";
 
@@ -102,9 +99,6 @@
 
 /* Class = "UILabel"; text = "Photos quality"; ObjectID = "bbT-7s-6ph"; */
 "bbT-7s-6ph.text" = "Jakość zdjęć";
-
-/* Class = "UILabel"; text = "File download limit"; ObjectID = "bj6-vP-3A7"; */
-"bj6-vP-3A7.text" = "Limit pobierania pliku";
 
 /* Class = "UILabel"; text = "Push notifications"; ObjectID = "cyb-st-Bmw"; */
 "cyb-st-Bmw.text" = "Powiadomienia push";
@@ -153,3 +147,9 @@
 
 /* Class = "UILabel"; text = "Message carbons"; ObjectID = "zwR-jn-5u6"; */
 "zwR-jn-5u6.text" = "Message carbons";
+
+/* Class = "UILabel"; text = "File download limit"; ObjectID = "8WB-sA-XVp"; */
+"8WB-sA-XVp.text" = "Limit pobierania pliku";
+
+/* Class = "UILabel"; text = "20 MB"; ObjectID = "ubX-Hq-ZFQ"; */
+"ubX-Hq-ZFQ.text" = "20 MB";
