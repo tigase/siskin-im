@@ -66,11 +66,13 @@ class OMEMOFingerprintsController: UITableViewController {
         switch indexPath.section {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: "OMEMOLocalIdentityCell", for: indexPath);
+            (cell.contentView.subviews[1] as? UILabel)?.text = String.localizedStringWithFormat(NSLocalizedString("Device: %@", comment: "label for omemo device id"), "\(localIdentity?.address.deviceId ?? -1)");
             (cell.contentView.subviews[0] as? UILabel)?.text = preetify(fingerprint: localIdentity?.fingerprint);
             return cell;
         default:
             let identity = self.otherIdentities[indexPath.row];
             let cell = tableView.dequeueReusableCell(withIdentifier: "OMEMORemoteIdentityCell", for: indexPath) as! OMEMOIdentityTableViewCell;
+            cell.deviceLabel?.text = String.localizedStringWithFormat(NSLocalizedString("Device: %@", comment: "label for omemo device id"), "\(identity.address.deviceId)");
             cell.identityLabel.text = preetify(fingerprint: identity.fingerprint);
             cell.trustSwitch.isEnabled = identity.status.isActive;
             cell.trustSwitch.isOn = identity.status.trust == .trusted || identity.status.trust == .undecided;

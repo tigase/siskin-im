@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19162" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="vAU-gJ-Tx3">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="vAU-gJ-Tx3">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19144"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -287,16 +287,16 @@
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <stackView opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="749" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="vls-oU-dVk">
-                                    <rect key="frame" x="0.0" y="4.5" width="390" height="31.5"/>
+                                    <rect key="frame" x="0.0" y="2" width="390" height="36.5"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Jane Done" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UWL-vQ-lxc">
-                                            <rect key="frame" x="0.0" y="0.0" width="390" height="17"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="390" height="20.5"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="Here I'm again..." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="m0n-Ls-5LF">
-                                            <rect key="frame" x="0.0" y="17" width="390" height="14.5"/>
+                                            <rect key="frame" x="0.0" y="20.5" width="390" height="16"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                             <color key="textColor" systemColor="secondaryLabelColor"/>
                                             <nil key="highlightedColor"/>
@@ -1035,15 +1035,15 @@
                                     </subviews>
                                 </tableViewCellContentView>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="OMEMOIdentityCell" rowHeight="60" id="3q3-ov-q6z" customClass="OMEMOIdentityTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="406.5" width="414" height="60"/>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="OMEMOIdentityCell" id="3q3-ov-q6z" customClass="OMEMOIdentityTableViewCell" customModule="Siskin" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="406.5" width="414" height="63"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="3q3-ov-q6z" id="ArO-fK-TDf">
-                                    <rect key="frame" x="0.0" y="0.0" width="414" height="60"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="63"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="diN-oY-G54">
-                                            <rect key="frame" x="10" y="13" width="324.5" height="34"/>
+                                            <rect key="frame" x="10" y="23" width="324.5" height="34"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="34" id="P0U-51-Isi"/>
                                             </constraints>
@@ -1058,27 +1058,38 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bsQ-Fj-zSv">
-                                            <rect key="frame" x="355" y="14.5" width="51" height="31"/>
+                                            <rect key="frame" x="355" y="24.5" width="51" height="31"/>
                                             <connections>
                                                 <action selector="valueChanged:" destination="3q3-ov-q6z" eventType="valueChanged" id="YOR-XP-dbc"/>
                                             </connections>
                                         </switch>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Device 11111111" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Xm-hp-sUz">
+                                            <rect key="frame" x="10" y="6" width="86.5" height="15"/>
+                                            <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                            <color key="textColor" systemColor="secondaryLabelColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstItem="diN-oY-G54" firstAttribute="centerY" secondItem="ArO-fK-TDf" secondAttribute="centerY" id="6yo-nH-NJV"/>
+                                        <constraint firstAttribute="bottom" secondItem="diN-oY-G54" secondAttribute="bottom" constant="6" id="10W-Kw-IMJ"/>
+                                        <constraint firstItem="2Xm-hp-sUz" firstAttribute="bottom" secondItem="diN-oY-G54" secondAttribute="top" constant="-2" id="7EJ-hB-Lvd"/>
+                                        <constraint firstItem="2Xm-hp-sUz" firstAttribute="top" secondItem="ArO-fK-TDf" secondAttribute="top" constant="6" id="9dT-P3-iIn"/>
+                                        <constraint firstItem="bsQ-Fj-zSv" firstAttribute="centerY" secondItem="diN-oY-G54" secondAttribute="centerY" id="RLk-G2-gZ5"/>
                                         <constraint firstAttribute="trailing" secondItem="bsQ-Fj-zSv" secondAttribute="trailing" constant="10" id="YZA-wI-S5K"/>
+                                        <constraint firstItem="2Xm-hp-sUz" firstAttribute="leading" secondItem="diN-oY-G54" secondAttribute="leading" id="aeF-9V-N2J"/>
                                         <constraint firstItem="diN-oY-G54" firstAttribute="leading" secondItem="ArO-fK-TDf" secondAttribute="leading" constant="10" id="gLY-XG-hST"/>
-                                        <constraint firstItem="bsQ-Fj-zSv" firstAttribute="centerY" secondItem="ArO-fK-TDf" secondAttribute="centerY" id="lMD-D1-5Po"/>
                                         <constraint firstItem="bsQ-Fj-zSv" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="diN-oY-G54" secondAttribute="trailing" constant="10" id="ldc-Jj-xKd"/>
+                                        <constraint firstItem="2Xm-hp-sUz" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="diN-oY-G54" secondAttribute="trailing" id="x6C-EQ-kjD"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <connections>
+                                    <outlet property="deviceLabel" destination="2Xm-hp-sUz" id="w3h-id-9Fd"/>
                                     <outlet property="identityLabel" destination="diN-oY-G54" id="zvi-PC-r8s"/>
                                     <outlet property="trustSwitch" destination="bsQ-Fj-zSv" id="9e2-f4-TMH"/>
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="AttachmentsCell" textLabel="EpU-tc-DIx" rowHeight="44" style="IBUITableViewCellStyleDefault" id="09h-vH-qSu">
-                                <rect key="frame" x="0.0" y="466.5" width="414" height="44"/>
+                                <rect key="frame" x="0.0" y="469.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="09h-vH-qSu" id="Khc-ES-FDl">
                                     <rect key="frame" x="0.0" y="0.0" width="384.5" height="44"/>

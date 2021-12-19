@@ -212,6 +212,7 @@ class ContactViewController: UITableViewController {
                     fingerprint.insert(" ", at: idx);
                     idx = fingerprint.index(after: idx);
                 }
+                cell.deviceLabel?.text = String.localizedStringWithFormat(NSLocalizedString("Device: %@", comment: "label for omemo device id"), "\(identity.address.deviceId)");
                 cell.identityLabel.text = fingerprint;
                 cell.trustSwitch.isEnabled = identity.status.isActive;
                 cell.trustSwitch.isOn = identity.status.trust == .trusted || identity.status.trust == .undecided;

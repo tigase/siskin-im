@@ -23,6 +23,8 @@ import UIKit
 
 class OMEMOIdentityTableViewCell: UITableViewCell {
     
+    @IBOutlet var deviceLabel: UILabel?;
+    
     @IBOutlet var identityLabel: UILabel!
     
     @IBOutlet var trustSwitch: UISwitch!

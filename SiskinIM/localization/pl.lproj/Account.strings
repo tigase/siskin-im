@@ -150,3 +150,9 @@
 
 /* Class = "UILabel"; text = "Title"; ObjectID = "zhp-jp-Aoq"; */
 "zhp-jp-Aoq.text" = "Tytuł";
+
+/* Class = "UILabel"; text = "Device 11111111"; ObjectID = "VBD-gj-5RW"; */
+"VBD-gj-5RW.text" = "Device 11111111";
+
+/* Class = "UILabel"; text = "Device 11111111"; ObjectID = "xMn-lc-rJ9"; */
+"xMn-lc-rJ9.text" = "Device 11111111";

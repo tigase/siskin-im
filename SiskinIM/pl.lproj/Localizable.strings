@@ -1037,3 +1037,6 @@
 
 /* conversation view input field placeholder */
 "from %@..." = "używając %@...";
+
+/* label for omemo device id */
+"Device: %@" = "Urządzenie: %@";

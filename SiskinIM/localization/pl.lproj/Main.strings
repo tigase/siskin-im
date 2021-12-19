@@ -165,3 +165,6 @@
 
 /* Class = "UILabel"; text = "Type"; ObjectID = "yxF-LM-meS"; */
 "yxF-LM-meS.text" = "Typ";
+
+/* Class = "UILabel"; text = "Device 11111111"; ObjectID = "2Xm-hp-sUz"; */
+"2Xm-hp-sUz.text" = "Device 11111111";
