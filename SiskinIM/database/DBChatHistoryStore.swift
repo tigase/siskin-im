@@ -409,6 +409,18 @@ class DBChatHistoryStore {
             }
             
             guard let id = try! Database.main.writer({ database -> Int? in
+                switch sender {
+                case .occupant(_, _):
+                    if let originId = stanzaId, let existingMessageId = self.findItemId(for: conversation, originId: originId, sender: sender) {
+                        if let stableId = serverMsgId {
+                            try database.update(query: .messageUpdateServerMsgId, params: ["id": existingMessageId, "server_msg_id": stableId]);
+                        }
+                        return nil;
+                    }
+                default:
+                    break;
+                }
+
                 try database.insert(query: .messageInsert, params: params);
                 return database.lastInsertedRowId;
             }) else {
