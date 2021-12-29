@@ -135,7 +135,7 @@ class AccountSettingsViewController: UITableViewController {
                 let nickname = controller.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines);
                 if var account = AccountManager.getAccount(for: self.account) {
                     account.nickname = nickname;
-                    try? AccountManager.save(account: account);
+                    try? AccountManager.save(account: account, reconnect: false);
                     self.nicknameLabel.text = account.nickname;
                 }
             }))

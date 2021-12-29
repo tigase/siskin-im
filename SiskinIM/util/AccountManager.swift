@@ -156,6 +156,9 @@ open class AccountManager {
                 }
             }
             
+            if account.newPassword != nil {
+                account.saltedPassword = nil;
+            }
             account.newPassword = nil;
             
             if defaultAccount == nil {
