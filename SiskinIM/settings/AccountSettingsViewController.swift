@@ -52,7 +52,7 @@ class AccountSettingsViewController: UITableViewController {
         
         AccountManager.accountEventsPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] event in
             switch event {
-            case .enabled(let account), .disabled(let account), .removed(let account):
+            case .enabled(let account,_), .disabled(let account), .removed(let account):
                 if self?.account == account.name {
                     self?.updateView();
                 }

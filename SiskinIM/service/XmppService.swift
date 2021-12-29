@@ -136,7 +136,10 @@ open class XmppService {
     
     private func accountChanged(event: AccountManager.Event) {
         switch event {
-        case .enabled(let account):
+        case .enabled(let account, let reconnect):
+            guard reconnect else {
+                return;
+            }
             AccountSettings.reconnectionLocation(for: account.name, value: nil);
             if let client = self.client(for: account.name) {
                 // if client exists and is connected, then reconnect it..

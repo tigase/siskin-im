@@ -130,7 +130,7 @@ open class AccountManager {
         return String(data: data, encoding: .utf8);
     }
     
-    static func save(account toSave: Account) throws {
+    static func save(account toSave: Account, reconnect: Bool = true) throws {
         try self.dispatcher.sync {
             var account = toSave;
             var query = AccountManager.getAccountQuery(account.name.stringValue);
@@ -165,7 +165,7 @@ open class AccountManager {
             self.accounts[account.name] = account;
                         
             DispatchQueue.main.async {
-                self.accountEventsPublisher.send(account.active ? .enabled(account) : .disabled(account));
+                self.accountEventsPublisher.send(account.active ? .enabled(account, reconnect) : .disabled(account));
             }
         }
     }
@@ -199,7 +199,7 @@ open class AccountManager {
     }
     
     enum Event {
-            case enabled(Account)
+            case enabled(Account,Bool)
             case disabled(Account)
             case removed(Account)
         }

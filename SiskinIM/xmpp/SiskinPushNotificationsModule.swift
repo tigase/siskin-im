@@ -207,7 +207,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
                 if var config = AccountManager.getAccount(for: accountJid) {
                     config.pushSettings = settings;
                     config.pushNotifications = true;
-                    try? AccountManager.save(account: config);
+                    try? AccountManager.save(account: config, reconnect: false);
                 }
                 completionHandler(.success(settings));
             case .failure(let err):
@@ -249,7 +249,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
                 if var config = AccountManager.getAccount(for: accountJid) {
                     config.pushSettings = nil;
                     config.pushNotifications = false;
-                    try? AccountManager.save(account: config);
+                    try? AccountManager.save(account: config, reconnect: false);
                 }
                 completionHandler(total);
             }

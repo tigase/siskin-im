@@ -72,7 +72,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ = NotificationManager.instance;
         XmppService.instance.initialize();
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
-            // sending notifications not granted!
+            if let error = error {
+                self.logger.debug("error while requesting notifications authorization: \(error)");
+            } else {
+                DispatchQueue.main.async {
+                    application.registerForRemoteNotifications();
+                }
+            }
         }
         UNUserNotificationCenter.current().delegate = self.notificationCenterDelegate;
         let categories = [
@@ -80,13 +86,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         ];
         UNUserNotificationCenter.current().setNotificationCategories(Set(categories));
         
-        Settings.$enablePush.map({ $0 ?? false }).sink(receiveValue: { value in
-            if value {
-                application.registerForRemoteNotifications();
-            } else {
-                application.unregisterForRemoteNotifications();
-            }
-        }).store(in: &cancellables);
         
         CallManager.initializeCallManager();
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.serverCertificateError), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
