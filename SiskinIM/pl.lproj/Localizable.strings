@@ -1040,3 +1040,12 @@
 
 /* label for omemo device id */
 "Device: %@" = "Urządzenie: %@";
+
+/* list of users with this role */
+"Moderators" = "Moderatorzy";
+
+/* list of users with this role */
+"Participans" = "Uczestnicy";
+
+/* list of users with this role */
+"Visitors" = "Goście";

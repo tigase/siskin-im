@@ -64,11 +64,11 @@ class MucChatOccupantsTableViewCell: UITableViewCell {
             cancellables.removeAll();
 
             if let occupant = occupant {
-                let nickname = occupant.nickname;
+//                let nickname = occupant.nickname;
                 nicknameLabel.text = occupant.nickname;
                 
                 occupant.$presence.map({ $0.show }).receive(on: DispatchQueue.main).assign(to: \.status, on: avatarStatusView).store(in: &cancellables);
-                occupant.$presence.map(XMucUserElement.extract(from: )).map({ $0?.role ?? .none }).map({ "\(nickname) \(MucChatOccupantsTableViewCell.roleToEmoji($0))" }).receive(on: DispatchQueue.main).assign(to: \.text, on: nicknameLabel).store(in: &cancellables);
+//                occupant.$presence.map(XMucUserElement.extract(from: )).map({ $0?.role ?? .none }).map({ "\(nickname) \(MucChatOccupantsTableViewCell.roleToEmoji($0))" }).receive(on: DispatchQueue.main).assign(to: \.text, on: nicknameLabel).store(in: &cancellables);
                 occupant.$presence.map({ $0.status }).receive(on: DispatchQueue.main).assign(to: \.text, on: statusLabel).store(in: &cancellables);
             }
         }

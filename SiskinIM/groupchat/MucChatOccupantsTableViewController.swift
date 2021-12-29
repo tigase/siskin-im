@@ -25,12 +25,72 @@ import Combine
 
 class MucChatOccupantsTableViewController: UITableViewController {
     
+    private class ParticipantsGroup: Equatable, Hashable {
+        static func == (lhs: ParticipantsGroup, rhs: ParticipantsGroup) -> Bool {
+            return lhs.role == rhs.role;
+        }
+        
+        let role: MucRole;
+        var participants: [MucOccupant];
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(role);
+        }
+        
+        @available(iOS 13.0, *)
+        var image: UIImage? {
+            switch role {
+            case .moderator:
+                return UIImage(systemName: "rosette");
+            case .participant:
+                return UIImage(systemName: "person.3");
+            case .visitor:
+                return UIImage(systemName: "theatermasks");
+            case .none:
+                return nil;
+            }
+        }
+        
+        var label: String {
+            switch role {
+            case .moderator:
+                return NSLocalizedString("Moderators", comment: "list of users with this role");
+            case .participant:
+                return NSLocalizedString("Participans", comment: "list of users with this role");
+            case .visitor:
+                return NSLocalizedString("Visitors", comment: "list of users with this role");
+            case .none:
+                return NSLocalizedString("None", comment: "list of users with this role");
+            }
+        }
+        
+        var labelAttributedString: NSAttributedString {
+            if #available(macOS 11.0, *) {
+                let text = NSMutableAttributedString(string: "");
+                if let image = self.image {
+                    let att = NSTextAttachment();
+                    att.image = image;
+                    text.append(NSAttributedString(attachment: att));
+                }
+                text.append(NSAttributedString(string: self.label.uppercased()));
+                return text;
+            } else {
+                return NSAttributedString(string: self.label);
+            }
+        }
+        
+        init(role: MucRole, participants: [MucOccupant] = []) {
+            self.role = role;
+            self.participants = participants;
+        }
+    }
+    
     private var dispatcher = QueueDispatcher(label: "MucChatOccupantsTableViewController");
     
     var room: Room! {
         didSet {
             cancellables.removeAll();
-            room.occupantsPublisher.receive(on: self.dispatcher.queue).sink(receiveValue: { [weak self] value in
+            room.occupantsPublisher.throttle(for: 0.1, scheduler: self.dispatcher.queue, latest: true).sink(receiveValue: { [weak self] value in
                 self?.update(participants: value);
             }).store(in: &cancellables);
         }
@@ -39,8 +99,15 @@ class MucChatOccupantsTableViewController: UITableViewController {
     var mentionOccupant: ((String)->Void)? = nil;
     
     private var cancellables: Set<AnyCancellable> = [];
-    private var participants: [MucOccupant] = [];
-    
+    private let allGroups: [MucRole: ParticipantsGroup] = [
+        .moderator: ParticipantsGroup(role: .moderator),
+        .participant: ParticipantsGroup(role: .participant),
+        .visitor: ParticipantsGroup(role: .visitor)
+    ];
+    private var groups: [ParticipantsGroup] = [
+    ];
+    private let allRoles: [MucRole] = [.moderator, .participant, .visitor];
+
     override func viewDidLoad() {
         super.viewDidLoad()
     }
@@ -58,34 +125,78 @@ class MucChatOccupantsTableViewController: UITableViewController {
     }
     
     private func update(participants: [MucOccupant]) {
-        let oldParticipants = self.participants;
-        let newParticipants = participants.sorted(by: { (i1,i2) -> Bool in i1.nickname.lowercased() < i2.nickname.lowercased() });
-        let changes = newParticipants.calculateChanges(from: oldParticipants);
+        let oldGroups = self.groups;
+        let newGroups = allRoles.map({ role in ParticipantsGroup(role: role, participants: participants.filter({ $0.role == role }).sorted(by: { (i1,i2) -> Bool in i1.nickname.lowercased() < i2.nickname.lowercased() })) }).filter({ !$0.participants.isEmpty });
+
+        let allChanges = newGroups.calculateChanges(from: oldGroups);
+//
+        let allChanges2 = newGroups.compactMap({ newGroup -> (ParticipantsGroup,ParticipantsGroup)? in
+            guard let oldGroup = oldGroups.first(where: { $0.role == newGroup.role }) else {
+                return nil;
+            }
+            return (oldGroup, newGroup);
+        }).map({ (old, new) in
+            return new.participants.calculateChanges(from: old.participants);
+        })
+
+        
+//        let oldParticipants = self.participants;
+//        let newParticipants = participants.sorted(by: { (i1,i2) -> Bool in i1.nickname.lowercased() < i2.nickname.lowercased() });
+//        let changes = newParticipants.calculateChanges(from: oldParticipants);
             
         DispatchQueue.main.sync {
-            self.participants = newParticipants;
+            //self.groups = newGroups;
+
+            self.groups = newGroups.map({ newGroup in
+                let group = allGroups[newGroup.role]!;
+                group.participants = newGroup.participants;
+                return group;
+            })
+            
             self.tableView?.beginUpdates();
-            self.tableView?.deleteRows(at: changes.removed.map({ IndexPath(row: $0, section: 0)}), with: .fade);
-            self.tableView?.insertRows(at: changes.inserted.map({ IndexPath(row: $0, section: 0)}), with: .fade);
+
+            if !allChanges.removed.isEmpty {
+                tableView.deleteSections(allChanges.removed, with: .fade);
+            }
+            
+            for (idx, changes) in allChanges2.enumerated() {
+                self.tableView.deleteRows(at: changes.removed.map({ [idx, $0 ]}), with: .fade);
+                self.tableView.insertRows(at: changes.inserted.map({ [idx, $0 ]}), with: .fade);
+            }
+
+            if !allChanges.inserted.isEmpty {
+                tableView.insertSections(allChanges.inserted, with: .fade);
+            }
+
+//            self.tableView?.deleteRows(at: changes.removed.map({ IndexPath(row: $0, section: 0)}), with: .fade);
+//            self.tableView?.insertRows(at: changes.inserted.map({ IndexPath(row: $0, section: 0)}), with: .fade);
             self.tableView?.endUpdates();
             self.tableView?.isHidden = false;
         }
     }
-    
+
     // MARK: - Table view data source
 
     override func numberOfSections(in: UITableView) -> Int {
-        return 1;
+        return groups.count;
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return participants.count;
+        return groups[section].participants.count;
+    }
+    
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return groups[section].label;
+    }
+    
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+        return nil;
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MucChatOccupantsTableViewCell", for: indexPath as IndexPath) as! MucChatOccupantsTableViewCell;
         
-        let occupant = participants[indexPath.row];
+        let occupant = groups[indexPath.section].participants[indexPath.row];
         cell.set(occupant: occupant, in: self.room);
         
         return cell
@@ -98,7 +209,7 @@ class MucChatOccupantsTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true);
         
-        let occupant = participants[indexPath.row];
+        let occupant = groups[indexPath.section].participants[indexPath.row];
 
         if let fn = mentionOccupant {
             fn(occupant.nickname);
@@ -111,7 +222,7 @@ class MucChatOccupantsTableViewController: UITableViewController {
             return nil;
         }
         
-        let participant = self.participants[indexPath.row];
+        let participant = groups[indexPath.section].participants[indexPath.row];
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
             var actions: [UIAction] = [];
             actions.append(UIAction(title: NSLocalizedString("Private message", comment: "action label"), handler: { action in
