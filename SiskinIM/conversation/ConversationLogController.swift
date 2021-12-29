@@ -370,7 +370,10 @@ extension ConversationLogController {
         UIView.animate(withDuration: 0.3) {
             self.conversationLogDelegate?.navigationController?.setToolbarHidden(true, animated: true);
             self.conversationLogDelegate?.setToolbarItems(nil, animated: true);
-            self.conversationLogDelegate?.navigationItem.rightBarButtonItem = self.tempRightBarButtonItem;
+            if let temp = self.tempRightBarButtonItem {
+                self.conversationLogDelegate?.navigationItem.rightBarButtonItem = temp;
+            }
+            self.tempRightBarButtonItem = nil;
             self.tableView?.isEditing = false;
         }
     }
