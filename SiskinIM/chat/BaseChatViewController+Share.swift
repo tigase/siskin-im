@@ -130,9 +130,9 @@ extension BaseChatViewController: URLSessionDelegate {
         case let chat as Chat:
             return chat.options.encryption ?? Settings.messageEncryption == .omemo;
         case let room as Room:
-            let encryption: ChatEncryption = room.options.encryption ?? (room.isOMEMOSupported ? Settings.messageEncryption : .none);
+            let encryption: ChatEncryption = room.options.encryption ?? (room.features.contains(.omemo) ? Settings.messageEncryption : .none);
             
-            guard encryption == .none || room.isOMEMOSupported else {
+            guard encryption == .none || room.features.contains(.omemo) else {
                 return true;
             }
             return encryption == .omemo;

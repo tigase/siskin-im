@@ -67,6 +67,7 @@
 		FE1A34A8258CD3EE0058B86A /* WebRTC.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE1A349F258CD3E10058B86A /* WebRTC.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE1AC8F7216B8AB700D4CDAB /* NewFeaturesDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */; };
 		FE1DCCA21EA52CE200850563 /* DataFormController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1DCCA11EA52CE200850563 /* DataFormController.swift */; };
+		FE1EE9D227862A5F000FA599 /* HttpFileUploadModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1EE9D127862A5F000FA599 /* HttpFileUploadModule.swift */; };
 		FE1FA7162663AFFD0010333E /* CurrentDatePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1FA7152663AFFD0010333E /* CurrentDatePublisher.swift */; };
 		FE2332DB242B9C2300008ED4 /* ChannelInviteController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2332DA242B9C2300008ED4 /* ChannelInviteController.swift */; };
 		FE2332E1242CCDB400008ED4 /* InvitationChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2332E0242CCDB400008ED4 /* InvitationChatTableViewCell.swift */; };
@@ -386,6 +387,7 @@
 		FE1A349F258CD3E10058B86A /* WebRTC.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = WebRTC.xcframework; sourceTree = "<group>"; };
 		FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewFeaturesDetector.swift; sourceTree = "<group>"; };
 		FE1DCCA11EA52CE200850563 /* DataFormController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataFormController.swift; sourceTree = "<group>"; };
+		FE1EE9D127862A5F000FA599 /* HttpFileUploadModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpFileUploadModule.swift; sourceTree = "<group>"; };
 		FE1FA7152663AFFD0010333E /* CurrentDatePublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentDatePublisher.swift; sourceTree = "<group>"; };
 		FE2332DA242B9C2300008ED4 /* ChannelInviteController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelInviteController.swift; sourceTree = "<group>"; };
 		FE2332E0242CCDB400008ED4 /* InvitationChatTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationChatTableViewCell.swift; sourceTree = "<group>"; };
@@ -638,6 +640,7 @@
 			isa = PBXGroup;
 			children = (
 				FE01ADA81E224CF400FA7E65 /* SiskinPushNotificationsModule.swift */,
+				FE1EE9D127862A5F000FA599 /* HttpFileUploadModule.swift */,
 			);
 			path = xmpp;
 			sourceTree = "<group>";
@@ -1583,6 +1586,7 @@
 				FE2332E3242CE8D600008ED4 /* ChannelBlockedUsersController.swift in Sources */,
 				FE75A006237475E2001E78D9 /* MainNotificationManagerProvider.swift in Sources */,
 				FE1FA7162663AFFD0010333E /* CurrentDatePublisher.swift in Sources */,
+				FE1EE9D227862A5F000FA599 /* HttpFileUploadModule.swift in Sources */,
 				FE11D3ED26639E0100CC883F /* VCardManager.swift in Sources */,
 				FE0E31122537288A0030F8C5 /* MediaSettingsVIewController.swift in Sources */,
 				FEDE93871D07564F00CA60A9 /* SwitchTableViewCell.swift in Sources */,

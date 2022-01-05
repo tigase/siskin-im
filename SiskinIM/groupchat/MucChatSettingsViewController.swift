@@ -160,7 +160,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if indexPath.section == 2 && indexPath.row == 1 && !room.isOMEMOSupported {
+        if indexPath.section == 2 && indexPath.row == 1 && !room.features.contains(.omemo) {
             return 0;
         }
         return super.tableView(tableView, heightForRowAt: indexPath);

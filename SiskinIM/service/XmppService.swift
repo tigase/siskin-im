@@ -63,10 +63,8 @@ open class XmppService {
     fileprivate var fetchClientsWaitingForReconnection: [BareJID] = [];
     fileprivate var fetchStart = NSDate();
         
-    let extensions: [XmppServiceExtension] = [BlockedEventHandler.instance, PresenceRosterEventHandler.instance, AvatarEventHandler.instance, MixEventHandler.instance, MucEventHandler.instance, NewFeaturesDetector.instance, PushEventHandler.instance, MeetEventHandler.instance];
+    let extensions: [XmppServiceExtension] = [MessageEventHandler.instance, BlockedEventHandler.instance, PresenceRosterEventHandler.instance, AvatarEventHandler.instance, MixEventHandler.instance, MucEventHandler.instance, NewFeaturesDetector.instance, PushEventHandler.instance, MeetEventHandler.instance];
 
-    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MessageEventHandler.instance];
-    
     @Published
     open private(set) var applicationState: ApplicationState = .suspended;
 
@@ -311,9 +309,6 @@ open class XmppService {
 
             self.clientCancellables.removeValue(forKey: accountName);
             
-            self.eventHandlers.forEach { handler in
-                client.eventBus.unregister(handler: handler, for: handler.events);
-            }
             dispatcher.async {
                 if removed {
                     DBRosterStore.instance.clear(for: client)
@@ -505,17 +500,10 @@ open class XmppService {
             client.$state.subscribe(account.state).store(in: &clientCancellables.cancellables);
             client.$state.dropFirst().sink(receiveValue: { state in self.changedState(state, for: client) }).store(in: &clientCancellables.cancellables);
                     
-            MessageEventHandler.instance.register(for: client, cancellables: &clientCancellables.cancellables);
-            MucEventHandler.instance.register(for: client, cancellables: &clientCancellables.cancellables);
-                    
             for ext in extensions {
                 ext.register(for: client, cancellables: &clientCancellables.cancellables);
             }
-                        
-            eventHandlers.forEach { handler in
-                client.eventBus.register(handler: handler, for: handler.events);
-            }
-            
+                                    
             client.$state.combineLatest($applicationState).sink(receiveValue: { [weak client] (clientState, applicationState) in
                 if clientState == .connected() {
                     _ = client?.module(.csi).setState(applicationState == .active);

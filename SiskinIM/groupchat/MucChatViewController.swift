@@ -136,7 +136,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             return;
         }
         
-        let canEncrypt = room.isOMEMOSupported;
+        let canEncrypt = room.features.contains(.omemo);
         
         let encryption: ChatEncryption = room.options.encryption ?? (canEncrypt ? Settings.messageEncryption : .none);
         guard encryption == .none || canEncrypt else {
@@ -155,7 +155,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
     }
     
     override func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (() -> Void)?) {
-        let canEncrypt = room.isOMEMOSupported;
+        let canEncrypt = room.features.contains(.omemo);
         
         let encryption: ChatEncryption = room.options.encryption ?? (canEncrypt ? Settings.messageEncryption : .none);
         guard encryption == .none || canEncrypt else {

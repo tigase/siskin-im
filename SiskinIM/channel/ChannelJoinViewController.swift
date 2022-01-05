@@ -253,7 +253,7 @@ class ChannelJoinViewController: UITableViewController {
                                 if priv {
                                     features.insert(.membersOnly);
                                 }
-                                (room as! Room).features = features;
+                                (room as! Room).roomFeatures = features;
                                 let vcard = VCard();
                                 if let binval = avatar?.scaled(maxWidthOrHeight: 512.0)?.jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
                                     vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
@@ -313,7 +313,7 @@ class ChannelJoinViewController: UITableViewController {
                         client.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
                             switch result {
                             case .success(let info):
-                                (room as! Room).features = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
+                                (room as! Room).roomFeatures = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
                             case .failure(_):
                                 break;
                             }

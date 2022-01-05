@@ -25,6 +25,11 @@ import TigaseSwift
 import Combine
 import Shared
 
+public enum ConversationFeature {
+    case omemo
+    case httpFileUpload
+}
+
 public protocol Conversation: ConversationProtocol, ConversationKey, DisplayableIdWithKeyProtocol {
         
     var status: Presence.Show? { get }
@@ -46,6 +51,9 @@ public protocol Conversation: ConversationProtocol, ConversationKey, Displayable
     var automaticallyFetchPreviews: Bool { get }
     
     var markersPublisher: AnyPublisher<[ChatMarker],Never> { get }
+    
+    var features: [ConversationFeature] { get }
+    var featuresPublisher: AnyPublisher<[ConversationFeature],Never> { get }
     
     func mark(as markerType: ChatMarker.MarkerType, before: Date, by sender: ConversationEntrySender);
     func markAsRead(count: Int) -> Bool;

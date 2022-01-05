@@ -62,11 +62,11 @@ class LinkPreviewChatTableViewCell: BaseChatTableViewCell {
         guard let metadata = MetadataCache.instance.metadata(for: "\(item.id)") else {
             setup(linkView: LPLinkView(metadata: createMetadata(url: url)));
             
-            MetadataCache.instance.generateMetadata(for: url, withId: "\(item.id)", completionHandler: { meta in
+            MetadataCache.instance.generateMetadata(for: url, withId: "\(item.id)", completionHandler: { [weak self] meta in
                 guard meta != nil else {
                     return;
                 }
-                DispatchQueue.main.async { [weak self] in
+                DispatchQueue.main.async {
                     guard let that = self, that.url == url else {
                         return;
                     }
