@@ -475,7 +475,11 @@ class DBChatHistoryStore {
                 return database.changes;
             })
             if updated > 0 {
-                markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)], before: oldItem.timestamp));
+                var markAsReadTimestamp = oldItem.timestamp;
+                if case  .message(_, let prevCorrectionTime) = oldItem.payload, let timestamp = prevCorrectionTime {
+                    markAsReadTimestamp = timestamp;
+                }
+                markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)], before: markAsReadTimestamp.addingTimeInterval(0.1), onlyLocally: true));
 
                 let newMessageState: ConversationEntryState = (oldItem.state.direction == .incoming) ? (oldItem.state.isUnread ? .incoming(.displayed) : .incoming(newState.isUnread ? .received : .displayed)) : (.outgoing(.sent));
                 DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: oldItem.timestamp, itemType: .message, message: data, state: newMessageState, completionHandler: {
@@ -483,6 +487,8 @@ class DBChatHistoryStore {
 
                 logger.debug("correcing previews for master id: \(itemId)");
                 self.itemUpdated(withId: itemId, for: conversation);
+                
+                NotificationManager.instance.newMessage(ConversationEntry(id: itemId, conversation: oldItem.conversation, timestamp: oldItem.timestamp, state: oldItem.state, sender: sender, payload: .message(message: data, correctionTimestamp: correctionTimestamp), options: oldItem.options));
                 
                 if case .outgoing(let state) = newState, state == .unsent {
                 } else {
@@ -516,7 +522,11 @@ class DBChatHistoryStore {
                 return database.changes;
             })
             if updated > 0 {
-                markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)], before: oldItem.timestamp));
+                var markAsReadTimestamp = oldItem.timestamp;
+                if case  .message(_, let prevCorrectionTime) = oldItem.payload, let timestamp = prevCorrectionTime {
+                    markAsReadTimestamp = timestamp;
+                }
+                markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)], before: markAsReadTimestamp.addingTimeInterval(0.1), onlyLocally: true));
 
                 // what should be sent to "newMessage" how to reatract message from there??
                 let activity: LastChatActivity = DBChatStore.instance.lastActivity(for: conversation.account, jid: conversation.jid) ?? .message("", direction: .incoming, sender: nil);
@@ -651,6 +661,8 @@ class DBChatHistoryStore {
         let messages: [Message];
         let before: Date;
         
+        let onlyLocally: Bool;
+        
         struct Message {
             let id: Int;
             let markableId: String?;
@@ -668,7 +680,7 @@ class DBChatHistoryStore {
         
         if !updatedRecords.isEmpty {
             DBChatStore.instance.markAsRead(for: account, with: jid, count: updatedRecords.count);
-            markedAsRead.send(MarkedAsRead(account: account, jid: jid, messages: updatedRecords, before: before));
+            markedAsRead.send(MarkedAsRead(account: account, jid: jid, messages: updatedRecords, before: before, onlyLocally: false));
         }
     }
 
