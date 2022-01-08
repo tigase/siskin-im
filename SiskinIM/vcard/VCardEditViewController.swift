@@ -392,55 +392,49 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     }
 
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        guard var photo = (info[UIImagePickerController.InfoKey.editedImage] as? UIImage) else {
+        guard let photo = (info[UIImagePickerController.InfoKey.editedImage] as? UIImage) else {
             return;
         }
         
-        // scalling photo to max of 180px
-        var size: CGSize! = nil;
-        if photo.size.height > photo.size.width {
-            size = CGSize(width: (photo.size.width/photo.size.height) * 180, height: 180);
-        } else {
-            size = CGSize(width: 180, height: (photo.size.height/photo.size.width) * 180);
+        guard let pngImage = photo.scaled(maxWidthOrHeight: 48), let pngData = pngImage.pngData() else {
+            return;
         }
-        UIGraphicsBeginImageContextWithOptions(size, false, 0);
-        photo.draw(in: CGRect(x: 0, y: 0, width: size.width, height: size.height));
-        photo = UIGraphicsGetImageFromCurrentImageContext()!;
-        UIGraphicsEndImageContext();
         
-        // saving photo
-        let data = photo.pngData()
-        if data != nil {
-            vcard?.photos = [VCard.Photo(type: "image/png", binval: data!.base64EncodedString(options: NSData.Base64EncodingOptions(rawValue: 0)))];
+        var items: [PEPUserAvatarModule.Avatar] = [.init(data: pngData, mimeType: "image/png", width: Int(pngImage.size.width), height: Int(pngImage.size.height))];
+        
+        if let jpegImage = photo.scaled(maxWidthOrHeight: 256), let jpegData = jpegImage.jpegData(compressionQuality: 0.8) {
+            items = [.init(data: jpegData, mimeType: "image/jpeg", width: Int(jpegImage.size.width), height: Int(jpegImage.size.height))] + items;
+        }
+                
+        if let item = items.first {
+            vcard?.photos = [VCard.Photo(type: item.info.mimeType, binval: item.data!.base64EncodedString(options: NSData.Base64EncodingOptions(rawValue: 0)))];
         }
         tableView.reloadData();
         picker.dismiss(animated: true, completion: nil);
         
-        if data != nil {
-            let pepUserAvatarModule = client.module(.pepUserAvatar);
-            if pepUserAvatarModule.isPepAvailable {
-                let question = UIAlertController(title: nil, message: NSLocalizedString("Do you wish to publish this photo as avatar?", comment: "alert body"), preferredStyle: .actionSheet);
-                question.addAction(UIAlertAction(title: NSLocalizedString("Yes", comment: "button label"), style: .default, handler: { (action) in
-                    pepUserAvatarModule.publishAvatar(data: data!, mimeType: "image/png", completionHandler: { result in
-                        switch result {
-                        case .success(_):
-                            break;
-                        case .failure(let error):
-                            DispatchQueue.main.async {
-                                let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("User avatar publication failed.\nReason: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
-                                alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
-                                self.present(alert, animated: true, completion: nil);
-                            }
+        let pepUserAvatarModule = client.module(.pepUserAvatar);
+        if pepUserAvatarModule.isPepAvailable {
+            let question = UIAlertController(title: nil, message: NSLocalizedString("Do you wish to publish this photo as avatar?", comment: "alert body"), preferredStyle: .actionSheet);
+            question.addAction(UIAlertAction(title: NSLocalizedString("Yes", comment: "button label"), style: .default, handler: { (action) in
+                pepUserAvatarModule.publishAvatar(avatar: items, completionHandler: { result in
+                    switch result {
+                    case .success(_):
+                        break;
+                    case .failure(let error):
+                        DispatchQueue.main.async {
+                            let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("User avatar publication failed.\nReason: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
+                            alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
+                            self.present(alert, animated: true, completion: nil);
                         }
-                    })
-                }));
-                question.addAction(UIAlertAction(title: NSLocalizedString("No", comment: "button label"), style: .cancel, handler: nil));
-                let cell = self.tableView(tableView, cellForRowAt: IndexPath(row: VCardBaseSectionRows.avatar.rawValue, section: VCardSections.basic.rawValue)) as! VCardAvatarEditCell;
-                question.popoverPresentationController?.sourceView = cell.avatarView;
-                question.popoverPresentationController?.sourceRect = cell.avatarView!.bounds;
-
-                present(question, animated: true, completion: nil);
-            }
+                    }
+                })
+            }));
+            question.addAction(UIAlertAction(title: NSLocalizedString("No", comment: "button label"), style: .cancel, handler: nil));
+            let cell = self.tableView(tableView, cellForRowAt: IndexPath(row: VCardBaseSectionRows.avatar.rawValue, section: VCardSections.basic.rawValue)) as! VCardAvatarEditCell;
+            question.popoverPresentationController?.sourceView = cell.avatarView;
+            question.popoverPresentationController?.sourceRect = cell.avatarView!.bounds;
+            
+            present(question, animated: true, completion: nil);
         }
     }
 

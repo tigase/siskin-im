@@ -186,28 +186,6 @@ class ChannelSettingsViewController: UITableViewController {
         }
     }
     
-    private func squared(image inImage: UIImage?) -> UIImage? {
-        guard let image = inImage else {
-            return nil;
-        }
-        let origSize = image.size;
-        guard origSize.width != origSize.height else {
-            return image;
-        }
-        
-        let size = min(origSize.width, origSize.height);
-        
-        let x = origSize.width > origSize.height ? ((origSize.width - origSize.height)/2) : 0.0;
-        let y = origSize.width > origSize.height ? 0.0 : ((origSize.height - origSize.width)/2);
-        
-        UIGraphicsBeginImageContextWithOptions(CGSize(width: size, height: size), false, 0);
-        image.draw(in: CGRect(x: x * (-1.0), y: y * (-1.0), width: origSize.width, height: origSize.height));
-        let squared = UIGraphicsGetImageFromCurrentImageContext();
-        UIGraphicsEndImageContext();
-        
-        return squared;
-    }
-    
     static func labelFor(conversationNotification type: ConversationNotification) -> String {
         switch type {
         case .none:

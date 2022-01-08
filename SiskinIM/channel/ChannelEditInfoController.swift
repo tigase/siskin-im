@@ -31,7 +31,7 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
     
     var channel: Channel!;
     
-    private var avatarData: Data?;
+    private var avatar: [PEPUserAvatarModule.Avatar]?;
     private var infoData: ChannelInfo?;
     private var cancellables: Set<AnyCancellable> = [];
     
@@ -82,9 +82,9 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
                 group.leave();
             })
         }
-        if let avatarData = self.avatarData {
+        if let avatar = self.avatar {
             group.enter();
-            avatarModule.publishAvatar(at: channel.channelJid, data: avatarData, mimeType: "image/jpeg", completionHandler: { [weak self] result in
+            avatarModule.publishAvatar(at: channel.channelJid, avatar: avatar, completionHandler: { [weak self] result in
                 switch result {
                 case .success(_):
                     break;
@@ -152,14 +152,20 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        guard let scaled = (info[UIImagePickerController.InfoKey.editedImage] as? UIImage)?.scaled(maxWidthOrHeight: 512.0), let data = scaled.jpegData(compressionQuality: 0.8) else {
+        guard let image = (info[UIImagePickerController.InfoKey.editedImage] as? UIImage), let pngImage = image.scaled(maxWidthOrHeight: 48), let pngData = pngImage.pngData() else {
             return;
         }
         
-        avatarData = data;
+        avatar = [.init(data: pngData, mimeType: "image/png", width: Int(pngImage.size.width), height: Int(pngImage.size.width))];
+        
+        if let jpegImage = image.scaled(maxWidthOrHeight: 256), let jpegData = jpegImage.jpegData(compressionQuality: 0.75) {
+            if let items = avatar {
+                avatar = [.init(data: jpegData, mimeType: "image/jpeg", width: Int(jpegImage.size.width), height: Int(jpegImage.size.height))] + items;
+            }
+        }
         
         picker.dismiss(animated: true, completion: nil);
         avatarView.contentMode = .scaleAspectFill;
-        avatarView.image = scaled;
+        avatarView.image = image.scaled(maxWidthOrHeight: 256);
     }
 }
