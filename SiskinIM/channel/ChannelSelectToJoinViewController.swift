@@ -239,6 +239,13 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
                     that.updateItems();
                     that.operationFinished();
                 })
+                if components.isEmpty {
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(title: NSLocalizedString("Service unavailable", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("There is no service supporting channels for domain %@", comment: "alert message"), domain), preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default));
+                        that.present(alert, animated: true, completion: nil);
+                    }
+                }
             }
         })
     }

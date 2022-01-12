@@ -206,6 +206,13 @@ class ChannelCreateViewController: UITableViewController, ChannelSelectAccountAn
                 self.tableView.reloadData();
                 self.updateJoinButtonStatus();
                 self.operationEnded();
+                if components.isEmpty {
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(title: NSLocalizedString("Service unavailable", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("There is no service supporting channels for domain %@", comment: "alert message"), domain), preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default));
+                        self.present(alert, animated: true, completion: nil);
+                    }
+                }
             }
         })
     }

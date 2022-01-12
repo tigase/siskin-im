@@ -1049,3 +1049,9 @@
 
 /* list of users with this role */
 "Visitors" = "Goście";
+
+/* alert title */
+"Service unavailable" = "Usługa niedostępna";
+
+/* alert message */
+"There is no service supporting channels for domain %@" = "Brak usługi wspierającej kanały dla domeny %@";
