@@ -68,6 +68,7 @@
 		FE1AC8F7216B8AB700D4CDAB /* NewFeaturesDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */; };
 		FE1DCCA21EA52CE200850563 /* DataFormController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1DCCA11EA52CE200850563 /* DataFormController.swift */; };
 		FE1EE9D227862A5F000FA599 /* HttpFileUploadModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1EE9D127862A5F000FA599 /* HttpFileUploadModule.swift */; };
+		FE1EE9D627903F58000FA599 /* ChannelSelectNewOwnerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1EE9D527903F58000FA599 /* ChannelSelectNewOwnerViewController.swift */; };
 		FE1FA7162663AFFD0010333E /* CurrentDatePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1FA7152663AFFD0010333E /* CurrentDatePublisher.swift */; };
 		FE2332DB242B9C2300008ED4 /* ChannelInviteController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2332DA242B9C2300008ED4 /* ChannelInviteController.swift */; };
 		FE2332E1242CCDB400008ED4 /* InvitationChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2332E0242CCDB400008ED4 /* InvitationChatTableViewCell.swift */; };
@@ -388,6 +389,7 @@
 		FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewFeaturesDetector.swift; sourceTree = "<group>"; };
 		FE1DCCA11EA52CE200850563 /* DataFormController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataFormController.swift; sourceTree = "<group>"; };
 		FE1EE9D127862A5F000FA599 /* HttpFileUploadModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpFileUploadModule.swift; sourceTree = "<group>"; };
+		FE1EE9D527903F58000FA599 /* ChannelSelectNewOwnerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelSelectNewOwnerViewController.swift; sourceTree = "<group>"; };
 		FE1FA7152663AFFD0010333E /* CurrentDatePublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentDatePublisher.swift; sourceTree = "<group>"; };
 		FE2332DA242B9C2300008ED4 /* ChannelInviteController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelInviteController.swift; sourceTree = "<group>"; };
 		FE2332E0242CCDB400008ED4 /* InvitationChatTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationChatTableViewCell.swift; sourceTree = "<group>"; };
@@ -1138,6 +1140,7 @@
 				FE3E388F242A98C000D3A8E8 /* ChannelParticipantsController.swift */,
 				FE2332DA242B9C2300008ED4 /* ChannelInviteController.swift */,
 				FE2332E2242CE8D600008ED4 /* ChannelBlockedUsersController.swift */,
+				FE1EE9D527903F58000FA599 /* ChannelSelectNewOwnerViewController.swift */,
 			);
 			path = channel;
 			sourceTree = "<group>";
@@ -1508,6 +1511,7 @@
 				FEF0968226D7A9FB001C0454 /* ServerCertificateInfo.swift in Sources */,
 				FE11D35F26623D6D00CC883F /* Conversation.swift in Sources */,
 				FE719E762271B2BA007CEEC9 /* OpenSSL_AES_GCM_Engine.swift in Sources */,
+				FE1EE9D627903F58000FA599 /* ChannelSelectNewOwnerViewController.swift in Sources */,
 				FE11D2E426616B7300CC883F /* Database.swift in Sources */,
 				FEDC678A238A9F16005C0FAB /* BlockedEventHandler.swift in Sources */,
 				FE4071E821E2653700F09B58 /* RoundButton.swift in Sources */,

@@ -1055,3 +1055,12 @@
 
 /* alert message */
 "There is no service supporting channels for domain %@" = "Brak usługi wspierającej kanały dla domeny %@";
+
+/* leaving channel title */
+"Leaving channel" = "Opuszczanie kanału";
+
+/* button label */
+"Pass ownership" = "Zmień właściciela";
+
+/* leaving channel text */
+"You are the last person with ownership of this channel. Please decide what to do with the channel." = "Jesteś ostatnią osobą będącą właścicielem tego kanału. Zdecyduj co zrobić z kanałem.";

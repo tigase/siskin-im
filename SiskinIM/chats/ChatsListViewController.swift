@@ -223,21 +223,111 @@ class ChatsListViewController: UITableViewController {
             }))
         case let channel as Channel:
             actions.append(UIContextualAction(style: .normal, title: NSLocalizedString("Close", comment: "button label"), handler: { (action, view, completion) in
-                if let mixModule = channel.context?.module(.mix) {
-                    mixModule.leave(channel: channel, completionHandler: { result in
+                if let mixModule = channel.context?.module(.mix), let userJid = channel.context?.userBareJid {
+                    let leaveFn: ()-> Void = {
+                        mixModule.leave(channel: channel, completionHandler: { result in
+                            switch result {
+                            case .success(_):
+                                self.discardNotifications(for: channel);
+                                completion(true);
+                            case .failure(_):
+                                completion(false);
+                                break;
+                            }
+                        });
+                    }
+                    
+                    mixModule.retrieveConfig(for: channel.channelJid, completionHandler: { result in
                         switch result {
-                        case .success(_):
-                            self.discardNotifications(for: channel);
-                            completion(true);
-                        case .failure(_):
-                            completion(false);
-                            break;
+                        case .success(let data):
+                            if let adminsField: JidMultiField = data.getField(named: "Owner"), adminsField.value.contains(JID(userJid)) && adminsField.value.count == 1 {
+                                // you need to pass the permission or delete channel..
+                                DispatchQueue.main.async {
+                                    let alert = UIAlertController(title: NSLocalizedString("Leaving channel", comment: "leaving channel title"), message: NSLocalizedString("You are the last person with ownership of this channel. Please decide what to do with the channel.", comment: "leaving channel text"), preferredStyle: .actionSheet);
+                                    alert.addAction(UIAlertAction(title: NSLocalizedString("Destroy", comment: "button label"), style: .destructive, handler: { _ in
+                                        mixModule.destroy(channel: channel.channelJid, completionHandler: { result in
+                                            switch result {
+                                            case .success(_):
+                                                break;
+                                            case .failure(let error):
+                                                DispatchQueue.main.async {
+                                                    let alert = UIAlertController(title: NSLocalizedString("Channel destruction failed!", comment: "alert window title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert window message"), channel.name ?? channel.channelJid.stringValue, error.message ?? error.description), preferredStyle: .alert)
+                                                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Button"), style: .default, handler: nil));
+                                                    self.present(alert, animated: true, completion: nil);
+                                                }
+                                            }
+                                        })
+                                    }));
+                                    let otherParticipants = channel.participants.filter({ $0.jid != nil && $0.jid != userJid });
+                                    if !otherParticipants.isEmpty {
+                                        alert.addAction(UIAlertAction(title: NSLocalizedString("Pass ownership", comment: "button label"), style: .default, handler: { _ in
+                                            if let navController = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelSelectNewOwnerViewNavController") as? UINavigationController, let controller = navController.visibleViewController as? ChannelSelectNewOwnerViewController {
+                                                controller.channel = channel;
+                                                controller.participants = otherParticipants.sorted(by: { p1, p2 in
+                                                    return p1.nickname ?? p1.jid?.stringValue ?? p1.id < p2.nickname ?? p2.jid?.stringValue ?? p2.id;
+                                                });
+                                                controller.completionHandler = { result in
+                                                    guard let participant = result, let jid = participant.jid else {
+                                                        completion(false);
+                                                        return;
+                                                    }
+                                                    adminsField.value = adminsField.value.filter({ $0.bareJid != userJid }) + [JID(jid)];
+                                                    mixModule.updateConfig(for: channel.channelJid, config: data, completionHandler: { _ in
+                                                        leaveFn();
+                                                    })
+                                                }
+                                                self.present(navController, animated: true, completion: nil);
+                                            }
+                                        }));
+                                    }
+                                    alert.addAction(UIAlertAction(title: NSLocalizedString("Leave", comment: "button label"), style: .default, handler: { _ in
+                                        leaveFn();
+                                    }))
+                                    alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: { _ in
+                                        completion(false);
+                                    }))
+
+                                    alert.popoverPresentationController?.sourceView = self.view;
+                                    alert.popoverPresentationController?.sourceRect = tableView.rectForRow(at: indexPath);
+
+                                    self.present(alert, animated: true, completion: nil);
+                                }
+                            } else {
+                                leaveFn();
+                            }
+                        case .failure(let error):
+                            leaveFn();
                         }
                     });
                 } else {
                     completion(false);
                 }
             }))
+            if channel.permissions?.contains(.changeConfig) ?? false {
+                actions.append(UIContextualAction(style: .destructive, title: NSLocalizedString("Destroy", comment: "button label"), handler: { (action, view, completion) in
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(title: NSLocalizedString("Channel destuction", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("You are about to destroy channel %@. This will remove the channel on the server, remove remote history archive, and kick out all participants. Are you sure?", comment: "alert body"), channel.channelJid.stringValue), preferredStyle: .actionSheet);
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("Yes", comment: "button label"), style: .destructive, handler: { action in
+                            channel.context?.module(.mix).destroy(channel: channel.channelJid, completionHandler: { result in
+                                switch result {
+                                case .success(_):
+                                    self.discardNotifications(for: channel);
+                                    completion(true);
+                                case .failure(_):
+                                    completion(false);
+                                    break;
+                                }
+                            })
+                        }));
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("No", comment: "button label"), style: .default, handler: { action in
+                            completion(false)
+                        }))
+                        alert.popoverPresentationController?.sourceView = self.view;
+                        alert.popoverPresentationController?.sourceRect = tableView.rectForRow(at: indexPath);
+                        self.present(alert, animated: true, completion: nil);
+                    }
+                }))
+            }
         default:
             return nil;
         }

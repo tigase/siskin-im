@@ -162,3 +162,9 @@
 
 /* Class = "UILabel"; text = "Title"; ObjectID = "zcF-H6-Z39"; */
 "zcF-H6-Z39.text" = "Tytuł";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "47w-Kg-bgC"; */
+"47w-Kg-bgC.text" = "";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "hKZ-uC-8qH"; */
+"hKZ-uC-8qH.text" = "";
