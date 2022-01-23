@@ -240,12 +240,17 @@ class ChannelJoinViewController: UITableViewController {
             form.addField(BooleanField(name: "muc#roomconfig_publicroom", value: !priv));
 //            form.addField(TextSingleField(name: "muc#roomconfig_roomdesc", value: channelDescription));
             form.addField(TextSingleField(name: "muc#roomconfig_whois", value: priv ? "anyone" : "moderators"))
-            mucModule.setRoomConfiguration(roomJid: JID(BareJID(localPart: roomName, domain: channelJid.domain)), configuration: form, completionHandler: { creationResult in
+            let mucServer = self.channelJid.domain;
+            self.operationStarted(message: NSLocalizedString("Creating channel...", comment: "channel join view operation label"))
+            mucModule.setRoomConfiguration(roomJid: JID(BareJID(localPart: roomName, domain: mucServer)), configuration: form, completionHandler: { [weak self] creationResult in
                 switch creationResult {
                 case .success(_):
-                    mucModule.join(roomName: roomName, mucServer: self.channelJid.domain, nickname: nick).handle({ joinResult in
+                    mucModule.join(roomName: roomName, mucServer: mucServer, nickname: nick).handle({ joinResult in
                         switch joinResult {
                         case .success(let r):
+                            DispatchQueue.main.async {
+                                self?.operationEnded();
+                            }
                             switch r {
                             case .created(let room), .joined(let room):
                                 var features = Set<Room.Feature>();
@@ -263,16 +268,30 @@ class ChannelJoinViewController: UITableViewController {
                                     mucModule.setRoomSubject(roomJid: room.jid, newSubject: description);
                                 }
                                 DispatchQueue.main.async {
-                                    self.dismiss(animated: true, completion: nil);
+                                    self?.dismiss(animated: true, completion: nil);
                                 }
                             }
-                        case .failure(_):
-                            break;
-                        }
+                        case .failure(let error):
+                            DispatchQueue.main.async {
+                                self?.operationEnded();
+                                guard let that = self else {
+                                    return;
+                                }
+                                let alert = UIAlertController(title: NSLocalizedString("Error occurred", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not create channel on the server. Got following error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
+                                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
+                                that.present(alert, animated: true, completion: nil);
+                            }                        }
                     })
-                case .failure(_):
-                    break;
-                }
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        self?.operationEnded();
+                        guard let that = self else {
+                            return;
+                        }
+                        let alert = UIAlertController(title: NSLocalizedString("Error occurred", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not create channel on the server. Got following error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
+                        that.present(alert, animated: true, completion: nil);
+                    }                }
             })
         }
     }
@@ -305,9 +324,13 @@ class ChannelJoinViewController: UITableViewController {
              });
         case .muc:
             let room = channelJid!;
+            self.operationStarted(message: NSLocalizedString("Joining...", comment: "channel join view operation label"));
             client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nick, password: password).handle({ result in
                 switch result {
                 case .success(let joinResult):
+                    DispatchQueue.main.async {
+                        self.operationEnded();
+                    }
                     switch joinResult {
                     case .created(let room), .joined(let room):
                         client.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
@@ -326,8 +349,13 @@ class ChannelJoinViewController: UITableViewController {
                     DispatchQueue.main.async {
                         self.dismiss(animated: true, completion: nil);
                     }
-                case .failure(_):
-                    break;
+                case .failure(let error):
+                    DispatchQueue.main.async { [weak self] in
+                        self?.operationEnded();
+                        let alert = UIAlertController(title: NSLocalizedString("Could not join", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a channel. The server returned an error: %@", comment: "alert button"), error.localizedDescription), preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
+                        self?.present(alert, animated: true, completion: nil);
+                    }
                 }
             });
         }
