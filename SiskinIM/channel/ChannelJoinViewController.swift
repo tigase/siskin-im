@@ -242,56 +242,72 @@ class ChannelJoinViewController: UITableViewController {
             form.addField(TextSingleField(name: "muc#roomconfig_whois", value: priv ? "anyone" : "moderators"))
             let mucServer = self.channelJid.domain;
             self.operationStarted(message: NSLocalizedString("Creating channel...", comment: "channel join view operation label"))
-            mucModule.setRoomConfiguration(roomJid: JID(BareJID(localPart: roomName, domain: mucServer)), configuration: form, completionHandler: { [weak self] creationResult in
-                switch creationResult {
-                case .success(_):
-                    mucModule.join(roomName: roomName, mucServer: mucServer, nickname: nick).handle({ joinResult in
-                        switch joinResult {
-                        case .success(let r):
-                            DispatchQueue.main.async {
-                                self?.operationEnded();
+            mucModule.setRoomConfiguration(roomJid: JID(BareJID(localPart: roomName, domain: mucServer)), configuration: form, completionHandler: { [weak self] configResult in
+                mucModule.join(roomName: roomName, mucServer: mucServer, nickname: nick).handle({ [weak self] joinResult in
+                    switch joinResult {
+                    case .success(let r):
+                        switch r {
+                        case .created(let room), .joined(let room):
+                            var features = Set<Room.Feature>();
+                            features.insert(.nonAnonymous);
+                            if priv {
+                                features.insert(.membersOnly);
                             }
-                            switch r {
-                            case .created(let room), .joined(let room):
-                                var features = Set<Room.Feature>();
-                                features.insert(.nonAnonymous);
-                                if priv {
-                                    features.insert(.membersOnly);
-                                }
-                                (room as! Room).roomFeatures = features;
-                                let vcard = VCard();
-                                if let binval = avatar?.scaled(maxWidthOrHeight: 512.0)?.jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
-                                    vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
-                                }
-                                client.module(.vcardTemp).publishVCard(vcard, to: room.jid, completionHandler: nil);
-                                if description != nil {
-                                    mucModule.setRoomSubject(roomJid: room.jid, newSubject: description);
-                                }
+                            (room as! Room).roomFeatures = features;
+                            let vcard = VCard();
+                            if let binval = avatar?.scaled(maxWidthOrHeight: 512.0)?.jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
+                                vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
+                            }
+                            client.module(.vcardTemp).publishVCard(vcard, to: room.jid, completionHandler: nil);
+                            if description != nil {
+                                mucModule.setRoomSubject(roomJid: room.jid, newSubject: description);
+                            }
+                            
+                            let finished = {
                                 DispatchQueue.main.async {
+                                    self?.operationEnded();
                                     self?.dismiss(animated: true, completion: nil);
                                 }
                             }
-                        case .failure(let error):
-                            DispatchQueue.main.async {
-                                self?.operationEnded();
-                                guard let that = self else {
-                                    return;
-                                }
-                                let alert = UIAlertController(title: NSLocalizedString("Error occurred", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not create channel on the server. Got following error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
-                                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
-                                that.present(alert, animated: true, completion: nil);
-                            }                        }
-                    })
-                case .failure(let error):
-                    DispatchQueue.main.async {
-                        self?.operationEnded();
-                        guard let that = self else {
-                            return;
+                            switch configResult {
+                            case .success(_):
+                                finished();
+                            case .failure(_):
+                                mucModule.setRoomConfiguration(roomJid: JID(room.jid), configuration: form, completionHandler: { configResult in
+                                    switch configResult {
+                                    case .failure(let error):
+                                        DispatchQueue.main.async {
+                                            self?.operationEnded();
+                                            guard let that = self else {
+                                                return;
+                                            }
+                                            let alert = UIAlertController(title: NSLocalizedString("Error occurred", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Room was created and joined but room was not properly configured. Got following error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
+                                            alert.addAction(UIAlertAction(title: NSLocalizedString("Destroy", comment: "button label"), style: .destructive, handler: { _ in
+                                                room.context?.module(.muc).destroy(room: room);
+                                                finished();
+                                            }))
+                                            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: { _ in
+                                                finished();
+                                            }));
+                                            that.present(alert, animated: true, completion: nil);
+                                        }
+                                    case .success(_):
+                                        finished();
+                                    }
+                                })
+                            }
                         }
-                        let alert = UIAlertController(title: NSLocalizedString("Error occurred", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not create channel on the server. Got following error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
-                        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
-                        that.present(alert, animated: true, completion: nil);
-                    }                }
+                    case .failure(let error):
+                        DispatchQueue.main.async {
+                            self?.operationEnded();
+                            guard let that = self else {
+                                return;
+                            }
+                            let alert = UIAlertController(title: NSLocalizedString("Error occurred", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not create channel on the server. Got following error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
+                            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
+                            that.present(alert, animated: true, completion: nil);
+                        }                        }
+                })
             })
         }
     }
