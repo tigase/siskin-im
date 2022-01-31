@@ -111,7 +111,7 @@ extension BaseChatViewController: PHPickerViewControllerDelegate {
             } else if provider.hasItemConformingToTypeIdentifier("public.movie") {
                 provider.loadFileRepresentation(forTypeIdentifier: "public.movie", completionHandler: self.handleLoaded(movieUrl:error:));
             } else {
-                showAlert(shareError: .notSupported);
+                showAlert(shareError: .noAccessError);
             }
         }
     }
@@ -226,23 +226,23 @@ extension BaseChatViewController: UIImagePickerControllerDelegate, UINavigationC
             case .success(let quality):
                 DispatchQueue.main.async {
                     self.showProgressBar();
-                    MediaHelper.compressMovie(url: url, fileInfo: fileInfo, quality: quality, progressCallback: { [weak self] progress in
-                        DispatchQueue.main.async {
-                            self?.progressBar?.progress = progress;
-                        }
-                    }, completionHandler: { result in
-                        try? FileManager.default.removeItem(at: url);
-                        DispatchQueue.main.async {
-                            self.hideProgressBar();
-                        }
-                        switch result {
-                        case .success((let fileUrl, let fileInfo)):
-                            self.uploadFile(url: fileUrl, filename: fileInfo.filenameWithSuffix, deleteSource: true);
-                        case .failure(let error):
-                            self.showAlert(shareError: error);
-                        }
-                    })
                 }
+                MediaHelper.compressMovie(url: url, fileInfo: fileInfo, quality: quality, progressCallback: { [weak self] progress in
+                    DispatchQueue.main.async {
+                        self?.progressBar?.progress = progress;
+                    }
+                }, completionHandler: { result in
+                    try? FileManager.default.removeItem(at: url);
+                    DispatchQueue.main.async {
+                        self.hideProgressBar();
+                    }
+                    switch result {
+                    case .success((let fileUrl, let fileInfo)):
+                        self.uploadFile(url: fileUrl, filename: fileInfo.filenameWithSuffix, deleteSource: true);
+                    case .failure(let error):
+                        self.showAlert(error: error);
+                    }
+                })
             case .failure(_):
                 return;
             }
@@ -250,9 +250,13 @@ extension BaseChatViewController: UIImagePickerControllerDelegate, UINavigationC
     }
         
     private func copyFileLocally(url: URL) -> URL? {
-        var filename = url.lastPathComponent;
+        let filename = url.lastPathComponent;
+        var suffix: String = "";
+        if let idx = filename.lastIndex(of: ".") {
+            suffix = String(filename.suffix(from: idx));
+        }
         
-        let tmpUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: false);
+        let tmpUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + suffix, isDirectory: false);
         do {
             try FileManager.default.copyItem(at: url, to: tmpUrl);
         } catch {

@@ -237,6 +237,14 @@ extension BaseChatViewController: URLSessionDelegate {
         self.showAlert(title: NSLocalizedString("Upload failed", comment: "alert title"), message: shareError.message);
     }
     
+    func showAlert(error: Error) {
+        if let shareError = error as? ShareError {
+            self.showAlert(shareError: shareError);
+        } else {
+            self.showAlert(title: NSLocalizedString("Upload failed", comment: "alert title"), message: error.localizedDescription);
+        }
+    }
+    
     func showAlert(title: String, message: String) {
         DispatchQueue.main.async {
             self.hideProgressBar();

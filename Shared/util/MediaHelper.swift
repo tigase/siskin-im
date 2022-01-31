@@ -106,13 +106,13 @@ open class MediaHelper {
         }
     }
     
-    public static func compressMovie(url: URL, fileInfo: ShareFileInfo, quality: VideoQuality, progressCallback: @escaping (Float)->Void, completionHandler: @escaping (Result<(URL,ShareFileInfo),ShareError>)->Void) {
+    public static func compressMovie(url: URL, fileInfo: ShareFileInfo, quality: VideoQuality, progressCallback: @escaping (Float)->Void, completionHandler: @escaping (Result<(URL,ShareFileInfo),Error>)->Void) {
         guard quality != .original else {
             let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent(fileInfo.with(filename: UUID().uuidString));
             do {
                 try FileManager.default.copyItem(at: url, to: tempUrl);
             } catch {
-                completionHandler(.failure(.noAccessError))
+                completionHandler(.failure(ShareError.noAccessError))
                 return;
             }
             completionHandler(.success((tempUrl,fileInfo)));
@@ -131,13 +131,17 @@ open class MediaHelper {
         })
         exportSession.exportAsynchronously {
             timer.invalidate();
-            completionHandler(.success((fileUrl,newFileInfo)));
+            if let error = exportSession.error {
+                completionHandler(.failure(error));
+            } else {
+                completionHandler(.success((fileUrl,newFileInfo)));
+            }
         }
     }
     
 }
 
-public enum ShareError: Error {
+public enum ShareError: Error, LocalizedError {
     case unknownError
     case noAccessError
     case noFileSizeError
