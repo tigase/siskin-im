@@ -235,6 +235,7 @@ class ChannelJoinViewController: UITableViewController {
             let roomName = isPublic ? channelJid.localPart! : UUID().uuidString;
 
             let form = JabberDataElement(type: .submit);
+            form.addField(HiddenField(name: "FORM_TYPE")).value = "http://jabber.org/protocol/muc#roomconfig";
             form.addField(TextSingleField(name: "muc#roomconfig_roomname", value: name));
             form.addField(BooleanField(name: "muc#roomconfig_membersonly", value: priv));
             form.addField(BooleanField(name: "muc#roomconfig_publicroom", value: !priv));
