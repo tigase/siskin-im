@@ -43,6 +43,7 @@ extension JingleManager {
             case contentSet(SDP)
             case contentApply(Jingle.ContentAction, SDP)
             case transportAdd(Jingle.Transport.ICEUDPTransport.Candidate, String);
+            case sessionInfo([Jingle.SessionInfo])
             
             var order: Int {
                 switch self {
@@ -52,6 +53,8 @@ extension JingleManager {
                     return 0;
                 case .transportAdd(_, _):
                     return 1;
+                case .sessionInfo(_):
+                    return 2;
                 }
             }
         }
@@ -105,6 +108,10 @@ extension JingleManager {
         open override func contentModified(action: Jingle.ContentAction, contents: [Jingle.Content], bundle: [String]?) {
             let sdp = SDP(contents: contents, bundle: bundle);
             received(action: .contentApply(action, sdp));
+        }
+        
+        open override func sessionInfoReceived(info: [Jingle.SessionInfo]) {
+            received(action: .sessionInfo(info));
         }
         
         func addCandidate(_ candidate: Jingle.Transport.ICEUDPTransport.Candidate, for contentName: String) {
