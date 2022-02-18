@@ -624,7 +624,7 @@
 /* message decryption error
    message encryption error
    message encryption failure */
-"Message decryption failed!" = "Deszyfrowanie wiadomości nie udało się!";
+"Message decryption failed! Error code: %d" = "Deszyfrowanie wiadomości nie udało się! Kod błędu: %d";
 
 /* section label */
 "Message synchronization" = "Synchronizacja wiadomości";

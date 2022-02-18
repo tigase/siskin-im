@@ -24,28 +24,15 @@ import Foundation
 public enum ConversationEntryEncryption: Hashable {
     case none
     case decrypted(fingerprint: String?)
-    case decryptionFailed
+    case decryptionFailed(errorCode: Int)
     case notForThisDevice
-    
-    static func from(messageEncryption: MessageEncryption, fingerprint: String?) -> ConversationEntryEncryption {
-        switch messageEncryption {
-        case .decrypted:
-            return .decrypted(fingerprint: fingerprint);
-        case .none:
-            return .none;
-        case .decryptionFailed:
-            return .decryptionFailed;
-        case .notForThisDevice:
-            return .notForThisDevice;
-        }
-    }
     
     func message() -> String? {
         switch self {
         case .none, .decrypted(_):
             return nil;
-        case .decryptionFailed:
-            return NSLocalizedString("Message decryption failed!", comment: "message encryption failure");
+        case .decryptionFailed(let errorCode):
+            return String.localizedStringWithFormat(NSLocalizedString("Message decryption failed! Error code: %d", comment: "message encryption failure"), errorCode);
         case .notForThisDevice:
             return NSLocalizedString("Message was not encrypted for this device", comment: "message encryption failure");
         }
@@ -60,6 +47,15 @@ public enum ConversationEntryEncryption: Hashable {
         }
     }
     
+    var errorCode: Int? {
+        switch self {
+        case .decryptionFailed(let errorCode):
+            return errorCode;
+        default:
+            return nil;
+        }
+    }
+
     var value: MessageEncryption {
         switch self {
         case .none:
