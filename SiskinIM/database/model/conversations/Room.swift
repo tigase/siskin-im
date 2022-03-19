@@ -242,8 +242,8 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     public func update(state: RoomState) {
         dispatcher.async(flags: .barrier) {
             self.state = state;
-            self.occupantsStore.removeAll();
             if state != .joined && state != .requested {
+                self.occupantsStore.removeAll();
                 self._members = nil;
             }
         }
