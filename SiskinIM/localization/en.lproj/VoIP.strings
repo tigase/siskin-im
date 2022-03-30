@@ -1,0 +1,11 @@
+/* Class = "UITableViewSection"; footerTitle = "Select which account should be used to join channel"; ObjectID = "0d6-UW-iX3"; */
+"0d6-UW-iX3.footerTitle" = "Select which account should be used to join channel";
+
+/* Class = "UITableViewSection"; headerTitle = "Account"; ObjectID = "0d6-UW-iX3"; */
+"0d6-UW-iX3.headerTitle" = "Account";
+
+/* Class = "UITextField"; text = "test@example.com"; ObjectID = "9Dn-ee-8WK"; */
+"9Dn-ee-8WK.text" = "test@example.com";
+
+/* Class = "UILabel"; text = "Calling John Doe..."; ObjectID = "i9e-aU-c5F"; */
+"i9e-aU-c5F.text" = "Calling John Doe...";

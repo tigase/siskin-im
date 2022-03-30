@@ -1,11 +1,11 @@
 /* Class = "UILabel"; text = "Label"; ObjectID = "1gF-9W-YJd"; */
-"1gF-9W-YJd.text" = "Etykieta";
+"1gF-9W-YJd.text" = "Label";
 
 /* Class = "UIButton"; normalTitle = "Accept"; ObjectID = "7TV-Kq-bdP"; */
-"7TV-Kq-bdP.normalTitle" = "Akceptuj";
+"7TV-Kq-bdP.normalTitle" = "Accept";
 
 /* Class = "UILabel"; text = "Label"; ObjectID = "9Iv-6m-Olu"; */
-"9Iv-6m-Olu.text" = "Etykieta";
+"9Iv-6m-Olu.text" = "Label";
 
 /* Class = "UILabel"; text = "Temporary label"; ObjectID = "FUt-h4-wkU"; */
 "FUt-h4-wkU.text" = "Temporary label";
@@ -26,7 +26,7 @@
 "lOe-B5-HHI.text" = "Label";
 
 /* Class = "UILabel"; text = "Temporary label"; ObjectID = "lQM-kh-PzX"; */
-"lQM-kh-PzX.text" = "Label";
+"lQM-kh-PzX.text" = "Temporary label";
 
 /* Class = "UILabel"; text = "Temporary label"; ObjectID = "qKZ-5B-qhf"; */
 "qKZ-5B-qhf.text" = "Temporary label";
@@ -44,7 +44,7 @@
 "V6M-WP-Vfp.text" = "Label";
 
 /* Class = "UILabel"; text = "Incoming message"; ObjectID = "VN2-IB-Jlq"; */
-"VN2-IB-Jlq.text" = "Przychodząca wiadomość";
+"VN2-IB-Jlq.text" = "Incoming message";
 
 /* Class = "UILabel"; text = "Label"; ObjectID = "zix-O9-jze"; */
 "zix-O9-jze.text" = "Label";
