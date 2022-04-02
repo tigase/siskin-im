@@ -478,15 +478,9 @@ class ChatsListViewController: UITableViewController {
         init(controller: ChatsListViewController) {
             self.controller = controller;
             
-            if #available(iOS 13.2, *) {
-                DBChatStore.instance.$conversations.throttle(for: 0.1, scheduler: self.dispatcher, latest: true).sink(receiveValue: { [weak self] items in
-                    self?.update(items: items);
-                }).store(in: &cancellables);
-            } else {
-                DBChatStore.instance.$conversations.throttle(for: 0.1, scheduler: RunLoop.main, latest: true).sink(receiveValue: { [weak self] items in
-                    self?.update(items: items);
-                }).store(in: &cancellables);
-            }
+            DBChatStore.instance.$conversations.throttleFixed(for: 0.1, scheduler: self.dispatcher, latest: true).sink(receiveValue: { [weak self] items in
+                self?.update(items: items);
+            }).store(in: &cancellables);
         }
         
         func update(items: [Conversation]) {

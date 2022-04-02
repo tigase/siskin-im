@@ -26,6 +26,8 @@ import Combine
 
 class ChatsListTableViewCell: UITableViewCell {
 
+    private static let throttlingQueue = DispatchQueue(label: "ChatCellViewThrottlingQueue");
+    
     private static let relativeForamtter: RelativeDateTimeFormatter = {
             let formatter = RelativeDateTimeFormatter();
             formatter.dateTimeStyle = .named;
@@ -93,12 +95,12 @@ class ChatsListTableViewCell: UITableViewCell {
             cancellables.removeAll();
             conversation?.displayNamePublisher.map({ $0 }).assign(to: \.text, on: nameLabel).store(in: &cancellables);
             avatarStatusView.displayableId = conversation;
-            conversation?.unreadPublisher.sink(receiveValue: { [weak self] value in
+            conversation?.unreadPublisher.throttleFixed(for: 0.1, scheduler: ChatsListTableViewCell.throttlingQueue, latest: true).removeDuplicates().receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
                 self?.set(unread: value);
             }).store(in: &cancellables);
-            conversation?.timestampPublisher.combineLatest(CurrentTimePublisher.publisher).map({ (value, now) in ChatsListTableViewCell.formatTimestamp(value, now) }).assign(to: \.text, on: timestampLabel).store(in: &cancellables);
+            conversation?.timestampPublisher.throttleFixed(for: 0.1, scheduler: ChatsListTableViewCell.throttlingQueue, latest: true).combineLatest(CurrentTimePublisher.publisher).map({ (value, now) in ChatsListTableViewCell.formatTimestamp(value, now) }).receive(on: DispatchQueue.main).assign(to: \.text, on: timestampLabel).store(in: &cancellables);
             if let account = conversation?.account {
-                conversation?.lastActivityPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
+                conversation?.lastActivityPublisher.throttleFixed(for: 0.1, scheduler: ChatsListTableViewCell.throttlingQueue, latest: true).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
                     self?.set(lastActivity: value, account: account);
                 }).store(in: &cancellables);
             }

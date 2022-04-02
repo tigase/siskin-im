@@ -78,6 +78,7 @@
 		FE258EAA1F3B8BC90042CED9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FE258EA91F3B8BC90042CED9 /* Assets.xcassets */; };
 		FE2809812167CE18002F5BD0 /* server_features_list.xml in Resources */ = {isa = PBXBuildFile; fileRef = FE2809802167CE18002F5BD0 /* server_features_list.xml */; };
 		FE2809832167CF1B002F5BD0 /* ServerFeaturesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2809822167CF1B002F5BD0 /* ServerFeaturesViewController.swift */; };
+		FE2A00BB27F89BF500AF0152 /* Publisher+ThrottleFixed.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2A00BA27F89BF500AF0152 /* Publisher+ThrottleFixed.swift */; };
 		FE2D481A24505F1600C13CE5 /* CallManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2D481924505F1600C13CE5 /* CallManager.swift */; };
 		FE2D481C24518C2800C13CE5 /* RTCCameraVideoCapturer_Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2D481B24518C2800C13CE5 /* RTCCameraVideoCapturer_Format.swift */; };
 		FE31291A22240BEB00A92863 /* PEPBookmarksModule_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31291922240BEB00A92863 /* PEPBookmarksModule_extension.swift */; };
@@ -409,6 +410,7 @@
 		FE258EA91F3B8BC90042CED9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FE2809802167CE18002F5BD0 /* server_features_list.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = server_features_list.xml; sourceTree = "<group>"; };
 		FE2809822167CF1B002F5BD0 /* ServerFeaturesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerFeaturesViewController.swift; sourceTree = "<group>"; };
+		FE2A00BA27F89BF500AF0152 /* Publisher+ThrottleFixed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publisher+ThrottleFixed.swift"; sourceTree = "<group>"; };
 		FE2A0E8D1F74012D006ADF08 /* db-schema-2.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-2.sql"; sourceTree = "<group>"; };
 		FE2D481924505F1600C13CE5 /* CallManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallManager.swift; sourceTree = "<group>"; };
 		FE2D481B24518C2800C13CE5 /* RTCCameraVideoCapturer_Format.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTCCameraVideoCapturer_Format.swift; sourceTree = "<group>"; };
@@ -718,6 +720,7 @@
 			children = (
 				FE11D3B3266241BD00CC883F /* Publisher+OnlyGetter.swift */,
 				FE11D3B2266241BD00CC883F /* Publisher+ThrottledSink.swift */,
+				FE2A00BA27F89BF500AF0152 /* Publisher+ThrottleFixed.swift */,
 			);
 			path = combine;
 			sourceTree = "<group>";
@@ -1515,6 +1518,7 @@
 				FEF19F0223473B9E005CFE9A /* XmppServiceEventHandler.swift in Sources */,
 				FEDE93971D0C202600CA60A9 /* ContactViewController.swift in Sources */,
 				FEE49DCE2424C1F800900BBB /* ConversationLogController.swift in Sources */,
+				FE2A00BB27F89BF500AF0152 /* Publisher+ThrottleFixed.swift in Sources */,
 				FE1AC8F7216B8AB700D4CDAB /* NewFeaturesDetector.swift in Sources */,
 				FE11D35726623D6800CC883F /* ConversationEntrySender.swift in Sources */,
 				FE17808D23EB4C7F00A1EA76 /* AccountQRCodeController.swift in Sources */,
