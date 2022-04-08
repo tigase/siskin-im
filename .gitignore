@@ -111,3 +111,6 @@ xcuserdata
 # We're using source-control, so this is a "feature" that we do not want!
 
 *.moved-aside
+
+Documentation/restructured/docs/locale/pl/LC_MESSAGES/*.mo
+Documentation/restructured/docs/_build/
