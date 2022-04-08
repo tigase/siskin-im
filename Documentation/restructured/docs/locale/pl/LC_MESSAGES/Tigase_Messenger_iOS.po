@@ -1,0 +1,718 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2004-2022, Tigase, Inc
+# This file is distributed under the same license as the TigaseDoc package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: TigaseDoc \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-04-07 12:13-0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
+
+#: ../../Tigase_Messenger_iOS.rst:2
+msgid "Tigase Messenger for iOS Interface"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:4
+msgid ""
+"The menu interface for Tigase Messenger for iOS is broken up into three "
+"main panels; `Recent <#recent>`__, `Contacts <#contacts>`__ and `More "
+"<#more>`__. This can be brought up from any screen by swiping right from "
+"the left side of the screen, or tapping the back option on the top left."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:6
+msgid ""
+"The recent menu displays recent conversations with other users, and also "
+"serves as a way to navigate between multi-user chatrooms (MUCs). Each "
+"conversation will be displayed here along with an icon indicating user or"
+" room status."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:8
+msgid "|images/recent|"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:249
+msgid "images/recent"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:10
+msgid ""
+"Tapping one of these conversations will bring up the chat, whether it is "
+"MUC or one on one. This panel also serves as an archive of sorts, and "
+"previous conversations with users will be accessible in this panel."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:12
+msgid "**Note**"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:14
+msgid ""
+"Conversations will only be saved if they took place on this device, or if"
+" message archive is active."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:16
+msgid ""
+"You may clear conversations from the archive by dragging the name or MUC "
+"conversation to the left and selecting delete. If you are removing a MUC "
+"chat, you will leave the chatroom."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:18
+msgid "|images/delchat|"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:250
+msgid "images/delchat"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:22
+msgid "New/Join MUC"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:24
+msgid ""
+"Tapping the plus button on the top right will bring up the new/join muc "
+"panel. This interface will allow you to either join an existing or create"
+" a new MUC on your chosen server."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:26
+msgid "|images/join|"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:251
+msgid "images/join"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:28
+msgid ""
+"Account: This is the account that will handle data for the MUC chatroom. "
+"This is available for users who have multiple accounts logged in."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:30
+msgid ""
+"Server: The server the chatroom is located on, in many cases the muc "
+"server will be muc.servername.com, but may be different."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:32
+msgid "Room: The name of the chatroom you wish to create or join."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:34
+msgid ""
+"Nickname: Your name for use inside the MUC. This will become "
+"``yournickname@muc.server.com``. MUC conversations do not leak your XMPP "
+"account, so a nickname is required."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:36
+msgid ""
+"Password: The password for the MUC room. If you are creating a new "
+"chatroom, this will serve as the chat room password."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:38
+msgid ""
+"Once you are finished, tap Join and you will join, or the room will be "
+"opened for you."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:40
+msgid ""
+"The recent panel will now display the chatroom, you may tap it to enter "
+"the MUC interface."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:42
+msgid ""
+"When in a chatroom, you may view the occupants by tapping Occupants, and "
+"will be given a list and statuses of the room participants."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:44
+msgid "|images/occu|"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:252
+msgid "images/occu"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:46
+msgid ""
+"The contacts panel serves as your Roster, displaying all the contacts you"
+" have on your roster, and displaying statuses along with their names. "
+"Tigase Messenger for iOS supports vCard-Temp Avatars and will retrieve "
+"them if they are uploaded by a user."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:48
+msgid "|images/roster|"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:253
+msgid "images/roster"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:50
+msgid "Contacts with green icons are available or free to chat status."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:51
+msgid "Contacts with yellow icons are away or extended away."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:52
+msgid "Contacts with red icons are in do not disturb status."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:53
+msgid "Contacts with gray icons are offline or unavailable."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:55
+msgid ""
+"Note that contacts will remain gray if you decide not to allow presence "
+"notifications in the settings."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:57
+msgid ""
+"You may remove or edit contacts by dragging a contact to the left and "
+"tapping Delete. You also have the ability to edit a contact, explained in"
+" the next section. Deleting the contact will remove them from your "
+"roster, and remove any presence sharing permissions from the contact."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:59
+msgid "|images/deluser|"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:254
+msgid "images/deluser"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:61
+msgid ""
+"You may also filter contacts by status by selecting All to display all "
+"users, or Available to hide users that are offline or unavailable."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:64
+msgid "Editing a contact"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:66
+msgid ""
+"When editing a contact, you may chose to change the account that has "
+"friended the user, XMPP name, edit a roster name (which will be shown on "
+"your roster). Here, you may also decide to selectively approve or deny "
+"subscription requests to and from the user. If you do not send presence "
+"updates, they will not know whether you are online, busy, or away. If you"
+" elect not to receive presence updates, you will not receive information "
+"if they are online, busy or away."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:68
+msgid "|images/edituser|"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:255
+msgid "images/edituser"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:72
+msgid "Adding a contact"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:74
+msgid ""
+"To add a contact, tap the plus button in the upper left and the add "
+"contact screen will show."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:76
+msgid "|images/adduser|"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:256
+msgid "images/adduser"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:78
+msgid ""
+"First, select the account friends list you wish the new contact to be "
+"added too. Then type in the JID of the user, do not use resources, just "
+"bare JID. You may enter a friendly nickname for the contact to be added "
+"to your friend list, this is optional. When adding users, you have two "
+"options to select:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:80
+msgid ""
+"Send presence updates - This will allow sending of presence status and "
+"changes to this user on your roster. You may disable this to reduce "
+"network usage, however you will not be able to obtain status information."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:82
+msgid ""
+"Receive presence updates - Turning this on will enable the applications "
+"to send presence changes to this person on the roster. You may disable "
+"this to reduce network usage, however they will not receive notifications"
+" if you turn off the phone"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:86
+msgid ""
+"These options are on by default and enable Tigase Messenger for iOS to "
+"behave like a traditional client."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:88
+msgid ""
+"If you do decide to receive presence updates when adding a new contact, "
+"you will be presented with this screen when they add you back:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:90
+msgid "|images/presreq|"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:257
+msgid "images/presreq"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:92
+msgid ""
+"By tapping yes, you will receive notifications of presence changes from "
+"your contact. This subscription will be maintained by the server, and "
+"will stay active with your friends list."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:96
+msgid ""
+"You will only receive this option if 'automatically accept presence "
+"requests' is set to yes in account settings."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:100
+msgid ""
+"If somebody not on your friends list adds you, you will receive this same"
+" message."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:102
+msgid ""
+"The more panel is your program and account settings panel, from here you "
+"can change program settings and general account information."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:104
+msgid "|images/settings|"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:258
+msgid "images/settings"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:108
+msgid "Accounts"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:110
+msgid ""
+"This will list your current accounts, if an avatar has been defined for "
+"the account, it will show on the left side but by default the Tigase logo"
+" will be used."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:114
+msgid "vCard data"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:116
+msgid ""
+"You can set and change vCard data for your account. Tap the account you "
+"wish to edit and you will be presented with a number of fields that may "
+"be filled out. There is a blank space in the upper left corner where you "
+"may upload a photo as your avatar."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:120
+msgid "Badge descriptions"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:122
+msgid ""
+"We have included a badging system on accounts to help indicate if "
+"connections issues are present with any account setup."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:125
+msgid "Icon"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:125
+msgid "Meaning"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:127
+msgid "No icon"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:127
+msgid "If account is disabled and will not try to connect"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:129
+msgid "Red icon with a cross"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:129
+msgid ""
+"Account is disabled and will not try to connect due to server reporting "
+"an error (persistent error, i.e. authentication error)."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:131
+msgid "Grey"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:131
+msgid ""
+"Account attempts to connect but is unable to connect to server (usually "
+"it means client is unable to establish TCP connection with the server) In"
+" this state, account tries to reconnect every few seconds if the client "
+"is in the foreground."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:133
+msgid "Orange with dots"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:133
+msgid ""
+"TCP connection is established but XMPP stream is not ready yet (not "
+"authorized yet, awaiting resource binding, etc)."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:135
+msgid "Green"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:135
+msgid ""
+"XMPP client is connected and XMPP stream is established and ready to "
+"send/receive stanzas."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:139
+msgid "Delete an account"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:141
+msgid ""
+"If you wish to remove an account, swipe left and select Delete. You will "
+"be asked for a confirmation whether you want to remove it from the "
+"application, and if the server supports it, you may delete it from the "
+"server removing roster, presence subscriptions, and potentially saved "
+"history."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:143
+msgid "|images/delacct|"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:259
+msgid "images/delacct"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:147
+msgid ""
+"Deleting your account from the server is a permanent and non-reversible "
+"action."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:149
+msgid ""
+"You may also add multiple XMPP accounts from this screen. The add account"
+" screen looks identical to the one seen in the `existing account "
+"<#existing>`__ section."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:151
+msgid ""
+"To change settings for an individual account, tap that account name. "
+"Those options are covered under `Account Settings <#acctSettings>`__ "
+"section."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:154 ../../Tigase_Messenger_iOS.rst:161
+msgid "Status"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:156
+msgid "Below accounts is a status setting for all connected and online accounts."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:158
+msgid ""
+"To save data usage, your account status will be managed automatically "
+"using the following rules by default"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:161
+msgid "Behavior"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:163
+msgid "Online"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:163
+msgid "Application has focus on the device."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:165
+msgid "Away / XA"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:165
+msgid "Application is running in the background."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:167
+msgid "Offline"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:167
+msgid ""
+"Application is killed or disconnected. If the device is turned off for a "
+"period of time, this will also set status to offline."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:170
+msgid ""
+"However, you may override this logic by tapping Automatic and selecting a"
+" status manually."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:172
+msgid "|images/setstatus|"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:260
+msgid "images/setstatus"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:176
+msgid "Show tag"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:178
+msgid "Underneath is a blank space where you can set your show tag"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:180
+msgid ""
+"Editing this text section will change the ``<show>`` tags in your status."
+" Once you press OK, your new show tag will display."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:182
+msgid "Below are settings for the operation and behavior of the application."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:184
+msgid "|images/chatsettings|"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:261
+msgid "images/chatsettings"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:188
+msgid "Chats"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:190
+msgid "**List of Messages**"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Lines of preview:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"Sets the lines of preview text to keep within the chat window without "
+"using internal or message archive."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Sorting:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"Allows sorting of recent messages by Time, or by status and time (with "
+"unavailable resources at the bottom)."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:198
+msgid "**Messages**"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Send messages on return:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"If you are offline or away from connection, messages may be resent when "
+"you are back online or back in connection if this option is checked."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Clear chat on close:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"If this is enabled, when you close chats from the recent screen, all "
+"local history on the device will be deleted. This does not affect "
+"operation of offline or server-stored message archives."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Message carbons:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"Enables or disables message carbons to deliver to all resources. This is "
+"on by default, however some servers may not support this."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Request delivery receipts:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Whether or not to request delivery receipts of messages sent."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:212
+msgid "**Attachments**"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "File sharing via HTTP:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"This setting turns on the use of HTTP file sharing using the application."
+" The server you are connected too must support this component to enable "
+"this option."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Simplified link to HTTP file:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"This creates a simplified link to the file after uploading rather than "
+"directly sending the file. This may be useful for intermittent "
+"communications."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Max image preview size:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"Sets the maximum size of image previews to download before fully "
+"downloading files. Setting this at 0 prevents previews from retrieving "
+"files."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Clear cache:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"This clears the devices cache of all downloaded and saved files retrieved"
+" from HTTP upload component."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:228
+msgid "Contacts"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:230
+msgid "**Display**"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Contacts in groups:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"Allows contacts to be displayed in groups as defined by the roster. "
+"Disabling this will show contacts in a flat organization."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "\"Hidden\" group:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Whether or not to display contacts that are added to the \"hidden\" group."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:238
+msgid "**General**"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Auto-authorize contacts:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"Selecting this will automatically request subscription to users added to "
+"contacts."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:245
+msgid "Notifications"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:247
+msgid ""
+"This section has one option: Whether to accept notifications from "
+"unknown. If left disabled, notifications from unknown sources (including "
+"server administrators) will not be sent to the native notification "
+"section of the device. Instead, you will have to see them under the "
+"Recent menu."
+msgstr ""
+
