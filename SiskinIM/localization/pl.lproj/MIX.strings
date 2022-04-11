@@ -37,9 +37,6 @@
 /* Class = "UIBarButtonItem"; title = "Invite"; ObjectID = "Kre-sS-2vH"; */
 "Kre-sS-2vH.title" = "Zaproś";
 
-/* Class = "UIViewController"; title = "Channel Controller"; ObjectID = "lfo-Uw-gL1"; */
-"lfo-Uw-gL1.title" = "Channel Controller";
-
 /* Class = "UITextField"; placeholder = "Description"; ObjectID = "MsF-6z-TY3"; */
 "MsF-6z-TY3.placeholder" = "Opis";
 
@@ -85,7 +82,7 @@
 /* Class = "UITableViewSection"; footerTitle = "Notification support and filtering depends on the XMPP server which you are using and may not work in some cases even if it's enabled here."; ObjectID = "Ta8-dG-cwn"; */
 "Ta8-dG-cwn.footerTitle" = "Wsparcie dla powiadomień i filtrowania zależy od serwera XMPP, który jest używany i może nie zawsze działać mimo, iż jest włączone tutaj.";
 
-/* Class = "UITableViewSection"; headerTitle = " Settings"; ObjectID = "Ta8-dG-cwn"; */
+/* Class = "UITableViewSection"; headerTitle = "Settings"; ObjectID = "Ta8-dG-cwn"; */
 "Ta8-dG-cwn.headerTitle" = "Ustawienia";
 
 /* Class = "UITableViewSection"; footerTitle = "ID of a channel used for joining (localpart of a JID)"; ObjectID = "u6K-qu-Pf5"; */

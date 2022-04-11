@@ -80,6 +80,9 @@
                         </barButtonItem>
                     </navigationItem>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
+                    <attributedString key="userComments">
+                        <fragment content="#bc-ignore!"/>
+                    </attributedString>
                     <connections>
                         <outlet property="containerView" destination="sgc-HQ-Zz2" id="4MZ-gD-QS6"/>
                     </connections>

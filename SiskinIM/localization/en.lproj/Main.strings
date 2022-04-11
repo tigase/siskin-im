@@ -49,9 +49,6 @@
 /* Class = "UITableViewSection"; headerTitle = "Account"; ObjectID = "Mfv-HJ-QDO"; */
 "Mfv-HJ-QDO.headerTitle" = "Account";
 
-/* Class = "UITableViewController"; title = "Roster"; ObjectID = "mps-t3-QBq"; */
-"mps-t3-QBq.title" = "Roster";
-
 /* Class = "UICollectionViewController"; title = "Attachments"; ObjectID = "N9z-ms-iaT"; */
 "N9z-ms-iaT.title" = "Attachments";
 

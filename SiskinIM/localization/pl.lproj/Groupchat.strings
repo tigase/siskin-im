@@ -25,9 +25,6 @@
 /* Class = "UITableViewController"; title = "Invite to chat"; ObjectID = "SOJ-3n-8YB"; */
 "SOJ-3n-8YB.title" = "Zaproś do kanału";
 
-/* Class = "UIViewController"; title = "Room Controller"; ObjectID = "uV2-vL-T54"; */
-"uV2-vL-T54.title" = "Room Controller";
-
 /* Class = "UILabel"; text = "Attachments"; ObjectID = "wBw-1J-Xau"; */
 "wBw-1J-Xau.text" = "Załączniki";
 

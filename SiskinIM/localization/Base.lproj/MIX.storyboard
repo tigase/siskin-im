@@ -81,6 +81,9 @@
                         </barButtonItem>
                     </navigationItem>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
+                    <attributedString key="userComments">
+                        <fragment content="#bc-ignore!"/>
+                    </attributedString>
                     <connections>
                         <outlet property="containerView" destination="DLI-2v-dJu" id="kan-1D-3Jw"/>
                         <segue destination="LfZ-I7-lik" kind="presentation" identifier="ChannelSettingsShow" id="OfB-oE-ClH"/>
@@ -668,7 +671,7 @@
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
-                            <tableViewSection headerTitle=" Settings" id="Ta8-dG-cwn">
+                            <tableViewSection headerTitle="Settings" id="Ta8-dG-cwn">
                                 <string key="footerTitle">Notification support and filtering depends on the XMPP server which you are using and may not work in some cases even if it's enabled here.</string>
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" textLabel="fFa-pN-ndo" detailTextLabel="4mY-vJ-rHP" style="IBUITableViewCellStyleValue1" id="7pY-3B-7KX">

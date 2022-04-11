@@ -75,10 +75,6 @@
    channel join status view label */
 "Automatic" = "Automatic";
 
-/* presence automatic
-   presence status */
-"Automatic " = "Automatic ";
-
 /* filter scope */
 "Available" = "Available";
 

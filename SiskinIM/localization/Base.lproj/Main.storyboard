@@ -601,6 +601,9 @@
                         </barButtonItem>
                     </navigationItem>
                     <nil key="simulatedBottomBarMetrics"/>
+                    <attributedString key="userComments">
+                        <fragment content="#bc-ignore!"/>
+                    </attributedString>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="oko-Zq-ifa" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

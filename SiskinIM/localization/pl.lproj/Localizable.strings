@@ -1063,7 +1063,3 @@
 
 /* search location pin label */
 "Your location" = "Twoje położenie";
-
-/* presence automatic
-   presence status */
-"Automatic " = "";
