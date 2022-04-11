@@ -411,6 +411,7 @@
 		FE2809802167CE18002F5BD0 /* server_features_list.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = server_features_list.xml; sourceTree = "<group>"; };
 		FE2809822167CF1B002F5BD0 /* ServerFeaturesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerFeaturesViewController.swift; sourceTree = "<group>"; };
 		FE2A00BA27F89BF500AF0152 /* Publisher+ThrottleFixed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publisher+ThrottleFixed.swift"; sourceTree = "<group>"; };
+		FE2A00BD28048D6C00AF0152 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/MainInterface.strings; sourceTree = "<group>"; };
 		FE2A0E8D1F74012D006ADF08 /* db-schema-2.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-2.sql"; sourceTree = "<group>"; };
 		FE2D481924505F1600C13CE5 /* CallManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallManager.swift; sourceTree = "<group>"; };
 		FE2D481B24518C2800C13CE5 /* RTCCameraVideoCapturer_Format.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTCCameraVideoCapturer_Format.swift; sourceTree = "<group>"; };
@@ -1738,6 +1739,7 @@
 			children = (
 				FE4DDF581F39E0B500A4CE5A /* Base */,
 				FEBA831726F76B0800347D89 /* pl */,
+				FE2A00BD28048D6C00AF0152 /* en */,
 			);
 			name = MainInterface.storyboard;
 			sourceTree = "<group>";
