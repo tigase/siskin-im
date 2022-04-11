@@ -67,8 +67,8 @@
 /* Class = "UITextField"; placeholder = "Street"; ObjectID = "KgL-GY-IFp"; */
 "KgL-GY-IFp.placeholder" = "Street";
 
-/* Class = "UITableViewSection"; headerTitle = " Password"; ObjectID = "LO4-Ys-cek"; */
-"LO4-Ys-cek.headerTitle" = " Password";
+/* Class = "UITableViewSection"; headerTitle = "Password"; ObjectID = "LO4-Ys-cek"; */
+"LO4-Ys-cek.headerTitle" = "Password";
 
 /* Class = "UIButton"; normalTitle = "Change avatar"; ObjectID = "Mo3-sc-7ss"; */
 "Mo3-sc-7ss.normalTitle" = "Change avatar";
@@ -97,8 +97,8 @@
 /* Class = "UITableViewSection"; footerTitle = "Enter your account JID"; ObjectID = "SKG-bP-NPK"; */
 "SKG-bP-NPK.footerTitle" = "Enter your account JID";
 
-/* Class = "UITableViewSection"; headerTitle = " XMPP ID"; ObjectID = "SKG-bP-NPK"; */
-"SKG-bP-NPK.headerTitle" = " XMPP ID";
+/* Class = "UITableViewSection"; headerTitle = "XMPP ID"; ObjectID = "SKG-bP-NPK"; */
+"SKG-bP-NPK.headerTitle" = "XMPP ID";
 
 /* Class = "UITextField"; placeholder = "Phone number"; ObjectID = "T1r-DU-iqs"; */
 "T1r-DU-iqs.placeholder" = "Phone number";

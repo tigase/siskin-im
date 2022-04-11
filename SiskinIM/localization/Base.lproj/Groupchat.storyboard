@@ -281,7 +281,7 @@
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
-                            <tableViewSection headerTitle=" Settings" id="bRu-vo-fpu">
+                            <tableViewSection headerTitle="Settings" id="bRu-vo-fpu">
                                 <string key="footerTitle">Push notification support depends on the XMPP server which you are using and may not work in some cases even if it's supported and enabled on the group chat</string>
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" textLabel="02f-aw-3Zd" detailTextLabel="exK-ZH-jpA" style="IBUITableViewCellStyleValue1" id="KlQ-4F-rae">

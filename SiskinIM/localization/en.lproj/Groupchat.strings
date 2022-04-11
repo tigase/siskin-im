@@ -4,8 +4,8 @@
 /* Class = "UITableViewSection"; footerTitle = "Push notification support depends on the XMPP server which you are using and may not work in some cases even if it's supported and enabled on the group chat"; ObjectID = "bRu-vo-fpu"; */
 "bRu-vo-fpu.footerTitle" = "Push notification support depends on the XMPP server which you are using and may not work in some cases even if it's supported and enabled on the group chat";
 
-/* Class = "UITableViewSection"; headerTitle = " Settings"; ObjectID = "bRu-vo-fpu"; */
-"bRu-vo-fpu.headerTitle" = " Settings";
+/* Class = "UITableViewSection"; headerTitle = "Settings"; ObjectID = "bRu-vo-fpu"; */
+"bRu-vo-fpu.headerTitle" = "Settings";
 
 /* Class = "UILabel"; text = "Encryption"; ObjectID = "DQk-sn-hKj"; */
 "DQk-sn-hKj.text" = "Encryption";
