@@ -1,53 +1,5 @@
-/* Class = "UILabel"; text = "Label"; ObjectID = "1gF-9W-YJd"; */
-"1gF-9W-YJd.text" = "Etykieta";
-
 /* Class = "UIButton"; normalTitle = "Accept"; ObjectID = "7TV-Kq-bdP"; */
 "7TV-Kq-bdP.normalTitle" = "Akceptuj";
 
-/* Class = "UILabel"; text = "Label"; ObjectID = "9Iv-6m-Olu"; */
-"9Iv-6m-Olu.text" = "Etykieta";
-
-/* Class = "UILabel"; text = "Temporary label"; ObjectID = "FUt-h4-wkU"; */
-"FUt-h4-wkU.text" = "Temporary label";
-
-/* Class = "UILabel"; text = "Label"; ObjectID = "gwl-mz-S3w"; */
-"gwl-mz-S3w.text" = "Label";
-
-/* Class = "UILabel"; text = "Label"; ObjectID = "I8a-au-D5U"; */
-"I8a-au-D5U.text" = "Label";
-
-/* Class = "UILabel"; text = "Label"; ObjectID = "IXK-ie-MfZ"; */
-"IXK-ie-MfZ.text" = "Label";
-
-/* Class = "UILabel"; text = "Temporary label"; ObjectID = "kCs-nM-AcB"; */
-"kCs-nM-AcB.text" = "Temporary label";
-
-/* Class = "UILabel"; text = "Label"; ObjectID = "lOe-B5-HHI"; */
-"lOe-B5-HHI.text" = "Label";
-
-/* Class = "UILabel"; text = "Temporary label"; ObjectID = "lQM-kh-PzX"; */
-"lQM-kh-PzX.text" = "Label";
-
-/* Class = "UILabel"; text = "Temporary label"; ObjectID = "qKZ-5B-qhf"; */
-"qKZ-5B-qhf.text" = "Temporary label";
-
-/* Class = "UILabel"; text = "Label"; ObjectID = "S79-tM-pQh"; */
-"S79-tM-pQh.text" = "Label";
-
-/* Class = "UILabel"; text = "Label"; ObjectID = "sEy-DK-0eP"; */
-"sEy-DK-0eP.text" = "Label";
-
-/* Class = "UILabel"; text = "Label"; ObjectID = "twg-Vx-EgF"; */
-"twg-Vx-EgF.text" = "Label";
-
 /* Class = "UILabel"; text = "Label"; ObjectID = "V6M-WP-Vfp"; */
 "V6M-WP-Vfp.text" = "Label";
-
-/* Class = "UILabel"; text = "Incoming message"; ObjectID = "VN2-IB-Jlq"; */
-"VN2-IB-Jlq.text" = "Przychodząca wiadomość";
-
-/* Class = "UILabel"; text = "Label"; ObjectID = "zix-O9-jze"; */
-"zix-O9-jze.text" = "Label";
-
-/* Class = "UILabel"; text = "Label"; ObjectID = "zwG-47-Ljq"; */
-"zwG-47-Ljq.text" = "Label";

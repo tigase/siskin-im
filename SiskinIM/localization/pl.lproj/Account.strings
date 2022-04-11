@@ -28,12 +28,6 @@
 /* Class = "UILabel"; text = "When in Away/XA/DND state"; ObjectID = "aKW-CM-bl2"; */
 "aKW-CM-bl2.text" = "Gdy w stanie Away/XA/DND";
 
-/* Class = "UILabel"; text = "John Doe"; ObjectID = "bDD-UG-Fxr"; */
-"bDD-UG-Fxr.text" = "John Doe";
-
-/* Class = "UILabel"; text = "9dfacd3d 410d52bc 35f8e816 c7efc5b6 efe138e5 452a9e96 f30c2839 63b46241 "; ObjectID = "BE2-bI-S0Z"; */
-"BE2-bI-S0Z.text" = "9dfacd3d 410d52bc 35f8e816 c7efc5b6 efe138e5 452a9e96 f30c2839 63b46241 ";
-
 /* Class = "UITextField"; placeholder = "Type"; ObjectID = "Clb-vT-t5A"; */
 "Clb-vT-t5A.placeholder" = "Typ";
 
@@ -48,9 +42,6 @@
 
 /* Class = "UITableViewSection"; headerTitle = "Encryption"; ObjectID = "Et5-H6-t7C"; */
 "Et5-H6-t7C.headerTitle" = "Szyfrowanie";
-
-/* Class = "UILabel"; text = "Subtitle"; ObjectID = "FeX-5F-H2m"; */
-"FeX-5F-H2m.text" = "Podtytuł";
 
 /* Class = "UILabel"; text = "add address"; ObjectID = "fRX-fN-yOj"; */
 "fRX-fN-yOj.text" = "dodaj adres";
@@ -67,17 +58,11 @@
 /* Class = "UINavigationItem"; title = "Account settings"; ObjectID = "gzC-dB-kIF"; */
 "gzC-dB-kIF.title" = "Ustawienia konta";
 
-/* Class = "UILabel"; text = "Address"; ObjectID = "i2f-mN-qTd"; */
-"i2f-mN-qTd.text" = "Adres";
-
 /* Class = "UIBarButtonItem"; title = "Done"; ObjectID = "ijD-Kb-uyj"; */
 "ijD-Kb-uyj.title" = "Gotowe";
 
 /* Class = "UILabel"; text = "add phone"; ObjectID = "jAE-vq-Vfj"; */
 "jAE-vq-Vfj.text" = "dodaj telefon";
-
-/* Class = "UILabel"; text = "Detail"; ObjectID = "JkB-3h-A61"; */
-"JkB-3h-A61.text" = "Szczegół";
 
 /* Class = "UITextField"; placeholder = "Street"; ObjectID = "KgL-GY-IFp"; */
 "KgL-GY-IFp.placeholder" = "Ulica";
@@ -103,9 +88,6 @@
 /* Class = "UITableViewSection"; headerTitle = "Push Notifications"; ObjectID = "PvC-LX-0Sp"; */
 "PvC-LX-0Sp.headerTitle" = "Powiadomienia push";
 
-/* Class = "UITextField"; placeholder = "user@domain.com"; ObjectID = "qTN-JT-Mcr"; */
-"qTN-JT-Mcr.placeholder" = "user@domain.com";
-
 /* Class = "UIBarButtonItem"; title = "Next"; ObjectID = "R0m-k2-q64"; */
 "R0m-k2-q64.title" = "Dalej";
 
@@ -130,29 +112,14 @@
 /* Class = "UITableViewSection"; headerTitle = "General"; ObjectID = "v8B-ee-zAk"; */
 "v8B-ee-zAk.headerTitle" = "Ogólne";
 
-/* Class = "UILabel"; text = "Device 11111111"; ObjectID = "VBD-gj-5RW"; */
-"VBD-gj-5RW.text" = "Device 11111111";
-
-/* Class = "UILabel"; text = "Company, Inc."; ObjectID = "vF4-tE-C74"; */
-"vF4-tE-C74.text" = "Company, Inc.";
-
-/* Class = "UILabel"; text = "Label"; ObjectID = "vjD-aw-Ugt"; */
-"vjD-aw-Ugt.text" = "Etykieta";
-
 /* Class = "UILabel"; text = "Enabled"; ObjectID = "wbI-5v-vug"; */
 "wbI-5v-vug.text" = "Włączone";
 
 /* Class = "UITableViewController"; title = "Server Features"; ObjectID = "wW7-3f-Kck"; */
 "wW7-3f-Kck.title" = "Funkcje Serwera";
 
-/* Class = "UILabel"; text = "Device 11111111"; ObjectID = "xMn-lc-rJ9"; */
-"xMn-lc-rJ9.text" = "Device 11111111";
-
 /* Class = "UILabel"; text = "Title"; ObjectID = "XMr-e2-2o3"; */
 "XMr-e2-2o3.text" = "Tytuł";
 
 /* Class = "UITextField"; placeholder = "Email address"; ObjectID = "ynp-RE-XlY"; */
 "ynp-RE-XlY.placeholder" = "Adres e-mail";
-
-/* Class = "UILabel"; text = "Title"; ObjectID = "zhp-jp-Aoq"; */
-"zhp-jp-Aoq.text" = "Tytuł";

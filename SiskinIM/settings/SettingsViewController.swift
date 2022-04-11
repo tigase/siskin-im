@@ -129,7 +129,7 @@ class SettingsViewController: UITableViewController {
                     if let value = type {
                         return self?.statusNames[value];
                     } else {
-                        return NSLocalizedString("Automatic ", comment: "presence status");
+                        return NSLocalizedString("Automatic", comment: "presence status");
                     }
                 }).sink(receiveValue: { [weak cell] name in
                     (cell?.contentView.subviews[1] as? UILabel)?.text = name;
@@ -216,7 +216,7 @@ class SettingsViewController: UITableViewController {
                 let alert = UIAlertController(title: NSLocalizedString("Select status", comment: "alert title"), message: nil, preferredStyle: .actionSheet);
                 let options: [Presence.Show?] = [nil, .chat, .online, .away, .xa, .dnd];
                 for type in options {
-                    let name = type == nil ? NSLocalizedString("Automatic ", comment: "presence automatic") : self.statusNames[type!];
+                    let name = type == nil ? NSLocalizedString("Automatic", comment: "presence automatic") : self.statusNames[type!];
                     let action = UIAlertAction(title: name, style: .default) { (a) in
                         Settings.statusType = type;
                     };

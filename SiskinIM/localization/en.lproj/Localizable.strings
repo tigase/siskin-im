@@ -187,7 +187,7 @@
 "Could not join" = "Could not join";
 
 /* alert body */
-"Could not join newly created channel '%@' on the server. Got following error: %@" = "Could not join newly created channel '%1$@' on the server. Got following error: %2$@";
+"Could not join newly created channel '%@' on the server. Got following error: %@" = "Could not join newly created channel '%@' on the server. Got following error: %@";
 
 /* alert body */
 "Could not join room. Reason:\n%@" = "Could not join room. Reason:\n%@";

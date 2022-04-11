@@ -6,6 +6,3 @@
 
 /* Class = "UITextField"; text = "test@example.com"; ObjectID = "9Dn-ee-8WK"; */
 "9Dn-ee-8WK.text" = "test@example.com";
-
-/* Class = "UILabel"; text = "Calling John Doe..."; ObjectID = "i9e-aU-c5F"; */
-"i9e-aU-c5F.text" = "Calling John Doe...";

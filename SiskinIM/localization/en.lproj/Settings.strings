@@ -13,12 +13,6 @@
 /* Class = "UILabel"; text = "Notifications from unknown"; ObjectID = "67H-51-GcY"; */
 "67H-51-GcY.text" = "Notifications from unknown";
 
-/* Class = "UILabel"; text = "Account name"; ObjectID = "7ho-Mu-thd"; */
-"7ho-Mu-thd.text" = "Account name";
-
-/* Class = "UILabel"; text = "Title"; ObjectID = "7tC-Eh-kK5"; */
-"7tC-Eh-kK5.text" = "Title";
-
 /* Class = "UILabel"; text = "Media"; ObjectID = "8G3-tm-sCO"; */
 "8G3-tm-sCO.text" = "Media";
 
@@ -36,9 +30,6 @@
 
 /* Class = "UILabel"; text = "No blocked contacts"; ObjectID = "Aki-gv-qus"; */
 "Aki-gv-qus.text" = "No blocked contacts";
-
-/* Class = "UILabel"; text = "Label"; ObjectID = "b4V-dp-Rpl"; */
-"b4V-dp-Rpl.text" = "Label";
 
 /* Class = "UILabel"; text = "Photos quality"; ObjectID = "bbT-7s-6ph"; */
 "bbT-7s-6ph.text" = "Photos quality";
@@ -67,9 +58,6 @@
 /* Class = "UILabel"; text = "File sharing via HTTP"; ObjectID = "eZJ-fR-LPh"; */
 "eZJ-fR-LPh.text" = "File sharing via HTTP";
 
-/* Class = "UILabel"; text = "Subtitle"; ObjectID = "fB5-hb-x8m"; */
-"fB5-hb-x8m.text" = "Subtitle";
-
 /* Class = "UITableViewController"; title = "Experimental"; ObjectID = "FGQ-GL-dYt"; */
 "FGQ-GL-dYt.title" = "Experimental";
 
@@ -97,12 +85,6 @@
 /* Class = "UINavigationItem"; title = "Settings"; ObjectID = "jeY-X9-tWB"; */
 "jeY-X9-tWB.title" = "Settings";
 
-/* Class = "UILabel"; text = "Light"; ObjectID = "L2t-Ud-Fkc"; */
-"L2t-Ud-Fkc.text" = "Light";
-
-/* Class = "UILabel"; text = "By presence and time"; ObjectID = "LAc-oF-22z"; */
-"LAc-oF-22z.text" = "By presence and time";
-
 /* Class = "UILabel"; text = "Auto-authorize contacts"; ObjectID = "MGl-L6-Fs3"; */
 "MGl-L6-Fs3.text" = "Auto-authorize contacts";
 
@@ -115,29 +97,14 @@
 /* Class = "UITableViewController"; title = "Chat settings"; ObjectID = "pFo-ox-4gT"; */
 "pFo-ox-4gT.title" = "Chat settings";
 
-/* Class = "UILabel"; text = "Detail"; ObjectID = "QHQ-RS-Q7a"; */
-"QHQ-RS-Q7a.text" = "Detail";
-
 /* Class = "UILabel"; text = "Groupchats bookmarks sync"; ObjectID = "Tbt-L3-jpa"; */
 "Tbt-L3-jpa.text" = "Groupchats bookmarks sync";
-
-/* Class = "UILabel"; text = "Medium"; ObjectID = "tqu-Xn-F0Z"; */
-"tqu-Xn-F0Z.text" = "Medium";
-
-/* Class = "UILabel"; text = "Medium"; ObjectID = "u45-W8-GP0"; */
-"u45-W8-GP0.text" = "Medium";
-
-/* Class = "UILabel"; text = "20 MB"; ObjectID = "ubX-Hq-ZFQ"; */
-"ubX-Hq-ZFQ.text" = "20 MB";
 
 /* Class = "UITableViewController"; title = "Contacts settings"; ObjectID = "xRS-v5-T5C"; */
 "xRS-v5-T5C.title" = "Contacts settings";
 
 /* Class = "UILabel"; text = "Sorting"; ObjectID = "Y0J-o4-ADK"; */
 "Y0J-o4-ADK.text" = "Sorting";
-
-/* Class = "UILabel"; text = "Status Type"; ObjectID = "Y3q-SX-IhN"; */
-"Y3q-SX-IhN.text" = "Status Type";
 
 /* Class = "UILabel"; text = "Show link previews"; ObjectID = "ybc-mt-hVG"; */
 "ybc-mt-hVG.text" = "Show link previews";

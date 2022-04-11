@@ -74,10 +74,6 @@
 /* channel join status view label */
 "Automatic" = "Automatycznie";
 
-/* presence automatic
-   presence status */
-"Automatic " = "Automatyczny";
-
 /* filter scope */
 "Available" = "Dostępni";
 
@@ -183,7 +179,7 @@
 "Could not join" = "Nie udało się dołączyć";
 
 /* alert body */
-"Could not join newly created channel '%@' on the server. Got following error: %@" = "Nie udało się dołączyć do nowoutworzonego kanału '%@' na serwerze.";
+"Could not join newly created channel '%@' on the server. Got following error: %@" = "Nie udało się dołączyć do nowoutworzonego kanału '%@' na serwerze. Serwer zwrócił błąd: %@";
 
 /* alert body */
 "Could not join room. Reason:\n%@" = "Nie udało się dołączyć do pokoju. Powód:\n%@";
@@ -292,7 +288,7 @@
 "Enable" = "Włączone";
 
 /* option description */
-"Enabling message synchronization will enable message archiving on the server" = "Włączenie synchronizacji wiadomości włączy archiwizację wiadomości na serwerze.";
+"Enabling message synchronization will enable message archiving on the server" = "Włączenie synchronizacji wiadomości włączy archiwizację wiadomości na serwerze";
 
 /* contact details section */
 "Encryption" = "Szyfrowanie";
@@ -528,7 +524,7 @@
 "Low" = "Niska";
 
 /* muc error reason */
-"Maximum number of users exceeded" = "Przekroczono maksymalną ilość uczestników.";
+"Maximum number of users exceeded" = "Przekroczono maksymalną ilość uczestników";
 
 /* me label for conversation log */
 "Me" = "Ja";
@@ -1067,3 +1063,7 @@
 
 /* search location pin label */
 "Your location" = "Twoje położenie";
+
+/* presence automatic
+   presence status */
+"Automatic " = "";
