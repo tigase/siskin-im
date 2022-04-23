@@ -22,6 +22,9 @@
 /* Class = "UILabel"; text = "Message Archiving"; ObjectID = "Ckp-Mb-v0c"; */
 "Ckp-Mb-v0c.text" = "Archiwum wiadomości";
 
+/* Class = "UITabBarItem"; title = "Bookmarks"; ObjectID = "dgT-Yo-7nF"; */
+"dgT-Yo-7nF.title" = "Zakładki";
+
 /* Class = "UILabel"; text = "Attachments"; ObjectID = "EpU-tc-DIx"; */
 "EpU-tc-DIx.text" = "Załączniki";
 
@@ -63,6 +66,9 @@
 
 /* Class = "UITableViewSection"; headerTitle = "JID"; ObjectID = "Qgj-eQ-geg"; */
 "Qgj-eQ-geg.headerTitle" = "JID";
+
+/* Class = "UITableViewController"; title = "Bookmarks"; ObjectID = "rba-pb-IiC"; */
+"rba-pb-IiC.title" = "Zakładki";
 
 /* Class = "UILabel"; text = "Disclose my online status"; ObjectID = "upM-mW-rMZ"; */
 "upM-mW-rMZ.text" = "Udostępnij mój status online";

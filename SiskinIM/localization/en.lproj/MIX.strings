@@ -10,14 +10,23 @@
 /* Class = "UITableViewSection"; headerTitle = "Component domain"; ObjectID = "94L-uC-ldZ"; */
 "94L-uC-ldZ.headerTitle" = "Component domain";
 
+/* Class = "UILabel"; text = "Create"; ObjectID = "9Ww-8v-Dml"; */
+"9Ww-8v-Dml.text" = "Create";
+
 /* Class = "UITableViewSection"; headerTitle = "Experimental"; ObjectID = "aqR-Sm-2re"; */
 "aqR-Sm-2re.headerTitle" = "Experimental";
 
 /* Class = "UINavigationItem"; title = "Select channel"; ObjectID = "C5U-9C-poe"; */
 "C5U-9C-poe.title" = "Select channel";
 
+/* Class = "UITableViewSection"; headerTitle = "Bookmark"; ObjectID = "cOt-Oi-tab"; */
+"cOt-Oi-tab.headerTitle" = "Bookmark";
+
 /* Class = "UIBarButtonItem"; title = "Item"; ObjectID = "cv8-VS-8c6"; */
 "cv8-VS-8c6.title" = "Item";
+
+/* Class = "UILabel"; text = "Autojoin"; ObjectID = "da6-M6-5nm"; */
+"da6-M6-5nm.text" = "Autojoin";
 
 /* Class = "UILabel"; text = "Notifications"; ObjectID = "fFa-pN-ndo"; */
 "fFa-pN-ndo.text" = "Notifications";

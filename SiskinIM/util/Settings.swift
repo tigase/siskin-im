@@ -177,7 +177,7 @@ class SettingsStore {
     @UserDefaultsSetting(key: "XmppPipelining", defaultValue: false)
     var xmppPipelining: Bool;
     
-    @UserDefaultsSetting(key: "enableBookmarksSync", defaultValue: false)
+    @UserDefaultsSetting(key: "enableBookmarksSync", defaultValue: true)
     var enableBookmarksSync: Bool;
     @UserDefaultsRawSetting(key: "messageEncryption", defaultValue: ConversationEncryption.none)
     var messageEncryption: ConversationEncryption;

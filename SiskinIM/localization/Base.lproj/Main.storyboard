@@ -490,6 +490,7 @@
                     <connections>
                         <segue destination="JxF-gw-olp" kind="relationship" relationship="viewControllers" id="ifN-oQ-Gcj"/>
                         <segue destination="Ndx-if-NHK" kind="relationship" relationship="viewControllers" id="o8R-rQ-mdc"/>
+                        <segue destination="uKH-vf-YBY" kind="relationship" relationship="viewControllers" id="hOA-xK-gxP"/>
                         <segue destination="w4Y-E8-hif" kind="relationship" relationship="viewControllers" id="5fd-ya-4oz"/>
                     </connections>
                 </tabBarController>
@@ -1374,9 +1375,107 @@
             </objects>
             <point key="canvasLocation" x="2020" y="90"/>
         </scene>
+        <!--Bookmarks-->
+        <scene sceneID="2RC-MI-G2c">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="uKH-vf-YBY" sceneMemberID="viewController">
+                    <tabBarItem key="tabBarItem" title="Bookmarks" image="bookmark.circle.fill" catalog="system" id="dgT-Yo-7nF"/>
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="BWe-az-1Sv">
+                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="rba-pb-IiC" kind="relationship" relationship="rootViewController" id="dHI-x5-14M"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="PQG-85-JwT" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2779.7101449275365" y="99.776785714285708"/>
+        </scene>
+        <!--Bookmarks-->
+        <scene sceneID="QrV-Go-pPc">
+            <objects>
+                <tableViewController title="Bookmarks" id="rba-pb-IiC" customClass="BookmarksController" customModule="Siskin" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="dHi-2q-YJs">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" name="chatslistBackground"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="bookmarkCell" id="2Pz-rv-NGY" customClass="BookmarkViewCell" customModule="Siskin" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="44.5" width="414" height="60.5"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="2Pz-rv-NGY" id="FcJ-ju-Pff">
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="60.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="nTX-5X-KoR" customClass="AvatarView" customModule="Siskin" customModuleProvider="target">
+                                            <rect key="frame" x="10" y="6" width="48" height="48.5"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="48" id="RI4-B8-eZ1"/>
+                                                <constraint firstAttribute="height" constant="48" id="j25-jJ-gav"/>
+                                            </constraints>
+                                        </imageView>
+                                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="r1C-OG-oGw">
+                                            <rect key="frame" x="66" y="11.5" width="338" height="38"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="Bookmark label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oGF-gw-aag">
+                                                    <rect key="frame" x="0.0" y="0.0" width="338" height="17"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <nil key="highlightedColor"/>
+                                                    <attributedString key="userComments">
+                                                        <fragment content="#bc-ignore!"/>
+                                                    </attributedString>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="200" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="1000" text="conference@muc.example.net" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LTO-Jq-ee6">
+                                                    <rect key="frame" x="0.0" y="21" width="338" height="17"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
+                                                    <color key="textColor" name="chatslistItemSecondaryLabel"/>
+                                                    <nil key="highlightedColor"/>
+                                                    <attributedString key="userComments">
+                                                        <fragment content="#bc-ignore!"/>
+                                                    </attributedString>
+                                                </label>
+                                            </subviews>
+                                        </stackView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="nTX-5X-KoR" firstAttribute="leading" secondItem="FcJ-ju-Pff" secondAttribute="leading" constant="10" id="4hQ-NR-4E2"/>
+                                        <constraint firstItem="r1C-OG-oGw" firstAttribute="top" relation="greaterThanOrEqual" secondItem="FcJ-ju-Pff" secondAttribute="top" constant="2" id="BVy-7m-Qbe"/>
+                                        <constraint firstAttribute="trailing" secondItem="r1C-OG-oGw" secondAttribute="trailing" constant="10" id="SnR-eI-t0C"/>
+                                        <constraint firstItem="nTX-5X-KoR" firstAttribute="centerY" secondItem="FcJ-ju-Pff" secondAttribute="centerY" id="fGr-6C-emj"/>
+                                        <constraint firstItem="nTX-5X-KoR" firstAttribute="top" secondItem="FcJ-ju-Pff" secondAttribute="top" constant="6" id="gfB-EH-BXM"/>
+                                        <constraint firstItem="r1C-OG-oGw" firstAttribute="leading" secondItem="nTX-5X-KoR" secondAttribute="trailing" constant="8" id="sDo-k1-ncW"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <color key="backgroundColor" name="chatslistBackground"/>
+                                <constraints>
+                                    <constraint firstItem="r1C-OG-oGw" firstAttribute="centerY" secondItem="2Pz-rv-NGY" secondAttribute="centerY" id="8aD-5B-8A4"/>
+                                </constraints>
+                                <connections>
+                                    <outlet property="avatarView" destination="nTX-5X-KoR" id="L3W-vx-M1A"/>
+                                    <outlet property="jidLabel" destination="LTO-Jq-ee6" id="w6b-fe-qNk"/>
+                                    <outlet property="nameLabel" destination="oGF-gw-aag" id="Bbt-E9-Nd2"/>
+                                </connections>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="rba-pb-IiC" id="9PK-Nh-Jfw"/>
+                            <outlet property="delegate" destination="rba-pb-IiC" id="nTo-1Q-04a"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" id="kRB-um-N0J"/>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="8ht-61-spm" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3573" y="97"/>
+        </scene>
     </scenes>
     <resources>
         <image name="appLogo" width="1024" height="1024"/>
+        <image name="bookmark.circle.fill" catalog="system" width="32" height="32"/>
         <image name="defaultAvatar" width="100" height="100"/>
         <image name="first" width="30" height="30"/>
         <image name="gear" catalog="system" width="32" height="32"/>

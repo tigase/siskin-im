@@ -81,7 +81,6 @@
 		FE2A00BB27F89BF500AF0152 /* Publisher+ThrottleFixed.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2A00BA27F89BF500AF0152 /* Publisher+ThrottleFixed.swift */; };
 		FE2D481A24505F1600C13CE5 /* CallManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2D481924505F1600C13CE5 /* CallManager.swift */; };
 		FE2D481C24518C2800C13CE5 /* RTCCameraVideoCapturer_Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2D481B24518C2800C13CE5 /* RTCCameraVideoCapturer_Format.swift */; };
-		FE31291A22240BEB00A92863 /* PEPBookmarksModule_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31291922240BEB00A92863 /* PEPBookmarksModule_extension.swift */; };
 		FE31291C222C0D1500A92863 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31291B222C0D1500A92863 /* AvatarView.swift */; };
 		FE31DDE4201261A200C2AB1D /* DNSSrvDiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */; };
 		FE36B3C821FA52E000D1F037 /* EmptyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */; };
@@ -122,6 +121,9 @@
 		FE507A241CDB7B3B001A015C /* GlobalSplitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A111CDB7B3B001A015C /* GlobalSplitViewController.swift */; };
 		FE507A251CDB7B3B001A015C /* AccountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A131CDB7B3B001A015C /* AccountManager.swift */; };
 		FE507A261CDB7B3B001A015C /* AvatarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A141CDB7B3B001A015C /* AvatarManager.swift */; };
+		FE64445E281314ED002D6E8E /* BookmarksController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE64445D281314ED002D6E8E /* BookmarksController.swift */; };
+		FE64446028131538002D6E8E /* BookmarkViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE64445F28131538002D6E8E /* BookmarkViewCell.swift */; };
+		FE644462281334ED002D6E8E /* BookmarkItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE644461281334ED002D6E8E /* BookmarkItem.swift */; };
 		FE6545601E9E7B85006A14AC /* RegisterAccountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE65455F1E9E7B85006A14AC /* RegisterAccountController.swift */; };
 		FE6545621E9E7FDE006A14AC /* AccountDomainTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6545611E9E7FDE006A14AC /* AccountDomainTableViewCell.swift */; };
 		FE6545641E9E8B67006A14AC /* ServerSelectorTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6545631E9E8B67006A14AC /* ServerSelectorTableViewCell.swift */; };
@@ -415,7 +417,6 @@
 		FE2A0E8D1F74012D006ADF08 /* db-schema-2.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-2.sql"; sourceTree = "<group>"; };
 		FE2D481924505F1600C13CE5 /* CallManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallManager.swift; sourceTree = "<group>"; };
 		FE2D481B24518C2800C13CE5 /* RTCCameraVideoCapturer_Format.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTCCameraVideoCapturer_Format.swift; sourceTree = "<group>"; };
-		FE31291922240BEB00A92863 /* PEPBookmarksModule_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PEPBookmarksModule_extension.swift; sourceTree = "<group>"; };
 		FE31291B222C0D1500A92863 /* AvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
 		FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSSrvDiskCache.swift; sourceTree = "<group>"; };
 		FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyViewController.swift; sourceTree = "<group>"; };
@@ -463,6 +464,9 @@
 		FE507A131CDB7B3B001A015C /* AccountManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountManager.swift; sourceTree = "<group>"; };
 		FE507A141CDB7B3B001A015C /* AvatarManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarManager.swift; sourceTree = "<group>"; };
 		FE60F29B1ED48B470030D411 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
+		FE64445D281314ED002D6E8E /* BookmarksController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarksController.swift; sourceTree = "<group>"; };
+		FE64445F28131538002D6E8E /* BookmarkViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkViewCell.swift; sourceTree = "<group>"; };
+		FE644461281334ED002D6E8E /* BookmarkItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkItem.swift; sourceTree = "<group>"; };
 		FE65455F1E9E7B85006A14AC /* RegisterAccountController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegisterAccountController.swift; sourceTree = "<group>"; };
 		FE6545611E9E7FDE006A14AC /* AccountDomainTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountDomainTableViewCell.swift; sourceTree = "<group>"; };
 		FE6545631E9E8B67006A14AC /* ServerSelectorTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerSelectorTableViewCell.swift; sourceTree = "<group>"; };
@@ -985,6 +989,16 @@
 			path = notifications;
 			sourceTree = "<group>";
 		};
+		FE7607DA2812BC2B009C2A93 /* bookmarks */ = {
+			isa = PBXGroup;
+			children = (
+				FE64445D281314ED002D6E8E /* BookmarksController.swift */,
+				FE64445F28131538002D6E8E /* BookmarkViewCell.swift */,
+				FE644461281334ED002D6E8E /* BookmarkItem.swift */,
+			);
+			path = bookmarks;
+			sourceTree = "<group>";
+		};
 		FE8885EA26BAEA350095E25E /* suggestions */ = {
 			isa = PBXGroup;
 			children = (
@@ -1024,6 +1038,7 @@
 		FE94E5231CCBA74F00FAE755 /* SiskinIM */ = {
 			isa = PBXGroup;
 			children = (
+				FE7607DA2812BC2B009C2A93 /* bookmarks */,
 				FE9D4DA226BE9EFD00DD295A /* foreman.mp4 */,
 				FE168ACC1CCD197A003F8B26 /* db-schema-1.sql */,
 				FE2A0E8D1F74012D006ADF08 /* db-schema-2.sql */,
@@ -1080,7 +1095,6 @@
 				FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */,
 				FE00157C2017617B00490340 /* StreamFeaturesCache.swift */,
 				FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */,
-				FE31291922240BEB00A92863 /* PEPBookmarksModule_extension.swift */,
 				FEF19F0123473B9E005CFE9A /* XmppServiceEventHandler.swift */,
 				FEF19F0323473C06005CFE9A /* MessageEventHandler.swift */,
 				FEF19F0B23476466005CFE9A /* MucEventHandler.swift */,
@@ -1512,6 +1526,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FE64445E281314ED002D6E8E /* BookmarksController.swift in Sources */,
 				FEDE93921D09E74100CA60A9 /* VCardEditAddressTableViewCell.swift in Sources */,
 				FEAC71791CECE50400ABABEF /* MucChatOccupantsTableViewController.swift in Sources */,
 				FE3E387E2427A09A00D3A8E8 /* ChannelSelectToJoinViewController.swift in Sources */,
@@ -1525,6 +1540,7 @@
 				FE17808D23EB4C7F00A1EA76 /* AccountQRCodeController.swift in Sources */,
 				FE11D36726623D7000CC883F /* DisplayableIdProtocol.swift in Sources */,
 				FEF0968226D7A9FB001C0454 /* ServerCertificateInfo.swift in Sources */,
+				FE64446028131538002D6E8E /* BookmarkViewCell.swift in Sources */,
 				FE11D35F26623D6D00CC883F /* Conversation.swift in Sources */,
 				FE719E762271B2BA007CEEC9 /* OpenSSL_AES_GCM_Engine.swift in Sources */,
 				FE1EE9D627903F58000FA599 /* ChannelSelectNewOwnerViewController.swift in Sources */,
@@ -1601,7 +1617,6 @@
 				FE7D293623BB5E0A001A877D /* LinkPreviewChatTableViewCell.swift in Sources */,
 				FE11D37E26623D7700CC883F /* DBChatStore+ChannelStore.swift in Sources */,
 				FE6545641E9E8B67006A14AC /* ServerSelectorTableViewCell.swift in Sources */,
-				FE31291A22240BEB00A92863 /* PEPBookmarksModule_extension.swift in Sources */,
 				FE00157F2019090300490340 /* ExperimentalSettingsViewController.swift in Sources */,
 				FE2332E3242CE8D600008ED4 /* ChannelBlockedUsersController.swift in Sources */,
 				FE75A006237475E2001E78D9 /* MainNotificationManagerProvider.swift in Sources */,
@@ -1691,6 +1706,7 @@
 				FE11D38226623D7700CC883F /* DBChatStore+ChatStore.swift in Sources */,
 				FE2809832167CF1B002F5BD0 /* ServerFeaturesViewController.swift in Sources */,
 				FEC514281CEB82E9003AF765 /* MucChatViewController.swift in Sources */,
+				FE644462281334ED002D6E8E /* BookmarkItem.swift in Sources */,
 				FE1A07482525EDD4004F38A0 /* ExternalServiceDiscovery_Service_extension.swift in Sources */,
 				FE74D510234A4E1F001A925B /* ChatTableViewSystemCell.swift in Sources */,
 				FE507A241CDB7B3B001A015C /* GlobalSplitViewController.swift in Sources */,

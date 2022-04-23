@@ -37,6 +37,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
     
     var room: Room!;
     
+    @Published
     private var canEditVCard: Bool = false;
     
     private var cancellables: Set<AnyCancellable> = [];
@@ -48,17 +49,77 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         room.optionsPublisher.compactMap({ $0.name }).receive(on: DispatchQueue.main).assign(to: \.text, on: roomNameField).store(in: &cancellables);
         room.avatarPublisher.map({ $0 ?? AvatarManager.instance.defaultGroupchatAvatar }).receive(on: DispatchQueue.main).assign(to: \.avatar, on: roomAvatarView).store(in: &cancellables);
         room.descriptionPublisher.receive(on: DispatchQueue.main).assign(to: \.text, on: roomSubjectField).store(in: &cancellables);
-        room.$affiliation.map({ $0 == .admin || $0 == .owner }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
-            guard let that = self else {
-                return;
-            }
-            that.navigationItem.rightBarButtonItem = value ? UIBarButtonItem(barButtonSystemItem: .edit, target: that, action: #selector(MucChatSettingsViewController.editClicked(_:))) : nil;
-        }).store(in: &cancellables);
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "pencil.circle"), style: .plain, target: self, action: #selector(MucChatSettingsViewController.editClicked(_:)));
+//        room.$affiliation.map({ $0 == .admin || $0 == .owner }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
+//            guard let that = self else {
+//                return;
+//            }
+//            that.navigationItem.rightBarButtonItem = value ? UIBarButtonItem(barButtonSystemItem: .edit, target: that, action: #selector(MucChatSettingsViewController.editClicked(_:))) : nil;
+//        }).store(in: &cancellables);
         pushNotificationsSwitch.isEnabled = false;
         pushNotificationsSwitch.isOn = false;
         room.optionsPublisher.map({ $0.encryption?.description ?? NSLocalizedString("Default", comment: "encryption setting value") }).receive(on: DispatchQueue.main).assign(to: \.text, on: encryptionField).store(in: &cancellables);
         room.optionsPublisher.map({ MucChatSettingsViewController.labelFor(conversationNotification: $0.notifications) }).receive(on: DispatchQueue.main).assign(to: \.text, on: notificationsField).store(in: &cancellables);
         refresh();
+        
+        if #available(iOS 14.0, *) {
+            if let pepBookmarksModule = room.context?.module(.pepBookmarks) {
+                room.$affiliation.map({ $0 == .admin || $0 == .owner }).combineLatest($canEditVCard, pepBookmarksModule.$currentBookmarks).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (value, canEditVCard, bookmarks) in
+                    guard let that = self else {
+                        return;
+                    }
+                    
+                    that.navigationItem.rightBarButtonItem?.target = nil;
+                    that.navigationItem.rightBarButtonItem?.action = nil;
+                    that.navigationItem.rightBarButtonItem?.primaryAction = nil
+                    that.navigationItem.rightBarButtonItem?.menu = that.prepareEditContextMenu(isOwner: value, canEditVCard: canEditVCard, bookmarks: bookmarks);
+                }).store(in: &cancellables);
+            }
+        }
+    }
+    
+    @available(iOS 14.0, *)
+    private func prepareEditContextMenu(isOwner: Bool, canEditVCard: Bool, bookmarks: Bookmarks) -> UIMenu {
+        var actions: [UIMenuElement] = [];
+        
+        if let pepBookmarksModule = room.context?.module(.pepBookmarks), let room = self.room, room.context?.isConnected ?? false {
+            if let bookmark = bookmarks.conference(for: JID(room.jid)) {
+                actions.append(UIAction(title: NSLocalizedString("Remove bookmark", comment: "button label"), image: UIImage(systemName: "bookmark.slash"), handler: { action in
+                    pepBookmarksModule.remove(bookmark: bookmark);
+                }));
+            } else {
+                actions.append(UIAction(title: NSLocalizedString("Create bookmark", comment: "button label"), image: UIImage(systemName: "bookmark"), handler: { action in
+                    pepBookmarksModule.addOrUpdate(bookmark: Bookmarks.Conference(name: room.name ?? room.jid.localPart ?? room.jid.stringValue, jid: JID(room.jid), autojoin: false, nick: room.nickname, password: room.password));
+                }));
+            }
+        }
+
+        actions.append(UIAction(title: NSLocalizedString("Rename chat", comment: "button label"), handler: { action in
+            self.renameChat();
+        }));
+        
+        if canEditVCard {
+            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                actions.append(UIMenu(title: NSLocalizedString("Change avatar", comment: "button label"), children: [
+                    UIAction(title: NSLocalizedString("Take photo", comment: "button label"), handler: { action in
+                        self.selectPhoto(.camera);
+                    }),
+                    UIAction(title: NSLocalizedString("Select photo", comment: "button label"), handler: { action in
+                        self.selectPhoto(.photoLibrary);
+                    })
+                ]));
+            } else {
+                actions.append(UIAction(title: NSLocalizedString("Change avatar", comment: "button label"), handler: { action in
+                    self.selectPhoto(.photoLibrary);
+                }));
+            }
+        }
+        
+        actions.append(UIAction(title: NSLocalizedString("Change subject", comment: "button label"), handler: { action in
+            self.changeSubject();
+        }));
+        
+        return UIMenu(title: "", children: actions);
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -215,6 +276,17 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
     
     @objc func editClicked(_ sender: UIBarButtonItem) {
         let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
+        if room.context?.isConnected ?? false, let pepBookmarksModule = room.context?.module(.pepBookmarks) {
+            if pepBookmarksModule.currentBookmarks.conference(for: JID(room.jid)) == nil {
+                alertController.addAction(UIAlertAction(title: NSLocalizedString("Create bookmark", comment: "button label"), style: .default, handler: { action in
+                    pepBookmarksModule.addOrUpdate(bookmark: Bookmarks.Conference(name: self.room.name, jid: JID(self.room.jid), autojoin: false, nick: self.room.nickname, password: self.room.password));
+                }))
+            } else {
+                alertController.addAction(UIAlertAction(title: NSLocalizedString("Remove bookmark", comment: "button label"), style: .default, handler: { action in
+                    pepBookmarksModule.remove(bookmark: Bookmarks.Conference(name: self.room.name, jid: JID(self.room.jid), autojoin: false));
+                }))
+            }
+        }
         alertController.addAction(UIAlertAction(title: NSLocalizedString("Rename chat", comment: "button label"), style: .default, handler: { (action) in
             self.renameChat();
         }));

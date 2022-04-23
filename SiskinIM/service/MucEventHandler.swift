@@ -102,10 +102,10 @@ class MucEventHandler: XmppServiceExtension {
                 return;
             }
             let mucModule = client.module(.muc);
-            bookmarks.items.compactMap({ $0 as? Bookmarks.Conference }).filter { bookmark in
-                return mucModule.roomManager.room(for: client, with: bookmark.jid.bareJid) == nil;
+            bookmarks.items.compactMap({ $0 as? Bookmarks.Conference }).filter({ $0.autojoin }).filter { bookmark in
+                return DBChatStore.instance.conversation(for: client.userBareJid, with: bookmark.jid.bareJid) == nil;
             }.forEach({ (bookmark) in
-                guard let nick = bookmark.nick, bookmark.autojoin else {
+                guard let nick = bookmark.nick else {
                         return;
                     }
                     _ = mucModule.join(roomName: bookmark.jid.localPart!, mucServer: bookmark.jid.domain, nickname: nick, password: bookmark.password);

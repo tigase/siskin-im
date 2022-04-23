@@ -199,6 +199,9 @@
 /* button label */
 "Create" = "Utwórz";
 
+/* button label */
+"Create bookmark" = "Utwórz zakładkę";
+
 /* label for chats list new converation action */
 "Create meeting" = "Utwórz spotkanie";
 
@@ -238,6 +241,9 @@
 
 /* label for omemo device id */
 "Device: %@" = "Urządzenie: %@";
+
+/* button label */
+"Disable autojoin" = "Niedołączaj automatycznie";
 
 /* button label */
 "Dismiss" = "Odrzuć";
@@ -286,6 +292,9 @@
 
 /* button label */
 "Enable" = "Włączone";
+
+/* button label */
+"Enable autojoin" = "Dołączaj automatycznie";
 
 /* option description */
 "Enabling message synchronization will enable message archiving on the server" = "Włączenie synchronizacji wiadomości włączy archiwizację wiadomości na serwerze";
@@ -772,6 +781,9 @@
 
 /* alert body */
 "Remove account from application?" = "Usuwanie konta z aplikacji?";
+
+/* button label */
+"Remove bookmark" = "Usuń zakładkę";
 
 /* button label */
 "Remove from application" = "Usuń z aplikacji";

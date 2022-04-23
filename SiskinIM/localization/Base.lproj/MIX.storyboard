@@ -381,6 +381,65 @@
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
+                            <tableViewSection headerTitle="Bookmark" id="cOt-Oi-tab">
+                                <cells>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="gKm-pR-jMZ">
+                                        <rect key="frame" x="0.0" y="312.5" width="414" height="43.5"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="gKm-pR-jMZ" id="p8D-If-2jr">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bqL-KT-mhB">
+                                                    <rect key="frame" x="344" y="6" width="49" height="31"/>
+                                                    <connections>
+                                                        <action selector="bookmarkCreateChanged:" destination="mSp-gL-5Hz" eventType="valueChanged" id="Fko-Y8-gee"/>
+                                                    </connections>
+                                                </switch>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Create" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9Ww-8v-Dml">
+                                                    <rect key="frame" x="20" y="11.5" width="51" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="bqL-KT-mhB" firstAttribute="top" secondItem="p8D-If-2jr" secondAttribute="top" constant="6" id="4tW-LU-9AT"/>
+                                                <constraint firstItem="9Ww-8v-Dml" firstAttribute="centerY" secondItem="p8D-If-2jr" secondAttribute="centerY" id="8VU-4R-uM8"/>
+                                                <constraint firstItem="9Ww-8v-Dml" firstAttribute="leading" secondItem="p8D-If-2jr" secondAttribute="leading" constant="20" symbolic="YES" id="JMS-FE-8xw"/>
+                                                <constraint firstItem="bqL-KT-mhB" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="9Ww-8v-Dml" secondAttribute="trailing" constant="20" id="k17-fl-fMa"/>
+                                                <constraint firstAttribute="trailing" secondItem="bqL-KT-mhB" secondAttribute="trailing" constant="20" symbolic="YES" id="sY6-WN-zP0"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="IfW-60-zpy">
+                                        <rect key="frame" x="0.0" y="356" width="414" height="43.5"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="IfW-60-zpy" id="CkB-vI-Gnx">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cRU-3f-9Er">
+                                                    <rect key="frame" x="344" y="6" width="49" height="31"/>
+                                                </switch>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Autojoin" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="da6-M6-5nm">
+                                                    <rect key="frame" x="20" y="11.5" width="62" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="da6-M6-5nm" firstAttribute="centerY" secondItem="CkB-vI-Gnx" secondAttribute="centerY" id="Ec4-8o-pmu"/>
+                                                <constraint firstItem="cRU-3f-9Er" firstAttribute="top" secondItem="CkB-vI-Gnx" secondAttribute="top" constant="6" id="Ep1-B2-WXp"/>
+                                                <constraint firstItem="cRU-3f-9Er" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="da6-M6-5nm" secondAttribute="trailing" constant="20" id="Syx-P6-Xxw"/>
+                                                <constraint firstItem="da6-M6-5nm" firstAttribute="leading" secondItem="CkB-vI-Gnx" secondAttribute="leading" constant="20" symbolic="YES" id="heq-pj-Inn"/>
+                                                <constraint firstAttribute="trailing" secondItem="cRU-3f-9Er" secondAttribute="trailing" constant="20" symbolic="YES" id="qaR-BS-eES"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
                         </sections>
                         <connections>
                             <outlet property="dataSource" destination="mSp-gL-5Hz" id="zbg-HR-EgM"/>
@@ -395,6 +454,8 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="bookmarkAutojoinSwitch" destination="cRU-3f-9Er" id="uw1-3z-7nc"/>
+                        <outlet property="bookmarkCreateSwitch" destination="bqL-KT-mhB" id="gEW-Ks-LMK"/>
                         <outlet property="jidField" destination="491-DV-e2a" id="daC-HW-TeR"/>
                         <outlet property="joinButton" destination="Pgv-Uz-ZgP" id="5YT-9l-ijE"/>
                         <outlet property="nameField" destination="hOB-gk-g82" id="G5w-bJ-vSU"/>

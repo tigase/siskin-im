@@ -31,6 +31,8 @@ class ChannelJoinViewController: UITableViewController {
     @IBOutlet var jidField: UILabel!;
     @IBOutlet var nicknameField: UITextField!;
     @IBOutlet var passwordField: UITextField!;
+    @IBOutlet var bookmarkCreateSwitch: UISwitch!;
+    @IBOutlet var bookmarkAutojoinSwitch: UISwitch!;
     
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ChannelJoinViewController");
     
@@ -41,7 +43,9 @@ class ChannelJoinViewController: UITableViewController {
     var passwordRequired: Bool = false;
     var action: Action = .join
     var password: String?;
+    var nickname: String? = nil;
     
+
     var mixInvitation: MixInvitation? {
         didSet {
             if let value = mixInvitation {
@@ -55,6 +59,9 @@ class ChannelJoinViewController: UITableViewController {
     
     var roomFeatures: [String]?;
     
+    var fromBookmark: Bool = false;
+    var onConversationJoined: ((Conversation)->Void)?;
+    
     override func viewDidLoad() {
         super.viewDidLoad();
         self.tableView.contentInsetAdjustmentBehavior = .always;
@@ -65,8 +72,10 @@ class ChannelJoinViewController: UITableViewController {
         self.nameField.text = name;
         self.jidField.text = channelJid?.stringValue;
         self.passwordField.text = password
-        self.nicknameField.text = AccountManager.getAccount(for: self.client.userBareJid)?.nickname;
-                
+        self.nicknameField.text = self.nickname ?? AccountManager.getAccount(for: self.client.userBareJid)?.nickname;
+               
+        bookmarkCreateSwitch.isOn = Settings.enableBookmarksSync;
+        
         switch action {
         case .join:
             if componentType == .muc {
@@ -123,28 +132,28 @@ class ChannelJoinViewController: UITableViewController {
      }
     
     override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        if !passwordRequired && section == 2 {
+        if (!passwordRequired && section == 2) || ((fromBookmark || componentType == .mix) && section == 3) {
             return 0.1;
         }
         return super.tableView(tableView, heightForHeaderInSection: section);
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if !passwordRequired && section == 2 {
+        if (!passwordRequired && section == 2) || ((fromBookmark || componentType == .mix) && section == 3) {
             return 0;
         }
         return super.tableView(tableView, numberOfRowsInSection: section);
     }
         
     override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        if !passwordRequired && section == 2 {
+        if (!passwordRequired && section == 2) || ((fromBookmark || componentType == .mix) && section == 3) {
             return 0.1;
         }
         return super.tableView(tableView, heightForFooterInSection: section);
     }
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        if !passwordRequired && section == 2 {
+        if (!passwordRequired && section == 2) || ((fromBookmark || componentType == .mix) && section == 3) {
             return nil;
         }
         return super.tableView(tableView, titleForHeaderInSection: section);
@@ -170,6 +179,10 @@ class ChannelJoinViewController: UITableViewController {
         updateJoinButtonStatus();
     }
     
+    @IBAction func bookmarkCreateChanged(_ sender: UISwitch) {
+        bookmarkAutojoinSwitch.isEnabled = sender.isOn;
+    }
+    
     private func updateJoinButtonStatus() {
         let nick = self.nicknameField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "";
         self.joinButton.isEnabled = (!nick.isEmpty) && ((!passwordRequired) || (!(passwordField.text?.isEmpty ?? true)));
@@ -193,6 +206,9 @@ class ChannelJoinViewController: UITableViewController {
                             case .success(_):
                                 DispatchQueue.main.async {
                                     self?.dismiss(animated: true, completion: nil);
+                                    if let channel = DBChatStore.instance.channel(for: client, with: channelJid) {
+                                        self?.onConversationJoined?(channel);
+                                    }
                                 }
                             case .failure(let error):
                                 DispatchQueue.main.async {
@@ -234,6 +250,9 @@ class ChannelJoinViewController: UITableViewController {
             let priv = !isPublic;
             let roomName = isPublic ? channelJid.localPart! : UUID().uuidString;
 
+            let createBookmark = bookmarkCreateSwitch.isOn;
+            let autojoin = createBookmark && bookmarkAutojoinSwitch.isOn;
+            
             let form = JabberDataElement(type: .submit);
             form.addField(HiddenField(name: "FORM_TYPE")).value = "http://jabber.org/protocol/muc#roomconfig";
             form.addField(TextSingleField(name: "muc#roomconfig_roomname", value: name));
@@ -249,6 +268,10 @@ class ChannelJoinViewController: UITableViewController {
                     case .success(let r):
                         switch r {
                         case .created(let room), .joined(let room):
+                            if createBookmark {
+                                client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: name.isEmpty ? room.jid.localPart : name, jid: JID(room.jid), autojoin: autojoin, nick: nick, password: nil));
+                            }
+                            
                             var features = Set<Room.Feature>();
                             features.insert(.nonAnonymous);
                             if priv {
@@ -268,6 +291,7 @@ class ChannelJoinViewController: UITableViewController {
                                 DispatchQueue.main.async {
                                     self?.operationEnded();
                                     self?.dismiss(animated: true, completion: nil);
+                                    self?.onConversationJoined?(room as! Room);
                                 }
                             }
                             switch configResult {
@@ -329,6 +353,9 @@ class ChannelJoinViewController: UITableViewController {
                     DispatchQueue.main.async {
                         self.operationEnded();
                         self.dismiss(animated: true, completion: nil);
+                        if let channel = DBChatStore.instance.channel(for: client, with: self.channelJid) {
+                            self.onConversationJoined?(channel);
+                        }
                     }
                 case .failure(let error):
                     DispatchQueue.main.async { [weak self] in
@@ -341,6 +368,9 @@ class ChannelJoinViewController: UITableViewController {
              });
         case .muc:
             let room = channelJid!;
+            let createBookmark = bookmarkCreateSwitch.isOn;
+            let autojoin = createBookmark && bookmarkAutojoinSwitch.isOn;
+            
             self.operationStarted(message: NSLocalizedString("Joining...", comment: "channel join view operation label"));
             client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nick, password: password).handle({ result in
                 switch result {
@@ -353,6 +383,9 @@ class ChannelJoinViewController: UITableViewController {
                         client.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
                             switch result {
                             case .success(let info):
+                                if createBookmark {
+                                    client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: info.identities.first?.name ?? room.jid.localPart, jid: JID(room.jid), autojoin: autojoin, nick: nick, password: password));
+                                }
                                 (room as! Room).roomFeatures = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
                             case .failure(_):
                                 break;
@@ -361,8 +394,15 @@ class ChannelJoinViewController: UITableViewController {
                         (room as! Room).registerForTigasePushNotification(true, completionHandler: { (result) in
                             self.logger.debug("automatically enabled push for: \(room.jid), result: \(result)");
                         })
+                        defer {
+                            DispatchQueue.main.async {                                
+                                self.onConversationJoined?(room as! Room);
+                            }
+                        }
                     }
-                    PEPBookmarksModule.updateOrAdd(for: client.userBareJid, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nick, password: password));
+                    if createBookmark {
+                        client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: autojoin, nick: nick, password: password));
+                    }
                     DispatchQueue.main.async {
                         self.dismiss(animated: true, completion: nil);
                     }
