@@ -230,7 +230,7 @@ open class XmppService {
     }
     
     private func connect(client: XMPPClient, for account: AccountManager.Account) {
-        client.connectionConfiguration.credentials = .password(password: account.password!, authenticationName: nil, cache: nil);
+        client.connectionConfiguration.credentials = .password(password: account.password ?? "", authenticationName: nil, cache: nil);
         client.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
             if let serverCertificate = account.serverCertificate, serverCertificate.accepted {
                 options.sslCertificateValidation = .fingerprint(serverCertificate.details.fingerprintSha1);

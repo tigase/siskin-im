@@ -107,7 +107,10 @@ class AvatarView: UIImageView {
         }
         
         UIGraphicsBeginImageContextWithOptions(size, false, scale);
-        let ctx = UIGraphicsGetCurrentContext()!;
+        guard let ctx = UIGraphicsGetCurrentContext() else {
+            UIGraphicsEndImageContext();
+            return nil;
+        }
         let path = CGPath(ellipseIn: self.bounds, transform: nil);
         ctx.addPath(path);
                 
