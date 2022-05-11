@@ -403,7 +403,7 @@ class MessageEventHandler: XmppServiceExtension {
                         guard let client = client else {
                             return;
                         }
-                        self.syncMessages(for: client, period: period, version: version, rsmQuery: response.rsm?.next(150));
+                        self.syncMessages(for: client, period: period, version: version, rsmQuery: response.rsm?.next(300));
                     }
                 }
                 os_log("for account %s fetch for component %s with id %s executed in %f s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil", queryId, Date().timeIntervalSince(start));
