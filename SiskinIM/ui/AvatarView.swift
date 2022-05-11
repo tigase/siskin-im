@@ -122,7 +122,7 @@ class AvatarView: UIImageView {
         
         text.draw(in: CGRect(x: size.width/2 - textSize.width/2, y: size.height/2 - textSize.height/2, width: textSize.width, height: textSize.height), withAttributes: textAttr);
         
-        let image = UIGraphicsGetImageFromCurrentImageContext()!;
+        let image = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         
         return image;
