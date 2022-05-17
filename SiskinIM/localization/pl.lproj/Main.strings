@@ -40,9 +40,6 @@
 /* Class = "UITextField"; text = "local_user@example.com"; ObjectID = "gXY-yq-Y2K"; */
 "gXY-yq-Y2K.text" = "local_user@example.com";
 
-/* Class = "UITabBarItem"; title = "Settings"; ObjectID = "kee-Xk-ORJ"; */
-"kee-Xk-ORJ.title" = "Ustawienia";
-
 /* Class = "UITableViewSection"; headerTitle = "Name"; ObjectID = "Kfl-J5-hdD"; */
 "Kfl-J5-hdD.headerTitle" = "Nazwa";
 

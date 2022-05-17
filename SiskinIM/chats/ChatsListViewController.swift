@@ -25,9 +25,113 @@ import UserNotifications
 import TigaseSwift
 import Combine
 
+class LabelWithInsets: UILabel {
+    
+    var insets: UIEdgeInsets = UIEdgeInsets(top: 1, left: 5, bottom: 1, right: 5)
+    
+    override var intrinsicContentSize: CGSize {
+        let size = super.intrinsicContentSize;
+        return CGSize(width: size.width + insets.left + insets.right, height: size.height + insets.top + insets.bottom);
+    }
+    
+}
+
+class BadgedButton: UIButton {
+    
+    let badgeLabel = LabelWithInsets();
+    
+    var badge: String? {
+        didSet {
+            badgeLabel.text = badge;
+            isBadgeVisible = badge != nil;
+
+            badgeLabel.sizeToFit();
+            badgeLabel.layer.cornerRadius = badgeLabel.intrinsicContentSize.height / 2;
+        }
+    }
+    
+    var isBadgeVisible: Bool = false {
+        didSet {
+            guard oldValue != isBadgeVisible else {
+                return;
+            }
+            
+            badgeLabel.translatesAutoresizingMaskIntoConstraints = false;
+            badgeLabel.backgroundColor = UIColor.systemRed;
+            badgeLabel.textColor = UIColor.white;
+            badgeLabel.font = UIFont.systemFont(ofSize: UIFont.smallSystemFontSize, weight: .medium)
+            badgeLabel.textAlignment = .center;
+            badgeLabel.layer.masksToBounds = true;
+
+            if isBadgeVisible {
+                self.addSubview(badgeLabel);
+                NSLayoutConstraint.activate([
+                    badgeLabel.rightAnchor.constraint(equalTo: self.rightAnchor, constant: 2),
+                    badgeLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: 2)
+                ])
+            } else {
+                badgeLabel.removeFromSuperview();
+            }
+        }
+    }
+    
+}
+
+private var badgeHandle: UInt8 = 0
+
+class BadgedBarButtonItem: UIBarButtonItem {
+
+    private var badgeLayer: CAShapeLayer? {
+        return objc_getAssociatedObject(self, &badgeHandle) as? CAShapeLayer;
+    }
+
+        public func setBadge(text: String?) {
+            badgeLayer?.removeFromSuperlayer()
+
+            guard let text = text, !text.isEmpty else {
+                return
+            }
+
+            guard let view = self.value(forKey: "view") as? UIView else {
+                return;
+            }
+            
+            let font = UIFont.monospacedDigitSystemFont(ofSize: UIFont.smallSystemFontSize, weight: .regular);
+            let badgeSize = text.size(withAttributes: [.font: font])
+            let width = max(badgeSize.width + 2, badgeSize.height)
+            let badgeFrame = CGRect(origin: CGPoint(x: view.frame.width - width - 8, y: 4), size: CGSize(width: width, height: badgeSize.height))
+
+            let layer = CAShapeLayer()
+            layer.path = UIBezierPath(roundedRect: badgeFrame, cornerRadius: 7).cgPath
+            layer.fillColor = UIColor.red.cgColor;
+            layer.strokeColor = UIColor.red.cgColor
+            
+            view.layer.addSublayer(layer)
+
+            let label = CATextLayer()
+            label.string = text
+            label.alignmentMode = .center
+            label.font = font
+            label.fontSize = font.pointSize
+            label.foregroundColor = UIColor.white.cgColor
+
+            label.frame = badgeFrame
+            label.cornerRadius = label.frame.height / 2
+            label.foregroundColor = UIColor.white.cgColor;
+            label.backgroundColor = UIColor.clear.cgColor
+            label.contentsScale = UIScreen.main.scale
+            layer.addSublayer(label)
+            
+            objc_setAssociatedObject(self, &badgeHandle, layer, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            layer.zPosition = 1000
+        }
+    
+}
+
 class ChatsListViewController: UITableViewController {
     
     @IBOutlet var addMucButton: UIBarButtonItem!
+    @IBOutlet var settingsButton: BadgedBarButtonItem!;
     
     var dataSource: ChatsDataSource?;
     
@@ -40,6 +144,14 @@ class ChatsListViewController: UITableViewController {
         tableView.dataSource = self;
         setColors();
 
+        settingsButton.image = UIImage(systemName: "gear");
+        XmppService.instance.$clients.combineLatest(XmppService.instance.$connectedClients).map({ (clients, connectedClients) -> Int in
+            return (clients.count - connectedClients.count) + AccountManager.getAccounts().filter({(name)->Bool in
+                return AccountSettings.lastError(for: name) != nil
+            }).count;
+        }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
+            self?.settingsButton.setBadge(text: value == 0 ? nil : "\(value)")
+        }).store(in: &cancellables);
     }
     
     override func viewWillAppear(_ animated: Bool) {

@@ -11,6 +11,14 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
+        <!--Settings-->
+        <scene sceneID="PiQ-Vm-Vob">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Settings" id="YQ3-W5-I9J" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="T9q-rg-5pk" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2781" y="-1262"/>
+        </scene>
         <!--Chats List View Controller-->
         <scene sceneID="hNz-n2-bh7">
             <objects>
@@ -253,6 +261,11 @@
                         <sections/>
                     </tableView>
                     <navigationItem key="navigationItem" id="LKO-PG-RwH">
+                        <barButtonItem key="leftBarButtonItem" image="gear" catalog="system" id="dKq-Kn-VEZ" customClass="BadgedBarButtonItem" customModule="Siskin" customModuleProvider="target">
+                            <connections>
+                                <segue destination="YQ3-W5-I9J" kind="presentation" id="pSy-vZ-fzB"/>
+                            </connections>
+                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" image="square.and.pencil" catalog="system" id="AHa-0l-wJt">
                             <connections>
                                 <action selector="addMucButtonClicked:" destination="9pv-A4-QxB" id="Fcb-M7-ynm"/>
@@ -263,6 +276,7 @@
                     <nil key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="addMucButton" destination="AHa-0l-wJt" id="bMf-ys-7CM"/>
+                        <outlet property="settingsButton" destination="dKq-Kn-VEZ" id="Dbc-S0-slH"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="W5J-7L-Pyd" sceneMemberID="firstResponder"/>
@@ -308,10 +322,10 @@
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <stackView opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="749" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="vls-oU-dVk">
-                                    <rect key="frame" x="0.0" y="4.5" width="390" height="31.5"/>
+                                    <rect key="frame" x="0.0" y="2" width="390" height="36.5"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Jane Done" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UWL-vQ-lxc">
-                                            <rect key="frame" x="0.0" y="0.0" width="390" height="17"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="390" height="20.5"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -320,7 +334,7 @@
                                             </attributedString>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="Here I'm again..." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="m0n-Ls-5LF">
-                                            <rect key="frame" x="0.0" y="17" width="390" height="14.5"/>
+                                            <rect key="frame" x="0.0" y="20.5" width="390" height="16"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                             <color key="textColor" systemColor="secondaryLabelColor"/>
                                             <nil key="highlightedColor"/>
@@ -480,7 +494,7 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="barTintColor" name="chatslistBackground"/>
                         <color key="selectedImageTintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <tabBarAppearance key="standardAppearance" backgroundEffect="systemUltraThinMaterialDark">
+                        <tabBarAppearance key="standardAppearance" backgroundEffect="systemUltraThinMaterialDark" stackedItemPositioning="automatic">
                             <color key="backgroundColor" name="chatslistSemiBackground"/>
                         </tabBarAppearance>
                         <tabBarAppearance key="scrollEdgeAppearance" backgroundEffect="systemUltraThinMaterialDark">
@@ -491,7 +505,6 @@
                         <segue destination="JxF-gw-olp" kind="relationship" relationship="viewControllers" id="ifN-oQ-Gcj"/>
                         <segue destination="Ndx-if-NHK" kind="relationship" relationship="viewControllers" id="o8R-rQ-mdc"/>
                         <segue destination="uKH-vf-YBY" kind="relationship" relationship="viewControllers" id="hOA-xK-gxP"/>
-                        <segue destination="w4Y-E8-hif" kind="relationship" relationship="viewControllers" id="5fd-ya-4oz"/>
                     </connections>
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="DlS-2b-Lr8" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1359,22 +1372,6 @@
             </objects>
             <point key="canvasLocation" x="2922" y="2654"/>
         </scene>
-        <!--Settings-->
-        <scene sceneID="OSZ-BF-hNM">
-            <objects>
-                <viewController storyboardIdentifier="SettingsNavigationControllerDummy" useStoryboardIdentifierAsRestorationIdentifier="YES" id="w4Y-E8-hif" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="cLl-kf-X7x">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <viewLayoutGuide key="safeArea" id="KbB-FL-79t"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                    </view>
-                    <tabBarItem key="tabBarItem" title="Settings" image="gear" catalog="system" id="kee-Xk-ORJ"/>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="FRI-AJ-iTD" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="2020" y="90"/>
-        </scene>
         <!--Bookmarks-->
         <scene sceneID="2RC-MI-G2c">
             <objects>
@@ -1475,15 +1472,15 @@
     </scenes>
     <resources>
         <image name="appLogo" width="1024" height="1024"/>
-        <image name="bookmark.circle.fill" catalog="system" width="32" height="32"/>
+        <image name="bookmark.circle.fill" catalog="system" width="128" height="121"/>
         <image name="defaultAvatar" width="100" height="100"/>
         <image name="first" width="30" height="30"/>
-        <image name="gear" catalog="system" width="32" height="32"/>
-        <image name="message.fill" catalog="system" width="32" height="32"/>
+        <image name="gear" catalog="system" width="128" height="119"/>
+        <image name="message.fill" catalog="system" width="128" height="113"/>
         <image name="messageArchiving" width="50" height="50"/>
-        <image name="person.crop.circle.fill" catalog="system" width="32" height="32"/>
-        <image name="person.crop.circle.fill.badge.plus" catalog="system" width="32" height="32"/>
-        <image name="square.and.pencil" catalog="system" width="32" height="32"/>
+        <image name="person.crop.circle.fill" catalog="system" width="128" height="121"/>
+        <image name="person.crop.circle.fill.badge.plus" catalog="system" width="128" height="113"/>
+        <image name="square.and.pencil" catalog="system" width="128" height="115"/>
         <namedColor name="chatslistBackground">
             <color red="0.36862745098039218" green="0.36862745098039218" blue="0.54117647058823526" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>

@@ -27,7 +27,7 @@ class MainTabBarController: CustomTabBarController, UITabBarControllerDelegate {
     
     public static let RECENTS_TAB = 0;
     public static let ROSTER_TAB = 1;
-    public static let MORE_TAB = 2;
+    public static let BOOKMARKS_TAB = 2;
     
     private var cancellables: Set<AnyCancellable> = [];
     
@@ -35,32 +35,6 @@ class MainTabBarController: CustomTabBarController, UITabBarControllerDelegate {
         super.viewDidLoad();
         
         self.delegate = self;
-        
-        XmppService.instance.$clients.combineLatest(XmppService.instance.$connectedClients).map({ (clients, connectedClients) -> Int in
-            return (clients.count - connectedClients.count) + AccountManager.getAccounts().filter({(name)->Bool in
-                return AccountSettings.lastError(for: name) != nil
-            }).count;
-        }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
-            self?.updateMoreBadge(count: value);
-        }).store(in: &cancellables);
-    }
-    
-    private func updateMoreBadge(count: Int) {
-        self.tabBar.items![MainTabBarController.MORE_TAB].badgeValue = count == 0 ? nil : count.description;
-        if count == 0 {
-            NotificationManager.instance.updateApplicationIconBadgeNumber(completionHandler: nil);
-        }
-    }
-        
-    func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
-        guard viewController.restorationIdentifier == "SettingsNavigationControllerDummy" else {
-            return true;
-        }
-        DispatchQueue.main.async {
-            let controller = UIStoryboard(name: "Settings", bundle: nil).instantiateViewController(withIdentifier: "SettingsNavigationController")
-            self.present(controller, animated: true, completion: nil);
-        }
-        return false;
     }
         
 }
