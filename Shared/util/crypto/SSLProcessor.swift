@@ -237,8 +237,8 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
     open func readDataFromNetwork() {
         var n: Int32 = 0;
         repeat {
-            var buffer = [UInt8](repeating: 0, count: 2048);
-            n = SSL_read(ssl, &buffer, 2048);
+            var buffer = [UInt8](repeating: 0, count: 4096);
+            n = SSL_read(ssl, &buffer, 4096);
             if n > 0 {
                 super.read(data: Data(bytes: &buffer, count: Int(n)));
             }
