@@ -246,17 +246,17 @@ Notifications
 
 This section has one option: Whether to accept notifications from unknown. If left disabled, notifications from unknown sources (including server administrators) will not be sent to the native notification section of the device. Instead, you will have to see them under the Recent menu.
 
-.. |images/recent| image:: images/recent.png
-.. |images/delchat| image:: images/delchat.png
-.. |images/join| image:: images/join.png
-.. |images/occu| image:: images/occu.png
-.. |images/roster| image:: images/roster.png
-.. |images/deluser| image:: images/deluser.png
-.. |images/edituser| image:: images/edituser.png
-.. |images/adduser| image:: images/adduser.png
-.. |images/presreq| image:: images/presreq.png
-.. |images/settings| image:: images/settings.png
-.. |images/delacct| image:: images/delacct.png
-.. |images/setstatus| image:: images/setstatus.png
-.. |images/chatsettings| image:: images/chatsettings.png
+.. |images/recent| image:: ../images/recent.png
+.. |images/delchat| image:: ../images/delchat.png
+.. |images/join| image:: ../images/join.png
+.. |images/occu| image:: ../images/occu.png
+.. |images/roster| image:: ../images/roster.PNG
+.. |images/deluser| image:: ../images/deluser.PNG
+.. |images/edituser| image:: ../images/edituser.png
+.. |images/adduser| image:: ../images/adduser.png
+.. |images/presreq| image:: ../images/presreq.PNG
+.. |images/settings| image:: ../images/settings.PNG
+.. |images/delacct| image:: ../images/Delacct.PNG
+.. |images/setstatus| image:: ../images/setstatus.png
+.. |images/chatsettings| image:: ../images/chatsettings.png
 
