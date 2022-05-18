@@ -85,7 +85,7 @@ Final Steps
 
 Once your account is verified, the application will log you in as online and display the recent screen.
 
-.. |images/home| image:: images/home.png
-.. |images/regfailure| image:: images/regfailure.png
-.. |images/registernew| image:: images/registernew.png
+.. |images/home| image:: ../images/Home.PNG
+.. |images/regfailure| image:: ../images/regfailure.png
+.. |images/registernew| image:: ../images/registernew.png
 
