@@ -107,8 +107,7 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                 linkView.topAnchor.constraint(equalTo: self.customView.topAnchor, constant: 0),
                 linkView.bottomAnchor.constraint(equalTo: self.customView.bottomAnchor, constant: 0),
                 linkView.leadingAnchor.constraint(equalTo: self.customView.leadingAnchor, constant: 0),
-                linkView.trailingAnchor.constraint(equalTo: self.customView.trailingAnchor, constant: 0),
-                linkView.heightAnchor.constraint(lessThanOrEqualToConstant: 350)
+                linkView.trailingAnchor.constraint(lessThanOrEqualTo: self.customView.trailingAnchor, constant: 0)
             ]);
                 
             if isNew {
