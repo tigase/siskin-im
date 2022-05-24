@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+
+    Tigase iOS Messenger Documentation - bootstrap configuration for all Tigase projects
+    Copyright (C) 2004 Tigase, Inc. (office@tigase.com) - All Rights Reserved
+    Unauthorized copying of this file, via any medium is strictly prohibited
+    Proprietary and confidential
+
+-->
 <server_feaures>
     <feature id="">
         <xep>XEP-0001</xep>

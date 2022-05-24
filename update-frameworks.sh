@@ -1,3 +1,10 @@
+#
+# Tigase iOS Messenger Documentation - bootstrap configuration for all Tigase projects
+# Copyright (C) 2004 Tigase, Inc. (office@tigase.com) - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+#
+
 OPENSSL_FRAMEWORK="OpenSSL.xcframework"
 OPENSSL_VERSION="1.1.1400"
 OPENSSL_CHECKSUM="ad34827d95048a4b16c66614428e6f077d9a9e4892b8cf2c9fa66ac7ac93f916"
