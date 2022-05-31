@@ -41,5 +41,5 @@ For each connected account, there are sever-specific settings that are available
 -  | Synchronization:
    | Choose the level of synchronization that the device will retrieve and send to the server.
 
-.. |images/acctsetting| image:: ../images/acctsetting.png
+.. |images/acctsetting| image:: images/acctsetting.png
 
