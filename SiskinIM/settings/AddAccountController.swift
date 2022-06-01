@@ -43,6 +43,8 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     
     var accountValidatorTask: AccountValidatorTask?;
     
+    var connectivitySettings = AccountConnectivitySettingsViewController.Settings();
+    
 //    var onAccountAdded: (() -> Void)?;
     
     override func viewDidLoad() {
@@ -51,6 +53,14 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
             jidTextField.text = account;
             passwordTextField.text = AccountManager.getAccountPassword(for: BareJID(account)!);
             jidTextField.isEnabled = false;
+            if let acc = AccountManager.getAccount(for: BareJID(account)!) {
+                connectivitySettings.disableTLS13 = acc.disableTLS13;
+                if let endpoint = acc.endpoint {
+                    connectivitySettings.host = endpoint.host;
+                    connectivitySettings.port = endpoint.port;
+                    connectivitySettings.useDirectTLS = endpoint.proto == .XMPPS;
+                }
+            }
         } else {
             navigationController?.navigationItem.leftBarButtonItem = nil;
         }
@@ -74,6 +84,12 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated);
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let advSettingsController = segue.destination as? AccountConnectivitySettingsViewController {
+            advSettingsController.values = connectivitySettings;
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -108,7 +124,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         showIndicator();
         
         self.accountValidatorTask = AccountValidatorTask(controller: self);
-        self.accountValidatorTask?.check(account: jid, password: password, callback: self.handleResult);
+        self.accountValidatorTask?.check(account: jid, password: password, connectivitySettings: connectivitySettings, callback: self.handleResult);
     }
     
     func saveAccount(acceptedCertificate: SslCertificateInfo?) {
@@ -118,6 +134,10 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         var account = AccountManager.getAccount(for: jid) ?? AccountManager.Account(name: jid);
         account.acceptCertificate(acceptedCertificate);
         account.password = passwordTextField.text!;
+        if let host = connectivitySettings.host, let port = connectivitySettings.port {
+            account.endpoint = .init(proto: connectivitySettings.useDirectTLS ? .XMPPS : .XMPP, host: host, port: port)
+        }
+        account.disableTLS13 = connectivitySettings.disableTLS13;
 
         var cancellables: Set<AnyCancellable> = [];
         do {
@@ -251,10 +271,16 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
             _ = client?.modulesManager.register(AuthModule());
         }
         
-        public func check(account: BareJID, password: String, callback: @escaping (Result<Void,ErrorCondition>)->Void) {
+        public func check(account: BareJID, password: String, connectivitySettings: AccountConnectivitySettingsViewController.Settings, callback: @escaping (Result<Void,ErrorCondition>)->Void) {
             self.callback = callback;
             client?.connectionConfiguration.useSeeOtherHost = false;
             client?.connectionConfiguration.userJid = account;
+            client?.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
+                if let host = connectivitySettings.host, let port = connectivitySettings.port {
+                    options.connectionDetails = .init(proto: connectivitySettings.useDirectTLS ? .XMPPS : .XMPP, host: host, port: port)
+                }
+                options.networkProcessorProviders.append(connectivitySettings.disableTLS13 ? SSLProcessorProvider(supportedTlsVersions: TLSVersion.TLSv1_2...TLSVersion.TLSv1_2) : SSLProcessorProvider());
+            })
             client?.connectionConfiguration.credentials = .password(password: password, authenticationName: nil, cache: nil);
             client?.login();
         }

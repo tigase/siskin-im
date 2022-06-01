@@ -7,6 +7,9 @@
 /* Class = "UITextField"; placeholder = "Country"; ObjectID = "4hs-GL-9fd"; */
 "4hs-GL-9fd.placeholder" = "Country";
 
+/* Class = "UILabel"; text = "Host"; ObjectID = "5fg-qS-fyV"; */
+"5fg-qS-fyV.text" = "Host";
+
 /* Class = "UILabel"; text = "Change account settings"; ObjectID = "70p-aF-3x5"; */
 "70p-aF-3x5.text" = "Change account settings";
 
@@ -31,8 +34,14 @@
 /* Class = "UITextField"; placeholder = "Type"; ObjectID = "Clb-vT-t5A"; */
 "Clb-vT-t5A.placeholder" = "Type";
 
+/* Class = "UILabel"; text = "Port"; ObjectID = "clx-xZ-SVL"; */
+"clx-xZ-SVL.text" = "Port";
+
 /* Class = "UITextField"; placeholder = "City"; ObjectID = "Cmz-iN-c4d"; */
 "Cmz-iN-c4d.placeholder" = "City";
+
+/* Class = "UILabel"; text = "Use Direct TLS"; ObjectID = "dtA-fp-y9J"; */
+"dtA-fp-y9J.text" = "Use Direct TLS";
 
 /* Class = "UILabel"; text = "Month"; ObjectID = "E11-00-jW5"; */
 "E11-00-jW5.text" = "Month";
@@ -42,6 +51,9 @@
 
 /* Class = "UITableViewSection"; headerTitle = "Encryption"; ObjectID = "Et5-H6-t7C"; */
 "Et5-H6-t7C.headerTitle" = "Encryption";
+
+/* Class = "UITextField"; placeholder = "Automatic"; ObjectID = "FBK-JI-crl"; */
+"FBK-JI-crl.placeholder" = "Automatic";
 
 /* Class = "UILabel"; text = "add address"; ObjectID = "fRX-fN-yOj"; */
 "fRX-fN-yOj.text" = "add address";
@@ -67,6 +79,9 @@
 /* Class = "UITextField"; placeholder = "Street"; ObjectID = "KgL-GY-IFp"; */
 "KgL-GY-IFp.placeholder" = "Street";
 
+/* Class = "UILabel"; text = "Advanced"; ObjectID = "KjA-5f-Mg4"; */
+"KjA-5f-Mg4.text" = "Advanced";
+
 /* Class = "UITableViewSection"; headerTitle = "Password"; ObjectID = "LO4-Ys-cek"; */
 "LO4-Ys-cek.headerTitle" = "Password";
 
@@ -87,6 +102,12 @@
 
 /* Class = "UITableViewSection"; headerTitle = "Push Notifications"; ObjectID = "PvC-LX-0Sp"; */
 "PvC-LX-0Sp.headerTitle" = "Push Notifications";
+
+/* Class = "UITableViewSection"; headerTitle = "Encryption"; ObjectID = "qGc-1C-qdh"; */
+"qGc-1C-qdh.headerTitle" = "Encryption";
+
+/* Class = "UITextField"; placeholder = "Automatic"; ObjectID = "QX9-Nr-Eq6"; */
+"QX9-Nr-Eq6.placeholder" = "Automatic";
 
 /* Class = "UIBarButtonItem"; title = "Next"; ObjectID = "R0m-k2-q64"; */
 "R0m-k2-q64.title" = "Next";
@@ -115,11 +136,17 @@
 /* Class = "UILabel"; text = "Enabled"; ObjectID = "wbI-5v-vug"; */
 "wbI-5v-vug.text" = "Enabled";
 
+/* Class = "UITableViewSection"; headerTitle = "Connectivity"; ObjectID = "we8-hg-uOZ"; */
+"we8-hg-uOZ.headerTitle" = "Connectivity";
+
 /* Class = "UITableViewController"; title = "Server Features"; ObjectID = "wW7-3f-Kck"; */
 "wW7-3f-Kck.title" = "Server Features";
 
 /* Class = "UILabel"; text = "Title"; ObjectID = "XMr-e2-2o3"; */
 "XMr-e2-2o3.text" = "Title";
+
+/* Class = "UILabel"; text = "Disable TLS 1.3"; ObjectID = "xMW-iz-ghG"; */
+"xMW-iz-ghG.text" = "Disable TLS 1.3";
 
 /* Class = "UITextField"; placeholder = "Email address"; ObjectID = "ynp-RE-XlY"; */
 "ynp-RE-XlY.placeholder" = "Email address";

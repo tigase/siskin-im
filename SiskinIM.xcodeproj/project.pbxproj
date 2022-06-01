@@ -206,6 +206,7 @@
 		FECEF29B23B7BC02007EC323 /* BaseChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECEF29923B7BBD3007EC323 /* BaseChatTableViewCell.swift */; };
 		FECEF29E23B7C390007EC323 /* AttachmentChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECEF29C23B7C36F007EC323 /* AttachmentChatTableViewCell.swift */; };
 		FED353892270C1D000B69C53 /* DBOMEMOStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED353882270C1D000B69C53 /* DBOMEMOStore.swift */; };
+		FED40440283E9C5800C91BCF /* AccountConnectivitySettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED4043F283E9C5800C91BCF /* AccountConnectivitySettingsViewController.swift */; };
 		FEDC678A238A9F16005C0FAB /* BlockedEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDC6789238A9F16005C0FAB /* BlockedEventHandler.swift */; };
 		FEDC678E238B03C1005C0FAB /* AppStoryboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDC678D238B03C1005C0FAB /* AppStoryboard.swift */; };
 		FEDC6790238B05E4005C0FAB /* BlockedContactsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDC678F238B05E4005C0FAB /* BlockedContactsController.swift */; };
@@ -572,6 +573,7 @@
 		FECEF29C23B7C36F007EC323 /* AttachmentChatTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentChatTableViewCell.swift; sourceTree = "<group>"; };
 		FED353732270BBA500B69C53 /* TigaseSwiftOMEMO.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TigaseSwiftOMEMO.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FED353882270C1D000B69C53 /* DBOMEMOStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBOMEMOStore.swift; sourceTree = "<group>"; };
+		FED4043F283E9C5800C91BCF /* AccountConnectivitySettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountConnectivitySettingsViewController.swift; sourceTree = "<group>"; };
 		FEDC6789238A9F16005C0FAB /* BlockedEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedEventHandler.swift; sourceTree = "<group>"; };
 		FEDC678D238B03C1005C0FAB /* AppStoryboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoryboard.swift; sourceTree = "<group>"; };
 		FEDC678F238B05E4005C0FAB /* BlockedContactsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedContactsController.swift; sourceTree = "<group>"; };
@@ -858,6 +860,7 @@
 				FE0E31112537288A0030F8C5 /* MediaSettingsVIewController.swift */,
 				FE82A72A268CC0740049C844 /* DeviceMemoryUsageTableViewCell.swift */,
 				FE0AE0B326A9DD6D0010D2E2 /* SetAccountSettingsController.swift */,
+				FED4043F283E9C5800C91BCF /* AccountConnectivitySettingsViewController.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -1568,6 +1571,7 @@
 				FEDC6790238B05E4005C0FAB /* BlockedContactsController.swift in Sources */,
 				FE2332E1242CCDB400008ED4 /* InvitationChatTableViewCell.swift in Sources */,
 				FE3E38862428C21100D3A8E8 /* OSLog.swift in Sources */,
+				FED40440283E9C5800C91BCF /* AccountConnectivitySettingsViewController.swift in Sources */,
 				FECEF29423B7933A007EC323 /* MetadataCache.swift in Sources */,
 				FE7D293423B919FF001A877D /* DownloadManager.swift in Sources */,
 				FE137A4821F6464D006B7F7C /* UIColor_mix.swift in Sources */,

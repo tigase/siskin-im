@@ -237,6 +237,11 @@ open class XmppService {
             } else {
                 options.sslCertificateValidation = .default;
             }
+            options.connectionDetails = account.endpoint;
+            if let idx = options.networkProcessorProviders.firstIndex(where: { $0 is SSLProcessorProvider }) {
+                options.networkProcessorProviders.remove(at: idx);
+            }
+            options.networkProcessorProviders.append(account.disableTLS13 ? SSLProcessorProvider(supportedTlsVersions: TLSVersion.TLSv1_2...TLSVersion.TLSv1_2) : SSLProcessorProvider());
         });
 
         client.connectionConfiguration.resource = UIDevice.current.name;
