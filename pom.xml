@@ -17,12 +17,33 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>docs</artifactId>
-	<name>Tigase iOS Messenger Documentation</name>
+	<name>Siskin IM Documentation</name>
 
 	<packaging>pom</packaging>
 
 	<groupId>iosdocs</groupId>
 	<version>v1.0</version>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+					<excludes>
+						<exclude>**/*</exclude>
+					</excludes>
+				</configuration>
+				<executions>
+					<execution>
+						<id>format</id>
+						<phase/>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 
 	<repositories>
 		<repository>
