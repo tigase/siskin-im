@@ -1,10 +1,3 @@
-#
-# Tigase iOS Messenger Documentation - bootstrap configuration for all Tigase projects
-# Copyright (C) 2004 Tigase, Inc. (office@tigase.com) - All Rights Reserved
-# Unauthorized copying of this file, via any medium is strictly prohibited
-# Proprietary and confidential
-#
-
 FRAMEWORK=$1
 echo "Trimming $FRAMEWORK..."
 FRAMEWORK_EXECUTABLE_PATH="${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/$FRAMEWORK.framework/$FRAMEWORK"

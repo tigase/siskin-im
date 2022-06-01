@@ -1,10 +1,3 @@
-@REM
-@REM Tigase iOS Messenger Documentation - bootstrap configuration for all Tigase projects
-@REM Copyright (C) 2004 Tigase, Inc. (office@tigase.com) - All Rights Reserved
-@REM Unauthorized copying of this file, via any medium is strictly prohibited
-@REM Proprietary and confidential
-@REM
-
 @ECHO OFF
 
 pushd %~dp0
