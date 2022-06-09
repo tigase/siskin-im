@@ -64,7 +64,7 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
         
         let rowChanges = calculateChanges(newGroups: newGroups, oldGroups: oldGroups);
         
-        DispatchQueue.main.async {
+        DispatchQueue.main.sync {
             self.groups = newGroups;
             if !self.initialized {
                 self.initialized = true;

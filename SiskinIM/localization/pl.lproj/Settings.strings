@@ -44,7 +44,7 @@
 "BSa-RZ-M7L.text" = "Używaj publicznych serwerów STUN";
 
 /* Class = "UILabel"; text = "Contacts in groups"; ObjectID = "BSk-tI-BDM"; */
-"BSk-tI-BDM.text" = "Grupuj kontaktu";
+"BSk-tI-BDM.text" = "Grupuj kontakty";
 
 /* Class = "UILabel"; text = "Push notifications"; ObjectID = "cyb-st-Bmw"; */
 "cyb-st-Bmw.text" = "Powiadomienia push";
