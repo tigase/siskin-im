@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>tigase</groupId>
 		<artifactId>tigase-projects-parent</artifactId>
-		<version>1.0.4-SNAPSHOT</version>
+		<version>1.0.4</version>
 		<relativePath />
 	</parent>
 
@@ -48,7 +48,7 @@
 	<repositories>
 		<repository>
 			<id>tigase</id>
-			<url>http://maven-repo.tigase.org/repository/tigase</url>
+			<url>https://maven-repo.tigase.org/repository/tigase</url>
 		</repository>
 	</repositories>
 </project>
