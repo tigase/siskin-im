@@ -63,7 +63,7 @@ class ContactViewController: UITableViewController {
         })
         omemoIdentities = DBOMEMOStore.instance.identities(forAccount: account, andName: jid.stringValue);
         tableView.contentInset = UIEdgeInsets(top: -1, left: 0, bottom: 0, right: 0);
-        tableView.reloadData();
+        reloadData();
     }
 
     override func didReceiveMemoryWarning() {
@@ -366,17 +366,22 @@ class ContactViewController: UITableViewController {
             return;
         }
 
+        let jid = JID(self.jid!);
+        let account = self.account!;
         if sender.isOn {
-            blockingModule.block(jids: [JID(jid!)], completionHandler: { [weak sender] result in
+            blockingModule.block(jids: [jid], completionHandler: { [weak sender] result in
                 switch result {
                 case .failure(_):
                     sender?.isOn = false;
-                default:
+                case .success(_):
+                    if DBRosterStore.instance.item(for: account, jid: jid) == nil {
+                        InvitationManager.instance.rejectPresenceSubscription(for: account, from: jid);
+                    }
                     break;
                 }
             })
         } else {
-            blockingModule.unblock(jids: [JID(jid!)], completionHandler: { [weak sender] result in
+            blockingModule.unblock(jids: [jid], completionHandler: { [weak sender] result in
                 switch result {
                 case .failure(_):
                     sender?.isOn = true;

@@ -49,4 +49,16 @@ class InvitationManager {
         content.userInfo = ["account": account.stringValue, "roomJid": roomJid.stringValue, "password": invitation.password as Any];
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil), withCompletionHandler: nil);
     }
+    
+    func rejectPresenceSubscription(for account: BareJID, from jid: JID) {
+        let threadId = "account=\(account.stringValue)|sender=\(jid.stringValue)";
+        UNUserNotificationCenter.current().getDeliveredNotifications(completionHandler: { notifications in
+            let subscriptionReqNotifications = notifications.filter({ $0.request.content.categoryIdentifier == "SUBSCRIPTION_REQUEST" && $0.request.content.threadIdentifier == threadId });
+            guard !subscriptionReqNotifications.isEmpty else {
+                return;
+            }
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: subscriptionReqNotifications.map({ $0.request.identifier }));
+            XmppService.instance.getClient(for: account)?.module(.presence).unsubscribed(by: jid);
+        })
+    }
 }
