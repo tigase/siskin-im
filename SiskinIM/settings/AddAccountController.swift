@@ -234,21 +234,15 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         activityInditcator = nil;
     }
     
-    class AccountValidatorTask: EventHandler {
+    class AccountValidatorTask {
         
         private var cancellables: Set<AnyCancellable> = [];
         var client: XMPPClient? {
-            willSet {
-                if newValue != nil {
-                    newValue?.eventBus.register(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE);
-                }
-            }
             didSet {
                 cancellables.removeAll();
-                if oldValue != nil {
-                    _ = oldValue?.disconnect(true);
-                    oldValue?.eventBus.unregister(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE);
-                }
+                client?.module(.sasl).$state.filter({ $0 == .authorized || $0.isError }).sink(receiveValue: { [weak self] state in
+                    self?.saslStateChanged(newState: state);
+                }).store(in: &cancellables);
                 client?.$state.sink(receiveValue: { [weak self] state in self?.changedState(state) }).store(in: &cancellables);
             }
         }
@@ -265,10 +259,11 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         }
         
         fileprivate func initClient() {
-            self.client = XMPPClient();
-            _ = client?.modulesManager.register(StreamFeaturesModule());
-            _ = client?.modulesManager.register(SaslModule());
-            _ = client?.modulesManager.register(AuthModule());
+            let client = XMPPClient();
+            _ = client.modulesManager.register(StreamFeaturesModule());
+            _ = client.modulesManager.register(SaslModule());
+            _ = client.modulesManager.register(AuthModule());
+            self.client = client;
         }
         
         public func check(account: BareJID, password: String, connectivitySettings: AccountConnectivitySettingsViewController.Settings, callback: @escaping (Result<Void,ErrorCondition>)->Void) {
@@ -285,26 +280,20 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
             client?.login();
         }
         
-        public func handle(event: Event) {
+        func saslStateChanged(newState: AuthModule.AuthorizationStatus) {
             dispatchQueue.sync {
                 guard let callback = self.callback else {
                     return;
                 }
-                var param: ErrorCondition? = nil;
-                switch event {
-                case is SaslModule.SaslAuthSuccessEvent:
-                    param = nil;
-                case is SaslModule.SaslAuthFailedEvent:
-                    param = ErrorCondition.not_authorized;
-                default:
-                    param = ErrorCondition.service_unavailable;
-                }
                 
                 DispatchQueue.main.async {
-                    if let error = param {
-                        callback(.failure(error));
-                    } else {
-                        callback(.success(Void()));
+                    switch newState {
+                    case .error(_):
+                        callback(.failure(.not_authorized));
+                    case .authorized:
+                        callback(.success(Void()))
+                    default:
+                        callback(.failure(.service_unavailable));
                     }
                 }
                 self.finish();
@@ -323,7 +312,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
                     case .sslCertError(let trust):
                         self.callback = nil;
                         let certData = SslCertificateInfo(trust: trust);
-                        let alert = CertificateErrorAlert.create(domain: self.client!.sessionObject.userBareJid!.domain, certData: certData, onAccept: {
+                        let alert = CertificateErrorAlert.create(domain: self.client!.userBareJid.domain, certData: certData, onAccept: {
                             self.acceptedCertificate = certData;
                             self.client?.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
                                 options.networkProcessorProviders.append(SSLProcessorProvider());

@@ -277,7 +277,7 @@ open class XmppService {
     private var clientCancellables: [BareJID:ClientCancellables] = [:];
     
     private func disconnected(client: XMPPClient) {
-        let accountName = client.sessionObject.userBareJid!;
+        let accountName = client.userBareJid;
         defer {
             DBChatStore.instance.resetChatStates(for: accountName);
         }
@@ -292,6 +292,7 @@ open class XmppService {
         guard self.status.shouldConnect else {
             return;
         }
+        
         let retry = client.retryNo;
         client.retryNo = retry + 1;
         var timeout = 2.0 * Double(retry) + 0.5;
@@ -307,7 +308,7 @@ open class XmppService {
     
     private func unregisterClient(_ client: XMPPClient, removed: Bool = false) {
         dispatcher.sync {
-            let accountName = client.sessionObject.userBareJid!;
+            let accountName = client.userBareJid;
             guard let client = self.clients.removeValue(forKey: accountName) else {
                 return;
             }
@@ -523,6 +524,7 @@ open class XmppService {
     private func changedState(_ state: XMPPClient.State, for client: XMPPClient) {
         switch state {
         case .connected:
+            client.retryNo = 0;
             self.dispatcher.async {
                 self.connectedClients.insert(client);
             }
