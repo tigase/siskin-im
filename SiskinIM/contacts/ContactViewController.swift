@@ -369,14 +369,14 @@ class ContactViewController: UITableViewController {
         let jid = JID(self.jid!);
         let account = self.account!;
         if sender.isOn {
+            if DBRosterStore.instance.item(for: account, jid: jid) == nil {
+                InvitationManager.instance.rejectPresenceSubscription(for: account, from: jid);
+            }
             blockingModule.block(jids: [jid], completionHandler: { [weak sender] result in
                 switch result {
                 case .failure(_):
                     sender?.isOn = false;
                 case .success(_):
-                    if DBRosterStore.instance.item(for: account, jid: jid) == nil {
-                        InvitationManager.instance.rejectPresenceSubscription(for: account, from: jid);
-                    }
                     break;
                 }
             })

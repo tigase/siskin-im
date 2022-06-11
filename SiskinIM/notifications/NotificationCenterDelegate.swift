@@ -154,6 +154,15 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
             }
             client.module(.presence).unsubscribed(by: JID(senderJid));
         }));
+        if let blockingCommandModule = XmppService.instance.getClient(for: accountJid)?.module(.blockingCommand), blockingCommandModule.isAvailable {
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Block", comment: "button label"), style: .destructive, handler: { action in
+                guard let client = XmppService.instance.getClient(for: accountJid) else {
+                    return;
+                }
+                client.module(.presence).unsubscribed(by: JID(senderJid))
+                blockingCommandModule.block(jids: [JID(senderJid)], completionHandler: { result in });
+            }))
+        }
         
         topController()?.present(alert, animated: true, completion: nil);
         completionHandler();

@@ -100,6 +100,9 @@
 /* vcard field label */
 "Birthday" = "Birthday";
 
+/* button label */
+"Block" = "Block";
+
 /* action */
 "Block participant" = "Block participant";
 

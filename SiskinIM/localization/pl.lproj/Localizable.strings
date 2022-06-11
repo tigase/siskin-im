@@ -99,6 +99,9 @@
 /* vcard field label */
 "Birthday" = "Urodziny";
 
+/* button label */
+"Block" = "Zablokuj";
+
 /* action */
 "Block participant" = "Zablokuj uczestnika";
 
