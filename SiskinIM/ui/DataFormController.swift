@@ -26,7 +26,10 @@ import TigaseSwift
 class DataFormController: UITableViewController {
     
     var bob: [BobData] = [];
-    var form: JabberDataElement?;
+    var form: DataForm?;
+    var visibleFields: [DataForm.Field] {
+        return form?.fields.filter({ $0.type != .hidden }) ?? [];
+    }
     
     var passwordSuggestNew: Bool?;
 
@@ -55,7 +58,7 @@ class DataFormController: UITableViewController {
         guard form != nil else {
             return 0;
         }
-        return 1 + form!.visibleFieldNames.count;
+        return 1 + visibleFields.count;
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -63,8 +66,7 @@ class DataFormController: UITableViewController {
             return 0;
         }
         
-        let fieldName = form!.visibleFieldNames[section - 1];
-        let field = form!.getField(named: fieldName)!;
+        let field = visibleFields[section-1];
         return 1 + field.media.count;
         
     }
@@ -75,14 +77,13 @@ class DataFormController: UITableViewController {
         
             return (instructions == nil || instructions!.isEmpty) ? NSLocalizedString("Please fill this form", comment: "instruction to fill out the form") : instructions!.joined(separator: "\n");
         } else {
-            let fieldName = form!.visibleFieldNames[section - 1];
-            return form?.getField(named: fieldName)?.label ?? fieldName;
+            let field = visibleFields[section-1];
+            return field.label ?? field.var;
         }
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let fieldName = form!.visibleFieldNames[indexPath.section - 1];
-        let field = form!.getField(named: fieldName)!;
+        let field = visibleFields[indexPath.section-1];
         let medias = field.media;
         if indexPath.row < medias.count {
             let media = medias[indexPath.row];
@@ -98,10 +99,10 @@ class DataFormController: UITableViewController {
             }
             return cell;
         } else {
-            let cellId = "FormViewCell-" + ( field.type ?? "fixed" );
+            let cellId = "FormViewCell-" + ( field.type ?? .fixed ).rawValue;
             let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath);
             (cell as? FieldCell)?.field = field;
-            if field.type == "list-single" || field.type == "list-multi" || field.type == "text-multi" || field.type == "jid-multi" {
+            if field.type == .listSingle || field.type == .listMulti || field.type == .textMulti || field.type == .jidMulti {
                 cell.accessoryType = .disclosureIndicator;
             }
             if let passwordSuggestNew = self.passwordSuggestNew, let c = cell as? TextPrivateFieldCell {
@@ -118,23 +119,30 @@ class DataFormController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: false);
         
-        guard indexPath.section > 0, let fieldName = form?.visibleFieldNames[indexPath.section - 1] else {
+        guard indexPath.section > 0 else {
             return;
         }
         
-        let field = form!.getField(named: fieldName)!;
-        if field.type == "list-single" || field.type == "list-multi" {
-            let listController = ListSelectorController(style: .grouped);
-            listController.field = field as? ListField;
+        let field = visibleFields[indexPath.section - 1];
+        switch field.type ?? .fixed {
+        case .listSingle:
+            let listController = ListSingleSelectorController(style: .grouped);
+            listController.field = field as? DataForm.Field.ListSingle;
             self.navigationController?.pushViewController(listController, animated: true);
-        } else if field.type == "text-multi" {
+        case .listMulti:
+            let listController = ListMultiSelectorController(style: .grouped);
+            listController.field = field as? DataForm.Field.ListMulti;
+            self.navigationController?.pushViewController(listController, animated: true);
+        case .textMulti:
             let textController = TextController();
-            textController.field = field as? TextMultiField;
+            textController.field = field as? DataForm.Field.TextMulti;
             self.navigationController?.pushViewController(textController, animated: true);
-        } else if field.type == "jid-multi" {
+        case .jidMulti:
             let jidsController = JidsController();
-            jidsController.field = field as? JidMultiField;
+            jidsController.field = field as? DataForm.Field.JIDMulti;
             self.navigationController?.pushViewController(jidsController, animated: true);
+        default:
+            break;
         }
     }
     
@@ -163,11 +171,9 @@ class DataFormController: UITableViewController {
         }
         
         var errors = [IndexPath]();
-        for (index, fieldName) in form!.visibleFieldNames.enumerated() {
-            if let field = form!.getField(named: fieldName)! as? ValidatableField {
-                if !field.valid {
-                    errors.append(IndexPath(row: 0, section: index + 1));
-                }
+        for (index, field) in visibleFields.enumerated() {
+            if !field.isValid {
+                errors.append(IndexPath(row: 0, section: index + 1));
             }
         }
         self.errors = errors;
@@ -177,18 +183,18 @@ class DataFormController: UITableViewController {
     
     class TextSingleFieldCell: AbstractTextSingleFieldCell {
         
-        override var field: Field? {
+        override var field: DataForm.Field? {
             didSet {
-                guard let f: TextSingleField = field as? TextSingleField else {
+                guard let f = field as? DataForm.Field.TextSingle else {
                     value = nil;
                     return;
                 }
-                value = f.value;
+                value = f.currentValue;
             }
         }
         
         override func textDidChanged(textField: UITextField) {
-            (field as? TextSingleField)?.value = textField.text;
+            (field as? DataForm.Field.TextSingle)?.currentValue = textField.text;
         }
         
     }
@@ -204,19 +210,19 @@ class DataFormController: UITableViewController {
             }
         }
         
-        override var field: Field? {
+        override var field: DataForm.Field? {
             didSet {
                 uiTextField.isSecureTextEntry = true;
-                guard let f: TextPrivateField = field as? TextPrivateField else {
+                guard let f = field as? DataForm.Field.TextPrivate else {
                     value = nil;
                     return;
                 }
-                value = f.value;
+                value = f.currentValue;
             }
         }
         
         override func textDidChanged(textField: UITextField) {
-            (field as? TextPrivateField)?.value = textField.text;
+            (field as? DataForm.Field.TextPrivate)?.currentValue = textField.text;
         }
         
     }
@@ -269,13 +275,13 @@ class DataFormController: UITableViewController {
             }
         }
         
-        override var field: Field? {
+        override var field: DataForm.Field? {
             didSet {
-                guard let f: TextMultiField = field as? TextMultiField else {
+                guard let f = field as? DataForm.Field.TextMulti else {
                     value = nil;
                     return;
                 }
-                value = f.value.joined(separator: " ");
+                value = f.currentValues.joined(separator: " ");
             }
         }
         
@@ -307,13 +313,13 @@ class DataFormController: UITableViewController {
             }
         }
         
-        override var field: Field? {
+        override var field: DataForm.Field? {
             didSet {
-                guard let f: JidSingleField = field as? JidSingleField else {
+                guard let f = field as? DataForm.Field.JIDSingle else {
                     value = nil;
                     return;
                 }
-                value = f.value;
+                value = f.currentValue;
             }
         }
         
@@ -326,7 +332,7 @@ class DataFormController: UITableViewController {
         }
         
         @objc func textDidChanged(textField: UITextField) {
-            (field as? JidSingleField)?.value = JID(textField.text);
+            (field as? DataForm.Field.JIDSingle)?.currentValue = JID(textField.text);
         }
     }
     
@@ -344,13 +350,13 @@ class DataFormController: UITableViewController {
             }
         }
         
-        override var field: Field? {
+        override var field: DataForm.Field? {
             didSet {
-                guard let f: JidMultiField = field as? JidMultiField else {
+                guard let f = field as? DataForm.Field.JIDMulti else {
                     value = [];
                     return;
                 }
-                value = f.value;
+                value = f.currentValues;
             }
         }
         
@@ -376,10 +382,10 @@ class DataFormController: UITableViewController {
         }
         
                 
-        var field: Field? {
+        var field: DataForm.Field? {
             didSet {
-                label = field?.label ?? field?.name.capitalized;
-                value = (field as? BooleanField)?.value ?? false;
+                label = field?.label ?? field?.var.capitalized;
+                value = (field as? DataForm.Field.Boolean)?.currentValue ?? false;
             }
         }
         var fieldView: UIView? {
@@ -418,7 +424,7 @@ class DataFormController: UITableViewController {
         }
         
         @objc func switchValueChanged(switch uiswitch: UISwitch) {
-            (field as? BooleanField)?.value = uiswitch.isOn;
+            (field as? DataForm.Field.Boolean)?.currentValue = uiswitch.isOn;
         }
         
     }
@@ -435,10 +441,10 @@ class DataFormController: UITableViewController {
             }
         }
         
-        override var field: Field? {
+        override var field: DataForm.Field? {
             didSet {
                 //label = field?.label ?? field?.name.capitalized;
-                value = (field as? FixedField)?.value;
+                value = (field as? DataForm.Field.Fixed)?.currentValue;
             }
         }
         
@@ -460,10 +466,10 @@ class DataFormController: UITableViewController {
             }
         }
         
-        override var field: Field? {
+        override var field: DataForm.Field? {
             didSet {
-                if let f: ListSingleField = field as? ListSingleField {
-                    let value = f.value;
+                if let f = field as? DataForm.Field.ListSingle {
+                    let value = f.currentValue;
                     let selected = f.options.first(where: { (option) -> Bool in
                         option.value == value;
                     });
@@ -490,10 +496,10 @@ class DataFormController: UITableViewController {
             }
         }
         
-        override var field: Field? {
+        override var field: DataForm.Field? {
             didSet {
-                if let f: ListMultiField = field as? ListMultiField {
-                    let value = f.value;
+                if let f = field as? DataForm.Field.ListMulti {
+                    let value = f.currentValues;
                     let selected = f.options.filter({ (option) -> Bool in
                         return value.firstIndex(of: option.value) != nil;
                     });
@@ -512,7 +518,7 @@ class DataFormController: UITableViewController {
     
     class AbstractFieldCell: UITableViewCell, FieldCell {
                 
-        var field: Field?;
+        var field: DataForm.Field?;
         var fieldView: UIView?;
         
         override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -612,19 +618,13 @@ class DataFormController: UITableViewController {
         
     }
     
-    class ListSelectorController: UITableViewController {
+    class ListSingleSelectorController: UITableViewController {
         
-        var field: ListField! {
-            didSet {
-                options = field.options;
-            }
-        }
-        
-        var options: [ListFieldOption] = [];
+        var field: DataForm.Field.ListSingle!
         
         override func viewDidLoad() {
             tableView.allowsSelection = true;
-            tableView.allowsMultipleSelection = (field as? ListMultiField) != nil;
+            tableView.allowsMultipleSelection = false;
         }
         
         override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -632,44 +632,73 @@ class DataFormController: UITableViewController {
         }
         
         override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-            return (field as? Field)?.label ?? (field as? Field)?.name.capitalized;
+            return field.label ?? field.var.capitalized;
         }
         
         override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
             let cell = UITableViewCell(style: .value1, reuseIdentifier: nil);
-            let option = options[indexPath.row];
+            let option = field.options[indexPath.row];
             cell.textLabel?.text = option.label ?? option.value;
             return cell;
         }
         
         override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-            let option = options[indexPath.row];
-            if let multiList: ListMultiField = field as? ListMultiField {
-                let values = multiList.value;
-                cell.accessoryType = values.firstIndex(of: option.value) != nil ? .checkmark : .none;
-            } else if let singleList: ListSingleField = field as? ListSingleField {
-                cell.accessoryType = singleList.value == option.value ? .checkmark : .none;
-            }
+            let option = field.options[indexPath.row];
+            cell.accessoryType = field.currentValue == option.value ? .checkmark : .none;
         }
         
         override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
             tableView.deselectRow(at: indexPath, animated: true);
-            let value = options[indexPath.row].value;
-            if let multiList: ListMultiField = field as? ListMultiField {
-                var values = multiList.value;
-                if let idx = values.firstIndex(of: value) {
-                    values.remove(at: idx);
-                } else {
-                    values.append(value);
-                }
-                multiList.value = values;
-            } else if let singleList: ListSingleField = field as? ListSingleField {
-                if singleList.value == value {
-                    singleList.value = nil;
-                } else {
-                    singleList.value = value;
-                }
+            let value = field.options[indexPath.row].value;
+            if field.currentValue == value {
+                field.currentValue = nil;
+            } else {
+                field.currentValue = value;
             }
+            tableView.reloadData();
+        }
+        
+    }
+    
+    class ListMultiSelectorController: UITableViewController {
+        
+        var field: DataForm.Field.ListMulti!
+        
+        override func viewDidLoad() {
+            tableView.allowsSelection = true;
+            tableView.allowsMultipleSelection = true;
+        }
+        
+        override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+            return field.options.count;
+        }
+        
+        override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+            return field.label ?? field.var.capitalized;
+        }
+        
+        override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+            let cell = UITableViewCell(style: .value1, reuseIdentifier: nil);
+            let option = field.options[indexPath.row];
+            cell.textLabel?.text = option.label ?? option.value;
+            return cell;
+        }
+        
+        override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+            let option = field.options[indexPath.row];
+            cell.accessoryType = field.currentValues.contains(option.value) ? .checkmark : .none;
+        }
+        
+        override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+            tableView.deselectRow(at: indexPath, animated: true);
+            let value = field.options[indexPath.row].value;
+            var values = field.currentValues;
+            if let idx = values.firstIndex(of: value) {
+                values.remove(at: idx);
+            } else {
+                values.append(value);
+            }
+            field.currentValues = values;
             tableView.reloadData();
         }
         
@@ -679,9 +708,9 @@ class DataFormController: UITableViewController {
         
         var textView = UITextView();
         
-        var field: JidMultiField! {
+        var field: DataForm.Field.JIDMulti! {
             didSet {
-                textView.text = field.value.map({(jid)->String in jid.stringValue}).joined(separator: "\n");
+                textView.text = field.currentValues.map({(jid)->String in jid.stringValue}).joined(separator: "\n");
             }
         }
         
@@ -706,7 +735,7 @@ class DataFormController: UITableViewController {
         func textViewDidChange(_ textView: UITextView) {
             let values = textView.text.components(separatedBy: "\n");
             let results = values.map({(str)->JID? in JID(str) }).filter({(jid)->Bool in jid != nil}).map({(jid)->JID in jid!});
-            field.value = results;
+            field.currentValues = results;
         }
         
     }
@@ -715,9 +744,9 @@ class DataFormController: UITableViewController {
         
         var textView = UITextView();
         
-        var field: TextMultiField! {
+        var field: DataForm.Field.TextMulti! {
             didSet {
-                textView.text = field.rawValue.joined(separator: "\n");
+                textView.text = field.currentValues.joined(separator: "\n");
             }
         }
         
@@ -740,7 +769,7 @@ class DataFormController: UITableViewController {
         }
         
         func textViewDidChange(_ textView: UITextView) {
-            field.value = textView.text.components(separatedBy: "\n");
+            field.currentValues = textView.text.components(separatedBy: "\n");
         }
         
     }
@@ -749,7 +778,7 @@ class DataFormController: UITableViewController {
 
 protocol FieldCell: AnyObject {
     
-    var field: Field? {
+    var field: DataForm.Field? {
         get set
     }
     

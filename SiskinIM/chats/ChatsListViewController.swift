@@ -352,7 +352,7 @@ class ChatsListViewController: UITableViewController {
                     mixModule.retrieveConfig(for: channel.channelJid, completionHandler: { result in
                         switch result {
                         case .success(let data):
-                            if let adminsField: JidMultiField = data.getField(named: "Owner"), adminsField.value.contains(JID(userJid)) && adminsField.value.count == 1 {
+                            if let admins = data.owner, admins.contains(JID(userJid)) && admins.count == 1 {
                                 // you need to pass the permission or delete channel..
                                 DispatchQueue.main.async {
                                     let alert = UIAlertController(title: NSLocalizedString("Leaving channel", comment: "leaving channel title"), message: NSLocalizedString("You are the last person with ownership of this channel. Please decide what to do with the channel.", comment: "leaving channel text"), preferredStyle: .actionSheet);
@@ -383,7 +383,7 @@ class ChatsListViewController: UITableViewController {
                                                         completion(false);
                                                         return;
                                                     }
-                                                    adminsField.value = adminsField.value.filter({ $0.bareJid != userJid }) + [JID(jid)];
+                                                    data.owner = admins.filter({ $0.bareJid != userJid }) + [JID(jid)];
                                                     mixModule.updateConfig(for: channel.channelJid, config: data, completionHandler: { _ in
                                                         leaveFn();
                                                     })

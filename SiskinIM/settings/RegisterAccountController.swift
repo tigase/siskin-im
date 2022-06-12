@@ -89,9 +89,9 @@ class RegisterAccountController: DataFormController {
             return;
         }
         
-        let jid = BareJID((form?.getField(named: "username") as? TextSingleField)?.value);
+        let jid = BareJID(form?.value(for: "username", type: String.self));
         self.account = BareJID(localPart: jid?.localPart ?? jid?.domain, domain: domain!);
-        self.password = (form?.getField(named: "password") as? TextPrivateField)?.value;
+        self.password = form?.value(for: "password", type: String.self);
         task?.submit(form: form!);
         self.showIndicator();
     }
@@ -146,8 +146,7 @@ class RegisterAccountController: DataFormController {
         
         let cell = super.tableView(tableView, cellForRowAt: indexPath);
         if #available(iOS 11.0, *) {
-            let fieldName = form!.visibleFieldNames[indexPath.row];
-            if fieldName == "username", let c = cell as? TextSingleFieldCell {
+            if visibleFields[indexPath.row].var == "username", let c = cell as? TextSingleFieldCell {
                 c.uiTextField.isEnabled = !self.lockAccount;
                 c.uiTextField?.textContentType = .username;
             }
@@ -203,17 +202,17 @@ class RegisterAccountController: DataFormController {
     }
     
     func retrieveRegistrationForm(domain: String) {
-        let onForm = {(form: JabberDataElement, bob: [BobData], task: InBandRegistrationModule.AccountRegistrationTask)->Void in
+        let onForm = {(form: DataForm, bob: [BobData], task: InBandRegistrationModule.AccountRegistrationTask)->Void in
             DispatchQueue.main.async {
                 self.nextButton.isEnabled = true;
                 self.hideIndicator();
-                if let accountField = form.getField(named: "username") as? TextSingleField, accountField.value?.isEmpty ?? true {
-                    accountField.value = self.account?.localPart;
+                if let accountField = form.field(for: "username", type: DataForm.Field.TextSingle.self), accountField.currentValue?.isEmpty ?? true {
+                    accountField.currentValue = self.account?.localPart;
                 }
                 self.bob = bob;
                 self.form = form;
                 
-                self.tableView.insertSections(IndexSet(0..<(form.visibleFieldNames.count + 1)), with: .fade);
+                self.tableView.insertSections(IndexSet(0..<(self.visibleFields.count + 1)), with: .fade);
             }
         };
         let client: XMPPClient? = nil;

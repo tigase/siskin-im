@@ -253,13 +253,13 @@ class ChannelJoinViewController: UITableViewController {
             let createBookmark = bookmarkCreateSwitch.isOn;
             let autojoin = createBookmark && bookmarkAutojoinSwitch.isOn;
             
-            let form = JabberDataElement(type: .submit);
-            form.addField(HiddenField(name: "FORM_TYPE")).value = "http://jabber.org/protocol/muc#roomconfig";
-            form.addField(TextSingleField(name: "muc#roomconfig_roomname", value: name));
-            form.addField(BooleanField(name: "muc#roomconfig_membersonly", value: priv));
-            form.addField(BooleanField(name: "muc#roomconfig_publicroom", value: !priv));
-//            form.addField(TextSingleField(name: "muc#roomconfig_roomdesc", value: channelDescription));
-            form.addField(TextSingleField(name: "muc#roomconfig_whois", value: priv ? "anyone" : "moderators"))
+            let form = RoomConfig();
+            form.FORM_TYPE = "http://jabber.org/protocol/muc#roomconfig";
+            form.name = name;
+            form.membersOnly = priv;
+            form.publicRoom = !priv;
+            form.whois = priv ? .anyone : .moderators;
+            
             let mucServer = self.channelJid.domain;
             self.operationStarted(message: NSLocalizedString("Creating channel…", comment: "channel join view operation label"))
             mucModule.setRoomConfiguration(roomJid: JID(BareJID(localPart: roomName, domain: mucServer)), configuration: form, completionHandler: { [weak self] configResult in

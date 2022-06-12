@@ -174,7 +174,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         return hash;
     }
     
-    private func enable(serviceJid: JID, node: String, deviceId: String, pushkitDeviceId: String? = nil, features: [String], maxSize: Int?, publishOptions: JabberDataElement? = nil, completionHandler: @escaping (Result<PushSettings,XMPPError>)->Void) {
+    private func enable(serviceJid: JID, node: String, deviceId: String, pushkitDeviceId: String? = nil, features: [String], maxSize: Int?, publishOptions: PubSubSubscribeOptions? = nil, completionHandler: @escaping (Result<PushSettings,XMPPError>)->Void) {
         
         guard let context = self.context else {
             completionHandler(.failure(.remote_server_timeout));

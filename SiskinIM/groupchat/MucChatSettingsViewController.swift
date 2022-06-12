@@ -388,7 +388,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
             mucModule.getRoomConfiguration(roomJid: JID(self.room.jid), completionHandler: { result in
                 switch result {
                 case .success(let form):
-                    (form.getField(named: "muc#roomconfig_roomname") as? TextSingleField)?.value = newName;
+                    form.name = newName;
                     mucModule.setRoomConfiguration(roomJid: JID(self.room.jid), configuration: form, completionHandler: { result in
                         DispatchQueue.main.async {
                             self.hideIndicator();
