@@ -102,6 +102,9 @@
 /* button label */
 "Block" = "Zablokuj";
 
+/* button label */
+"Block and report" = "Zablokuj i zgłoś";
+
 /* action */
 "Block participant" = "Zablokuj uczestnika";
 
@@ -499,6 +502,9 @@
 /* channel join view operation label */
 "Joining..." = "Dołącznie...";
 
+/* report spam action */
+"Just block" = "Tylko zablokuj";
+
 /* no OMEMO key - not generated yet */
 "Key not generated!" = "Klucz nie został wygenerowany!";
 
@@ -745,7 +751,7 @@
 "Received presence subscription request from %@" = "Otrzymano zapytanie o subskrypcję dostępnośco od %@";
 
 /* alert title body */
-"Received presence subscription request from\n%@\non account %@" = "Otrzymano prośbę o subskrypcję dostępnośći od\n%@\ndla konta %@";
+"Received presence subscription request from\n%@\non account %@" = "Otrzymano prośbę o subskrypcję dostępności od\n%@\ndla konta %@";
 
 /* voice message state */
 "Recorded: %@" = "Nagrano: %@";
@@ -803,6 +809,15 @@
 
 /* context action label */
 "Reply.." = "Odpowiedz...";
+
+/* context action label */
+"Report & block.." = "Zgłoś i zablokuj..";
+
+/* report abuse action */
+"Report abuse" = "Zgłoś nadużycie";
+
+/* report spam action */
+"Report spam" = "Zgłoś spam";
 
 /* button label */
 "Resend" = "Wyślij ponownie";
@@ -948,6 +963,9 @@
 /* button label
    photo selection action */
 "Take photo" = "Zrób zdjęcie";
+
+/* report user message */
+"The user %@ will be blocked. Should it be reported as well?" = "Użytkownik %@ zostanie zablokowny. Czy chcesz to również zgłosić?";
 
 /* alert message */
 "There is no service supporting channels for domain %@" = "Brak usługi wspierającej kanały dla domeny %@";

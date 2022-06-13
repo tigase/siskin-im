@@ -155,13 +155,32 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
             client.module(.presence).unsubscribed(by: JID(senderJid));
         }));
         if let blockingCommandModule = XmppService.instance.getClient(for: accountJid)?.module(.blockingCommand), blockingCommandModule.isAvailable {
-            alert.addAction(UIAlertAction(title: NSLocalizedString("Block", comment: "button label"), style: .destructive, handler: { action in
-                guard let client = XmppService.instance.getClient(for: accountJid) else {
-                    return;
-                }
-                client.module(.presence).unsubscribed(by: JID(senderJid))
-                blockingCommandModule.block(jids: [JID(senderJid)], completionHandler: { result in });
-            }))
+            guard let client = XmppService.instance.getClient(for: accountJid) else {
+                return;
+            }
+            if blockingCommandModule.isReportingSupported {
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Block and report", comment: "button label"), style: .destructive, handler: { action in
+                    let alert2 = UIAlertController(title: String.localizedStringWithFormat(NSLocalizedString("Block and report", comment: "report user title"), senderJid.stringValue), message: String.localizedStringWithFormat(NSLocalizedString("The user %@ will be blocked. Should it be reported as well?", comment: "report user message"), senderJid.stringValue), preferredStyle: .alert)
+                    alert2.addAction(UIAlertAction(title: NSLocalizedString("Report spam", comment: "report spam action"), style: .default, handler: { _ in
+                        client.module(.presence).unsubscribed(by: JID(senderJid))
+                        blockingCommandModule.block(jid: JID(senderJid), report: .init(cause: .spam), completionHandler: { result in });
+                    }))
+                    alert2.addAction(UIAlertAction(title: NSLocalizedString("Report abuse", comment: "report abuse action"), style: .default, handler: { _ in
+                        client.module(.presence).unsubscribed(by: JID(senderJid))
+                        blockingCommandModule.block(jid: JID(senderJid), report: .init(cause: .abuse), completionHandler: { result in });
+                    }))
+                    alert2.addAction(UIAlertAction(title: NSLocalizedString("Just block", comment: "report spam action"), style: .default, handler: { _ in
+                        client.module(.presence).unsubscribed(by: JID(senderJid))
+                        blockingCommandModule.block(jid: JID(senderJid), completionHandler: { result in });
+                    }))
+                    self.topController()?.present(alert2, animated: true, completion: nil);
+                }))
+            } else {
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Block", comment: "button label"), style: .destructive, handler: { action in
+                    client.module(.presence).unsubscribed(by: JID(senderJid))
+                    blockingCommandModule.block(jids: [JID(senderJid)], completionHandler: { result in });
+                }));
+            }
         }
         
         topController()?.present(alert, animated: true, completion: nil);

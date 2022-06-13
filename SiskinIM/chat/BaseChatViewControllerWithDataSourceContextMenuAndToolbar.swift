@@ -26,7 +26,7 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
 
     fileprivate weak var timestampsSwitch: UIBarButtonItem? = nil;
     
-    var contextActions: [ContextAction] = [.showMap, .copy, .reply, .share, .correct, .retract, .more];
+    var contextActions: [ContextAction] = [.showMap, .copy, .reply, .share, .report, .correct, .retract, .more];
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
@@ -66,15 +66,30 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         let items: [UIMenuElement] = actions.map({ action -> UIMenuElement in
             if action.isDesctructive {
                 return UIMenu(title: action.title, image: action.image, options: .destructive, children: [
-                    UIAction(title: "No", handler: { _ in }),
-                    UIAction(title: "Yes", attributes: .destructive, handler: { _ in
+                    UIAction(title: NSLocalizedString("No", comment: "context menu action"), handler: { _ in }),
+                    UIAction(title: NSLocalizedString("Yes", comment: "context menu action"), attributes: .destructive, handler: { _ in
                         self.executeContext(action: action, forItem: item, at: indexPath);
                     })
                 ]);
             } else {
-                return UIAction(title: action.title, image: action.image, handler: { _ in
-                    self.executeContext(action: action, forItem: item, at: indexPath);
-                })
+                switch action {
+                case .report:
+                    return UIMenu(title: action.title, image: action.image, children: [
+                        UIAction(title: NSLocalizedString("Report spam", comment: "context menu action"), attributes: .destructive, handler: { _ in
+                            self.conversation.context?.module(.blockingCommand).block(jid: JID(self.conversation.jid),
+                                                                                      report: .init(cause: .spam), completionHandler: { _ in });
+                        }),
+                        UIAction(title: NSLocalizedString("Report abuse", comment: "context menu action"), attributes: .destructive, handler: { _ in
+                            self.conversation.context?.module(.blockingCommand).block(jid: JID(self.conversation.jid),
+                                                                                      report: .init(cause: .abuse), completionHandler: { _ in });
+                        }),
+                        UIAction(title: NSLocalizedString("Cancel", comment: "context menu action"), handler: { _ in })
+                    ])
+                default:
+                    return UIAction(title: action.title, image: action.image, handler: { _ in
+                        self.executeContext(action: action, forItem: item, at: indexPath);
+                    })
+                }
             }
         })
         
@@ -124,6 +139,9 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 NotificationCenter.default.post(name: Notification.Name("tableViewCellShowEditToolbar"), object: cell);
             }
+        case .report:
+            // taken care of in `prepareContextMenu(for:)`
+            break;
         }
     }
     
@@ -138,6 +156,8 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
             return true;
         case .reply:
             return true;
+        case .report:
+            return false;
         case .share:
             return true;
         case .correct:
@@ -162,6 +182,7 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         case copy
         case reply
         case share
+        case report
         case correct
         case retract
         case more
@@ -175,6 +196,8 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
                 return NSLocalizedString("Copy", comment: "context action label");
             case .reply:
                 return NSLocalizedString("Reply..", comment: "context action label");
+            case .report:
+                return NSLocalizedString("Report & block..", comment: "context action label")
             case .share:
                 return NSLocalizedString("Share..", comment: "context action label");
             case .correct:
@@ -194,6 +217,8 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
                 return UIImage(systemName: "doc.on.doc");
             case .reply:
                 return UIImage(systemName: "arrowshape.turn.up.left");
+            case .report:
+                return UIImage(systemName: "hand.raised")
             case .share:
                 return UIImage(systemName: "square.and.arrow.up");
             case .correct:

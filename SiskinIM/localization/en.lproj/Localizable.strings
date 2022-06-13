@@ -103,6 +103,9 @@
 /* button label */
 "Block" = "Block";
 
+/* button label */
+"Block and report" = "Block and report";
+
 /* action */
 "Block participant" = "Block participant";
 
@@ -509,6 +512,9 @@
    muc room status */
 "Joining..." = "Joining...";
 
+/* report spam action */
+"Just block" = "Just block";
+
 /* no OMEMO key - not generated yet */
 "Key not generated!" = "Key not generated!";
 
@@ -822,6 +828,15 @@
 /* context action label */
 "Reply.." = "Reply..";
 
+/* context action label */
+"Report & block.." = "Report & block..";
+
+/* report abuse action */
+"Report abuse" = "Report abuse";
+
+/* report spam action */
+"Report spam" = "Report spam";
+
 /* button label */
 "Resend" = "Resend";
 
@@ -969,6 +984,9 @@
 /* button label
    photo selection action */
 "Take photo" = "Take photo";
+
+/* report user message */
+"The user %@ will be blocked. Should it be reported as well?" = "The user %@ will be blocked. Should it be reported as well?";
 
 /* alert message */
 "There is no service supporting channels for domain %@" = "There is no service supporting channels for domain %@";

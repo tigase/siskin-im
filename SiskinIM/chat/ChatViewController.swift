@@ -123,6 +123,8 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
         switch action {
         case .retract:
             return item.state.direction == .outgoing && XmppService.instance.getClient(for: item.conversation.account)?.isConnected ?? false;
+        case .report:
+            return item.state.direction == .incoming && XmppService.instance.getClient(for: item.conversation.account)?.module(.blockingCommand).isReportingSupported ?? false;
         default:
             return super.canExecuteContext(action: action, forItem: item, at: indexPath);
         }
