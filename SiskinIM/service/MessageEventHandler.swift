@@ -387,7 +387,7 @@ class MessageEventHandler: XmppServiceExtension {
         let start = Date();
         let queryId = UUID().uuidString;
         let account = client.userBareJid;
-        client.module(.mam).queryItems(version: version, componentJid: period.component == nil ? nil : JID(period.component!), start: period.from, end: period.to, queryId: queryId, rsm: rsmQuery ?? RSM.Query(after: period.after, max: 150), completionHandler: { [weak client] result in
+        client.module(.mam).queryItems(version: version, componentJid: period.component == nil ? nil : JID(period.component!), start: period.from, end: period.to, queryId: queryId, rsm: rsmQuery ?? ( period.after == nil ? .max(150) : .after(period.after!, max: 150)), completionHandler: { [weak client] result in
             switch result {
             case .success(let response):
                 if response.complete || response.rsm == nil {
