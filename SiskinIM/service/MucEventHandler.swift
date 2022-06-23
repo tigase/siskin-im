@@ -119,11 +119,11 @@ class MucEventHandler: XmppServiceExtension {
         }
             
         let content = UNMutableNotificationContent();
-        content.title = String.localizedStringWithFormat(NSLocalizedString("Room %@", comment: "alert title"), room.roomJid.stringValue);
+        content.title = String.localizedStringWithFormat(NSLocalizedString("Room %@", comment: "alert title"), room.roomJid.description);
         content.body = String.localizedStringWithFormat(NSLocalizedString("Could not join room. Reason:\n%@", comment: "alert body"), error.reason);
         content.sound = .default;
         if error != .banned && error != .registrationRequired {
-            content.userInfo = ["account": context.userBareJid.stringValue, "roomJid": room.roomJid.stringValue, "nickname": room.nickname, "id": "room-join-error"];
+            content.userInfo = ["account": context.userBareJid.description, "roomJid": room.roomJid.description, "nickname": room.nickname, "id": "room-join-error"];
         }
         let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
         UNUserNotificationCenter.current().add(request) { (error) in

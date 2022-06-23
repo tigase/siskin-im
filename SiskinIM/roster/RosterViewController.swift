@@ -102,7 +102,7 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
         
         if let item = roster?.item(at: indexPath) {
             cell.nameLabel.text = item.displayName;
-            cell.statusLabel.text = item.presence?.status ?? item.jid.stringValue;
+            cell.statusLabel.text = item.presence?.status ?? item.jid.description;
             cell.avatarStatusView.displayableId = ContactManager.instance.contact(for: .init(account: item.account, jid: item.jid, type: .buddy));
         }
         

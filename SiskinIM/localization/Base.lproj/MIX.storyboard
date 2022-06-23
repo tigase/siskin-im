@@ -595,7 +595,7 @@
                     <toolbarItems>
                         <barButtonItem systemItem="organize" id="h5s-mV-KH1">
                             <connections>
-                                <segue destination="zDA-wq-fpG" kind="push" id="j5J-Tn-QfR"/>
+                                <segue destination="zDA-wq-fpG" kind="show" id="j5J-Tn-QfR"/>
                             </connections>
                         </barButtonItem>
                         <barButtonItem width="10" style="plain" systemItem="fixedSpace" id="fcg-Nr-Zey"/>
@@ -1281,7 +1281,7 @@
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="XRy-yU-VZ5"/>
-        <segue reference="j5J-Tn-QfR"/>
+        <segue reference="IbT-RI-igU"/>
     </inferredMetricsTieBreakers>
     <resources>
         <image name="defaultAvatar" width="100" height="100"/>

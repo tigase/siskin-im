@@ -41,7 +41,7 @@ extension Query {
     static let messageDelete = Query("DELETE FROM chat_history WHERE id = :id");
     static let messageFindMessageOriginId = Query("select stanza_id from chat_history where id = :id");
     static let messagesFindUnsent = Query("SELECT ch.account as account, ch.jid as jid, ch.item_type as item_type, ch.data as data, ch.stanza_id as stanza_id, ch.encryption as encryption, ch.markable FROM chat_history ch WHERE ch.account = :account AND ch.state = \(ConversationEntryState.outgoing(.unsent).rawValue) ORDER BY timestamp ASC");
-    static let messagesFindForChat = Query("SELECT id, author_nickname, author_jid, recipient_nickname, participant_id, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, correction_timestamp, markable FROM chat_history WHERE account = :account AND jid = :jid AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.messageRetracted.rawValue), \(ItemType.attachment.rawValue), \(ItemType.invitation.rawValue), \(ItemType.location.rawValue))) ORDER BY timestamp DESC LIMIT :limit OFFSET :offset");
+    static let messagesFindForChat = Query("SELECT id, author_nickname, author_jid, recipient_nickname, participant_id, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, correction_timestamp, markable FROM chat_history WHERE account = :account AND jid = :jid AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.retraction.rawValue), \(ItemType.attachment.rawValue), \(ItemType.invitation.rawValue), \(ItemType.location.rawValue))) ORDER BY timestamp DESC LIMIT :limit OFFSET :offset");
     static let messageFindPositionInChat = Query("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id <> :msgId AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue), \(ItemType.invitation.rawValue), \(ItemType.location.rawValue))) AND timestamp > (SELECT timestamp FROM chat_history WHERE id = :msgId)");
     static let messageSearchHistory = Query("SELECT chat_history.id as id, chat_history.account as account, chat_history.jid as jid, author_nickname, author_jid, participant_id,  chat_history.timestamp as timestamp, item_type, chat_history.data as data, state, preview, chat_history.encryption as encryption, fingerprint, markable FROM chat_history INNER JOIN chat_history_fts_index ON chat_history.id = chat_history_fts_index.rowid LEFT JOIN chats ON chats.account = chat_history.account AND chats.jid = chat_history.jid WHERE (chats.id IS NOT NULL OR chat_history.author_nickname is NULL) AND chat_history_fts_index MATCH :query AND (:account IS NULL OR chat_history.account = :account) AND (:jid IS NULL OR chat_history.jid = :jid) AND item_type = \(ItemType.message.rawValue) ORDER BY chat_history.timestamp DESC");
     static let messagesDeleteChatHistory = Query("DELETE FROM chat_history WHERE account = :account AND (:jid IS NULL OR jid = :jid)");
@@ -249,7 +249,7 @@ class DBChatHistoryStore {
             return;
         }
 
-        guard !state.isError || stanzaId == nil || !self.processOutgoingError(for: conversation, stanzaId: stanzaId!, errorCondition: message.errorCondition, errorMessage: message.errorText) else {
+        guard !state.isError || stanzaId == nil || !self.processOutgoingError(for: conversation, stanzaId: stanzaId!, error: message.error) else {
             return;
         }
 
@@ -390,7 +390,7 @@ class DBChatHistoryStore {
                 if Settings.linkPreviews {
                     payload = .linkPreview(url: data)
                 }
-            case .messageRetracted, .attachmentRetracted:
+            case .retraction:
                 // nothing to do, as we do not want notifications for that (at least for now and no item of that type would be created in here!
                 break;
             }
@@ -431,9 +431,11 @@ class DBChatHistoryStore {
             
             if let payload = payload {
                 let entry = ConversationEntry(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, payload: payload, options: options);
-                
-                DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: timestamp, itemType: type, message: options.encryption.message() ?? data, state: state, remoteChatState: state.direction == .incoming ? chatState : nil, senderNickname: sender.isGroupchat ? sender.nickname : nil) {
-                    NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: entry);
+
+                if let activityPayload = LastChatActivityType.from(payload) {
+                    DBChatStore.instance.newActivity(.init(timestamp: timestamp, sender: sender, payload: activityPayload), isUnread: state.isUnread, for: conversation.account, with: conversation.jid, completionHandler: {
+                        NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: entry);
+                    })
                 }
                 
                 self.events.send(.added(entry));
@@ -483,7 +485,7 @@ class DBChatHistoryStore {
                 markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)], before: markAsReadTimestamp.addingTimeInterval(0.1), onlyLocally: true));
 
                 let newMessageState: ConversationEntryState = (oldItem.state.direction == .incoming) ? (oldItem.state.isUnread ? .incoming(.displayed) : .incoming(newState.isUnread ? .received : .displayed)) : (.outgoing(.sent));
-                DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: oldItem.timestamp, itemType: .message, message: data, state: newMessageState, completionHandler: {
+                DBChatStore.instance.newActivity(.init(timestamp: oldItem.timestamp, sender: sender, payload: .message(message: data)), isUnread: newMessageState.isUnread, for: conversation.account, with: conversation.jid, completionHandler: {
                 })
 
                 logger.debug("correcing previews for master id: \(itemId)");
@@ -513,10 +515,7 @@ class DBChatHistoryStore {
     private func retractMessageSync(for conversation: ConversationKey, stanzaId: String, sender: ConversationEntrySender, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) {
         if let oldItem = self.findItem(for: conversation, originId: stanzaId, sender: sender) {
             let itemId = oldItem.id;
-            var itemType: ItemType = .messageRetracted;
-            if case .attachment(_,_) = oldItem.payload {
-                itemType = .attachmentRetracted;
-            }
+            let itemType: ItemType = .retraction;
             let params: [String: Any?] = ["id": itemId, "item_type": itemType.rawValue, "correction_stanza_id": retractionStanzaId, "remote_msg_id": remoteMsgId, "server_msg_id": serverMsgId, "correction_timestamp": retractionTimestamp];
             let updated = try! Database.main.writer({ database -> Int in
                 try database.update(query: .messageRetract, params: params);
@@ -530,8 +529,8 @@ class DBChatHistoryStore {
                 markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)], before: markAsReadTimestamp.addingTimeInterval(0.1), onlyLocally: true));
 
                 // what should be sent to "newMessage" how to reatract message from there??
-                let activity: LastChatActivity = DBChatStore.instance.lastActivity(for: conversation.account, jid: conversation.jid) ?? .message("", direction: .incoming, sender: nil);
-                DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: oldItem.timestamp, lastActivity: activity, state: oldItem.state.direction == .incoming ? .incoming(.displayed) : .outgoing(.sent), completionHandler: {
+                let activity: LastChatActivity = .init(timestamp: oldItem.timestamp, sender: sender, payload: .retraction);
+                DBChatStore.instance.newActivity(activity, isUnread: false, for: conversation.account, with: conversation.jid, completionHandler: {
                     self.logger.debug("chat store state updated with message retraction for \(itemId)");
                 })
                 if oldItem.state.isUnread {
@@ -623,25 +622,28 @@ class DBChatHistoryStore {
         previewGenerationQueue.addOperation(operation);
     }
 
-    fileprivate func processOutgoingError(for conversation: ConversationKey, stanzaId: String, errorCondition: ErrorCondition?, errorMessage: String?) -> Bool {
+    fileprivate func processOutgoingError(for conversation: ConversationKey, stanzaId: String, error: XMPPError?) -> Bool {
         guard let itemId = findItemId(for: conversation, originId: stanzaId, sender: .none) else {
             return false;
         }
 
         guard try! Database.main.writer({ database -> Int in
-            try! database.update(query: .messageUpdateState, params: ["id": itemId, "newState": ConversationEntryState.outgoing_error(.received).rawValue, "error": errorMessage ?? errorCondition?.rawValue ?? "Unknown error"]);
+            try! database.update(query: .messageUpdateState, params: ["id": itemId, "newState": ConversationEntryState.outgoing_error(.received).rawValue, "error": error?.localizedDescription ?? "Unknown error"]);
             return database.changes;
         }) > 0 else {
             return false;
         }
-        DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: Date(timeIntervalSince1970: 0), itemType: nil, message: nil, state: .outgoing_error(.received, errorMessage: errorMessage ?? errorCondition?.rawValue ?? "Unknown error")) {
-            self.itemUpdated(withId: itemId, for: conversation);
-        }
+        
+        // FIXME: This does not look like it was working..
+//        DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: Date(timeIntervalSince1970: 0), itemType: nil, message: nil, state: .outgoing_error(.received, errorMessage: error?.localizedDescription ?? "Unknown error")) {
+//          self.itemUpdated(withId: itemId, for: conversation);
+//        }
+        self.itemUpdated(withId: itemId, for: conversation);
         return true;
     }
     
-    open func markOutgoingAsError(for conversation: ConversationKey, stanzaId: String, errorCondition: ErrorCondition?, errorMessage: String?) {
-        _ = self.processOutgoingError(for: conversation, stanzaId: stanzaId, errorCondition: errorCondition, errorMessage: errorMessage);
+    open func markOutgoingAsError(for conversation: ConversationKey, stanzaId: String, error: XMPPError?) {
+        _ = self.processOutgoingError(for: conversation, stanzaId: stanzaId, error: error);
     }
 
     open func countUnsentMessages() -> Int {
@@ -919,8 +921,8 @@ class DBChatHistoryStore {
                 return nil;
             }
             return .message(message: message, correctionTimestamp: correctionTimestamp);
-        case .messageRetracted:
-            return .messageRetracted;
+        case .retraction:
+            return .retraction;
         case .invitation:
             guard let appendix: ChatInvitationAppendix = cursor.object(for: "appendix")else {
                 return nil;
@@ -932,8 +934,6 @@ class DBChatHistoryStore {
             }
             let appendix = cursor.object(for: "appendix") ?? ChatAttachmentAppendix();
             return .attachment(url: url, appendix: appendix);
-        case .attachmentRetracted:
-            return nil;
         case .linkPreview:
             guard let url: String = cursor["data"] else {
                 return nil;
@@ -1021,8 +1021,7 @@ public enum ItemType: Int {
     case linkPreview = 2
     // with that in place we can have separate metadata kept "per" message as it is only one, so message id can be id of associated metadata..
     case invitation = 3
-    case messageRetracted = 4
-    case attachmentRetracted = 5;
+    case retraction = 4
     case location = 6;
 }
 

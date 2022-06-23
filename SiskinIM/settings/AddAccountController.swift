@@ -194,7 +194,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         return false;
     }
     
-    func handleResult(result: Result<Void,ErrorCondition>) {
+    func handleResult(result: Result<Void,XMPPError>) {
         let acceptedCertificate = accountValidatorTask?.acceptedCertificate;
         self.accountValidatorTask = nil;
         switch result {
@@ -247,7 +247,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
             }
         }
         
-        var callback: ((Result<Void,ErrorCondition>)->Void)? = nil;
+        var callback: ((Result<Void,XMPPError>)->Void)? = nil;
         weak var controller: UIViewController?;
         var dispatchQueue = DispatchQueue(label: "accountValidatorSync");
         
@@ -266,7 +266,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
             self.client = client;
         }
         
-        public func check(account: BareJID, password: String, connectivitySettings: AccountConnectivitySettingsViewController.Settings, callback: @escaping (Result<Void,ErrorCondition>)->Void) {
+        public func check(account: BareJID, password: String, connectivitySettings: AccountConnectivitySettingsViewController.Settings, callback: @escaping (Result<Void,XMPPError>)->Void) {
             self.callback = callback;
             client?.connectionConfiguration.useSeeOtherHost = false;
             client?.connectionConfiguration.userJid = account;
@@ -289,11 +289,11 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
                 DispatchQueue.main.async {
                     switch newState {
                     case .error(_):
-                        callback(.failure(.not_authorized));
+                        callback(.failure(.not_authorized(nil)));
                     case .authorized:
                         callback(.success(Void()))
                     default:
-                        callback(.failure(.service_unavailable));
+                        callback(.failure(.service_unavailable(nil)));
                     }
                 }
                 self.finish();
@@ -322,7 +322,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
                             self.client?.login();
                         }, onDeny: {
                             self.finish();
-                            callback(.failure(ErrorCondition.service_unavailable));
+                            callback(.failure(XMPPError.service_unavailable(nil)));
                         })
                         DispatchQueue.main.async {
                             self.controller?.present(alert, animated: true, completion: nil);
@@ -332,7 +332,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
                         break;
                     }
                     DispatchQueue.main.async {
-                        callback(.failure(.service_unavailable));
+                        callback(.failure(.service_unavailable(nil)));
                     }
                     self.finish();
                 default:

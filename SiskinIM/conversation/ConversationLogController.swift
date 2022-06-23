@@ -110,7 +110,7 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
             cell.messageView.text = NSLocalizedString("Unread messages", comment: "conversation log label");
             cell.contentView.transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0);
             return cell;
-        case .messageRetracted:
+        case .retraction:
             let id = isContinuation(at: indexPath.row, for: item) ? "ChatTableViewMessageContinuationCell" : "ChatTableViewMessageCell";
             let cell: ChatTableViewCell = tableView.dequeueReusableCell(withIdentifier: id, for: indexPath) as! ChatTableViewCell;
             cell.contentView.transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0);
@@ -184,7 +184,7 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
             return false;
         }
         switch prevEntry.payload {
-        case .messageRetracted, .message(_, _), .attachment(_, _):
+        case .retraction, .message(_, _), .attachment(_, _):
             return entry.isMergeable(with: prevEntry);
         case .marker(_, _), .linkPreview(_):
             return isContinuation(at: row + 1, for: entry);

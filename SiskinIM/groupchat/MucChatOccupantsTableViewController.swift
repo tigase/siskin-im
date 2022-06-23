@@ -85,12 +85,12 @@ class MucChatOccupantsTableViewController: UITableViewController {
         }
     }
     
-    private var dispatcher = QueueDispatcher(label: "MucChatOccupantsTableViewController");
+    private var queue = DispatchQueue(label: "MucChatOccupantsTableViewController");
     
     var room: Room! {
         didSet {
             cancellables.removeAll();
-            room.occupantsPublisher.throttle(for: 0.1, scheduler: self.dispatcher.queue, latest: true).sink(receiveValue: { [weak self] value in
+            room.occupantsPublisher.throttle(for: 0.1, scheduler: self.queue, latest: true).sink(receiveValue: { [weak self] value in
                 self?.update(participants: value);
             }).store(in: &cancellables);
         }

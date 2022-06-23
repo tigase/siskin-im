@@ -69,8 +69,8 @@ class BlockedContactsController: UITableViewController {
         }
         let cell = tableView.dequeueReusableCell(withIdentifier: "BlockedContactTableViewCell", for: indexPath);
         let item = items[indexPath.row];
-        cell.textLabel?.text = item.jid.stringValue;
-        cell.detailTextLabel?.text = item.account.stringValue;
+        cell.textLabel?.text = item.jid.description;
+        cell.detailTextLabel?.text = item.account.description;
         return cell;
     }
     
@@ -153,13 +153,13 @@ class BlockedContactsController: UITableViewController {
     
     struct Item: Equatable, Comparable {
         static func < (i1: BlockedContactsController.Item, i2: BlockedContactsController.Item) -> Bool {
-            switch i1.jid.stringValue.compare(i2.jid.stringValue) {
+            switch i1.jid.description.compare(i2.jid.description) {
             case.orderedAscending:
                 return true;
             case .orderedDescending:
                 return false;
             case .orderedSame:
-                return i1.account.stringValue.compare(i2.account.stringValue) == .orderedAscending;
+                return i1.account.description.compare(i2.account.description) == .orderedAscending;
             }
         }
         

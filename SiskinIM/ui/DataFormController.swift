@@ -309,7 +309,7 @@ class DataFormController: UITableViewController {
                 return JID(uiTextField.text);
             }
             set {
-                uiTextField.text = newValue?.stringValue;
+                uiTextField.text = newValue?.description;
             }
         }
         
@@ -346,7 +346,7 @@ class DataFormController: UITableViewController {
                 return uiTextField.text?.components(separatedBy: "\n").map({(str)->JID? in JID(str) }).filter({(jid)->Bool in jid != nil}).map({(jid)->JID in jid!}) ?? [JID]();
             }
             set {
-                uiTextField.text = newValue.map({(jid)->String in jid.stringValue}).joined(separator: " ");
+                uiTextField.text = newValue.map({(jid)->String in jid.description}).joined(separator: " ");
             }
         }
         
@@ -710,7 +710,7 @@ class DataFormController: UITableViewController {
         
         var field: DataForm.Field.JIDMulti! {
             didSet {
-                textView.text = field.currentValues.map({(jid)->String in jid.stringValue}).joined(separator: "\n");
+                textView.text = field.currentValues.map({ $0.description }).joined(separator: "\n");
             }
         }
         

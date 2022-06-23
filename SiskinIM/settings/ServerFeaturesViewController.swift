@@ -74,7 +74,7 @@ class ServerFeaturesViewController: UITableViewController {
             return [];
         }
         
-        return parent.mapChildren(transform: Feature.init(from:));
+        return parent.compactMapChildren(Feature.init(from:));
     }
     
     class Feature {
@@ -84,10 +84,10 @@ class ServerFeaturesViewController: UITableViewController {
         let description: String?;
         
         convenience init?(from el: Element) {
-            guard let xep = el.findChild(name: "xep")?.value, let name = el.findChild(name: "name")?.value else {
+            guard let xep = el.firstChild(name: "xep")?.value, let name = el.firstChild(name: "name")?.value else {
                 return nil;
             }
-            self.init(id: el.getAttribute("id"), xep: xep, name: name, description: el.findChild(name: "description")?.value);
+            self.init(id: el.attribute("id"), xep: xep, name: name, description: el.firstChild(name: "description")?.value);
         }
         
         init(id: String?, xep: String, name: String, description: String?) {

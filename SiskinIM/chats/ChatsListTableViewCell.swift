@@ -118,59 +118,84 @@ class ChatsListTableViewCell: UITableViewCell {
         self.badge.title = unread > 0 ? "\(unread)" : nil;
     }
     
-    private func set(lastActivity: LastConversationActivity?, account: BareJID) {
-        if let lastActivity = lastActivity {
-            switch lastActivity {
-            case .message(let lastMessage, let direction, let sender):
-                if lastMessage.starts(with: "/me ") {
-                    let nick = sender ?? (direction == .incoming ? (nameLabel.text ?? "") : (AccountManager.getAccount(for: account)?.nickname ?? NSLocalizedString("Me", comment: "me label for conversation log")));
+    private func set(lastActivity activity: LastConversationActivity, account: BareJID) {
+        if let payload = activity.payload {
+            switch payload {
+            case .message(let message):
+                if message.starts(with: "/me ") {
+                    let nick = activity.sender.nickname ?? NSLocalizedString("Me", comment: "me label for conversation log");
                     let baseFontDescriptor = UIFont.preferredFont(forTextStyle: .subheadline).fontDescriptor;
                     let fontDescriptor = baseFontDescriptor.withSymbolicTraits([.traitBold, .traitItalic]);
                     
                     let font = UIFont(descriptor: fontDescriptor ?? baseFontDescriptor, size: 0);
                     
                     let msg = NSMutableAttributedString(string: "\(nick) ", attributes: [.font: font]);
-                    msg.append(NSAttributedString(string: "\(lastMessage.dropFirst(4))", attributes: [.font: font]));
+                    msg.append(NSAttributedString(string: "\(message.dropFirst(4))", attributes: [.font: font]));
                     
                     lastMessageLabel.attributedText = msg;
                 } else {
                     let font = UIFont.preferredFont(forTextStyle: .subheadline);
-                    let msg = NSMutableAttributedString(string: lastMessage);
+                    let msg = NSMutableAttributedString(string: message);
                     Markdown.applyStyling(attributedString: msg, defTextStyle: .subheadline, showEmoticons: Settings.showEmoticons);
-                    if sender != nil {
+                    switch activity.sender {
+                    case .none, .buddy(_):
+                        lastMessageLabel.attributedText = msg;
+                    case .me(_):
+                        let nick = NSLocalizedString("You", comment: "you label for conversation log")
                         let prefixFontDescription = font.fontDescriptor.withSymbolicTraits(.traitBold);
-                        let prefix = NSMutableAttributedString(string: "\(sender!): ", attributes: [.font: prefixFontDescription != nil ? UIFont(descriptor: prefixFontDescription!, size: 0) : font]);
+                        let prefix = NSMutableAttributedString(string: "\(nick): ", attributes: [.font: prefixFontDescription != nil ? UIFont(descriptor: prefixFontDescription!, size: 0) : font]);
                         prefix.append(msg);
                         lastMessageLabel.attributedText = prefix;
-                    } else {
-                        lastMessageLabel.attributedText = msg;
+                    default:
+                        if let nick = activity.sender.nickname {
+                            let prefixFontDescription = font.fontDescriptor.withSymbolicTraits(.traitBold);
+                            let prefix = NSMutableAttributedString(string: "\(nick): ", attributes: [.font: prefixFontDescription != nil ? UIFont(descriptor: prefixFontDescription!, size: 0) : font]);
+                            prefix.append(msg);
+                            lastMessageLabel.attributedText = prefix;
+                        } else {
+                            lastMessageLabel.attributedText = msg;
+                        }
                     }
                 }
-            case .invitation(_, _, let sender):
-                let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .subheadline).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: 0);
-                let msg = NSAttributedString(string: "📨 \(NSLocalizedString("Invitation", comment: "invitation label for chats list"))", attributes: [.font:  font, .foregroundColor: lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
-
-                if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
-                    prefix.append(msg);
-                    lastMessageLabel.attributedText = prefix;
-                } else {
-                    lastMessageLabel.attributedText = msg;
-                }
-            case .attachment(_, _, let sender):
+            case .attachment:
                 let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .subheadline).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: 0);
                 let msg = NSAttributedString(string: "📎 \(NSLocalizedString("Attachment", comment: "attachemt label for conversations list"))", attributes: [.font:  font, .foregroundColor: lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
 
-                if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                if let nick = activity.sender.nickname {
+                    let prefix = NSMutableAttributedString(string: "\(nick): ");
                     prefix.append(msg);
                     lastMessageLabel.attributedText = prefix;
                 } else {
                     lastMessageLabel.attributedText = msg;
                 }
-            case .location(_, _, let sender):
+            case .invitation:
+                let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .subheadline).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: 0);
+                let msg = NSAttributedString(string: "📨 \(NSLocalizedString("Invitation", comment: "invitation label for chats list"))", attributes: [.font:  font, .foregroundColor: lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
+
+                if let nick = activity.sender.nickname {
+                    let prefix = NSMutableAttributedString(string: "\(nick): ");
+                    prefix.append(msg);
+                    lastMessageLabel.attributedText = prefix;
+                } else {
+                    lastMessageLabel.attributedText = msg;
+                }
+            case .location:
                 let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .subheadline).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: 0);
                 let msg = NSAttributedString(string: "📍 \(NSLocalizedString("Location", comment: "attachemt label for conversations list"))", attributes: [.font:  font, .foregroundColor: lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
 
-                if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                if let nick = activity.sender.nickname {
+                    let prefix = NSMutableAttributedString(string: "\(nick): ");
+                    prefix.append(msg);
+                    lastMessageLabel.attributedText = prefix;
+                } else {
+                    lastMessageLabel.attributedText = msg;
+                }
+            case .retraction:
+                let font = UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .subheadline).withSymbolicTraits([.traitItalic, .traitBold, .traitCondensed])!, size: 0);
+                let msg = NSAttributedString(string: "🗑️ \(NSLocalizedString("Retracted", comment: "retraction label for conversations list"))", attributes: [.font:  font, .foregroundColor: lastMessageLabel.textColor!.withAlphaComponent(0.8)]);
+
+                if let nick = activity.sender.nickname {
+                    let prefix = NSMutableAttributedString(string: "\(nick): ");
                     prefix.append(msg);
                     lastMessageLabel.attributedText = prefix;
                 } else {

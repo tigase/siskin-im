@@ -35,13 +35,13 @@ public class NotificationManager {
 
     private var queues: [NotificationQueueKey: NotificationQueue] = [:];
     
-    private let dispatcher = QueueDispatcher(label: "NotificationManager");
+    private let queue = DispatchQueue(label: "NotificationManager");
     private var cancellables: Set<AnyCancellable> = [];
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "NotificationManager");
     
     private init() {
         self.provider = MainNotificationManagerProvider();
-        MessageEventHandler.eventsPublisher.receive(on: dispatcher.queue).sink(receiveValue: { [weak self] event in
+        MessageEventHandler.eventsPublisher.receive(on: queue).sink(receiveValue: { [weak self] event in
             switch event {
             case .started(let account, let jid):
                 self?.syncStarted(for: account, with: jid);
@@ -49,10 +49,10 @@ public class NotificationManager {
                 self?.syncCompleted(for: account, with: jid);
             }
         }).store(in: &cancellables);
-        DBChatHistoryStore.instance.markedAsRead.receive(on: dispatcher.queue).sink(receiveValue: { [weak self] marked in
+        DBChatHistoryStore.instance.markedAsRead.receive(on: queue).sink(receiveValue: { [weak self] marked in
             self?.markAsRead(on: marked.account, with: marked.jid, itemsIds: marked.messages.map({ $0.id }), before: marked.before);
         }).store(in: &cancellables);
-        DBChatStore.instance.$unreadMessagesCount.delay(for: 0.1, scheduler: self.dispatcher.queue).throttle(for: 0.1, scheduler: self.dispatcher.queue, latest: true).sink(receiveValue: { [weak self] value in
+        DBChatStore.instance.unreadMessageCountPublisher.delay(for: 0.1, scheduler: self.queue).throttle(for: 0.1, scheduler: self.queue, latest: true).sink(receiveValue: { [weak self] value in
             self?.updateApplicationIconBadgeNumber(completionHandler: nil);
         }).store(in: &cancellables);
         NotificationCenter.default.publisher(for: XmppService.AUTHENTICATION_ERROR).sink(receiveValue: { [weak self] notification in
@@ -64,10 +64,10 @@ public class NotificationManager {
     
     private func authentication(error: SaslError, on account: BareJID) {
         let content = UNMutableNotificationContent();
-        content.body = String.localizedStringWithFormat(NSLocalizedString("Authentication for account %@ failed: %@", comment: "notification warning about authentication failure"), account.stringValue, error.rawValue);
-        content.userInfo = ["auth-error-type": error.rawValue, "account": account.stringValue];
+        content.body = String.localizedStringWithFormat(NSLocalizedString("Authentication for account %@ failed: %@", comment: "notification warning about authentication failure"), account.description, error.rawValue);
+        content.userInfo = ["auth-error-type": error.rawValue, "account": account.description];
         content.categoryIdentifier = "ERROR";
-        content.threadIdentifier = "account=" + account.stringValue;
+        content.threadIdentifier = "account=" + account.description;
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
     
@@ -93,7 +93,7 @@ public class NotificationManager {
 //    }
 
     func newMessage(_ entry: ConversationEntry) {
-        dispatcher.async {
+        queue.async {
             guard entry.shouldNotify() else {
                 return;
             }
@@ -106,7 +106,7 @@ public class NotificationManager {
     }
 
     public func dismissAllNotifications(on account: BareJID, with jid: BareJID) {
-        let threadId = "account=\(account.stringValue)|sender=\(jid.stringValue)";
+        let threadId = "account=\(account.description)|sender=\(jid.description)";
         UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
             let toRemove = notifications.filter({ (notification) -> Bool in
                 return notification.request.content.threadIdentifier == threadId;
@@ -128,7 +128,7 @@ public class NotificationManager {
         }
 //        let ids = itemsIds.map({ "message:\($0):new" });
 //        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ids);
-        let threadId = "account=\(account.stringValue)|sender=\(jid.stringValue)";
+        let threadId = "account=\(account.description)|sender=\(jid.description)";
         UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
             let toRemove = notifications.filter({ (notification) -> Bool in
                 guard notification.request.content.threadIdentifier == threadId else {
@@ -148,7 +148,7 @@ public class NotificationManager {
     }
         
     private func syncStarted(for account: BareJID, with jid: BareJID?) {
-        dispatcher.async {
+        queue.async {
             let key = NotificationQueueKey(account: account, jid: jid);
             if self.queues[key] == nil {
                 self.queues[key] = NotificationQueue();
@@ -157,7 +157,7 @@ public class NotificationManager {
     }
         
     private func syncCompleted(for account: BareJID, with jid: BareJID?) {
-        dispatcher.async {
+        queue.async {
             if let messages = self.queues.removeValue(forKey: .init(account: account, jid: jid))?.unreadMessages {
                 for message in messages {
                     self.notifyNewMessage(message: message);
@@ -267,7 +267,7 @@ extension ConversationEntry {
         }
         
         if conversation is Chat {
-            guard Settings.notificationsFromUnknown || conversation.displayName != conversation.jid.stringValue else {
+            guard Settings.notificationsFromUnknown || conversation.displayName != conversation.jid.description else {
                 return false;
             }
         }

@@ -30,7 +30,7 @@ public struct BookmarkItem {
         return item.jid;
     }
     public var name: String {
-        return item.name ?? item.jid.localPart ?? item.jid.stringValue;
+        return item.name ?? item.jid.localPart ?? item.jid.description;
     }
     public var nickname: String? {
         return item.nick;

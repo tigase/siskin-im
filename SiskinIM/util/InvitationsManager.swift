@@ -29,29 +29,29 @@ class InvitationManager {
     static let instance = InvitationManager();
     
     func addPresenceSubscribe(for account: BareJID, from jid: JID) {
-        let senderName = DBRosterStore.instance.item(for: account, jid: jid.withoutResource)?.name ?? jid.stringValue;
+        let senderName = DBRosterStore.instance.item(for: account, jid: jid.withoutResource)?.name ?? jid.description;
         let content = UNMutableNotificationContent();
         content.body = String.localizedStringWithFormat(NSLocalizedString("Received presence subscription request from %@", comment: "presence subscription request notification"), senderName);
-        content.userInfo = ["sender": jid.stringValue as NSString, "account": account.stringValue as NSString, "senderName": senderName as NSString];
+        content.userInfo = ["sender": jid.description as NSString, "account": account.description as NSString, "senderName": senderName as NSString];
         content.categoryIdentifier = "SUBSCRIPTION_REQUEST";
-        content.threadIdentifier = "account=\(account.stringValue)|sender=\(jid.stringValue)";
+        content.threadIdentifier = "account=\(account.description)|sender=\(jid.description)";
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
     
     func addMucInvitation(for account: BareJID, roomJid: BareJID, invitation: MucModule.Invitation) {
         let content = UNMutableNotificationContent();
-        content.body = String.localizedStringWithFormat(NSLocalizedString("Invitation to groupchat %@", comment: "muc invitation notification"), roomJid.stringValue);
+        content.body = String.localizedStringWithFormat(NSLocalizedString("Invitation to groupchat %@", comment: "muc invitation notification"), roomJid.description);
         if let from = invitation.inviter, let name = DBRosterStore.instance.item(for: account, jid: from.withoutResource)?.name {
             content.body = "\(content.body) from \(name)";
         }
-        content.threadIdentifier = "mucRoomInvitation=\(account.stringValue)|room=\(roomJid.stringValue)";
+        content.threadIdentifier = "mucRoomInvitation=\(account.description)|room=\(roomJid.description)";
         content.categoryIdentifier = "MUC_ROOM_INVITATION";
-        content.userInfo = ["account": account.stringValue, "roomJid": roomJid.stringValue, "password": invitation.password as Any];
+        content.userInfo = ["account": account.description, "roomJid": roomJid.description, "password": invitation.password as Any];
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil), withCompletionHandler: nil);
     }
     
     func rejectPresenceSubscription(for account: BareJID, from jid: JID) {
-        let threadId = "account=\(account.stringValue)|sender=\(jid.stringValue)";
+        let threadId = "account=\(account.description)|sender=\(jid.description)";
         UNUserNotificationCenter.current().getDeliveredNotifications(completionHandler: { notifications in
             let subscriptionReqNotifications = notifications.filter({ $0.request.content.categoryIdentifier == "SUBSCRIPTION_REQUEST" && $0.request.content.threadIdentifier == threadId });
             guard !subscriptionReqNotifications.isEmpty else {

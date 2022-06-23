@@ -59,7 +59,7 @@ class ChannelBlockedUsersController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let jid = jids[indexPath.row];
         let cell = tableView.dequeueReusableCell(withIdentifier: "ChannelBlockedCellView", for: indexPath);
-        cell.textLabel?.text = jid.stringValue;
+        cell.textLabel?.text = jid.description;
         return cell;
     }
     

@@ -67,7 +67,7 @@ class StreamFeaturesCache: StreamFeaturesModuleWithPipeliningCacheProtocol {
         guard let data = try? String(contentsOf: fileUrl, encoding: .utf8) else {
             return nil;
         }
-        if let cached = Element.from(string: data)?.getChildren() {
+        if let cached = Element.from(string: data)?.children {
 //            sessionObject.setProperty(StreamFeaturesCache.CACHED_STREAM_FEATURES, value: cached);
             if cached.count > embeddedStreamNo {
                 return cached[embeddedStreamNo];

@@ -28,30 +28,31 @@ open class PushEventHandler: XmppServiceExtension {
     
     static let instance = PushEventHandler();
     
-    public static func unregisterDevice(from pushServiceJid: BareJID, account: BareJID, deviceId: String, completionHandler: @escaping (Result<Void,ErrorCondition>)->Void) {
+    public static func unregisterDevice(from pushServiceJid: BareJID, account: BareJID, deviceId: String, completionHandler: @escaping (Result<Void,XMPPError>)->Void) {
         unregisterDevice(from: pushServiceJid, path: "", account: account, deviceId: deviceId, completionHandler: { result in
             switch result {
             case .success(_):
                 completionHandler(.success(Void()));
             case .failure(let error):
-                if error == .internal_server_error || error == .service_unavailable {
+                switch error {
+                case .internal_server_error(_), .service_unavailable(_):
                     self.unregisterDevice(from: pushServiceJid, path: "/rest/push", account: account, deviceId: deviceId, completionHandler: completionHandler);
-                } else {
+                default:
                     completionHandler(.failure(error));
                 }
             }
         })
     }
     
-    private static func unregisterDevice(from pushServiceJid: BareJID, path: String, account: BareJID, deviceId: String, completionHandler: @escaping (Result<Void,ErrorCondition>)->Void) {
-        guard let url = URL(string: "https://\(pushServiceJid.stringValue)\(path)/unregister-device/\(pushServiceJid.stringValue)") else {
-            completionHandler(.failure(.service_unavailable));
+    private static func unregisterDevice(from pushServiceJid: BareJID, path: String, account: BareJID, deviceId: String, completionHandler: @escaping (Result<Void,XMPPError>)->Void) {
+        guard let url = URL(string: "https://\(pushServiceJid.description)\(path)/unregister-device/\(pushServiceJid.description)") else {
+            completionHandler(.failure(.service_unavailable(nil)));
             return;
         }
         var request = URLRequest(url: url);
         request.httpMethod = "POST";
         guard let payload = try? JSONEncoder().encode(UnregisterDeviceRequestPayload(account: account, provider: "tigase:messenger:apns:1", deviceToken: deviceId)) else {
-            completionHandler(.failure(.internal_server_error));
+            completionHandler(.failure(.internal_server_error(nil)));
             return;
         }
         request.addValue("application/json", forHTTPHeaderField: "Content-Type");
@@ -59,17 +60,17 @@ open class PushEventHandler: XmppServiceExtension {
         
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard error == nil else {
-                completionHandler(.failure(.service_unavailable));
+                completionHandler(.failure(.service_unavailable(nil)));
                 return;
             }
             guard let data = data, let payload = try? JSONDecoder().decode(UnregisterDeviceResponsePayload.self, from: data) else {
-                completionHandler(.failure(.internal_server_error));
+                completionHandler(.failure(.internal_server_error(nil)));
                 return;
             }
             if payload.success {
                 completionHandler(.success(Void()));
             } else {
-                completionHandler(.failure(.not_acceptable));
+                completionHandler(.failure(.not_acceptable(nil)));
             }
         }
         task.resume();

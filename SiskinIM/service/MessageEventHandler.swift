@@ -324,16 +324,16 @@ class MessageEventHandler: XmppServiceExtension {
     }
 
     static func calculateState(direction: MessageDirection, message: Message, isFromArchive archived: Bool, isMuc: Bool) -> ConversationEntryState {
-        let error = message.type == StanzaType.error;
+        let error = message.error;
         let unread = (!archived) || isMuc;
         if direction == .incoming {
-            if error {
-                return .incoming_error(unread ? .received : .displayed, errorMessage: message.errorText ?? message.errorCondition?.rawValue);
+            if let error = error {
+                return .incoming_error(unread ? .received : .displayed, errorMessage: error.localizedDescription);
             }
             return .incoming(unread ? .received : .displayed);
         } else {
-            if error {
-                return .outgoing_error(unread ? .received : .displayed,errorMessage: message.errorText ?? message.errorCondition?.rawValue);
+            if let error = error {
+                return .outgoing_error(unread ? .received : .displayed, errorMessage: error.localizedDescription);
             }
             return .outgoing(.sent);
         }
@@ -406,10 +406,10 @@ class MessageEventHandler: XmppServiceExtension {
                         self.syncMessages(for: client, period: period, version: version, rsmQuery: response.rsm?.next(300));
                     }
                 }
-                os_log("for account %s fetch for component %s with id %s executed in %f s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil", queryId, Date().timeIntervalSince(start));
+                os_log("for account %s fetch for component %s with id %s executed in %f s", log: .chatHistorySync, type: .debug, period.account.description, period.component?.description ?? "nil", queryId, Date().timeIntervalSince(start));
             case .failure(let error):
                 guard client?.state ?? .disconnected() == .connected(), retry > 0 && error != .feature_not_implemented else {
-                    os_log("for account %s fetch for component %s with id %s could not synchronize message archive for: %{public}s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil", queryId, error.description);
+                    os_log("for account %s fetch for component %s with id %s could not synchronize message archive for: %{public}s", log: .chatHistorySync, type: .debug, period.account.description, period.component?.description ?? "nil", queryId, error.description);
                     if period.component != nil {
                         DBChatMarkersStore.instance.syncCompleted(forAccount: account, with: period.component!);
                     }
@@ -444,7 +444,7 @@ class MessageEventHandler: XmppServiceExtension {
             }
         } else {
             // this can be 1-1 message from MUC..
-            if let room = conversation as? Room, message.findChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") != nil {
+            if let room = conversation as? Room, message.firstChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") != nil {
                 if conversation.account == message.from?.bareJid {
                     // outgoing message!
                     if let recipientNickname = message.to?.resource {

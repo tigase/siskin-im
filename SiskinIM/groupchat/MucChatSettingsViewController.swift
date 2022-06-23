@@ -89,7 +89,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
                 }));
             } else {
                 actions.append(UIAction(title: NSLocalizedString("Create bookmark", comment: "button label"), image: UIImage(systemName: "bookmark"), handler: { action in
-                    pepBookmarksModule.addOrUpdate(bookmark: Bookmarks.Conference(name: room.name ?? room.jid.localPart ?? room.jid.stringValue, jid: JID(room.jid), autojoin: false, nick: room.nickname, password: room.password));
+                    pepBookmarksModule.addOrUpdate(bookmark: Bookmarks.Conference(name: room.name ?? room.jid.localPart ?? room.jid.description, jid: JID(room.jid), autojoin: false, nick: room.nickname, password: room.password));
                 }));
             }
         }

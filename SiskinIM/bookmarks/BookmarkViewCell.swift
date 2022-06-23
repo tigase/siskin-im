@@ -44,7 +44,7 @@ public class BookmarkViewCell: UITableViewCell {
             if let bookmark = self.bookmark {
                 avatar = AvatarManager.instance.avatarPublisher(for: .init(account: bookmark.account, jid: bookmark.jid.bareJid, mucNickname: nil));
                 nameLabel.text = bookmark.name;
-                jidLabel.text = bookmark.jid.stringValue;
+                jidLabel.text = bookmark.jid.description;
             } else {
                 avatar = nil;
             }

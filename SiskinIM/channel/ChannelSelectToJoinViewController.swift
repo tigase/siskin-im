@@ -96,7 +96,7 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
         let cell = tableView.dequeueReusableCell(withIdentifier: "ChannelJoinCellView", for: indexPath);
         let item = items[indexPath.row];
         cell.textLabel?.text = item.name ?? item.jid.localPart;
-        cell.detailTextLabel?.text = item.jid.stringValue;
+        cell.detailTextLabel?.text = item.jid.description;
         return cell;
     }
     
@@ -253,10 +253,10 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
     private func updateItems() {
         let prefix = self.navigationItem.searchController?.searchBar.text ?? "";
         let items = prefix.isEmpty ? allItems : allItems.filter({ item -> Bool in
-            return (item.name?.starts(with: prefix) ?? false) || item.jid.stringValue.contains(prefix);
+            return (item.name?.starts(with: prefix) ?? false) || item.jid.description.contains(prefix);
         });
         self.items = items.sorted(by: { (i1, i2) -> Bool in
-            return (i1.name ?? i1.jid.stringValue).caseInsensitiveCompare(i2.name ?? i2.jid.stringValue) == .orderedAscending;
+            return (i1.name ?? i1.jid.description).caseInsensitiveCompare(i2.name ?? i2.jid.description) == .orderedAscending;
         });
         tableView.reloadData();
         joinButton.isEnabled = false;
@@ -269,7 +269,7 @@ class ChannelJoinStatusView: UIBarButtonItem {
     var account: BareJID? {
         didSet {
             let value = NSMutableAttributedString(string: "\(NSLocalizedString("Account", comment: "channel join status view label")): ", attributes: [.font: UIFont.preferredFont(forTextStyle: .caption1), .foregroundColor: UIColor.secondaryLabel]);
-            value.append(NSAttributedString(string: account?.stringValue ?? NSLocalizedString("None", comment: "channel join status view label"), attributes: [.font: UIFont.preferredFont(forTextStyle: .caption1), .foregroundColor: UIColor(named: "tintColor")!]));
+            value.append(NSAttributedString(string: account?.description ?? NSLocalizedString("None", comment: "channel join status view label"), attributes: [.font: UIFont.preferredFont(forTextStyle: .caption1), .foregroundColor: UIColor(named: "tintColor")!]));
             accountLabel.attributedText = value;
         }
     }

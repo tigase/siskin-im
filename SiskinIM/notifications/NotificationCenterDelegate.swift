@@ -104,7 +104,7 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
             if let authError = userInfo["auth-error-type"] {
                 let accountJid = BareJID(userInfo["account"] as! String);
                 
-                let alert = UIAlertController(title: NSLocalizedString("Authentication issue", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Authentication for account %@ failed: %@\nVerify provided account password.", comment: "alert title body"), accountJid.stringValue, String(describing: authError)), preferredStyle: .alert);
+                let alert = UIAlertController(title: NSLocalizedString("Authentication issue", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Authentication for account %@ failed: %@\nVerify provided account password.", comment: "alert title body"), accountJid.description, String(describing: authError)), preferredStyle: .alert);
                 alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .cancel, handler: nil));
                 
                 topController()?.present(alert, animated: true, completion: nil);
@@ -122,10 +122,10 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         let senderJid = BareJID(userInfo["sender"] as! String);
         let accountJid = BareJID(userInfo["account"] as! String);
         var senderName = userInfo["senderName"] as! String;
-        if senderName != senderJid.stringValue {
-            senderName = "\(senderName) (\(senderJid.stringValue))";
+        if senderName != senderJid.description {
+            senderName = "\(senderName) (\(senderJid.description))";
         }
-        let alert = UIAlertController(title: NSLocalizedString("Subscription request", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Received presence subscription request from\n%@\non account %@", comment: "alert title body"), senderName, accountJid.stringValue), preferredStyle: .alert);
+        let alert = UIAlertController(title: NSLocalizedString("Subscription request", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Received presence subscription request from\n%@\non account %@", comment: "alert title body"), senderName, accountJid.description), preferredStyle: .alert);
         alert.addAction(UIAlertAction(title: NSLocalizedString("Accept", comment: "button label"), style: .default, handler: {(action) in
             guard let client = XmppService.instance.getClient(for: accountJid) else {
                 return;
@@ -139,7 +139,7 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
             if Settings.autoSubscribeOnAcceptedSubscriptionRequest {
                 presenceModule.subscribe(to: JID(senderJid));
             } else {
-                let alert2 = UIAlertController(title: String.localizedStringWithFormat(NSLocalizedString("Subscribe to %@", comment: "alert title"), senderName), message: String.localizedStringWithFormat(NSLocalizedString("Do you wish to subscribe to \n%@\non account %@", comment: "alert body"), senderName, accountJid.stringValue), preferredStyle: .alert);
+                let alert2 = UIAlertController(title: String.localizedStringWithFormat(NSLocalizedString("Subscribe to %@", comment: "alert title"), senderName), message: String.localizedStringWithFormat(NSLocalizedString("Do you wish to subscribe to \n%@\non account %@", comment: "alert body"), senderName, accountJid.description), preferredStyle: .alert);
                 alert2.addAction(UIAlertAction(title: NSLocalizedString("Accept", comment: "button label"), style: .default, handler: {(action) in
                     presenceModule.subscribe(to: JID(senderJid));
                 }));
@@ -160,7 +160,7 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
             }
             if blockingCommandModule.isReportingSupported {
                 alert.addAction(UIAlertAction(title: NSLocalizedString("Block and report", comment: "button label"), style: .destructive, handler: { action in
-                    let alert2 = UIAlertController(title: String.localizedStringWithFormat(NSLocalizedString("Block and report", comment: "report user title"), senderJid.stringValue), message: String.localizedStringWithFormat(NSLocalizedString("The user %@ will be blocked. Should it be reported as well?", comment: "report user message"), senderJid.stringValue), preferredStyle: .alert)
+                    let alert2 = UIAlertController(title: String.localizedStringWithFormat(NSLocalizedString("Block and report", comment: "report user title"), senderJid.description), message: String.localizedStringWithFormat(NSLocalizedString("The user %@ will be blocked. Should it be reported as well?", comment: "report user message"), senderJid.description), preferredStyle: .alert)
                     alert2.addAction(UIAlertAction(title: NSLocalizedString("Report spam", comment: "report spam action"), style: .default, handler: { _ in
                         client.module(.presence).unsubscribed(by: JID(senderJid))
                         blockingCommandModule.block(jid: JID(senderJid), report: .init(cause: .spam), completionHandler: { result in });

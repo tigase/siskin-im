@@ -26,7 +26,7 @@ class SiskinPushNotificationsModuleProvider: SiskinPushNotificationsModuleProvid
     
     func mutedChats(for context: Context) -> [BareJID] {
         return DBChatStore.instance.chats(for: context).filter({ $0.options.notifications == .none }).map({ $0.jid }).sorted { (j1, j2) -> Bool in
-            return j1.stringValue.compare(j2.stringValue) == .orderedAscending;
+            return j1.description.compare(j2.description) == .orderedAscending;
         }
     }
     
@@ -52,7 +52,7 @@ class SiskinPushNotificationsModuleProvider: SiskinPushNotificationsModuleProvid
             }
             return false;
         }).sorted(by: { (r1, r2) -> Bool in
-            return r1.jid.stringValue.compare(r2.jid.stringValue) == .orderedAscending;
+            return r1.jid.description.compare(r2.jid.description) == .orderedAscending;
         }).map({ (c) -> TigasePushNotificationsModule.GroupchatFilter.Rule in
             switch c {
             case let channel as Channel:

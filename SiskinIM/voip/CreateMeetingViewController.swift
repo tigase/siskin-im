@@ -168,7 +168,7 @@ class CreateMeetingViewController: MultiContactSelectionViewController {
         var account: BareJID? {
             didSet {
                 let value = NSMutableAttributedString(string: "\(NSLocalizedString("Account", comment: "channel join status view label")): ", attributes: [.font: UIFont.preferredFont(forTextStyle: .footnote), .foregroundColor: UIColor.secondaryLabel]);
-                value.append(NSAttributedString(string: account?.stringValue ?? NSLocalizedString("None", comment: "channel join status view label"), attributes: [.font: UIFont.preferredFont(forTextStyle: .footnote), .foregroundColor: UIColor(named: "tintColor")!]));
+                value.append(NSAttributedString(string: account?.description ?? NSLocalizedString("None", comment: "channel join status view label"), attributes: [.font: UIFont.preferredFont(forTextStyle: .footnote), .foregroundColor: UIColor(named: "tintColor")!]));
                 accountLabel.attributedText = value;
             }
         }
@@ -228,7 +228,7 @@ class SelectAccountController: UITableViewController, UIPickerViewDataSource, UI
         accountPicker.dataSource = self;
         accountPicker.delegate = self;
         accountField.inputView = accountPicker;
-        accountField.text = delegate?.client?.userBareJid.stringValue;
+        accountField.text = delegate?.client?.userBareJid.description;
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -260,7 +260,7 @@ class SelectAccountController: UITableViewController, UIPickerViewDataSource, UI
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return AccountManager.getActiveAccounts()[row].name.stringValue;
+        return AccountManager.getActiveAccounts()[row].name.description;
     }
     
     func  pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {

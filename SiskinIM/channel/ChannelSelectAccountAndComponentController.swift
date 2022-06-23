@@ -37,7 +37,7 @@ class ChannelSelectAccountAndComponentController: UITableViewController, UIPicke
         accountPicker.dataSource = self;
         accountPicker.delegate = self;
         accountField.inputView = accountPicker;
-        accountField.text = delegate?.client?.userBareJid.stringValue;
+        accountField.text = delegate?.client?.userBareJid.description;
         componentField?.text = delegate?.domain;
     }
     
@@ -59,7 +59,7 @@ class ChannelSelectAccountAndComponentController: UITableViewController, UIPicke
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return AccountManager.getActiveAccounts()[row].name.stringValue;
+        return AccountManager.getActiveAccounts()[row].name.description;
     }
     
     func  pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {

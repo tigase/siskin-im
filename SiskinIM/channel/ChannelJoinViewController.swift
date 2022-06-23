@@ -52,7 +52,7 @@ class ChannelJoinViewController: UITableViewController {
                 channelJid = value.channel;
                 componentType = .mix;
                 action = .join;
-                name = value.channel.stringValue;
+                name = value.channel.description;
             }
         }
     }
@@ -70,7 +70,7 @@ class ChannelJoinViewController: UITableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
         self.nameField.text = name;
-        self.jidField.text = channelJid?.stringValue;
+        self.jidField.text = channelJid?.description;
         self.passwordField.text = password
         self.nicknameField.text = self.nickname ?? AccountManager.getAccount(for: self.client.userBareJid)?.nickname;
                
@@ -215,7 +215,7 @@ class ChannelJoinViewController: UITableViewController {
                                     guard let that = self else {
                                         return;
                                     }
-                                    let alert = UIAlertController(title: NSLocalizedString("Error occurred", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not join newly created channel '%@' on the server. Got following error: %@", comment: "alert body"), channelJid.stringValue, error.localizedDescription), preferredStyle: .alert);
+                                    let alert = UIAlertController(title: NSLocalizedString("Error occurred", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not join newly created channel '%@' on the server. Got following error: %@", comment: "alert body"), channelJid.description, error.localizedDescription), preferredStyle: .alert);
                                     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
                                     that.present(alert, animated: true, completion: nil);
                                 }
@@ -394,10 +394,8 @@ class ChannelJoinViewController: UITableViewController {
                         (room as! Room).registerForTigasePushNotification(true, completionHandler: { (result) in
                             self.logger.debug("automatically enabled push for: \(room.jid), result: \(result)");
                         })
-                        defer {
-                            DispatchQueue.main.async {                                
-                                self.onConversationJoined?(room as! Room);
-                            }
+                        DispatchQueue.main.async {
+                            self.onConversationJoined?(room as! Room);
                         }
                     }
                     if createBookmark {

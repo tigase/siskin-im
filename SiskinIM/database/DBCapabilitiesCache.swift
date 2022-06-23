@@ -36,17 +36,17 @@ class DBCapabilitiesCache: CapabilitiesCache {
     
     public static let instance = DBCapabilitiesCache();
     
-    public let dispatcher: QueueDispatcher;
+    public let queue: DispatchQueue;
     
     private var features = [String: [String]]();
     private var identities: [String: DiscoveryModule.Identity] = [:];
     
     fileprivate init() {
-        dispatcher = QueueDispatcher(label: "DBCapabilitiesCache", attributes: .concurrent);
+        queue = DispatchQueue(label: "DBCapabilitiesCache", attributes: .concurrent);
     }
 
     open func getFeatures(for node: String) -> [String]? {
-        return dispatcher.sync {
+        return queue.sync {
             guard let features = self.features[node] else {
                 let features = try! Database.main.reader({ database in
                     try database.select(query: .capsFindFeaturesForNode, params: ["node": node]).mapAll({ $0.string(for: "feature")});
@@ -87,7 +87,7 @@ class DBCapabilitiesCache: CapabilitiesCache {
     }
     
     open func isCached(node: String, handler: @escaping (Bool)->Void) {
-        dispatcher.async {
+        queue.async {
             handler(self.isCached(node: node));
         }
     }
@@ -97,7 +97,7 @@ class DBCapabilitiesCache: CapabilitiesCache {
     }
     
     open func store(node: String, identity: DiscoveryModule.Identity?, features: [String]) {
-        dispatcher.async(flags: .barrier) {
+        queue.async(flags: .barrier) {
             guard !self.isCached(node: node) else {
                 return;
             }

@@ -48,7 +48,7 @@ class AccountSettingsViewController: UITableViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        navigationItem.title = account.stringValue;
+        navigationItem.title = account.description;
         
         AccountManager.accountEventsPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] event in
             switch event {
@@ -86,7 +86,7 @@ class AccountSettingsViewController: UITableViewController {
         }).store(in: &cancellables);
         
         let localDeviceId = Int32(bitPattern: AccountSettings.omemoRegistrationId(for: self.account) ?? 0);
-        if let omemoIdentity = DBOMEMOStore.instance.identities(forAccount: self.account, andName: self.account.stringValue).first(where: { (identity) -> Bool in
+        if let omemoIdentity = DBOMEMOStore.instance.identities(forAccount: self.account, andName: self.account.description).first(where: { (identity) -> Bool in
             return identity.address.deviceId == localDeviceId;
         }) {
             var fingerprint = String(omemoIdentity.fingerprint.dropFirst(2));
@@ -198,7 +198,7 @@ class AccountSettingsViewController: UITableViewController {
             destination.account = account;
         case "EditAccountSegue":
             let destination = segue.destination as! AddAccountController;
-            destination.account = account.stringValue;
+            destination.account = account.description;
         case "EditAccountVCardSegue":
             let destination = segue.destination as! VCardEditViewController;
             destination.client = XmppService.instance.getClient(for: account);
@@ -307,7 +307,7 @@ class AccountSettingsViewController: UITableViewController {
         } else if let surname = vcard?.surname, let given = vcard?.givenName {
             fullNameTextView.text = "\(given) \(surname)";
         } else {
-            fullNameTextView.text = account.stringValue;
+            fullNameTextView.text = account.description;
         }
         
         let company = vcard?.organizations.first?.name;
@@ -398,7 +398,7 @@ class AccountSettingsViewController: UITableViewController {
                                         case .success(_):
                                             removeAccount(account, removeFromServer);
                                         case .failure(_):
-                                            let alert = UIAlertController(title: NSLocalizedString("Account removal", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Push notifications are enabled for %@. They need to be disabled before account can be removed and it is not possible to at this time. Please try again later.", comment: "alert body"), account.stringValue), preferredStyle: .alert);
+                                            let alert = UIAlertController(title: NSLocalizedString("Account removal", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Push notifications are enabled for %@. They need to be disabled before account can be removed and it is not possible to at this time. Please try again later.", comment: "alert body"), account.description), preferredStyle: .alert);
                                             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
                                             self.present(alert, animated: true, completion: nil);
                                         }
@@ -415,7 +415,7 @@ class AccountSettingsViewController: UITableViewController {
                                     try? AccountManager.save(account: config);
                                     removeAccount(account, removeFromServer);
                                 case .failure(_):
-                                    let alert = UIAlertController(title: NSLocalizedString("Account removal", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Push notifications are enabled for %@. They need to be disabled before account can be removed and it is not possible to at this time. Please try again later.", comment: "alert body"), account.stringValue), preferredStyle: .alert);
+                                    let alert = UIAlertController(title: NSLocalizedString("Account removal", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Push notifications are enabled for %@. They need to be disabled before account can be removed and it is not possible to at this time. Please try again later.", comment: "alert body"), account.description), preferredStyle: .alert);
                                     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
                                     self.present(alert, animated: true, completion: nil);
                                 }

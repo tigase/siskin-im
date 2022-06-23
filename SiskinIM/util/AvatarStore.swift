@@ -33,7 +33,7 @@ extension Query {
 
 open class AvatarStore {
     
-    fileprivate let dispatcher = QueueDispatcher(label: "avatar_store", attributes: .concurrent);
+    fileprivate let queue = DispatchQueue(label: "avatar_store", attributes: .concurrent);
     fileprivate let cacheDirectory: URL;
     
     private let cache = NSCache<NSString,UIImage>();
@@ -63,26 +63,30 @@ open class AvatarStore {
     }
     
     open func hasAvatarFor(hash: String) -> Bool {
-        return dispatcher.sync {
+        return queue.sync {
             return FileManager.default.fileExists(atPath: self.cacheDirectory.appendingPathComponent(hash).path);
         }
     }
     
     open func avatarHash(for jid: BareJID, on account: BareJID) -> [AvatarHash] {
-        return dispatcher.sync {
-            return try! Database.main.reader({ database in
-                try database.select(query: .avatarFindHash, params: ["account": account, "jid": jid]).mapAll({ cursor -> AvatarHash? in
-                    guard let type = AvatarType(rawValue: cursor["type"]!), let hash: String = cursor["hash"] else {
-                        return nil;
-                    }
-                    return AvatarHash(type: type, hash: hash);
-                });
-            });
+        return queue.sync {
+            _avatarHash(for: jid, on: account);
         }
     }
     
+    private func _avatarHash(for jid: BareJID, on account: BareJID) -> [AvatarHash] {
+        return try! Database.main.reader({ database in
+            try database.select(query: .avatarFindHash, params: ["account": account, "jid": jid]).mapAll({ cursor -> AvatarHash? in
+                guard let type = AvatarType(rawValue: cursor["type"]!), let hash: String = cursor["hash"] else {
+                    return nil;
+                }
+                return AvatarHash(type: type, hash: hash);
+            });
+        });
+    }
+    
     open func avatar(for hash: String) -> UIImage? {
-        return dispatcher.sync {
+        return queue.sync {
             if let image = cache.object(forKey: hash as NSString) {
                 return image;
             }
@@ -94,8 +98,8 @@ open class AvatarStore {
         }
     }
 
-    func avatar(for hash: String, completionHandler: @escaping (Result<UIImage,ErrorCondition>)->Void) {
-        dispatcher.async {
+    func avatar(for hash: String, completionHandler: @escaping (Result<UIImage,XMPPError>)->Void) {
+        queue.async {
             if let image = self.cache.object(forKey: hash as NSString) {
                 completionHandler(.success(image));
                 return;
@@ -105,19 +109,19 @@ open class AvatarStore {
                 completionHandler(.success(image));
                 return;
             }
-            completionHandler(.failure(.conflict))
+            completionHandler(.failure(.conflict(nil)))
         }
     }
     
     open func removeAvatar(for hash: String) {
-        dispatcher.sync(flags: .barrier) {
+        queue.sync(flags: .barrier) {
             try? FileManager.default.removeItem(at: cacheDirectory.appendingPathComponent(hash));
             cache.removeObject(forKey: hash as NSString);
         }
     }
     
     open func storeAvatar(data: Data, for hash: String) {
-        dispatcher.async(flags: .barrier) {
+        queue.async(flags: .barrier) {
             if !FileManager.default.fileExists(atPath: self.cacheDirectory.path) {
                 try? FileManager.default.createDirectory(at: self.cacheDirectory, withIntermediateDirectories: true, attributes: nil);
             }
@@ -133,7 +137,7 @@ open class AvatarStore {
     }
     
     open func removeAvatarHash(for jid: BareJID, on account: BareJID, type: AvatarType, completionHandler: @escaping ()->Void) {
-        dispatcher.async {
+        queue.async {
             try! Database.main.writer({ database in
                 try database.delete(query: .avatarDeleteHash, params: ["account": account, "jid": jid, "type": type.rawValue]);
             });
@@ -142,8 +146,8 @@ open class AvatarStore {
     }
     
     open func updateAvatarHash(for jid: BareJID, on account: BareJID, hash: AvatarHash, completionHandler: @escaping (AvatarUpdateResult)->Void ) {
-        dispatcher.async(flags: .barrier) {
-            let oldHashes = self.avatarHash(for: jid, on: account);
+        queue.async(flags: .barrier) {
+            let oldHashes = self._avatarHash(for: jid, on: account);
             guard !oldHashes.contains(hash) else {
                 completionHandler(.notChanged);
                 return;

@@ -62,7 +62,7 @@ class CallManager: NSObject, CXProviderDelegate {
     private let provider: CXProvider;
     private let callController: CXCallController;
     
-    private let dispatcher = QueueDispatcher(label: "CallManager");
+    private let queue = DispatchQueue(label: "CallManager");
     @Published
     private var activeCalls: [CallBase] = [];
     private var activeCallsByUuid: [UUID: CallBase] = [:];
@@ -108,7 +108,7 @@ class CallManager: NSObject, CXProviderDelegate {
 //    }
     
     func reportIncomingCall(_ call: CallBase, completionHandler: @escaping(Result<Void,Error>)->Void) {
-        dispatcher.sync {
+        queue.sync {
             guard self.activeCalls.allSatisfy({ !call.isEqual($0) }) else {
                 completionHandler(.failure(XMPPError.conflict("Call already registered!")));
                 return;
@@ -121,7 +121,7 @@ class CallManager: NSObject, CXProviderDelegate {
                     return meet;
                 }).first {
                     // we have found a meet for this account-jid pair..
-                    self.dispatcher.sync {
+                    self.queue.sync {
                         c.ringing();
                     }
                     meet.setIncomingCall(c);
@@ -131,7 +131,7 @@ class CallManager: NSObject, CXProviderDelegate {
             }
             
             if #available(iOS 15.0, *) {
-                let sender = INPerson(personHandle: INPersonHandle(value: call.jid.stringValue, type: .unknown), nameComponents: nil, displayName: call.name, image: AvatarManager.instance.avatar(for: call.jid, on: call.account)?.inImage(), contactIdentifier: nil, customIdentifier: call.jid.stringValue, isMe: false, suggestionType: .instantMessageAddress);
+                let sender = INPerson(personHandle: INPersonHandle(value: call.jid.description, type: .unknown), nameComponents: nil, displayName: call.name, image: AvatarManager.instance.avatar(for: call.jid, on: call.account)?.inImage(), contactIdentifier: nil, customIdentifier: call.jid.description, isMe: false, suggestionType: .instantMessageAddress);
                 let intent = INStartCallIntent(callRecordFilter: nil, callRecordToCallBack: nil, audioRoute: .unknown, destinationType: .unknown, contacts: [sender], callCapability: AVCaptureDevice.authorizationStatus(for: .video) == .authorized && call.media.contains(.video) ? .videoCall : .audioCall)
                 let interaction = INInteraction(intent: intent, response: nil);
                 interaction.direction = .incoming;
@@ -178,7 +178,7 @@ class CallManager: NSObject, CXProviderDelegate {
     }
     
     func reportOutgoingCall(_ call: CallBase, completionHandler: @escaping(Result<Void,Error>)->Void) {
-        dispatcher.async {
+        queue.async {
             guard self.activeCalls.allSatisfy({ !call.isEqual($0) }) else {
                 completionHandler(.failure(XMPPError.conflict("Call already registered!")));
                 return;
@@ -186,7 +186,7 @@ class CallManager: NSObject, CXProviderDelegate {
             self.activeCalls.append(call);
 
             if #available(iOS 15.0, *) {
-                let recipient = INPerson(personHandle: INPersonHandle(value: call.jid.stringValue, type: .unknown), nameComponents: nil, displayName: call.name, image: AvatarManager.instance.avatar(for: call.jid, on: call.account)?.inImage(), contactIdentifier: nil, customIdentifier: call.jid.stringValue, isMe: false, suggestionType: .instantMessageAddress);
+                let recipient = INPerson(personHandle: INPersonHandle(value: call.jid.description, type: .unknown), nameComponents: nil, displayName: call.name, image: AvatarManager.instance.avatar(for: call.jid, on: call.account)?.inImage(), contactIdentifier: nil, customIdentifier: call.jid.description, isMe: false, suggestionType: .instantMessageAddress);
                 let intent = INStartCallIntent(callRecordFilter: nil, callRecordToCallBack: nil, audioRoute: .unknown, destinationType: .unknown, contacts: [recipient], callCapability: AVCaptureDevice.authorizationStatus(for: .video) == .authorized && call.media.contains(.video) ? .videoCall : .audioCall)
                 let interaction = INInteraction(intent: intent, response: nil);
                 interaction.direction = .incoming;
@@ -257,7 +257,7 @@ class CallManager: NSObject, CXProviderDelegate {
                     switch result {
                     case .success(_):
                         action.fulfill();
-                    case .failure(let error):
+                    case .failure(_):
                         self.callEnded(call);
                         action.fail();
                     }
@@ -341,7 +341,7 @@ class CallManager: NSObject, CXProviderDelegate {
     
     func endCall(on account: BareJID, with jid: BareJID, sid: String, completionHandler: @escaping ()->Void) {
         logger.debug("endCall(on account) called");
-        dispatcher.async {
+        queue.async {
             guard let call = self.activeCalls.first(where: { $0.account == account && $0.jid == jid && $0.sid == sid }) else {
                 completionHandler();
                 return;
@@ -357,7 +357,7 @@ class CallManager: NSObject, CXProviderDelegate {
     
     func endCall(on account: BareJID, sid: String, completionHandler: (()->Void)? = nil) {
         logger.debug("endCall(on account) called");
-        dispatcher.async {
+        queue.async {
             guard let call = self.activeCalls.first(where: { $0.account == account && $0.sid == sid }) else {
                 completionHandler?();
                 return;
@@ -413,11 +413,11 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
     let uuid = UUID();
     
     var name: String {
-        return DBRosterStore.instance.item(for: client, jid: JID(jid))?.name ?? jid.stringValue;
+        return DBRosterStore.instance.item(for: client, jid: JID(jid))?.name ?? jid.description;
     }
     
     var remoteHandle: CXHandle {
-        return CXHandle(type: .generic, value: jid.stringValue);
+        return CXHandle(type: .generic, value: jid.description);
     }
     
     let client: XMPPClient;
@@ -610,7 +610,7 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
 
     func initiateOutgoingCall(with callee: JID? = nil, completionHandler: @escaping (Result<Void,Error>)->Void) {
         guard let client = XmppService.instance.getClient(for: account) else {
-            completionHandler(.failure(ErrorCondition.item_not_found));
+            completionHandler(.failure(XMPPError.item_not_found));
             return;
         }
         var withJingle: [JID] = [];
@@ -812,7 +812,7 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
                 completionHandler(.success(Void()));
             }
         } else {
-            completionHandler(.failure(ErrorCondition.internal_server_error));
+            completionHandler(.failure(XMPPError.internal_server_error(nil)));
         }
     }
 
@@ -862,9 +862,9 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
             
         if case let .transportAdd(candidate, contentName) = action {
             if let idx = remoteSessionDescription?.contents.firstIndex(where: { $0.name == contentName }) {
-                peerConnection.add(RTCIceCandidate(sdp: candidate.toSDP(), sdpMLineIndex: Int32(idx), sdpMid: contentName));
+                peerConnection.add(RTCIceCandidate(sdp: candidate.toSDP(), sdpMLineIndex: Int32(idx), sdpMid: contentName), completionHandler: { _ in });
+                remoteSessionSemaphore.signal();
             }
-            remoteSessionSemaphore.signal();
             return;
         }
             
@@ -974,7 +974,7 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
             guard let error = err else {
                 // session may be unavailable, and we need it to get content creator from it.. or we may have many sessions for a single RTCPeerConnection (initiating outgoing call using plain Jingle)
                 guard let (sdp, _) = SDP.parse(sdpString: localSDP.sdp, creatorProvider: creatorProvider, localRole: localRole) else {
-                    completionHandler(.failure(ErrorCondition.not_acceptable));
+                    completionHandler(.failure(XMPPError.not_acceptable(nil)));
                     return;
                 }
                 self.localSessionDescription = sdp;
@@ -1135,7 +1135,7 @@ extension Call: RTCPeerConnectionDelegate {
     }
         
     func peerConnection(_ peerConnection: RTCPeerConnection, didGenerate candidate: RTCIceCandidate) {
-        JingleManager.instance.dispatcher.async {
+        JingleManager.instance.queue.async {
             self.localCandidates.append(candidate);
             self.sendLocalCandidates();
         }
@@ -1232,7 +1232,7 @@ extension Call {
         guard let peerConnection = self.currentConnection else {
                 return;
             }
-            peerConnection.add(candidate);
+            peerConnection.add(candidate, completionHandler: { _ in });
         }
     }
     

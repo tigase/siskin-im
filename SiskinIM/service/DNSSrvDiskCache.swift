@@ -33,7 +33,7 @@ open class DNSSrvDiskCache: DNSSrvResolverWithCache.DiskCache {
             switch event {
             case .disabled(let account), .removed(let account):
                 self.store(for: account.name.domain, result: nil);
-            case .enabled(_):
+            case .enabled(_,_):
                 break;
             }
         });

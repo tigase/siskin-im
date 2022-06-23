@@ -24,12 +24,12 @@ import TigaseSwift
 
 public class KeyedTasksQueue {
     
-    private let dispatcher = QueueDispatcher(label: "TasksQueue");
+    private let queue = DispatchQueue(label: "TasksQueue");
     private var queues: [BareJID:[Task]] = [:];
     private var inProgress: [BareJID] = [];
     
     func schedule(for key: BareJID, task: @escaping Task) {
-        dispatcher.async {
+        queue.async {
             var queue = self.queues[key] ?? [];
             queue.append(task);
             self.queues[key] = queue;
@@ -38,7 +38,7 @@ public class KeyedTasksQueue {
     }
     
     private func execute(for key: BareJID) {
-        dispatcher.async {
+        queue.async {
             guard !self.inProgress.contains(key) else {
                 return;
             }
@@ -58,7 +58,7 @@ public class KeyedTasksQueue {
     }
     
     private func executed(for key: BareJID) {
-        dispatcher.async {
+        queue.async {
             self.inProgress = self.inProgress.filter({ (k) -> Bool in
                 return k != key;
             });

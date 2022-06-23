@@ -28,7 +28,7 @@ import Shared
 import Intents
 
 public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conversation {
-    
+        
     public override var defaultMessageType: StanzaType {
         return .chat;
     }
@@ -47,9 +47,9 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         return "Chat(account: \(account), jid: \(jid))";
     }
 
-    init(dispatcher: QueueDispatcher, context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastConversationActivity?, unread: Int, options: ChatOptions) {
+    init(queue: DispatchQueue, context: Context, jid: BareJID, id: Int, lastActivity: LastConversationActivity, unread: Int, options: ChatOptions) {
         let contact = ContactManager.instance.contact(for: .init(account: context.userBareJid, jid: jid, type: .buddy));
-        super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: contact);
+        super.init(queue: queue, context: context, jid: jid, id: id, lastActivity: lastActivity, unread: unread, options: options, displayableId: contact);
         (context.module(.httpFileUpload) as! HttpFileUploadModule).isAvailablePublisher.combineLatest(context.$state, { isAvailable, state -> [ConversationFeature] in
             if case .connected(_) = state {
                 return isAvailable ? [.httpFileUpload, .omemo] : [.omemo];
@@ -182,7 +182,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
             var messageEncryption: ConversationEntryEncryption = .none;
             switch encryption {
             case .omemo:
-                messageEncryption = .decrypted(fingerprint: DBOMEMOStore.instance.identityFingerprint(forAccount: self.account, andAddress: SignalAddress(name: self.account.stringValue, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: self.account)!))));
+                messageEncryption = .decrypted(fingerprint: DBOMEMOStore.instance.identityFingerprint(forAccount: self.account, andAddress: SignalAddress(name: self.account.description, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: self.account)!))));
             case .none:
                 break;
             }
@@ -201,7 +201,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         var messageEncryption: ConversationEntryEncryption = .none;
         switch encryption {
         case .omemo:
-            messageEncryption = .decrypted(fingerprint: DBOMEMOStore.instance.identityFingerprint(forAccount: self.account, andAddress: SignalAddress(name: self.account.stringValue, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: self.account)!))));
+            messageEncryption = .decrypted(fingerprint: DBOMEMOStore.instance.identityFingerprint(forAccount: self.account, andAddress: SignalAddress(name: self.account.description, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: self.account)!))));
         case .none:
             break;
         }
@@ -223,9 +223,9 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         message.lastMessageCorrectionId = correctedMessageOriginId;
         
         if #available(iOS 15.0, *) {
-            let sender = INPerson(personHandle: INPersonHandle(value: account.stringValue, type: .unknown), nameComponents: nil, displayName: AccountManager.getAccount(for: self.account)?.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: account.stringValue, isMe: true, suggestionType: .instantMessageAddress);
-            let recipient = INPerson(personHandle: INPersonHandle(value: jid.stringValue, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: jid.stringValue, isMe: false, suggestionType: .instantMessageAddress);
-            let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: nil, conversationIdentifier: "account=\(account.stringValue)|sender=\(jid.stringValue)", serviceName: "Siskin IM", sender: sender, attachments: nil);
+            let sender = INPerson(personHandle: INPersonHandle(value: account.description, type: .unknown), nameComponents: nil, displayName: AccountManager.getAccount(for: self.account)?.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: account.description, isMe: true, suggestionType: .instantMessageAddress);
+            let recipient = INPerson(personHandle: INPersonHandle(value: jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: jid.description, isMe: false, suggestionType: .instantMessageAddress);
+            let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: nil, conversationIdentifier: "account=\(account.description)|sender=\(jid.description)", serviceName: "Siskin IM", sender: sender, attachments: nil);
             let interaction = INInteraction(intent: intent, response: nil);
             interaction.direction = .outgoing;
             interaction.donate(completion: nil);
@@ -242,7 +242,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
                 default:
                     break;
                 }
-                DBChatHistoryStore.instance.markOutgoingAsError(for: self, stanzaId: message.id!, errorCondition: .undefined_condition, errorMessage: error.message)
+                DBChatHistoryStore.instance.markOutgoingAsError(for: self, stanzaId: message.id!, error: error)
             }
         })
     }

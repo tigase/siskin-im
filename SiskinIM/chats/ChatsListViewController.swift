@@ -156,7 +156,7 @@ class ChatsListViewController: UITableViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        DBChatStore.instance.$unreadMessagesCount.throttle(for: 0.1, scheduler: DispatchQueue.main, latest: true).map({ $0 == 0 ? nil : "\($0)" }).sink(receiveValue: { [weak self] value in
+        DBChatStore.instance.unreadMessageCountPublisher.throttle(for: 0.1, scheduler: DispatchQueue.main, latest: true).map({ $0 == 0 ? nil : "\($0)" }).sink(receiveValue: { [weak self] value in
             self?.navigationController?.tabBarItem.badgeValue = value;
         }).store(in: &cancellables);
         Settings.$recentsMessageLinesNo.removeDuplicates().receive(on: DispatchQueue.main).sink(receiveValue: { _ in
@@ -294,7 +294,7 @@ class ChatsListViewController: UITableViewController {
                         }
                         room.registerForTigasePushNotification(false, completionHandler: { (regResult) in
                             DispatchQueue.main.async {
-                                let alert = UIAlertController(title: NSLocalizedString("Push notifications", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("You've left there room %@ and push notifications for this room were disabled!\nYou may need to reenable them on other devices.", comment: "alert body"), room.name ?? room.roomJid.stringValue), preferredStyle: .actionSheet);
+                                let alert = UIAlertController(title: NSLocalizedString("Push notifications", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("You've left there room %@ and push notifications for this room were disabled!\nYou may need to reenable them on other devices.", comment: "alert body"), room.name ?? room.roomJid.description), preferredStyle: .actionSheet);
                                 alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
                                 alert.popoverPresentationController?.sourceView = self.view;
                                 alert.popoverPresentationController?.sourceRect = tableView.rectForRow(at: indexPath);
@@ -309,7 +309,7 @@ class ChatsListViewController: UITableViewController {
             if room.affiliation == .owner {
                 actions.append(UIContextualAction(style: .destructive, title: NSLocalizedString("Destroy", comment: "button label"), handler: { (action, view, completion) in
                     DispatchQueue.main.async {
-                        let alert = UIAlertController(title: NSLocalizedString("Channel destuction", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("You are about to destroy channel %@. This will remove the channel on the server, remove remote history archive, and kick out all participants. Are you sure?", comment: "alert body"), room.roomJid.stringValue), preferredStyle: .actionSheet);
+                        let alert = UIAlertController(title: NSLocalizedString("Channel destuction", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("You are about to destroy channel %@. This will remove the channel on the server, remove remote history archive, and kick out all participants. Are you sure?", comment: "alert body"), room.roomJid.description), preferredStyle: .actionSheet);
                         alert.addAction(UIAlertAction(title: NSLocalizedString("Yes", comment: "button label"), style: .destructive, handler: { action in
                             room.context?.module(.pepBookmarks).remove(bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: JID(room.jid), autojoin: false));
                             room.context?.module(.muc).destroy(room: room);
@@ -363,7 +363,7 @@ class ChatsListViewController: UITableViewController {
                                                 break;
                                             case .failure(let error):
                                                 DispatchQueue.main.async {
-                                                    let alert = UIAlertController(title: NSLocalizedString("Channel destruction failed!", comment: "alert window title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert window message"), channel.name ?? channel.channelJid.stringValue, error.message ?? error.description), preferredStyle: .alert)
+                                                    let alert = UIAlertController(title: NSLocalizedString("Channel destruction failed!", comment: "alert window title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert window message"), channel.name ?? channel.channelJid.description, error.message ?? error.description), preferredStyle: .alert)
                                                     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Button"), style: .default, handler: nil));
                                                     self.present(alert, animated: true, completion: nil);
                                                 }
@@ -376,7 +376,7 @@ class ChatsListViewController: UITableViewController {
                                             if let navController = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelSelectNewOwnerViewNavController") as? UINavigationController, let controller = navController.visibleViewController as? ChannelSelectNewOwnerViewController {
                                                 controller.channel = channel;
                                                 controller.participants = otherParticipants.sorted(by: { p1, p2 in
-                                                    return p1.nickname ?? p1.jid?.stringValue ?? p1.id < p2.nickname ?? p2.jid?.stringValue ?? p2.id;
+                                                    return p1.nickname ?? p1.jid?.description ?? p1.id < p2.nickname ?? p2.jid?.description ?? p2.id;
                                                 });
                                                 controller.completionHandler = { result in
                                                     guard let participant = result, let jid = participant.jid else {
@@ -418,7 +418,7 @@ class ChatsListViewController: UITableViewController {
             if channel.permissions?.contains(.changeConfig) ?? false {
                 actions.append(UIContextualAction(style: .destructive, title: NSLocalizedString("Destroy", comment: "button label"), handler: { (action, view, completion) in
                     DispatchQueue.main.async {
-                        let alert = UIAlertController(title: NSLocalizedString("Channel destuction", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("You are about to destroy channel %@. This will remove the channel on the server, remove remote history archive, and kick out all participants. Are you sure?", comment: "alert body"), channel.channelJid.stringValue), preferredStyle: .actionSheet);
+                        let alert = UIAlertController(title: NSLocalizedString("Channel destuction", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("You are about to destroy channel %@. This will remove the channel on the server, remove remote history archive, and kick out all participants. Are you sure?", comment: "alert body"), channel.channelJid.description), preferredStyle: .actionSheet);
                         alert.addAction(UIAlertAction(title: NSLocalizedString("Yes", comment: "button label"), style: .destructive, handler: { action in
                             channel.context?.module(.mix).destroy(channel: channel.channelJid, completionHandler: { result in
                                 switch result {
@@ -450,8 +450,8 @@ class ChatsListViewController: UITableViewController {
     }
     
     func discardNotifications(for item: Conversation) {
-        let accountStr = item.account.stringValue.lowercased();
-        let jidStr = item.jid.stringValue.lowercased();
+        let accountStr = item.account.description.lowercased();
+        let jidStr = item.jid.description.lowercased();
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
             var toRemove = [String]();
             for notification in notifications {
@@ -590,7 +590,7 @@ class ChatsListViewController: UITableViewController {
         init(controller: ChatsListViewController) {
             self.controller = controller;
             
-            DBChatStore.instance.$conversations.throttleFixed(for: 0.1, scheduler: self.dispatcher, latest: true).sink(receiveValue: { [weak self] items in
+            DBChatStore.instance.conversationsPublisher.throttleFixed(for: 0.1, scheduler: self.dispatcher, latest: true).sink(receiveValue: { [weak self] items in
                 self?.update(items: items);
             }).store(in: &cancellables);
         }

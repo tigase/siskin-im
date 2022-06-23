@@ -155,7 +155,7 @@ class ChannelSettingsViewController: UITableViewController {
                             guard let that = self else {
                                 return;
                             }
-                            let alert = UIAlertController(title: NSLocalizedString("Channel destruction failed!", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert body"), channel.name ?? channel.channelJid.stringValue, error.localizedDescription), preferredStyle: .alert);
+                            let alert = UIAlertController(title: NSLocalizedString("Channel destruction failed!", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert body"), channel.name ?? channel.channelJid.description, error.localizedDescription), preferredStyle: .alert);
                             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
                             that.present(alert, animated: true, completion: nil);
                         }

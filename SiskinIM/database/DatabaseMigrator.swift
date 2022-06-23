@@ -27,7 +27,7 @@ import CoreLocation
 
 public class DatabaseMigrator: DatabaseSchemaMigrator {
     
-    public let expectedVersion: Int = 18;
+    public let expectedVersion: Int = 19;
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "DatabaseMigrator");
     
     public func upgrade(database: DatabaseWriter, newVersion version: Int) throws {
@@ -114,6 +114,8 @@ DROP TABLE chat_history_sync_old;
 CREATE INDEX chat_history_account_jid_stanza_id on chat_history (account, jid, stanza_id);
 CREATE INDEX chat_history_account_jid_correction_stanza_id on chat_history (account, jid, correction_stanza_id);
 """);
+        case 19:
+            try database.update("update chat_history set item_type = \(ItemType.retraction.rawValue) where item_type = 5");
         default:
             break;
         }

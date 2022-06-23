@@ -56,7 +56,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         }
         
         func dictionary() -> [String: Any] {
-            var dict: [String: Any] =  ["jid": jid.stringValue, "node": node, "device": deviceId];
+            var dict: [String: Any] =  ["jid": jid.description, "node": node, "device": deviceId];
             if let pushkitDevice = self.pushkitDeviceId {
                 dict["pushkitDevice"] = pushkitDevice;
             }

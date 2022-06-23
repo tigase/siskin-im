@@ -81,7 +81,7 @@ open class XmppService {
         return clients[account];
     }
     
-    fileprivate let dispatcher: QueueDispatcher = QueueDispatcher(label: "xmpp_service");
+    fileprivate let queue = DispatchQueue(label: "xmpp_service");
     
     @Published
     var status: Status = Status(show: nil, message: nil, shouldConnect: true, sendInitialPresence: false);
@@ -127,7 +127,7 @@ open class XmppService {
             return status;
         }).sink(receiveValue: { [weak self] status in self?.currentStatus = status }).store(in: &cancellables);
                 
-        AccountManager.accountEventsPublisher.receive(on: self.dispatcher.queue).sink(receiveValue: { [weak self] event in
+        AccountManager.accountEventsPublisher.receive(on: self.queue).sink(receiveValue: { [weak self] event in
             self?.accountChanged(event: event);
         }).store(in: &cancellables);
     }
@@ -190,13 +190,13 @@ open class XmppService {
     }
 
     open func getClient(for account:BareJID) -> XMPPClient? {
-        return dispatcher.sync {
+        return queue.sync {
             return self.client(for: account);
         }
     }
     
     private func connectClients(ignoreCheck: Bool) {
-        dispatcher.async {
+        queue.async {
             self.clients.values.forEach { client in
                 self.reconnect(client: client, ignoreCheck: ignoreCheck);
             }
@@ -204,7 +204,7 @@ open class XmppService {
     }
     
     private func disconnectClients(force: Bool = false) {
-        dispatcher.async {
+        queue.async {
             self.clients.values.forEach { client in
                 _ = client.disconnect(force);
             }
@@ -212,7 +212,7 @@ open class XmppService {
     }
     
     fileprivate func sendKeepAlive() {
-        dispatcher.async {
+        queue.async {
             self.clients.values.forEach { client in
                 client.keepalive();
             }
@@ -220,7 +220,7 @@ open class XmppService {
     }
     
     private func reconnect(client: XMPPClient, ignoreCheck: Bool = false) {
-        self.dispatcher.sync {
+        self.queue.async {
             guard client.state == .disconnected(), let account = AccountManager.getAccount(for: client.userBareJid), account.active, ignoreCheck || self.status.shouldConnect  else {
                 return;
             }
@@ -281,7 +281,7 @@ open class XmppService {
         defer {
             DBChatStore.instance.resetChatStates(for: accountName);
         }
-        self.dispatcher.sync {
+        self.queue.sync {
             let active = AccountManager.getAccount(for: accountName)?.active
             if !(active ?? false) {
                 self.unregisterClient(client, removed: active == nil);
@@ -307,7 +307,7 @@ open class XmppService {
     }
     
     private func unregisterClient(_ client: XMPPClient, removed: Bool = false) {
-        dispatcher.sync {
+        queue.sync {
             let accountName = client.userBareJid;
             guard let client = self.clients.removeValue(forKey: accountName) else {
                 return;
@@ -315,7 +315,7 @@ open class XmppService {
 
             self.clientCancellables.removeValue(forKey: accountName);
             
-            dispatcher.async {
+            queue.async {
                 if removed {
                     DBRosterStore.instance.clear(for: client)
                     DBChatStore.instance.closeAll(for: accountName);
@@ -327,7 +327,7 @@ open class XmppService {
     }
     
     func forEachClient(_ task: @escaping (XMPPClient)->Void) {
-        let clients = dispatcher.sync {
+        let clients = queue.sync {
             return Array(self.clients.values);
         }
         clients.forEach(task);
@@ -499,7 +499,7 @@ open class XmppService {
     
 
     fileprivate func register(client: XMPPClient, for account: AccountManager.Account) -> XMPPClient {
-        return self.dispatcher.sync {
+        return self.queue.sync {
             let clientCancellables = ClientCancellables();
             self.clientCancellables[account.name] = clientCancellables;
                         
@@ -525,11 +525,11 @@ open class XmppService {
         switch state {
         case .connected:
             client.retryNo = 0;
-            self.dispatcher.async {
+            self.queue.async {
                 self.connectedClients.insert(client);
             }
         case .disconnected(let reason):
-            self.dispatcher.async {
+            self.queue.async {
                 self.connectedClients.remove(client);
             }
             AccountSettings.reconnectionLocation(for: client.userBareJid, value: nil);
@@ -540,7 +540,7 @@ open class XmppService {
                     account.active = false;
                     account.serverCertificate = certData;
                     try? AccountManager.save(account: account);
-                    NotificationCenter.default.post(name: XmppService.SERVER_CERTIFICATE_ERROR, object: client.userBareJid, userInfo: ["account": client.userBareJid.stringValue, "cert-name": certData.details.name, "cert-hash-sha1": certData.details.fingerprintSha1, "issuer-name": certData.issuer?.name, "issuer-hash-sha1": certData.issuer?.fingerprintSha1]);
+                    NotificationCenter.default.post(name: XmppService.SERVER_CERTIFICATE_ERROR, object: client.userBareJid, userInfo: ["account": client.userBareJid.description, "cert-name": certData.details.name, "cert-hash-sha1": certData.details.fingerprintSha1, "issuer-name": certData.issuer?.name as Any, "issuer-hash-sha1": certData.issuer?.fingerprintSha1 as Any]);
                 }
             case .authenticationFailure(let err):
                 if let error = err as? SaslError {

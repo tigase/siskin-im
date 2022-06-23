@@ -29,7 +29,7 @@ class Meet: CallBase {
     
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "meet")
         
-    private static let dispatcher = QueueDispatcher(label: "MeetDispatcher");
+    private static let queue = DispatchQueue(label: "MeetDispatcher");
     
     let client: XMPPClient;
 
@@ -43,11 +43,11 @@ class Meet: CallBase {
     let uuid = UUID();
     
     var name: String {
-        return jid.stringValue;
+        return jid.description;
     }
     
     var remoteHandle: CXHandle {
-        return CXHandle(type: .generic, value: jid.stringValue);
+        return CXHandle(type: .generic, value: jid.description);
     }
     
     let media: [Call.Media] = [.audio,.video]
@@ -115,7 +115,7 @@ class Meet: CallBase {
             presenceSent = true;
         }
         
-        client.module(.meet).eventsPublisher.receive(on: Meet.dispatcher.queue).filter({ $0.meetJid == self.jid }).sink(receiveValue: { [weak self] event in
+        client.module(.meet).eventsPublisher.receive(on: Meet.queue).filter({ $0.meetJid == self.jid }).sink(receiveValue: { [weak self] event in
             self?.handle(event: event);
         }).store(in: &cancellables);
         

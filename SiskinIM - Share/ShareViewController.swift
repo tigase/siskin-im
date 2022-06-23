@@ -50,7 +50,7 @@ struct RosterItem: Equatable {
     let name: String?;
     
     var displayName: String {
-        return name ?? jid.stringValue;
+        return name ?? jid.description;
     }
     
     var initials: String? {
@@ -336,7 +336,7 @@ class ShareViewController: UITableViewController {
         cell.imageView?.layer.cornerRadius = 20;
         cell.imageView?.layer.masksToBounds = true;
         cell.textLabel?.text = item.displayName;
-        cell.detailTextLabel?.text = item.jid.stringValue;
+        cell.detailTextLabel?.text = item.jid.description;
         if recipients.contains(item) {
             cell.accessoryType = .checkmark;
         } else {
@@ -560,7 +560,7 @@ class ShareViewController: UITableViewController {
     }
 
     func getAccountPassword(for account: BareJID) -> String? {
-        let query: [String: NSObject] = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitOne, String(kSecReturnData) : kCFBooleanTrue, String(kSecAttrService) : "xmpp" as NSObject, String(kSecAttrAccount) : account.stringValue as NSObject ];
+        let query: [String: NSObject] = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitOne, String(kSecReturnData) : kCFBooleanTrue, String(kSecAttrService) : "xmpp" as NSObject, String(kSecAttrAccount) : account.description as NSObject ];
 
         var result:AnyObject?;
 

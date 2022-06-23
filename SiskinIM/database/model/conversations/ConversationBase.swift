@@ -32,7 +32,7 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
     }
     
     public let id: Int;
-    public let dispatcher: QueueDispatcher;
+    public let queue: DispatchQueue;
     private let displayableId: DisplayableIdProtocol;
 
     public var displayName: String {
@@ -61,15 +61,16 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
         return displayableId.descriptionPublisher;
     }
     
-    @Published
-    public private(set) var timestamp: Date;
-    public var timestampPublisher: AnyPublisher<Date,Never> {
-        return $timestamp.receive(on: DispatchQueue.main).eraseToAnyPublisher();
+    public var timestamp: Date {
+        return lastActivity.timestamp;
     }
-    
+    public var timestampPublisher: Publishers.Map<Published<LastChatActivity>.Publisher, Date> {
+        return $lastActivity.map({ $0.timestamp });
+    }
+
     @Published
-    public private(set) var lastActivity: LastChatActivity?;
-    public var lastActivityPublisher: Published<LastChatActivity?>.Publisher {
+    public private(set) var lastActivity: LastChatActivity;
+    public var lastActivityPublisher: Published<LastChatActivity>.Publisher {
         return $lastActivity;
     }
     
@@ -91,10 +92,10 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
         return $features.eraseToAnyPublisher();
     }
     
-    public init(dispatcher: QueueDispatcher, context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, displayableId: DisplayableIdProtocol) {
+    public init(queue: DispatchQueue, context: Context, jid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, displayableId: DisplayableIdProtocol) {
         self.id = id;
-        self.timestamp = timestamp;
-        self.dispatcher = dispatcher;
+//        self.timestamp = timestamp;
+        self.queue = queue;
         self.lastActivity = lastActivity;
         self.unread = unread;
         self.displayableId = displayableId;
@@ -131,7 +132,7 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
     }
     
     public func markAsRead(count: Int) -> Bool {
-        return dispatcher.sync(flags: .barrier) {
+        return queue.sync(flags: .barrier) {
             guard unread > 0 else {
                 return false;
             }
@@ -140,19 +141,16 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
         }
     }
 
-    public func update(lastActivity: LastChatActivity?, timestamp: Date, isUnread: Bool) -> Bool {
-        return dispatcher.sync(flags: .barrier) {
+    public func update(_ lastActivity: LastChatActivity, isUnread: Bool) -> Bool {
+        return queue.sync(flags: .barrier) {
             if isUnread {
                 unread = unread + 1;
             }
-            guard self.lastActivity == nil || self.timestamp.compare(timestamp) != .orderedDescending else {
+            guard self.lastActivity.timestamp.compare(lastActivity.timestamp) != .orderedDescending else {
                 return isUnread;
             }
             
-            if lastActivity != nil {
-                self.lastActivity = lastActivity;
-                self.timestamp = timestamp;
-            }
+            self.lastActivity = lastActivity;
             
             return true;
         }
@@ -179,7 +177,7 @@ public class ConversationBaseWithOptions<Options: ChatOptionsProtocol>: Conversa
     @Published
     private var _options: Options;
     public var options: Options {
-        return dispatcher.sync {
+        return queue.sync {
             return _options;
         }
     }
@@ -193,13 +191,13 @@ public class ConversationBaseWithOptions<Options: ChatOptionsProtocol>: Conversa
     }
 
     
-    public init(dispatcher: QueueDispatcher, context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: Options, displayableId: DisplayableIdProtocol) {
+    public init(queue: DispatchQueue, context: Context, jid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, options: Options, displayableId: DisplayableIdProtocol) {
         self._options = options;
-        super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread:  unread, displayableId: displayableId);
+        super.init(queue: queue, context: context, jid: jid, id: id, lastActivity: lastActivity, unread:  unread, displayableId: displayableId);
     }
     
     public func updateOptions(_ fn: @escaping (inout Options)->Void, completionHandler: (()->Void)? = nil) {
-        dispatcher.async(flags: .barrier) {
+        queue.async(flags: .barrier) {
             var options = self._options;
             fn(&options);
             if !options.equals(self._options) {

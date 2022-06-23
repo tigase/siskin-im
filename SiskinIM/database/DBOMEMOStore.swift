@@ -67,7 +67,7 @@ class DBOMEMOStore {
         }
         
         guard let data = try! Database.main.reader({ database in
-            return try database.select(query: .omemoKeyPairForAccount, params: ["account": account, "name": account.stringValue, "deviceId": deviceId]).mapFirst({ $0.data(for: "key") });
+            return try database.select(query: .omemoKeyPairForAccount, params: ["account": account, "name": account.description, "deviceId": deviceId]).mapFirst({ $0.data(for: "key") });
         }) else {
             return nil;
         }
@@ -467,7 +467,7 @@ class OMEMOStoreWrapper: SignalStorage {
             AccountSettings.omemoRegistrationId(for: context!.userBareJid, value: regId);
 
             let keyPair = SignalIdentityKeyPair.generateKeyPair(context: signalContext);
-            if !identityKeyStore.save(identity: SignalAddress(name: context!.userBareJid.stringValue, deviceId: Int32(identityKeyStore.localRegistrationId())), key: keyPair) {
+            if !identityKeyStore.save(identity: SignalAddress(name: context!.userBareJid.description, deviceId: Int32(identityKeyStore.localRegistrationId())), key: keyPair) {
             }
         }
         return true;

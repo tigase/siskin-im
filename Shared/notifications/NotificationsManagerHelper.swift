@@ -72,11 +72,11 @@ public class NotificationsManagerHelper {
         content.categoryIdentifier = NotificationCategory.MESSAGE.rawValue;
         if let sender = jid, let body = msg {
             let uid = generateMessageUID(account: account, sender: sender, body: body)!;
-            content.threadIdentifier = "account=\(account.stringValue)|sender=\(sender.stringValue)";
+            content.threadIdentifier = "account=\(account.description)|sender=\(sender.description)";
             provider.conversationNotificationDetails(for: account, with: sender, completionHandler: { details in
                 os_log("%{public}@", log: OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SiskinPush"), "Found: name: \(details.name), type: \(String(describing: details.type.rawValue))");
 
-                var senderId: String = sender.stringValue;
+                var senderId: String = sender.description;
                 var group: INSpeakableString?;
                 switch details.type {
                 case .chat:
@@ -99,17 +99,17 @@ public class NotificationsManagerHelper {
                         content.body = body;
                         if let nickname = nickname {
                             content.subtitle = nickname;
-                            senderId = sender.with(resource: nickname).stringValue;
+                            senderId = sender.with(resource: nickname).description;
                         }
                     }
                 }
                 
-                content.userInfo = ["account": account.stringValue, "sender": sender.stringValue, "uid": uid, "timestamp": timestamp];
+                content.userInfo = ["account": account.description, "sender": sender.description, "uid": uid, "timestamp": timestamp];
                 provider.countBadge(withThreadId: content.threadIdentifier, completionHandler: { count in
                     content.badge = count as NSNumber;
                     if #available(iOS 15.0, *) {
                         do {
-                            let recipient = INPerson(personHandle: INPersonHandle(value: account.stringValue, type: .unknown), nameComponents: nil, displayName: nil, image: nil, contactIdentifier: nil, customIdentifier: nil, isMe: true, suggestionType: .none);
+                            let recipient = INPerson(personHandle: INPersonHandle(value: account.description, type: .unknown), nameComponents: nil, displayName: nil, image: nil, contactIdentifier: nil, customIdentifier: nil, isMe: true, suggestionType: .none);
                             let avatar = provider.avatar(on: account, for: sender);
                             let sender = INPerson(personHandle: INPersonHandle(value: senderId, type: .unknown), nameComponents: nil, displayName: group == nil ? details.name : nickname, image: avatar, contactIdentifier: nil, customIdentifier: senderId, isMe: false, suggestionType: .instantMessageAddress);
                             let intent = INSendMessageIntent(recipients: group == nil ? [recipient] : [recipient, sender], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: group, conversationIdentifier: content.threadIdentifier, serviceName: "Siskin IM", sender: sender, attachments: nil);
@@ -132,7 +132,7 @@ public class NotificationsManagerHelper {
                 });
             })
         } else {
-            content.threadIdentifier = "account=\(account.stringValue)";
+            content.threadIdentifier = "account=\(account.description)";
             content.body = NSLocalizedString("New message!", comment: "new message without content notification");
             provider.countBadge(withThreadId: content.threadIdentifier, completionHandler: { count in
                 content.badge = count as NSNumber;

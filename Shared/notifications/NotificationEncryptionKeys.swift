@@ -27,11 +27,11 @@ public class NotificationEncryptionKeys {
     private static let storage = UserDefaults(suiteName: "group.siskinim.notifications")!;
     
     public static func key(for account: BareJID) -> Data? {
-        storage.data(forKey: account.stringValue)
+        storage.data(forKey: account.description)
     }
     
     public static func set(key: Data?, for account: BareJID) {
-        storage.setValue(key, forKey: account.stringValue);
+        storage.setValue(key, forKey: account.description);
     }
 }
 

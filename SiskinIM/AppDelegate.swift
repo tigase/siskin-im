@@ -334,7 +334,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let accounts = XmppService.instance.clients.values.map({ (client) -> BareJID in
                 return client.userBareJid;
             }).sorted { (a1, a2) -> Bool in
-                return a1.stringValue.compare(a2.stringValue) == .orderedAscending;
+                return a1.description.compare(a2.description) == .orderedAscending;
             }
             
             let openChatFn: (BareJID)->Void = { (account) in
@@ -366,7 +366,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 openChatFn(accounts.first!);
             } else {
                 accounts.forEach({ account in
-                    alert.addAction(UIAlertAction(title: account.stringValue, style: .default, handler: { (action) in
+                    alert.addAction(UIAlertAction(title: account.description, style: .default, handler: { (action) in
                         openChatFn(account);
                     }));
                 })
@@ -393,12 +393,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             self.window?.rootViewController?.present(navigationController, animated: true, completion: {
                 itemEditController?.account = nil;
                 itemEditController?.jid = xmppUri.jid;
-                itemEditController?.jidTextField.text = xmppUri.jid.stringValue;
+                itemEditController?.jidTextField.text = xmppUri.jid.description;
                 itemEditController?.nameTextField.text = xmppUri.dict?["name"];
                 itemEditController?.preauth = xmppUri.dict?["preauth"];
             });
         case .register:
-            let alert = UIAlertController(title: NSLocalizedString("Registering account", comment: "alert title"), message: xmppUri.jid.localPart == nil ? String.localizedStringWithFormat(NSLocalizedString("Do you wish to register a new account at %@?", comment: "alert body"), xmppUri.jid.domain!) : String.localizedStringWithFormat(NSLocalizedString("Do you wish to register a new account %@?", comment: "alert body"), xmppUri.jid.stringValue), preferredStyle: .alert);
+            let alert = UIAlertController(title: NSLocalizedString("Registering account", comment: "alert title"), message: xmppUri.jid.localPart == nil ? String.localizedStringWithFormat(NSLocalizedString("Do you wish to register a new account at %@?", comment: "alert body"), xmppUri.jid.domain!) : String.localizedStringWithFormat(NSLocalizedString("Do you wish to register a new account %@?", comment: "alert body"), xmppUri.jid.description), preferredStyle: .alert);
             alert.addAction(UIAlertAction(title: NSLocalizedString("Yes", comment: "button label"), style: .default, handler: { action in
                 let registerAccountController = RegisterAccountController.instantiate(fromAppStoryboard: .Account);
                 registerAccountController.hidesBottomBarWhenPushed = true;
@@ -579,7 +579,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let toRemove = notifications.filter({ (notification) in
                 switch NotificationCategory.from(identifier: notification.request.content.categoryIdentifier) {
                 case .MESSAGE:
-                    return (notification.request.content.userInfo["account"] as? String) == account.stringValue;
+                    return (notification.request.content.userInfo["account"] as? String) == account.description;
                 default:
                     return false;
                 }
@@ -603,9 +603,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         default:
             content.body = String.localizedStringWithFormat(NSLocalizedString("It was not possible to contact push notification component: %@", comment: "push notifications registration failure message"), errorCondition.rawValue);
         }
-        content.threadIdentifier = "account=" + account!.stringValue;
+        content.threadIdentifier = "account=" + account!.description;
         content.categoryIdentifier = "ERROR";
-        content.userInfo = ["account": account!.stringValue];
+        content.userInfo = ["account": account!.description];
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
     
@@ -620,7 +620,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         content.body = String.localizedStringWithFormat(NSLocalizedString("Connection to server %@ failed", comment: "error notification message"), account.domain);
         content.userInfo = certInfo;
         content.categoryIdentifier = "ERROR";
-        content.threadIdentifier = "account=" + account.stringValue;
+        content.threadIdentifier = "account=" + account.description;
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
     
@@ -685,7 +685,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         func toURL() -> URL? {
             var parts = URLComponents();
             parts.scheme = "xmpp";
-            parts.path = jid.stringValue;
+            parts.path = jid.description;
             if action != nil {
                 parts.query = action!.rawValue + (dict?.map({ (k,v) -> String in ";\(k)=\(v)"}).joined() ?? "");
             } else {

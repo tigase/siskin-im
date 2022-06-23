@@ -38,11 +38,11 @@ class MeetEventHandler: XmppServiceExtension {
     }
     
     func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
-        client.module(.meet).eventsPublisher.sink(receiveValue: { [weak self] event in
+        client.module(.meet).eventsPublisher.sink(receiveValue: { event in
             switch event {
             case .inivitation(let action, let sender):
                 switch action {
-                case .propose(let id, let meetJid, let media):
+                case .propose(let id, let meetJid, _):
                     let meet = Meet(client: client, jid: meetJid.bareJid, sid: id);
                     
                     guard let callManager = CallManager.instance else {
@@ -58,9 +58,9 @@ class MeetEventHandler: XmppServiceExtension {
                             break;
                         }
                     });
-                case .accept(let id):
+                case .accept(_):
                     break;
-                case .proceed(let id):
+                case .proceed(_):
                     break;
                 case .retract(let id):
                     CallManager.instance?.endCall(on: client.userBareJid, sid: id);

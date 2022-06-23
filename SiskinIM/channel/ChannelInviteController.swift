@@ -46,7 +46,7 @@ class ChannelInviteController: AbstractRosterViewController {
             mixModule.allowAccess(to: channel.channelJid, for: item.jid, completionHandler: { result in
                 switch result {
                 case .success(_):
-                    let body = "Invitation to channel: \(channelJid.stringValue)";
+                    let body = "Invitation to channel: \(channelJid.description)";
                     let mixInvitation = MixInvitation(inviter: channel.account, invitee: item.jid, channel: channelJid, token: nil);
                     let message = mixModule.createInvitation(mixInvitation, message: body);
                     message.messageDelivery = .request;
@@ -81,7 +81,7 @@ class ChannelInviteController: AbstractRosterViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ChannelInviteViewCell", for: indexPath);
         if let item = roster?.item(at: indexPath) {
             cell.textLabel?.text = item.displayName;
-            cell.detailTextLabel?.text = item.jid.stringValue;
+            cell.detailTextLabel?.text = item.jid.description;
             (cell.imageView as? AvatarView)?.set(name: item.displayName, avatar: AvatarManager.instance.avatar(for: item.jid, on: item.account));
         }
         cell.accessoryType = (tableView.indexPathsForSelectedRows?.contains(indexPath) ?? false) ? .checkmark : .none;

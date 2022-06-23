@@ -34,7 +34,7 @@ class JingleManager: JingleSessionManager {
     
     private var cancellables: Set<AnyCancellable> = [];
     
-    let dispatcher = QueueDispatcher(label: "jingleEventHandler");
+    let queue = DispatchQueue(label: "jingleEventHandler");
     
     init() {
         RTCInitializeSSL();
@@ -47,7 +47,7 @@ class JingleManager: JingleSessionManager {
     }
 
     func session(for account: BareJID, with jid: JID, sid: String?) -> Session? {
-        return dispatcher.sync {
+        return queue.sync {
             return connections.first(where: {(sess) -> Bool in
                 return sess.account == account && (sid == nil || sess.sid == sid) && (sess.jid == jid || (sess.jid.resource == nil && sess.jid.bareJid == jid.bareJid));
             });
@@ -55,7 +55,7 @@ class JingleManager: JingleSessionManager {
     }
         
     func open(for context: Context, with jid: JID, sid: String, role: Jingle.Content.Creator, initiationType: JingleSessionInitiationType) -> Session {
-        return dispatcher.sync {
+        return queue.sync {
             let session = Session(context: context, jid: jid, sid: sid, role: role, initiationType: initiationType);
             self.connections.append(session);
             session.$state.removeDuplicates().sink(receiveValue: { [weak self, weak session] state in
@@ -69,7 +69,7 @@ class JingleManager: JingleSessionManager {
     }
     
     func close(for account: BareJID, with jid: JID, sid: String) -> Session? {
-        return dispatcher.sync {
+        return queue.sync {
             guard let idx = self.connections.firstIndex(where: { sess -> Bool in
                 return sess.sid == sid && sess.account == account && sess.jid == jid;
             }) else {
@@ -223,7 +223,7 @@ class JingleManager: JingleSessionManager {
     }
     
     private func sessionTerminated(account: BareJID, sid: String) {
-        let toTerminate = dispatcher.sync(execute: {
+        let toTerminate = queue.sync(execute: {
             return connections.filter({(sess) -> Bool in
                 return sess.account == account && sess.sid == sid;
             });
@@ -277,7 +277,7 @@ class JingleManager: JingleSessionManager {
 extension JingleManager {
 
     func session(forCall call: Call) -> Session? {
-        return dispatcher.sync {
+        return queue.sync {
             return self.connections.first(where: { $0.account == call.account && $0.jid.bareJid == call.jid && $0.sid == call.sid });
         }
     }

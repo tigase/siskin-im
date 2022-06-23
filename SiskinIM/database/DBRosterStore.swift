@@ -179,12 +179,11 @@ open class DBRosterStore: RosterStore {
     
     func itemUpdated(_ newItem: RosterItem, context: Context) {
         ContactManager.instance.update(name: newItem.name, for: .init(account: context.userBareJid, jid: newItem.jid.bareJid, type: .buddy))
-        DBChatStore.instance.refreshConversationsList();
     }
     
     public func deleteItem(for context: Context, jid: JID) {
         self.remove(for: context.userBareJid, jid: jid);
-        DBChatStore.instance.refreshConversationsList();
+        ContactManager.instance.update(name: nil, for: .init(account: context.userBareJid, jid: jid.bareJid, type: .buddy))
     }
     
     public func version(for context: Context) -> String? {

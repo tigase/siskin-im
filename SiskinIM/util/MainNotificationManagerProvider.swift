@@ -49,7 +49,7 @@ class MainNotificationManagerProvider: NotificationManagerProvider {
                 break;
             }
         }
-        completionHandler(ConversationNotificationDetails(name: DBRosterStore.instance.item(for: account, jid: JID(jid))?.name ?? jid.stringValue, notifications: .always, type: .chat, nick: nil));
+        completionHandler(ConversationNotificationDetails(name: DBRosterStore.instance.item(for: account, jid: JID(jid))?.name ?? jid.description, notifications: .always, type: .chat, nick: nil));
     }
     
     func countBadge(withThreadId: String?, completionHandler: @escaping (Int) -> Void) {
@@ -59,7 +59,7 @@ class MainNotificationManagerProvider: NotificationManagerProvider {
             DBChatStore.instance.conversations.filter({ chat -> Bool in
                 return chat.unread > 0;
             }).forEach { (chat) in
-                unreadChats.insert("account=" + chat.account.stringValue + "|sender=" + chat.jid.stringValue)
+                unreadChats.insert("account=" + chat.account.description + "|sender=" + chat.jid.description)
             }
         
             if let threadId = withThreadId {

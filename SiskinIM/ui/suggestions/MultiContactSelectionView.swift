@@ -86,7 +86,7 @@ class MultiContactSelectionViewController: UITableViewController, UISearchContro
     
     class SearchResultController: UITableViewController, UISearchResultsUpdating {
         
-        private let dispatcher = QueueDispatcher(label: "searchResultDispatcher");
+        private let queue = DispatchQueue(label: "searchResultDispatcher");
         private var items: [Item] = [];
         private var cancellables: Set<AnyCancellable> = [];
         
@@ -98,9 +98,9 @@ class MultiContactSelectionViewController: UITableViewController, UISearchContro
         override func viewDidLoad() {
             super.viewDidLoad();
             tableView.register(SelectedItemCellView.self, forCellReuseIdentifier: "selectedItem");
-            DBRosterStore.instance.$items.combineLatest(Settings.$rosterDisplayHiddenGroup, $queryString).throttle(for: 0.1, scheduler: dispatcher.queue, latest: true).map({ items, displayHidden, query -> [RosterItem] in
+            DBRosterStore.instance.$items.combineLatest(Settings.$rosterDisplayHiddenGroup, $queryString).throttle(for: 0.1, scheduler: queue, latest: true).map({ items, displayHidden, query -> [RosterItem] in
                 let notHidden = (displayHidden ? items : items.filter({ !$0.groups.contains("Hidden") }));
-                return Array(query.isEmpty ? notHidden : notHidden.filter({ $0.name?.lowercased().contains(query) ?? false || $0.jid.stringValue.lowercased().contains(query)}));
+                return Array(query.isEmpty ? notHidden : notHidden.filter({ $0.name?.lowercased().contains(query) ?? false || $0.jid.description.lowercased().contains(query)}));
             }).sink(receiveValue: { [weak self] items in
                 self?.updateItems(items: items);
             }).store(in: &cancellables);
@@ -130,7 +130,7 @@ class MultiContactSelectionViewController: UITableViewController, UISearchContro
                 guard !item.annotations.contains(where: { $0.type == "mix" }) else {
                     return nil;
                 }
-                return Item(account: account, jid: item.jid.bareJid, displayName: item.name ?? item.jid.stringValue);
+                return Item(account: account, jid: item.jid.bareJid, displayName: item.name ?? item.jid.description);
             }).sorted();
 
             let diff = newItems.calculateChanges(from: oldItems);
@@ -190,7 +190,7 @@ class MultiContactSelectionViewController: UITableViewController, UISearchContro
                         self?.avatarView.set(name: name, avatar: avatar);
                     }).store(in: &cancellables);
                 }
-                self.subtext.text = contact?.jid.stringValue
+                self.subtext.text = contact?.jid.description
             }
         }
 

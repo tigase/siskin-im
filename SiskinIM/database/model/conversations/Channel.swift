@@ -51,7 +51,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
     }
     
     public func update(permissions: Set<ChannelPermission>) {
-        dispatcher.async(flags: .barrier) {
+        queue.async(flags: .barrier) {
             self.permissions = permissions;
         }
     }
@@ -97,10 +97,10 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
     
     private let creationTimestamp: Date;
     public var lastMessageTimestamp: Date? {
-        guard creationTimestamp == timestamp else {
+        guard creationTimestamp == lastActivity.timestamp else {
             return nil;
         }
-        return timestamp;
+        return lastActivity.timestamp;
     }
     
     private var connectionState: XMPPClient.State = .disconnected() {
@@ -146,10 +146,10 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         
     }
     
-    init(dispatcher: QueueDispatcher, context: Context, channelJid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: ChannelOptions, creationTimestamp: Date) {
+    init(queue: DispatchQueue, context: Context, channelJid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, options: ChannelOptions, creationTimestamp: Date) {
         self.creationTimestamp = creationTimestamp;
-        self.displayable = ChannelDisplayableId(displayName: options.name ?? channelJid.stringValue, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: channelJid, mucNickname: nil)), description: options.description);
-        super.init(dispatcher: dispatcher, context: context, jid: channelJid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
+        self.displayable = ChannelDisplayableId(displayName: options.name ?? channelJid.description, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: channelJid, mucNickname: nil)), description: options.description);
+        super.init(queue: queue, context: context, jid: channelJid, id: id, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
         context.$state.sink(receiveValue: { [weak self] state in
             self?.connectionState = state;
         }).store(in: &cancellables);
@@ -180,7 +180,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
     public override func updateOptions(_ fn: @escaping (inout ChannelOptions) -> Void, completionHandler: (()->Void)? = nil) {
         super.updateOptions(fn, completionHandler: completionHandler);
         DispatchQueue.main.async {
-            self.displayable.displayName = self.options.name ?? self.jid.stringValue;
+            self.displayable.displayName = self.options.name ?? self.jid.description;
             self.displayable.description = self.options.description;
             self.updateState();
         }
@@ -197,9 +197,9 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         message.lastMessageCorrectionId = correctedMessageOriginId;
         self.send(message: message, completionHandler: nil);
         if #available(iOS 15.0, *) {
-            let sender = INPerson(personHandle: INPersonHandle(value: self.account.stringValue, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.stringValue, isMe: true, suggestionType: .instantMessageAddress);
-            let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.stringValue, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.stringValue, isMe: false, suggestionType: .instantMessageAddress);
-            let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.stringValue)|sender=\(self.jid.stringValue)", serviceName: "Siskin IM", sender: sender, attachments: nil);
+            let sender = INPerson(personHandle: INPersonHandle(value: self.account.description, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.description, isMe: true, suggestionType: .instantMessageAddress);
+            let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.description, isMe: false, suggestionType: .instantMessageAddress);
+            let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.description)|sender=\(self.jid.description)", serviceName: "Siskin IM", sender: sender, attachments: nil);
             let interaction = INInteraction(intent: intent, response: nil);
             interaction.direction = .outgoing;
             interaction.donate(completion: nil);
@@ -220,9 +220,9 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         message.oob = uploadedUrl;
         send(message: message, completionHandler: nil)
         if #available(iOS 15.0, *) {
-            let sender = INPerson(personHandle: INPersonHandle(value: self.account.stringValue, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.stringValue, isMe: true, suggestionType: .instantMessageAddress);
-            let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.stringValue, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.stringValue, isMe: false, suggestionType: .instantMessageAddress);
-            let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.stringValue)|sender=\(self.jid.stringValue)", serviceName: "Siskin IM", sender: sender, attachments: nil);
+            let sender = INPerson(personHandle: INPersonHandle(value: self.account.description, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.description, isMe: true, suggestionType: .instantMessageAddress);
+            let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.description, isMe: false, suggestionType: .instantMessageAddress);
+            let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.description)|sender=\(self.jid.description)", serviceName: "Siskin IM", sender: sender, attachments: nil);
             let interaction = INInteraction(intent: intent, response: nil);
             interaction.direction = .outgoing;
             interaction.donate(completion: nil);
@@ -308,7 +308,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
 extension Channel: MixParticipantsProtocol {
     
     public var participants: [MixParticipant] {
-        return dispatcher.sync {
+        return queue.sync {
             return self.participantsStore.participants;
         }
     }
@@ -318,25 +318,25 @@ extension Channel: MixParticipantsProtocol {
     }
     
     public func participant(withId: String) -> MixParticipant? {
-        return dispatcher.sync {
+        return queue.sync {
             return self.participantsStore.participant(withId: withId);
         }
     }
     
     public func set(participants: [MixParticipant]) {
-        dispatcher.async(flags: .barrier) {
+        queue.async(flags: .barrier) {
             self.participantsStore.set(participants: participants);
         }
     }
     
     public func update(participant: MixParticipant) {
-        dispatcher.async(flags: .barrier) {
+        queue.async(flags: .barrier) {
             self.participantsStore.update(participant: participant);
         }
     }
     
     public func removeParticipant(withId id: String) -> MixParticipant? {
-        return dispatcher.sync(flags: .barrier) {
+        return queue.sync(flags: .barrier) {
             return self.participantsStore.removeParticipant(withId: id);
         }
     }

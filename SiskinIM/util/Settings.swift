@@ -401,7 +401,7 @@ public struct AccountSettingsStore {
         let accounts = AccountManager.getAccounts();
         let toRemove = storage.dictionaryRepresentation().keys.filter { (key) -> Bool in
             return key.hasPrefix("accounts.") && accounts.firstIndex(where: { (account) -> Bool in
-                return key.hasPrefix("accounts.\(account.stringValue).");
+                return key.hasPrefix("accounts.\(account.description).");
             }) == nil;
         };
         toRemove.forEach { (key) in

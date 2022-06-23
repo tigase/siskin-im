@@ -843,6 +843,9 @@
 /* context action label */
 "Retract" = "Retract";
 
+/* retraction label for conversations list */
+"Retracted" = "Retracted";
+
 /* call state label */
 "Ringing…" = "Ringing…";
 
@@ -1094,6 +1097,9 @@
 
 /* button label */
 "Yes" = "Yes";
+
+/* you label for conversation log */
+"You" = "You";
 
 /* alert body */
 "You are about to destroy channel %@. This will remove the channel on the server, remove remote history archive, and kick out all participants. Are you sure?" = "You are about to destroy channel %@. This will remove the channel on the server, remove remote history archive, and kick out all participants. Are you sure?";

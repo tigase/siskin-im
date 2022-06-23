@@ -39,21 +39,21 @@ class AvatarEventHandler: XmppServiceExtension {
                 return;
             }
             self.queue.async {
-                if e.presence.findChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") == nil {
+                if !e.presence.hasChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") {
                     AvatarManager.instance.avatarHashChanged(for: e.jid.bareJid, on: to, type: .vcardTemp, hash: photoId);
                 } else {
-                    os_log(OSLogType.debug, log: .avatar, "received presence from %s with avaar hash: %{public}s", e.presence.from!.stringValue, photoId);
+                    os_log(OSLogType.debug, log: .avatar, "received presence from %s with avaar hash: %{public}s", e.presence.from!.description, photoId);
                     guard let client = client else {
                         return;
                     }
                     if !AvatarManager.instance.hasAvatar(withHash: photoId) {
-                        os_log(OSLogType.debug, log: .avatar, "querying %s for VCard for avaar hash: %{public}s", e.presence.from!.stringValue, photoId);
+                        os_log(OSLogType.debug, log: .avatar, "querying %s for VCard for avaar hash: %{public}s", e.presence.from!.description, photoId);
                         client.module(.vcardTemp).retrieveVCard(from: e.jid, completionHandler: { result in
                             switch result {
                             case .success(let vcard):
-                                os_log(OSLogType.debug, log: .avatar, "got result %s with %d photos from %s VCard for avaar hash: %{public}s", String(describing: type(of: vcard).self), vcard.photos.count, e.presence.from!.stringValue, photoId);
+                                os_log(OSLogType.debug, log: .avatar, "got result %s with %d photos from %s VCard for avaar hash: %{public}s", String(describing: type(of: vcard).self), vcard.photos.count, e.presence.from!.description, photoId);
                                 vcard.photos.forEach({ photo in
-                                    os_log(OSLogType.debug, log: .avatar, "got photo from %s VCard for avaar hash: %{public}s", e.presence.from!.stringValue, photoId);
+                                    os_log(OSLogType.debug, log: .avatar, "got photo from %s VCard for avaar hash: %{public}s", e.presence.from!.description, photoId);
                                     self.queue.async {
                                         AvatarManager.fetchData(photo: photo, completionHandler: { result in
                                             if let data = result {
@@ -64,7 +64,7 @@ class AvatarEventHandler: XmppServiceExtension {
                                     }
                                 })
                             case .failure(let error):
-                                os_log(OSLogType.debug, log: .avatar, "got error %{public}s from %s VCard for avaar hash: %{public}s", error.description, e.presence.from!.stringValue, photoId);
+                                os_log(OSLogType.debug, log: .avatar, "got error %{public}s from %s VCard for avaar hash: %{public}s", error.description, e.presence.from!.description, photoId);
                                 break;
                             }
                         })

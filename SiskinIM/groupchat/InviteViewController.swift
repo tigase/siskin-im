@@ -69,7 +69,7 @@ class InviteViewController: AbstractRosterViewController {
             return;
         }
 
-        room.invite(JID(item.jid), reason: String.localizedStringWithFormat(NSLocalizedString("You are invied to join conversation at %@", comment: "error label"), room.roomJid.stringValue));
+        room.invite(JID(item.jid), reason: String.localizedStringWithFormat(NSLocalizedString("You are invied to join conversation at %@", comment: "error label"), room.roomJid.description));
         
         self.navigationController?.dismiss(animated: true, completion: nil);
     }

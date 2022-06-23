@@ -61,7 +61,7 @@ class ContactViewController: UITableViewController {
                 }
             }
         })
-        omemoIdentities = DBOMEMOStore.instance.identities(forAccount: account, andName: jid.stringValue);
+        omemoIdentities = DBOMEMOStore.instance.identities(forAccount: account, andName: jid.description);
         tableView.contentInset = UIEdgeInsets(top: -1, left: 0, bottom: 0, right: 0);
         reloadData();
     }

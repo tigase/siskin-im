@@ -55,7 +55,7 @@ public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>,
     }
     
     override func newItem(rosterItem item: RosterItem, account: BareJID, presence: Presence?) -> RosterProviderFlatItem? {
-        return RosterProviderFlatItem(account: account, jid: item.jid.bareJid, presence: presence, displayName: item.name ?? item.jid.stringValue);
+        return RosterProviderFlatItem(account: account, jid: item.jid.bareJid, presence: presence, displayName: item.name ?? item.jid.description);
     }
     
     override func updateItems(items: [RosterProviderFlatItem], order: RosterSortingOrder) {

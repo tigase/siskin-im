@@ -91,7 +91,7 @@ class AbstractRosterViewController: UITableViewController, UISearchResultsUpdati
         
         if let item = roster?.item(at: indexPath) {
             cell.nameLabel.text = item.displayName;
-            cell.statusLabel.text = item.account.stringValue;
+            cell.statusLabel.text = item.account.description;
             cell.avatarStatusView.displayableId = ContactManager.instance.contact(for: .init(account: item.account, jid: item.jid, type: .buddy));
         }
         

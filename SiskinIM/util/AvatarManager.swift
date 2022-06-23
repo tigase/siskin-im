@@ -106,7 +106,7 @@ class AvatarManager {
     
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "AvatarManager");
     
-    fileprivate var dispatcher = QueueDispatcher(label: "avatar_manager", attributes: .concurrent);
+    fileprivate var queue = DispatchQueue(label: "avatar_manager", attributes: .concurrent);
 
     public init() {
         NotificationCenter.default.addObserver(self, selector: #selector(vcardUpdated), name: DBVCardStore.VCARD_UPDATED, object: nil);
@@ -114,7 +114,7 @@ class AvatarManager {
 
     private var avatars: [Avatar.Key: AvatarWeakRef] = [:];
     open func avatarPublisher(for key: Avatar.Key) -> Avatar {
-        return dispatcher.sync(flags: .barrier) {
+        return queue.sync(flags: .barrier) {
             guard let avatar = avatars[key]?.avatar else {
                 let avatar = Avatar(key: key);
                 DispatchQueue.global(qos: .userInitiated).async {
@@ -128,13 +128,13 @@ class AvatarManager {
     }
     
     open func existingAvatarPublisher(for key: Avatar.Key) -> Avatar? {
-        return dispatcher.sync {
+        return queue.sync {
             return avatars[key]?.avatar;
         }
     }
     
     open func releasePublisher(for key: Avatar.Key) {
-        dispatcher.async(flags: .barrier) {
+        queue.async(flags: .barrier) {
             self.avatars.removeValue(forKey: key);
         }
     }
@@ -178,7 +178,7 @@ class AvatarManager {
         return store.avatar(for: hash);
     }
     
-    open func avatar(withHash hash: String, completionHandler: @escaping (Result<UIImage,ErrorCondition>)->Void) {
+    open func avatar(withHash hash: String, completionHandler: @escaping (Result<UIImage,XMPPError>)->Void) {
         store.avatar(for: hash, completionHandler: completionHandler);
     }
     

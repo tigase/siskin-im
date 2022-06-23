@@ -132,7 +132,7 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
         }
         group.leave();
         group.notify(queue: DispatchQueue.main, execute: {
-            completionHandler(errors ? .failure(ErrorCondition.forbidden) : .success(Void()));
+            completionHandler(errors ? .failure(XMPPError.forbidden(nil)) : .success(Void()));
         })
     }
 
@@ -141,13 +141,13 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
         case .authorized:
             completionHandler(.success(Void()));
         case .denied, .restricted:
-            completionHandler(.failure(ErrorCondition.forbidden));
+            completionHandler(.failure(XMPPError.forbidden(nil)));
         case .notDetermined:
             AVCaptureDevice.requestAccess(for: media.avmedia, completionHandler: { result in
-                completionHandler(result ? .success(Void()) : .failure(ErrorCondition.forbidden));
+                completionHandler(result ? .success(Void()) : .failure(XMPPError.forbidden(nil)));
             })
         default:
-            completionHandler(.failure(ErrorCondition.forbidden));
+            completionHandler(.failure(XMPPError.forbidden(nil)));
         }
     }
     
@@ -158,7 +158,7 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
                 break;
             case .failure(let err):
                 var message = NSLocalizedString("It was not possible to establish call", comment: "error message");
-                if let e = err as? ErrorCondition {
+                if let e = err as? XMPPError {
                     switch e {
                     case .forbidden:
                         message = NSLocalizedString("It was not possible to access camera or microphone. Please check privacy settings", comment: "error message");
@@ -177,11 +177,11 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
     
     static func call(jid: BareJID, from account: BareJID, media: [Call.Media], completionHandler: @escaping (Result<Void,Error>)->Void) {
         guard let instance = CallManager.instance else {
-            completionHandler(.failure(ErrorCondition.not_allowed))
+            completionHandler(.failure(XMPPError.not_allowed(nil)))
             return;
         }
         guard let client = XmppService.instance.getClient(for: account) else {
-            completionHandler(.failure(ErrorCondition.item_not_found));
+            completionHandler(.failure(XMPPError.item_not_found));
             return;
         }
         
@@ -207,14 +207,14 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
                         if result {
                             continueCall();
                         } else {
-                            completionHandler(.failure(ErrorCondition.not_allowed))
+                            completionHandler(.failure(XMPPError.not_allowed(nil)))
                         }
                     });
                 } else {
                     continueCall();
                 }
             } else {
-                completionHandler(.failure(ErrorCondition.not_allowed))
+                completionHandler(.failure(XMPPError.not_allowed(nil)))
             }
         });
         
@@ -338,7 +338,7 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
     
     private func updateAvatarView() {
         if let call = self.call {
-            avatar?.set(name: DBRosterStore.instance.item(for: call.account, jid: JID(call.jid))?.name ?? call.jid.stringValue, avatar: AvatarManager.instance.avatar(for: call.jid, on: call.account));
+            avatar?.set(name: DBRosterStore.instance.item(for: call.account, jid: JID(call.jid))?.name ?? call.jid.description, avatar: AvatarManager.instance.avatar(for: call.jid, on: call.account));
         } else {
             avatar?.set(name: nil, avatar: nil);
         }

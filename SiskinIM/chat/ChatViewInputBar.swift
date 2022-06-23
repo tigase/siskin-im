@@ -245,28 +245,28 @@ class VoiceRecordingView: UIView, AVAudioRecorderDelegate {
         return stack;
     }();
     
-    public let closeBtn: UIButton = {
+    public lazy var closeBtn: UIButton = {
         let closeBtn = UIButton.systemButton(with: UIImage(systemName: "xmark.circle.fill")!, target: self, action: #selector(hideVoiceRecordingView(_:)));
         closeBtn.contentEdgeInsets = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 10);
         closeBtn.tintColor = UIColor(named: "tintColor");
         return closeBtn;
     }();
     
-    public let sendBtn: UIButton = {
+    public lazy var sendBtn: UIButton = {
         let sendBtn = UIButton.systemButton(with: UIImage(systemName: "paperplane.fill")!, target: self, action: #selector(sendTapped(_:)));
         sendBtn.tintColor = UIColor(named: "tintColor");
         sendBtn.contentEdgeInsets = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16);
         return sendBtn;
     }();
     
-    public let actionBtn: UIButton = {
+    public lazy var actionBtn: UIButton = {
         let btn = UIButton.systemButton(with: UIImage(systemName: "stop.circle")!, target: self, action: #selector(actionTapped(_:)));
         btn.tintColor = UIColor.systemRed;
         btn.contentEdgeInsets = UIEdgeInsets(top: 16, left: 10, bottom: 16, right: 16);
         return btn;
     }();
     
-    public let label: UILabel = {
+    public lazy var label: UILabel = {
         let label = UILabel();
         label.text = NSLocalizedString("Recording…", comment: "voice message state");
         label.setContentHuggingPriority(UILayoutPriority(200), for: .horizontal);

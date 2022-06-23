@@ -44,8 +44,8 @@ class RosterItemEditViewController: UITableViewController, UIPickerViewDataSourc
         self.accountTextField.inputView = accountPicker;
 //        self.accountTextField.addTarget(self, action: #selector(RosterItemEditViewController.textFieldDidChange), for: UIControlEvents.editingChanged);
 //        self.jidTextField.addTarget(self, action: #selector(RosterItemEditViewController.textFieldDidChange), for: UIControlEvents.editingChanged);
-        self.jidTextField.text = jid?.stringValue;
-        self.accountTextField.text = account?.stringValue;
+        self.jidTextField.text = jid?.description;
+        self.accountTextField.text = account?.description;
         self.sendPresenceUpdatesSwitch.isOn = true;
         self.receivePresenceUpdatesSwitch.isOn = true;//Settings.AutoSubscribeOnAcceptedSubscriptionRequest.getBool();
         if let account = account, let jid = jid {
@@ -60,7 +60,7 @@ class RosterItemEditViewController: UITableViewController, UIPickerViewDataSourc
         } else {
             if account == nil && !AccountManager.getAccounts().isEmpty {
                 self.account = AccountManager.getAccounts().first;
-                self.accountTextField.text = account?.stringValue;
+                self.accountTextField.text = account?.description;
             }
             self.nameTextField.text = nil;
         }
@@ -210,7 +210,7 @@ class RosterItemEditViewController: UITableViewController, UIPickerViewDataSourc
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return AccountManager.getAccounts()[row].stringValue;
+        return AccountManager.getAccounts()[row].description;
     }
     
     func  pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {

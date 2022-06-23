@@ -123,7 +123,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
                         });
                     }
                     group.notify(queue: DispatchQueue.global(), execute: { [weak self] in
-                        self?.dispatcher.async {
+                        self?.queue.async {
                             self?._members = members;
                         }
                     })
@@ -139,9 +139,9 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     
     private var cancellables: Set<AnyCancellable> = [];
     
-    init(dispatcher: QueueDispatcher,context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: RoomOptions) {
-        self.displayable = RoomDisplayableId(displayName: options.name ?? jid.stringValue, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: jid, mucNickname: nil)), description: nil);
-        super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
+    init(queue: DispatchQueue, context: Context, jid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, options: RoomOptions) {
+        self.displayable = RoomDisplayableId(displayName: options.name ?? jid.description, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: jid, mucNickname: nil)), description: nil);
+        super.init(queue: queue, context: context, jid: jid, id: id, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
         (context.module(.httpFileUpload) as! HttpFileUploadModule).isAvailablePublisher.combineLatest(self.statePublisher, self.$roomFeatures, { isAvailable, state, roomFeatures -> [ConversationFeature] in
             var features: [ConversationFeature] = [];
             if state == .joined {
@@ -171,26 +171,26 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     private static let nonMembersAffiliations: Set<MucAffiliation> = [.none, .outcast];
     private var _members: [JID]?;
     public var members: [JID]? {
-        return dispatcher.sync {
+        return queue.sync {
             return _members;
         }
     }
     
     public var occupants: [MucOccupant] {
-        return dispatcher.sync {
+        return queue.sync {
             return self.occupantsStore.occupants;
         }
     }
     
     public func occupant(nickname: String) -> MucOccupant? {
-        return dispatcher.sync {
+        return queue.sync {
             return occupantsStore.occupant(nickname: nickname);
         }
     }
     
     public func addOccupant(nickname: String, presence: Presence) -> MucOccupant {
         let occupant = MucOccupant(nickname: nickname, presence: presence, for: self);
-        dispatcher.async(flags: .barrier) {
+        queue.async(flags: .barrier) {
             self.occupantsStore.add(occupant: occupant);
             if let jid = occupant.jid {
                 if !Room.nonMembersAffiliations.contains(occupant.affiliation) {
@@ -206,7 +206,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     }
     
     public func remove(occupant: MucOccupant) {
-        dispatcher.async(flags: .barrier) {
+        queue.async(flags: .barrier) {
             self.occupantsStore.remove(occupant: occupant);
             if let jid = occupant.jid {
                 self._members = self._members?.filter({ $0 != jid });
@@ -215,13 +215,13 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     }
     
     public func addTemp(nickname: String, occupant: MucOccupant) {
-        dispatcher.async(flags: .barrier) {
+        queue.async(flags: .barrier) {
             self.occupantsStore.addTemp(nickname: nickname, occupant: occupant);
         }
     }
     
     public func removeTemp(nickname: String) -> MucOccupant? {
-        return dispatcher.sync(flags: .barrier) {
+        return queue.sync(flags: .barrier) {
             return occupantsStore.removeTemp(nickname: nickname);
         }
     }
@@ -235,12 +235,12 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     public override func updateOptions(_ fn: @escaping (inout RoomOptions) -> Void, completionHandler: (()->Void)? = nil) {
         super.updateOptions(fn, completionHandler: completionHandler);
         DispatchQueue.main.async {
-            self.displayable.displayName = self.options.name ?? self.jid.stringValue;
+            self.displayable.displayName = self.options.name ?? self.jid.description;
         }
     }
     
     public func update(state: RoomState) {
-        dispatcher.async(flags: .barrier) {
+        queue.async(flags: .barrier) {
             self.state = state;
             if state != .joined && state != .requested {
                 self.occupantsStore.removeAll();
@@ -272,9 +272,9 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
                 case .successMessage(let message, let fingerprint):
                     super.send(message: message, completionHandler: nil);
                     if #available(iOS 15.0, *) {
-                        let sender = INPerson(personHandle: INPersonHandle(value: self.account.stringValue, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.stringValue, isMe: true, suggestionType: .instantMessageAddress);
-                        let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.stringValue, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.stringValue, isMe: false, suggestionType: .instantMessageAddress);
-                        let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.stringValue)|sender=\(self.jid.stringValue)", serviceName: "Siskin IM", sender: sender, attachments: nil);
+                        let sender = INPerson(personHandle: INPersonHandle(value: self.account.description, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.description, isMe: true, suggestionType: .instantMessageAddress);
+                        let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.description, isMe: false, suggestionType: .instantMessageAddress);
+                        let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.description)|sender=\(self.jid.description)", serviceName: "Siskin IM", sender: sender, attachments: nil);
                         let interaction = INInteraction(intent: intent, response: nil);
                         interaction.direction = .outgoing;
                         interaction.donate(completion: nil);
@@ -287,9 +287,9 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         } else {
             super.send(message: message, completionHandler: nil);
             if #available(iOS 15.0, *) {
-                let sender = INPerson(personHandle: INPersonHandle(value: self.account.stringValue, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.stringValue, isMe: true, suggestionType: .instantMessageAddress);
-                let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.stringValue, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.stringValue, isMe: false, suggestionType: .instantMessageAddress);
-                let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.stringValue)|sender=\(self.jid.stringValue)", serviceName: "Siskin IM", sender: sender, attachments: nil);
+                let sender = INPerson(personHandle: INPersonHandle(value: self.account.description, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.description, isMe: true, suggestionType: .instantMessageAddress);
+                let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.description, isMe: false, suggestionType: .instantMessageAddress);
+                let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.description)|sender=\(self.jid.description)", serviceName: "Siskin IM", sender: sender, attachments: nil);
                 let interaction = INInteraction(intent: intent, response: nil);
                 interaction.direction = .outgoing;
                 interaction.donate(completion: nil);
@@ -354,9 +354,9 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
                 case .successMessage(let message, let fingerprint):
                     super.send(message: message, completionHandler: nil);
                     if #available(iOS 15.0, *) {
-                        let sender = INPerson(personHandle: INPersonHandle(value: self.account.stringValue, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.stringValue, isMe: true, suggestionType: .instantMessageAddress);
-                        let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.stringValue, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.stringValue, isMe: false, suggestionType: .instantMessageAddress);
-                        let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.stringValue)|sender=\(self.jid.stringValue)", serviceName: "Siskin IM", sender: sender, attachments: nil);
+                        let sender = INPerson(personHandle: INPersonHandle(value: self.account.description, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.description, isMe: true, suggestionType: .instantMessageAddress);
+                        let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.description, isMe: false, suggestionType: .instantMessageAddress);
+                        let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.description)|sender=\(self.jid.description)", serviceName: "Siskin IM", sender: sender, attachments: nil);
                         let interaction = INInteraction(intent: intent, response: nil);
                         interaction.direction = .outgoing;
                         interaction.donate(completion: nil);
@@ -373,9 +373,9 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
             message.oob = uploadedUrl;
             super.send(message: message, completionHandler: nil);
             if #available(iOS 15.0, *) {
-                let sender = INPerson(personHandle: INPersonHandle(value: self.account.stringValue, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.stringValue, isMe: true, suggestionType: .instantMessageAddress);
-                let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.stringValue, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.stringValue, isMe: false, suggestionType: .instantMessageAddress);
-                let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.stringValue)|sender=\(self.jid.stringValue)", serviceName: "Siskin IM", sender: sender, attachments: nil);
+                let sender = INPerson(personHandle: INPersonHandle(value: self.account.description, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.description, isMe: true, suggestionType: .instantMessageAddress);
+                let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.description, isMe: false, suggestionType: .instantMessageAddress);
+                let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.description)|sender=\(self.jid.description)", serviceName: "Siskin IM", sender: sender, attachments: nil);
                 let interaction = INInteraction(intent: intent, response: nil);
                 interaction.direction = .outgoing;
                 interaction.donate(completion: nil);

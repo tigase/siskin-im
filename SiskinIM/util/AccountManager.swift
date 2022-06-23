@@ -28,7 +28,7 @@ import Combine
 
 open class AccountManager {
     
-    private static let dispatcher = QueueDispatcher(label: "AccountManager");
+    private static let queue = DispatchQueue(label: "AccountManager");
     private static var accounts: [BareJID: Account] = [:];
     
     static let accountEventsPublisher = PassthroughSubject<Event,Never>();
@@ -37,7 +37,7 @@ open class AccountManager {
             return BareJID(Settings.defaultAccount);
         }
         set {
-            Settings.defaultAccount = newValue?.stringValue;
+            Settings.defaultAccount = newValue?.description;
         }
     }
     
@@ -53,10 +53,10 @@ open class AccountManager {
     }
     
     static func getAccounts() -> [BareJID] {
-        self.dispatcher.sync {
+        self.queue.sync {
             guard accounts.isEmpty else {
                 return Array(accounts.keys).sorted(by: { (j1, j2) -> Bool in
-                    j1.stringValue.compare(j2.stringValue) == .orderedAscending;
+                    j1.description.compare(j2.description) == .orderedAscending;
                 });
             }
             
@@ -74,7 +74,7 @@ open class AccountManager {
             let accounts = results.filter({ $0[kSecAttrAccount as String] != nil}).map { item -> BareJID in
                 return BareJID(item[kSecAttrAccount as String] as! String);
             }.sorted(by: { (j1, j2) -> Bool in
-                j1.stringValue.compare(j2.stringValue) == .orderedAscending
+                j1.description.compare(j2.description) == .orderedAscending
             });
             
             for account in accounts {
@@ -87,13 +87,13 @@ open class AccountManager {
     }
 
     static func getAccount(for jid: BareJID) -> Account? {
-        return self.dispatcher.sync {
+        return self.queue.sync {
             return self.accounts[jid];
         }
     }
     
     private static func getAccountInt(for jid: BareJID) -> Account? {
-        let query = AccountManager.getAccountQuery(jid.stringValue);
+        let query = AccountManager.getAccountQuery(jid.description);
         var result: CFTypeRef?;
         
         guard SecItemCopyMatching(query as CFDictionary, &result) == noErr else {
@@ -115,7 +115,7 @@ open class AccountManager {
     
     
     static func getAccountPassword(for account: BareJID) -> String? {
-        let query = AccountManager.getAccountQuery(account.stringValue, withData: kSecReturnData);
+        let query = AccountManager.getAccountQuery(account.description, withData: kSecReturnData);
         
         var result: CFTypeRef?;
         
@@ -131,9 +131,9 @@ open class AccountManager {
     }
     
     static func save(account toSave: Account, reconnect: Bool = true) throws {
-        try self.dispatcher.sync {
+        try self.queue.sync {
             var account = toSave;
-            var query = AccountManager.getAccountQuery(account.name.stringValue);
+            var query = AccountManager.getAccountQuery(account.name.description);
             query.removeValue(forKey: String(kSecMatchLimit));
             query.removeValue(forKey: String(kSecReturnAttributes));
 
@@ -181,8 +181,8 @@ open class AccountManager {
     }
     
     static func delete(account: Account) throws {
-        try dispatcher.sync {
-            var query = AccountManager.getAccountQuery(account.name.stringValue);
+        try queue.sync {
+            var query = AccountManager.getAccountQuery(account.name.description);
             query.removeValue(forKey: String(kSecMatchLimit));
             query.removeValue(forKey: String(kSecReturnAttributes));
             

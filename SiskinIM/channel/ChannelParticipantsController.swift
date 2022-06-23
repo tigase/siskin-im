@@ -30,12 +30,12 @@ class ChannelParticipantsController: UITableViewController {
     private var participants: [MixParticipant] = [];
     private var invitationOnly: Bool = false;
     
-    private var dispatcher = QueueDispatcher(label: "ChannelParticipantsController");
+    private var queue = DispatchQueue(label: "ChannelParticipantsController");
     private var cancellables: Set<AnyCancellable> = [];
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        channel.participantsPublisher.throttle(for: 0.2, scheduler: dispatcher.queue, latest: true).sink(receiveValue: { [weak self] participants in
+        channel.participantsPublisher.throttle(for: 0.2, scheduler: queue, latest: true).sink(receiveValue: { [weak self] participants in
             self?.update(participants: participants);
         }).store(in: &cancellables);
         if channel.permissions?.contains(.changeConfig) ?? false, let mixModule = channel.context?.module(.mix) {
@@ -185,7 +185,7 @@ class ChannelParticipantTableViewCell: UITableViewCell {
         
         labelView.font = ChannelParticipantTableViewCell.labelViewFont();
         labelView?.text = participant.nickname;
-        jidView?.text = participant.jid?.stringValue ?? participant.id
+        jidView?.text = participant.jid?.description ?? participant.id
     }
     
 }

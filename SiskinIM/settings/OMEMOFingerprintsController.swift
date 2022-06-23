@@ -31,7 +31,7 @@ class OMEMOFingerprintsController: UITableViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        let allIdentities = DBOMEMOStore.instance.identities(forAccount: account, andName: account.stringValue);
+        let allIdentities = DBOMEMOStore.instance.identities(forAccount: account, andName: account.description);
         let localDeviceId = Int32(bitPattern: AccountSettings.omemoRegistrationId(for: account) ?? 0);
         self.localIdentity = allIdentities.first(where: { (identity) -> Bool in
             return identity.address.deviceId == localDeviceId;

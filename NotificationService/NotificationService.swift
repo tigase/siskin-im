@@ -184,9 +184,9 @@ class ExtensionNotificationManagerProvider: NotificationManagerProvider {
         
         switch type {
         case .chat:
-            completionHandler(ConversationNotificationDetails(name: try! Database.mainReader().select(query: .buddyName, cached: false, params: ["account": account, "jid": jid]).mapFirst({ $0.string(for: "name") }) ?? jid.stringValue, notifications: options.notifications ?? .always, type: type, nick: nil));
+            completionHandler(ConversationNotificationDetails(name: try! Database.mainReader().select(query: .buddyName, cached: false, params: ["account": account, "jid": jid]).mapFirst({ $0.string(for: "name") }) ?? jid.description, notifications: options.notifications ?? .always, type: type, nick: nil));
         case .channel, .room:
-            completionHandler(ConversationNotificationDetails(name: options.name ?? jid.stringValue, notifications: options.notifications ?? .always, type: type, nick: options.nick));
+            completionHandler(ConversationNotificationDetails(name: options.name ?? jid.description, notifications: options.notifications ?? .always, type: type, nick: options.nick));
         }
     }
     
@@ -196,7 +196,7 @@ class ExtensionNotificationManagerProvider: NotificationManagerProvider {
 
             try? Database.mainReader().select(query: .listUnreadThreads, cached: false, params: []).mapAll({ cursor in
                 if let account = cursor.bareJid(for: "account"), let jid = cursor.bareJid(for: "jid") {
-                    return "account=\(account.stringValue)|sender=\(jid.stringValue)"
+                    return "account=\(account.description)|sender=\(jid.description)"
                 }
                 return nil;
             }).forEach({ unreadChats.insert($0) });
