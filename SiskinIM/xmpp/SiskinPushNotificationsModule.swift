@@ -22,6 +22,7 @@
 import UIKit
 import Foundation
 import UserNotifications
+import CryptoKit
 import Shared
 import TigaseSwift
 
@@ -131,7 +132,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
             if priority {
                 extensions.append(TigasePushNotificationsModule.Priority());
                 if componentSupportsEncryption && self.isSupported(extension: TigasePushNotificationsModule.Encryption.self) && self.isSupported(feature: TigasePushNotificationsModule.Encryption.AES_128_GCM) {
-                    extensions.append(TigasePushNotificationsModule.Encryption(algorithm: TigasePushNotificationsModule.Encryption.AES_128_GCM.replacingOccurrences(of: "tigase:push:encrypt:", with: ""), key: NotificationEncryptionKeys.key(for: account) ?? Cipher.AES_GCM.generateKey(ofSize: 128)!, maxPayloadSize: maxSize));
+                    extensions.append(TigasePushNotificationsModule.Encryption(algorithm: TigasePushNotificationsModule.Encryption.AES_128_GCM.replacingOccurrences(of: "tigase:push:encrypt:", with: ""), key: NotificationEncryptionKeys.key(for: account) ?? SymmetricKey(size: .bits128).data(), maxPayloadSize: maxSize));
                 }
             }
         }

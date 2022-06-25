@@ -128,7 +128,6 @@
 		FE6545621E9E7FDE006A14AC /* AccountDomainTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6545611E9E7FDE006A14AC /* AccountDomainTableViewCell.swift */; };
 		FE6545641E9E8B67006A14AC /* ServerSelectorTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6545631E9E8B67006A14AC /* ServerSelectorTableViewCell.swift */; };
 		FE65D62822E9F8EB0065DEA5 /* Markdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE65D62722E9F8EB0065DEA5 /* Markdown.swift */; };
-		FE719E762271B2BA007CEEC9 /* OpenSSL_AES_GCM_Engine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE719E752271B2BA007CEEC9 /* OpenSSL_AES_GCM_Engine.swift */; };
 		FE719E782271B439007CEEC9 /* MessageEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE719E772271B439007CEEC9 /* MessageEncryption.swift */; };
 		FE719E7C22730DC3007CEEC9 /* OMEMOIdentityTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE719E7B22730DC3007CEEC9 /* OMEMOIdentityTableViewCell.swift */; };
 		FE719E7E2274D20D007CEEC9 /* OMEMOFingerprintsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE719E7D2274D20D007CEEC9 /* OMEMOFingerprintsController.swift */; };
@@ -139,7 +138,6 @@
 		FE759FCC2370B2A4001E78D9 /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE759FC52370B2A4001E78D9 /* Shared.framework */; };
 		FE759FCD2370B2A4001E78D9 /* Shared.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE759FC52370B2A4001E78D9 /* Shared.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE759FD12370B2F2001E78D9 /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE759FC52370B2A4001E78D9 /* Shared.framework */; };
-		FE759FDB2370B384001E78D9 /* Cipher+AES.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE759FDA2370B384001E78D9 /* Cipher+AES.swift */; };
 		FE759FDE2371989B001E78D9 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FE759FDD2371988B001E78D9 /* libsqlite3.tbd */; };
 		FE759FE22371C83D001E78D9 /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE759FC52370B2A4001E78D9 /* Shared.framework */; };
 		FE759FE82371C972001E78D9 /* libxml2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FE759FE72371C966001E78D9 /* libxml2.tbd */; };
@@ -475,7 +473,6 @@
 		FE6545631E9E8B67006A14AC /* ServerSelectorTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerSelectorTableViewCell.swift; sourceTree = "<group>"; };
 		FE65D62722E9F8EB0065DEA5 /* Markdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Markdown.swift; sourceTree = "<group>"; };
 		FE719E732271AF88007CEEC9 /* db-schema-5.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-5.sql"; sourceTree = "<group>"; };
-		FE719E752271B2BA007CEEC9 /* OpenSSL_AES_GCM_Engine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSSL_AES_GCM_Engine.swift; sourceTree = "<group>"; };
 		FE719E772271B439007CEEC9 /* MessageEncryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEncryption.swift; sourceTree = "<group>"; };
 		FE719E7B22730DC3007CEEC9 /* OMEMOIdentityTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OMEMOIdentityTableViewCell.swift; sourceTree = "<group>"; };
 		FE719E7D2274D20D007CEEC9 /* OMEMOFingerprintsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OMEMOFingerprintsController.swift; sourceTree = "<group>"; };
@@ -486,7 +483,6 @@
 		FE759FC52370B2A4001E78D9 /* Shared.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Shared.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE759FC72370B2A4001E78D9 /* Shared.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Shared.h; sourceTree = "<group>"; };
 		FE759FC82370B2A4001E78D9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		FE759FDA2370B384001E78D9 /* Cipher+AES.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Cipher+AES.swift"; sourceTree = "<group>"; };
 		FE759FDD2371988B001E78D9 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libsqlite3.tbd; sourceTree = DEVELOPER_DIR; };
 		FE759FE12371C79E001E78D9 /* NotificationService.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NotificationService.entitlements; sourceTree = "<group>"; };
 		FE759FE72371C966001E78D9 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libxml2.tbd; sourceTree = DEVELOPER_DIR; };
@@ -760,7 +756,6 @@
 				FE11D3C62662AB8900CC883F /* SSLCertificate.swift */,
 				FE11D3C52662AB8900CC883F /* SSLContext.swift */,
 				FE11D3C42662AB8900CC883F /* SSLProcessor.swift */,
-				FE759FDA2370B384001E78D9 /* Cipher+AES.swift */,
 			);
 			path = crypto;
 			sourceTree = "<group>";
@@ -922,7 +917,6 @@
 				FE11D3B92662849E00CC883F /* ServerCertificateInfo.swift */,
 				FE9D4DA626C7E87C00DD295A /* AudioSession.swift */,
 				FE11D3B1266241A200CC883F /* combine */,
-				FE719E752271B2BA007CEEC9 /* OpenSSL_AES_GCM_Engine.swift */,
 				FE507A131CDB7B3B001A015C /* AccountManager.swift */,
 				FE507A141CDB7B3B001A015C /* AvatarManager.swift */,
 				FEDE93881D081C3D00CA60A9 /* Settings.swift */,
@@ -1541,7 +1535,6 @@
 				FEF0967A26D64347001C0454 /* ImageQuality.swift in Sources */,
 				FEDE009D266BE3BD0019CC1C /* NotificationsManagerHelper.swift in Sources */,
 				FEF0967926D642EA001C0454 /* MediaHelper.swift in Sources */,
-				FE759FDB2370B384001E78D9 /* Cipher+AES.swift in Sources */,
 				FE11D2EA26616F0100CC883F /* Database.swift in Sources */,
 				FEF0967B26D64347001C0454 /* VideoQuality.swift in Sources */,
 				FE759FF923742AC1001E78D9 /* NotificationCategory.swift in Sources */,
@@ -1569,7 +1562,6 @@
 				FEF0968226D7A9FB001C0454 /* ServerCertificateInfo.swift in Sources */,
 				FE64446028131538002D6E8E /* BookmarkViewCell.swift in Sources */,
 				FE11D35F26623D6D00CC883F /* Conversation.swift in Sources */,
-				FE719E762271B2BA007CEEC9 /* OpenSSL_AES_GCM_Engine.swift in Sources */,
 				FE1EE9D627903F58000FA599 /* ChannelSelectNewOwnerViewController.swift in Sources */,
 				FE11D2E426616B7300CC883F /* Database.swift in Sources */,
 				FEDC678A238A9F16005C0FAB /* BlockedEventHandler.swift in Sources */,

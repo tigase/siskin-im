@@ -177,9 +177,7 @@ public class ConversationBaseWithOptions<Options: ChatOptionsProtocol>: Conversa
     @Published
     private var _options: Options;
     public var options: Options {
-        return queue.sync {
-            return _options;
-        }
+        return _options;
     }
     
     public var optionsPublisher: Published<Options>.Publisher {

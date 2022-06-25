@@ -28,6 +28,7 @@ import BackgroundTasks
 import Combine
 import TigaseLogging
 import Intents
+import CryptoKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -545,9 +546,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             } else {
                 if let encryped = userInfo["encrypted"] as? String, let ivStr = userInfo["iv"] as? String, let key = NotificationEncryptionKeys.key(for: account.bareJid), let data = Data(base64Encoded: encryped), let iv = Data(base64Encoded: ivStr) {
                     logger.debug("got encrypted push with known key");
-                    let cipher = Cipher.AES_GCM();
-                    var decoded = Data();
-                    if cipher.decrypt(iv: iv, key: key, encoded: data, auth: nil, output: &decoded) {
+                    if let decoded = try? AES.GCM.open(.init(nonce: .init(data: iv), ciphertext: data, tag: Data()), using: SymmetricKey(data: key)) {
                         logger.debug("got decrypted data: \(String(data: decoded, encoding: .utf8) as Any)");
                         if let payload = try? JSONDecoder().decode(Payload.self, from: decoded) {
                             logger.debug("decoded payload successfully!");

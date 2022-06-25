@@ -495,7 +495,7 @@ open class XmppService {
         let signalStorage = OMEMOStoreWrapper(context: client.context);
         let signalContext = SignalContext(withStorage: signalStorage)!;
         signalStorage.setup(withContext: signalContext);
-        _ = client.modulesManager.register(OMEMOModule(aesGCMEngine: OpenSSL_AES_GCM_Engine(), signalContext: signalContext, signalStorage: signalStorage));
+        _ = client.modulesManager.register(OMEMOModule(signalContext: signalContext, signalStorage: signalStorage));
         
         return client;
     }

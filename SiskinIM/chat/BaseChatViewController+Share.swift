@@ -59,6 +59,7 @@ extension ChatViewInputBar {
 }
 
 import AVFoundation
+import TigaseSwiftOMEMO
 
 extension ChatViewInputBar {
     class VoiceMessageButton: ShareButton {
@@ -168,39 +169,16 @@ extension BaseChatViewController: URLSessionDelegate {
         let encrypted = shouldEncryptUploadedFile();
 
         if encrypted {
-            var iv = Data(count: 12);
-            iv.withUnsafeMutableBytes { (bytes) -> Void in
-                _ = SecRandomCopyBytes(kSecRandomDefault, 12, bytes.baseAddress!);
-            }
-
-            var key = Data(count: 32);
-            key.withUnsafeMutableBytes { (bytes) -> Void in
-                _ = SecRandomCopyBytes(kSecRandomDefault, 32, bytes.baseAddress!);
-            }
-
-            let dataProvider = Cipher.FileDataProvider(inputStream: InputStream(url: url)!);
-            let dataConsumer = Cipher.TempFileConsumer()!;
-            
-            let cipher = Cipher.AES_GCM();
-            let tag = cipher.encrypt(iv: iv, key: key, provider: dataProvider, consumer: dataConsumer);
-            _ = dataConsumer.consume(data: tag);
-            dataConsumer.close();
-
-            guard let inputStream = InputStream(url: dataConsumer.url) else {
-                DispatchQueue.main.async {
-                    self.hideProgressBar();
-                }
+            guard case let .success((data, fragment)) = OMEMOModule.encryptFile(url: url) else {
                 completionHandler(.failure(.noAccessError));
                 return;
             }
-            HTTPFileUploadHelper.upload(for: context, filename: filename, inputStream: inputStream, filesize: dataConsumer.size, mimeType: mimeType ?? "application/octet-stream", delegate: self, completionHandler: { result in
-                // we cannot release dataConsumer before the file is uploaded!
-                var tmp = dataConsumer;
+            HTTPFileUploadHelper.upload(for: context, filename: filename, inputStream: InputStream(data: data), filesize: data.count, mimeType: mimeType ?? "application/octet-stream", delegate: self, completionHandler: { result in
                 switch result {
                 case .success(let url):
                     var parts = URLComponents(url: url, resolvingAgainstBaseURL: true)!;
                     parts.scheme = "aesgcm";
-                    parts.fragment = (iv + key).map({ String(format: "%02x", $0) }).joined();
+                    parts.fragment = fragment;
                     let shareUrl = parts.url!;
                     
                     completionHandler(.success(url: shareUrl, filesize: size, mimeType: mimeType));

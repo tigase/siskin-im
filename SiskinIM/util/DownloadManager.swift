@@ -24,6 +24,7 @@ import MobileCoreServices
 import TigaseSwift
 import Shared
 import CryptoKit
+import TigaseSwiftOMEMO
 
 class DownloadManager: NSObject {
     
@@ -137,35 +138,19 @@ class DownloadManager: NSObject {
                     self.download(session: self.downloadSession, url: url, expectedSize: expectedSize, completionHandler: { result in
                         switch result {
                         case .success((let downloadedUrl, let filename)):
-                            var dataConsumer: Cipher.TempFileConsumer?;
-                            if let encryptionKey = encryptionKey, let inputStream = InputStream(url: downloadedUrl), encryptionKey.count % 2 == 0 && encryptionKey.count > 64, let size = try? downloadedUrl.resourceValues(forKeys: [.fileSizeKey]).fileSize {
-                                
-                                let fragmentData = encryptionKey.map { (c) -> UInt8 in
-                                    return UInt8(c.hexDigitValue ?? 0);
-                                };
+                            var result: Result<Data,XMPPError> = .failure(.not_acceptable(nil));
 
-                                let ivLen = fragmentData.count - (32 * 2);
-                                var iv = Data();
-                                var key = Data();
-                                
-                                for i in 0..<(ivLen/2) {
-                                    iv.append(fragmentData[i*2]*16 + fragmentData[i*2+1]);
-                                }
-                                for i in (ivLen/2)..<(fragmentData.count/2) {
-                                    key.append(fragmentData[i*2]*16 + fragmentData[i*2+1]);
-                                }
-                                
-                                let dataProvider = Cipher.FileDataProvider(inputStream: inputStream, fileSize: size, hasAuthTag: true);
-                                dataConsumer = Cipher.TempFileConsumer();
-                                let aes = Cipher.AES_GCM();
-                                                                
-                                if !aes.decrypt(iv: iv, key: key, provider: dataProvider, consumer: dataConsumer!) {
-                                    dataConsumer = nil;
-                                }
-                                dataConsumer?.close();
+                            if let encryptionKey = encryptionKey {
+                                result = OMEMOModule.decryptFile(url: downloadedUrl, fragment: encryptionKey);
                             }
+
                             //let id = UUID().uuidString;
-                            _ = DownloadStore.instance.store(dataConsumer?.url ?? downloadedUrl, filename: filename, with: "\(item.id)");
+                            switch result {
+                            case .success(let data):
+                                _ = DownloadStore.instance.store(data, filename: filename, with: "\(item.id)");
+                            case .failure(_):
+                                _ = DownloadStore.instance.store(downloadedUrl, filename: filename, with: "\(item.id)");
+                            }
                             DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                                 appendix.state = .downloaded;
                             });

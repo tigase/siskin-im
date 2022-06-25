@@ -149,7 +149,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
                 completionHandler(.failure(.unknownError));
                 return;
             }
-            let result = omemoModule.encryptFile(data: data);
+            let result = OMEMOModule.encryptFile(data: data);
             switch result {
             case .success(let (encryptedData, hash)):
                 let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString);

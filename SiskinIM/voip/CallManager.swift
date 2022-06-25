@@ -28,6 +28,7 @@ import TigaseLogging
 import Shared
 import Combine
 import Intents
+import CryptoKit
 
 class CallManager: NSObject, CXProviderDelegate {    
     
@@ -1034,9 +1035,7 @@ extension CallManager: PKPushRegistryDelegate {
             if let encryped = payload.dictionaryPayload["encrypted"] as? String, let ivStr = payload.dictionaryPayload["iv"] as? String {
                 if let key = NotificationEncryptionKeys.key(for: account), let data = Data(base64Encoded: encryped), let iv = Data(base64Encoded: ivStr) {
                     logger.debug("got encrypted voip push with known key");
-                    let cipher = Cipher.AES_GCM();
-                    var decoded = Data();
-                    if cipher.decrypt(iv: iv, key: key, encoded: data, auth: nil, output: &decoded) {
+                    if let decoded = try? AES.GCM.open(.init(nonce: .init(data: iv), ciphertext: data, tag: Data()), using: SymmetricKey(data: key)) {
                         logger.debug("got decrypted voip data: \(String(data: decoded, encoding: .utf8) as Any)");
                         if let payload = try? JSONDecoder().decode(VoIPPayload.self, from: decoded) {
                             logger.debug("decoded voip payload successfully!");
