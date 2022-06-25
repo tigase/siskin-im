@@ -49,7 +49,7 @@ extension BareJID: DatabaseConvertibleStringValue {
 
 extension Element: DatabaseConvertibleStringValue {
     public func encode() -> String {
-        return self.stringValue;
+        return self.description;
     }
 }
 

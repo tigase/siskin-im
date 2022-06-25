@@ -25,6 +25,7 @@ import UserNotifications
 import os
 import Intents
 import UIKit
+import CryptoKit
 
 public struct ConversationNotificationDetails {
     public let name: String;
@@ -61,7 +62,7 @@ public class NotificationsManagerHelper {
     
     public static func generateMessageUID(account: BareJID, sender: BareJID?, body: String?) -> String? {
         if let sender = sender, let body = body {
-            return Digest.sha256.digest(toHex: "\(account)|\(sender)|\(body)".data(using: .utf8));
+            return SHA256.hash(toHex: "\(account)|\(sender)|\(body)", using: .utf8);
         }
         return nil;
     }

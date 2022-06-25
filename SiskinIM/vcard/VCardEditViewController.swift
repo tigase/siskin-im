@@ -21,6 +21,7 @@
 
 import UIKit
 import TigaseSwift
+import CryptoKit
 
 class VCardEditViewController: UITableViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
     
@@ -324,7 +325,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                             VCardManager.instance.fetchPhoto(photo: photo, completionHandler: { result in
                                 switch result {
                                 case .success(let data):
-                                    let avatarHash = Digest.sha1.digest(toHex: data);
+                                    let avatarHash = Insecure.SHA1.hash(toHex: data);
                                     let x = Element(name: "x", xmlns: "vcard-temp:x:update");
                                     x.addChild(Element(name: "photo", cdata: avatarHash));
                                     client.module(.presence).setPresence(show: .online, status: nil, priority: nil, additionalElements: [x]);

@@ -23,6 +23,7 @@ import Foundation
 import MobileCoreServices
 import TigaseSwift
 import Shared
+import CryptoKit
 
 class DownloadManager: NSObject {
     
@@ -62,7 +63,7 @@ class DownloadManager: NSObject {
             
             itemDownloadInProgress.append(item.id);
             
-            if let hash = Digest.sha1.digest(toHex: inUrl.data(using: .utf8)!), var params = SettingsStore.sharedDefaults.dictionary(forKey: "upload-\(hash)"), let filename = params["name"] as? String {
+            if let hash = Insecure.SHA1.hash(toHex: inUrl, using: .utf8), var params = SettingsStore.sharedDefaults.dictionary(forKey: "upload-\(hash)"), let filename = params["name"] as? String {
                 var jids: [BareJID] = (params["jids"] as? [String])?.map({ BareJID($0) }) ?? [];
 
                 let sharedFileUrl = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.siskinim.shared")!.appendingPathComponent("upload", isDirectory: true).appendingPathComponent(hash, isDirectory: false);

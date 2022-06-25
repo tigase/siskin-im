@@ -83,7 +83,7 @@ class StreamFeaturesCache: StreamFeaturesModuleWithPipeliningCacheProtocol {
         if features == nil {
             try? fileManager.removeItem(atPath: filePath);
         } else {
-            try? Element(name: "cache", children: features!).stringValue.write(toFile: filePath, atomically: false, encoding: .utf8);
+            try? Element(name: "cache", children: features!).description.write(toFile: filePath, atomically: false, encoding: .utf8);
         }
     }
     

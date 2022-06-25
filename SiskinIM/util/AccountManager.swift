@@ -143,7 +143,7 @@ open class AccountManager {
                 update[kSecValueData as String] = newPassword.data(using: .utf8)!;
             }
 
-            if getAccount(for: account.name) == nil {
+            if getAccountInt(for: account.name) == nil {
                 query.merge(update) { (v1, v2) -> Any in
                     return v1;
                 }

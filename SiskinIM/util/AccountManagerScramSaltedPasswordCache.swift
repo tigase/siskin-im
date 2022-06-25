@@ -27,15 +27,15 @@ open class AccountManagerScramSaltedPasswordCache: ScramSaltedPasswordCacheProto
     public init() {
     }
     
-    public func getSaltedPassword(for context: Context, id: String) -> [UInt8]? {
+    public func getSaltedPassword(for context: Context, id: String) -> Data? {
         guard let salted = AccountManager.getAccount(for: context.userBareJid)?.saltedPassword else {
             return nil;
         }
-        return salted.id == id ? salted.value : nil;
+        return salted.id == id ? Data(salted.value) : nil;
     }
     
-    public func store(for context: Context, id: String, saltedPassword: [UInt8]) {
-        setSaltedPassword(AccountManager.SaltEntry(id: id, value: saltedPassword), for: context);
+    public func store(for context: Context, id: String, saltedPassword: Data) {
+        setSaltedPassword(AccountManager.SaltEntry(id: id, value: saltedPassword.map({ $0 })), for: context);
     }
     
     public func clearCache(for context: Context) {

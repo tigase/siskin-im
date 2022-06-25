@@ -24,6 +24,7 @@ import UIKit
 import TigaseSwift
 import Combine
 import TigaseLogging
+import CryptoKit
 
 struct AvatarWeakRef {
     weak var avatar: Avatar?;
@@ -183,7 +184,7 @@ class AvatarManager {
     }
     
     open func storeAvatar(data: Data) -> String {
-        let hash = Digest.sha1.digest(toHex: data)!;
+        let hash = Insecure.SHA1.hash(toHex: data);
         self.store.storeAvatar(data: data, for: hash);
         NotificationCenter.default.post(name: AvatarManager.AVATAR_FOR_HASH_CHANGED, object: hash);
         return hash;

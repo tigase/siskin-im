@@ -164,7 +164,9 @@ open class XmppService {
     open func initialize() {
         for account in AccountManager.getActiveAccounts() {
             let client = self.initializeClient(for: account);
-            _ = self.register(client: client, for: account);
+            self.queue.sync {
+                _ = self.register(client: client, for: account);
+            }
         }
         self.$status.combineLatest($applicationState, NetworkMonitor.shared.$isNetworkAvailable, self.$isFetch, { (status, appState, networkAvailble, isFetch) -> Status in
             var newStatus = status;
@@ -306,8 +308,9 @@ open class XmppService {
         }
     }
     
+    // call only on internal queue
     private func unregisterClient(_ client: XMPPClient, removed: Bool = false) {
-        queue.sync {
+//        queue.sync {
             let accountName = client.userBareJid;
             guard let client = self.clients.removeValue(forKey: accountName) else {
                 return;
@@ -323,7 +326,7 @@ open class XmppService {
                     _ = client;
                 }
             }
-        }
+//        }
     }
     
     func forEachClient(_ task: @escaping (XMPPClient)->Void) {
@@ -498,27 +501,26 @@ open class XmppService {
     }
     
 
+    // call only on internal queue
     fileprivate func register(client: XMPPClient, for account: AccountManager.Account) -> XMPPClient {
-        return self.queue.sync {
-            let clientCancellables = ClientCancellables();
-            self.clientCancellables[account.name] = clientCancellables;
+        let clientCancellables = ClientCancellables();
+        self.clientCancellables[account.name] = clientCancellables;
                         
-            client.$state.subscribe(account.state).store(in: &clientCancellables.cancellables);
-            client.$state.dropFirst().sink(receiveValue: { state in self.changedState(state, for: client) }).store(in: &clientCancellables.cancellables);
+        client.$state.subscribe(account.state).store(in: &clientCancellables.cancellables);
+        client.$state.dropFirst().sink(receiveValue: { state in self.changedState(state, for: client) }).store(in: &clientCancellables.cancellables);
                     
-            for ext in extensions {
-                ext.register(for: client, cancellables: &clientCancellables.cancellables);
-            }
-                                    
-            client.$state.combineLatest($applicationState).sink(receiveValue: { [weak client] (clientState, applicationState) in
-                if clientState == .connected() {
-                    _ = client?.module(.csi).setState(applicationState == .active);
-                }
-            }).store(in: &clientCancellables.cancellables);
-                    
-            self.clients[account.name] = client;
-            return client;
+        for ext in extensions {
+            ext.register(for: client, cancellables: &clientCancellables.cancellables);
         }
+                                    
+        client.$state.combineLatest($applicationState).sink(receiveValue: { [weak client] (clientState, applicationState) in
+            if clientState == .connected() {
+                _ = client?.module(.csi).setState(applicationState == .active);
+            }
+        }).store(in: &clientCancellables.cancellables);
+                    
+        self.clients[account.name] = client;
+        return client;
     }
     
     private func changedState(_ state: XMPPClient.State, for client: XMPPClient) {
