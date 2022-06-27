@@ -34,40 +34,30 @@ class MucEventHandler: XmppServiceExtension {
                 return;
             }
             client.module(.muc).roomManager.rooms(for: client).forEach { (room) in
-                // first we need to check if room supports MAM
-                DBChatMarkersStore.instance.awaitingSync(for: room as! Room);
-                client.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
-                    var mamVersions: [MessageArchiveManagementModule.Version] = [];
-                    switch result {
-                    case .success(let info):
-                        mamVersions = info.features.compactMap({ MessageArchiveManagementModule.Version(rawValue: $0) });
-                            (room as! Room).roomFeatures = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
-                    default:
-                        break;
-                    }
+                Task {
+                    DBChatMarkersStore.instance.awaitingSync(for: room as! Room);
+                    let info = try await client.module(.disco).info(for: JID(room.jid));
+                    let mamVersions = info.features.compactMap(MessageArchiveManagementModule.Version.init(rawValue:));
+                    (room as! Room).roomFeatures = Set(info.features.compactMap(Room.Feature.init(rawValue:)));
                     if let timestamp = (room as? Room)?.timestamp {
                         if !mamVersions.isEmpty {
-                            room.rejoin(fetchHistory: .skip).handle({ result in
-                                guard case .success(let r) = result else {
+                            let result = try await room.rejoin(fetchHistory: .skip);
+                            switch result {
+                            case .created(let room), .joined(let room):
+                                guard let client = room.context as? XMPPClient else {
                                     return;
                                 }
-                                switch r {
-                                case .created(let room), .joined(let room):
-                                    guard let client = room.context as? XMPPClient else {
-                                        return;
-                                    }
-                                    MessageEventHandler.syncMessages(for: client, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: JID(room.jid), since: timestamp);
-                                }
-                            });
+                                MessageEventHandler.syncMessages(for: client, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: JID(room.jid), since: timestamp);
+                            }
                         } else {
                             DBChatMarkersStore.instance.syncCompleted(forAccount: room.account, with: room.jid);
-                            _ = room.rejoin(fetchHistory: .from(timestamp));
+                            _ = try await room.rejoin(fetchHistory: .from(timestamp))
                         }
                     } else {
                         DBChatMarkersStore.instance.syncCompleted(forAccount: room.account, with: room.jid);
-                        _ = room.rejoin(fetchHistory: .initial);
+                        _ = try await room.rejoin(fetchHistory: .initial);
                     }
-                });
+                }
             }
         }).store(in: &cancellables);
         client.module(.muc).messagesPublisher.sink(receiveValue: { e in
@@ -133,7 +123,7 @@ class MucEventHandler: XmppServiceExtension {
     }
             
     public func updateRoomName(room: Room) {
-        room.context?.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
+        room.context?.module(.disco).info(for: JID(room.jid), completionHandler: { result in
             switch result {
             case .success(let info):
                 let newName = info.identities.first(where: { (identity) -> Bool in
@@ -150,17 +140,15 @@ class MucEventHandler: XmppServiceExtension {
 
 class CustomMucModule: MucModule {
     
-    override func join(room: RoomProtocol, fetchHistory: RoomHistoryFetch) -> Future<RoomJoinResult, XMPPError> {
-        return Future({ promise in
-            super.join(room: room, fetchHistory: fetchHistory).handle({ result in
-                switch result {
-                case .success(_):
-                    MucEventHandler.instance.updateRoomName(room: room as! Room);
-                case .failure(_):
-                    break;
-                }
-                promise(result);
-            })
+    override func join(room: RoomProtocol, fetchHistory: RoomHistoryFetch, completionHandler: @escaping (Result<RoomJoinResult,XMPPError>)->Void) {
+        super.join(room: room, fetchHistory: fetchHistory, completionHandler: { result in
+            switch result {
+            case .success(_):
+                MucEventHandler.instance.updateRoomName(room: room as! Room);
+            case .failure(_):
+                break;
+            }
+            completionHandler(result);
         });
     }
     

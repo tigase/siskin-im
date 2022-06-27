@@ -153,7 +153,7 @@ class JingleManager: JingleSessionManager {
 
             let call = Call(client: context as! XMPPClient, with: jid.bareJid, sid: id, direction: .incoming, media: media);
             guard let callManager = CallManager.instance else {
-                throw XMPPError.feature_not_implemented;
+                throw XMPPError(condition: .feature_not_implemented);
             }
             callManager.reportIncomingCall(call, completionHandler: { result in
                 switch result {
@@ -196,7 +196,7 @@ class JingleManager: JingleSessionManager {
             session.initiated(contents: contents, bundle: bundle);
             
             guard let callManager = CallManager.instance else {
-                throw XMPPError.feature_not_implemented;
+                throw XMPPError(condition: .feature_not_implemented);
             }
             
             callManager.reportIncomingCall(call, completionHandler: { result in
@@ -212,7 +212,7 @@ class JingleManager: JingleSessionManager {
     
     func sessionAccepted(for context: Context, with jid: JID, sid: String, contents: [Jingle.Content], bundle: [String]?) throws {
         guard let session = session(for: context, with: jid, sid: sid) else {
-            throw XMPPError.item_not_found;
+            throw XMPPError(condition: .item_not_found);
         }
                
         session.accepted(contents: contents, bundle: bundle);
@@ -243,7 +243,7 @@ class JingleManager: JingleSessionManager {
 
     func transportInfo(for context: Context, with jid: JID, sid: String, contents: [Jingle.Content]) throws {
         guard let session = self.session(for: context, with: jid, sid: sid) else {
-            throw XMPPError.item_not_found;
+            throw XMPPError(condition: .item_not_found);
         }
         
         contents.forEach { (content) in
@@ -259,7 +259,7 @@ class JingleManager: JingleSessionManager {
     
     func contentModified(for context: Context, with jid: JID, sid: String, action: Jingle.ContentAction, contents: [Jingle.Content], bundle: [String]?) throws {
         guard let session = self.session(for: context, with: jid, sid: sid) else {
-            throw XMPPError.item_not_found;
+            throw XMPPError(condition: .item_not_found);
         }
         
         session.contentModified(action: action, contents: contents, bundle: bundle);
@@ -267,7 +267,7 @@ class JingleManager: JingleSessionManager {
     
     func sessionInfo(for context: Context, with jid: JID, sid: String, info: [Jingle.SessionInfo]) throws {
         guard let session = self.session(for: context, with: jid, sid: sid) else {
-            throw XMPPError.item_not_found;
+            throw XMPPError(condition: .item_not_found);
         }
         
         session.sessionInfoReceived(info: info);

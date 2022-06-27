@@ -67,7 +67,7 @@ open class HTTPFileUploadHelper {
                     }
                 });
             case .failure(let error):
-                completionHandler(.failure(error.errorCondition == .item_not_found ? .notSupported : .unknownError));
+                completionHandler(.failure(error.condition == .item_not_found ? .notSupported : .unknownError));
             }
         })
     }

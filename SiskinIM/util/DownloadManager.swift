@@ -138,25 +138,27 @@ class DownloadManager: NSObject {
                     self.download(session: self.downloadSession, url: url, expectedSize: expectedSize, completionHandler: { result in
                         switch result {
                         case .success((let downloadedUrl, let filename)):
-                            var result: Result<Data,XMPPError> = .failure(.not_acceptable(nil));
-
-                            if let encryptionKey = encryptionKey {
-                                result = OMEMOModule.decryptFile(url: downloadedUrl, fragment: encryptionKey);
-                            }
-
-                            //let id = UUID().uuidString;
-                            switch result {
-                            case .success(let data):
-                                _ = DownloadStore.instance.store(data, filename: filename, with: "\(item.id)");
-                            case .failure(_):
-                                _ = DownloadStore.instance.store(downloadedUrl, filename: filename, with: "\(item.id)");
-                            }
-                            DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
-                                appendix.state = .downloaded;
-                            });
                             self.queue.sync {
                                 self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
                                     return item.id != id;
+                                });
+                            }
+                            if let encryptionKey = encryptionKey {
+                                do {
+                                    let data = try OMEMOModule.decryptFile(url: downloadedUrl, fragment: encryptionKey)
+                                    _ = DownloadStore.instance.store(data, filename: filename, with: "\(item.id)");
+                                    DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
+                                        appendix.state = .downloaded;
+                                    });
+                                } catch {
+                                    DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
+                                        appendix.state = .error;
+                                    });
+                                }
+                            } else {
+                                _ = DownloadStore.instance.store(downloadedUrl, filename: filename, with: "\(item.id)");
+                                DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
+                                    appendix.state = .downloaded;
                                 });
                             }
                         case .failure(let err):

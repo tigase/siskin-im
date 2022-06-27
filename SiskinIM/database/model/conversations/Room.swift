@@ -112,7 +112,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
                     let group = DispatchGroup();
                     for affiliation: MucAffiliation in [.member, .admin, .owner] {
                         group.enter();
-                        mucModule.getRoomAffiliations(from: self, with: affiliation, completionHandler: { result in
+                        mucModule.roomAffiliations(from: self, with: affiliation, completionHandler: { result in
                             switch result {
                             case .success(let affs):
                                 members.append(contentsOf: affs.map({ $0.jid }));
@@ -300,36 +300,23 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         }
     }
     
-    public func prepareAttachment(url originalURL: URL, completionHandler: @escaping (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
+    public func prepareAttachment(url originalURL: URL) throws -> SharePreparedAttachment {
         let encryption = self.features.contains(.omemo) ? self.options.encryption ?? Settings.messageEncryption : .none;
         switch encryption {
         case .none:
-            completionHandler(.success((originalURL, false, nil)));
+            return .init(url: originalURL, isTemporary: false, prepareShareURL: nil);
         case .omemo:
-            guard let omemoModule: OMEMOModule = self.context?.module(.omemo), let data = try? Data(contentsOf: originalURL) else {
-                completionHandler(.failure(.unknownError));
-                return;
-            }
-            let result = OMEMOModule.encryptFile(data: data);
-            switch result {
-            case .success(let (encryptedData, hash)):
-                let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString);
-                do {
-                    try encryptedData.write(to: tmpFile);
-                    completionHandler(.success((tmpFile, true, { url in
-                        var parts = URLComponents(url: url, resolvingAgainstBaseURL: true)!;
-                        parts.scheme = "aesgcm";
-                        parts.fragment = hash;
-                        let shareUrl = parts.url!;
+            let (encryptedData, hash) = try OMEMOModule.encryptFile(url: originalURL);
+            let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString);
+            try encryptedData.write(to: tmpFile);
+            return .init(url: tmpFile, isTemporary: true, prepareShareURL: { url in
+                var parts = URLComponents(url: url, resolvingAgainstBaseURL: true)!;
+                parts.scheme = "aesgcm";
+                parts.fragment = hash;
+                let shareUrl = parts.url!;
 
-                        return shareUrl;
-                    })));
-                } catch {
-                    completionHandler(.failure(.noAccessError));
-                }
-            case .failure(_):
-                completionHandler(.failure(.unknownError));
-            }
+                return shareUrl;
+            });
         }
     }
     

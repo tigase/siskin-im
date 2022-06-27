@@ -233,7 +233,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
                 DispatchQueue.main.async {
                     switch result {
                     case .failure(let error):
-                        if error != .item_not_found {
+                        if error.condition != .item_not_found {
                             total = .failure(error);
                         }
                     default:
@@ -265,7 +265,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
             });
             self.unregisterDevice(serviceJid: settings.jid, provider: self.providerId, deviceId: settings.deviceId, completionHandler: resultHandler);
         } else {
-            completionHandler(.failure(.remote_server_not_found()));
+            completionHandler(.failure(XMPPError(condition: .remote_server_not_found)));
         }
     }
     

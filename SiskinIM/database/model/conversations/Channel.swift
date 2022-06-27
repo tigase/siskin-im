@@ -206,8 +206,8 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         }
     }
     
-    public func prepareAttachment(url originalURL: URL, completionHandler: (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
-        completionHandler(.success((originalURL, false, nil)));
+    public func prepareAttachment(url originalURL: URL) throws -> SharePreparedAttachment {
+        return .init(url: originalURL, isTemporary: false, prepareShareURL: nil);
     }
     
     public func sendAttachment(url uploadedUrl: String, appendix: ChatAttachmentAppendix, originalUrl: URL?, completionHandler: (() -> Void)?) {

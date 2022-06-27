@@ -85,11 +85,11 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         if let pepBookmarksModule = room.context?.module(.pepBookmarks), let room = self.room, room.context?.isConnected ?? false {
             if let bookmark = bookmarks.conference(for: JID(room.jid)) {
                 actions.append(UIAction(title: NSLocalizedString("Remove bookmark", comment: "button label"), image: UIImage(systemName: "bookmark.slash"), handler: { action in
-                    pepBookmarksModule.remove(bookmark: bookmark);
+                    pepBookmarksModule.remove(bookmark: bookmark, completionHandler: { _ in });
                 }));
             } else {
                 actions.append(UIAction(title: NSLocalizedString("Create bookmark", comment: "button label"), image: UIImage(systemName: "bookmark"), handler: { action in
-                    pepBookmarksModule.addOrUpdate(bookmark: Bookmarks.Conference(name: room.name ?? room.jid.localPart ?? room.jid.description, jid: JID(room.jid), autojoin: false, nick: room.nickname, password: room.password));
+                    pepBookmarksModule.addOrUpdate(bookmark: Bookmarks.Conference(name: room.name ?? room.jid.localPart ?? room.jid.description, jid: JID(room.jid), autojoin: false, nick: room.nickname, password: room.password), completionHandler: { _ in });
                 }));
             }
         }
@@ -139,7 +139,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         
         let dispatchGroup = DispatchGroup();
         dispatchGroup.enter();
-        context.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
+        context.module(.disco).info(for: JID(room.jid), completionHandler: { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let info):
@@ -279,11 +279,11 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         if room.context?.isConnected ?? false, let pepBookmarksModule = room.context?.module(.pepBookmarks) {
             if pepBookmarksModule.currentBookmarks.conference(for: JID(room.jid)) == nil {
                 alertController.addAction(UIAlertAction(title: NSLocalizedString("Create bookmark", comment: "button label"), style: .default, handler: { action in
-                    pepBookmarksModule.addOrUpdate(bookmark: Bookmarks.Conference(name: self.room.name, jid: JID(self.room.jid), autojoin: false, nick: self.room.nickname, password: self.room.password));
+                    pepBookmarksModule.addOrUpdate(bookmark: Bookmarks.Conference(name: self.room.name, jid: JID(self.room.jid), autojoin: false, nick: self.room.nickname, password: self.room.password), completionHandler: { _ in });
                 }))
             } else {
                 alertController.addAction(UIAlertAction(title: NSLocalizedString("Remove bookmark", comment: "button label"), style: .default, handler: { action in
-                    pepBookmarksModule.remove(bookmark: Bookmarks.Conference(name: self.room.name, jid: JID(self.room.jid), autojoin: false));
+                    pepBookmarksModule.remove(bookmark: Bookmarks.Conference(name: self.room.name, jid: JID(self.room.jid), autojoin: false), completionHandler: { _ in });
                 }))
             }
         }
@@ -385,11 +385,11 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
                 return;
             }
             self.showIndicator();
-            mucModule.getRoomConfiguration(roomJid: JID(self.room.jid), completionHandler: { result in
+            mucModule.roomConfiguration(of: JID(self.room.jid), completionHandler: { result in
                 switch result {
                 case .success(let form):
                     form.name = newName;
-                    mucModule.setRoomConfiguration(roomJid: JID(self.room.jid), configuration: form, completionHandler: { result in
+                    mucModule.roomConfiguration(form, of: JID(self.room.jid), completionHandler: { result in
                         DispatchQueue.main.async {
                             self.hideIndicator();
                             switch result {

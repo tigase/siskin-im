@@ -132,7 +132,7 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
         }
         group.leave();
         group.notify(queue: DispatchQueue.main, execute: {
-            completionHandler(errors ? .failure(XMPPError.forbidden(nil)) : .success(Void()));
+            completionHandler(errors ? .failure(XMPPError(condition: .forbidden)) : .success(Void()));
         })
     }
 
@@ -141,13 +141,13 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
         case .authorized:
             completionHandler(.success(Void()));
         case .denied, .restricted:
-            completionHandler(.failure(XMPPError.forbidden(nil)));
+            completionHandler(.failure(XMPPError(condition: .forbidden)));
         case .notDetermined:
             AVCaptureDevice.requestAccess(for: media.avmedia, completionHandler: { result in
-                completionHandler(result ? .success(Void()) : .failure(XMPPError.forbidden(nil)));
+                completionHandler(result ? .success(Void()) : .failure(XMPPError(condition: .forbidden)));
             })
         default:
-            completionHandler(.failure(XMPPError.forbidden(nil)));
+            completionHandler(.failure(XMPPError(condition: .forbidden)));
         }
     }
     
@@ -159,7 +159,7 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
             case .failure(let err):
                 var message = NSLocalizedString("It was not possible to establish call", comment: "error message");
                 if let e = err as? XMPPError {
-                    switch e {
+                    switch e.condition {
                     case .forbidden:
                         message = NSLocalizedString("It was not possible to access camera or microphone. Please check privacy settings", comment: "error message");
                     default:
@@ -177,11 +177,11 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
     
     static func call(jid: BareJID, from account: BareJID, media: [Call.Media], completionHandler: @escaping (Result<Void,Error>)->Void) {
         guard let instance = CallManager.instance else {
-            completionHandler(.failure(XMPPError.not_allowed(nil)))
+            completionHandler(.failure(XMPPError(condition: .not_allowed)))
             return;
         }
         guard let client = XmppService.instance.getClient(for: account) else {
-            completionHandler(.failure(XMPPError.item_not_found));
+            completionHandler(.failure(XMPPError(condition: .item_not_found)));
             return;
         }
         
@@ -207,14 +207,14 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
                         if result {
                             continueCall();
                         } else {
-                            completionHandler(.failure(XMPPError.not_allowed(nil)))
+                            completionHandler(.failure(XMPPError(condition: .not_allowed)))
                         }
                     });
                 } else {
                     continueCall();
                 }
             } else {
-                completionHandler(.failure(XMPPError.not_allowed(nil)))
+                completionHandler(.failure(XMPPError(condition: .not_allowed)))
             }
         });
         

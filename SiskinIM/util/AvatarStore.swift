@@ -109,7 +109,7 @@ open class AvatarStore {
                 completionHandler(.success(image));
                 return;
             }
-            completionHandler(.failure(.conflict(nil)))
+            completionHandler(.failure(XMPPError(condition: .conflict)))
         }
     }
     

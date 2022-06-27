@@ -111,7 +111,7 @@ class CallManager: NSObject, CXProviderDelegate {
     func reportIncomingCall(_ call: CallBase, completionHandler: @escaping(Result<Void,Error>)->Void) {
         queue.sync {
             guard self.activeCalls.allSatisfy({ !call.isEqual($0) }) else {
-                completionHandler(.failure(XMPPError.conflict("Call already registered!")));
+                completionHandler(.failure(XMPPError(condition: .conflict, message: "Call already registered!")));
                 return;
             }
             if let c = call as? Call {
@@ -181,7 +181,7 @@ class CallManager: NSObject, CXProviderDelegate {
     func reportOutgoingCall(_ call: CallBase, completionHandler: @escaping(Result<Void,Error>)->Void) {
         queue.async {
             guard self.activeCalls.allSatisfy({ !call.isEqual($0) }) else {
-                completionHandler(.failure(XMPPError.conflict("Call already registered!")));
+                completionHandler(.failure(XMPPError(condition: .conflict, message: "Call already registered!")));
                 return;
             }
             self.activeCalls.append(call);
@@ -611,7 +611,7 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
 
     func initiateOutgoingCall(with callee: JID? = nil, completionHandler: @escaping (Result<Void,Error>)->Void) {
         guard let client = XmppService.instance.getClient(for: account) else {
-            completionHandler(.failure(XMPPError.item_not_found));
+            completionHandler(.failure(XMPPError(condition: .item_not_found)));
             return;
         }
         var withJingle: [JID] = [];
@@ -813,7 +813,7 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
                 completionHandler(.success(Void()));
             }
         } else {
-            completionHandler(.failure(XMPPError.internal_server_error(nil)));
+            completionHandler(.failure(XMPPError(condition: .internal_server_error)));
         }
     }
 
@@ -975,7 +975,7 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
             guard let error = err else {
                 // session may be unavailable, and we need it to get content creator from it.. or we may have many sessions for a single RTCPeerConnection (initiating outgoing call using plain Jingle)
                 guard let (sdp, _) = SDP.parse(sdpString: localSDP.sdp, creatorProvider: creatorProvider, localRole: localRole) else {
-                    completionHandler(.failure(XMPPError.not_acceptable(nil)));
+                    completionHandler(.failure(XMPPError(condition: .not_acceptable)));
                     return;
                 }
                 self.localSessionDescription = sdp;

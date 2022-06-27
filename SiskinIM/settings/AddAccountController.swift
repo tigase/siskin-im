@@ -198,17 +198,17 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         let acceptedCertificate = accountValidatorTask?.acceptedCertificate;
         self.accountValidatorTask = nil;
         switch result {
-        case .failure(let errorCondition):
+        case .failure(let error):
             self.hideIndicator();
             self.saveButton.isEnabled = true;
-            var error = "";
-            switch errorCondition {
+            var errorMessage = "";
+            switch error.condition {
             case .not_authorized:
-                error = NSLocalizedString("Login and password do not match.", comment: "error message");
+                errorMessage = NSLocalizedString("Login and password do not match.", comment: "error message");
             default:
-                error = NSLocalizedString("It was not possible to contact XMPP server and sign in.", comment: "error message");
+                errorMessage = NSLocalizedString("It was not possible to contact XMPP server and sign in.", comment: "error message");
             }
-            let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message:  error, preferredStyle: .alert);
+            let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: errorMessage, preferredStyle: .alert);
             alert.addAction(UIAlertAction(title: NSLocalizedString("Close", comment: "button label"), style: .cancel, handler: nil));
             self.present(alert, animated: true, completion: nil);
         case .success(_):
@@ -289,11 +289,11 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
                 DispatchQueue.main.async {
                     switch newState {
                     case .error(_):
-                        callback(.failure(.not_authorized(nil)));
+                        callback(.failure(XMPPError(condition: .not_authorized)));
                     case .authorized:
                         callback(.success(Void()))
                     default:
-                        callback(.failure(.service_unavailable(nil)));
+                        callback(.failure(XMPPError(condition: .service_unavailable)));
                     }
                 }
                 self.finish();
@@ -322,7 +322,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
                             self.client?.login();
                         }, onDeny: {
                             self.finish();
-                            callback(.failure(XMPPError.service_unavailable(nil)));
+                            callback(.failure(XMPPError(condition: .service_unavailable)));
                         })
                         DispatchQueue.main.async {
                             self.controller?.present(alert, animated: true, completion: nil);
@@ -332,7 +332,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
                         break;
                     }
                     DispatchQueue.main.async {
-                        callback(.failure(.service_unavailable(nil)));
+                        callback(.failure(XMPPError(condition: .service_unavailable)));
                     }
                     self.finish();
                 default:

@@ -111,7 +111,7 @@ class Meet: CallBase {
         if !PresenceStore.instance.isAvailable(for: jid, context: client) {
             let presence = Presence();
             presence.to = JID(jid);
-            client.writer.write(presence);
+            client.writer.write(stanza: presence);
             presenceSent = true;
         }
         
@@ -162,7 +162,7 @@ class Meet: CallBase {
             let presence = Presence();
             presence.type = .unavailable;
             presence.to = JID(jid);
-            client.writer.write(presence);
+            client.writer.write(stanza: presence);
         }
     }
     

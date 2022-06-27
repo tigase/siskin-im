@@ -60,12 +60,18 @@ public protocol Conversation: ConversationProtocol, ConversationKey, Displayable
     func update(_ activity: LastConversationActivity, isUnread: Bool) -> Bool;
     
     func sendMessage(text: String, correctedMessageOriginId: String?);
-    func prepareAttachment(url: URL, completionHandler: @escaping (Result<(URL,Bool,((URL)->URL)?),ShareError>)->Void);
+    func prepareAttachment(url originalURL: URL) throws -> SharePreparedAttachment
     func sendAttachment(url: String, appendix: ChatAttachmentAppendix, originalUrl: URL?, completionHandler: (()->Void)?);
     func canSendChatMarker() -> Bool;
     func sendChatMarker(_ marker: Message.ChatMarkers, andDeliveryReceipt: Bool);
     
     func isLocal(sender: ConversationEntrySender) -> Bool;
+}
+
+public struct SharePreparedAttachment {
+    let url: URL;
+    let isTemporary: Bool;
+    let prepareShareURL: ((URL) -> URL)?;
 }
 
 import TigaseSwiftOMEMO

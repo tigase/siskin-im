@@ -237,7 +237,7 @@ class RegisterAccountController: DataFormController {
         
         var msg = error.message;
         if msg == nil || msg == "Unsuccessful registration attempt" {
-            switch error.errorCondition {
+            switch error.condition {
             case .feature_not_implemented:
                 msg = NSLocalizedString("Registration is not supported by this server", comment: "account registration error");
             case .not_acceptable, .not_allowed:
@@ -252,8 +252,8 @@ class RegisterAccountController: DataFormController {
         }
         var handler: ((UIAlertAction?)->Void)? = nil;
         
-        switch error {
-        case .feature_not_implemented, .service_unavailable(_):
+        switch error.condition {
+        case .feature_not_implemented, .service_unavailable:
             handler = {(action)->Void in
                 self.dismissView();
             };

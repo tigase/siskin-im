@@ -355,7 +355,7 @@ class AccountSettingsViewController: UITableViewController {
             if fromServer {
                 if let client = XmppService.instance.getClient(for: account), client.state == .connected() {
                     let regModule = client.modulesManager.register(InBandRegistrationModule());
-                    regModule.unregister(completionHander: { (result) in
+                    regModule.unregister(completionHandler: { (result) in
                         DispatchQueue.main.async() {
                             try? AccountManager.deleteAccount(for: account);
                             self.navigationController?.popViewController(animated: true);

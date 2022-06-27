@@ -244,7 +244,7 @@ class MucChatOccupantsTableViewController: UITableViewController {
                     }
                     let alert = UIAlertController(title: NSLocalizedString("Banning user", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Do you want to ban user %@?", comment: "alert body"), participant.nickname), preferredStyle: .alert);
                     alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { action in
-                        mucModule.setRoomAffiliations(to: self.room, changedAffiliations: [MucModule.RoomAffiliation(jid: jid, affiliation: .outcast)], completionHandler: { result in
+                        mucModule.roomAffiliations([MucModule.RoomAffiliation(jid: jid, affiliation: .outcast)], to: self.room, completionHandler: { result in
                             switch result {
                             case .success(_):
                                 break;

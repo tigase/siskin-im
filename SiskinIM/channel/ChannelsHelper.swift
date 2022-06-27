@@ -29,7 +29,7 @@ class ChannelsHelper {
         let group = DispatchGroup();
         for component in components {
             group.enter();
-            client.module(.disco).getItems(for: component.jid, completionHandler: { result in
+            client.module(.disco).items(for: component.jid, completionHandler: { result in
                  switch result {
                  case .success(let items):
                      DispatchQueue.main.async {
@@ -60,7 +60,7 @@ class ChannelsHelper {
                 }
                 group.leave();
             case .failure(_):
-                discoModule.getItems(for: domainJid, completionHandler: { result in
+                discoModule.items(for: domainJid, completionHandler: { result in
                     switch result {
                     case .success(let items):
                         // we need to do disco on all components to find out local mix/muc component..
@@ -99,7 +99,7 @@ class ChannelsHelper {
         for component in components {
             group.enter();
             let channelJid = JID(BareJID(localPart: name, domain: component.jid.domain));
-            discoModule.getInfo(for: channelJid, node: nil, completionHandler: { result in
+            discoModule.info(for: channelJid, node: nil, completionHandler: { result in
                  switch result {
                  case .success(let info):
                      DispatchQueue.main.async {
@@ -117,11 +117,11 @@ class ChannelsHelper {
     }
     
     static func retrieveComponent(from jid: JID, name: String?, discoModule: DiscoveryModule, completionHandler: @escaping (Result<Component,XMPPError>)->Void) {
-        discoModule.getInfo(for: jid, completionHandler: { result in
+        discoModule.info(for: jid, completionHandler: { result in
             switch result {
             case .success(let info):
                 guard let component = Component(jid: jid, name: name, identities: info.identities, features: info.features) else {
-                    completionHandler(.failure(.item_not_found));
+                    completionHandler(.failure(XMPPError(condition: .item_not_found)));
                     return;
                 }
                 completionHandler(.success(component));

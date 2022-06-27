@@ -169,26 +169,30 @@ extension BaseChatViewController: URLSessionDelegate {
         let encrypted = shouldEncryptUploadedFile();
 
         if encrypted {
-            guard case let .success((data, fragment)) = OMEMOModule.encryptFile(url: url) else {
+            do {
+                let (data,fragment) = try OMEMOModule.encryptFile(url: url);
+                HTTPFileUploadHelper.upload(for: context, filename: filename, inputStream: InputStream(data: data), filesize: data.count, mimeType: mimeType ?? "application/octet-stream", delegate: self, completionHandler: { result in
+                    switch result {
+                    case .success(let url):
+                        var parts = URLComponents(url: url, resolvingAgainstBaseURL: true)!;
+                        parts.scheme = "aesgcm";
+                        parts.fragment = fragment;
+                        let shareUrl = parts.url!;
+                        
+                        completionHandler(.success(url: shareUrl, filesize: size, mimeType: mimeType));
+                    case .failure(let error):
+                        completionHandler(.failure(error));
+                    }
+                    DispatchQueue.main.async {
+                        self.hideProgressBar();
+                    }
+                });
+            } catch {
                 completionHandler(.failure(.noAccessError));
-                return;
-            }
-            HTTPFileUploadHelper.upload(for: context, filename: filename, inputStream: InputStream(data: data), filesize: data.count, mimeType: mimeType ?? "application/octet-stream", delegate: self, completionHandler: { result in
-                switch result {
-                case .success(let url):
-                    var parts = URLComponents(url: url, resolvingAgainstBaseURL: true)!;
-                    parts.scheme = "aesgcm";
-                    parts.fragment = fragment;
-                    let shareUrl = parts.url!;
-                    
-                    completionHandler(.success(url: shareUrl, filesize: size, mimeType: mimeType));
-                case .failure(let error):
-                    completionHandler(.failure(error));
-                }
                 DispatchQueue.main.async {
                     self.hideProgressBar();
                 }
-            });
+            }
         } else {
             guard let inputStream = InputStream(url: url) else {
                 DispatchQueue.main.async {

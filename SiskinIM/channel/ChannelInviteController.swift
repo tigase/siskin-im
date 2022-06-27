@@ -53,7 +53,7 @@ class ChannelInviteController: AbstractRosterViewController {
                     let conversationKey: ConversationKey = DBChatStore.instance.conversation(for: channel.account, with: item.jid) ?? ConversationKeyItem(account: channel.account, jid: item.jid);
                     let options = ConversationEntry.Options(recipient: .none, encryption: .none, isMarkable: false);
                     DBChatHistoryStore.instance.appendItem(for: conversationKey, state: .outgoing(.sent), sender: .me(conversation: conversationKey), type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), options: options, linkPreviewAction: .none, completionHandler: nil);
-                    mixModule.write(message);
+                    mixModule.write(stanza: message);
                 case .failure(_):
                     break;
                 }

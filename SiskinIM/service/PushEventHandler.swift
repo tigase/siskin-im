@@ -34,8 +34,8 @@ open class PushEventHandler: XmppServiceExtension {
             case .success(_):
                 completionHandler(.success(Void()));
             case .failure(let error):
-                switch error {
-                case .internal_server_error(_), .service_unavailable(_):
+                switch error.condition {
+                case .internal_server_error, .service_unavailable:
                     self.unregisterDevice(from: pushServiceJid, path: "/rest/push", account: account, deviceId: deviceId, completionHandler: completionHandler);
                 default:
                     completionHandler(.failure(error));
@@ -46,13 +46,13 @@ open class PushEventHandler: XmppServiceExtension {
     
     private static func unregisterDevice(from pushServiceJid: BareJID, path: String, account: BareJID, deviceId: String, completionHandler: @escaping (Result<Void,XMPPError>)->Void) {
         guard let url = URL(string: "https://\(pushServiceJid.description)\(path)/unregister-device/\(pushServiceJid.description)") else {
-            completionHandler(.failure(.service_unavailable(nil)));
+            completionHandler(.failure(XMPPError(condition: .service_unavailable)));
             return;
         }
         var request = URLRequest(url: url);
         request.httpMethod = "POST";
         guard let payload = try? JSONEncoder().encode(UnregisterDeviceRequestPayload(account: account, provider: "tigase:messenger:apns:1", deviceToken: deviceId)) else {
-            completionHandler(.failure(.internal_server_error(nil)));
+            completionHandler(.failure(XMPPError(condition: .internal_server_error)));
             return;
         }
         request.addValue("application/json", forHTTPHeaderField: "Content-Type");
@@ -60,17 +60,17 @@ open class PushEventHandler: XmppServiceExtension {
         
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard error == nil else {
-                completionHandler(.failure(.service_unavailable(nil)));
+                completionHandler(.failure(XMPPError(condition: .service_unavailable)));
                 return;
             }
             guard let data = data, let payload = try? JSONDecoder().decode(UnregisterDeviceResponsePayload.self, from: data) else {
-                completionHandler(.failure(.internal_server_error(nil)));
+                completionHandler(.failure(XMPPError(condition: .internal_server_error)));
                 return;
             }
             if payload.success {
                 completionHandler(.success(Void()));
             } else {
-                completionHandler(.failure(.not_acceptable(nil)));
+                completionHandler(.failure(XMPPError(condition: .not_acceptable)));
             }
         }
         task.resume();

@@ -80,7 +80,7 @@ class ChannelJoinViewController: UITableViewController {
         case .join:
             if componentType == .muc {
                 operationStarted(message: NSLocalizedString("Checking…", comment: "channel join view operation label"));
-                client.module(.disco).getInfo(for: JID(channelJid), node: nil, completionHandler: { result in
+                client.module(.disco).info(for: JID(channelJid), node: nil, completionHandler: { result in
                     switch result {
                     case .success(let info):
                         DispatchQueue.main.async {
@@ -221,11 +221,15 @@ class ChannelJoinViewController: UITableViewController {
                                 }
                             }
                         })
-                        mixModule.publishInfo(for: channelJid, info: ChannelInfo(name: name, description: description, contact: []), completionHandler: nil);
-                        if let avatarData = avatar?.scaled(maxWidthOrHeight: 512.0)?.jpegData(compressionQuality: 0.8) {
-                            client.module(.pepUserAvatar).publishAvatar(at: channelJid, data: avatarData, mimeType: "image/jpeg", completionHandler: { result in
+                        mixModule.publishInfo(for: channelJid, info: ChannelInfo(name: name, description: description, contact: []), completionHandler: { _ in });
+                        if let pngImage = avatar?.scaled(maxWidthOrHeight: 48), let pngData = pngImage.pngData() {
+                            var avatars: [PEPUserAvatarModule.Avatar] = [.init(data: pngData, mimeType: "image/png", width: Int(pngImage.size.width), height: Int(pngImage.size.height))];
+                            if let jpegImage = avatar?.scaled(maxWidthOrHeight: 512), let jpegData = jpegImage.jpegData(compressionQuality: 0.8) {
+                                avatars.append(.init(data: jpegData, mimeType: "image/jpeg", width: Int(jpegImage.size.width), height: Int(jpegImage.size.height)));
+                            }
+                            client.module(.pepUserAvatar).publishAvatar(at: channelJid, avatar: avatars, completionHandler: { result in
                                 self?.logger.debug("avatar publication result: \(result)");
-                            });
+                            })
                         }
                         if invitationOnly {
                             mixModule.changeAccessPolicy(of: channelJid, isPrivate: invitationOnly, completionHandler: { result in
@@ -262,14 +266,14 @@ class ChannelJoinViewController: UITableViewController {
             
             let mucServer = self.channelJid.domain;
             self.operationStarted(message: NSLocalizedString("Creating channel…", comment: "channel join view operation label"))
-            mucModule.setRoomConfiguration(roomJid: JID(BareJID(localPart: roomName, domain: mucServer)), configuration: form, completionHandler: { [weak self] configResult in
+            mucModule.roomConfiguration(form, of: JID(BareJID(localPart: roomName, domain: mucServer)), completionHandler: { [weak self] configResult in
                 mucModule.join(roomName: roomName, mucServer: mucServer, nickname: nick).handle({ [weak self] joinResult in
                     switch joinResult {
                     case .success(let r):
                         switch r {
                         case .created(let room), .joined(let room):
                             if createBookmark {
-                                client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: name.isEmpty ? room.jid.localPart : name, jid: JID(room.jid), autojoin: autojoin, nick: nick, password: nil));
+                                client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: name.isEmpty ? room.jid.localPart : name, jid: JID(room.jid), autojoin: autojoin, nick: nick, password: nil), completionHandler: { _ in });
                             }
                             
                             var features = Set<Room.Feature>();
@@ -282,7 +286,7 @@ class ChannelJoinViewController: UITableViewController {
                             if let binval = avatar?.scaled(maxWidthOrHeight: 512.0)?.jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
                                 vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
                             }
-                            client.module(.vcardTemp).publishVCard(vcard, to: room.jid, completionHandler: nil);
+                            client.module(.vcardTemp).publishVCard(vcard, to: room.jid, completionHandler: { _ in });
                             if description != nil {
                                 mucModule.setRoomSubject(roomJid: room.jid, newSubject: description);
                             }
@@ -298,7 +302,7 @@ class ChannelJoinViewController: UITableViewController {
                             case .success(_):
                                 finished();
                             case .failure(_):
-                                mucModule.setRoomConfiguration(roomJid: JID(room.jid), configuration: form, completionHandler: { configResult in
+                                mucModule.roomConfiguration(form, of: JID(room.jid), completionHandler: { configResult in
                                     switch configResult {
                                     case .failure(let error):
                                         DispatchQueue.main.async {
@@ -380,11 +384,11 @@ class ChannelJoinViewController: UITableViewController {
                     }
                     switch joinResult {
                     case .created(let room), .joined(let room):
-                        client.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
+                        client.module(.disco).info(for: JID(room.jid), completionHandler: { result in
                             switch result {
                             case .success(let info):
                                 if createBookmark {
-                                    client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: info.identities.first?.name ?? room.jid.localPart, jid: JID(room.jid), autojoin: autojoin, nick: nick, password: password));
+                                    client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: info.identities.first?.name ?? room.jid.localPart, jid: JID(room.jid), autojoin: autojoin, nick: nick, password: password), completionHandler: { _ in });
                                 }
                                 (room as! Room).roomFeatures = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
                             case .failure(_):
@@ -399,7 +403,7 @@ class ChannelJoinViewController: UITableViewController {
                         }
                     }
                     if createBookmark {
-                        client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: autojoin, nick: nick, password: password));
+                        client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: autojoin, nick: nick, password: password), completionHandler: { _ in });
                     }
                     DispatchQueue.main.async {
                         self.dismiss(animated: true, completion: nil);

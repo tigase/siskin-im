@@ -139,36 +139,23 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         self.send(message: message, completionHandler: nil);
     }
  
-    public func prepareAttachment(url originalURL: URL, completionHandler: @escaping (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
+    public func prepareAttachment(url originalURL: URL) throws -> SharePreparedAttachment {
         let encryption = self.options.encryption ?? .none;
         switch encryption {
         case .none:
-            completionHandler(.success((originalURL, false, nil)));
+            return .init(url: originalURL, isTemporary: false, prepareShareURL: nil);
         case .omemo:
-            guard let omemoModule: OMEMOModule = self.context?.module(.omemo), let data = try? Data(contentsOf: originalURL) else {
-                completionHandler(.failure(.unknownError));
-                return;
-            }
-            let result = OMEMOModule.encryptFile(data: data);
-            switch result {
-            case .success(let (encryptedData, hash)):
-                let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString);
-                do {
-                    try encryptedData.write(to: tmpFile);
-                    completionHandler(.success((tmpFile, true, { url in
-                        var parts = URLComponents(url: url, resolvingAgainstBaseURL: true)!;
-                        parts.scheme = "aesgcm";
-                        parts.fragment = hash;
-                        let shareUrl = parts.url!;
+            let (encryptedData, hash) = try OMEMOModule.encryptFile(url: originalURL);
+            let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString);
+            try encryptedData.write(to: tmpFile);
+            return .init(url: tmpFile, isTemporary: true, prepareShareURL: { url in
+                var parts = URLComponents(url: url, resolvingAgainstBaseURL: true)!;
+                parts.scheme = "aesgcm";
+                parts.fragment = hash;
+                let shareUrl = parts.url!;
 
-                        return shareUrl;
-                    })));
-                } catch {
-                    completionHandler(.failure(.noAccessError));
-                }
-            case .failure(_):
-                completionHandler(.failure(.unknownError));
-            }
+                return shareUrl;
+            });
         }
     }
     
@@ -236,7 +223,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
             case .success(_):
                 DBChatHistoryStore.instance.updateItemState(for: self, stanzaId: correctedMessageOriginId ?? message.id!, from: .outgoing(.unsent), to: .outgoing(.sent), withTimestamp: correctedMessageOriginId != nil ? nil : Date());
             case .failure(let error):
-                switch error {
+                switch error.condition {
                 case .gone:
                     return;
                 default:
@@ -257,7 +244,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
                 });
             case .omemo:
                 guard let context = self.context as? XMPPClient, context.isConnected else {
-                    completionHandler(.failure(.gone(nil)));
+                    completionHandler(.failure(XMPPError(condition: .gone)));
                     callback();
                     return;
                 }
@@ -266,7 +253,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
                     switch result {
                     case .successMessage(let encodedMessage, _):
                         guard context.isConnected else {
-                            completionHandler(.failure(.gone(nil)))
+                            completionHandler(.failure(XMPPError(condition: .gone)))
                             callback();
                             return;
                         }
@@ -282,7 +269,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
                         default:
                             break;
                         }
-                        completionHandler(.failure(.unexpected_request(errorMessage)));
+                        completionHandler(.failure(XMPPError(condition: .unexpected_request, message: errorMessage)));
                         callback();
                     }
                 })

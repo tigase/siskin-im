@@ -108,15 +108,15 @@ public class BookmarksController: UITableViewController {
             
             if (item.autojoin) {
                 items.append(UIAction(title: NSLocalizedString("Disable autojoin", comment: "button label"), image: UIImage(systemName: "star.slash"), handler: { action in
-                    self.pepBookmarksModule(for: item.account)?.setConferenceAutojoin(false, for: item.jid);
+                    self.pepBookmarksModule(for: item.account)?.setConferenceAutojoin(false, for: item.jid, completionHandler: { _ in });
                 }));
             } else {
                 items.append(UIAction(title: NSLocalizedString("Enable autojoin", comment: "button label"), image: UIImage(systemName: "star"), handler: { action in
-                    self.pepBookmarksModule(for: item.account)?.setConferenceAutojoin(true, for: item.jid);
+                    self.pepBookmarksModule(for: item.account)?.setConferenceAutojoin(true, for: item.jid, completionHandler: { _ in });
                 }));
             }
             items.append(UIAction(title: NSLocalizedString("Delete", comment: "button label"), image: UIImage(systemName: "trash"), attributes: .destructive, handler: { action in
-                self.pepBookmarksModule(for: item.account)?.remove(bookmark: item.item);
+                self.pepBookmarksModule(for: item.account)?.remove(bookmark: item.item, completionHandler: { _ in });
             }));
             return UIMenu(title: "", children: items);
         };

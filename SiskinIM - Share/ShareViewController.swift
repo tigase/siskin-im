@@ -312,7 +312,7 @@ class ShareViewController: UITableViewController {
             message.id = UUID().uuidString;
             message.body = body;
             message.oob = oob;
-            client.writer.write(message, writeCompleted: { result in
+            client.writer.write(stanza: message, completionHandler: { result in
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
                     group.leave();
                 })

@@ -259,8 +259,8 @@ class AvatarManager {
 
         pepModule.retrieveAvatar(from: jid, itemId: hash, completionHandler: { result in
             switch result {
-            case .success((let hash, let data)):
-                self.store.storeAvatar(data: data, for: hash);
+            case .success(let avatarData):
+                self.store.storeAvatar(data: avatarData.data, for: hash);
                 self.updateAvatar(hash: hash, forType: .pepUserAvatar, forJid: jid, on: account);
             case .failure(let error):
                 self.logger.error("could not retrieve avatar from: \(jid), item id: \(hash), got error: \(error.description, privacy: .public)");

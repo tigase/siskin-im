@@ -408,7 +408,7 @@ class MessageEventHandler: XmppServiceExtension {
                 }
                 os_log("for account %s fetch for component %s with id %s executed in %f s", log: .chatHistorySync, type: .debug, period.account.description, period.component?.description ?? "nil", queryId, Date().timeIntervalSince(start));
             case .failure(let error):
-                guard client?.state ?? .disconnected() == .connected(), retry > 0 && error != .feature_not_implemented else {
+                guard client?.state ?? .disconnected() == .connected(), retry > 0 && error.condition != .feature_not_implemented else {
                     os_log("for account %s fetch for component %s with id %s could not synchronize message archive for: %{public}s", log: .chatHistorySync, type: .debug, period.account.description, period.component?.description ?? "nil", queryId, error.description);
                     if period.component != nil {
                         DBChatMarkersStore.instance.syncCompleted(forAccount: account, with: period.component!);
