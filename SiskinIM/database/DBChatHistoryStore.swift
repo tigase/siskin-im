@@ -187,7 +187,64 @@ class DBChatHistoryStore {
     }
     private var enqueuedItems = 0;
     
+    /// Class ensures that async task is completed before another task is started
+    private class AccountTaskSerializer {
+        private var lock = UnfairLock();
+        
+        private var accountLocks: [BareJID: AccountLock] = [:];
+        
+        func execute(for jid: BareJID, body: @escaping () async -> Void) {
+            lock.lock();
+            let accountLock = ensureAccountLock(for: jid);
+            accountLock.counter = accountLock.counter + 1;
+            lock.unlock();
+            
+            accountLock.execute(body);
+            
+            lock.lock();
+            accountLock.counter = accountLock.counter - 1;
+            if accountLock.counter == 0 {
+                releaseAccountLock(for: jid);
+            }
+            lock.unlock();
+        }
+            
+        private func ensureAccountLock(for jid: BareJID) -> AccountLock {
+            if let lock = accountLocks[jid] {
+                return lock;
+            }
+            let lock = AccountLock();
+            accountLocks[jid] = lock;
+            return lock;
+        }
+        
+        private func releaseAccountLock(for jid: BareJID) {
+            accountLocks.removeValue(forKey: jid);
+        }
+                                    
+        private class AccountLock {
+            var counter: Int = 0;
+            let semaphore = DispatchSemaphore(value: 1);
+            
+            func execute(_ body: @escaping () async -> Void) {
+                semaphore.wait();
+                Task {
+                    await body();
+                    self.semaphore.signal();
+                };
+            }
+        }
+    }
+    
+    private let accountTaskSerializer = AccountTaskSerializer();
+    
     open func append(for conversation: ConversationKey, message: Message, source: MessageSource) {
+        accountTaskSerializer.execute(for: conversation.account, body: {
+            await self.appendSerialized(for: conversation, message: message, source: source);
+        })
+    }
+    
+    private func appendSerialized(for conversation: ConversationKey, message: Message, source: MessageSource) async {
         let direction: MessageDirection = conversation.account == message.from?.bareJid ? .outgoing : .incoming;
         guard let jidFull = direction == .outgoing ? message.to : message.from else {
             // sender jid should always be there..
@@ -258,7 +315,7 @@ class DBChatHistoryStore {
             return;
         }
 
-        let (decryptedBody, encryption) = MessageEventHandler.prepareBody(message: message, forAccount: conversation.account, serverMsgId: serverMsgId);
+        let (decryptedBody, encryption) = await MessageEventHandler.prepareBody(message: message, forAccount: conversation.account, serverMsgId: serverMsgId);
         
         guard let body = decryptedBody ?? (mixInvitation != nil ? "Invitation" : nil) else {
             switch source {

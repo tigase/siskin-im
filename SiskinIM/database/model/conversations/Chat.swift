@@ -251,20 +251,20 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
                 message.oob = nil;
                 context.module(.omemo).encode(message: message, completionHandler: { result in
                     switch result {
-                    case .successMessage(let encodedMessage, _):
+                    case .success(let encodedMessage):
                         guard context.isConnected else {
                             completionHandler(.failure(XMPPError(condition: .gone)))
                             callback();
                             return;
                         }
-                        super.send(message: encodedMessage, completionHandler: { result in
+                        super.send(message: encodedMessage.message, completionHandler: { result in
                             completionHandler(result);
                             callback();
                         });
                     case .failure(let error):
                         var errorMessage = NSLocalizedString("It was not possible to send encrypted message due to encryption error", comment: "message encryption failure");
                         switch error {
-                        case .noSession:
+                        case SignalError.noSession:
                             errorMessage = NSLocalizedString("There is no trusted device to send message to", comment: "message encryption failure");
                         default:
                             break;

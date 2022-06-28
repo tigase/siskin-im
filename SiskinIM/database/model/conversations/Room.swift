@@ -269,8 +269,8 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
                 switch result {
                 case .failure(let error):
                     break;
-                case .successMessage(let message, let fingerprint):
-                    super.send(message: message, completionHandler: nil);
+                case .success(let encryptedMessage):
+                    super.send(message: encryptedMessage.message, completionHandler: nil);
                     if #available(iOS 15.0, *) {
                         let sender = INPerson(personHandle: INPersonHandle(value: self.account.description, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.description, isMe: true, suggestionType: .instantMessageAddress);
                         let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.description, isMe: false, suggestionType: .instantMessageAddress);
@@ -280,7 +280,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
                         interaction.donate(completion: nil);
                     }
                     if correctedMessageOriginId == nil {
-                        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, options: .init(recipient: .none, encryption: .decrypted(fingerprint: fingerprint), isMarkable: true), linkPreviewAction: .auto, completionHandler: nil);
+                        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, options: .init(recipient: .none, encryption: .decrypted(fingerprint: encryptedMessage.fingerprint), isMarkable: true), linkPreviewAction: .auto, completionHandler: nil);
                     }
                 }
             });
@@ -338,8 +338,8 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
                 switch result {
                 case .failure(let error):
                     break;
-                case .successMessage(let message, let fingerprint):
-                    super.send(message: message, completionHandler: nil);
+                case .success(let encryptedMessage):
+                    super.send(message: encryptedMessage.message, completionHandler: nil);
                     if #available(iOS 15.0, *) {
                         let sender = INPerson(personHandle: INPersonHandle(value: self.account.description, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.description, isMe: true, suggestionType: .instantMessageAddress);
                         let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.description, isMe: false, suggestionType: .instantMessageAddress);
@@ -348,7 +348,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
                         interaction.direction = .outgoing;
                         interaction.donate(completion: nil);
                     }
-                    DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: uploadedUrl, appendix: appendix, options: .init(recipient: .none, encryption: .decrypted(fingerprint: fingerprint), isMarkable: true), linkPreviewAction: .auto, completionHandler: { msgId in
+                    DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: uploadedUrl, appendix: appendix, options: .init(recipient: .none, encryption: .decrypted(fingerprint: encryptedMessage.fingerprint), isMarkable: true), linkPreviewAction: .auto, completionHandler: { msgId in
                         if let url = originalUrl {
                             _ = DownloadStore.instance.store(url, filename: appendix.filename ?? url.lastPathComponent, with: "\(msgId)");
                         }

@@ -39,7 +39,7 @@ class MessageEventHandler: XmppServiceExtension {
         case finished(account: BareJID, with: BareJID?)
     }
     
-    static func prepareBody(message: Message, forAccount account: BareJID, serverMsgId: String?) -> (String?, ConversationEntryEncryption) {
+    static func prepareBody(message: Message, forAccount account: BareJID, serverMsgId: String?) async -> (String?, ConversationEntryEncryption) {
         var encryption: ConversationEntryEncryption = .none;
         
         guard (message.type ?? .chat) != .error else {
@@ -64,14 +64,17 @@ class MessageEventHandler: XmppServiceExtension {
                 from = occupantJid.bareJid;
             }
             // we need to know if MAM is being synced or not, if so, we should wait until it finishes!
-            switch context.module(.omemo).decode(message: message, from: from, serverMsgId: serverMsgId) {
-            case .successMessage(_, let keyFingerprint):
-                encryption = .decrypted(fingerprint: keyFingerprint);
-                break;
-            case .successTransportKey(_, _):
-                logger.debug("got transport key with key and iv!");
-            case .failure(let error):
-                switch error {
+            do {
+                switch try await context.module(.omemo).decrypt(message: message, from: from, serverMsgId: serverMsgId) {
+                case .message(let decryptedMessage):
+                    encryption = .decrypted(fingerprint: decryptedMessage.fingerprint);
+                    break;
+                case .transportKey(_):
+                    logger.debug("got transport key with key and iv!");
+                }
+            } catch {
+                let err = error as? SignalError ?? SignalError.unknown;
+                switch err {
                 case .invalidMessage:
                     encryptionErrorBody = NSLocalizedString("Message was not encrypted for this device.", comment: "message decryption error");
                     encryption = .notForThisDevice;
@@ -81,10 +84,9 @@ class MessageEventHandler: XmppServiceExtension {
                 case .notEncrypted:
                     encryption = .none;
                 default:
-                    encryptionErrorBody = String.localizedStringWithFormat(NSLocalizedString("Message decryption failed! Error code: %d", comment: "message decryption error"), error.rawValue);
-                    encryption = .decryptionFailed(errorCode: error.rawValue);
+                    encryptionErrorBody = String.localizedStringWithFormat(NSLocalizedString("Message decryption failed! Error code: %d", comment: "message decryption error"), err.rawValue);
+                    encryption = .decryptionFailed(errorCode: err.rawValue);
                 }
-                break;
             }
         }
 
@@ -213,9 +215,14 @@ class MessageEventHandler: XmppServiceExtension {
     }
     
     private class ReadMarkersQueue {
+        private var lock = UnfairLock();
         private var queue: [Item] = [];
             
         func add(for conversation: ConversationKey, timestamp: Date, stanzaId: String) {
+            lock.lock();
+            defer {
+                lock.unlock();
+            }
             if let idx = queue.firstIndex(where: { $0.conversation.account == conversation.account && $0.conversation.jid == $0.conversation.jid }) {
                 guard queue[idx].timestamp <= timestamp else {
                     return;
@@ -226,12 +233,20 @@ class MessageEventHandler: XmppServiceExtension {
         }
             
         func sendQueued() {
+            lock.lock();
+            defer {
+                lock.unlock();
+            }
             for item in queue {
                 (item.conversation as? Conversation)?.sendChatMarker(.received(id: item.stanzaId), andDeliveryReceipt: false);
             }
         }
             
         func cancelReceived(for conversation: ConversationKey, before: Date) {
+            lock.lock();
+            defer {
+                lock.unlock();
+            }
             queue = queue.filter({ $0.conversation.account != conversation.account || $0.conversation.jid != conversation.jid || $0.timestamp >= before });
         }
             
