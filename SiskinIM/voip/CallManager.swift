@@ -623,7 +623,7 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
             let presences = PresenceStore.instance.presences(for: jid, context: client);
             for presence in presences {
                 if let jid = presence.from, let capsNode = presence.capsNode {
-                    if let features = DBCapabilitiesCache.instance.getFeatures(for: capsNode) {
+                    if let features = DBCapabilitiesCache.instance.features(for: capsNode) {
                         if features.contains(JingleModule.XMLNS) && features.contains(Jingle.Transport.ICEUDPTransport.XMLNS) && features.contains("urn:xmpp:jingle:apps:rtp:audio") {
                             withJingle.append(jid);
                             if features.contains(JingleModule.MESSAGE_INITIATION_XMLNS) {

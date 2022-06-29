@@ -243,7 +243,7 @@ class DBChatHistoryStore {
             return;
         }
 
-        let jid = jidFull.withoutResource;
+        let jid = jidFull.withoutResource();
 
         let mixInvitation = message.mixInvitation;
 

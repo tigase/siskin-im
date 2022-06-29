@@ -101,13 +101,13 @@ class JingleManager: JingleSessionManager {
             PresenceStore.instance.presences(for: jid.bareJid, context: client).filter({ (p) -> Bool in
                 return (p.type ?? .available) == .available;
             }).forEach({ (p) in
-                guard let node = p.capsNode, let f = DBCapabilitiesCache.instance.getFeatures(for: node) else {
+                guard let node = p.capsNode, let f = DBCapabilitiesCache.instance.features(for: node) else {
                     return;
                 }
                 features.append(contentsOf: f);
             })
         } else {
-            guard let p = PresenceStore.instance.presence(for: jid, context: client), (p.type ?? .available) == .available, let node = p.capsNode, let f = DBCapabilitiesCache.instance.getFeatures(for: node) else {
+            guard let p = PresenceStore.instance.presence(for: jid, context: client), (p.type ?? .available) == .available, let node = p.capsNode, let f = DBCapabilitiesCache.instance.features(for: node) else {
                 return [];
             }
             features.append(contentsOf: f);
