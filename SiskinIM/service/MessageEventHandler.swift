@@ -39,7 +39,7 @@ class MessageEventHandler: XmppServiceExtension {
         case finished(account: BareJID, with: BareJID?)
     }
     
-    static func prepareBody(message: Message, forAccount account: BareJID, serverMsgId: String?) async -> (String?, ConversationEntryEncryption) {
+    static func prepareBody(message: Message, forAccount account: BareJID, serverMsgId: String?) -> (String?, ConversationEntryEncryption) {
         var encryption: ConversationEntryEncryption = .none;
         
         guard (message.type ?? .chat) != .error else {
@@ -65,7 +65,7 @@ class MessageEventHandler: XmppServiceExtension {
             }
             // we need to know if MAM is being synced or not, if so, we should wait until it finishes!
             do {
-                switch try await context.module(.omemo).decrypt(message: message, from: from, serverMsgId: serverMsgId) {
+                switch try context.module(.omemo).decrypt(message: message, from: from, serverMsgId: serverMsgId) {
                 case .message(let decryptedMessage):
                     encryption = .decrypted(fingerprint: decryptedMessage.fingerprint);
                     break;

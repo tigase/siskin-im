@@ -236,15 +236,7 @@ class DBChatHistoryStore {
         }
     }
     
-    private let accountTaskSerializer = AccountTaskSerializer();
-    
     open func append(for conversation: ConversationKey, message: Message, source: MessageSource) {
-        accountTaskSerializer.execute(for: conversation.account, body: {
-            await self.appendSerialized(for: conversation, message: message, source: source);
-        })
-    }
-    
-    private func appendSerialized(for conversation: ConversationKey, message: Message, source: MessageSource) async {
         let direction: MessageDirection = conversation.account == message.from?.bareJid ? .outgoing : .incoming;
         guard let jidFull = direction == .outgoing ? message.to : message.from else {
             // sender jid should always be there..
@@ -315,7 +307,7 @@ class DBChatHistoryStore {
             return;
         }
 
-        let (decryptedBody, encryption) = await MessageEventHandler.prepareBody(message: message, forAccount: conversation.account, serverMsgId: serverMsgId);
+        let (decryptedBody, encryption) = MessageEventHandler.prepareBody(message: message, forAccount: conversation.account, serverMsgId: serverMsgId);
         
         guard let body = decryptedBody ?? (mixInvitation != nil ? "Invitation" : nil) else {
             switch source {
