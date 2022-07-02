@@ -306,7 +306,7 @@ class ShareViewController: UITableViewController {
         let group = DispatchGroup();
         for recipient in recipients {
             group.enter();
-            let message = Message(elem: Element(name: "message"));
+            let message = Message(element: Element(name: "message"));
             message.type = .chat;
             message.to = JID(recipient.jid)
             message.id = UUID().uuidString;

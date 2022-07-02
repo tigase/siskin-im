@@ -98,7 +98,9 @@ class MucEventHandler: XmppServiceExtension {
                 guard let nick = bookmark.nick else {
                         return;
                     }
-                    _ = mucModule.join(roomName: bookmark.jid.localPart!, mucServer: bookmark.jid.domain, nickname: nick, password: bookmark.password);
+                    Task {
+                        _ = try await mucModule.join(roomName: bookmark.jid.localPart!, mucServer: bookmark.jid.domain, nickname: nick, password: bookmark.password);
+                    }
                 });
         }).store(in: &cancellables);
     }

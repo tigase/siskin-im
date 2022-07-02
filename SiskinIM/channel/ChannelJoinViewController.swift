@@ -266,78 +266,52 @@ class ChannelJoinViewController: UITableViewController {
             
             let mucServer = self.channelJid.domain;
             self.operationStarted(message: NSLocalizedString("Creating channel…", comment: "channel join view operation label"))
-            mucModule.roomConfiguration(form, of: JID(BareJID(localPart: roomName, domain: mucServer)), completionHandler: { [weak self] configResult in
-                mucModule.join(roomName: roomName, mucServer: mucServer, nickname: nick).handle({ [weak self] joinResult in
-                    switch joinResult {
-                    case .success(let r):
-                        switch r {
-                        case .created(let room), .joined(let room):
-                            if createBookmark {
-                                client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: name.isEmpty ? room.jid.localPart : name, jid: JID(room.jid), autojoin: autojoin, nick: nick, password: nil), completionHandler: { _ in });
+            Task {
+                do {
+                    try await mucModule.roomConfiguration(form, of: JID(BareJID(localPart: roomName, domain: mucServer)));
+                    let r = try await mucModule.join(roomName: roomName, mucServer: mucServer, nickname: nick);
+                    switch r {
+                    case .created(let room), .joined(let room):
+                        if createBookmark {
+                            Task {
+                                try await client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: name.isEmpty ? room.jid.localPart : name, jid: JID(room.jid), autojoin: autojoin, nick: nick, password: nil));
                             }
-                            
-                            var features = Set<Room.Feature>();
-                            features.insert(.nonAnonymous);
-                            if priv {
-                                features.insert(.membersOnly);
-                            }
-                            (room as! Room).roomFeatures = features;
+                        }
+                        
+                        var features = Set<Room.Feature>();
+                        features.insert(.nonAnonymous);
+                        if priv {
+                            features.insert(.membersOnly);
+                        }
+                        (room as! Room).updateRoom(name: name);
+                        (room as! Room).roomFeatures = features;
+                        Task {
                             let vcard = VCard();
                             if let binval = avatar?.scaled(maxWidthOrHeight: 512.0)?.jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
                                 vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
                             }
-                            client.module(.vcardTemp).publishVCard(vcard, to: room.jid, completionHandler: { _ in });
-                            if description != nil {
-                                mucModule.setRoomSubject(roomJid: room.jid, newSubject: description);
-                            }
-                            
-                            let finished = {
-                                DispatchQueue.main.async {
-                                    self?.operationEnded();
-                                    self?.dismiss(animated: true, completion: nil);
-                                    self?.onConversationJoined?(room as! Room);
-                                }
-                            }
-                            switch configResult {
-                            case .success(_):
-                                finished();
-                            case .failure(_):
-                                mucModule.roomConfiguration(form, of: JID(room.jid), completionHandler: { configResult in
-                                    switch configResult {
-                                    case .failure(let error):
-                                        DispatchQueue.main.async {
-                                            self?.operationEnded();
-                                            guard let that = self else {
-                                                return;
-                                            }
-                                            let alert = UIAlertController(title: NSLocalizedString("Error occurred", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Room was created and joined but room was not properly configured. Got following error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
-                                            alert.addAction(UIAlertAction(title: NSLocalizedString("Destroy", comment: "button label"), style: .destructive, handler: { _ in
-                                                room.context?.module(.muc).destroy(room: room);
-                                                finished();
-                                            }))
-                                            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: { _ in
-                                                finished();
-                                            }));
-                                            that.present(alert, animated: true, completion: nil);
-                                        }
-                                    case .success(_):
-                                        finished();
-                                    }
-                                })
-                            }
+                            try await client.module(.vcardTemp).publish(vcard: vcard, to: room.jid);
                         }
-                    case .failure(let error):
-                        DispatchQueue.main.async {
+                        
+                        if description != nil {
+                            try? await mucModule.setRoomSubject(roomJid: room.jid, newSubject: description);
+                        }
+                        
+                        DispatchQueue.main.async { [weak self] in
                             self?.operationEnded();
-                            guard let that = self else {
-                                return;
-                            }
-                            let alert = UIAlertController(title: NSLocalizedString("Error occurred", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not create channel on the server. Got following error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
-                            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
-                            that.present(alert, animated: true, completion: nil);
-                        }                        }
-                })
-            })
+                            self?.dismiss(animated: true, completion: nil);
+                            self?.onConversationJoined?(room as! Room);
+                        }
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        self.operationEnded();
+                        let alert = UIAlertController(title: NSLocalizedString("Error occurred", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not create channel on the server. Got following error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
+                        self.present(alert, animated: true, completion: nil);
+                    }
+                }
+            }
         }
     }
     
@@ -376,39 +350,35 @@ class ChannelJoinViewController: UITableViewController {
             let autojoin = createBookmark && bookmarkAutojoinSwitch.isOn;
             
             self.operationStarted(message: NSLocalizedString("Joining…", comment: "channel join view operation label"));
-            client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nick, password: password).handle({ result in
-                switch result {
-                case .success(let joinResult):
+            Task {
+                do {
+                    let joinResult = try await client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nick, password: password);
                     DispatchQueue.main.async {
                         self.operationEnded();
                     }
                     switch joinResult {
                     case .created(let room), .joined(let room):
-                        client.module(.disco).info(for: JID(room.jid), completionHandler: { result in
-                            switch result {
-                            case .success(let info):
-                                if createBookmark {
-                                    client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: info.identities.first?.name ?? room.jid.localPart, jid: JID(room.jid), autojoin: autojoin, nick: nick, password: password), completionHandler: { _ in });
-                                }
-                                (room as! Room).roomFeatures = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
-                            case .failure(_):
-                                break;
+                        let info = try await client.module(.disco).info(for: JID(room.jid));
+                        if createBookmark {
+                            client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: info.identities.first?.name ?? room.jid.localPart, jid: JID(room.jid), autojoin: autojoin, nick: nick, password: password), completionHandler: { _ in });
+                        }
+                        (room as! Room).updateRoom(name: info.identities.first(where: { $0.category == "conference" })?.name?.trimmingCharacters(in: .whitespacesAndNewlines))
+                        (room as! Room).roomFeatures = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
+                        Task {
+                            do {
+                                _ = try await (room as! Room).registerForTigasePushNotification(true);
+                            } catch {
+                                self.logger.error("failed to enable push for: \(room.jid), result: \(error.localizedDescription)");
                             }
-                        });
-                        (room as! Room).registerForTigasePushNotification(true, completionHandler: { (result) in
-                            self.logger.debug("automatically enabled push for: \(room.jid), result: \(result)");
-                        })
+                        }
                         DispatchQueue.main.async {
                             self.onConversationJoined?(room as! Room);
                         }
                     }
-                    if createBookmark {
-                        client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: autojoin, nick: nick, password: password), completionHandler: { _ in });
-                    }
                     DispatchQueue.main.async {
                         self.dismiss(animated: true, completion: nil);
                     }
-                case .failure(let error):
+                } catch {
                     DispatchQueue.main.async { [weak self] in
                         self?.operationEnded();
                         let alert = UIAlertController(title: NSLocalizedString("Could not join", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a channel. The server returned an error: %@", comment: "alert button"), error.localizedDescription), preferredStyle: .alert);
@@ -416,7 +386,7 @@ class ChannelJoinViewController: UITableViewController {
                         self?.present(alert, animated: true, completion: nil);
                     }
                 }
-            });
+            }
         }
     }
     
