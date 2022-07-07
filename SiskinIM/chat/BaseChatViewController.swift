@@ -262,7 +262,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
         assert(false, "This method should be overridden");
     }
     
-    func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (() -> Void)?) {
+    func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix) async throws {
         assert(false, "This method should be overridden");
     }
     

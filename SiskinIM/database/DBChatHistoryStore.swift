@@ -125,13 +125,13 @@ class DBChatHistoryStore {
                         
                         if isAttachmentOnly {
                             let appendix = ChatAttachmentAppendix();
-                            DBChatHistoryStore.instance.appendItem(for: item.conversation, state: item.state, sender: item.sender, type: .attachment, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: message, appendix: appendix, options: item.options, linkPreviewAction: .none, masterId: nil, completionHandler: { newId in
+                            if DBChatHistoryStore.instance.appendItem(for: item.conversation, state: item.state, sender: item.sender, type: .attachment, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: message, appendix: appendix, options: item.options, linkPreviewAction: .none, masterId: nil) != nil {
                                 DBChatHistoryStore.instance.remove(item: item);
-                            });
+                            }
                         } else {
-                            DBChatHistoryStore.instance.appendItem(for: item.conversation, state: item.state, sender: item.sender, type: .linkPreview, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: previews.keys.first ?? message, options: item.options, linkPreviewAction: .none, masterId: nil, completionHandler: { newId in
+                            if DBChatHistoryStore.instance.appendItem(for: item.conversation, state: item.state, sender: item.sender, type: .linkPreview, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: previews.keys.first ?? message, options: item.options, linkPreviewAction: .none, masterId: nil) != nil {
                                 removePreview(item.id);
-                            });
+                            }
                         }
                     default:
                         break;
@@ -145,10 +145,7 @@ class DBChatHistoryStore {
                     })
 
                     for (url, _) in previews {
-                        group.enter();
-                        DBChatHistoryStore.instance.appendItem(for: item.conversation, state: item.state, sender: item.sender, type: .linkPreview, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, options: item.options, linkPreviewAction: .none, masterId: nil, completionHandler: { newId in
-                                group.leave();
-                        });
+                        _ = DBChatHistoryStore.instance.appendItem(for: item.conversation, state: item.state, sender: item.sender, type: .linkPreview, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, options: item.options, linkPreviewAction: .none, masterId: nil);
                     }
                     group.leave();
                 }
@@ -343,7 +340,7 @@ class DBChatHistoryStore {
         
         let options = ConversationEntry.Options(recipient: recipient, encryption: encryption, isMarkable: message.isMarkable)
 
-        self.appendItemSync(for: conversation, state: state, sender: sender, type: itemType, timestamp: timestamp, stanzaId: stanzaId, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, data: body, chatState: message.chatState, appendix: appendix, options: options, linkPreviewAction: .auto, masterId: nil, completionHandler: nil);
+        _ = self.appendItemSync(for: conversation, state: state, sender: sender, type: itemType, timestamp: timestamp, stanzaId: stanzaId, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, data: body, chatState: message.chatState, appendix: appendix, options: options, linkPreviewAction: .auto, masterId: nil);
 
         if state.direction == .outgoing {
             self.markAsRead(for: conversation.account, with: conversation.jid, before: timestamp, sendMarkers: false);
@@ -415,8 +412,9 @@ class DBChatHistoryStore {
 //        })
 //    }
 
-    private func appendItemSync(for conversation: ConversationKey, state: ConversationEntryState, sender: ConversationEntrySender, type inType: ItemType, timestamp: Date, stanzaId: String?, serverMsgId: String?, remoteMsgId: String?, data: String, chatState: ChatState?,  appendix: AppendixProtocol?, options: ConversationEntry.Options, linkPreviewAction: LinkPreviewAction, masterId: Int? = nil, completionHandler: ((Int) -> Void)?) {
+    private func appendItemSync(for conversation: ConversationKey, state: ConversationEntryState, sender: ConversationEntrySender, type inType: ItemType, timestamp: Date, stanzaId: String?, serverMsgId: String?, remoteMsgId: String?, data: String, chatState: ChatState?,  appendix: AppendixProtocol?, options: ConversationEntry.Options, linkPreviewAction: LinkPreviewAction, masterId: Int? = nil) -> Int? {
         var item: ConversationEntry?;
+        var insertedItemId: Int?;
         var type = inType;
         if linkPreviewAction != .only {
             var payload: ConversationEntryPayload?;
@@ -474,9 +472,9 @@ class DBChatHistoryStore {
                 try database.insert(query: .messageInsert, params: params);
                 return database.lastInsertedRowId;
             }) else {
-                return;
+                return nil;
             }
-            completionHandler?(id);
+            insertedItemId = id;
             
             if let payload = payload {
                 let entry = ConversationEntry(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, payload: payload, options: options);
@@ -496,12 +494,14 @@ class DBChatHistoryStore {
         if linkPreviewAction != .none && type == .message, let id = item?.id {
             self.generatePreviews(forItem: id, conversation: conversation, state: state, sender: sender, timestamp: timestamp, data: data, options: options, action: .new);
         }
+        
+        return insertedItemId;
     }
 
-    open func appendItem(for conversation: ConversationKey, state: ConversationEntryState, sender: ConversationEntrySender, type: ItemType, timestamp inTimestamp: Date, stanzaId: String?, serverMsgId: String?, remoteMsgId: String?, data: String, chatState: ChatState? = nil, appendix: AppendixProtocol? = nil, options: ConversationEntry.Options, linkPreviewAction: LinkPreviewAction, masterId: Int? = nil, completionHandler: ((Int) -> Void)?) {
+    open func appendItem(for conversation: ConversationKey, state: ConversationEntryState, sender: ConversationEntrySender, type: ItemType, timestamp inTimestamp: Date, stanzaId: String?, serverMsgId: String?, remoteMsgId: String?, data: String, chatState: ChatState? = nil, appendix: AppendixProtocol? = nil, options: ConversationEntry.Options, linkPreviewAction: LinkPreviewAction, masterId: Int? = nil) -> Int? {
 
         let timestamp = Date(timeIntervalSince1970: Double(Int64(inTimestamp.timeIntervalSince1970 * 1000)) / 1000);
-        self.appendItemSync(for: conversation, state: state, sender: sender, type: type, timestamp: timestamp, stanzaId: stanzaId, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, data: data, chatState: chatState, appendix: appendix, options: options, linkPreviewAction: linkPreviewAction, masterId: masterId, completionHandler: completionHandler);
+        return self.appendItemSync(for: conversation, state: state, sender: sender, type: type, timestamp: timestamp, stanzaId: stanzaId, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, data: data, chatState: chatState, appendix: appendix, options: options, linkPreviewAction: linkPreviewAction, masterId: masterId);
     }
 
     open func removeHistory(for account: BareJID, with jid: JID?) {
@@ -656,13 +656,13 @@ class DBChatHistoryStore {
                 for match in matches {
                     if let url = match.url, let scheme = url.scheme, ["https", "http"].contains(scheme) {
                         if (data as NSString).range(of: "http", options: .caseInsensitive, range: match.range).location == match.range.location {
-                            DBChatHistoryStore.instance.appendItem(for: conversation, state: state, sender: sender, type: .linkPreview, timestamp: timestamp, stanzaId: nil, serverMsgId: nil, remoteMsgId: nil, data: url.absoluteString, options: newOptions, linkPreviewAction: .none, masterId: masterId, completionHandler: nil);
+                            _ = DBChatHistoryStore.instance.appendItem(for: conversation, state: state, sender: sender, type: .linkPreview, timestamp: timestamp, stanzaId: nil, serverMsgId: nil, remoteMsgId: nil, data: url.absoluteString, options: newOptions, linkPreviewAction: .none, masterId: masterId);
                         }
                     }
                     if let address = match.components {
                         let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
                         let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
-                        DBChatHistoryStore.instance.appendItem(for: conversation, state: state, sender: sender, type: .linkPreview, timestamp: timestamp, stanzaId: nil, serverMsgId: nil, remoteMsgId: nil, data: mapUrl.absoluteString, options: newOptions, linkPreviewAction: .none, masterId: masterId, completionHandler: nil);
+                        _ = DBChatHistoryStore.instance.appendItem(for: conversation, state: state, sender: sender, type: .linkPreview, timestamp: timestamp, stanzaId: nil, serverMsgId: nil, remoteMsgId: nil, data: mapUrl.absoluteString, options: newOptions, linkPreviewAction: .none, masterId: masterId);
                     }
                 }
             }
@@ -809,18 +809,14 @@ class DBChatHistoryStore {
         }
     }
 
-    func originId(for key: ConversationKey, id: Int, completionHandler: @escaping (String)->Void ){
-        self.originId(for: key.account, with: key.jid, id: id, completionHandler: completionHandler);
+    func originId(for key: ConversationKey, id: Int) -> String? {
+        return self.originId(for: key.account, with: key.jid, id: id);
     }
     
-    func originId(for account: BareJID, with jid: BareJID, id: Int, completionHandler: @escaping (String)->Void ){
-        if let stanzaId = try! Database.main.reader({ dataase in
+    func originId(for account: BareJID, with jid: BareJID, id: Int) -> String? {
+        return try! Database.main.reader({ dataase in
             try dataase.select(query: .messageFindMessageOriginId, cached: false, params: ["id": id]).mapFirst({ $0.string(for: "stanza_id")});
-        }) {
-            DispatchQueue.main.async {
-                completionHandler(stanzaId);
-            }
-        }
+        })
     }
 
     open func updateItem(for conversation: ConversationKey, id: Int, updateAppendix updateFn: @escaping (inout ChatAttachmentAppendix)->Void) {

@@ -232,7 +232,9 @@ class MucChatOccupantsTableViewController: UITableViewController {
                     guard let text = alert.textFields?.first?.text else {
                         return;
                     }
-                    self.room.sendPrivateMessage(to: participant, text: text);
+                    Task {
+                        try await self.room.sendPrivateMessage(to: participant, text: text);
+                    }
                 }));
                 alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
                 self.present(alert, animated: true, completion: nil);

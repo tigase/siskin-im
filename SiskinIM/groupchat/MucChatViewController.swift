@@ -85,7 +85,9 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
                 return;
             }
             
-            room.retract(entry: item);
+            Task {
+                try await room.retract(entry: item);
+            }
         default:
             super.executeContext(action: action, forItem: item, at: indexPath);
         }
@@ -148,22 +150,23 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             return;
         }
         
-        room.sendMessage(text: text, correctedMessageOriginId: correctedMessageOriginId);
-        DispatchQueue.main.async {
-            self.messageText = nil;
+        Task {
+            try await room.sendMessage(text: text, correctedMessageOriginId: correctedMessageOriginId);
+            DispatchQueue.main.async {
+                self.messageText = nil;
+            }
         }
     }
     
-    override func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (() -> Void)?) {
+    override func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix) async throws {
         let canEncrypt = room.features.contains(.omemo);
         
         let encryption: ChatEncryption = room.options.encryption ?? (canEncrypt ? Settings.messageEncryption : .none);
         guard encryption == .none || canEncrypt else {
-            completionHandler?();
-            return;
+            throw XMPPError(condition: .not_acceptable, message: NSLocalizedString("Could not send encrypted message due to missing list of room members.", comment: "omemo muc error - no members"));
         }
         
-        room.sendAttachment(url: uploadedUrl, appendix: appendix, originalUrl: originalUrl, completionHandler: completionHandler);
+        try await room.sendAttachment(url: uploadedUrl, appendix: appendix, originalUrl: originalUrl);
     }
     
     @objc func roomInfoClicked() {

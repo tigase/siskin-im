@@ -255,48 +255,36 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         return msg;
     }
     
-    public func sendMessage(text: String, correctedMessageOriginId: String?) {
-        let encryption = self.features.contains(.omemo) ? self.options.encryption ?? Settings.messageEncryption : .none;
-        
-        let message = self.createMessage(text: text);
+    public func sendMessage(text: String, correctedMessageOriginId: String?) async throws {
+        let (message,encryption) = try await self.prepareForSend(message: self.createMessage(text: text));
         message.lastMessageCorrectionId = correctedMessageOriginId;
+
+        try await super.send(message: message);
+        if correctedMessageOriginId == nil {
+            _ = DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, options: .init(recipient: .none, encryption: encryption, isMarkable: true), linkPreviewAction: .auto);
+        }
         
+        if #available(iOS 15.0, *) {
+            let sender = INPerson(personHandle: INPersonHandle(value: self.account.description, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.description, isMe: true, suggestionType: .instantMessageAddress);
+            let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.description, isMe: false, suggestionType: .instantMessageAddress);
+            let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.description)|sender=\(self.jid.description)", serviceName: "Siskin IM", sender: sender, attachments: nil);
+            let interaction = INInteraction(intent: intent, response: nil);
+            interaction.direction = .outgoing;
+            try? await interaction.donate()
+        }
+    }
+    
+    private func prepareForSend(message: Message) async throws -> (Message,ConversationEntryEncryption) {
+        let encryption = self.features.contains(.omemo) ? self.options.encryption ?? Settings.messageEncryption : .none;
         if encryption == .omemo, let omemoModule = context?.modulesManager.module(.omemo) {
             guard let members = self.members else {
-                return;
+                throw XMPPError(condition: .not_acceptable, message: NSLocalizedString("Could not send encrypted message due to missing list of room members.", comment: "omemo muc error - no members"));
             }
-            omemoModule.encode(message: message, for: members.map({ $0.bareJid }), completionHandler: { result in
-                switch result {
-                case .failure(let error):
-                    break;
-                case .success(let encryptedMessage):
-                    super.send(message: encryptedMessage.message, completionHandler: nil);
-                    if #available(iOS 15.0, *) {
-                        let sender = INPerson(personHandle: INPersonHandle(value: self.account.description, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.description, isMe: true, suggestionType: .instantMessageAddress);
-                        let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.description, isMe: false, suggestionType: .instantMessageAddress);
-                        let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.description)|sender=\(self.jid.description)", serviceName: "Siskin IM", sender: sender, attachments: nil);
-                        let interaction = INInteraction(intent: intent, response: nil);
-                        interaction.direction = .outgoing;
-                        interaction.donate(completion: nil);
-                    }
-                    if correctedMessageOriginId == nil {
-                        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, options: .init(recipient: .none, encryption: .decrypted(fingerprint: encryptedMessage.fingerprint), isMarkable: true), linkPreviewAction: .auto, completionHandler: nil);
-                    }
-                }
-            });
+            message.oob = nil;
+            let encrypted = try await omemoModule.encrypt(message: message, for: members.map({ $0.bareJid }));
+            return (encrypted.message, .decrypted(fingerprint: encrypted.fingerprint));
         } else {
-            super.send(message: message, completionHandler: nil);
-            if #available(iOS 15.0, *) {
-                let sender = INPerson(personHandle: INPersonHandle(value: self.account.description, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.description, isMe: true, suggestionType: .instantMessageAddress);
-                let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.description, isMe: false, suggestionType: .instantMessageAddress);
-                let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.description)|sender=\(self.jid.description)", serviceName: "Siskin IM", sender: sender, attachments: nil);
-                let interaction = INInteraction(intent: intent, response: nil);
-                interaction.direction = .outgoing;
-                interaction.donate(completion: nil);
-            }
-            if correctedMessageOriginId == nil {
-                DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, options: .init(recipient: .none, encryption: .none, isMarkable: true), linkPreviewAction: .auto, completionHandler: nil);
-            }
+            return (message,.none)
         }
     }
     
@@ -320,66 +308,42 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         }
     }
     
-    public func sendAttachment(url uploadedUrl: String, appendix: ChatAttachmentAppendix, originalUrl: URL?, completionHandler: (() -> Void)?) {
+    public func sendAttachment(url uploadedUrl: String, appendix: ChatAttachmentAppendix, originalUrl: URL?) async throws {
         guard ((self.context as? XMPPClient)?.state ?? .disconnected()) == .connected(), self.state == .joined else {
-            completionHandler?();
-            return;
+            throw XMPPError(condition: .remote_server_timeout);
         }
         
-        let encryption = self.features.contains(.omemo) ? self.options.encryption ?? Settings.messageEncryption : .none;
-        
-        let message = self.createMessage(text: uploadedUrl);
-        if encryption == .omemo, let omemoModule = context?.modulesManager.module(.omemo) {
-            guard let members = self.members else {
-                completionHandler?();
-                return;
+        let origMessage = self.createMessage(text: uploadedUrl);
+        origMessage.oob = uploadedUrl;
+        let (message,encryption) = try await self.prepareForSend(message: origMessage);
+        try await super.send(message: message);
+        if let msgId = DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: uploadedUrl, appendix: appendix, options: .init(recipient: .none, encryption: encryption, isMarkable: true), linkPreviewAction: .auto) {
+            if let url = originalUrl {
+                _ = DownloadStore.instance.store(url, filename: appendix.filename ?? url.lastPathComponent, with: "\(msgId)");
             }
-            omemoModule.encode(message: message, for: members.map({ $0.bareJid }), completionHandler: { result in
-                switch result {
-                case .failure(let error):
-                    break;
-                case .success(let encryptedMessage):
-                    super.send(message: encryptedMessage.message, completionHandler: nil);
-                    if #available(iOS 15.0, *) {
-                        let sender = INPerson(personHandle: INPersonHandle(value: self.account.description, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.description, isMe: true, suggestionType: .instantMessageAddress);
-                        let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.description, isMe: false, suggestionType: .instantMessageAddress);
-                        let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.description)|sender=\(self.jid.description)", serviceName: "Siskin IM", sender: sender, attachments: nil);
-                        let interaction = INInteraction(intent: intent, response: nil);
-                        interaction.direction = .outgoing;
-                        interaction.donate(completion: nil);
-                    }
-                    DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: uploadedUrl, appendix: appendix, options: .init(recipient: .none, encryption: .decrypted(fingerprint: encryptedMessage.fingerprint), isMarkable: true), linkPreviewAction: .auto, completionHandler: { msgId in
-                        if let url = originalUrl {
-                            _ = DownloadStore.instance.store(url, filename: appendix.filename ?? url.lastPathComponent, with: "\(msgId)");
-                        }
-                    });
-                }
-                completionHandler?();
-            });
-        } else {
-            message.oob = uploadedUrl;
-            super.send(message: message, completionHandler: nil);
-            if #available(iOS 15.0, *) {
-                let sender = INPerson(personHandle: INPersonHandle(value: self.account.description, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.description, isMe: true, suggestionType: .instantMessageAddress);
-                let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.description, isMe: false, suggestionType: .instantMessageAddress);
-                let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.description)|sender=\(self.jid.description)", serviceName: "Siskin IM", sender: sender, attachments: nil);
-                let interaction = INInteraction(intent: intent, response: nil);
-                interaction.direction = .outgoing;
-                interaction.donate(completion: nil);
-            }
-            DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: uploadedUrl, appendix: appendix, options: .init(recipient: .none, encryption: .none, isMarkable: true), linkPreviewAction: .auto, completionHandler: { msgId in
-                if let url = originalUrl {
-                    _ = DownloadStore.instance.store(url, filename: appendix.filename ?? url.lastPathComponent, with: "\(msgId)");
-                }
-            });
+        }
+        if #available(iOS 15.0, *) {
+            let sender = INPerson(personHandle: INPersonHandle(value: self.account.description, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.description, isMe: true, suggestionType: .instantMessageAddress);
+            let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.description, isMe: false, suggestionType: .instantMessageAddress);
+            let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.description)|sender=\(self.jid.description)", serviceName: "Siskin IM", sender: sender, attachments: nil);
+            let interaction = INInteraction(intent: intent, response: nil);
+            interaction.direction = .outgoing;
+            try? await interaction.donate();
         }
     }
     
-    public func sendPrivateMessage(to occupant: MucOccupant, text: String) {
+    public func sendPrivateMessage(to occupant: MucOccupant, text: String) async throws {
         let message = self.createPrivateMessage(text, recipientNickname: occupant.nickname);
         let options = ConversationEntry.Options(recipient: .occupant(nickname: occupant.nickname), encryption: .none, isMarkable: false)
-        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.options.nickname, jid: nil), type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, appendix: nil, options: options, linkPreviewAction: .auto, completionHandler: nil);
-        self.send(message: message, completionHandler: nil);
+        _ = DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.options.nickname, jid: nil), type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, appendix: nil, options: options, linkPreviewAction: .auto);
+        do {
+            try await self.send(message: message);
+        } catch {
+            if let id = message.id {
+                DBChatHistoryStore.instance.markOutgoingAsError(for: ConversationKeyItem(account: account, jid: jid), stanzaId: id, error: error as? XMPPError ?? .undefined_condition)
+            }
+            throw error;
+        }
     }
     
     public func canSendChatMarker() -> Bool {
@@ -402,12 +366,16 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
             if receipt {
                 message.messageDelivery = .received(id: marker.id)
             }
-            self.send(message: message, completionHandler: nil);
+            Task {
+                try await self.send(message: message);
+            }
         } else if case .displayed(_) = marker {
             let message = self.createPrivateMessage(recipientNickname: self.nickname);
             message.chatMarkers = marker;
             message.hints = [.store]
-            self.send(message: message, completionHandler: nil);
+            Task {
+                try await self.send(message: message);
+            }
         }
         
     }

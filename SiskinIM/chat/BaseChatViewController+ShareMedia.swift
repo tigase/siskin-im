@@ -131,7 +131,14 @@ extension BaseChatViewController: PHPickerViewControllerDelegate {
             return;
         }
 
-        upload(imageUrl: localUrl, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "jpg"));
+        Task {
+            do {
+                try await upload(imageUrl: localUrl, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "jpg"));
+            } catch ShareError.cancelled {
+            } catch {
+                self.showAlert(error: error);
+            }
+        }
     }
     
     private func handleLoaded(movieUrl url: URL?, error: Error?) {
@@ -149,7 +156,14 @@ extension BaseChatViewController: PHPickerViewControllerDelegate {
             return;
         }
 
-        upload(movieUrl: localUrl, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "mov"));
+        Task {
+            do {
+                try await upload(movieUrl: localUrl, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "mov"));
+            } catch ShareError.cancelled {
+            } catch {
+                self.showAlert(error: error);
+            }
+        }
     }
     
 }
@@ -173,80 +187,72 @@ extension BaseChatViewController: UIImagePickerControllerDelegate, UINavigationC
     }
     
     @objc func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        if let movieUrl = info[.mediaURL] as? URL {
-            upload(movieUrl: movieUrl, fileInfo: ShareFileInfo.from(url: movieUrl, defaultSuffix: "mov"));
-        } else if let imageUrl = info[.imageURL] as? URL {
-            upload(imageUrl: imageUrl, fileInfo: ShareFileInfo.from(url: imageUrl, defaultSuffix: "jpg"));
-        } else if let image = (info[.editedImage] as? UIImage) ?? (info[.originalImage] as? UIImage) {
-            MediaHelper.askImageQuality(controller: self, forceQualityQuestion: self.askMediaQuality, { result in
-                self.askMediaQuality = false;
-                switch result {
-                case .success(let quality):
-                    MediaHelper.compressImage(image: image, fileInfo: ShareFileInfo(filename: UUID().uuidString, suffix: "jpg"), quality: quality, completionHandler: { result in
-                        switch result {
-                        case .success((let fileUrl, let fileInfo)):
-                            self.uploadFile(url: fileUrl, filename: fileInfo.filenameWithSuffix, deleteSource: true);
-                        case .failure(let error):
-                            self.showAlert(shareError: error);
-                        }
-                    })
-                case .failure(_):
-                    return;
+        Task {
+            do {
+                if let movieUrl = info[.mediaURL] as? URL {
+                    defer {
+                        try? FileManager.default.removeItem(at: movieUrl);
+                    }
+                    try await upload(movieUrl: movieUrl, fileInfo: ShareFileInfo.from(url: movieUrl, defaultSuffix: "mov"));
+                } else if let imageUrl = info[.imageURL] as? URL {
+                    defer {
+                        try? FileManager.default.removeItem(at: imageUrl);
+                    }
+                    try await upload(imageUrl: imageUrl, fileInfo: ShareFileInfo.from(url: imageUrl, defaultSuffix: "jpg"));
+                } else if let image = (info[.editedImage] as? UIImage) ?? (info[.originalImage] as? UIImage) {
+                    let quality = try await MediaHelper.askImageQuality(controller: self, forceQualityQuestion: self.askMediaQuality);
+                    let (fileUrl, fileInfo) = try MediaHelper.compressImage(image: image, fileInfo: ShareFileInfo(filename: UUID().uuidString, suffix: "jpg"), quality: quality);
+                    
+                    defer {
+                        try? FileManager.default.removeItem(at: fileUrl);
+                    }
+
+                    try await uploadFile(url: fileUrl, filename: fileInfo.filenameWithSuffix);
                 }
-            });
+            } catch ShareError.cancelled {
+                // operation cancelled by the user - nothing to do
+            } catch {
+                self.showAlert(error: error);
+            }
         }
         
         picker.dismiss(animated: true, completion: nil);
     }
     
-    func upload(imageUrl url: URL, fileInfo: ShareFileInfo) {
-        MediaHelper.askImageQuality(controller: self, forceQualityQuestion: self.askMediaQuality, { result in
-            self.askMediaQuality = false;
-            switch result {
-            case .success(let quality):
-                MediaHelper.compressImage(url: url, fileInfo: fileInfo, quality: quality, completionHandler: { result in
-                    try? FileManager.default.removeItem(at: url);
-                    switch result {
-                    case .success((let fileUrl, let fileInfo)):
-                        self.uploadFile(url: fileUrl, filename: fileInfo.filenameWithSuffix, deleteSource: true);
-                    case .failure(let error):
-                        self.showAlert(shareError: error);
-                    }
-                })
-            case .failure(_):
-                return;
-            }
-        });
+    func upload(imageUrl url: URL, fileInfo: ShareFileInfo) async throws {
+        let quality = try await MediaHelper.askImageQuality(controller: self, forceQualityQuestion: self.askMediaQuality);
+        let (fileUrl, fileInfo) = try MediaHelper.compressImage(url: url, fileInfo: ShareFileInfo(filename: UUID().uuidString, suffix: "jpg"), quality: quality);
+        
+        defer {
+            try? FileManager.default.removeItem(at: fileUrl);
+        }
+        
+        try await uploadFile(url: fileUrl, filename: fileInfo.filenameWithSuffix);
     }
     
-    func upload(movieUrl url: URL, fileInfo: ShareFileInfo) {
-        MediaHelper.askVideoQuality(controller: self, forceQualityQuestion: self.askMediaQuality, { result in
-            self.askMediaQuality = false;
-            switch result {
-            case .success(let quality):
-                DispatchQueue.main.async {
-                    self.showProgressBar();
-                }
-                MediaHelper.compressMovie(url: url, fileInfo: fileInfo, quality: quality, progressCallback: { [weak self] progress in
-                    DispatchQueue.main.async {
-                        self?.progressBar?.progress = progress;
-                    }
-                }, completionHandler: { result in
-                    try? FileManager.default.removeItem(at: url);
-                    DispatchQueue.main.async {
-                        self.hideProgressBar();
-                    }
-                    switch result {
-                    case .success((let fileUrl, let fileInfo)):
-                        self.uploadFile(url: fileUrl, filename: fileInfo.filenameWithSuffix, deleteSource: true);
-                    case .failure(let error):
-                        self.showAlert(error: error);
-                    }
-                })
-            case .failure(_):
-                return;
+    func upload(movieUrl url: URL, fileInfo: ShareFileInfo) async throws {
+        let quality = try await MediaHelper.askVideoQuality(controller: self, forceQualityQuestion: self.askMediaQuality);
+        DispatchQueue.main.async {
+            self.showProgressBar();
+        }
+
+        defer {
+            DispatchQueue.main.async {
+                self.hideProgressBar();
+            }
+        }
+        
+        let (fileUrl,fileInfo) = try await MediaHelper.compressMovie(url: url, fileInfo: fileInfo, quality: quality, progressCallback: { [weak self] progress in
+            DispatchQueue.main.async {
+                self?.progressBar?.progress = progress;
             }
         });
+        
+        defer {
+            try? FileManager.default.removeItem(at: fileUrl);
+        }
+        
+        try await uploadFile(url: fileUrl, filename: fileInfo.filenameWithSuffix);
     }
         
     private func copyFileLocally(url: URL) -> URL? {
@@ -265,25 +271,16 @@ extension BaseChatViewController: UIImagePickerControllerDelegate, UINavigationC
         return tmpUrl;
     }
         
-    private func uploadFile(url fileUrl: URL, filename: String, deleteSource: Bool) {
-        self.share(filename: filename, url: fileUrl, completionHandler: { result in
-            switch result {
-            case .success(let uploadedUrl, let filesize, let mimetype):
-                var appendix = ChatAttachmentAppendix()
-                appendix.filename = filename;
-                appendix.filesize = filesize
-                appendix.mimetype = mimetype;
-                appendix.state = .downloaded;
+    private func uploadFile(url fileUrl: URL, filename: String) async throws {
+        let uploaded = try await self.share(filename: filename, url: fileUrl);
 
-                self.sendAttachment(originalUrl: fileUrl, uploadedUrl: uploadedUrl.absoluteString, appendix: appendix, completionHandler: {
-                    if deleteSource && FileManager.default.fileExists(atPath: fileUrl.path) {
-                        try? FileManager.default.removeItem(at: fileUrl);
-                    }
-                });
-            case .failure(let error):
-                self.showAlert(shareError: error);
-            }
-        })
+        var appendix = ChatAttachmentAppendix()
+        appendix.filename = filename;
+        appendix.filesize = uploaded.filesize;
+        appendix.mimetype = uploaded.mimeType;
+        appendix.state = .downloaded;
+
+        try await self.sendAttachment(originalUrl: fileUrl, uploadedUrl: uploaded.url.absoluteString, appendix: appendix);
     }
     
 }

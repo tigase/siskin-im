@@ -77,7 +77,13 @@ class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
                 return;
             }
             
-            channel.retract(entry: item);
+            Task {
+                do {
+                    try await channel.retract(entry: item);
+                } catch {
+                    self.showAlert(title: NSLocalizedString("Retraction failed!", comment: "message retraction failed alert title"), message: error.localizedDescription);
+                }
+            }
         default:
             super.executeContext(action: action, forItem: item, at: indexPath);
         }
@@ -113,14 +119,16 @@ class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             return;
         }
         
-        channel.sendMessage(text: text, correctedMessageOriginId: self.correctedMessageOriginId);
-        DispatchQueue.main.async {
-            self.messageText = nil;
+        Task {
+            try await channel.sendMessage(text: text, correctedMessageOriginId: self.correctedMessageOriginId);
+            DispatchQueue.main.async {
+                self.messageText = nil;
+            }
         }
     }
     
-    override func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (() -> Void)?) {
-        channel.sendAttachment(url: uploadedUrl, appendix: appendix, originalUrl: originalUrl, completionHandler: completionHandler);
+    override func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix) async throws {
+        try await channel.sendAttachment(url: uploadedUrl, appendix: appendix, originalUrl: originalUrl);
     }
     
 }

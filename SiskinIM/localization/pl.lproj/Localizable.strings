@@ -196,6 +196,9 @@
 /* sharing error */
 "Could not retrieve file size." = "Nie udało się pobrać wielkości pliku.";
 
+/* omemo muc error - no members */
+"Could not send encrypted message due to missing list of room members." = "Nie udało się wysłać zaszyfrowanej wiadomości z powodu braku listy członków pokoju.";
+
 /* alert body */
 "Could not set group chat avatar. The server responded with an error: %@" = "Nie udało się ustawić avatara dla pokoju. Serwer zwrócił błąd: %@";
 
@@ -665,6 +668,9 @@
 /* alert title */
 "Open URL" = "Otwórz URL";
 
+/* sharing error */
+"Operation was cancelled" = "Operacja została anulowana";
+
 /* vcard field label */
 "Organization" = "Organizacja";
 
@@ -719,6 +725,9 @@
 
 /* action label */
 "Private message" = "Wiadomość prywatna";
+
+/* xmpp error condition modify type recovery suggestion */
+"Provided data were not accepted. Please check provided values." = "Przesłane dane zostały odrzucone. Proszę sprawdzić podane wartości.";
 
 /* account registration error */
 "Provided values are not acceptable" = "Podane wartości są nieakceptowalne";
@@ -828,6 +837,12 @@
 /* retraction label for conversations list */
 "Retracted" = "Retracted";
 
+/* message retraction failed alert title */
+"Retraction failed!" = "Wycofanie nie udało się!";
+
+/* xmpp error condition auth type recovery suggestion */
+"Retry after providing credentials" = "Ponów po podaniu poświadczeń";
+
 /* call state label */
 "Ringing…" = "Dzwonienie…";
 
@@ -910,6 +925,9 @@
 /* alert body */
 "Server returned an error: %@" = "Serwer zwrócił błąd: %@";
 
+/* xmpp error description with message and codes */
+"Server returned an error: %@ (%@)" = "Serwer zwrócił błą∂: %1$@ (%2$@)";
+
 /* account registration error */
 "Service is not available at this time." = "Chwilowo usługa nie jest dostępna.";
 
@@ -931,6 +949,9 @@
 
 /* alert body */
 "Sharing feature with HTTP upload is disabled within application. To use this feature you need to enable sharing with HTTP upload in application" = "Udostępnianie plików przez HTTP jest wyłączone w aplikacji. Aby użyć tej funkcjonalności, włącz udostępnianie plików przez HTTP w aplikacji";
+
+/* error title for sharing location error */
+"Sharing localtion failed!" = "Udostępnienie lokalizacji nie powiodło się!";
 
 /* alert body */
 "Should account be removed from server as well?" = "Czy konto powinno być usunięte również z serwera?";
@@ -984,6 +1005,9 @@
 
 /* section label */
 "Trusted servers" = "Zaufane serwery";
+
+/* xmpp error condition wait type recovery suggestion */
+"Try again later." = "Spróbuj ponownie później.";
 
 /* error recovery suggestion */
 "Try again. If removal failed, try accessing Keychain to update account credentials manually." = "Spróbuj ponownie. Jeśli usunięcie się nie powiedzie, spróbuj usunąć dane o koncie z poziomu Pęku kluczy.";

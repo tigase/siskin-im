@@ -63,21 +63,23 @@ extension BaseChatViewController: UIDocumentPickerDelegate {
             self.showAlert(shareError: .noAccessError);
             return;
         }
-        share(filename: url.lastPathComponent, url: url) { (result) in
-            switch result {
-            case .success(let uploadedUrl, let filesize, let mimetype):
-                url.stopAccessingSecurityScopedResource();
+        Task {
+            do {
+                defer {
+                    url.stopAccessingSecurityScopedResource();
+                }
+
+                let uploaded = try await share(filename: url.lastPathComponent, url: url);
+               
                 var appendix = ChatAttachmentAppendix()
                 appendix.filename = url.lastPathComponent;
-                appendix.filesize = filesize;
-                appendix.mimetype = mimetype;
+                appendix.filesize = uploaded.filesize;
+                appendix.mimetype = uploaded.mimeType;
                 appendix.state = .downloaded;
-                _ = url.startAccessingSecurityScopedResource();
-                self.sendAttachment(originalUrl: url, uploadedUrl: uploadedUrl.absoluteString, appendix: appendix, completionHandler: {
-                    url.stopAccessingSecurityScopedResource();
-                });
-            case .failure(let error):
-                self.showAlert(shareError: error);
+               
+                try await self.sendAttachment(originalUrl: url, uploadedUrl: uploaded.url.absoluteString, appendix: appendix);
+            } catch {
+                self.showAlert(error: error);
             }
         }
     }

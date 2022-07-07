@@ -192,17 +192,17 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         return msg;
     }
     
-    public func sendMessage(text: String, correctedMessageOriginId: String?) {
+    public func sendMessage(text: String, correctedMessageOriginId: String?) async throws {
         let message = self.createMessage(text: text);
         message.lastMessageCorrectionId = correctedMessageOriginId;
-        self.send(message: message, completionHandler: nil);
+        try await self.send(message: message);
         if #available(iOS 15.0, *) {
             let sender = INPerson(personHandle: INPersonHandle(value: self.account.description, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.description, isMe: true, suggestionType: .instantMessageAddress);
             let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.description, isMe: false, suggestionType: .instantMessageAddress);
             let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.description)|sender=\(self.jid.description)", serviceName: "Siskin IM", sender: sender, attachments: nil);
             let interaction = INInteraction(intent: intent, response: nil);
             interaction.direction = .outgoing;
-            interaction.donate(completion: nil);
+            try? await interaction.donate();
         }
     }
     
@@ -210,24 +210,22 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         return .init(url: originalURL, isTemporary: false, prepareShareURL: nil);
     }
     
-    public func sendAttachment(url uploadedUrl: String, appendix: ChatAttachmentAppendix, originalUrl: URL?, completionHandler: (() -> Void)?) {
+    public func sendAttachment(url uploadedUrl: String, appendix: ChatAttachmentAppendix, originalUrl: URL?) async throws {
         guard ((self.context as? XMPPClient)?.state ?? .disconnected()) == .connected(), self.state == .joined else {
-            completionHandler?();
-            return;
+            throw XMPPError(condition: .remote_server_timeout);
         }
         
         let message = self.createMessage(text: uploadedUrl);
         message.oob = uploadedUrl;
-        send(message: message, completionHandler: nil)
+        try await send(message: message)
         if #available(iOS 15.0, *) {
             let sender = INPerson(personHandle: INPersonHandle(value: self.account.description, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.description, isMe: true, suggestionType: .instantMessageAddress);
             let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.description, isMe: false, suggestionType: .instantMessageAddress);
             let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.description)|sender=\(self.jid.description)", serviceName: "Siskin IM", sender: sender, attachments: nil);
             let interaction = INInteraction(intent: intent, response: nil);
             interaction.direction = .outgoing;
-            interaction.donate(completion: nil);
+            try? await interaction.donate();
         }
-        completionHandler?();
     }
     
     public func canSendChatMarker() -> Bool {
@@ -246,13 +244,17 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
             if receipt {
                 message.messageDelivery = .received(id: marker.id)
             }
-            self.send(message: message, completionHandler: nil);
+            Task {
+                try await self.send(message: message);
+            }
         } else if case .displayed(_) = marker {
             let message = createMessage(id: UUID().uuidString, type: .chat);
             message.to = JID(BareJID(localPart: "\(participantId)#\(jid.localPart!)", domain: jid.domain), resource: nil);
             message.chatMarkers = marker;
             message.hints = [.store]
-            self.send(message: message, completionHandler: nil);
+            Task {
+                try await self.send(message: message);
+            }
         }
     }
     

@@ -136,7 +136,9 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
             message.messageDelivery = .received(id: marker.id)
         }
         message.hints = [.store];
-        self.send(message: message, completionHandler: nil);
+        Task {
+            try await self.send(message: message);
+        }
     }
  
     public func prepareAttachment(url originalURL: URL) throws -> SharePreparedAttachment {
@@ -159,7 +161,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         }
     }
     
-    public func sendMessage(text: String, correctedMessageOriginId: String?) {
+    public func sendMessage(text: String, correctedMessageOriginId: String?) async throws {
         let stanzaId = UUID().uuidString;
         let encryption = self.options.encryption ?? Settings.messageEncryption;
         
@@ -174,14 +176,14 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
                 break;
             }
             let options = ConversationEntry.Options(recipient: .none, encryption: messageEncryption, isMarkable: true)
-            DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.unsent), sender: .me(conversation: self), type: .message, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: text, appendix: nil, options: options, linkPreviewAction: .none, completionHandler: nil);
+            _ = DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.unsent), sender: .me(conversation: self), type: .message, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: text, appendix: nil, options: options, linkPreviewAction: .none);
         }
         
-        resendMessage(content: text, isAttachment: false, encryption: encryption, stanzaId: stanzaId, correctedMessageOriginId: correctedMessageOriginId);
+        try await resendMessage(content: text, isAttachment: false, encryption: encryption, stanzaId: stanzaId, correctedMessageOriginId: correctedMessageOriginId);
     }
     
     // we are only encrypting URL and not file content, it should be encoded prior uploading
-    public func sendAttachment(url: String, appendix: ChatAttachmentAppendix, originalUrl: URL?, completionHandler: (()->Void)?) {
+    public func sendAttachment(url: String, appendix: ChatAttachmentAppendix, originalUrl: URL?) async throws {
         let stanzaId = UUID().uuidString;
         let encryption = self.options.encryption ?? Settings.messageEncryption;
 
@@ -193,16 +195,15 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
             break;
         }
         let options = ConversationEntry.Options(recipient: .none, encryption: messageEncryption, isMarkable: true)
-        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.unsent), sender: .me(conversation: self), type: .attachment, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, appendix: appendix, options: options, linkPreviewAction: .none, completionHandler: { msgId in
+        if let msgId = DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.unsent), sender: .me(conversation: self), type: .attachment, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, appendix: appendix, options: options, linkPreviewAction: .none) {
             if let url = originalUrl {
                 _ = DownloadStore.instance.store(url, filename:  appendix.filename ?? url.lastPathComponent, with: "\(msgId)");
             }
-            completionHandler?();
-        });
-        resendMessage(content: url, isAttachment: true, encryption: encryption, stanzaId: stanzaId, correctedMessageOriginId: nil);
+        }
+        try await resendMessage(content: url, isAttachment: true, encryption: encryption, stanzaId: stanzaId, correctedMessageOriginId: nil);
     }
     
-    func resendMessage(content: String, isAttachment: Bool, encryption: ChatEncryption, stanzaId: String, correctedMessageOriginId: String?) {
+    func resendMessage(content: String, isAttachment: Bool, encryption: ChatEncryption, stanzaId: String, correctedMessageOriginId: String?) async throws {
         let message = createMessage(text: content, id: stanzaId);
         if isAttachment {
             message.oob = content
@@ -215,66 +216,75 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
             let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: nil, conversationIdentifier: "account=\(account.description)|sender=\(jid.description)", serviceName: "Siskin IM", sender: sender, attachments: nil);
             let interaction = INInteraction(intent: intent, response: nil);
             interaction.direction = .outgoing;
-            interaction.donate(completion: nil);
+            try await interaction.donate();
         }
         
-        send(message: message, encryption: encryption, completionHandler: { result in
-            switch result {
-            case .success(_):
-                DBChatHistoryStore.instance.updateItemState(for: self, stanzaId: correctedMessageOriginId ?? message.id!, from: .outgoing(.unsent), to: .outgoing(.sent), withTimestamp: correctedMessageOriginId != nil ? nil : Date());
-            case .failure(let error):
-                switch error.condition {
-                case .gone:
-                    return;
-                default:
-                    break;
-                }
+        do {
+            try await send(message: message, encryption: encryption);
+            DBChatHistoryStore.instance.updateItemState(for: self, stanzaId: correctedMessageOriginId ?? message.id!, from: .outgoing(.unsent), to: .outgoing(.sent), withTimestamp: correctedMessageOriginId != nil ? nil : Date());
+        } catch let error as XMPPError {
+            guard error.condition == .gone else {
                 DBChatHistoryStore.instance.markOutgoingAsError(for: self, stanzaId: message.id!, error: error)
+                throw error;
             }
-        })
+        }
     }
     
-    private func send(message: Message, encryption: ChatEncryption, completionHandler: @escaping (Result<Void,XMPPError>)->Void) {
-        XmppService.instance.tasksQueue.schedule(for: jid, task: { callback in
+    private func send(message: Message, encryption: ChatEncryption) async throws {
+        try await XmppService.instance.tasksQueue.schedule(for: jid, operation: {
             switch encryption {
             case .none:
-                super.send(message: message, completionHandler: { result in
-                    completionHandler(result);
-                    callback();
-                });
+                try await super.send(message: message);
             case .omemo:
                 guard let context = self.context as? XMPPClient, context.isConnected else {
-                    completionHandler(.failure(XMPPError(condition: .gone)));
-                    callback();
-                    return;
+                    throw XMPPError(condition: .gone);
                 }
-                message.oob = nil;
-                context.module(.omemo).encode(message: message, completionHandler: { result in
-                    switch result {
-                    case .success(let encodedMessage):
-                        guard context.isConnected else {
-                            completionHandler(.failure(XMPPError(condition: .gone)))
-                            callback();
-                            return;
-                        }
-                        super.send(message: encodedMessage.message, completionHandler: { result in
-                            completionHandler(result);
-                            callback();
-                        });
-                    case .failure(let error):
-                        var errorMessage = NSLocalizedString("It was not possible to send encrypted message due to encryption error", comment: "message encryption failure");
-                        switch error {
-                        case SignalError.noSession:
-                            errorMessage = NSLocalizedString("There is no trusted device to send message to", comment: "message encryption failure");
-                        default:
-                            break;
-                        }
-                        completionHandler(.failure(XMPPError(condition: .unexpected_request, message: errorMessage)));
-                        callback();
-                    }
-                })
+
+                let encryptedMessage = try await context.module(.omemo).encrypt(message: message);
+                try await super.send(message: encryptedMessage.message);
             }
         })
+//
+//            .schedule(for: jid, task: { callback in
+//            switch encryption {
+//            case .none:
+//                super.send(message: message, completionHandler: { result in
+//                    completionHandler(result);
+//                    callback();
+//                });
+//            case .omemo:
+//                guard let context = self.context as? XMPPClient, context.isConnected else {
+//                    completionHandler(.failure(XMPPError(condition: .gone)));
+//                    callback();
+//                    return;
+//                }
+//                message.oob = nil;
+//                context.module(.omemo).encode(message: message, completionHandler: { result in
+//                    switch result {
+//                    case .success(let encodedMessage):
+//                        guard context.isConnected else {
+//                            completionHandler(.failure(XMPPError(condition: .gone)))
+//                            callback();
+//                            return;
+//                        }
+//                        super.send(message: encodedMessage.message, completionHandler: { result in
+//                            completionHandler(result);
+//                            callback();
+//                        });
+//                    case .failure(let error):
+//                        var errorMessage = NSLocalizedString("It was not possible to send encrypted message due to encryption error", comment: "message encryption failure");
+//                        switch error {
+//                        case SignalError.noSession:
+//                            errorMessage = NSLocalizedString("There is no trusted device to send message to", comment: "message encryption failure");
+//                        default:
+//                            break;
+//                        }
+//                        completionHandler(.failure(XMPPError(condition: .unexpected_request, message: errorMessage)));
+//                        callback();
+//                    }
+//                })
+//            }
+//        })
     }
 
     public override func isLocal(sender: ConversationEntrySender) -> Bool {

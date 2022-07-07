@@ -429,14 +429,14 @@ class ShareViewController: UITableViewController {
             return;
         }
         
-        HTTPFileUploadHelper.upload(for: client, filename: fileInfo.filenameWithSuffix, inputStream: inputStream, filesize: Int(size), mimeType: mimeType ?? "application/octet-stream", delegate: nil, completionHandler: { result in
-            switch result {
-            case .success(let url):
+        Task {
+            do {
+                let url = try await HTTPFileUploadHelper.upload(for: client, filename: fileInfo.filenameWithSuffix, inputStream: inputStream, filesize: Int(size), mimeType: mimeType ?? "application/octet-stream", delegate: nil);
                 completionHandler(.success(url));
-            case .failure(let error):
+            } catch {
                 completionHandler(.failure(error));
             }
-        })
+        }
     }
     
     enum Attachment {
@@ -453,15 +453,17 @@ class ShareViewController: UITableViewController {
                         completionHandler(.failure(error!));
                         return;
                     }
-                    MediaHelper.compressMovie(url: url, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "mov"), quality: self.videoQuality, progressCallback: { progress in }, completionHandler: { result in
-                        try? FileManager.default.removeItem(at: url);
-                        switch result {
-                        case .success((let url, let fileInfo)):
-                            completionHandler(.success(.file(url, fileInfo)))
-                        case .failure(let error):
+                    Task {
+                        defer {
+                            try? FileManager.default.removeItem(at: url);
+                        }
+                        do {
+                            let (url,fileInfo) = try await MediaHelper.compressMovie(url: url, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "mov"), quality: self.videoQuality, progressCallback: { _ in });
+                            completionHandler(.success(.file(url, fileInfo)));
+                        } catch {
                             completionHandler(.failure(error));
                         }
-                    })
+                    }
                 });
             } else if provider.hasItemConformingToTypeIdentifier(kUTTypeImage as String) {
                 provider.loadFileRepresentation(forTypeIdentifier: kUTTypeImage as String, completionHandler: { url, error in
@@ -469,15 +471,17 @@ class ShareViewController: UITableViewController {
                         completionHandler(.failure(error!));
                         return;
                     }
-                    MediaHelper.compressImage(url: url, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "jpg"), quality: self.imageQuality, completionHandler: { result in
-                        try? FileManager.default.removeItem(at: url);
-                        switch result {
-                        case .success((let url, let fileInfo)):
-                            completionHandler(.success(.file(url, fileInfo)))
-                        case .failure(let error):
+                    Task {
+                        defer {
+                            try? FileManager.default.removeItem(at: url);
+                        }
+                        do {
+                            let (url,fileInfo) = try MediaHelper.compressImage(url: url, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "jpg"), quality: self.imageQuality);
+                            completionHandler(.success(.file(url, fileInfo)));
+                        } catch {
                             completionHandler(.failure(error));
                         }
-                    })
+                    }
                 });
             } else if provider.hasItemConformingToTypeIdentifier(kUTTypeFileURL as String) {
                 provider.loadFileRepresentation(forTypeIdentifier: kUTTypeFileURL as String, completionHandler: { (url, error) in

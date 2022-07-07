@@ -72,52 +72,39 @@ public struct ShareFileInfo {
 
 open class MediaHelper {
     
-    public static func compressImage(url: URL, fileInfo: ShareFileInfo, quality: ImageQuality, completionHandler: @escaping (Result<(URL,ShareFileInfo),ShareError>)->Void) {
+    public static func compressImage(url: URL, fileInfo: ShareFileInfo, quality: ImageQuality) throws -> (URL,ShareFileInfo) {
         guard quality != .original else {
             let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent(fileInfo.with(filename: UUID().uuidString));
-            do {
-                try  FileManager.default.copyItem(at: url, to: tempUrl);
-            } catch {
-                completionHandler(.failure(.noAccessError))
-                return;
-            }
-            completionHandler(.success((tempUrl, fileInfo)));
-            return;
+            try FileManager.default.copyItem(at: url, to: tempUrl);
+            return (tempUrl, fileInfo);
         }
-        guard let inData = try? Data(contentsOf: url), let image = UIImage(data: inData) else {
-            completionHandler(.failure(.notSupported));
-            return;
+
+        let inData = try Data(contentsOf: url);
+        guard let image = UIImage(data: inData) else {
+            throw ShareError.notSupported;
         }
-        compressImage(image: image, fileInfo: fileInfo, quality: quality, completionHandler: completionHandler);
+        
+        return try compressImage(image: image, fileInfo: fileInfo, quality: quality);
     }
     
-    public static func compressImage(image: UIImage, fileInfo: ShareFileInfo, quality: ImageQuality, completionHandler: @escaping(Result<(URL,ShareFileInfo),ShareError>)->Void) {
+    public static func compressImage(image: UIImage, fileInfo: ShareFileInfo, quality: ImageQuality) throws -> (URL,ShareFileInfo)  {
         let newFileInfo = fileInfo.with(suffix: "jpg");
         let fileUrl = FileManager.default.temporaryDirectory.appendingPathComponent(newFileInfo.filenameWithSuffix, isDirectory: false);
         guard let outData = image.scaled(maxWidthOrHeight: quality.size)?.jpegData(compressionQuality: quality.quality) else {
-            return;
+            throw ShareError.unknownError;
         }
-        do {
-            try outData.write(to: fileUrl);
-            completionHandler(.success((fileUrl,newFileInfo)));
-        } catch {
-            completionHandler(.failure(.noAccessError));
-            return;
-        }
+        
+        try outData.write(to: fileUrl);
+        return (fileUrl,newFileInfo);
     }
     
-    public static func compressMovie(url: URL, fileInfo: ShareFileInfo, quality: VideoQuality, progressCallback: @escaping (Float)->Void, completionHandler: @escaping (Result<(URL,ShareFileInfo),Error>)->Void) {
+    public static func compressMovie(url: URL, fileInfo: ShareFileInfo, quality: VideoQuality, progressCallback: @escaping (Float)->Void) async throws -> (URL,ShareFileInfo) {
         guard quality != .original else {
             let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent(fileInfo.with(filename: UUID().uuidString));
-            do {
-                try FileManager.default.copyItem(at: url, to: tempUrl);
-            } catch {
-                completionHandler(.failure(ShareError.noAccessError))
-                return;
-            }
-            completionHandler(.success((tempUrl,fileInfo)));
-            return;
+            try FileManager.default.copyItem(at: url, to: tempUrl);
+            return (tempUrl,fileInfo);
         }
+
         let video = AVAsset(url: url);
         let exportSession = AVAssetExportSession(asset: video, presetName: quality.preset)!;
         exportSession.shouldOptimizeForNetworkUse = true;
@@ -129,19 +116,24 @@ open class MediaHelper {
         let timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: { _ in
             progressCallback(exportSession.progress);
         })
-        exportSession.exportAsynchronously {
-            timer.invalidate();
-            if let error = exportSession.error {
-                completionHandler(.failure(error));
-            } else {
-                completionHandler(.success((fileUrl,newFileInfo)));
+        
+        defer {
+            DispatchQueue.main.async {
+                timer.invalidate();
             }
         }
+        
+        await exportSession.export();
+        if let error = exportSession.error {
+            throw error;
+        }
+        return (fileUrl,newFileInfo);
     }
     
 }
 
 public enum ShareError: Error, LocalizedError {
+    case cancelled
     case unknownError
     case noAccessError
     case noFileSizeError
@@ -155,6 +147,8 @@ public enum ShareError: Error, LocalizedError {
     
     public var message: String {
         switch self {
+        case .cancelled:
+            return NSLocalizedString("Operation was cancelled", comment: "sharing error")
         case .invalidResponseCode:
             return NSLocalizedString("Server did not confirm file upload correctly.", comment: "sharing error")
         case .unknownError:

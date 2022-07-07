@@ -104,13 +104,16 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
         alert.addAction(UIAlertAction(title: NSLocalizedString("Resend", comment: "button label"), style: .default, handler: {(action) in
             switch item.payload {
             case .message(let message, _):
-                self.chat.sendMessage(text: message, correctedMessageOriginId: nil);
-                DBChatHistoryStore.instance.remove(item: item);
+                Task {
+                    try await self.chat.sendMessage(text: message, correctedMessageOriginId: nil);
+                    DBChatHistoryStore.instance.remove(item: item);
+                }
             case .attachment(let url, let appendix):
                 let oldLocalFile = DownloadStore.instance.url(for: "\(item.id)");
-                self.chat.sendAttachment(url: url, appendix: appendix, originalUrl: oldLocalFile, completionHandler: {
+                Task {
+                    try await self.chat.sendAttachment(url: url, appendix: appendix, originalUrl: oldLocalFile);
                     DBChatHistoryStore.instance.remove(item: item);
-                });
+                }
             default:
                 break;
             }
@@ -136,8 +139,13 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
             guard item.state.direction == .outgoing else {
                 return;
             }
-            
-            chat.retract(entry: item)
+            Task {
+                do {
+                    try await chat.retract(entry: item)
+                } catch {
+                    self.showAlert(title: NSLocalizedString("Retraction failed!", comment: "message retraction failed alert title"), message: error.localizedDescription);
+                }
+            }
         default:
             super.executeContext(action: action, forItem: item, at: indexPath);
         }
@@ -168,15 +176,17 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
             return;
         }
         
-        chat.sendMessage(text: text, correctedMessageOriginId: self.correctedMessageOriginId)
-        DispatchQueue.main.async {
-            self.messageText = nil;
+        Task {
+            try await chat.sendMessage(text: text, correctedMessageOriginId: self.correctedMessageOriginId)
+            DispatchQueue.main.async {
+                self.messageText = nil;
+            }
         }
     }
     
     
-    override func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (() -> Void)?) {
-        chat.sendAttachment(url: uploadedUrl, appendix: appendix, originalUrl: originalUrl, completionHandler: completionHandler);
+    override func sendAttachment(originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix) async throws {
+        try await chat.sendAttachment(url: uploadedUrl, appendix: appendix, originalUrl: originalUrl);
     }
         
 }

@@ -22,49 +22,70 @@
 import UIKit
 import TigaseSwift
 
-public class KeyedTasksQueue {
+public actor KeyedTasksQueue {
+    typealias Job = @Sendable () async throws -> Void
     
-    private let queue = DispatchQueue(label: "TasksQueue");
-    private var queues: [BareJID:[Task]] = [:];
-    private var inProgress: [BareJID] = [];
+    private var queues: [BareJID: Task<Void,Error>] = [:]
     
-    func schedule(for key: BareJID, task: @escaping Task) {
-        queue.async {
-            var queue = self.queues[key] ?? [];
-            queue.append(task);
-            self.queues[key] = queue;
-            self.execute(for: key);
+    func schedule(for key: BareJID, operation: @escaping Job) async throws {
+        if let prevTask = queues[key] {
+            try? await prevTask.value
         }
-    }
-    
-    private func execute(for key: BareJID) {
-        queue.async {
-            guard !self.inProgress.contains(key) else {
-                return;
-            }
-            if var queue = self.queues[key], !queue.isEmpty {
-                self.inProgress.append(key);
-                let task = queue.removeFirst();
-                if queue.isEmpty {
-                    self.queues.removeValue(forKey: key);
-                } else {
-                    self.queues[key] = queue;
-                }
-                task({
-                    self.executed(for: key);
-                })
+        let task = Task(operation: operation);
+        queues[key] = task;
+        defer {
+            if queues[key] == task {
+                queues.removeValue(forKey: key);
             }
         }
+        try await task.value;
     }
     
-    private func executed(for key: BareJID) {
-        queue.async {
-            self.inProgress = self.inProgress.filter({ (k) -> Bool in
-                return k != key;
-            });
-            self.execute(for: key);
-        }
-    }
-    
-    typealias Task = (@escaping ()->Void) -> Void;
 }
+
+//public class KeyedTasksQueue {
+//
+//    private let queue = DispatchQueue(label: "TasksQueue");
+//    private var queues: [BareJID:[Task]] = [:];
+//    private var inProgress: [BareJID] = [];
+//
+//    func schedule(for key: BareJID, task: @escaping Task) {
+//        queue.async {
+//            var queue = self.queues[key] ?? [];
+//            queue.append(task);
+//            self.queues[key] = queue;
+//            self.execute(for: key);
+//        }
+//    }
+//
+//    private func execute(for key: BareJID) {
+//        queue.async {
+//            guard !self.inProgress.contains(key) else {
+//                return;
+//            }
+//            if var queue = self.queues[key], !queue.isEmpty {
+//                self.inProgress.append(key);
+//                let task = queue.removeFirst();
+//                if queue.isEmpty {
+//                    self.queues.removeValue(forKey: key);
+//                } else {
+//                    self.queues[key] = queue;
+//                }
+//                task({
+//                    self.executed(for: key);
+//                })
+//            }
+//        }
+//    }
+//
+//    private func executed(for key: BareJID) {
+//        queue.async {
+//            self.inProgress = self.inProgress.filter({ (k) -> Bool in
+//                return k != key;
+//            });
+//            self.execute(for: key);
+//        }
+//    }
+//
+//    typealias Task = (@escaping ()->Void) -> Void;
+//}

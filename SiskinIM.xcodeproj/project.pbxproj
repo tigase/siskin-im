@@ -260,6 +260,7 @@
 		FEF19F162348E781005CFE9A /* BaseChatViewControllerWithDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF19F152348E781005CFE9A /* BaseChatViewControllerWithDataSource.swift */; };
 		FEF80DB21CDBBBFE005645A7 /* AccountSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF80DB11CDBBBFE005645A7 /* AccountSettingsViewController.swift */; };
 		FEF8255524BA0AFE00820108 /* MessageTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF8255424BA0AFE00820108 /* MessageTextView.swift */; };
+		FEF97CE62875EA0B008CF411 /* XMPPError+LocalizedError.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF97CE52875EA0B008CF411 /* XMPPError+LocalizedError.swift */; };
 		FEFB63AD1F31E4EE00EFB3E7 /* MainTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEFB63AC1F31E4EE00EFB3E7 /* MainTabBarController.swift */; };
 /* End PBXBuildFile section */
 
@@ -628,6 +629,7 @@
 		FEF97CF828770E80008CF411 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = localization/es.lproj/Conversation.strings; sourceTree = "<group>"; };
 		FEF97CF928770E80008CF411 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = localization/es.lproj/MIX.strings; sourceTree = "<group>"; };
 		FEF97CFA28770E83008CF411 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = localization/es.lproj/MainInterface.strings; sourceTree = "<group>"; };
+		FEF97CE52875EA0B008CF411 /* XMPPError+LocalizedError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XMPPError+LocalizedError.swift"; sourceTree = "<group>"; };
 		FEFB63AC1F31E4EE00EFB3E7 /* MainTabBarController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainTabBarController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -680,6 +682,7 @@
 			children = (
 				FE01ADA81E224CF400FA7E65 /* SiskinPushNotificationsModule.swift */,
 				FE1EE9D127862A5F000FA599 /* HttpFileUploadModule.swift */,
+				FEF97CE52875EA0B008CF411 /* XMPPError+LocalizedError.swift */,
 			);
 			path = xmpp;
 			sourceTree = "<group>";
@@ -1619,6 +1622,7 @@
 				FE9D4DA526C1375300DD295A /* InviteToMeetingViewController.swift in Sources */,
 				FECEF29E23B7C390007EC323 /* AttachmentChatTableViewCell.swift in Sources */,
 				FED353892270C1D000B69C53 /* DBOMEMOStore.swift in Sources */,
+				FEF97CE62875EA0B008CF411 /* XMPPError+LocalizedError.swift in Sources */,
 				FE8DD9C5221B153A0090F5AA /* InviteViewController.swift in Sources */,
 				FEB5EC9D1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift in Sources */,
 				FEE9608A22F191980009B191 /* MucChatSettingsViewController.swift in Sources */,

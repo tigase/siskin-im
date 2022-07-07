@@ -530,21 +530,22 @@ class VoiceRecordingView: UIView, AVAudioRecorderDelegate {
         }
         audioRecorder?.stop();
         self.fileUrl = nil;
-        controller.share(filename: url.lastPathComponent, url: url, mimeType: encoding.mimetype, completionHandler: { result in
-            switch result {
-            case .success(let uploadedUrl, let filesize, let mimetype):
+        Task {
+            do {
+                let uploaded = try await controller.share(filename: url.lastPathComponent, url: url, mimeType: encoding.mimetype);
+
                 var appendix = ChatAttachmentAppendix()
                 appendix.filename = url.lastPathComponent;
-                appendix.filesize = filesize;
-                appendix.mimetype = mimetype;
+                appendix.filesize = uploaded.filesize;
+                appendix.mimetype = uploaded.mimeType;
                 appendix.state = .downloaded;
-                controller.sendAttachment(originalUrl: url, uploadedUrl: uploadedUrl.absoluteString, appendix: appendix, completionHandler: {
-                });
-            case .failure(let error):
+
+                try await controller.sendAttachment(originalUrl: url, uploadedUrl: uploaded.url.absoluteString, appendix: appendix);
+            } catch {
                 try? FileManager.default.removeItem(at: url);
-                controller.showAlert(shareError: error);
+                controller.showAlert(error: error);
             }
-        })
+        }
         self.hideVoiceRecordingView(self);
     }
     

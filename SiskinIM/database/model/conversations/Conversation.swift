@@ -59,9 +59,9 @@ public protocol Conversation: ConversationProtocol, ConversationKey, Displayable
     func markAsRead(count: Int) -> Bool;
     func update(_ activity: LastConversationActivity, isUnread: Bool) -> Bool;
     
-    func sendMessage(text: String, correctedMessageOriginId: String?);
+    func sendMessage(text: String, correctedMessageOriginId: String?) async throws;
     func prepareAttachment(url originalURL: URL) throws -> SharePreparedAttachment
-    func sendAttachment(url: String, appendix: ChatAttachmentAppendix, originalUrl: URL?, completionHandler: (()->Void)?);
+    func sendAttachment(url: String, appendix: ChatAttachmentAppendix, originalUrl: URL?) async throws;
     func canSendChatMarker() -> Bool;
     func sendChatMarker(_ marker: Message.ChatMarkers, andDeliveryReceipt: Bool);
     
@@ -83,15 +83,16 @@ extension Conversation {
         return DBChatHistoryStore.instance.history(for: self, queryType: type);
     }
     
-    func retract(entry: ConversationEntry) {
+    func retract(entry: ConversationEntry) async throws {
         guard context != nil else {
-            return;
+            throw XMPPError(condition: .remote_server_timeout);
         }
-        DBChatHistoryStore.instance.originId(for: account, with: jid, id: entry.id, completionHandler: { originId in
-            let message = self.createMessageRetraction(forMessageWithId: originId);
-            self.send(message: message, completionHandler: nil);
-            DBChatHistoryStore.instance.retractMessage(for: self, stanzaId: originId, sender: entry.sender, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
-        })
+        guard let originId = DBChatHistoryStore.instance.originId(for: account, with: jid, id: entry.id) else {
+            throw XMPPError(condition: .item_not_found);
+        }
+        let message = self.createMessageRetraction(forMessageWithId: originId);
+        try await self.send(message: message);
+        DBChatHistoryStore.instance.retractMessage(for: self, stanzaId: originId, sender: entry.sender, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
     }
 }
 

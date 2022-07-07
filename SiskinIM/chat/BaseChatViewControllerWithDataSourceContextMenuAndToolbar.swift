@@ -123,11 +123,9 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
             self.conversationLogController?.shareMessageInt(paths: [indexPath]);
         case .correct:
             if case .message(let message, _) = item.payload {
-                DBChatHistoryStore.instance.originId(for: item.conversation, id: item.id, completionHandler: { [weak self] originId in
-                    DispatchQueue.main.async {
-                        self?.startMessageCorrection(message: message, originId: originId)
-                    }
-                });
+                if let originId = DBChatHistoryStore.instance.originId(for: item.conversation, id: item.id) {
+                    self.startMessageCorrection(message: message, originId: originId)
+                }
             }
         case .retract:
             // that is per-chat-type sepecific

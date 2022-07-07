@@ -142,18 +142,21 @@ extension BaseChatViewController: URLSessionDelegate {
         }
     }
 
-    func share(filename: String, url: URL, mimeType suggestedMimeType: String? = nil, completionHandler: @escaping (HTTPFileUploadHelper.UploadResult)->Void) {
+    func share(filename: String, url: URL, mimeType suggestedMimeType: String? = nil) async throws -> FileUpload {
         guard let context = self.conversation.context else {
-            completionHandler(.failure(.unknownError));
-            return;
+            throw XMPPError(condition: .remote_server_timeout);
         }
         guard let values = try? url.resourceValues(forKeys: [.fileSizeKey, .typeIdentifierKey]), let size = values.fileSize else {
-            completionHandler(.failure(.noFileSizeError));
-            return;
+            throw ShareError.noFileSizeError;
         }
         
         DispatchQueue.main.async {
             self.showProgressBar();
+        }
+        defer {
+            DispatchQueue.main.async {
+                self.hideProgressBar();
+            }
         }
 
         var mimeType: String? = nil;
@@ -169,49 +172,24 @@ extension BaseChatViewController: URLSessionDelegate {
         let encrypted = shouldEncryptUploadedFile();
 
         if encrypted {
-            do {
-                let (data,fragment) = try OMEMOModule.encryptFile(url: url);
-                HTTPFileUploadHelper.upload(for: context, filename: filename, inputStream: InputStream(data: data), filesize: data.count, mimeType: mimeType ?? "application/octet-stream", delegate: self, completionHandler: { result in
-                    switch result {
-                    case .success(let url):
-                        var parts = URLComponents(url: url, resolvingAgainstBaseURL: true)!;
-                        parts.scheme = "aesgcm";
-                        parts.fragment = fragment;
-                        let shareUrl = parts.url!;
-                        
-                        completionHandler(.success(url: shareUrl, filesize: size, mimeType: mimeType));
-                    case .failure(let error):
-                        completionHandler(.failure(error));
-                    }
-                    DispatchQueue.main.async {
-                        self.hideProgressBar();
-                    }
-                });
-            } catch {
-                completionHandler(.failure(.noAccessError));
-                DispatchQueue.main.async {
-                    self.hideProgressBar();
-                }
-            }
+            let (data,fragment) = try OMEMOModule.encryptFile(url: url);
+            let url = try await HTTPFileUploadHelper.upload(for: context, filename: filename, inputStream: InputStream(data: data), filesize: data.count, mimeType: mimeType ?? "application/octet-stream", delegate: self);
+
+            var parts = URLComponents(url: url, resolvingAgainstBaseURL: true)!;
+            parts.scheme = "aesgcm";
+            parts.fragment = fragment;
+
+            return FileUpload(url: parts.url!, filesize: size, mimeType: mimeType);
         } else {
             guard let inputStream = InputStream(url: url) else {
                 DispatchQueue.main.async {
                     self.hideProgressBar();
                 }
-                completionHandler(.failure(.noAccessError));
-                return;
+                throw ShareError.noAccessError;
             }
-            HTTPFileUploadHelper.upload(for: context, filename: filename, inputStream: inputStream, filesize: size, mimeType: mimeType ?? "application/octet-stream", delegate: self, completionHandler: { result in
-                switch result {
-                case .success(let getUri):
-                    completionHandler(.success(url: getUri, filesize: size, mimeType: mimeType));
-                case .failure(let error):
-                    completionHandler(.failure(error));
-                }
-                DispatchQueue.main.async {
-                    self.hideProgressBar();
-                }
-            });
+            let url = try await HTTPFileUploadHelper.upload(for: context, filename: filename, inputStream: inputStream, filesize: size, mimeType: mimeType ?? "application/octet-stream", delegate: self);
+            
+            return FileUpload(url: url, filesize: size, mimeType: mimeType);
         }
     }
             

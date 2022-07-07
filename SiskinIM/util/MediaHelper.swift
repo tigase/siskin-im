@@ -25,45 +25,49 @@ import Shared
 
 extension MediaHelper {
     
-    static func askImageQuality(controller: UIViewController, forceQualityQuestion askQuality: Bool, _ completionHandler: @escaping (Result<ImageQuality,ShareError>)->Void) {
+    static func askImageQuality(controller: UIViewController, forceQualityQuestion askQuality: Bool) async throws -> ImageQuality {
         if let quality = askQuality ? nil : Settings.imageQuality {
-            completionHandler(.success(quality));
+            return quality;
         } else {
-            DispatchQueue.main.async {
-                let alert = UIAlertController(title: NSLocalizedString("Select quality", comment: "media quality selection instruction"), message: nil, preferredStyle: .alert);
-                
-                let values: [ImageQuality] = [.original, .highest, .high, .medium, .low];
-                for value in  values {
-                    alert.addAction(UIAlertAction(title: value.rawValue.capitalized, style: .default, handler: { _ in
-                        completionHandler(.success(value));
-                    }));
+            return try await withUnsafeThrowingContinuation({ continuation in
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: NSLocalizedString("Select quality", comment: "media quality selection instruction"), message: nil, preferredStyle: .alert);
+                    
+                    let values: [ImageQuality] = [.original, .highest, .high, .medium, .low];
+                    for value in  values {
+                        alert.addAction(UIAlertAction(title: value.rawValue.capitalized, style: .default, handler: { _ in
+                            continuation.resume(returning: value)
+                        }));
+                    }
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: { _ in
+                        continuation.resume(throwing: ShareError.cancelled)
+                    }))
+                    controller.present(alert, animated: true);
                 }
-                alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: { _ in
-                    completionHandler(.failure(.noAccessError));
-                }))
-                controller.present(alert, animated: true);
-            }
+            })
         }
     }
     
-    static func askVideoQuality(controller: UIViewController, forceQualityQuestion askQuality: Bool, _ completionHandler: @escaping (Result<VideoQuality,ShareError>)->Void) {
+    static func askVideoQuality(controller: UIViewController, forceQualityQuestion askQuality: Bool) async throws -> VideoQuality {
         if let quality = askQuality ? nil : Settings.videoQuality {
-            completionHandler(.success(quality));
+            return quality;
         } else {
-            DispatchQueue.main.async {
-                let alert = UIAlertController(title: NSLocalizedString("Select quality", comment: "media quality selection instruction"), message: nil, preferredStyle: .alert);
-                
-                let values: [VideoQuality] = [.original, .high, .medium, .low];
-                for value in  values {
-                    alert.addAction(UIAlertAction(title: value.rawValue.capitalized, style: .default, handler: { _ in
-                        completionHandler(.success(value));
-                    }));
+            return try await withUnsafeThrowingContinuation({ continuation in
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: NSLocalizedString("Select quality", comment: "media quality selection instruction"), message: nil, preferredStyle: .alert);
+                    
+                    let values: [VideoQuality] = [.original, .high, .medium, .low];
+                    for value in  values {
+                        alert.addAction(UIAlertAction(title: value.rawValue.capitalized, style: .default, handler: { _ in
+                            continuation.resume(returning: value)
+                        }));
+                    }
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: { _ in
+                        continuation.resume(throwing: ShareError.cancelled)
+                    }))
+                    controller.present(alert, animated: true);
                 }
-                alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: { _ in
-                    completionHandler(.failure(.noAccessError));
-                }))
-                controller.present(alert, animated: true);
-            }
+            })
         }
     }
     

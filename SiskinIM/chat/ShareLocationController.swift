@@ -166,8 +166,22 @@ class ShareLocationController: UIViewController, MKMapViewDelegate, CLLocationMa
     }
     
     @objc func shareSelectedLocation(_ sender: Any) {
-        conversation.sendMessage(text: currentAnnotation.geoUri, correctedMessageOriginId: nil);
-        dismissView();
+        Task {
+            activityIndicator?.startAnimating();
+            defer {
+                DispatchQueue.main.async {
+                    self.activityIndicator?.stopAnimating();
+                }
+            }
+            do {
+                try await conversation.sendMessage(text: currentAnnotation.geoUri, correctedMessageOriginId: nil);
+                dismissView();
+            } catch {
+                let alert = UIAlertController(title: NSLocalizedString("Sharing localtion failed!", comment: "error title for sharing location error"), message: error.localizedDescription, preferredStyle: .alert);
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default));
+                self.present(alert, animated: false);
+            }
+        }
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {

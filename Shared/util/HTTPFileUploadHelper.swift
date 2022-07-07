@@ -27,53 +27,56 @@ open class HTTPFileUploadHelper {
     
     private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "HTTPFileUploadHelper")
     
-    public static func upload(for context: Context, filename: String, inputStream: InputStream, filesize size: Int, mimeType: String, delegate: URLSessionDelegate?, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
+    public static func upload(for context: Context, filename: String, inputStream: InputStream, filesize size: Int, mimeType: String, delegate: URLSessionDelegate?) async throws -> URL {
         let httpUploadModule = context.module(.httpFileUpload);
-        httpUploadModule.findHttpUploadComponent(completionHandler: { result in
-            switch result {
-            case .success(let components):
-                guard let component = components.first(where: { $0.maxSize > size }) else {
-                    completionHandler(.failure(.fileTooBig));
+        let components = try await httpUploadModule.findHttpUploadComponents();
+        guard let component = components.first(where: { $0.maxSize > size }) else {
+            throw ShareError.fileTooBig;
+        }
+
+        let slot = try await httpUploadModule.requestUploadSlot(componentJid: component.jid, filename: filename, size: size, contentType: mimeType);
+        
+        var request = URLRequest(url: slot.putUri);
+        slot.putHeaders.forEach({ (k,v) in
+            request.addValue(v, forHTTPHeaderField: k);
+        });
+        request.httpMethod = "PUT";
+        request.httpBodyStream = inputStream;
+        request.addValue(String(size), forHTTPHeaderField: "Content-Length");
+        request.addValue(mimeType, forHTTPHeaderField: "Content-Type");
+        let session = URLSession(configuration: URLSessionConfiguration.default, delegate: delegate, delegateQueue: OperationQueue.main);
+        return try await withUnsafeThrowingContinuation({ continuation in
+            session.dataTask(with: request) { (data, response, error) in
+                let code = (response as? HTTPURLResponse)?.statusCode ?? 500;
+                guard error == nil && (code == 200 || code == 201) else {
+                    logger.error("upload of file \(filename) failed, error: \(error as Any), response: \(response as Any)");
+                    continuation.resume(throwing: ShareError.httpError);
                     return;
                 }
-                httpUploadModule.requestUploadSlot(componentJid: component.jid, filename: filename, size: size, contentType: mimeType, completionHandler: { result in
-                    switch result {
-                    case .success(let slot):
-                        var request = URLRequest(url: slot.putUri);
-                        slot.putHeaders.forEach({ (k,v) in
-                            request.addValue(v, forHTTPHeaderField: k);
-                        });
-                        request.httpMethod = "PUT";
-                        request.httpBodyStream = inputStream;
-                        request.addValue(String(size), forHTTPHeaderField: "Content-Length");
-                        request.addValue(mimeType, forHTTPHeaderField: "Content-Type");
-                        let session = URLSession(configuration: URLSessionConfiguration.default, delegate: delegate, delegateQueue: OperationQueue.main);
-                        session.dataTask(with: request) { (data, response, error) in
-                            let code = (response as? HTTPURLResponse)?.statusCode ?? 500;
-                            guard error == nil && (code == 200 || code == 201) else {
-                                logger.error("upload of file \(filename) failed, error: \(error as Any), response: \(response as Any)");
-                                completionHandler(.failure(.httpError));
-                                return;
-                            }
-                            if code == 200 {
-                                completionHandler(.failure(.invalidResponseCode(url: slot.getUri)));
-                            } else {
-                                completionHandler(.success(slot.getUri));
-                            }
-                        }.resume();
-                    case .failure(let error):
-                        logger.error("upload of file \(filename) failed, upload component returned error: \(error as Any)");
-                        completionHandler(.failure(.unknownError));
-                    }
-                });
-            case .failure(let error):
-                completionHandler(.failure(error.condition == .item_not_found ? .notSupported : .unknownError));
-            }
+                if code == 200 {
+                    continuation.resume(throwing: ShareError.invalidResponseCode(url: slot.getUri));
+                } else {
+                    continuation.resume(returning: slot.getUri);
+                }
+            }.resume()
         })
     }
     
-    public enum UploadResult {
-        case success(url: URL, filesize: Int, mimeType: String?)
-        case failure(ShareError)
+//    public enum UploadResult {
+//        case success(url: URL, filesize: Int, mimeType: String?)
+//        case failure(ShareError)
+//    }
+}
+
+public struct FileUpload {
+    public let url: URL;
+    public let filesize: Int;
+    public let mimeType: String?;
+    
+    public init(url: URL, filesize: Int, mimeType: String?) {
+        self.url = url;
+        self.filesize = filesize;
+        self.mimeType = mimeType;
     }
 }
+
