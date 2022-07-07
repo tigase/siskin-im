@@ -1,0 +1,8 @@
+/* Class = "UITableViewSection"; footerTitle = "Select which account should be used to join channel"; ObjectID = "0d6-UW-iX3"; */
+"0d6-UW-iX3.footerTitle" = "Seleccionar la cuenta que debería ser usada para unirse al canal";
+
+/* Class = "UITableViewSection"; headerTitle = "Account"; ObjectID = "0d6-UW-iX3"; */
+"0d6-UW-iX3.headerTitle" = "Cuenta";
+
+/* Class = "UITextField"; text = "test@example.com"; ObjectID = "9Dn-ee-8WK"; */
+"9Dn-ee-8WK.text" = "test@ejemplo.com";

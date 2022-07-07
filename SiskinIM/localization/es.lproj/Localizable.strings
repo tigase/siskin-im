@@ -1,0 +1,1120 @@
+/* section label, device memory */
+"%@ memory" = "%@ memoria";
+
+/* no. of lines of messages preview label */
+"%d lines of preview" = "%d líneas de previsualización";
+
+/* conversation log groupchat direction label */
+"(private message)" = "(mensaje privado)";
+
+/* conversation log label */
+"(this message has been removed)" = "(este mensaje ha sido eliminado)";
+
+/* no. of lines of messages preview label */
+"1 line of preview" = "1 línea de previsualización";
+
+/* ssl certificate info - issue part */
+"\nissued by\n%@\n with fingerprint\n%@" = "\nemitido por\n%1$@\n con huella\n%2$@";
+
+/* button label */
+"Accept" = "Aceptar";
+
+/* channel join status view label */
+"Account" = "Cuenta";
+
+/* alert title */
+"Account removal" = "Eliminación de cuenta";
+
+/* section label */
+"Accounts" = "Cuentas";
+
+/* cell label */
+"Add account" = "Añadir cuenta";
+
+/* action label */
+"Add contact" = "Añadir contacto";
+
+/* button label */
+"Add existing" = "Añadir existente";
+
+/* contact details section
+   vcard section label */
+"Addresses" = "Direcciones";
+
+/* filter scope */
+"All" = "Todo";
+
+/* alert body */
+"All messages will be deleted and all participants will be kicked out. Are you sure?" = "Se borrarán todos los mensajes y todos los participantes serán expulsados. ¿Estás seguro?";
+
+/* conversation notifications status */
+"Always" = "Siempre";
+
+/* attachemt label for conversations list */
+"Attachment" = "Adjunto";
+
+/* section label */
+"Attachments" = "Adjuntos";
+
+/* action label */
+"Audio call" = "Llamada de audio";
+
+/* notification warning about authentication failure */
+"Authentication for account %@ failed: %@" = "La autenticación para la cuenta %1$@ ha fallado: %2$@";
+
+/* alert title body */
+"Authentication for account %@ failed: %@\nVerify provided account password." = "La autenticación para la cuenta %1$@ ha fallado: %2$@\nVerifica la contraseña de la cuenta.";
+
+/* alert title */
+"Authentication issue" = "Problema de autenticación";
+
+/* appearance type */
+"Auto" = "Auto";
+
+/* audio output selection
+   channel join status view label */
+"Automatic" = "Automático";
+
+/* filter scope */
+"Available" = "Disponible";
+
+/* presence status
+   user status */
+"Away" = "Ausente";
+
+/* action label */
+"Ban user" = "Prohibir usuario";
+
+/* alert title */
+"Banning user" = "Prohibición de usuario";
+
+/* alert title */
+"Banning user %@ failed" = "La prohibición al usuario %@ ha fallado";
+
+/* user status */
+"Be right back" = "Vuelvo enseguida";
+
+/* alert body */
+"Before changing roster you need to connect to server. Do you wish to do this now?" = "Antes de cambiar el roster necesitas conectar al servidor. ¿Quieres hacerlo ahora?";
+
+/* vcard field label */
+"Birthday" = "Fecha de nacimiento";
+
+/* button label */
+"Block" = "Bloquear";
+
+/* button label */
+"Block and report" = "Bloquear e informar";
+
+/* action */
+"Block participant" = "Bloquear participante";
+
+/* channel participants view operation */
+"Blocking…" = "Bloqueando…";
+
+/* search bar scope */
+"By name" = "Por nombre";
+
+/* search bar scope */
+"By status" = "Por estado";
+
+/* call state label */
+"Call ended" = "Llamada finalizada";
+
+/* alert title */
+"Call failed" = "Llamada fallada";
+
+/* button label */
+"Cancel" = "Cancelar";
+
+/* alert title */
+"Certificate issue" = "Emisión de certificado";
+
+/* button label */
+"Change" = "Cambiar";
+
+/* button label */
+"Change avatar" = "Cambiar avatar";
+
+/* alert title
+   button label */
+"Change subject" = "Cambiar asunto";
+
+/* alert title
+   alert window title */
+"Channel destruction failed!" = "¡Ha fallado la destrucción de canal!";
+
+/* alert title */
+"Channel destuction" = "Destrucción de canal";
+
+/* action label
+   presence status */
+"Chat" = "Chat";
+
+/* channel create view operation label
+   channel join view operation label
+   channel settings view opeartion label */
+"Checking…" = "Comprobando…";
+
+/* button label */
+"Close" = "Cerrar";
+
+/* channel join status view label */
+"Component" = "Componente";
+
+/* call state label */
+"Connecting…" = "Conectando…";
+
+/* error notification message */
+"Connection to server %@ failed" = "Ha fallado la conexión al servidor %@";
+
+/* attachment cell context action
+   context action
+   context action label */
+"Copy" = "Copiar";
+
+/* context action label */
+"Correct…" = "Corregir…";
+
+/* alert body */
+"Could not create channel on the server. Got following error: %@" = "No se ha podido crear el canal en el servidor. Se ha obtenido el siguiente error: %@";
+
+/* alert body */
+"Could not delete account as it was not possible to connect to the XMPP server. Please try again later." = "No se pudo eliminar la cuenta porque no fue posible conectarse al servidor XMPP. Por favor, inténtalo de nuevo más tarde.";
+
+/* sharing error */
+"Could not detect MIME type of a file." = "No se ha podido detectar el tipo MIME de un fichero.";
+
+/* alert title */
+"Could not join" = "No se ha podido unir";
+
+/* alert body */
+"Could not join newly created channel '%@' on the server. Got following error: %@" = "No se pudo unir al canal recién creado '%@' en el servidor. Obtuve el siguiente error: %@";
+
+/* alert body */
+"Could not join room. Reason:\n%@" = "No se pudo unir a la sala. Razón:\n%@";
+
+/* alert body */
+"Could not rename group chat. The server responded with an error: %@" = "No se pudo renombra el grupo. El servidor respondió con un error: %@";
+
+/* sharing error */
+"Could not retrieve file size." = "No se pudo recuperar el tamaño de fichero.";
+
+/* alert body */
+"Could not set group chat avatar. The server responded with an error: %@" = "No se pudo establecer el avatar del grupo. El servidor respondió con un error: %@";
+
+/* alert title */
+"Could not update channel details" = "No se pudieron actualizar los detalles del canal";
+
+/* button label */
+"Create" = "Crear";
+
+/* button label */
+"Create bookmark" = "Crear marcador";
+
+/* label for chats list new converation action */
+"Create meeting" = "Crear reunión";
+
+/* button label */
+"Create new" = "Crear nuevo";
+
+/* cell sublabel */
+"Create new or add existing account" = "Creada nueva cuenta o añadida un existente";
+
+/* channel join view operation label */
+"Creating channel…" = "Creando canal…";
+
+/* appearance type */
+"Dark" = "Oscuro";
+
+/* encryption default label
+   encryption setting value */
+"Default" = "Por defecto";
+
+/* default roster group */
+"Default " = "Por defecto ";
+
+/* alert body */
+"Default account is not connected. Please select a different account." = "La cuenta por defecto no está conectada. Por favor, selecciona otra.";
+
+/* action label
+   attachment cell context action
+   button label
+   context action */
+"Delete" = "Borrar";
+
+/* alert title */
+"Delete channel?" = "¿Borrar canal?";
+
+/* button label */
+"Destroy" = "Destruir";
+
+/* alert title */
+"Details" = "Detalles";
+
+/* label for omemo device id */
+"Device: %@" = "Dispositivo: %@";
+
+/* button label */
+"Disable autojoin" = "Deshabilitar autounión";
+
+/* button label */
+"Dismiss" = "Descartar";
+
+/* section label */
+"Display" = "Mostrar";
+
+/* label for chat marker */
+"Displayed" = "Mostrado";
+
+/* presence status
+   user status */
+"Do not disturb" = "No molestar";
+
+/* alert body */
+"Do you want to ban user %@?" = "¿Quieres prohibir al usuario %@?";
+
+/* alert body */
+"Do you wish to publish this photo as avatar?" = "¿Deseas publicar esta foto como avatar?";
+
+/* alert body */
+"Do you wish to register a new account %@?" = "¿Deseas registrar la nueva cuenta %@?";
+
+/* alert body */
+"Do you wish to register a new account at %@?" = "¿Deseas registrar una nueva cuenta en %@?";
+
+/* alert body */
+"Do you wish to subscribe to \n%@\non account %@" = "¿Deseas suscribirte a\n%1$@\ncon la cuenta %2$@?";
+
+/* attachment cell context action
+   confirmation dialog title */
+"Download" = "Descargar";
+
+/* alert title */
+"Download storage" = "Almacenamiento de descarga";
+
+/* memory usage label */
+"Downloads" = "Descargas";
+
+/* action label */
+"Edit" = "Editar";
+
+/* contact details section
+   vcard section label */
+"Emails" = "Correos electrónicos";
+
+/* button label */
+"Enable" = "Habilitar";
+
+/* button label */
+"Enable autojoin" = "Habilitar autounir";
+
+/* option description */
+"Enabling message synchronization will enable message archiving on the server" = "Habilitar sincronización de mensajes habilitará el archivado de mensajes en el servidor";
+
+/* contact details section */
+"Encryption" = "Cifrado";
+
+/* alert body */
+"Enter default nickname to use in chats" = "Entrar alias por defecto para usar en chats";
+
+/* alert body */
+"Enter message to send to: %@" = "Entrar mensaje para enviar a: %@";
+
+/* placeholder */
+"Enter message…" = "Entrar mensaje…";
+
+/* alert body */
+"Enter new name for group chat" = "Entrar nuevo nombre para el grupo";
+
+/* alert body */
+"Enter new subject for group chat" = "Entrar nuevo asunto para el grupo";
+
+/* alert body */
+"Enter status message" = "Entrar mensaje de estado";
+
+/* alert title */
+"Error" = "Error";
+
+/* error description message - detail */
+"Error code" = "Código de error";
+
+/* alert title */
+"Error occurred" = "Ha ocurrido un error";
+
+/* option to remove all data from local storage */
+"Everything" = "Todo";
+
+/* presence status */
+"Extended away" = "Ausencia extendida";
+
+/* alert title
+   alert window title */
+"Failure" = "Fallo";
+
+/* vcard field label */
+"Family name" = "Apellido";
+
+/* sharing error */
+"Feature not supported by XMPP server" = "Característica no soportada por el servidor XMPP";
+
+/* file size label */
+"File - %@" = "Fichero - %@";
+
+/* confirmation dialog body */
+"File is not available locally. Should it be downloaded?" = "El fichero no está disponible localmente. ¿Debería ser descargado?";
+
+/* sharing error */
+"File is too big to share" = "El fichero es demasiado grande para compartir";
+
+/* section label */
+"Fingerprint of this device" = "Huella de este dispositivo";
+
+/* section label */
+"For account" = "Para cuenta";
+
+/* memory usage label */
+"Free" = "Libre";
+
+/* user status */
+"Free for chat" = "Libre para conversar";
+
+/* conversation log groupchat direction label */
+"From" = "Desde";
+
+/* conversation view input field placeholder */
+"from %@…" = "desde %@…";
+
+/* vcard field label */
+"Full name" = "Nombre completo";
+
+/* section label */
+"General" = "General";
+
+/* vcard field label */
+"Given name" = "Nombre de pila";
+
+/* video quality */
+"High" = "Alta";
+
+/* video quality */
+"Highest" = "La más alta";
+
+/* address type
+   address type label */
+"Home" = "Domicilio";
+
+/* alert body
+   push notifications option description */
+"If enabled, you will receive notifications of new messages or calls even if SiskinIM is in background. SiskinIM servers will forward those notifications for you from XMPP servers." = "Si está habilitado, recibirás notificaciones de mensajes o llamadas incluso si SiskinIM en segundo plano. Los servidores SiskinIM redirigirán esas notificaciones para ti desde los servidores XMPP.";
+
+/* section footer */
+"If you don't know any XMPP server domain names, then select one of our trusted servers." = "Si no conoces ningún nombre de servidor de dominio XMPP, selecciona uno de los servidores de confianza.";
+
+/* alert title */
+"Incoming call" = "Llamada entrante";
+
+/* alert body */
+"Incoming call from %@" = "Llamada entrante desde %@";
+
+/* action label */
+"Info" = "Información";
+
+/* section label */
+"Initial synchronization" = "Sincronización inicial";
+
+/* muc error reason */
+"Invalid password" = "Contraseña no válida";
+
+/* invitation label for chats list */
+"Invitation" = "Invitación";
+
+/* conversation log invitation to channel label */
+"Invitation to channel %@" = "Invitación al canal %@";
+
+/* muc invitation notification */
+"Invitation to groupchat %@" = "Invitación al grupo %@";
+
+/* button label */
+"Invite" = "Invitar";
+
+/* button label */
+"Invite…" = "Invitar…";
+
+/* error message */
+"It was not possible to access camera or microphone. Please check privacy settings" = "No fue posible acceder a la cámara o el micrófono. Por favor, comprueba los ajustes de privacidad";
+
+/* sharing error */
+"It was not possible to access the file." = "No fue posible acceder al fichero.";
+
+/* push notifications registration failure message */
+"It was not possible to contact push notification component." = "No fue posible contactar con el componente de notificaciones push.";
+
+/* push notifications registration failure message */
+"It was not possible to contact push notification component.\nTry again later." = "No fue posible contactar con el componente de notificaciones push.\nInténtalo más tarde.";
+
+/* push notifications registration failure message */
+"It was not possible to contact push notification component: %@" = "No fue posible contactar con el componente de notificación push: %@";
+
+/* error message */
+"It was not possible to contact XMPP server and sign in." = "No fue posible contactar con el servidor XMPP y entrar en él.";
+
+/* alert body */
+"It was not possible to create a meeting. Server returned an error: %@" = "No fue posible crear una reunión. El servidor retornó un error: %@";
+
+/* alert body
+   alert window message */
+"It was not possible to destroy channel %@. Server returned an error: %@" = "No fue posible destruir el canal %1$@. El servidor retornó un error: %2$@";
+
+/* error message */
+"It was not possible to establish call" = "No fue posible establecer llamada";
+
+/* alert body */
+"It was not possible to grant selected users access to the meeting. Received an error: %@" = "No fue posible otorgar acceso a la reunión a los usuarios seleccionados. Recibido error: %@";
+
+/* alert body */
+"It was not possible to initiate a call: %@" = "No fue posible iniciar una llamada: %@";
+
+/* alert button */
+"It was not possible to join a channel. The server returned an error: %@" = "No fue posible unirse al canal. El servidor devolvió un error: %@";
+
+/* error description message */
+"It was not possible to modify account." = "No fue posible modificar la cuenta.";
+
+/* alert title */
+"It was not possible to save account details" = "No fue posible guardar los detalles de la cuenta";
+
+/* alert body */
+"It was not possible to save account details: %@" = "No fue posible guardar los detalles de la cuenta: %@";
+
+/* alert title body */
+"It was not possible to save account details: %@ Please try again later." = "No fue posible guardar los detalles de la cuenta: %@ Por favor, intentar más tarde.";
+
+/* unsent messages notification */
+"It was not possible to send %d messages. Open the app to retry" = "No fue posible enviar %d mensajes. Abrir la aplicación para reintentar";
+
+/* message encryption failure */
+"It was not possible to send encrypted message due to encryption error" = "No fue posible enviar mensaje cifrado debido a un error de cifrado";
+
+/* button label */
+"Join" = "Unirse";
+
+/* label for chats list new converation action */
+"Join group chat" = "Unirse al grupo";
+
+/* action label */
+"Join room" = "Unirse a sala";
+
+/* channel status label */
+"Joined" = "Unido";
+
+/* channel join view operation label
+   muc room status */
+"Joining…" = "Uniéndose…";
+
+/* report spam action */
+"Just block" = "Solo bloquea";
+
+/* no OMEMO key - not generated yet */
+"Key not generated!" = "¡Clave no generada!";
+
+/* button label */
+"Kick out" = "Expulsar";
+
+/* option description */
+"Large value may increase inital synchronization time" = "Valores más altos pueden incrementar el tiempo de sincronización inicial";
+
+/* button label */
+"Leave" = "Abandonar";
+
+/* leaving channel title */
+"Leaving channel" = "Abandonando canal";
+
+/* appearance type */
+"Light" = "Luminoso";
+
+/* option description */
+"Limits the size of the files sent to you which may be automatically downloaded" = "Limita el tamaño de los archivos que se te envían y que pueden descargarse automáticamente";
+
+/* memory usage label */
+"Link previews" = "Previsualizaciones de enlaces";
+
+/* section label */
+"List of messages" = "Lista de mensajes";
+
+/* attachemt label for conversations list */
+"Location" = "Ubicación";
+
+/* error message */
+"Login and password do not match." = "El usuario y la contraseña no coinciden.";
+
+/* video quality */
+"Low" = "Baja";
+
+/* muc error reason */
+"Maximum number of users exceeded" = "Excedido el número máximo de usuarios";
+
+/* me label for conversation log */
+"Me" = "Yo";
+
+/* video quality */
+"Medium" = "Media";
+
+/* alert title */
+"Meeting ended" = "Reunión finalizada";
+
+/* alert body */
+"Meeting has ended" = "La reunión ha finalizado";
+
+/* muc error reason */
+"Membership is required to access the room" = "Se requiere membresía para acceder a la sala";
+
+/* message decryption error
+   message encryption failure */
+"Message decryption failed! Error code: %d" = "¡Falló el descifrado de mensaje! Código de error: %d";
+
+/* section label */
+"Message synchronization" = "Sincronización de mensaje";
+
+/* message encryption failure */
+"Message was not encrypted for this device" = "El mensaje no fue cifrado para este dispositivo";
+
+/* message decryption error */
+"Message was not encrypted for this device." = "El mensaje no fue cifrado para este dispositivo.";
+
+/* section label */
+"Messages" = "Mensajes";
+
+/* alert title */
+"Metadata storage" = "Almacenamiento de metadatos";
+
+/* alert title */
+"Missed call" = "Llamada perdida";
+
+/* alert body */
+"Missed incoming call from %@" = "Perdida llamada entrante de %@";
+
+/* list of users with this role */
+"Moderators" = "Moderadores";
+
+/* synchronization period value */
+"Month" = "Mes";
+
+/* attachment cell context action
+   context action label */
+"More…" = "Más…";
+
+/* conversation notifications status */
+"Muted" = "Silenciado";
+
+/* call state label */
+"New call" = "Nueva llamada";
+
+/* notification of incoming message on locked screen */
+"New message" = "Nuevo mensaje";
+
+/* new message without content notification */
+"New message!" = "¡Nuevo mensaje!";
+
+/* label for chats list new converation action */
+"New private group chat" = "Nuevo grupo privado";
+
+/* label for chats list new converation action */
+"New public group chat" = "Nuevo grupo público";
+
+/* alert title */
+"Nickname" = "Alias";
+
+/* muc error reason */
+"Nickname already in use" = "Ya se está usándose el alias";
+
+/* muc error reason */
+"Nickname is locked down" = "El alias está bloqueado";
+
+/* button label */
+"No" = "No";
+
+/* attachments view label */
+"No attachments" = "Sin adjuntos";
+
+/* channel join status view label
+   encryption type
+   encyption option
+   list of users with this role */
+"None" = "Nada";
+
+/* channel status label
+   muc room status label */
+"Not connected" = "No conectado";
+
+/* channel status label */
+"Not joined" = "No unido";
+
+/* action label */
+"Nothing" = "Nada";
+
+/* muc room status
+   user status */
+"Offline" = "Fuera de línea";
+
+/* action label
+   Button
+   button label
+   button lable */
+"OK" = "OK";
+
+/* option to remove all data from local storage
+   option to remove data older than 7 days */
+"Older than 7 days" = "Más antiguo de 7 días";
+
+/* encryption option
+   encryption type */
+"OMEMO" = "OMEMO";
+
+/* muc room status
+   presence status
+   user status */
+"Online" = "En línea";
+
+/* action label */
+"Open chat" = "Abrir chat";
+
+/* alert title */
+"Open URL" = "Abrir URL";
+
+/* vcard field label */
+"Organization" = "Organización";
+
+/* vcard field label */
+"Organization role" = "Rol de la organización";
+
+/* video quality */
+"Original" = "Original";
+
+/* selection warning */
+"Original quality will share image in the format in which it is stored on your phone and it may not be supported by every device." = "La calidad original compartirá la imagen en el formato en el que está almacenada en tu teléfono y es posible que no sea compatible con todos los dispositivos.";
+
+/* selection warning */
+"Original quality will share video in the format in which video is stored on your phone and it may not be supported by every device." = "La calidad original compartirá el video en el formato en el que se almacena el video en tu teléfono y es posible que no sea compatible con todos los dispositivos.";
+
+/* memory usage label */
+"Other apps" = "Otras aplicaciones";
+
+/* section label */
+"Other devices fingerprints" = "Huellas de otros dispositivos";
+
+/* list of users with this role */
+"Participants" = "Participantes";
+
+/* button label */
+"Pass ownership" = "Titularidad del pase";
+
+/* contact details section
+   vcard section label */
+"Phones" = "Teléfonos";
+
+/* voice message state */
+"Playing…" = "Reproduciendo…";
+
+/* instruction to fill out the form */
+"Please fill this form" = "Por favor, rellenar este formulario";
+
+/* alert title */
+"Please launch application from the home screen before continuing." = "Inicia la aplicación desde la pantalla de inicio antes de continuar.";
+
+/* sharing error */
+"Please try again later." = "Por favor, intentar más tarde.";
+
+/* section label */
+"Preferred domain name" = "Nombre de dominio preferido";
+
+/* operation label */
+"Preparing…" = "Preparando…";
+
+/* attachment cell context action
+   context action */
+"Preview" = "Previsualización";
+
+/* action label */
+"Private message" = "Mensaje privado";
+
+/* account registration error */
+"Provided values are not acceptable" = "Los valores proporcionados no son aceptables";
+
+/* alert title */
+"Push notifications" = "Notificaciones push";
+
+/* alert title */
+"Push Notifications" = "Notificaciones Push";
+
+/* alert body */
+"Push notifications are enabled for %@. They need to be disabled before account can be removed and it is not possible to at this time. Please try again later." = "Las notificaciones push están habilitadas para %@. Deben desactivarse antes de que se pueda eliminar la cuenta y no es posible hacerlo en este momento. Por favor, inténtalo de nuevo más tarde.";
+
+/* push notifications registration failure message */
+"Push notifications not available" = "Las notificaciones push no están disponibles";
+
+/* section label */
+"Quality of uploaded media" = "Calidad de los medios subidos";
+
+/* synchronization period value */
+"Quarter" = "Trimestral";
+
+/* alert title */
+"Question" = "Pregunta";
+
+/* label for chat marker */
+"Received" = "Recibido";
+
+/* presence subscription request notification */
+"Received presence subscription request from %@" = "Solicitud de suscripción de presencia recibida de %@";
+
+/* alert title body */
+"Received presence subscription request from\n%@\non account %@" = "Solicitud de suscripción de presencia recibida de\n%1$@\npara la cuenta %2$@";
+
+/* voice message state */
+"Recorded: %@" = "Grabado: %@";
+
+/* voice message state */
+"Recording…" = "Grabando…";
+
+/* voice message state */
+"Recording… %@" = "Grabando… %@";
+
+/* channel block users view operation
+   channel edit info operation
+   channel participants view operation */
+"Refreshing…" = "Refrescando…";
+
+/* button label */
+"Register" = "Registro";
+
+/* alert title */
+"Registering account" = "Registrando cuenta";
+
+/* alert title */
+"Registration failure" = "Fallo de registro";
+
+/* account registration error */
+"Registration is not supported by this server" = "Este servidor no soporta registro";
+
+/* button label */
+"Reject" = "Rechazar";
+
+/* alert body */
+"Remote server returned an error: %@" = "El servidor remoto devolvió un error: %@";
+
+/* option description */
+"Removal of cached attachments may lead to increased usage of network, if attachment may need to be redownloaded, or to lost files, if they are no longer available at the server." = "La eliminación de los adjuntos en caché puede llevar a un mayor uso de la red, si es necesario volver a descargar los archivos adjuntos, o a la pérdida de archivos, si ya no están disponibles en el servidor.";
+
+/* alert body */
+"Remove account from application?" = "¿Borrar la cuenta de la aplicación?";
+
+/* button label */
+"Remove bookmark" = "Eliminar marcador";
+
+/* button label */
+"Remove from application" = "Eliminar de la aplicación";
+
+/* button label */
+"Remove from server" = "Eliminar del servidor";
+
+/* button label */
+"Rename" = "Renombrar";
+
+/* alert title
+   button label */
+"Rename chat" = "Renombrar chat";
+
+/* context action label */
+"Reply…" = "Respuesta…";
+
+/* context action label */
+"Report & block…" = "Informar y bloquear…";
+
+/* report abuse action */
+"Report abuse" = "Informar de abuso";
+
+/* report spam action */
+"Report spam" = "Informar de spam";
+
+/* button label */
+"Resend" = "Reenviar";
+
+/* context action label */
+"Retract" = "Retirar";
+
+/* call state label */
+"Ringing…" = "Zumbido…";
+
+/* alert title */
+"Room %@" = "Sala %@";
+
+/* muc error reason */
+"Room is locked" = "La sala está cerrada";
+
+/* alert body */
+"Room was created and joined but room was not properly configured. Got following error: %@" = "La sala fue creada y unido pero no está apropiadamente configurada. Obtenido el siguiente error: %@";
+
+/* search bar placeholder */
+"Search channels" = "Buscar canales";
+
+/* placeholder for location selection search bar */
+"Search for places" = "Buscar lugares";
+
+/* placeholder */
+"Search to add…" = "Buscar para añadir…";
+
+/* alert body */
+"Select account to open chat from" = "Seleccionar cuenta desde la que abrir el chat";
+
+/* selection information */
+"Select appearance" = "Seleccionar aspecto";
+
+/* title for multiple contact selection */
+"Select contacts" = "Seleccionar contactos";
+
+/* selection information */
+"Select default conversation encryption" = "Seleccionar el cifrado de conversación por defecto";
+
+/* location selection window title */
+"Select location" = "Seleccionar ubicación";
+
+/* selection description */
+"Select period of messages to be synchronized" = "Seleccionar el periodo de mensajes a sincronizar";
+
+/* button label
+   photo selection action */
+"Select photo" = "Seleccionar foto";
+
+/* media quality selection instruction */
+"Select quality" = "Seleccionar calidad";
+
+/* selection description */
+"Select quality of the image to use for sharing" = "Seleccionar la calidad de imagen para compartir";
+
+/* selection description */
+"Select quality of the video to use for sharing" = "Seleccionar la calidad de vídeo para compartir";
+
+/* view title */
+"Select recipients" = "Seleccionar destinatarios";
+
+/* alert title */
+"Select status" = "Seleccionar estado";
+
+/* button label */
+"Send" = "Enviar";
+
+/* alert title */
+"Send message" = "Enviar mensaje";
+
+/* channel invitations view operation */
+"Sending invitations…" = "Enviando invitaciones…";
+
+/* operation label */
+"Sending…" = "Enviando…";
+
+/* sharing error */
+"Server did not confirm file upload correctly." = "El servidor no confirmó correctamente la carga del archivo.";
+
+/* ssl certificate alert dialog body */
+"Server for domain %@ provided invalid certificate for %@\n with fingerprint\n%@%@.\nDo you trust this certificate?" = "El servidor del dominio %1$@ proporcionó un certificado no válido para %2$@\n con huella\n%3$@%4$@.\n¿Confías en este certificado?";
+
+/* alert body */
+"Server of selected account does not provide support for hosting meetings. Please select a different account." = "El servidor de la cuenta seleccionada no proporciona soporte para alojar reuniones. Por favor, seleccionar otra cuenta.";
+
+/* account registration error
+   alert body */
+"Server returned an error: %@" = "El servidor devolvió un error: %@";
+
+/* account registration error */
+"Service is not available at this time." = "El servicio no está disponible en este momento.";
+
+/* alert title */
+"Service unavailable" = "Servicio no disponible";
+
+/* button label */
+"Set" = "Establecer";
+
+/* contact details section
+   section label */
+"Settings" = "Ajustes";
+
+/* attachment cell context action
+   context action
+   context action label */
+"Share…" = "Compartir…";
+
+/* section label */
+"Sharing" = "Intercambio";
+
+/* alert body */
+"Sharing feature with HTTP upload is disabled within application. To use this feature you need to enable sharing with HTTP upload in application" = "La característica de compartir por carga HTTP está deshabilitada en la aplicación. Para usarla necesitas habilitar la compartición con carga HTPP en la aplicación";
+
+/* alert body */
+"Should account be removed from server as well?" = "¿Se debería eliminar también la cuenta del servidor?";
+
+/* context action label */
+"Show map" = "Mostrar mapa";
+
+/* notifications from unknown description */
+"Show notifications from people not in your contact list" = "Mostrar notificaciones de gente que no está en tu lista de contactos";
+
+/* audio output label */
+"Speaker" = "Altavoz";
+
+/* alert title */
+"Start chatting" = "Empezar a chatear";
+
+/* alert title
+   section label */
+"Status" = "Estado";
+
+/* alert title */
+"Subscribe to %@" = "Suscribir a %@";
+
+/* alert title */
+"Subscription request" = "Petición de suscripción";
+
+/* button label */
+"Switch audio" = "Cambiar audio";
+
+/* button label */
+"Switch camera" = "Cambiar cámara";
+
+/* button label
+   photo selection action */
+"Take photo" = "Hacer foto";
+
+/* report user message */
+"The user %@ will be blocked. Should it be reported as well?" = "El usuario %@ será bloqueado. ¿Debería ser informado también?";
+
+/* alert message */
+"There is no service supporting channels for domain %@" = "No hay servicio de soporte de canales en el dominio %@";
+
+/* message encryption failure */
+"There is no trusted device to send message to" = "No hay dispositivo de confianza para enviar mensajes";
+
+/* alert body */
+"This room is not capable of sending encrypted messages. Please change encryption settings to be able to send messages" = "Esta sala no es capaz de enviar mensajes cifrados. Por favor, cambia los ajustes de cifrado para poder enviar mensajes";
+
+/* conversation log groupchat direction label */
+"To" = "A";
+
+/* section label */
+"Trusted servers" = "Servidores de confianza";
+
+/* error recovery suggestion */
+"Try again. If removal failed, try accessing Keychain to update account credentials manually." = "Intentar otra vez. Si la eliminación falla, intenta acceder a Keychain para actualizar las credenciales de la cuenta manualmente.";
+
+/* synchronization period value */
+"Two weeks" = "Dos semanas";
+
+/* action
+   button label */
+"Unblock" = "Desbloquear";
+
+/* alert body */
+"Unknown error occurred" = "Ha ocurrido un error desconocido";
+
+/* unknown file label */
+"Unknown file" = "Fichero desconocido";
+
+/* allowed size of file to download */
+"Unlimited" = "Sin límite";
+
+/* conversation log label */
+"Unread messages" = "Mensajes no leídos";
+
+/* channel block users view operation
+   channel edit info operation
+   refresh conrol label */
+"Updating…" = "Actualizando…";
+
+/* alert title */
+"Upload failed" = "Carga fallida";
+
+/* sharing error */
+"Upload to HTTP server failed." = "Carga en servidor HTTP fallida.";
+
+/* option description */
+"Used image and video quality may impact storage and network usage" = "La calidad de imagen y vídeo puede impactar en el almacenamiento y el uso de red";
+
+/* alert body */
+"User avatar publication failed.\nReason: %@" = "Falló la publicación de avatar de usuario.\nRazón: %@";
+
+/* muc error reason */
+"User is banned" = "El usuario está prohibido";
+
+/* account registration error */
+"User with provided username already exists" = "El nombre de usuario ya existe";
+
+/* account info label */
+"using %@" = "usando %@";
+
+/* alert body */
+"VCard publication failed: %@" = "Falló la publicación de VCard: %@";
+
+/* version of the app */
+"Version: %@" = "Versión: %@";
+
+/* action label */
+"Video call" = "Llamada de vídeo";
+
+/* list of users with this role */
+"Visitors" = "Visitantes";
+
+/* alert title */
+"Warning" = "Advertencia";
+
+/* alert body
+   used space label */
+"We are using %@ of storage." = "Estamos usando %@ de almacenamiento.";
+
+/* synchronization period value */
+"Week" = "Semana";
+
+/* alert body */
+"What do you want to do with %@?" = "¿Qué quieres hacer con %@?";
+
+/* conversation notifications status */
+"When mentioned" = "Cuando sea mencionado";
+
+/* alert body */
+"When you share files using HTTP, they are uploaded to HTTP server with unique URL. Anyone who knows the unique URL to the file is able to download it.\nDo you wish to enable?" = "Cuando compartes archivos mediante HTTP, se cargan en el servidor HTTP con una URL única. Cualquiera que conozca la URL única del archivo puede descargarlo.\n¿Deseas habilitar?";
+
+/* alert body */
+"When you share files, they are uploaded to HTTP server with unique URL. Anyone who knows the unique URL to the file is able to download it.\nDo you wish to proceed?" = "Cuando compartes archivos mediante HTTP, se cargan en el servidor HTTP con una URL única. Cualquiera que conozca la URL única del archivo puede descargarlo.\n¿Deseas continuar?";
+
+/* address type
+   address type label */
+"Work" = "Trabajo";
+
+/* synchronization period value */
+"Year" = "Año";
+
+/* button label */
+"Yes" = "Sí";
+
+/* alert body */
+"You are about to destroy channel %@. This will remove the channel on the server, remove remote history archive, and kick out all participants. Are you sure?" = "Estás a punto de destruir el canal %@. Esto eliminará el canal en el servidor, eliminará el archivo de historial remoto y expulsará a todos los participantes. ¿Estás seguro?";
+
+/* error label */
+"You are invied to join conversation at %@" = "Estás invitado a unirte a la conversación en %@";
+
+/* alert body */
+"You are not connected to room.\nPlease wait reconnection to room" = "No estás conectado a la sala.\nPor favor, reconecta con la sala";
+
+/* alert body */
+"You are not joined to the channel." = "No te has unido al canal.";
+
+/* leaving channel text */
+"You are the last person with ownership of this channel. Please decide what to do with the channel." = "Eres la última persona con propiedad de este canal. Por favor, decide qué hacer con el canal.";
+
+/* push notifications not allowed warning */
+"You need to allow application to show notifications and for background refresh." = "Debes permitir que la aplicación muestre notificaciones y se actualice en segundo plano.";
+
+/* alert body */
+"You've left there room %@ and push notifications for this room were disabled!\nYou may need to reenable them on other devices." = "¡Has abandonado la sala %@ y las notificaciones push par esta sala han sido deshabilitadas!\nEs posible que debas volver a habilitarlas en otros dispositivos.";
+
+/* search location pin label */
+"Your location" = "Tu ubicación";

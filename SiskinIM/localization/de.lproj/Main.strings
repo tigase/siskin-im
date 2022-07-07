@@ -1,0 +1,74 @@
+/* Class = "UILabel"; text = "by Tigase, Inc."; ObjectID = "8ba-yZ-XRA"; */
+"8ba-yZ-XRA.text" = "von Tigase, Inc.";
+
+/* Class = "UITabBarItem"; title = "Chats"; ObjectID = "acW-dT-cKf"; */
+"acW-dT-cKf.title" = "Chats";
+
+/* Class = "UITextField"; placeholder = "Enter jid"; ObjectID = "BM3-28-huR"; */
+"BM3-28-huR.placeholder" = "XMPP-Adresse eingeben";
+
+/* Class = "UINavigationItem"; title = "Informations"; ObjectID = "bNp-S8-ulX"; */
+"bNp-S8-ulX.title" = "Informationen";
+
+/* Class = "UINavigationItem"; title = "Attachments"; ObjectID = "C1j-4i-HDP"; */
+"C1j-4i-HDP.title" = "Anhänge";
+
+/* Class = "UITabBarItem"; title = "Bookmarks"; ObjectID = "dgT-Yo-7nF"; */
+"dgT-Yo-7nF.title" = "Lesezeichen";
+
+/* Class = "UILabel"; text = "Attachments"; ObjectID = "EpU-tc-DIx"; */
+"EpU-tc-DIx.text" = "Anhänge";
+
+/* Class = "UILabel"; text = "Ask for presence updates"; ObjectID = "ffo-7n-Tn2"; */
+"ffo-7n-Tn2.text" = "Online-Status anfragen";
+
+/* Class = "UILabel"; text = "Mute contact"; ObjectID = "g8N-kr-fax"; */
+"g8N-kr-fax.text" = "Kontakt stummschalten";
+
+/* Class = "UITextField"; placeholder = "Select account"; ObjectID = "gXY-yq-Y2K"; */
+"gXY-yq-Y2K.placeholder" = "Konto wählen";
+
+/* Class = "UITextField"; text = "local_user@example.com"; ObjectID = "gXY-yq-Y2K"; */
+"gXY-yq-Y2K.text" = "nutzer@beispiel.de";
+
+/* Class = "UITableViewSection"; headerTitle = "Name"; ObjectID = "Kfl-J5-hdD"; */
+"Kfl-J5-hdD.headerTitle" = "Name";
+
+/* Class = "UILabel"; text = "Block contact"; ObjectID = "kwQ-p7-cX2"; */
+"kwQ-p7-cX2.text" = "Kontakt sperren";
+
+/* Class = "UITableViewSection"; headerTitle = "Account"; ObjectID = "Mfv-HJ-QDO"; */
+"Mfv-HJ-QDO.headerTitle" = "Konto";
+
+/* Class = "UICollectionViewController"; title = "Attachments"; ObjectID = "N9z-ms-iaT"; */
+"N9z-ms-iaT.title" = "Anhänge";
+
+/* Class = "UINavigationController"; title = "Contacts"; ObjectID = "Ndx-if-NHK"; */
+"Ndx-if-NHK.title" = "Kontakte";
+
+/* Class = "UITextField"; placeholder = "Enter display name"; ObjectID = "OGf-mX-8z3"; */
+"OGf-mX-8z3.placeholder" = "Namen eingeben, der angezeigt werden soll";
+
+/* Class = "UITableViewSection"; headerTitle = "PRESENCE"; ObjectID = "Q28-Ig-9NP"; */
+"Q28-Ig-9NP.headerTitle" = "ONLINE-STATUS";
+
+/* Class = "UITableViewSection"; headerTitle = "XMPP Address (JID)"; ObjectID = "Qgj-eQ-geg"; */
+"Qgj-eQ-geg.headerTitle" = "XMPP-Adresse (JID)";
+
+/* Class = "UITableViewController"; title = "Bookmarks"; ObjectID = "rba-pb-IiC"; */
+"rba-pb-IiC.title" = "Lesezeichen";
+
+/* Class = "UILabel"; text = "Disclose my online status"; ObjectID = "upM-mW-rMZ"; */
+"upM-mW-rMZ.text" = "Meinen Online-Status veröffentlichen";
+
+/* Class = "UITabBarItem"; title = "Contacts"; ObjectID = "W52-LN-wzX"; */
+"W52-LN-wzX.title" = "Kontakte";
+
+/* Class = "UIButton"; normalTitle = "Create new XMPP account"; ObjectID = "WyQ-cb-VAl"; */
+"WyQ-cb-VAl.normalTitle" = "Neues XMPP-Konto erstellen";
+
+/* Class = "UILabel"; text = "Message encryption"; ObjectID = "XZp-oZ-XpC"; */
+"XZp-oZ-XpC.text" = "Nachrichtenverschlüsselung";
+
+/* Class = "UIButton"; normalTitle = "Sign in to an existing XMPP account"; ObjectID = "ZzM-t7-zvW"; */
+"ZzM-t7-zvW.normalTitle" = "Mit einem vorhandenen XMPP-Konto anmelden";

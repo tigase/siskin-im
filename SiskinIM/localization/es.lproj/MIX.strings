@@ -1,0 +1,119 @@
+/* Class = "UITextField"; placeholder = "Automatic"; ObjectID = "19A-3H-7QN"; */
+"19A-3H-7QN.placeholder" = "Automático";
+
+/* Class = "UILabel"; text = "Use MIX"; ObjectID = "4P1-zT-Par"; */
+"4P1-zT-Par.text" = "Usar MIX";
+
+/* Class = "UITableViewSection"; footerTitle = "Enter domain name of a component with channel or leave blank to automatically detect components with channels"; ObjectID = "94L-uC-ldZ"; */
+"94L-uC-ldZ.footerTitle" = "Entrar el nombre de dominio de un componente con canal o déjar en blanco para detectar automáticamente componentes con canales";
+
+/* Class = "UITableViewSection"; headerTitle = "Component domain"; ObjectID = "94L-uC-ldZ"; */
+"94L-uC-ldZ.headerTitle" = "Dominio de componente";
+
+/* Class = "UILabel"; text = "Create"; ObjectID = "9Ww-8v-Dml"; */
+"9Ww-8v-Dml.text" = "Crear";
+
+/* Class = "UITableViewSection"; headerTitle = "Experimental"; ObjectID = "aqR-Sm-2re"; */
+"aqR-Sm-2re.headerTitle" = "Experimental";
+
+/* Class = "UINavigationItem"; title = "Select channel"; ObjectID = "C5U-9C-poe"; */
+"C5U-9C-poe.title" = "Seleccionar canal";
+
+/* Class = "UITableViewSection"; headerTitle = "Bookmark"; ObjectID = "cOt-Oi-tab"; */
+"cOt-Oi-tab.headerTitle" = "Marcador";
+
+/* Class = "UIBarButtonItem"; title = "Item"; ObjectID = "cv8-VS-8c6"; */
+"cv8-VS-8c6.title" = "Elemento";
+
+/* Class = "UILabel"; text = "Autojoin"; ObjectID = "da6-M6-5nm"; */
+"da6-M6-5nm.text" = "Autounirse";
+
+/* Class = "UILabel"; text = "Notifications"; ObjectID = "fFa-pN-ndo"; */
+"fFa-pN-ndo.text" = "Notificaciones";
+
+/* Class = "UITextField"; placeholder = "required"; ObjectID = "gNa-Cz-T88"; Note = "Placeholder for a field to notify user that it needs to be filled"; */
+"gNa-Cz-T88.placeholder" = "requerido";
+
+/* Class = "UITextField"; placeholder = "required"; ObjectID = "Jiu-Fd-AsM"; */
+"Jiu-Fd-AsM.placeholder" = "requerido";
+
+/* Class = "UITextField"; placeholder = "required"; ObjectID = "kD7-lz-IEK"; Note = "Placeholder for a field to notify user that it needs to be filled"; */
+"kD7-lz-IEK.placeholder" = "requerido";
+
+/* Class = "UITableViewController"; title = "Channel details"; ObjectID = "ke4-WK-unt"; */
+"ke4-WK-unt.title" = "Detalles del canal";
+
+/* Class = "UIBarButtonItem"; title = "Invite"; ObjectID = "Kre-sS-2vH"; */
+"Kre-sS-2vH.title" = "Invitar";
+
+/* Class = "UITextField"; placeholder = "Description"; ObjectID = "MsF-6z-TY3"; */
+"MsF-6z-TY3.placeholder" = "Descripción";
+
+/* Class = "UINavigationItem"; title = "Participants"; ObjectID = "mW8-st-X8N"; */
+"mW8-st-X8N.title" = "Participantes";
+
+/* Class = "UITableViewSection"; headerTitle = "Access"; ObjectID = "mXt-Xt-Bj5"; */
+"mXt-Xt-Bj5.headerTitle" = "Acceder";
+
+/* Class = "UILabel"; text = "Attachments"; ObjectID = "NWM-d4-jmq"; */
+"NWM-d4-jmq.text" = "Adjuntos";
+
+/* Class = "UITableViewSection"; headerTitle = "Nickname"; ObjectID = "NyO-PD-t9d"; */
+"NyO-PD-t9d.headerTitle" = "Alias";
+
+/* Class = "UILabel"; text = "Delete channel"; ObjectID = "O9e-sP-5IO"; */
+"O9e-sP-5IO.text" = "Borrar canal";
+
+/* Class = "UITextField"; placeholder = "required"; ObjectID = "oIZ-xz-SzZ"; */
+"oIZ-xz-SzZ.placeholder" = "requerido";
+
+/* Class = "UIBarButtonItem"; title = "Join"; ObjectID = "Pgv-Uz-ZgP"; */
+"Pgv-Uz-ZgP.title" = "Unirse";
+
+/* Class = "UIBarButtonItem"; title = "Next"; ObjectID = "pZC-YZ-jlg"; */
+"pZC-YZ-jlg.title" = "Siguiente";
+
+/* Class = "UITableViewSection"; headerTitle = "Password"; ObjectID = "qB9-Eq-3RT"; */
+"qB9-Eq-3RT.headerTitle" = "Contraseña";
+
+/* Class = "UITextField"; placeholder = "Name"; ObjectID = "r60-FV-hoE"; */
+"r60-FV-hoE.placeholder" = "Nombre";
+
+/* Class = "UILabel"; text = "Change"; ObjectID = "Sso-1F-PI3"; */
+"Sso-1F-PI3.text" = "Cambiar";
+
+/* Class = "UITableViewSection"; footerTitle = "Select which account should be used to join channel"; ObjectID = "SUF-pg-qbn"; */
+"SUF-pg-qbn.footerTitle" = "Seleccionar la cuenta que de debería usarse para unirse al canal";
+
+/* Class = "UITableViewSection"; headerTitle = "Account"; ObjectID = "SUF-pg-qbn"; */
+"SUF-pg-qbn.headerTitle" = "Cuenta";
+
+/* Class = "UITableViewSection"; footerTitle = "Notification support and filtering depends on the XMPP server which you are using and may not work in some cases even if it's enabled here."; ObjectID = "Ta8-dG-cwn"; */
+"Ta8-dG-cwn.footerTitle" = "EL soporte de notificación y filtrado depende del servidor XMPP que estés usando y podría no funcionar en algunos casos incluso estando habilitado aquí.";
+
+/* Class = "UITableViewSection"; headerTitle = "Settings"; ObjectID = "Ta8-dG-cwn"; */
+"Ta8-dG-cwn.headerTitle" = "Ajustes";
+
+/* Class = "UITableViewSection"; footerTitle = "ID of a channel used for joining (localpart of a JID)"; ObjectID = "u6K-qu-Pf5"; */
+"u6K-qu-Pf5.footerTitle" = "ID del canal usado para unirse (parte local de un JID)";
+
+/* Class = "UITableViewSection"; headerTitle = "Channel ID"; ObjectID = "u6K-qu-Pf5"; */
+"u6K-qu-Pf5.headerTitle" = "ID de canal";
+
+/* Class = "UINavigationItem"; title = "Blocked"; ObjectID = "uMJ-O9-BGV"; */
+"uMJ-O9-BGV.title" = "Bloqueado";
+
+/* Class = "UIBarButtonItem"; title = "Next"; ObjectID = "uX9-lh-BwU"; */
+"uX9-lh-BwU.title" = "Siguiente";
+
+/* Class = "UITableViewSection"; headerTitle = "Channel name"; ObjectID = "vcg-og-awz"; */
+"vcg-og-awz.headerTitle" = "Nombre de canal";
+
+/* Class = "UIBarButtonItem"; title = "Item"; ObjectID = "VkQ-fL-ON5"; */
+"VkQ-fL-ON5.title" = "Elemento";
+
+/* Class = "UINavigationItem"; title = "Create channel"; ObjectID = "Vna-Fa-6lB"; */
+"Vna-Fa-6lB.title" = "Crear canal";
+
+/* Class = "UILabel"; text = "Invitation only"; ObjectID = "Xcj-Am-jtk"; */
+"Xcj-Am-jtk.text" = "Solo con invitación";

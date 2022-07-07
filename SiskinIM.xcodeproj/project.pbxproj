@@ -440,6 +440,8 @@
 		FE4071E721E2653700F09B58 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		FE43E43723BF3DE80079BD9B /* ChatAttachementsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAttachementsController.swift; sourceTree = "<group>"; };
 		FE4496C31F87911C009F649C /* db-schema-3.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-3.sql"; sourceTree = "<group>"; };
+		FE4744062877120E00B28980 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FE4744072877121100B28980 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FE4A94A926679D65000A96E5 /* EnumTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnumTableViewCell.swift; sourceTree = "<group>"; };
 		FE4DDF531F39E0B500A4CE5A /* Siskin IM - Share.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Siskin IM - Share.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE4DDF551F39E0B500A4CE5A /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
@@ -610,6 +612,26 @@
 		FEF19F152348E781005CFE9A /* BaseChatViewControllerWithDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseChatViewControllerWithDataSource.swift; sourceTree = "<group>"; };
 		FEF80DB11CDBBBFE005645A7 /* AccountSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountSettingsViewController.swift; sourceTree = "<group>"; };
 		FEF8255424BA0AFE00820108 /* MessageTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageTextView.swift; sourceTree = "<group>"; };
+		FEF97CE728770E5C008CF411 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = localization/de.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
+		FEF97CE828770E5C008CF411 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = localization/de.lproj/Main.strings; sourceTree = "<group>"; };
+		FEF97CE928770E5C008CF411 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = localization/de.lproj/VoIP.strings; sourceTree = "<group>"; };
+		FEF97CEA28770E5C008CF411 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = localization/de.lproj/Groupchat.strings; sourceTree = "<group>"; };
+		FEF97CEB28770E5C008CF411 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = localization/de.lproj/Info.strings; sourceTree = "<group>"; };
+		FEF97CEC28770E5C008CF411 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = localization/de.lproj/Settings.strings; sourceTree = "<group>"; };
+		FEF97CED28770E5C008CF411 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = localization/de.lproj/Account.strings; sourceTree = "<group>"; };
+		FEF97CEE28770E5C008CF411 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = localization/de.lproj/Conversation.strings; sourceTree = "<group>"; };
+		FEF97CEF28770E5C008CF411 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = localization/de.lproj/MIX.strings; sourceTree = "<group>"; };
+		FEF97CF028770E60008CF411 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = localization/de.lproj/MainInterface.strings; sourceTree = "<group>"; };
+		FEF97CF128770E7F008CF411 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = localization/es.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
+		FEF97CF228770E7F008CF411 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = localization/es.lproj/Main.strings; sourceTree = "<group>"; };
+		FEF97CF328770E80008CF411 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = localization/es.lproj/VoIP.strings; sourceTree = "<group>"; };
+		FEF97CF428770E80008CF411 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = localization/es.lproj/Groupchat.strings; sourceTree = "<group>"; };
+		FEF97CF528770E80008CF411 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = localization/es.lproj/Info.strings; sourceTree = "<group>"; };
+		FEF97CF628770E80008CF411 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = localization/es.lproj/Settings.strings; sourceTree = "<group>"; };
+		FEF97CF728770E80008CF411 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = localization/es.lproj/Account.strings; sourceTree = "<group>"; };
+		FEF97CF828770E80008CF411 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = localization/es.lproj/Conversation.strings; sourceTree = "<group>"; };
+		FEF97CF928770E80008CF411 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = localization/es.lproj/MIX.strings; sourceTree = "<group>"; };
+		FEF97CFA28770E83008CF411 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = localization/es.lproj/MainInterface.strings; sourceTree = "<group>"; };
 		FEFB63AC1F31E4EE00EFB3E7 /* MainTabBarController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainTabBarController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1358,6 +1380,8 @@
 				en,
 				Base,
 				pl,
+				de,
+				es,
 			);
 			mainGroup = FE94E5181CCBA74F00FAE755;
 			packageReferences = (
@@ -1760,6 +1784,8 @@
 				FE4DDF581F39E0B500A4CE5A /* Base */,
 				FEBA831726F76B0800347D89 /* pl */,
 				FE2A00BD28048D6C00AF0152 /* en */,
+				FEF97CF028770E60008CF411 /* de */,
+				FEF97CFA28770E83008CF411 /* es */,
 			);
 			name = MainInterface.storyboard;
 			sourceTree = "<group>";
@@ -1770,6 +1796,8 @@
 				FE94E52B1CCBA74F00FAE755 /* Base */,
 				FEBA830F26F76ADA00347D89 /* pl */,
 				FE06920227F4D910004E341E /* en */,
+				FEF97CE828770E5C008CF411 /* de */,
+				FEF97CF228770E7F008CF411 /* es */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -1779,6 +1807,8 @@
 			children = (
 				FE94E5301CCBA74F00FAE755 /* Base */,
 				FEBA830E26F76ADA00347D89 /* pl */,
+				FEF97CE728770E5C008CF411 /* de */,
+				FEF97CF128770E7F008CF411 /* es */,
 			);
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
@@ -1789,6 +1819,8 @@
 				FEBA82FA26F76A8000347D89 /* Base */,
 				FEBA831026F76ADA00347D89 /* pl */,
 				FE06920027F4D8D8004E341E /* en */,
+				FEF97CE928770E5C008CF411 /* de */,
+				FEF97CF328770E80008CF411 /* es */,
 			);
 			name = VoIP.storyboard;
 			sourceTree = "<group>";
@@ -1799,6 +1831,8 @@
 				FEBA82FD26F76A8700347D89 /* Base */,
 				FEBA831126F76ADA00347D89 /* pl */,
 				FE0691FE27F4D84B004E341E /* en */,
+				FEF97CEA28770E5C008CF411 /* de */,
+				FEF97CF428770E80008CF411 /* es */,
 			);
 			name = Groupchat.storyboard;
 			sourceTree = "<group>";
@@ -1809,6 +1843,8 @@
 				FEBA830026F76A8D00347D89 /* Base */,
 				FEBA831226F76B0800347D89 /* pl */,
 				FE06920427F4D948004E341E /* en */,
+				FEF97CEB28770E5C008CF411 /* de */,
+				FEF97CF528770E80008CF411 /* es */,
 			);
 			name = Info.storyboard;
 			sourceTree = "<group>";
@@ -1819,6 +1855,8 @@
 				FEBA830326F76A9300347D89 /* Base */,
 				FEBA831326F76B0800347D89 /* pl */,
 				FE06920627F4D97E004E341E /* en */,
+				FEF97CEC28770E5C008CF411 /* de */,
+				FEF97CF628770E80008CF411 /* es */,
 			);
 			name = Settings.storyboard;
 			sourceTree = "<group>";
@@ -1829,6 +1867,8 @@
 				FEBA830626F76A9800347D89 /* Base */,
 				FEBA831426F76B0800347D89 /* pl */,
 				FE06920827F4D9BE004E341E /* en */,
+				FEF97CED28770E5C008CF411 /* de */,
+				FEF97CF728770E80008CF411 /* es */,
 			);
 			name = Account.storyboard;
 			sourceTree = "<group>";
@@ -1839,6 +1879,8 @@
 				FEBA830926F76A9C00347D89 /* Base */,
 				FEBA831526F76B0800347D89 /* pl */,
 				FE06920A27F4D9D6004E341E /* en */,
+				FEF97CEE28770E5C008CF411 /* de */,
+				FEF97CF828770E80008CF411 /* es */,
 			);
 			name = Conversation.storyboard;
 			sourceTree = "<group>";
@@ -1849,6 +1891,8 @@
 				FEBA830C26F76AA200347D89 /* Base */,
 				FEBA831626F76B0800347D89 /* pl */,
 				FE06920C27F4DA12004E341E /* en */,
+				FEF97CEF28770E5C008CF411 /* de */,
+				FEF97CF928770E80008CF411 /* es */,
 			);
 			name = MIX.storyboard;
 			sourceTree = "<group>";
@@ -1858,6 +1902,8 @@
 			children = (
 				FEBA835526F8DF1300347D89 /* pl */,
 				FE06920D27F4DA58004E341E /* en */,
+				FE4744062877120E00B28980 /* de */,
+				FE4744072877121100B28980 /* es */,
 			);
 			name = Localizable.strings;
 			path = localization;

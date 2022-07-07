@@ -1,0 +1,29 @@
+/* Class = "UILabel"; text = "Notifications"; ObjectID = "02f-aw-3Zd"; */
+"02f-aw-3Zd.text" = "Notificaciones";
+
+/* Class = "UITableViewSection"; footerTitle = "Push notification support depends on the XMPP server which you are using and may not work in some cases even if it's supported and enabled on the group chat"; ObjectID = "bRu-vo-fpu"; */
+"bRu-vo-fpu.footerTitle" = "La compatibilidad con notificaciones push depende del servidor XMPP que estés utilizando y es posible que no funcione en algunos casos, incluso si es compatible y está habilitado en el grupo";
+
+/* Class = "UITableViewSection"; headerTitle = "Settings"; ObjectID = "bRu-vo-fpu"; */
+"bRu-vo-fpu.headerTitle" = "Ajustes";
+
+/* Class = "UILabel"; text = "Encryption"; ObjectID = "DQk-sn-hKj"; */
+"DQk-sn-hKj.text" = "Cifrado";
+
+/* Class = "UILabel"; text = "When mentioned"; ObjectID = "exK-ZH-jpA"; */
+"exK-ZH-jpA.text" = "Cuando sea mencionado";
+
+/* Class = "UITableViewController"; title = "Room details"; ObjectID = "IGA-uE-mHb"; Note = "View with details of a room"; */
+"IGA-uE-mHb.title" = "Detalles de la sala";
+
+/* Class = "UITableViewSection"; headerTitle = "Subject"; ObjectID = "iYv-zL-tZT"; */
+"iYv-zL-tZT.headerTitle" = "Asunto";
+
+/* Class = "UILabel"; text = "Push notifications"; ObjectID = "jMz-qR-fJ6"; */
+"jMz-qR-fJ6.text" = "Notificaciones push";
+
+/* Class = "UITableViewController"; title = "Invite to chat"; ObjectID = "SOJ-3n-8YB"; */
+"SOJ-3n-8YB.title" = "Invitar a chat";
+
+/* Class = "UILabel"; text = "Attachments"; ObjectID = "wBw-1J-Xau"; */
+"wBw-1J-Xau.text" = "Adjuntos";
