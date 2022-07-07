@@ -171,7 +171,7 @@ class ShareViewController: UITableViewController {
         let activityIndicator = UIActivityIndicatorView(style: .medium);
         activityIndicator.startAnimating();
         let label = UILabel(frame: .zero);
-        label.text = NSLocalizedString("Preparing...", comment: "operation label");
+        label.text = NSLocalizedString("Preparing…", comment: "operation label");
         let stack = UIStackView(arrangedSubviews: [activityIndicator, label]);
         stack.alignment = .center;
         stack.distribution = .fillProportionally;
@@ -213,7 +213,7 @@ class ShareViewController: UITableViewController {
                 }
             case .success(let att):
                 DispatchQueue.main.async {
-                    label.text = NSLocalizedString("Sending...", comment: "operation label");
+                    label.text = NSLocalizedString("Sending…", comment: "operation label");
                 }
                 self.share(attachment: att, completionHandler: { errors in
                     DispatchQueue.main.async {

@@ -109,7 +109,7 @@
 "Block participant" = "Zablokuj uczestnika";
 
 /* channel participants view operation */
-"Blocking..." = "Blokowanie...";
+"Blocking…" = "Blokowanie…";
 
 /* search bar scope */
 "By name" = "Po nazwie";
@@ -152,7 +152,7 @@
 /* channel create view operation label
    channel join view operation label
    channel settings view opeartion label */
-"Checking..." = "Sprawdzanie...";
+"Checking…" = "Sprawdzanie…";
 
 /* button label */
 "Close" = "Zamknij";
@@ -161,7 +161,7 @@
 "Component" = "Komponent";
 
 /* call state label */
-"Connecting..." = "Łączenie...";
+"Connecting…" = "Łączenie…";
 
 /* error notification message */
 "Connection to server %@ failed" = "Połączenie z serwerem %@ nie udało się";
@@ -170,7 +170,7 @@
 "Copy" = "Kopiuj";
 
 /* context action label */
-"Correct.." = "Popraw...";
+"Correct…" = "Popraw…";
 
 /* alert body */
 "Could not create channel on the server. Got following error: %@" = "Nie udało sie utworzy kanału na serwerze. Serwer zwrócił błąd: %@";
@@ -218,7 +218,7 @@
 "Create new or add existing account" = "Stwórz nowe lub dodaj instniejące konto";
 
 /* channel join view operation label */
-"Creating channel..." = "Tworzenie kanału...";
+"Creating channel…" = "Tworzenie kanału…";
 
 /* appearance type */
 "Dark" = "Ciemny";
@@ -315,7 +315,7 @@
 "Enter message to send to: %@" = "Wprowadź wiadomość by wysłać do: %@";
 
 /* placeholder */
-"Enter message..." = "Wprowadź wiadomość...";
+"Enter message…" = "Wprowadź wiadomość…";
 
 /* alert body */
 "Enter new name for group chat" = "Wprowadź nową nazwę czatu";
@@ -375,7 +375,7 @@
 "From" = "Od";
 
 /* conversation view input field placeholder */
-"from %@..." = "używając %@...";
+"from %@…" = "używając %@…";
 
 /* vcard field label */
 "Full name" = "Pełna nazwa";
@@ -431,7 +431,7 @@
 "Invite" = "Zaproś";
 
 /* button label */
-"Invite..." = "Zaproś...";
+"Invite…" = "Zaproś…";
 
 /* error message */
 "It was not possible to access camera or microphone. Please check privacy settings" = "Nie udało się uzyskać dostępu do kamery lub mikrofonu. Sprawdź ustawienia prywatności";
@@ -500,7 +500,7 @@
 "Joined" = "Dołączony";
 
 /* channel join view operation label */
-"Joining..." = "Dołącznie...";
+"Joining…" = "Dołączanie…";
 
 /* report spam action */
 "Just block" = "Tylko zablokuj";
@@ -592,7 +592,7 @@
 "Month" = "Miesiąc";
 
 /* attachment cell context action */
-"More.." = "Więcej..";
+"More…" = "Więcej…";
 
 /* conversation notifications status */
 "Muted" = "Wyciszone";
@@ -697,7 +697,7 @@
 "Phones" = "Telefony";
 
 /* voice message state */
-"Playing..." = "Odtwarzanie...";
+"Playing…" = "Odtwarzanie...";
 
 /* instruction to fill out the form */
 "Please fill this form" = "Proszę wypełnić formularz";
@@ -712,7 +712,7 @@
 "Preferred domain name" = "Preferowana nazwa domeny";
 
 /* operation label */
-"Preparing..." = "Przygotowywanie...";
+"Preparing…" = "Przygotowywanie…";
 
 /* attachment cell context action */
 "Preview" = "Podgląd";
@@ -757,15 +757,15 @@
 "Recorded: %@" = "Nagrano: %@";
 
 /* voice message state */
-"Recording..." = "Nagrywanie...";
+"Recording…" = "Nagrywanie…";
 
 /* voice message state */
-"Recording... %@" = "Nagrywanie... %@";
+"Recording… %@" = "Nagrywanie… %@";
 
 /* channel block users view operation
    channel edit info operation
    channel participants view operation */
-"Refreshing..." = "Odświeżanie";
+"Refreshing…" = "Odświeżanie…";
 
 /* button label */
 "Register" = "Rejestruj";
@@ -808,10 +808,10 @@
 "Rename chat" = "Zmień nazwę czatu";
 
 /* context action label */
-"Reply.." = "Odpowiedz...";
+"Reply…" = "Odpowiedz…";
 
 /* context action label */
-"Report & block.." = "Zgłoś i zablokuj..";
+"Report & block…" = "Zgłoś i zablokuj…";
 
 /* report abuse action */
 "Report abuse" = "Zgłoś nadużycie";
@@ -826,7 +826,7 @@
 "Retract" = "Wycofaj";
 
 /* call state label */
-"Ringing..." = "Dzwonienie..";
+"Ringing…" = "Dzwonienie…";
 
 /* alert title */
 "Room %@" = "Pokój %@";
@@ -844,7 +844,7 @@
 "Search for places" = "Szukaj miejsc";
 
 /* placeholder */
-"Search to add.." = "Szukaj aby dodać..";
+"Search to add…" = "Szukaj aby dodać…";
 
 /* alert body */
 "Select account to open chat from" = "Wybierz konto aby otworzyc rozmowę";
@@ -890,10 +890,10 @@
 "Send message" = "Wyślij wiadomość";
 
 /* channel invitations view operation */
-"Sending invitations..." = "Wyślij zaproszenia...";
+"Sending invitations…" = "Wyślij zaproszenia…";
 
 /* operation label */
-"Sending..." = "Wysyłanie...";
+"Sending…" = "Wysyłanie…";
 
 /* sharing error */
 "Server did not confirm file upload correctly." = "Serwer nie potwierdził poprawnegp odebrania pliku.";
@@ -921,7 +921,7 @@
 "Settings" = "Ustawienia";
 
 /* attachment cell context action */
-"Share.." = "Udostępnij..";
+"Share…" = "Udostępnij…";
 
 /* section label */
 "Sharing" = "Udostępnianie";
@@ -1006,7 +1006,7 @@
 /* channel block users view operation
    channel edit info operation
    refresh conrol label */
-"Updating..." = "Aktualizowanie...";
+"Updating…" = "Aktualizacja…";
 
 /* alert title */
 "Upload failed" = "Przesył nie powiódł się";

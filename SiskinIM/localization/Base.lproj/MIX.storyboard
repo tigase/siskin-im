@@ -335,6 +335,9 @@
                                                     </constraints>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" textContentType="name"/>
+                                                    <attributedString key="userComments">
+                                                        <fragment content="Placeholder for a field to notify user that it needs to be filled"/>
+                                                    </attributedString>
                                                     <connections>
                                                         <action selector="textFieldChanged:" destination="mSp-gL-5Hz" eventType="editingChanged" id="o7Q-z0-zen"/>
                                                     </connections>
@@ -366,6 +369,9 @@
                                                     </constraints>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" textContentType="password"/>
+                                                    <attributedString key="userComments">
+                                                        <fragment content="Placeholder for a field to notify user that it needs to be filled"/>
+                                                    </attributedString>
                                                     <connections>
                                                         <action selector="textFieldChanged:" destination="mSp-gL-5Hz" eventType="editingChanged" id="b8a-Rw-O0p"/>
                                                     </connections>
@@ -1281,8 +1287,8 @@
         <image name="defaultAvatar" width="100" height="100"/>
         <image name="defaultGroupchatAvatarDark" width="16" height="16"/>
         <image name="participants" width="25" height="25"/>
-        <image name="pencil" catalog="system" width="32" height="32"/>
-        <image name="trash" catalog="system" width="32" height="32"/>
+        <image name="pencil" catalog="system" width="128" height="113"/>
+        <image name="trash" catalog="system" width="121" height="128"/>
         <namedColor name="tintColor">
             <color red="0.33000001311302185" green="0.33000001311302185" blue="0.48800000548362732" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>

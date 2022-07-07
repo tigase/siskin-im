@@ -34,8 +34,8 @@
 /* Class = "UILabel"; text = "Photos quality"; ObjectID = "bbT-7s-6ph"; */
 "bbT-7s-6ph.text" = "Photos quality";
 
-/* Class = "UILabel"; text = "Send message on return"; ObjectID = "Bd4-qf-OsU"; */
-"Bd4-qf-OsU.text" = "Send message on return";
+/* Class = "UILabel"; text = "Send message on Return"; ObjectID = "Bd4-qf-OsU"; */
+"Bd4-qf-OsU.text" = "Send message on Return";
 
 /* Class = "UILabel"; text = "Videos quality"; ObjectID = "bKW-ln-Kez"; */
 "bKW-ln-Kez.text" = "Videos quality";

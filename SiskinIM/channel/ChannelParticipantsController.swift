@@ -39,7 +39,7 @@ class ChannelParticipantsController: UITableViewController {
             self?.update(participants: participants);
         }).store(in: &cancellables);
         if channel.permissions?.contains(.changeConfig) ?? false, let mixModule = channel.context?.module(.mix) {
-            self.operationStarted(message: NSLocalizedString("Refreshing...", comment: "channel participants view operation"));
+            self.operationStarted(message: NSLocalizedString("Refreshing…", comment: "channel participants view operation"));
             mixModule.checkAccessPolicy(of: channel.channelJid, completionHandler: { [weak self] result in
                 DispatchQueue.main.async {
                     switch result {
@@ -99,7 +99,7 @@ class ChannelParticipantsController: UITableViewController {
                     return;
                 }
                 
-                self.operationStarted(message: NSLocalizedString("Blocking...", comment: "channel participants view operation"));
+                self.operationStarted(message: NSLocalizedString("Blocking…", comment: "channel participants view operation"));
                 let channelJid = self.channel.channelJid;
                 if self.invitationOnly {
                     mixModule.allowAccess(to: channelJid, for: jid, value: false, completionHandler: { [weak self] result in

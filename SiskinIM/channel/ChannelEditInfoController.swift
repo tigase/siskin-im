@@ -61,7 +61,7 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
             return;
         }
 
-        self.operationStarted(message: NSLocalizedString("Updating...", comment: "channel edit info operation"));
+        self.operationStarted(message: NSLocalizedString("Updating…", comment: "channel edit info operation"));
         let group = DispatchGroup();
         var error: Bool = false;
         let infoData = ChannelInfo(name: nameField.text, description: descriptionField.text, contact: self.infoData?.contact ?? []);
@@ -112,7 +112,7 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
         guard let mixModule = channel.context?.module(.mix) else {
             return;
         }
-        self.operationStarted(message: NSLocalizedString("Refreshing...", comment: "channel edit info operation"));
+        self.operationStarted(message: NSLocalizedString("Refreshing…", comment: "channel edit info operation"));
         mixModule.retrieveInfo(for: channel.channelJid, completionHandler: { [weak self] result in
             DispatchQueue.main.async {
                 switch result {

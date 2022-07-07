@@ -227,7 +227,7 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
         
         if #available(iOS 14.0, *) {
             moreButton?.menu = UIMenu(title: "", children: [
-                UIAction(title: NSLocalizedString("Invite...", comment: "button label"), image: UIImage(systemName: "person.fill.badge.plus"), handler: { action in
+                UIAction(title: NSLocalizedString("Invite…", comment: "button label"), image: UIImage(systemName: "person.fill.badge.plus"), handler: { action in
                     self.inviteToCallClicked(action);
                 }),
                 UIAction(title: NSLocalizedString("Switch camera", comment: "button label"), image: UIImage(systemName: "arrow.triangle.2.circlepath.camera.fill"), handler: { action in
@@ -311,7 +311,7 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
         controller.popoverPresentationController?.sourceView = sender;
         controller.popoverPresentationController?.sourceRect = sender.bounds;
         
-        controller.addAction(UIAlertAction(title: NSLocalizedString("Invite...", comment: "button label"), style: .default, handler: { action in
+        controller.addAction(UIAlertAction(title: NSLocalizedString("Invite…", comment: "button label"), style: .default, handler: { action in
             self.inviteToCallClicked(sender);
         }))
         controller.addAction(UIAlertAction(title: NSLocalizedString("Switch camera", comment: "button label"), style: .default, handler: { action in

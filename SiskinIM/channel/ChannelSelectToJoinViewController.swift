@@ -175,7 +175,7 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
             return;
         }
         self.tableView.refreshControl = UIRefreshControl();
-        self.tableView.refreshControl?.attributedTitle = NSAttributedString(string: NSLocalizedString("Updating...", comment: "refresh conrol label"));
+        self.tableView.refreshControl?.attributedTitle = NSAttributedString(string: NSLocalizedString("Updating…", comment: "refresh conrol label"));
         self.tableView.refreshControl?.isHidden = false;
         self.tableView.refreshControl?.layoutIfNeeded();
         self.tableView.setContentOffset(CGPoint(x: 0, y: tableView.contentOffset.y - self.tableView.refreshControl!.frame.height), animated: true)

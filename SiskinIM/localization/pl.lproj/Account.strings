@@ -31,7 +31,7 @@
 /* Class = "UILabel"; text = "When in Away/XA/DND state"; ObjectID = "aKW-CM-bl2"; */
 "aKW-CM-bl2.text" = "Gdy w stanie Away/XA/DND";
 
-/* Class = "UITextField"; placeholder = "Type"; ObjectID = "Clb-vT-t5A"; */
+/* Class = "UITextField"; placeholder = "Type"; ObjectID = "Clb-vT-t5A"; Note = "Placeholder text for selection of address/phone type (home/work)"; */
 "Clb-vT-t5A.placeholder" = "Typ";
 
 /* Class = "UILabel"; text = "Port"; ObjectID = "clx-xZ-SVL"; */
@@ -88,10 +88,10 @@
 /* Class = "UIButton"; normalTitle = "Change avatar"; ObjectID = "Mo3-sc-7ss"; */
 "Mo3-sc-7ss.normalTitle" = "Zmień avatar";
 
-/* Class = "UITextField"; placeholder = "Type"; ObjectID = "NK4-tE-QSu"; */
+/* Class = "UITextField"; placeholder = "Type"; ObjectID = "NK4-tE-QSu"; Note = "Placeholder text for selection of address/phone type (home/work)"; */
 "NK4-tE-QSu.placeholder" = "Typ";
 
-/* Class = "UITextField"; placeholder = "Code"; ObjectID = "NUu-KT-QM5"; */
+/* Class = "UITextField"; placeholder = "Code"; ObjectID = "NUu-KT-QM5"; Note = "Postal Code"; */
 "NUu-KT-QM5.placeholder" = "Kod";
 
 /* Class = "UILabel"; text = "Enable"; ObjectID = "P6B-h8-PVB"; */
@@ -127,7 +127,7 @@
 /* Class = "UILabel"; text = "Server features"; ObjectID = "t3T-uh-mob"; */
 "t3T-uh-mob.text" = "Funkcje serwera";
 
-/* Class = "UITextField"; placeholder = "Type"; ObjectID = "UQ1-rc-tuY"; */
+/* Class = "UITextField"; placeholder = "Type"; ObjectID = "UQ1-rc-tuY"; Note = "Placeholder text for selection of address/phone type (home/work)"; */
 "UQ1-rc-tuY.placeholder" = "Typ";
 
 /* Class = "UITableViewSection"; headerTitle = "General"; ObjectID = "v8B-ee-zAk"; */

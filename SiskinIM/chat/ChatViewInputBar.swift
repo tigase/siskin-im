@@ -79,7 +79,7 @@ class ChatViewInputBar: UIView, UITextViewDelegate, NSTextStorageDelegate {
         view.numberOfLines = 0;
         view.textColor = UIColor.secondaryLabel;
         view.font = Markdown.font(withTextStyle: .body, andTraits: []);
-        view.text = NSLocalizedString("Enter message...", comment: "placeholder");
+        view.text = NSLocalizedString("Enter message…", comment: "placeholder");
         view.backgroundColor = .clear;
         view.translatesAutoresizingMaskIntoConstraints = false;
         return view;
@@ -268,7 +268,7 @@ class VoiceRecordingView: UIView, AVAudioRecorderDelegate {
     
     public let label: UILabel = {
         let label = UILabel();
-        label.text = NSLocalizedString("Recording...", comment: "voice message state");
+        label.text = NSLocalizedString("Recording…", comment: "voice message state");
         label.setContentHuggingPriority(UILayoutPriority(200), for: .horizontal);
         return label;
     }();
@@ -501,11 +501,11 @@ class VoiceRecordingView: UIView, AVAudioRecorderDelegate {
         let diff = (recordingEndedTime ?? Date()).timeIntervalSince(start);
         switch self.action {
         case .recording:
-            self.label.text = String.localizedStringWithFormat(NSLocalizedString("Recording... %@", comment: "voice message state"), VoiceRecordingView.timeFormatter.string(from: diff) ?? "");
+            self.label.text = String.localizedStringWithFormat(NSLocalizedString("Recording… %@", comment: "voice message state"), VoiceRecordingView.timeFormatter.string(from: diff) ?? "");
         case .stopped:
             self.label.text = String.localizedStringWithFormat(NSLocalizedString("Recorded: %@", comment: "voice message state"), VoiceRecordingView.timeFormatter.string(from: diff) ?? "");
         case .playing:
-            self.label.text = NSLocalizedString("Playing...", comment: "voice message state");
+            self.label.text = NSLocalizedString("Playing…", comment: "voice message state");
         }
     }
     

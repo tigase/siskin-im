@@ -1068,6 +1068,9 @@
                                             <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <textInputTraits key="textInputTraits"/>
+                                            <attributedString key="userComments">
+                                                <fragment content="Placeholder text for selection of address/phone type (home/work)"/>
+                                            </attributedString>
                                         </textField>
                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Phone number" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="T1r-DU-iqs">
                                             <rect key="frame" x="88" y="0.0" width="492" height="44"/>
@@ -1139,6 +1142,9 @@
                                             <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <textInputTraits key="textInputTraits"/>
+                                            <attributedString key="userComments">
+                                                <fragment content="Placeholder text for selection of address/phone type (home/work)"/>
+                                            </attributedString>
                                         </textField>
                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Email address" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="ynp-RE-XlY">
                                             <rect key="frame" x="88" y="0.0" width="492" height="44"/>
@@ -1241,6 +1247,9 @@
                                             <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <textInputTraits key="textInputTraits"/>
+                                            <attributedString key="userComments">
+                                                <fragment content="Placeholder text for selection of address/phone type (home/work)"/>
+                                            </attributedString>
                                         </textField>
                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Street" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="KgL-GY-IFp">
                                             <rect key="frame" x="88" y="0.0" width="492" height="44"/>
@@ -1258,6 +1267,9 @@
                                             </constraints>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <textInputTraits key="textInputTraits" textContentType="postal-code"/>
+                                            <attributedString key="userComments">
+                                                <fragment content="Postal Code"/>
+                                            </attributedString>
                                         </textField>
                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="City" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Cmz-iN-c4d">
                                             <rect key="frame" x="170" y="44" width="410" height="44"/>

@@ -31,13 +31,13 @@
 /* Class = "UILabel"; text = "Notifications"; ObjectID = "fFa-pN-ndo"; */
 "fFa-pN-ndo.text" = "Notifications";
 
-/* Class = "UITextField"; placeholder = "required"; ObjectID = "gNa-Cz-T88"; */
+/* Class = "UITextField"; placeholder = "required"; ObjectID = "gNa-Cz-T88"; Note = "Placeholder for a field to notify user that it needs to be filled"; */
 "gNa-Cz-T88.placeholder" = "required";
 
 /* Class = "UITextField"; placeholder = "required"; ObjectID = "Jiu-Fd-AsM"; */
 "Jiu-Fd-AsM.placeholder" = "required";
 
-/* Class = "UITextField"; placeholder = "required"; ObjectID = "kD7-lz-IEK"; */
+/* Class = "UITextField"; placeholder = "required"; ObjectID = "kD7-lz-IEK"; Note = "Placeholder for a field to notify user that it needs to be filled"; */
 "kD7-lz-IEK.placeholder" = "required";
 
 /* Class = "UITableViewController"; title = "Channel details"; ObjectID = "ke4-WK-unt"; */

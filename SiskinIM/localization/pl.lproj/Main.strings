@@ -1,11 +1,5 @@
-/* Class = "UILabel"; text = "Your server for account \\(account) supports message archiving. Would you like to enable this feature?"; ObjectID = "1dk-YA-RVu"; */
-"1dk-YA-RVu.text" = "Twój serwer dla konta \\\(account) wspiera archiwizację wiadomości. Czy chcesz włączyć tą funkcjonalność?";
-
 /* Class = "UILabel"; text = "by Tigase, Inc."; ObjectID = "8ba-yZ-XRA"; */
 "8ba-yZ-XRA.text" = "od Tigase, Inc.";
-
-/* Class = "UINavigationItem"; title = "Root View"; ObjectID = "8T3-uF-8vn"; */
-"8T3-uF-8vn.title" = "Root View";
 
 /* Class = "UITabBarItem"; title = "Chats"; ObjectID = "acW-dT-cKf"; */
 "acW-dT-cKf.title" = "Czaty";
@@ -18,9 +12,6 @@
 
 /* Class = "UINavigationItem"; title = "Attachments"; ObjectID = "C1j-4i-HDP"; */
 "C1j-4i-HDP.title" = "Załączniki";
-
-/* Class = "UILabel"; text = "Message Archiving"; ObjectID = "Ckp-Mb-v0c"; */
-"Ckp-Mb-v0c.text" = "Archiwum wiadomości";
 
 /* Class = "UITabBarItem"; title = "Bookmarks"; ObjectID = "dgT-Yo-7nF"; */
 "dgT-Yo-7nF.title" = "Zakładki";
@@ -61,8 +52,8 @@
 /* Class = "UITableViewSection"; headerTitle = "PRESENCE"; ObjectID = "Q28-Ig-9NP"; */
 "Q28-Ig-9NP.headerTitle" = "Dostępność";
 
-/* Class = "UITableViewSection"; headerTitle = "JID"; ObjectID = "Qgj-eQ-geg"; */
-"Qgj-eQ-geg.headerTitle" = "JID";
+/* Class = "UITableViewSection"; headerTitle = "XMPP Address (JID)"; ObjectID = "Qgj-eQ-geg"; */
+"Qgj-eQ-geg.headerTitle" = "Adres XMPP (JID)";
 
 /* Class = "UITableViewController"; title = "Bookmarks"; ObjectID = "rba-pb-IiC"; */
 "rba-pb-IiC.title" = "Zakładki";
@@ -70,26 +61,14 @@
 /* Class = "UILabel"; text = "Disclose my online status"; ObjectID = "upM-mW-rMZ"; */
 "upM-mW-rMZ.text" = "Udostępnij mój status online";
 
-/* Class = "UIButton"; normalTitle = "123"; ObjectID = "uYb-hA-rRS"; */
-"uYb-hA-rRS.normalTitle" = "123";
-
 /* Class = "UITabBarItem"; title = "Contacts"; ObjectID = "W52-LN-wzX"; */
 "W52-LN-wzX.title" = "Kontakty";
-
-/* Class = "UIViewController"; title = "Chat"; ObjectID = "WP2-Cp-7ZE"; */
-"WP2-Cp-7ZE.title" = "Czat";
-
-/* Class = "UIButton"; normalTitle = "Not now"; ObjectID = "wvT-dz-RVz"; */
-"wvT-dz-RVz.normalTitle" = "Nie teraz";
 
 /* Class = "UIButton"; normalTitle = "Create new XMPP account"; ObjectID = "WyQ-cb-VAl"; */
 "WyQ-cb-VAl.normalTitle" = "Utwórz nowe konto XMPP";
 
 /* Class = "UILabel"; text = "Message encryption"; ObjectID = "XZp-oZ-XpC"; */
 "XZp-oZ-XpC.text" = "Szyfrowanie wiadomości";
-
-/* Class = "UIButton"; normalTitle = "Enable"; ObjectID = "yJk-Px-1oo"; */
-"yJk-Px-1oo.normalTitle" = "Włącz";
 
 /* Class = "UIButton"; normalTitle = "Sign in to an existing XMPP account"; ObjectID = "ZzM-t7-zvW"; */
 "ZzM-t7-zvW.normalTitle" = "Zaloguj do istniejącego konta XMPP";

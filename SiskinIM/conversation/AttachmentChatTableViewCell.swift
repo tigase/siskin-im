@@ -177,7 +177,7 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                     UIPasteboard.general.strings = [url];
                     UIPasteboard.general.string = url;
                 }),
-                UIAction(title: NSLocalizedString("Share..", comment: "attachment cell context action"), image: UIImage(systemName: "square.and.arrow.up"), handler: { action in
+                UIAction(title: NSLocalizedString("Share…", comment: "attachment cell context action"), image: UIImage(systemName: "square.and.arrow.up"), handler: { action in
                     self.open(url: localUrl, preview: false);
                 }),
                 UIAction(title: NSLocalizedString("Delete", comment: "attachment cell context action"), image: UIImage(systemName: "trash"), attributes: [.destructive], handler: { action in
@@ -186,7 +186,7 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                         appendix.state = .removed;
                     })
                 }),
-                UIAction(title: NSLocalizedString("More..", comment: "attachment cell context action"), image: UIImage(systemName: "ellipsis"), handler: { action in
+                UIAction(title: NSLocalizedString("More…", comment: "attachment cell context action"), image: UIImage(systemName: "ellipsis"), handler: { action in
                     NotificationCenter.default.post(name: Notification.Name("tableViewCellShowEditToolbar"), object: self);
                 })
             ];
@@ -200,7 +200,7 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                 UIAction(title: NSLocalizedString("Download", comment: "attachment cell context action"), image: UIImage(systemName: "square.and.arrow.down"), handler: { action in
                     self.download(for: item);
                 }),
-                UIAction(title: NSLocalizedString("More..", comment: "attachment cell context action"), image: UIImage(systemName: "ellipsis"), handler: { action in
+                UIAction(title: NSLocalizedString("More…", comment: "attachment cell context action"), image: UIImage(systemName: "ellipsis"), handler: { action in
                     NotificationCenter.default.post(name: Notification.Name("tableViewCellShowEditToolbar"), object: self);
                 })
             ];

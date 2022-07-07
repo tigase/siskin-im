@@ -41,7 +41,7 @@ class MultiContactSelectionViewController: UITableViewController, UISearchContro
         navigationItem.searchController = UISearchController(searchResultsController: searchResult);
         navigationItem.searchController?.searchResultsUpdater = searchResult;
         navigationItem.searchController?.delegate = self;
-        navigationItem.searchController?.searchBar.placeholder = NSLocalizedString("Search to add..", comment: "placeholder")
+        navigationItem.searchController?.searchBar.placeholder = NSLocalizedString("Search to add…", comment: "placeholder")
         navigationItem.searchController?.automaticallyShowsSearchResultsController = false;
         navigationItem.searchController?.showsSearchResultsController = true;
         navigationItem.searchController?.hidesNavigationBarDuringPresentation = false;

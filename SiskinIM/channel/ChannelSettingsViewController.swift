@@ -60,7 +60,7 @@ class ChannelSettingsViewController: UITableViewController {
         guard let mixModule = channel.context?.module(.mix) else {
             return;
         }
-        operationStarted(message: NSLocalizedString("Checking...", comment: "channel settings view opeartion label"));
+        operationStarted(message: NSLocalizedString("Checking…", comment: "channel settings view opeartion label"));
         
         let channel = self.channel!;
         let dispatchGroup = DispatchGroup();

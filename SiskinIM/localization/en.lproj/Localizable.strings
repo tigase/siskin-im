@@ -110,7 +110,7 @@
 "Block participant" = "Block participant";
 
 /* channel participants view operation */
-"Blocking..." = "Blocking...";
+"Blocking…" = "Blocking…";
 
 /* search bar scope */
 "By name" = "By name";
@@ -154,7 +154,7 @@
 /* channel create view operation label
    channel join view operation label
    channel settings view opeartion label */
-"Checking..." = "Checking...";
+"Checking…" = "Checking…";
 
 /* button label */
 "Close" = "Close";
@@ -163,7 +163,7 @@
 "Component" = "Component";
 
 /* call state label */
-"Connecting..." = "Connecting...";
+"Connecting…" = "Connecting…";
 
 /* error notification message */
 "Connection to server %@ failed" = "Connection to server %@ failed";
@@ -174,7 +174,7 @@
 "Copy" = "Copy";
 
 /* context action label */
-"Correct.." = "Correct..";
+"Correct…" = "Correct…";
 
 /* alert body */
 "Could not create channel on the server. Got following error: %@" = "Could not create channel on the server. Got following error: %@";
@@ -222,7 +222,7 @@
 "Create new or add existing account" = "Create new or add existing account";
 
 /* channel join view operation label */
-"Creating channel..." = "Creating channel...";
+"Creating channel…" = "Creating channel…";
 
 /* appearance type */
 "Dark" = "Dark";
@@ -322,7 +322,7 @@
 "Enter message to send to: %@" = "Enter message to send to: %@";
 
 /* placeholder */
-"Enter message..." = "Enter message...";
+"Enter message…" = "Enter message…";
 
 /* alert body */
 "Enter new name for group chat" = "Enter new name for group chat";
@@ -383,7 +383,7 @@
 "From" = "From";
 
 /* conversation view input field placeholder */
-"from %@..." = "from %@...";
+"from %@…" = "from %@…";
 
 /* vcard field label */
 "Full name" = "Full name";
@@ -439,7 +439,7 @@
 "Invite" = "Invite";
 
 /* button label */
-"Invite..." = "Invite...";
+"Invite…" = "Invite…";
 
 /* error message */
 "It was not possible to access camera or microphone. Please check privacy settings" = "It was not possible to access camera or microphone. Please check privacy settings";
@@ -510,7 +510,7 @@
 
 /* channel join view operation label
    muc room status */
-"Joining..." = "Joining...";
+"Joining…" = "Joining…";
 
 /* report spam action */
 "Just block" = "Just block";
@@ -602,7 +602,7 @@
 
 /* attachment cell context action
    context action label */
-"More.." = "More..";
+"More…" = "More…";
 
 /* conversation notifications status */
 "Muted" = "Muted";
@@ -714,7 +714,7 @@
 "Phones" = "Phones";
 
 /* voice message state */
-"Playing..." = "Playing...";
+"Playing…" = "Playing…";
 
 /* instruction to fill out the form */
 "Please fill this form" = "Please fill this form";
@@ -729,7 +729,7 @@
 "Preferred domain name" = "Preferred domain name";
 
 /* operation label */
-"Preparing..." = "Preparing...";
+"Preparing…" = "Preparing…";
 
 /* attachment cell context action
    context action */
@@ -775,15 +775,15 @@
 "Recorded: %@" = "Recorded: %@";
 
 /* voice message state */
-"Recording..." = "Recording...";
+"Recording…" = "Recording…";
 
 /* voice message state */
-"Recording... %@" = "Recording... %@";
+"Recording… %@" = "Recording… %@";
 
 /* channel block users view operation
    channel edit info operation
    channel participants view operation */
-"Refreshing..." = "Refreshing...";
+"Refreshing…" = "Refreshing…";
 
 /* button label */
 "Register" = "Register";
@@ -826,10 +826,10 @@
 "Rename chat" = "Rename chat";
 
 /* context action label */
-"Reply.." = "Reply..";
+"Reply…" = "Reply…";
 
 /* context action label */
-"Report & block.." = "Report & block..";
+"Report & block…" = "Report & block…";
 
 /* report abuse action */
 "Report abuse" = "Report abuse";
@@ -844,7 +844,7 @@
 "Retract" = "Retract";
 
 /* call state label */
-"Ringing..." = "Ringing...";
+"Ringing…" = "Ringing…";
 
 /* alert title */
 "Room %@" = "Room %@";
@@ -862,7 +862,7 @@
 "Search for places" = "Search for places";
 
 /* placeholder */
-"Search to add.." = "Search to add..";
+"Search to add…" = "Search to add…";
 
 /* alert body */
 "Select account to open chat from" = "Select account to open chat from";
@@ -908,10 +908,10 @@
 "Send message" = "Send message";
 
 /* channel invitations view operation */
-"Sending invitations..." = "Sending invitations...";
+"Sending invitations…" = "Sending invitations…";
 
 /* operation label */
-"Sending..." = "Sending...";
+"Sending…" = "Sending…";
 
 /* sharing error */
 "Server did not confirm file upload correctly." = "Server did not confirm file upload correctly.";
@@ -942,7 +942,7 @@
 /* attachment cell context action
    context action
    context action label */
-"Share.." = "Share..";
+"Share…" = "Share…";
 
 /* section label */
 "Sharing" = "Sharing";
@@ -1028,7 +1028,7 @@
 /* channel block users view operation
    channel edit info operation
    refresh conrol label */
-"Updating..." = "Updating...";
+"Updating…" = "Updating…";
 
 /* alert title */
 "Upload failed" = "Upload failed";

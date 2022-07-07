@@ -229,6 +229,9 @@
                                                             <state key="normal" title="123">
                                                                 <color key="titleColor" name="chatslistBackground"/>
                                                             </state>
+                                                            <attributedString key="userComments">
+                                                                <fragment content="#bc-ignore! "/>
+                                                            </attributedString>
                                                         </button>
                                                     </subviews>
                                                 </stackView>
@@ -359,6 +362,9 @@
                         </view>
                     </navigationItem>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
+                    <attributedString key="userComments">
+                        <fragment content="#bc-ignore!"/>
+                    </attributedString>
                     <connections>
                         <outlet property="containerView" destination="gYg-Wz-iZc" id="bHR-j9-Idy"/>
                     </connections>
@@ -475,7 +481,11 @@
         <scene sceneID="g0a-UN-HR6">
             <objects>
                 <splitViewController id="vAU-gJ-Tx3" customClass="GlobalSplitViewController" customModule="Siskin" customModuleProvider="target" sceneMemberID="viewController">
-                    <navigationItem key="navigationItem" title="Root View" id="8T3-uF-8vn"/>
+                    <navigationItem key="navigationItem" title="Root View" id="8T3-uF-8vn">
+                        <attributedString key="userComments">
+                            <fragment content="#bc-ignore!"/>
+                        </attributedString>
+                    </navigationItem>
                     <connections>
                         <segue destination="lx9-0R-yhg" kind="relationship" relationship="masterViewController" id="Xag-BS-h9G"/>
                         <segue destination="sks-Bw-Z68" kind="relationship" relationship="detailViewController" id="fSM-Q7-mjE"/>
@@ -753,7 +763,7 @@
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
-                            <tableViewSection headerTitle="JID" id="Qgj-eQ-geg">
+                            <tableViewSection headerTitle="XMPP Address (JID)" id="Qgj-eQ-geg" userLabel="XMPP Address (JID)">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="ubC-3x-1ej">
                                         <rect key="frame" x="0.0" y="143.5" width="414" height="44"/>
@@ -1238,91 +1248,6 @@
             </objects>
             <point key="canvasLocation" x="2922" y="1111"/>
         </scene>
-        <!--New Feature Suggestion View-->
-        <scene sceneID="8Dq-Md-MOo">
-            <objects>
-                <viewController storyboardIdentifier="NewFeatureSuggestionView" modalPresentationStyle="formSheet" id="Z9W-jo-gSy" customClass="NewFeatureSuggestionView" customModule="Siskin" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="nB0-oQ-Zoc">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Message Archiving" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ckp-Mb-v0c">
-                                <rect key="frame" x="103.5" y="64" width="207.5" height="29"/>
-                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="24"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your server for account \(account) supports message archiving. Would you like to enable this feature?" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.59999999999999998" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1dk-YA-RVu">
-                                <rect key="frame" x="29.5" y="302" width="355" height="358.5"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wvT-dz-RVz">
-                                <rect key="frame" x="30" y="820" width="61" height="32"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
-                                <state key="normal" title="Not now"/>
-                                <connections>
-                                    <action selector="skipClicked:" destination="Z9W-jo-gSy" eventType="touchUpInside" id="1nM-uk-wcu"/>
-                                </connections>
-                            </button>
-                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="ApQ-D1-Gfw">
-                                <rect key="frame" x="188.5" y="429.5" width="37" height="37"/>
-                                <color key="color" name="selectedMenuItemColor" catalog="System" colorSpace="catalog"/>
-                            </activityIndicatorView>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="messageArchiving" translatesAutoresizingMaskIntoConstraints="NO" id="j8I-n6-mj7">
-                                <rect key="frame" x="117.5" y="113" width="179" height="179"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" secondItem="j8I-n6-mj7" secondAttribute="height" multiplier="1:1" id="MAF-hM-QM0"/>
-                                </constraints>
-                            </imageView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yJk-Px-1oo">
-                                <rect key="frame" x="330" y="819.5" width="54" height="33"/>
-                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
-                                <state key="normal" title="Enable"/>
-                                <connections>
-                                    <action selector="enableClicked:" destination="Z9W-jo-gSy" eventType="touchUpInside" id="2Eh-v5-bb4"/>
-                                </connections>
-                            </button>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="r1z-rM-5lR"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <color key="tintColor" name="tintColor"/>
-                        <constraints>
-                            <constraint firstItem="j8I-n6-mj7" firstAttribute="height" secondItem="nB0-oQ-Zoc" secondAttribute="height" multiplier="0.2" id="28V-cx-Upa"/>
-                            <constraint firstItem="wvT-dz-RVz" firstAttribute="leading" secondItem="r1z-rM-5lR" secondAttribute="leading" constant="30" id="3em-Jb-wBv"/>
-                            <constraint firstItem="r1z-rM-5lR" firstAttribute="bottom" secondItem="wvT-dz-RVz" secondAttribute="bottom" constant="10" id="BpS-ey-ljS"/>
-                            <constraint firstItem="j8I-n6-mj7" firstAttribute="top" secondItem="Ckp-Mb-v0c" secondAttribute="bottom" priority="200" constant="20" id="FJW-KP-Lb0"/>
-                            <constraint firstItem="1dk-YA-RVu" firstAttribute="centerX" secondItem="r1z-rM-5lR" secondAttribute="centerX" id="KGO-dY-teH"/>
-                            <constraint firstItem="j8I-n6-mj7" firstAttribute="bottom" secondItem="1dk-YA-RVu" secondAttribute="top" constant="-10" id="TUb-Bu-jFf"/>
-                            <constraint firstItem="ApQ-D1-Gfw" firstAttribute="centerX" secondItem="r1z-rM-5lR" secondAttribute="centerX" id="UH0-9g-XZz"/>
-                            <constraint firstItem="r1z-rM-5lR" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="1dk-YA-RVu" secondAttribute="trailing" constant="20" id="UfX-eh-JN0"/>
-                            <constraint firstItem="j8I-n6-mj7" firstAttribute="width" relation="lessThanOrEqual" secondItem="nB0-oQ-Zoc" secondAttribute="width" multiplier="0.5" id="bia-Pm-GIk"/>
-                            <constraint firstItem="1dk-YA-RVu" firstAttribute="height" relation="greaterThanOrEqual" secondItem="nB0-oQ-Zoc" secondAttribute="height" multiplier="0.4" id="ccp-aR-Dzk"/>
-                            <constraint firstItem="j8I-n6-mj7" firstAttribute="centerX" secondItem="r1z-rM-5lR" secondAttribute="centerX" id="eiq-u9-Hqv"/>
-                            <constraint firstItem="yJk-Px-1oo" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="wvT-dz-RVz" secondAttribute="trailing" constant="-20" id="iYg-bd-IYP"/>
-                            <constraint firstItem="Ckp-Mb-v0c" firstAttribute="centerX" secondItem="r1z-rM-5lR" secondAttribute="centerX" id="kP2-Cf-Ufo"/>
-                            <constraint firstItem="Ckp-Mb-v0c" firstAttribute="top" secondItem="r1z-rM-5lR" secondAttribute="top" constant="20" id="m8i-oJ-q5I"/>
-                            <constraint firstItem="j8I-n6-mj7" firstAttribute="top" relation="greaterThanOrEqual" secondItem="Ckp-Mb-v0c" secondAttribute="bottom" constant="5" id="oiN-VC-XsK"/>
-                            <constraint firstItem="r1z-rM-5lR" firstAttribute="trailing" secondItem="yJk-Px-1oo" secondAttribute="trailing" constant="30" id="ovG-cK-eUm"/>
-                            <constraint firstItem="1dk-YA-RVu" firstAttribute="height" relation="lessThanOrEqual" secondItem="nB0-oQ-Zoc" secondAttribute="height" multiplier="0.5" id="pGO-1R-INO"/>
-                            <constraint firstItem="1dk-YA-RVu" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="r1z-rM-5lR" secondAttribute="leading" constant="20" id="qgY-rd-Wqd"/>
-                            <constraint firstItem="yJk-Px-1oo" firstAttribute="top" relation="greaterThanOrEqual" secondItem="1dk-YA-RVu" secondAttribute="bottom" constant="10" id="sDd-70-C1Y"/>
-                            <constraint firstItem="ApQ-D1-Gfw" firstAttribute="centerY" secondItem="nB0-oQ-Zoc" secondAttribute="centerY" id="sxO-Ts-sIF"/>
-                            <constraint firstItem="wvT-dz-RVz" firstAttribute="centerY" secondItem="yJk-Px-1oo" secondAttribute="centerY" id="yAr-zF-HF0"/>
-                        </constraints>
-                    </view>
-                    <connections>
-                        <outlet property="cancelButton" destination="wvT-dz-RVz" id="qEE-PL-dLn"/>
-                        <outlet property="descriptionField" destination="1dk-YA-RVu" id="4nV-ET-Xfr"/>
-                        <outlet property="enableButton" destination="yJk-Px-1oo" id="ZBN-Et-Nha"/>
-                        <outlet property="iconField" destination="j8I-n6-mj7" id="qzF-OC-py6"/>
-                        <outlet property="progressIndicator" destination="ApQ-D1-Gfw" id="xpI-pN-QUb"/>
-                        <outlet property="titleField" destination="Ckp-Mb-v0c" id="BQO-5s-kaW"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="Y3c-z5-x0j" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="1441" y="1111"/>
-        </scene>
         <!--Attachments-->
         <scene sceneID="LjN-O9-imb">
             <objects>
@@ -1477,7 +1402,6 @@
         <image name="first" width="30" height="30"/>
         <image name="gear" catalog="system" width="128" height="119"/>
         <image name="message.fill" catalog="system" width="128" height="113"/>
-        <image name="messageArchiving" width="50" height="50"/>
         <image name="person.crop.circle.fill" catalog="system" width="128" height="121"/>
         <image name="person.crop.circle.fill.badge.plus" catalog="system" width="128" height="113"/>
         <image name="square.and.pencil" catalog="system" width="128" height="115"/>

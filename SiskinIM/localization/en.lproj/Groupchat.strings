@@ -13,7 +13,7 @@
 /* Class = "UILabel"; text = "When mentioned"; ObjectID = "exK-ZH-jpA"; */
 "exK-ZH-jpA.text" = "When mentioned";
 
-/* Class = "UITableViewController"; title = "Room details"; ObjectID = "IGA-uE-mHb"; */
+/* Class = "UITableViewController"; title = "Room details"; ObjectID = "IGA-uE-mHb"; Note = "View with details of a room"; */
 "IGA-uE-mHb.title" = "Room details";
 
 /* Class = "UITableViewSection"; headerTitle = "Subject"; ObjectID = "iYv-zL-tZT"; */
@@ -27,6 +27,3 @@
 
 /* Class = "UILabel"; text = "Attachments"; ObjectID = "wBw-1J-Xau"; */
 "wBw-1J-Xau.text" = "Attachments";
-
-/* Class = "UILabel"; text = "None"; ObjectID = "YT2-1I-RlM"; */
-"YT2-1I-RlM.text" = "None";

@@ -331,6 +331,9 @@
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" systemColor="secondaryLabelColor"/>
                                                     <nil key="highlightedColor"/>
+                                                    <attributedString key="userComments">
+                                                        <fragment content="#bc-ignore!"/>
+                                                    </attributedString>
                                                 </label>
                                             </subviews>
                                         </tableViewCellContentView>
@@ -396,6 +399,9 @@
                             <outlet property="delegate" destination="IGA-uE-mHb" id="P2x-Zy-q7m"/>
                         </connections>
                     </tableView>
+                    <attributedString key="userComments">
+                        <fragment content="View with details of a room"/>
+                    </attributedString>
                     <connections>
                         <outlet property="encryptionField" destination="YT2-1I-RlM" id="UPB-Xs-MeS"/>
                         <outlet property="notificationsField" destination="exK-ZH-jpA" id="vM2-MR-DPe"/>

@@ -219,7 +219,7 @@ class MucTitleView: UIView {
                 desc = NSLocalizedString("Online", comment: "muc room status");
             case .requested:
                 show = Presence.Show.away;
-                desc = NSLocalizedString("Joining...", comment: "muc room status");
+                desc = NSLocalizedString("Joining…", comment: "muc room status");
             default:
                 break;
             }

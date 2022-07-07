@@ -79,7 +79,7 @@ class ChatAttachmentsCellView: UICollectionViewCell, UIDocumentInteractionContro
                     UIPasteboard.general.strings = [url];
                     UIPasteboard.general.string = url;
                 }),
-                UIAction(title: NSLocalizedString("Share..", comment: "context action"), image: UIImage(systemName: "square.and.arrow.up"), handler: { action in
+                UIAction(title: NSLocalizedString("Share…", comment: "context action"), image: UIImage(systemName: "square.and.arrow.up"), handler: { action in
                     self.open(url: localUrl, preview: false);
                 }),
                 UIAction(title: NSLocalizedString("Delete", comment: "context action"), image: UIImage(systemName: "trash"), attributes: [.destructive], handler: { action in

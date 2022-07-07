@@ -190,7 +190,7 @@ class ChannelCreateViewController: UITableViewController, ChannelSelectAccountAn
             return;
         }
         let domain = self.domain ?? client.userBareJid.domain;
-        self.operationStarted(message: NSLocalizedString("Checking...", comment: "channel create view operation label"));
+        self.operationStarted(message: NSLocalizedString("Checking…", comment: "channel create view operation label"));
         ChannelsHelper.findComponents(for: client, at: domain, completionHandler: { components in
             DispatchQueue.main.async {
                 self.components = components;

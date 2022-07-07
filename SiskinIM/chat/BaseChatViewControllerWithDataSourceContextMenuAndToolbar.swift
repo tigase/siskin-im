@@ -195,17 +195,17 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
             case .copy:
                 return NSLocalizedString("Copy", comment: "context action label");
             case .reply:
-                return NSLocalizedString("Reply..", comment: "context action label");
+                return NSLocalizedString("Reply…", comment: "context action label");
             case .report:
-                return NSLocalizedString("Report & block..", comment: "context action label")
+                return NSLocalizedString("Report & block…", comment: "context action label")
             case .share:
-                return NSLocalizedString("Share..", comment: "context action label");
+                return NSLocalizedString("Share…", comment: "context action label");
             case .correct:
-                return NSLocalizedString("Correct..", comment: "context action label");
+                return NSLocalizedString("Correct…", comment: "context action label");
             case .retract:
                 return NSLocalizedString("Retract", comment: "context action label");
             case .more:
-                return NSLocalizedString("More..", comment: "context action label");
+                return NSLocalizedString("More…", comment: "context action label");
             }
         }
         

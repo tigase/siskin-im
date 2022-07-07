@@ -79,7 +79,7 @@ class ChannelJoinViewController: UITableViewController {
         switch action {
         case .join:
             if componentType == .muc {
-                operationStarted(message: NSLocalizedString("Checking...", comment: "channel join view operation label"));
+                operationStarted(message: NSLocalizedString("Checking…", comment: "channel join view operation label"));
                 client.module(.disco).getInfo(for: JID(channelJid), node: nil, completionHandler: { result in
                     switch result {
                     case .success(let info):
@@ -193,7 +193,7 @@ class ChannelJoinViewController: UITableViewController {
         switch componentType {
         case .mix:
             let mixModule = client.module(.mix);
-            self.operationStarted(message: NSLocalizedString("Creating channel...", comment: "channel join view operation label"))
+            self.operationStarted(message: NSLocalizedString("Creating channel…", comment: "channel join view operation label"))
                 
             mixModule.create(channel: channelJid.localPart, at: BareJID(domain: channelJid.domain), completionHandler: { [weak self] result in
                 switch result {
@@ -261,7 +261,7 @@ class ChannelJoinViewController: UITableViewController {
 //            form.addField(TextSingleField(name: "muc#roomconfig_roomdesc", value: channelDescription));
             form.addField(TextSingleField(name: "muc#roomconfig_whois", value: priv ? "anyone" : "moderators"))
             let mucServer = self.channelJid.domain;
-            self.operationStarted(message: NSLocalizedString("Creating channel...", comment: "channel join view operation label"))
+            self.operationStarted(message: NSLocalizedString("Creating channel…", comment: "channel join view operation label"))
             mucModule.setRoomConfiguration(roomJid: JID(BareJID(localPart: roomName, domain: mucServer)), configuration: form, completionHandler: { [weak self] configResult in
                 mucModule.join(roomName: roomName, mucServer: mucServer, nickname: nick).handle({ [weak self] joinResult in
                     switch joinResult {
@@ -345,7 +345,7 @@ class ChannelJoinViewController: UITableViewController {
         
         switch componentType {
         case .mix:
-            self.operationStarted(message: NSLocalizedString("Joining...", comment: "channel join view operation label"));
+            self.operationStarted(message: NSLocalizedString("Joining…", comment: "channel join view operation label"));
             client.module(.mix).join(channel: channelJid, withNick: nick, invitation: mixInvitation, completionHandler: { result in
                 switch result {
                 case .success(_):
@@ -371,7 +371,7 @@ class ChannelJoinViewController: UITableViewController {
             let createBookmark = bookmarkCreateSwitch.isOn;
             let autojoin = createBookmark && bookmarkAutojoinSwitch.isOn;
             
-            self.operationStarted(message: NSLocalizedString("Joining...", comment: "channel join view operation label"));
+            self.operationStarted(message: NSLocalizedString("Joining…", comment: "channel join view operation label"));
             client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nick, password: password).handle({ result in
                 switch result {
                 case .success(let joinResult):

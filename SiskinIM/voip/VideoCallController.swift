@@ -351,9 +351,9 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
             case .new:
                 self.titleLabel?.text = NSLocalizedString("New call", comment: "call state label");
             case .ringing:
-                self.titleLabel?.text = NSLocalizedString("Ringing...", comment: "call state label");
+                self.titleLabel?.text = NSLocalizedString("Ringing…", comment: "call state label");
             case .connecting:
-                self.titleLabel?.text = NSLocalizedString("Connecting...", comment: "call state label");
+                self.titleLabel?.text = NSLocalizedString("Connecting…", comment: "call state label");
             case .connected:
                 self.titleLabel?.text = nil;
             case .ended:
