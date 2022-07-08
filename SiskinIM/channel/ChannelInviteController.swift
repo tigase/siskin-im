@@ -39,31 +39,25 @@ class ChannelInviteController: AbstractRosterViewController {
         }
         
         let channelJid = channel.channelJid;
-        let group = DispatchGroup();
         self.operationStarted(message: NSLocalizedString("Sending invitations…", comment: "channel invitations view operation"));
-        for item in items {
-            group.enter();
-            mixModule.allowAccess(to: channel.channelJid, for: item.jid, completionHandler: { result in
-                switch result {
-                case .success(_):
-                    let body = "Invitation to channel: \(channelJid.description)";
-                    let mixInvitation = MixInvitation(inviter: channel.account, invitee: item.jid, channel: channelJid, token: nil);
-                    let message = mixModule.createInvitation(mixInvitation, message: body);
-                    message.messageDelivery = .request;
-                    let conversationKey: ConversationKey = DBChatStore.instance.conversation(for: channel.account, with: item.jid) ?? ConversationKeyItem(account: channel.account, jid: item.jid);
-                    let options = ConversationEntry.Options(recipient: .none, encryption: .none, isMarkable: false);
-                    _ = DBChatHistoryStore.instance.appendItem(for: conversationKey, state: .outgoing(.sent), sender: .me(conversation: conversationKey), type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), options: options, linkPreviewAction: .none);
-                    mixModule.write(stanza: message);
-                case .failure(_):
-                    break;
+        Task {
+            defer {
+                DispatchQueue.main.async { [weak self] in
+                    self?.operationEnded();
+                    self?.navigationController?.popViewController(animated: true);
                 }
-                group.leave();
-            })
+            }
+            for item in items {
+                let body = "Invitation to channel: \(channelJid.description)";
+                let mixInvitation = MixInvitation(inviter: channel.account, invitee: item.jid, channel: channelJid, token: nil);
+                let message = mixModule.createInvitation(mixInvitation, message: body);
+                message.messageDelivery = .request;
+                let conversationKey: ConversationKey = DBChatStore.instance.conversation(for: channel.account, with: item.jid) ?? ConversationKeyItem(account: channel.account, jid: item.jid);
+                let options = ConversationEntry.Options(recipient: .none, encryption: .none, isMarkable: false);
+                _ = DBChatHistoryStore.instance.appendItem(for: conversationKey, state: .outgoing(.sent), sender: .me(conversation: conversationKey), type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), options: options, linkPreviewAction: .none);
+                try? await mixModule.write(stanza: message);
+            }
         }
-        group.notify(queue: DispatchQueue.main, execute: { [weak self] in
-            self?.operationEnded();
-            self?.navigationController?.popViewController(animated: true);
-        })
     }
         
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

@@ -53,7 +53,6 @@ extension ErrorCondition: LocalizedError {
             return NSLocalizedString("Provided data were not accepted. Please check provided values." , comment: "xmpp error condition modify type recovery suggestion")
         case .wait:
             return NSLocalizedString("Try again later." , comment: "xmpp error condition wait type recovery suggestion")
-            return "Try again later";
         }
     }
 }

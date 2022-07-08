@@ -62,50 +62,31 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
         }
 
         self.operationStarted(message: NSLocalizedString("Updating…", comment: "channel edit info operation"));
-        let group = DispatchGroup();
-        var error: Bool = false;
-        let infoData = ChannelInfo(name: nameField.text, description: descriptionField.text, contact: self.infoData?.contact ?? []);
-        if let oldData = self.infoData, oldData.name != infoData.name || oldData.description != infoData.description {
-            group.enter();
-            mixModule.publishInfo(for: channel.channelJid, info: infoData, completionHandler: { [weak self] result in
-                switch result {
-                case .success(_):
-                    break;
-                case .failure(let err):
-                    DispatchQueue.main.async {
-                        error = true;
-                        let alert = UIAlertController(title: NSLocalizedString("Could not update channel details", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Remote server returned an error: %@", comment: "alert body"), err.localizedDescription), preferredStyle: .alert);
-                        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
-                        self?.present(alert, animated: true, completion: nil);
+        let avatar = self.avatar;
+        Task {
+            do {
+                defer {
+                    DispatchQueue.main.async { [weak self] in
+                        self?.operationEnded();
                     }
                 }
-                group.leave();
-            })
-        }
-        if let avatar = self.avatar {
-            group.enter();
-            avatarModule.publishAvatar(at: channel.channelJid, avatar: avatar, completionHandler: { [weak self] result in
-                switch result {
-                case .success(_):
-                    break;
-                case .failure(let err):
-                    DispatchQueue.main.async {
-                        error = true;
-                        let alert = UIAlertController(title: NSLocalizedString("Could not update channel details", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Remote server returned an error: %@", comment: "alert body"), err.localizedDescription), preferredStyle: .alert);
-                        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
-                        self?.present(alert, animated: true, completion: nil);
-                    }
+                let infoData = MixChannelInfo(name: nameField.text, description: descriptionField.text, contact: self.infoData?.contact ?? []);
+                try await mixModule.info(infoData, for: channel.channelJid);
+                if let avatar = avatar {
+                    _ = try await avatarModule.publishAvatar(at: channel.channelJid, avatar: avatar);
                 }
-                group.leave();
-            })
-        }
-        group.notify(queue: DispatchQueue.main, execute: { [weak self] in
-            self?.operationEnded();
-            guard !error else {
-                return;
+                DispatchQueue.main.async { [weak self] in
+                    self?.dismiss(animated: true, completion: nil)
+                }
+            } catch {
+                let err = error as? XMPPError ?? .undefined_condition;
+                DispatchQueue.main.async { [weak self] in
+                    let alert = UIAlertController(title: NSLocalizedString("Could not update channel details", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Remote server returned an error: %@", comment: "alert body"), err.localizedDescription), preferredStyle: .alert);
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
+                    self?.present(alert, animated: true, completion: nil);
+                }
             }
-            self?.dismiss(animated: true, completion: nil)
-        })
+        }
     }
     
     private func refresh() {
@@ -113,20 +94,19 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
             return;
         }
         self.operationStarted(message: NSLocalizedString("Refreshing…", comment: "channel edit info operation"));
-        mixModule.retrieveInfo(for: channel.channelJid, completionHandler: { [weak self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let info):
-                    self?.infoData = info;
-                    self?.nameField.text = info.name;
-                    self?.descriptionField.text = info.description;
-                case .failure(_):
-                    self?.dismiss(animated: true, completion: nil);
-                    break;
+        Task {
+            defer {
+                DispatchQueue.main.async { [weak self] in
+                    self?.operationEnded();
                 }
-                self?.operationEnded();
             }
-        })
+            let info = try await mixModule.info(for: channel.channelJid);
+            DispatchQueue.main.async { [weak self] in
+                self?.infoData = info;
+                self?.nameField.text = info.name;
+                self?.descriptionField.text = info.description;
+            }
+        }
     }
     
     func operationStarted(message: String) {

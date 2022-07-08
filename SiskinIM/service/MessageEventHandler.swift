@@ -371,20 +371,22 @@ class MessageEventHandler: XmppServiceExtension {
     static func syncMessagesScheduled(for client: XMPPClient) {
         syncSinceQueue.async {
             let syncMessagesSince = syncSince.removeValue(forKey: client.userBareJid);
-            syncMessages(for: client, since: syncMessagesSince);
+            Task {
+                try await syncMessages(for: client, since: syncMessagesSince);
+            }
         }
     }
         
-    static func syncMessages(for client: XMPPClient, version: MessageArchiveManagementModule.Version? = nil, componentJID: JID? = nil, since: Date? = nil, rsmQuery: RSM.Query? = nil) {
+    static func syncMessages(for client: XMPPClient, version: MessageArchiveManagementModule.Version? = nil, componentJID: JID? = nil, since: Date? = nil, rsmQuery: RSM.Query? = nil) async throws {
         if let since = since {
             let period = DBChatHistorySyncStore.Period(account: client.userBareJid, component: componentJID?.bareJid, from: since, after: nil, to: nil);
             DBChatHistorySyncStore.instance.addSyncPeriod(period);
         }
         
-        syncMessagePeriods(for: client, version: version, componentJID: componentJID?.bareJid)
+        try await syncMessagePeriods(for: client, version: version, componentJID: componentJID?.bareJid)
     }
         
-    static func syncMessagePeriods(for client: XMPPClient, version: MessageArchiveManagementModule.Version? = nil, componentJID jid: BareJID? = nil) {
+    static func syncMessagePeriods(for client: XMPPClient, version: MessageArchiveManagementModule.Version? = nil, componentJID jid: BareJID? = nil) async throws {
         guard let first = DBChatHistorySyncStore.instance.loadSyncPeriods(forAccount: client.userBareJid, component: jid).first else {
             if jid != nil {
                 DBChatMarkersStore.instance.syncCompleted(forAccount: client.userBareJid, with: jid!);
@@ -395,52 +397,46 @@ class MessageEventHandler: XmppServiceExtension {
 
         eventsPublisher.send(.started(account: client.userBareJid, with: jid));
             
-        syncSinceQueue.async {
-            syncMessages(for: client, period: first, version: version);
-        }
+        try await syncMessages(for: client, period: first, version: version);
     }
     
-    static func syncMessages(for client: XMPPClient, period: DBChatHistorySyncStore.Period, version: MessageArchiveManagementModule.Version? = nil, rsmQuery: RSM.Query? = nil, retry: Int = 3) {
+    static func syncMessages(for client: XMPPClient, period: DBChatHistorySyncStore.Period, version: MessageArchiveManagementModule.Version? = nil, rsmQuery: RSM.Query? = nil, retry: Int = 3) async throws {
+        let mamModule = client.module(.mam);
+        guard let version = version ?? mamModule.availableVersions.first else {
+            throw XMPPError(condition: .feature_not_implemented);
+        }
+        
         let start = Date();
         let queryId = UUID().uuidString;
         let account = client.userBareJid;
-        client.module(.mam).queryItems(version: version, componentJid: period.component == nil ? nil : JID(period.component!), start: period.from, end: period.to, queryId: queryId, rsm: rsmQuery ?? ( period.after == nil ? .max(150) : .after(period.after!, max: 150)), completionHandler: { [weak client] result in
-            switch result {
-            case .success(let response):
-                if response.complete || response.rsm == nil {
-                    DBChatHistorySyncStore.instance.removeSyncPerod(period);
-                    if let client = client {
-                        syncMessagePeriods(for: client, version: version, componentJID: period.component);
-                    }
-                } else {
-                    if let last = response.rsm?.last, UUID(uuidString: last) != nil {
-                        DBChatHistorySyncStore.instance.updatePeriod(period, after: last);
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                        guard let client = client else {
-                            return;
-                        }
-                        self.syncMessages(for: client, period: period, version: version, rsmQuery: response.rsm?.next(300));
-                    }
+        let query: RSM.Query = rsmQuery ?? ( period.after == nil ? .max(150) : .after(period.after!, max: 150));
+        do {
+            let result = try await client.module(.mam).queryItems(MAMQueryForm(version: version, start: period.from, end: period.to), at: period.component?.jid(), queryId: queryId, rsm: query);
+            os_log("for account %s fetch for component %s with id %s executed in %f s", log: .chatHistorySync, type: .debug, period.account.description, period.component?.description ?? "nil", queryId, Date().timeIntervalSince(start));
+            if result.complete || result.rsm == nil {
+                DBChatHistorySyncStore.instance.removeSyncPerod(period);
+                try await syncMessagePeriods(for: client, version: version, componentJID: period.component);
+            } else {
+                if let last = result.rsm?.last, UUID(uuidString: last) != nil {
+                    DBChatHistorySyncStore.instance.updatePeriod(period, after: last);
                 }
-                os_log("for account %s fetch for component %s with id %s executed in %f s", log: .chatHistorySync, type: .debug, period.account.description, period.component?.description ?? "nil", queryId, Date().timeIntervalSince(start));
-            case .failure(let error):
-                guard client?.state ?? .disconnected() == .connected(), retry > 0 && error.condition != .feature_not_implemented else {
-                    os_log("for account %s fetch for component %s with id %s could not synchronize message archive for: %{public}s", log: .chatHistorySync, type: .debug, period.account.description, period.component?.description ?? "nil", queryId, error.description);
-                    if period.component != nil {
-                        DBChatMarkersStore.instance.syncCompleted(forAccount: account, with: period.component!);
-                    }
-                    eventsPublisher.send(.finished(account: period.account, with: period.component))
-                    return;
-                }
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                    guard let client = client else {
-                        return;
-                    }
-                    self.syncMessages(for: client, period: period, version: version, rsmQuery: rsmQuery, retry: retry - 1);
-                }
+                
+                try await Task.sleep(nanoseconds: UInt64(100_000_000))
+                try await self.syncMessages(for: client, period: period, version: version, rsmQuery: result.rsm!.next(300));
             }
-        });
+        } catch {
+            let err = error as? XMPPError ?? .undefined_condition;
+            guard err.condition.type == .wait && retry > 0 else {
+                os_log("for account %s fetch for component %s with id %s could not synchronize message archive for: %{public}s", log: .chatHistorySync, type: .debug, period.account.description, period.component?.description ?? "nil", queryId, err.description);
+                if period.component != nil {
+                    DBChatMarkersStore.instance.syncCompleted(forAccount: account, with: period.component!);
+                }
+                eventsPublisher.send(.finished(account: period.account, with: period.component))
+                return;
+            }
+            try await Task.sleep(nanoseconds: UInt64(100_000_000))
+            try await self.syncMessages(for: client, period: period, version: version, rsmQuery: query, retry: retry - 1);
+        }
     }
 
     static func extractRealAuthor(from message: Message, for conversation: ConversationKey) -> (ConversationEntrySender,ConversationEntryRecipient)? {

@@ -195,60 +195,52 @@ class ChannelJoinViewController: UITableViewController {
             let mixModule = client.module(.mix);
             self.operationStarted(message: NSLocalizedString("Creating channel…", comment: "channel join view operation label"))
                 
-            mixModule.create(channel: channelJid.localPart, at: BareJID(domain: channelJid.domain), completionHandler: { [weak self] result in
-                switch result {
-                case .success(let channelJid):
-                        mixModule.join(channel: channelJid, withNick: nick, completionHandler: { result in
-                            DispatchQueue.main.async {
-                                self?.operationEnded();
-                            }
-                            switch result {
-                            case .success(_):
-                                DispatchQueue.main.async {
-                                    self?.dismiss(animated: true, completion: nil);
-                                    if let channel = DBChatStore.instance.channel(for: client, with: channelJid) {
-                                        self?.onConversationJoined?(channel);
-                                    }
-                                }
-                            case .failure(let error):
-                                DispatchQueue.main.async {
-                                    guard let that = self else {
-                                        return;
-                                    }
-                                    let alert = UIAlertController(title: NSLocalizedString("Error occurred", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not join newly created channel '%@' on the server. Got following error: %@", comment: "alert body"), channelJid.description, error.localizedDescription), preferredStyle: .alert);
-                                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
-                                    that.present(alert, animated: true, completion: nil);
-                                }
-                            }
-                        })
-                        mixModule.publishInfo(for: channelJid, info: ChannelInfo(name: name, description: description, contact: []), completionHandler: { _ in });
-                        if let pngImage = avatar?.scaled(maxWidthOrHeight: 48), let pngData = pngImage.pngData() {
-                            var avatars: [PEPUserAvatarModule.Avatar] = [.init(data: pngData, mimeType: "image/png", width: Int(pngImage.size.width), height: Int(pngImage.size.height))];
-                            if let jpegImage = avatar?.scaled(maxWidthOrHeight: 512), let jpegData = jpegImage.jpegData(compressionQuality: 0.8) {
-                                avatars.append(.init(data: jpegData, mimeType: "image/jpeg", width: Int(jpegImage.size.width), height: Int(jpegImage.size.height)));
-                            }
-                            client.module(.pepUserAvatar).publishAvatar(at: channelJid, avatar: avatars, completionHandler: { result in
-                                self?.logger.debug("avatar publication result: \(result)");
-                            })
-                        }
+            Task {
+                do {
+                    let channelJid = try await mixModule.create(channel: channelJid.localPart, at: BareJID(domain: channelJid.domain));
+                    do {
                         if invitationOnly {
-                            mixModule.changeAccessPolicy(of: channelJid, isPrivate: invitationOnly, completionHandler: { result in
-                                self?.logger.debug("changed channel access policy: \(result)");
-                            })
+                            _ = try await mixModule.changeAccessPolicy(of: channelJid, isPrivate: invitationOnly);
                         }
-                    case .failure(let error):
-                        DispatchQueue.main.async {
-                            self?.operationEnded();
-                            guard let that = self else {
-                                return;
+                        Task {
+                            try await mixModule.info(MixChannelInfo(name: name, description: description, contact: []), for: channelJid);
+                        }
+                        Task {
+                            if let pngImage = avatar?.scaled(maxWidthOrHeight: 48), let pngData = pngImage.pngData() {
+                                var avatars: [PEPUserAvatarModule.Avatar] = [.init(data: pngData, mimeType: "image/png", width: Int(pngImage.size.width), height: Int(pngImage.size.height))];
+                                if let jpegImage = avatar?.scaled(maxWidthOrHeight: 512), let jpegData = jpegImage.jpegData(compressionQuality: 0.8) {
+                                    avatars.append(.init(data: jpegData, mimeType: "image/jpeg", width: Int(jpegImage.size.width), height: Int(jpegImage.size.height)));
+                                }
+                                _ = try await client.module(.pepUserAvatar).publishAvatar(at: channelJid, avatar: avatars);
                             }
-                            let alert = UIAlertController(title: NSLocalizedString("Error occurred", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not create channel on the server. Got following error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
-                            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
-                            that.present(alert, animated: true, completion: nil);
+                        }
+                        _ = try await mixModule.join(channel: channelJid, withNick: nick);
+                    } catch {
+                        try? await mixModule.destroy(channel: channelJid);
+                        throw error;
+                    }
+                    DispatchQueue.main.async { [weak self] in
+                        self?.operationEnded();
+                        self?.dismiss(animated: true, completion: nil);
+                        if let channel = DBChatStore.instance.channel(for: client, with: channelJid) {
+                            self?.onConversationJoined?(channel);
                         }
                     }
-                })
-                break;
+                } catch {
+                    let err = error as? XMPPError ?? .undefined_condition;
+                    DispatchQueue.main.async { [weak self] in
+                        self?.operationEnded();
+                        
+                        guard let that = self else {
+                            return;
+                        };
+                        let alert = UIAlertController(title: NSLocalizedString("Error occurred", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not create channel on the server. Got following error: %@", comment: "alert body"), err.localizedDescription), preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
+                        that.present(alert, animated: true, completion: nil);
+                    }
+                }
+            }
+            break;
         case .muc:
             let mucModule = client.module(.muc);
             let priv = !isPublic;
@@ -324,26 +316,30 @@ class ChannelJoinViewController: UITableViewController {
         switch componentType {
         case .mix:
             self.operationStarted(message: NSLocalizedString("Joining…", comment: "channel join view operation label"));
-            client.module(.mix).join(channel: channelJid, withNick: nick, invitation: mixInvitation, completionHandler: { result in
-                switch result {
-                case .success(_):
-                    // we have joined, so all what we need to do is close this window
+            Task {
+                do {
+                    defer {
+                        DispatchQueue.main.async { [weak self] in
+                            self?.operationEnded();
+                        }
+                    }
+                    _ = try await client.module(.mix).join(channel: channelJid, withNick: nick, invitation: mixInvitation);
                     DispatchQueue.main.async {
-                        self.operationEnded();
                         self.dismiss(animated: true, completion: nil);
                         if let channel = DBChatStore.instance.channel(for: client, with: self.channelJid) {
                             self.onConversationJoined?(channel);
                         }
                     }
-                case .failure(let error):
+
+                } catch {
                     DispatchQueue.main.async { [weak self] in
-                        self?.operationEnded();
                         let alert = UIAlertController(title: NSLocalizedString("Could not join", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a channel. The server returned an error: %@", comment: "alert button"), error.localizedDescription), preferredStyle: .alert);
                         alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
                         self?.present(alert, animated: true, completion: nil);
                     }
+
                 }
-             });
+            }
         case .muc:
             let room = channelJid!;
             let createBookmark = bookmarkCreateSwitch.isOn;

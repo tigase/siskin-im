@@ -47,7 +47,9 @@ class MucEventHandler: XmppServiceExtension {
                                 guard let client = room.context as? XMPPClient else {
                                     return;
                                 }
-                                MessageEventHandler.syncMessages(for: client, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: JID(room.jid), since: timestamp);
+                                Task {
+                                    try await MessageEventHandler.syncMessages(for: client, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: JID(room.jid), since: timestamp);
+                                }
                             }
                         } else {
                             DBChatMarkersStore.instance.syncCompleted(forAccount: room.account, with: room.jid);

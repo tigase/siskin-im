@@ -200,6 +200,9 @@
 /* sharing error */
 "Could not retrieve file size." = "Konnte die Dateigröße nicht abrufen.";
 
+/* omemo muc error - no members */
+"Could not send encrypted message due to missing list of room members." = "Could not send encrypted message due to missing list of room members.";
+
 /* alert body */
 "Could not set group chat avatar. The server responded with an error: %@" = "Gruppenchat-Profilbild konnte nicht festgelegt werden. Der Server meldete den Fehler: %@";
 
@@ -682,6 +685,9 @@
 /* alert title */
 "Open URL" = "URL öffnen";
 
+/* sharing error */
+"Operation was cancelled" = "Operation was cancelled";
+
 /* vcard field label */
 "Organization" = "Organisation";
 
@@ -737,6 +743,9 @@
 
 /* action label */
 "Private message" = "Private Nachricht";
+
+/* xmpp error condition modify type recovery suggestion */
+"Provided data were not accepted. Please check provided values." = "Provided data were not accepted. Please check provided values.";
 
 /* account registration error */
 "Provided values are not acceptable" = "Eingegebene Werte sind nicht zulässig";
@@ -843,6 +852,15 @@
 /* context action label */
 "Retract" = "Zurückziehen";
 
+/* retraction label for conversations list */
+"Retracted" = "Retracted";
+
+/* message retraction failed alert title */
+"Retraction failed!" = "Retraction failed!";
+
+/* xmpp error condition auth type recovery suggestion */
+"Retry after providing credentials" = "Retry after providing credentials";
+
 /* call state label */
 "Ringing…" = "Anrufen…";
 
@@ -926,6 +944,9 @@
    alert body */
 "Server returned an error: %@" = "Server meldet einen Fehler: %@";
 
+/* xmpp error description with message and codes */
+"Server returned an error: %@ (%@)" = "Server returned an error: %1$@ (%2$@)";
+
 /* account registration error */
 "Service is not available at this time." = "Service ist zur Zeit nicht verfügbar.";
 
@@ -949,6 +970,9 @@
 
 /* alert body */
 "Sharing feature with HTTP upload is disabled within application. To use this feature you need to enable sharing with HTTP upload in application" = "Die Funktion zum Teilen mit HTTP-Upload ist in der App deaktiviert. Um diese Funktion zu nutzen, musst du die Freigabe mit HTTP-Upload in der App aktivieren";
+
+/* error title for sharing location error */
+"Sharing localtion failed!" = "Sharing localtion failed!";
 
 /* alert body */
 "Should account be removed from server as well?" = "Soll das Konto auch auf dem Server gelöscht werden?";
@@ -1002,6 +1026,9 @@
 
 /* section label */
 "Trusted servers" = "Vertrauenswürdige Server";
+
+/* xmpp error condition wait type recovery suggestion */
+"Try again later." = "Try again later.";
 
 /* error recovery suggestion */
 "Try again. If removal failed, try accessing Keychain to update account credentials manually." = "Versuche es erneut. Wenn die Entfernung fehlgeschlagen ist, dann versuche, auf den Schlüsselbund zuzugreifen, um die Kontozugangsdaten manuell zu aktualisieren.";
@@ -1094,6 +1121,9 @@
 
 /* button label */
 "Yes" = "Ja";
+
+/* you label for conversation log */
+"You" = "You";
 
 /* alert body */
 "You are about to destroy channel %@. This will remove the channel on the server, remove remote history archive, and kick out all participants. Are you sure?" = "Du bist im Begriff, den Channel %@ zu löschen. Dadurch wird der Channel auf dem Server gelöscht, das Verlaufsarchiv gelöscht und alle Teilnehmer rausgeworfen. Bist du dir sicher?";

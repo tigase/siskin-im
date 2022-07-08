@@ -40,24 +40,24 @@ class ChannelParticipantsController: UITableViewController {
         }).store(in: &cancellables);
         if channel.permissions?.contains(.changeConfig) ?? false, let mixModule = channel.context?.module(.mix) {
             self.operationStarted(message: NSLocalizedString("Refreshing…", comment: "channel participants view operation"));
-            mixModule.checkAccessPolicy(of: channel.channelJid, completionHandler: { [weak self] result in
-                DispatchQueue.main.async {
-                    switch result {
-                    case .success(let invitiationOnly):
-                        if let that = self {
-                            that.invitationOnly = invitiationOnly;
-                            if invitiationOnly {
-                                that.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: that, action: #selector(that.inviteToChannel(_:)));
-                            } else {
-                                that.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "folder"), style: .plain, target: that, action: #selector(that.manageBlocked(_:)));
-                            }
-                        }
-                    case .failure(_):
-                        break;
+            Task {
+                defer {
+                    DispatchQueue.main.async { [weak self] in
+                        self?.operationEnded();
                     }
-                    self?.operationEnded();
                 }
-            });
+                let invitationOnly = try await mixModule.checkAccessPolicy(of: channel.channelJid);
+                DispatchQueue.main.async { [weak self] in
+                    guard let that = self else {
+                        return;
+                    }
+                    if invitationOnly {
+                        that.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: that, action: #selector(that.inviteToChannel(_:)));
+                    } else {
+                        that.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "folder"), style: .plain, target: that, action: #selector(that.manageBlocked(_:)));
+                    }
+                }
+            }
         }
     }
         
@@ -101,18 +101,17 @@ class ChannelParticipantsController: UITableViewController {
                 
                 self.operationStarted(message: NSLocalizedString("Blocking…", comment: "channel participants view operation"));
                 let channelJid = self.channel.channelJid;
-                if self.invitationOnly {
-                    mixModule.allowAccess(to: channelJid, for: jid, value: false, completionHandler: { [weak self] result in
-                        DispatchQueue.main.async {
+                Task {
+                    defer {
+                        DispatchQueue.main.async { [weak self] in
                             self?.operationEnded();
                         }
-                    });
-                } else {
-                    mixModule.denyAccess(to: channelJid, for: jid, value: true, completionHandler: { [weak self] result in
-                        DispatchQueue.main.async {
-                            self?.operationEnded();
-                        }
-                    });
+                    }
+                    if self.invitationOnly {
+                        _ = try await mixModule.allowAccess(to: channelJid, for: jid, value: false);
+                    } else {
+                        _ = try await mixModule.denyAccess(to: channelJid, for: jid, value: true);
+                    }
                 }
             });
             return UIMenu(title: "", children: [block]);

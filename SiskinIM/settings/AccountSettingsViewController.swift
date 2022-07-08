@@ -171,20 +171,20 @@ class AccountSettingsViewController: UITableViewController {
         archivingEnabledSwitch.isEnabled = false;
         
         if let mamModule = client?.module(.mam), mamModule.isAvailable {
-            mamModule.retrieveSettings(completionHandler: { result in
-                switch result {
-                case .success(let settings):
+            Task {
+                do {
+                    let settings = try await mamModule.settings();
                     DispatchQueue.main.async {
                         self.archivingEnabledSwitch.isEnabled = true;
                         self.archivingEnabledSwitch.isOn = settings.defaultValue == .always;
                     }
-                case .failure(_):
+                } catch {
                     DispatchQueue.main.async {
                         self.archivingEnabledSwitch.isOn = false;
                         self.archivingEnabledSwitch.isEnabled = false;
                     }
                 }
-            })
+            }
         }
     }
             
@@ -275,29 +275,27 @@ class AccountSettingsViewController: UITableViewController {
     @IBAction func archivingSwitchChangedValue(_ sender: Any) {
         if let mamModule = XmppService.instance.getClient(for: account)?.module(.mam){
             let defValue = archivingEnabledSwitch.isOn ? MessageArchiveManagementModule.DefaultValue.always : MessageArchiveManagementModule.DefaultValue.never;
-            mamModule.retrieveSettings(completionHandler: { result in
-                switch result {
-                case .success(let oldSettings):
-                    var newSettings = oldSettings;
-                    newSettings.defaultValue = defValue;
-                    mamModule.updateSettings(settings: newSettings, completionHandler: { result in
-                        switch result {
-                        case .success(let newSettings):
-                            DispatchQueue.main.async {
-                                self.archivingEnabledSwitch.isOn = newSettings.defaultValue == .always;
-                            }
-                        case .failure(_):
-                            DispatchQueue.main.async {
-                                self.archivingEnabledSwitch.isOn = oldSettings.defaultValue == .always;
-                            }
+            Task {
+                do {
+                    let oldSettings = try await mamModule.settings();
+                    do {
+                        var settings = oldSettings;
+                        settings.defaultValue = defValue;
+                        let newSettings = try await mamModule.settings(settings);
+                        DispatchQueue.main.async {
+                            self.archivingEnabledSwitch.isOn = newSettings.defaultValue == .always;
                         }
-                    });
-                case .failure(_):
+                    } catch {
+                        DispatchQueue.main.async {
+                            self.archivingEnabledSwitch.isOn = oldSettings.defaultValue == .always;
+                        }
+                    }
+                } catch {
                     DispatchQueue.main.async {
                         self.archivingEnabledSwitch.isOn = !self.archivingEnabledSwitch.isOn;
                     }
                 }
-            });
+            }
         }
     }
         

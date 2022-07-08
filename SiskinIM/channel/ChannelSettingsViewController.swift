@@ -63,29 +63,34 @@ class ChannelSettingsViewController: UITableViewController {
         operationStarted(message: NSLocalizedString("Checking…", comment: "channel settings view opeartion label"));
         
         let channel = self.channel!;
-        let dispatchGroup = DispatchGroup();
-        if channel.permissions == nil {
-            dispatchGroup.enter();
-            mixModule.retrieveAffiliations(for: channel, completionHandler: { [weak self] result in
-                DispatchQueue.main.async {
-                    self?.refreshPermissions();
+        Task {
+            defer {
+                DispatchQueue.main.async { [weak self] in
+                    self?.operationEnded();
                 }
-                dispatchGroup.leave();
-            })
-        }
-        dispatchGroup.enter();
-        mixModule.retrieveAvatar(for: channel.channelJid, completionHandler: { result in
-            switch result {
-            case .success(let avatarInfo):
-                if !AvatarManager.instance.hasAvatar(withHash: avatarInfo.id) {
-                    AvatarManager.instance.retrievePepUserAvatar(for: channel.channelJid, on: channel.account, hash: avatarInfo.id);
-                }
-            case .failure(_):
-                break;
             }
-            dispatchGroup.leave();
-        })
-        dispatchGroup.notify(queue: DispatchQueue.main, execute: self.operationEnded);
+            _ = await withTaskGroup(of: Void.self, returning: Void.self, body: { group in
+                group.addTask {
+                    do {
+                        _ = try await mixModule.affiliations(for: channel);
+                        DispatchQueue.main.async { [weak self] in
+                            self?.refreshPermissions();
+                        }
+                    } catch {}
+                }
+                group.addTask {
+                    do {
+                        let avatarInfo = try await mixModule.avatar(for: channel.channelJid)
+                        if !AvatarManager.instance.hasAvatar(withHash: avatarInfo.id) {
+                            AvatarManager.instance.retrievePepUserAvatar(for: channel.channelJid, on: channel.account, hash: avatarInfo.id);
+                        }
+                    } catch {}
+                }
+                for await _ in group {}
+                return Void();
+            })
+            
+        }
     }
     
     func refreshPermissions() {
@@ -145,22 +150,28 @@ class ChannelSettingsViewController: UITableViewController {
                 guard let mixModule = channel.context?.module(.mix) else {
                     return;
                 }
-                // -- handle this properly!!
-                mixModule.destroy(channel: channel.channelJid, completionHandler: { [weak self] result in
-                    DispatchQueue.main.async {
-                        switch result {
-                        case .success(_):
+                Task {
+                    do {
+                        try await mixModule.destroy(channel: channel.channelJid);
+                        DispatchQueue.main.async { [weak self] in
                             self?.dismiss(animated: true, completion: nil);
-                        case .failure(let error):
-                            guard let that = self else {
-                                return;
+                        }
+                    } catch {
+                        let err = error as? XMPPError ?? .undefined_condition;
+                        DispatchQueue.main.async { [weak self] in
+                            if err.condition == .item_not_found {
+                                self?.dismiss(animated: true, completion: nil);
+                            } else {
+                                guard let that = self else {
+                                    return;
+                                }
+                                let alert = UIAlertController(title: NSLocalizedString("Channel destruction failed!", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert body"), channel.name ?? channel.channelJid.description, error.localizedDescription), preferredStyle: .alert);
+                                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
+                                that.present(alert, animated: true, completion: nil);
                             }
-                            let alert = UIAlertController(title: NSLocalizedString("Channel destruction failed!", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert body"), channel.name ?? channel.channelJid.description, error.localizedDescription), preferredStyle: .alert);
-                            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
-                            that.present(alert, animated: true, completion: nil);
                         }
                     }
-                });
+                }
             }));
             alertController.addAction(UIAlertAction(title: NSLocalizedString("No", comment: "button label"), style: .cancel, handler: nil));
             alertController.popoverPresentationController?.sourceView = self.tableView;

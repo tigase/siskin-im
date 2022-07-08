@@ -37,7 +37,9 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
     
     public var permissionsPublisher: AnyPublisher<Set<ChannelPermission>,Never> {
         if permissions == nil {
-            context?.module(.mix).retrieveAffiliations(for: self, completionHandler: nil);
+            Task {
+                try await context?.module(.mix).affiliations(for: self);
+            }
         }
         return $permissions.compactMap({ $0 }).eraseToAnyPublisher();
     }

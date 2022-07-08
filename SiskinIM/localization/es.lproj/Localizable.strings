@@ -200,6 +200,9 @@
 /* sharing error */
 "Could not retrieve file size." = "No se pudo recuperar el tamaño de fichero.";
 
+/* omemo muc error - no members */
+"Could not send encrypted message due to missing list of room members." = "Could not send encrypted message due to missing list of room members.";
+
 /* alert body */
 "Could not set group chat avatar. The server responded with an error: %@" = "No se pudo establecer el avatar del grupo. El servidor respondió con un error: %@";
 
@@ -682,6 +685,9 @@
 /* alert title */
 "Open URL" = "Abrir URL";
 
+/* sharing error */
+"Operation was cancelled" = "Operation was cancelled";
+
 /* vcard field label */
 "Organization" = "Organización";
 
@@ -737,6 +743,9 @@
 
 /* action label */
 "Private message" = "Mensaje privado";
+
+/* xmpp error condition modify type recovery suggestion */
+"Provided data were not accepted. Please check provided values." = "Provided data were not accepted. Please check provided values.";
 
 /* account registration error */
 "Provided values are not acceptable" = "Los valores proporcionados no son aceptables";
@@ -843,6 +852,15 @@
 /* context action label */
 "Retract" = "Retirar";
 
+/* retraction label for conversations list */
+"Retracted" = "Retracted";
+
+/* message retraction failed alert title */
+"Retraction failed!" = "Retraction failed!";
+
+/* xmpp error condition auth type recovery suggestion */
+"Retry after providing credentials" = "Retry after providing credentials";
+
 /* call state label */
 "Ringing…" = "Zumbido…";
 
@@ -926,6 +944,9 @@
    alert body */
 "Server returned an error: %@" = "El servidor devolvió un error: %@";
 
+/* xmpp error description with message and codes */
+"Server returned an error: %@ (%@)" = "Server returned an error: %1$@ (%2$@)";
+
 /* account registration error */
 "Service is not available at this time." = "El servicio no está disponible en este momento.";
 
@@ -949,6 +970,9 @@
 
 /* alert body */
 "Sharing feature with HTTP upload is disabled within application. To use this feature you need to enable sharing with HTTP upload in application" = "La característica de compartir por carga HTTP está deshabilitada en la aplicación. Para usarla necesitas habilitar la compartición con carga HTPP en la aplicación";
+
+/* error title for sharing location error */
+"Sharing localtion failed!" = "Sharing localtion failed!";
 
 /* alert body */
 "Should account be removed from server as well?" = "¿Se debería eliminar también la cuenta del servidor?";
@@ -1002,6 +1026,9 @@
 
 /* section label */
 "Trusted servers" = "Servidores de confianza";
+
+/* xmpp error condition wait type recovery suggestion */
+"Try again later." = "Try again later.";
 
 /* error recovery suggestion */
 "Try again. If removal failed, try accessing Keychain to update account credentials manually." = "Intentar otra vez. Si la eliminación falla, intenta acceder a Keychain para actualizar las credenciales de la cuenta manualmente.";
@@ -1094,6 +1121,9 @@
 
 /* button label */
 "Yes" = "Sí";
+
+/* you label for conversation log */
+"You" = "You";
 
 /* alert body */
 "You are about to destroy channel %@. This will remove the channel on the server, remove remote history archive, and kick out all participants. Are you sure?" = "Estás a punto de destruir el canal %@. Esto eliminará el canal en el servidor, eliminará el archivo de historial remoto y expulsará a todos los participantes. ¿Estás seguro?";

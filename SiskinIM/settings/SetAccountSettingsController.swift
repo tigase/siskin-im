@@ -136,46 +136,29 @@ class SetAccountSettingsController: UITableViewController {
     @IBAction func doneClicked(_ sender: Any) {
         if let client = self.client {
             setInProgress(value: true);
-            let group = DispatchGroup();
             let since = Date().addingTimeInterval(-1 * initialSyncMAM.timeInterval);
             DBChatHistorySyncStore.instance.addSyncPeriod(.init(account: client.userBareJid, from: since, after: nil, to: nil));
-            MessageEventHandler.syncMessagePeriods(for: client);
             
-            group.enter();
-            var errors: [XMPPError] = [];
-            client.module(.mam).retrieveSettings(completionHandler: { result in
-                switch result {
-                case .success(let settings):
-                    var tmp = settings;
-                    tmp.defaultValue = self.enableMAM ? .always : .never;
-                    client.module(.mam).updateSettings(settings: tmp, completionHandler: { result in
-                        switch result {
-                        case .success(_):
-                            break;
-                        case .failure(let error):
-                            errors.append(error);
-                        }
-                        group.leave();
-                    })
-                case .failure(let error):
-                    errors.append(error);
-                    group.leave();
+            Task {
+                do {
+                    var settigs = try await client.module(.mam).settings();
+                    settigs.defaultValue = self.enableMAM ? .always : .never;
+                    _ = try await client.module(.mam).settings(settigs);
+                    Task {
+                        try await MessageEventHandler.syncMessagePeriods(for: client);
+                    }
+                } catch {
+                    // TODO: Should we notify about this error somehow?
+                    DispatchQueue.main.async {
+                        self.setInProgress(value: false);
+                        self.completionHandler?();
+                        NewFeaturesDetector.instance.showNext(fromController: true);
+                    }
                 }
-            })
-            group.notify(queue: DispatchQueue.main, execute: {
-//                guard errors.isEmpty else {
-//                    return;
-//                }
-                self.setInProgress(value: false);
-                self.completionHandler?();
-                NewFeaturesDetector.instance.showNext(fromController: true);
-            })
+            }
         } else {
             completionHandler?();
             NewFeaturesDetector.instance.showNext(fromController: true);
-//            self.navigationController?.dismiss(animated: true, completion: nil);
-//            (UIApplication.shared.delegate as? AppDelegate)?.showSetup(value: false);
-//            self.completionHandler?();
         }
     }
     

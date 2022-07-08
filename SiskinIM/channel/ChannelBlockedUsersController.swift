@@ -34,17 +34,17 @@ class ChannelBlockedUsersController: UITableViewController {
     override func viewWillAppear(_ animated: Bool) {
         if let mixModule = channel.context?.module(.mix) {
             self.operationStarted(message: NSLocalizedString("Refreshing…", comment: "channel block users view operation"));
-            mixModule.retrieveBanned(for: channel.channelJid, completionHandler: { [weak self] result in
-                DispatchQueue.main.async {
-                    self?.operationEnded();
-                    switch result {
-                    case .success(let blocked):
-                        self?.jids = blocked.sorted();
-                    case .failure(_):
-                        break;
+            Task {
+                defer {
+                    DispatchQueue.main.async { [weak self] in
+                        self?.operationEnded();
                     }
                 }
-            })
+                let blocked = try await mixModule.banned(for: channel.channelJid).sorted();
+                DispatchQueue.main.async { [weak self] in
+                    self?.jids = blocked;
+                }
+            }
         }
     }
     
@@ -69,17 +69,17 @@ class ChannelBlockedUsersController: UITableViewController {
             let unblock = UIAction(title: NSLocalizedString("Unblock", comment: "action"), image: UIImage(systemName: "trash"), handler: { action in
                 if let mixModule = self.channel.context?.module(.mix) {
                     self.operationStarted(message: NSLocalizedString("Updating…", comment: "channel block users view operation"));
-                    mixModule.denyAccess(to: self.channel.channelJid, for: jid, value: false, completionHandler: { [weak self] result in
-                        DispatchQueue.main.async {
-                            switch result {
-                            case .success(_):
-                                self?.jids = self?.jids.filter { $0 != jid } ?? [];
-                            case .failure(_):
-                                break;
+                    Task {
+                        defer {
+                            DispatchQueue.main.async { [weak self] in
+                                self?.operationEnded()
                             }
-                            self?.operationEnded();
                         }
-                    })
+                        try await mixModule.denyAccess(to: self.channel.channelJid, for: jid, value: false);
+                        DispatchQueue.main.async { [weak self] in
+                            self?.jids = self?.jids.filter { $0 != jid } ?? [];
+                        }
+                    }
                 }
             });
             return UIMenu(title: "", children: [unblock]);
