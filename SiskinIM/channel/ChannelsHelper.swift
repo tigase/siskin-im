@@ -24,112 +24,58 @@ import TigaseSwift
 
 class ChannelsHelper {
     
-    static func findChannels(for client: XMPPClient, at components: [Component], completionHandler: @escaping ([DiscoveryModule.Item])->Void) {
-        var allItems: [DiscoveryModule.Item] = [];
-        let group = DispatchGroup();
-        for component in components {
-            group.enter();
-            client.module(.disco).items(for: component.jid, completionHandler: { result in
-                 switch result {
-                 case .success(let items):
-                     DispatchQueue.main.async {
-                        allItems.append(contentsOf: items.items);
-                     }
-                 case .failure(_):
-                     break;
-                 }
-                 group.leave();
-             });
-        }
-        group.notify(queue: DispatchQueue.main, execute: {
-            completionHandler(allItems);
+    static func findChannels(for client: XMPPClient, at components: [Component]) async -> [DiscoveryModule.Item] {
+        return await withTaskGroup(of: [DiscoveryModule.Item]?.self, body: { group in
+            for component in components {
+                group.addTask(operation: {
+                    try? await client.module(.disco).items(for: component.jid).items
+                })
+            }
+            return await group.reduce(into: [DiscoveryModule.Item](), { $0.append(contentsOf: $1 ?? [])})
         })
     }
     
-    static func findComponents(for client: XMPPClient, at domain: String, completionHandler: @escaping ([Component])->Void) {
+    static func findComponents(for client: XMPPClient, at domain: String) async throws -> [Component] {
         let domainJid = JID(domain);
-        var components: [Component] = [];
-        let group = DispatchGroup();
-        group.enter();
         let discoModule = client.module(.disco);
-        retrieveComponent(from: domainJid, name: nil, discoModule: discoModule, completionHandler: { result in
-            switch result {
-            case .success(let component):
-                DispatchQueue.main.async {
-                    components.append(component);
+        do {
+            return [try await retrieveComponent(from: domainJid, name: nil, discoModule: discoModule)];
+        } catch {
+            let items = try await discoModule.items(for: domainJid);
+            return await withTaskGroup(of: Component?.self, body: { group in
+                for item in items.items {
+                    group.addTask(operation: {
+                        try? await retrieveComponent(from: item.jid, name: item.name, discoModule: discoModule);
+                    })
                 }
-                group.leave();
-            case .failure(_):
-                discoModule.items(for: domainJid, completionHandler: { result in
-                    switch result {
-                    case .success(let items):
-                        // we need to do disco on all components to find out local mix/muc component..
-                        // maybe this should be done once for all "views"?
-                        for item in items.items {
-                            group.enter();
-                            self.retrieveComponent(from: item.jid, name: item.name, discoModule: discoModule, completionHandler: { result in
-                                switch result {
-                                case .success(let component):
-                                    DispatchQueue.main.async {
-                                        components.append(component);
-                                    }
-                                case .failure(_):
-                                    break;
-                                }
-                                group.leave();
-                            });
-                        }
-                    case .failure(_):
-                        break;
-                    }
-                    group.leave();
-                });
-            }
-        })
-        
-        group.notify(queue: DispatchQueue.main, execute: {
-            completionHandler(components);
-        })
-    }
-    
-    static func queryChannel(for client: XMPPClient, at components: [Component], name: String, completionHandler: @escaping (Result<[DiscoveryModule.Item],XMPPError>)->Void) {
-        var allItems: [DiscoveryModule.Item] = [];
-        let group = DispatchGroup();
-        let discoModule = client.module(.disco);
-        for component in components {
-            group.enter();
-            let channelJid = JID(BareJID(localPart: name, domain: component.jid.domain));
-            discoModule.info(for: channelJid, node: nil, completionHandler: { result in
-                 switch result {
-                 case .success(let info):
-                     DispatchQueue.main.async {
-                        allItems.append(DiscoveryModule.Item(jid: channelJid, name: info.identities.first?.name));
-                     }
-                 case .failure(_):
-                     break;
-                 }
-                 group.leave();
-             });
+                return await group.reduce(into: [Component](), { if let component = $1 { $0.append(component) } });
+            })
         }
-        group.notify(queue: DispatchQueue.main, execute: {
-            completionHandler(.success(allItems));
+    }
+    
+    static func queryChannel(for client: XMPPClient, at components: [Component], name: String) async -> [DiscoveryModule.Item] {
+        let discoModule = client.module(.disco);
+        return await withTaskGroup(of: DiscoveryModule.Item?.self, body: { group in
+            for component in components {
+                group.addTask(operation: {
+                    let channelJid = JID(BareJID(localPart: name, domain: component.jid.domain));
+                    if let info = try? await discoModule.info(for: channelJid, node: nil) {
+                        return DiscoveryModule.Item(jid: channelJid, name: info.identities.first?.name)
+                    } else {
+                        return nil;
+                    }
+                })
+            }
+            return await group.reduce(into: [DiscoveryModule.Item](), { if let item = $1 { $0.append(item) } })
         })
     }
     
-    static func retrieveComponent(from jid: JID, name: String?, discoModule: DiscoveryModule, completionHandler: @escaping (Result<Component,XMPPError>)->Void) {
-        discoModule.info(for: jid, completionHandler: { result in
-            switch result {
-            case .success(let info):
-                guard let component = Component(jid: jid, name: name, identities: info.identities, features: info.features) else {
-                    completionHandler(.failure(XMPPError(condition: .item_not_found)));
-                    return;
-                }
-                completionHandler(.success(component));
-            case .failure(let errorCondition):
-                completionHandler(.failure(errorCondition));
-            }
-        })
-
+    static func retrieveComponent(from jid: JID, name: String?, discoModule: DiscoveryModule) async throws -> Component {
+        let info = try await discoModule.info(for: jid);
+        guard let component = Component(jid: jid, name: name, identities: info.identities, features: info.features) else {
+            throw XMPPError(condition: .item_not_found);
+        }
+        return component;
     }
     
     enum ComponentType {

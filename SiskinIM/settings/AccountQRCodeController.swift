@@ -32,7 +32,8 @@ class AccountQRCodeController: UIViewController {
         super.viewWillAppear(animated);
         
         if let account = self.account {
-            DBVCardStore.instance.vcard(for: account, completionHandler: { vcard in
+            Task {
+                let vcard = await DBVCardStore.instance.vcard(for: account);
                 var dict: [String: String]? = nil;
                 if let fn = vcard?.fn {
                     dict = ["name": fn];
@@ -49,7 +50,6 @@ class AccountQRCodeController: UIViewController {
                         dict = ["name": nick];
                     }
                 }
-            
                 DispatchQueue.main.async {
                     if let url = AppDelegate.XmppUri(jid: JID(account), action: nil, dict: dict).toURL()?.absoluteString, let qrCode = QRCode(string: url, scale: 10, foregroundColor: UIColor(named: "qrCodeForeground")!, backgroundColor: UIColor(named: "qrCodeBackground")!) {
                         if let img = UIImage(named: "tigaseLogo") {
@@ -66,7 +66,7 @@ class AccountQRCodeController: UIViewController {
                         }
                     }
                 }
-            });
+            }
         }
     }
     

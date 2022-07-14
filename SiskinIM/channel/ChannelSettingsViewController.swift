@@ -129,18 +129,16 @@ class ChannelSettingsViewController: UITableViewController {
             controller.sink(receiveValue: { [weak self] value in
                 self?.channel.updateOptions({ options in
                     options.notifications = value;
-                }, completionHandler: {
-                    if let account = self?.channel.account, let pushModule = self?.channel.context?.module(.push) as? SiskinPushNotificationsModule, let pushSettings = pushModule.pushSettings {
-                        pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
-                            switch result {
-                            case .success(_):
-                                break;
-                            case .failure(_):
-                                AccountSettings.pushHash(for: account, value: 0);
-                            }
-                        });
-                    }
                 })
+                if let account = self?.channel.account, let pushModule = self?.channel.context?.module(.push) as? SiskinPushNotificationsModule, let pushSettings = pushModule.pushSettings {
+                    Task {
+                        do {
+                            try await pushModule.reenable(pushSettings: pushSettings);
+                        } catch {
+                            AccountSettings.pushHash(for: account, value: 0);
+                        }
+                    }
+                }
             });
             self.navigationController?.pushViewController(controller, animated: true);
         }

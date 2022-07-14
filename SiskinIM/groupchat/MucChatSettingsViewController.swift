@@ -85,11 +85,15 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         if let pepBookmarksModule = room.context?.module(.pepBookmarks), let room = self.room, room.context?.isConnected ?? false {
             if let bookmark = bookmarks.conference(for: JID(room.jid)) {
                 actions.append(UIAction(title: NSLocalizedString("Remove bookmark", comment: "button label"), image: UIImage(systemName: "bookmark.slash"), handler: { action in
-                    pepBookmarksModule.remove(bookmark: bookmark, completionHandler: { _ in });
+                    Task {
+                        try await pepBookmarksModule.remove(bookmark: bookmark);
+                    }
                 }));
             } else {
                 actions.append(UIAction(title: NSLocalizedString("Create bookmark", comment: "button label"), image: UIImage(systemName: "bookmark"), handler: { action in
-                    pepBookmarksModule.addOrUpdate(bookmark: Bookmarks.Conference(name: room.name ?? room.jid.localPart ?? room.jid.description, jid: JID(room.jid), autojoin: false, nick: room.nickname, password: room.password), completionHandler: { _ in });
+                    Task {
+                        try await pepBookmarksModule.addOrUpdate(bookmark: Bookmarks.Conference(name: room.name ?? room.jid.localPart ?? room.jid.description, jid: JID(room.jid), autojoin: false, nick: room.nickname, password: room.password));
+                    }
                 }));
             }
         }
@@ -137,67 +141,54 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         }
         showIndicator();
         
-        let dispatchGroup = DispatchGroup();
-        dispatchGroup.enter();
-        context.module(.disco).info(for: JID(room.jid), completionHandler: { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let info):
-                    self.pushNotificationsSwitch.isEnabled = (context.module(.push) as! SiskinPushNotificationsModule).isEnabled && info.features.contains("jabber:iq:register");
-                    if self.pushNotificationsSwitch.isEnabled {
-                        self.room.checkTigasePushNotificationRegistrationStatus(completionHandler: { (result) in
-                            switch result {
-                            case .failure(_):
-                                DispatchQueue.main.async {
-                                    self.pushNotificationsSwitch.isEnabled = false;
-                                    dispatchGroup.leave();
-                                }
-                            case .success(let value):
-                                DispatchQueue.main.async {
-                                    self.pushNotificationsSwitch.isOn = value;
-                                    dispatchGroup.leave();
-                                }
-                            }
-                        })
-                    } else {
-                        dispatchGroup.leave();
+        let room = self.room!;
+        Task {
+            _ = await withTaskGroup(of: Void.self, returning: Void.self, body: { group in
+                group.addTask {
+                    do {
+                        let info = try await context.module(.disco).info(for: room.jid.jid());
+                        let hasPush = (context.module(.push) as! SiskinPushNotificationsModule).isEnabled && info.features.contains("jabber:iq:register");
+                        let pushEnabled = try await room.checkTigasePushNotificationRegistrationStatus();
+                        DispatchQueue.main.async {
+                            self.pushNotificationsSwitch.isEnabled = hasPush;
+                            self.pushNotificationsSwitch.isOn = pushEnabled;
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            self.pushNotificationsSwitch.isEnabled = false;
+                        }
                     }
-                case .failure(_):
-                    self.pushNotificationsSwitch.isEnabled = false;
-                    dispatchGroup.leave();
                 }
+                group.addTask {
+                    do {
+                        let vcard = try await context.module(.vcardTemp).retrieveVCard(from: room.jid.jid());
+                        DBVCardStore.instance.updateVCard(for: room.roomJid, on: room.account, vcard: vcard);
+                        DispatchQueue.main.async {
+                            self.canEditVCard = true;
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            self.canEditVCard = false;
+                        }
+                    }
+                }
+                for await _ in group {
+                }
+            })
+            DispatchQueue.main.async {
+                self.hideIndicator();
             }
-        });
-        dispatchGroup.enter();
-        context.module(.vcardTemp).retrieveVCard(from: JID(room.jid), completionHandler: { (result) in
-            switch result {
-            case .success(let vcard):
-                DBVCardStore.instance.updateVCard(for: self.room.roomJid, on: self.room.account, vcard: vcard);
-                DispatchQueue.main.async {
-                    self.canEditVCard = true;
-                    dispatchGroup.leave();
-                }
-            case .failure(_):
-                DispatchQueue.main.async {
-                    self.canEditVCard = false;
-                    dispatchGroup.leave();
-                }
-            }
-        })
-        
-        dispatchGroup.notify(queue: DispatchQueue.main, execute: self.hideIndicator);
+        }
     }
     
     @IBAction func pushNotificationSwitchChanged(_ sender: UISwitch) {
-        self.room.registerForTigasePushNotification(sender.isOn) { (result) in
-            switch result {
-            case .failure(_):
+        Task {
+            do {
+                try await self.room.registerForTigasePushNotification(sender.isOn);
+            } catch {
                 DispatchQueue.main.async {
                     sender.isOn = !sender.isOn;
                 }
-            case .success(_):
-                // nothing to do..
-                break;
             }
         }
     }
@@ -237,20 +228,18 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
                     guard let room = self?.room else {
                         return;
                     }
-                    room.updateOptions({ (options) in
+                    room.updateOptions({ options in
                         options.notifications = value;
-                    }, completionHandler: {
-                        if let pushModule = (room.context?.module(.push) as? SiskinPushNotificationsModule), let pushSettings = pushModule.pushSettings {
-                            pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
-                                switch result {
-                                case .success(_):
-                                    break;
-                                case .failure(_):
-                                    AccountSettings.pushHash(for: room.account, value: 0);
-                                }
-                            });
+                    })
+                    if let pushModule = (room.context?.module(.push) as? SiskinPushNotificationsModule), let pushSettings = pushModule.pushSettings {
+                        Task {
+                            do {
+                                try await pushModule.reenable(pushSettings: pushSettings);
+                            } catch {
+                                AccountSettings.pushHash(for: room.account, value: 0);
+                            }
                         }
-                    });
+                    }
                 });
                 self.navigationController?.pushViewController(controller, animated: true);
             }
@@ -259,7 +248,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
                 controller.sink(receiveValue: { value in
                     self.room.updateOptions({ (options) in
                         options.encryption = value;
-                    }, completionHandler: nil);
+                    });
                 });
                 self.navigationController?.pushViewController(controller, animated: true);
             }

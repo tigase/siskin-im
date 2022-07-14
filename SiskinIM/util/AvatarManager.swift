@@ -223,7 +223,9 @@ class AvatarManager {
         } else {
             switch type {
             case .vcardTemp:
-                VCardManager.instance.refreshVCard(for: jid, on: account, completionHandler: nil);
+                Task {
+                    try await VCardManager.instance.refreshVCard(for: jid, on: account);
+                }
             case .pepUserAvatar:
                 self.retrievePepUserAvatar(for: jid, on: account, hash: hash);
             }

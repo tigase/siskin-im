@@ -40,7 +40,7 @@ extension DBChatStore: ChannelStore {
                 let timestamp = Date();
                 let options = ChannelOptions(participantId: participantId, nick: nick, state: state);
                 let id = try! self.openConversation(account: context.userBareJid, jid: jid, type: .channel, timestamp: timestamp, options: nil);
-                let channel = Channel(queue: self.conversationQueue, context: context, channelJid: jid, id: id, lastActivity: lastActivity(for: account, jid: jid, conversationType: .channel) ?? .none(timestamp: timestamp), unread: 0, options: options, creationTimestamp: timestamp);
+                let channel = Channel(context: context, channelJid: jid, id: id, lastActivity: lastActivity(for: account, jid: jid, conversationType: .channel) ?? .none(timestamp: timestamp), unread: 0, options: options, creationTimestamp: timestamp);
                 if self.accountsConversations.add(channel) {
                     self.conversationsEventsPublisher.send(.created(channel));
                     return .created(channel);

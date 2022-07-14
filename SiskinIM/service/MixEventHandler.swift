@@ -55,12 +55,12 @@ class MixEventHandler: XmppServiceExtension {
             }
             
             let jid = participant.jid ?? BareJID(localPart: participant.id + "#" + channel.jid.localPart!, domain: channel.jid.domain);
-            DBVCardStore.instance.vcard(for: jid, completionHandler: { vcard in
-                guard vcard == nil else {
-                    return;
+            Task {
+                guard await DBVCardStore.instance.vcard(for: jid) == nil else {
+                    return
                 }
-                VCardManager.instance.refreshVCard(for: jid, on: channel.account, completionHandler: nil);
-            })
+                _ = try await VCardManager.instance.refreshVCard(for: jid, on: channel.account);
+            }
         }).store(in: &cancellables);
         client.module(.mix).messagesPublisher.sink(receiveValue: { e in
             DBChatHistoryStore.instance.append(for: e.channel as! Channel, message: e.message, source: .stream);

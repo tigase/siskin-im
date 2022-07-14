@@ -28,52 +28,49 @@ open class PushEventHandler: XmppServiceExtension {
     
     static let instance = PushEventHandler();
     
-    public static func unregisterDevice(from pushServiceJid: BareJID, account: BareJID, deviceId: String, completionHandler: @escaping (Result<Void,XMPPError>)->Void) {
-        unregisterDevice(from: pushServiceJid, path: "", account: account, deviceId: deviceId, completionHandler: { result in
-            switch result {
-            case .success(_):
-                completionHandler(.success(Void()));
-            case .failure(let error):
-                switch error.condition {
-                case .internal_server_error, .service_unavailable:
-                    self.unregisterDevice(from: pushServiceJid, path: "/rest/push", account: account, deviceId: deviceId, completionHandler: completionHandler);
-                default:
-                    completionHandler(.failure(error));
-                }
+    public static func unregisterDevice(from pushServiceJid: BareJID, account: BareJID, deviceId: String) async throws {
+        do {
+            try await unregisterDevice(from: pushServiceJid, path: "", account: account, deviceId: deviceId);
+        } catch let error as XMPPError {
+            switch error.condition {
+            case .internal_server_error, .service_unavailable:
+                try await unregisterDevice(from: pushServiceJid, path: "/rest/push", account: account, deviceId: deviceId);
+            default:
+                throw error;
             }
-        })
+        }
     }
     
-    private static func unregisterDevice(from pushServiceJid: BareJID, path: String, account: BareJID, deviceId: String, completionHandler: @escaping (Result<Void,XMPPError>)->Void) {
+    private static func unregisterDevice(from pushServiceJid: BareJID, path: String, account: BareJID, deviceId: String) async throws {
         guard let url = URL(string: "https://\(pushServiceJid.description)\(path)/unregister-device/\(pushServiceJid.description)") else {
-            completionHandler(.failure(XMPPError(condition: .service_unavailable)));
-            return;
+            throw XMPPError(condition: .service_unavailable);
         }
         var request = URLRequest(url: url);
         request.httpMethod = "POST";
         guard let payload = try? JSONEncoder().encode(UnregisterDeviceRequestPayload(account: account, provider: "tigase:messenger:apns:1", deviceToken: deviceId)) else {
-            completionHandler(.failure(XMPPError(condition: .internal_server_error)));
-            return;
+            throw XMPPError(condition: .internal_server_error);
         }
         request.addValue("application/json", forHTTPHeaderField: "Content-Type");
         request.httpBody = payload;
         
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard error == nil else {
-                completionHandler(.failure(XMPPError(condition: .service_unavailable)));
-                return;
+        return try await withUnsafeThrowingContinuation({ continuation in
+            let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                guard error == nil else {
+                    continuation.resume(throwing: XMPPError(condition: .service_unavailable));
+                    return;
+                }
+                guard let data = data, let payload = try? JSONDecoder().decode(UnregisterDeviceResponsePayload.self, from: data) else {
+                    continuation.resume(throwing: XMPPError(condition: .internal_server_error));
+                    return;
+                }
+                if payload.success {
+                    continuation.resume(returning: Void())
+                } else {
+                    continuation.resume(throwing: XMPPError(condition: .not_acceptable));
+                }
             }
-            guard let data = data, let payload = try? JSONDecoder().decode(UnregisterDeviceResponsePayload.self, from: data) else {
-                completionHandler(.failure(XMPPError(condition: .internal_server_error)));
-                return;
-            }
-            if payload.success {
-                completionHandler(.success(Void()));
-            } else {
-                completionHandler(.failure(XMPPError(condition: .not_acceptable)));
-            }
-        }
-        task.resume();
+            task.resume();
+        })
     }
     
     var deviceId: String?;
@@ -115,36 +112,30 @@ open class PushEventHandler: XmppServiceExtension {
         
         let pushkitDeviceId = hasPushJingle ? self.pushkitDeviceId : nil;
         
-        if hasPush && shouldEnable {
-            if let pushSettings = pushModule.pushSettings {
-                if pushSettings.deviceId != deviceId || pushSettings.pushkitDeviceId != pushkitDeviceId {
-                    pushModule.unregisterDeviceAndDisable(completionHandler: { result in
-                        switch result {
-                        case .success(_):
-                            pushModule.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, completionHandler: { result2 in
-                                self.logger.debug("reregistration for account: \(client.userBareJid), result: \(result2)");
-                            });
-                        case .failure(_):
-                            // we need to try again later
-                            break;
-                        }
-                    });
-                    return;
-                } else if AccountSettings.pushHash(for: client.userBareJid) == 0 {
-                    pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
-                        self.logger.debug("reenabling device for account: \(client.userBareJid), result: \(result)");
-                    })
+        Task {
+            do {
+            if hasPush && shouldEnable {
+                if let pushSettings = pushModule.pushSettings {
+                    if pushSettings.deviceId != deviceId || pushSettings.pushkitDeviceId != pushkitDeviceId {
+                        self.logger.debug("reregistration for account: \(client.userBareJid)")
+                        try await pushModule.unregisterDeviceAndDisable();
+                        _ = try await pushModule.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId);
+                    } else if AccountSettings.pushHash(for: client.userBareJid) == 0 {
+                        self.logger.debug("reenabling device for account: \(client.userBareJid)")
+                        try await pushModule.reenable(pushSettings: pushSettings);
+                    }
+                } else {
+                    self.logger.debug("automatic registration for account: \(client.userBareJid)")
+                    _ = try await pushModule.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId);
                 }
             } else {
-                pushModule.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, completionHandler: { result in
-                    self.logger.debug("automatic registration for account: \(client.userBareJid), result: \(result)");
-                })
+                if pushModule.pushSettings != nil, (!hasPush) || (!shouldEnable) {
+                    self.logger.debug("automatic deregistration for account: \(client.userBareJid)");
+                    try await pushModule.unregisterDeviceAndDisable();
+                }
             }
-        } else {
-            if pushModule.pushSettings != nil, (!hasPush) || (!shouldEnable) {
-                pushModule.unregisterDeviceAndDisable(completionHandler: { result in
-                    self.logger.debug("automatic deregistration for account: \(client.userBareJid), result: \(result)");
-                })
+            } catch {
+                self.logger.debug("changing push registration for account \(client.userBareJid) failed: \(error)")
             }
         }
     }
@@ -178,9 +169,10 @@ open class PushEventHandler: XmppServiceExtension {
             return;
         }
         if let client = XmppService.instance.getClient(for: account), client.state == .connected(), let pushModule = client.module(.push) as? SiskinPushNotificationsModule, let pushSettings = pushModule.pushSettings {
-            pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
+            Task {
                 self.logger.debug("updating account push settings finished for account: \(client.userBareJid)");
-            })
+                try await pushModule.reenable(pushSettings: pushSettings)
+            }
         } else {
             AccountSettings.pushHash(for: account, value: 0);
         }

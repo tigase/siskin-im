@@ -41,7 +41,7 @@ extension DBChatStore: ChatStore {
             guard let conversation = self.accountsConversations.conversation(for: account, with: jid) else {
                 let timestamp = Date();
                 let id = try! self.openConversation(account: context.userBareJid, jid: jid, type: .chat, timestamp: timestamp, options: nil);
-                let chat = Chat(queue: self.conversationQueue, context: context, jid: jid, id: id, lastActivity: lastActivity(for: account, jid: jid, conversationType: .chat) ?? .none(timestamp: timestamp), unread: 0, options: ChatOptions());
+                let chat = Chat(context: context, jid: jid, id: id, lastActivity: lastActivity(for: account, jid: jid, conversationType: .chat) ?? .none(timestamp: timestamp), unread: 0, options: ChatOptions());
                 if self.accountsConversations.add(chat) {
                     self.conversationsEventsPublisher.send(.created(chat));
                     return .created(chat);

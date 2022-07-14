@@ -32,7 +32,14 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
     }
     
     public let id: Int;
-    public let queue: DispatchQueue;
+    private let lock = UnfairLock();
+    public func withLock<T>(_ body: ()->T) -> T {
+        lock.lock();
+        defer {
+            lock.unlock();
+        }
+        return body();
+    }
     private let displayableId: DisplayableIdProtocol;
 
     public var displayName: String {
@@ -92,10 +99,9 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
         return $features.eraseToAnyPublisher();
     }
     
-    public init(queue: DispatchQueue, context: Context, jid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, displayableId: DisplayableIdProtocol) {
+    public init(context: Context, jid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, displayableId: DisplayableIdProtocol) {
         self.id = id;
 //        self.timestamp = timestamp;
-        self.queue = queue;
         self.lastActivity = lastActivity;
         self.unread = unread;
         self.displayableId = displayableId;
@@ -132,7 +138,7 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
     }
     
     public func markAsRead(count: Int) -> Bool {
-        return queue.sync(flags: .barrier) {
+        return withLock {
             guard unread > 0 else {
                 return false;
             }
@@ -142,7 +148,7 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
     }
 
     public func update(_ lastActivity: LastChatActivity, isUnread: Bool) -> Bool {
-        return queue.sync(flags: .barrier) {
+        return withLock {
             if isUnread {
                 unread = unread + 1;
             }
@@ -189,21 +195,19 @@ public class ConversationBaseWithOptions<Options: ChatOptionsProtocol>: Conversa
     }
 
     
-    public init(queue: DispatchQueue, context: Context, jid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, options: Options, displayableId: DisplayableIdProtocol) {
+    public init(context: Context, jid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, options: Options, displayableId: DisplayableIdProtocol) {
         self._options = options;
-        super.init(queue: queue, context: context, jid: jid, id: id, lastActivity: lastActivity, unread:  unread, displayableId: displayableId);
+        super.init(context: context, jid: jid, id: id, lastActivity: lastActivity, unread:  unread, displayableId: displayableId);
     }
-    
-    public func updateOptions(_ fn: @escaping (inout Options)->Void, completionHandler: (()->Void)? = nil) {
-        queue.async(flags: .barrier) {
+
+    public func updateOptions(_ fn: @escaping (inout Options)->Void) {
+        return withLock {
             var options = self._options;
             fn(&options);
             if !options.equals(self._options) {
                 DBChatStore.instance.update(options: options, for: self as! Conversation);
                 self._options = options;
             }
-            completionHandler?();
         }
     }
-
 }

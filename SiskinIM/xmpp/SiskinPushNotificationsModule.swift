@@ -96,14 +96,12 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         super.init();
     }
     
-    open func registerDeviceAndEnable(deviceId: String, pushkitDeviceId: String?, completionHandler: @escaping (Result<PushSettings,XMPPError>)->Void) {
-        self.findPushComponent { result in
-            switch result {
-            case .success(let jid):
-                self.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, pushServiceJid: jid, completionHandler: completionHandler);
-            case .failure(_):
-                self.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, pushServiceJid: self.defaultPushServiceJid, completionHandler: completionHandler);
-            }
+    open func registerDeviceAndEnable(deviceId: String, pushkitDeviceId: String?) async throws -> PushSettings {
+        do {
+            let jid = try await self.findPushComponent();
+            return try await self.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, pushServiceJid: jid);
+        } catch {
+            return try await self.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, pushServiceJid: self.defaultPushServiceJid);
         }
     }
 
@@ -148,19 +146,13 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         return extensions;
     }
     
-    open func registerDeviceAndEnable(deviceId: String, pushkitDeviceId: String? = nil, pushServiceJid: JID, completionHandler: @escaping (Result<PushSettings,XMPPError>)->Void) {
-        self.registerDevice(serviceJid: pushServiceJid, provider: self.providerId, deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, completionHandler: { (result) in
-            switch result {
-            case .success(let data):
-                self.enable(serviceJid: pushServiceJid, node: data.node, deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, features: data.features ?? [], maxSize: data.maxPayloadSize, completionHandler: completionHandler);
-            case .failure(let err):
-                completionHandler(.failure(err));
-            }
-        });
+    open func registerDeviceAndEnable(deviceId: String, pushkitDeviceId: String? = nil, pushServiceJid: JID) async throws -> PushSettings {
+        let data = try await self.registerDevice(serviceJid: pushServiceJid, provider: self.providerId, deviceId: deviceId, pushkitDeviceId: pushkitDeviceId);
+        return try await self.enable(serviceJid: pushServiceJid, node: data.node, deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, features: data.features ?? [], maxSize: data.maxPayloadSize);
     }
     
-    open func reenable(pushSettings: PushSettings, completionHandler: @escaping (Result<PushSettings,XMPPError>)->Void) {
-        self.enable(serviceJid: pushSettings.jid, node: pushSettings.node, deviceId: pushSettings.deviceId, features: pushSettings.encryption ? [TigasePushNotificationsModule.Encryption.XMLNS] : [], maxSize: pushSettings.maxSize, completionHandler: completionHandler);
+    open func reenable(pushSettings: PushSettings) async throws {
+        _ = try await self.enable(serviceJid: pushSettings.jid, node: pushSettings.node, deviceId: pushSettings.deviceId, features: pushSettings.encryption ? [TigasePushNotificationsModule.Encryption.XMLNS] : [], maxSize: pushSettings.maxSize);
     }
     
     private func hash(extensions: [PushNotificationsModuleExtension]) -> Int {
@@ -175,11 +167,10 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         return hash;
     }
     
-    private func enable(serviceJid: JID, node: String, deviceId: String, pushkitDeviceId: String? = nil, features: [String], maxSize: Int?, publishOptions: PubSubSubscribeOptions? = nil, completionHandler: @escaping (Result<PushSettings,XMPPError>)->Void) {
+    private func enable(serviceJid: JID, node: String, deviceId: String, pushkitDeviceId: String? = nil, features: [String], maxSize: Int?, publishOptions: PubSubSubscribeOptions? = nil) async throws -> PushSettings {
         
         guard let context = self.context else {
-            completionHandler(.failure(.remote_server_timeout));
-            return;
+            throw XMPPError(condition: .remote_server_timeout);
         }
         
         let extensions: [PushNotificationsModuleExtension] = self.prepareExtensions(for: context, componentSupportsEncryption: features.contains(TigasePushNotificationsModule.Encryption.XMLNS), maxSize: maxSize);
@@ -187,8 +178,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         let newHash = hash(extensions: extensions);
         if let oldSettings = self.pushSettings {
             guard newHash != AccountSettings.pushHash(for: context.userBareJid) else {
-                completionHandler(.success(oldSettings));
-                return;
+                return oldSettings;
             }
         }
         
@@ -198,79 +188,74 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
                 
         let settings = PushSettings(jid: serviceJid, node: node, deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, encryption: encryption != nil, maxSize: maxSize);
 
-        self.enable(serviceJid: serviceJid, node: node, extensions: extensions, completionHandler: { (result) in
-            switch result {
-            case .success(_):
-                let accountJid = context.userBareJid;
-                NotificationEncryptionKeys.set(key: encryption?.key, for: accountJid);
-                AccountSettings.pushHash(for: accountJid, value: newHash);
-                self.pushSettings = settings;
-                if var config = AccountManager.getAccount(for: accountJid) {
-                    config.pushSettings = settings;
-                    config.pushNotifications = true;
-                    try? AccountManager.save(account: config, reconnect: false);
-                }
-                completionHandler(.success(settings));
-            case .failure(let err):
-                self.unregisterDevice(serviceJid: serviceJid, provider: self.providerId, deviceId: deviceId, completionHandler: { result in
-                    completionHandler(.failure(err));
-                });
+        do {
+            _ = try await self.enable(serviceJid: serviceJid, node: node, extensions: extensions);
+            let accountJid = context.userBareJid;
+            NotificationEncryptionKeys.set(key: encryption?.key, for: accountJid);
+            AccountSettings.pushHash(for: accountJid, value: newHash);
+            self.pushSettings = settings;
+            if var config = AccountManager.getAccount(for: accountJid) {
+                config.pushSettings = settings;
+                config.pushNotifications = true;
+                try? AccountManager.save(account: config, reconnect: false);
             }
-        });
+            return settings;
+        } catch {
+            do {
+                try await self.unregisterDevice(serviceJid: serviceJid, provider: self.providerId, deviceId: deviceId);
+            } catch {}
+            throw error;
+        }
     }
         
-    public func unregisterDeviceAndDisable(completionHandler: @escaping (Result<Void,XMPPError>) -> Void) {
+    public func unregisterDeviceAndDisable() async throws {
         if let settings = self.pushSettings, let context = self.context {
-            var total: Result<Void, XMPPError> = .success(Void());
-            let group = DispatchGroup();
-            group.enter();
-            group.enter();
-            
             AccountSettings.pushHash(for: context.userBareJid, value: 0);
-            
-            let resultHandler: (Result<Void,XMPPError>)->Void = {
-                result in
+            defer {
                 DispatchQueue.main.async {
-                    switch result {
-                    case .failure(let error):
-                        if error.condition != .item_not_found {
-                            total = .failure(error);
-                        }
-                    default:
-                        break;
+                    self.pushSettings = nil;
+                    let accountJid = context.userBareJid;
+                    NotificationEncryptionKeys.set(key: nil, for: accountJid);
+                    if var config = AccountManager.getAccount(for: accountJid) {
+                        config.pushSettings = nil;
+                        config.pushNotifications = false;
+                        try? AccountManager.save(account: config, reconnect: false);
                     }
-                    group.leave();
                 }
             }
-            
-            group.notify(queue: DispatchQueue.main) {
-                self.pushSettings = nil;
-                let accountJid = context.userBareJid;
-                NotificationEncryptionKeys.set(key: nil, for: accountJid);
-                if var config = AccountManager.getAccount(for: accountJid) {
-                    config.pushSettings = nil;
-                    config.pushNotifications = false;
-                    try? AccountManager.save(account: config, reconnect: false);
+            try await withThrowingTaskGroup(of: Void.self, returning: Void.self, body: { group in
+                group.addTask {
+                    do {
+                        _ = try await self.disable(serviceJid: settings.jid, node: settings.node);
+                    } catch let error as XMPPError {
+                        guard error.condition == .item_not_found else {
+                            throw error;
+                        }
+                    }
                 }
-                completionHandler(total);
-            }
-            
-            self.disable(serviceJid: settings.jid, node: settings.node, completionHandler: { result in
-                switch result {
-                case .success(_):
-                    resultHandler(.success(Void()));
-                case .failure(let err):
-                    resultHandler(.failure(err));
+                group.addTask {
+                    do {
+                        try await self.unregisterDevice(serviceJid: settings.jid, provider: self.providerId, deviceId: settings.deviceId);
+                    } catch let error as XMPPError {
+                        guard error.condition == .item_not_found else {
+                            throw error;
+                        }
+                    }
                 }
-            });
-            self.unregisterDevice(serviceJid: settings.jid, provider: self.providerId, deviceId: settings.deviceId, completionHandler: resultHandler);
+                for try await _ in group {
+                }
+            })
         } else {
-            completionHandler(.failure(XMPPError(condition: .remote_server_not_found)));
+            throw XMPPError(condition: .remote_server_not_found);
         }
     }
     
-    func findPushComponent(completionHandler: @escaping (Result<JID,XMPPError>)->Void) {
-        self.findPushComponent(requiredFeatures: ["urn:xmpp:push:0", self.providerId], completionHandler: completionHandler);
+    func findPushComponent() async throws -> JID {
+        let jids = try await findPushComponents(requiredFeatures: ["urn:xmpp:push:0", self.providerId]);
+        guard let jid = jids.first else {
+            throw XMPPError(condition: .feature_not_implemented);
+        }
+        return jid;
     }
     
 }

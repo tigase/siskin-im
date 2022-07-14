@@ -246,18 +246,17 @@ class MucChatOccupantsTableViewController: UITableViewController {
                     }
                     let alert = UIAlertController(title: NSLocalizedString("Banning user", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Do you want to ban user %@?", comment: "alert body"), participant.nickname), preferredStyle: .alert);
                     alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { action in
-                        mucModule.roomAffiliations([MucModule.RoomAffiliation(jid: jid, affiliation: .outcast)], to: self.room, completionHandler: { result in
-                            switch result {
-                            case .success(_):
-                                break;
-                            case .failure(let error):
+                        Task {
+                            do {
+                                try await mucModule.roomAffiliations([MucModule.RoomAffiliation(jid: jid, affiliation: .outcast)], to: self.room);
+                            } catch {
                                 DispatchQueue.main.async {
                                     let alert = UIAlertController(title: String.localizedStringWithFormat(NSLocalizedString("Banning user %@ failed", comment: "alert title"), participant.nickname), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
                                     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .cancel, handler: nil));
                                     self.present(alert, animated: true, completion: nil);
                                 }
                             }
-                        });
+                        }
                     }))
                     alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
                     self.present(alert, animated: true, completion: nil);

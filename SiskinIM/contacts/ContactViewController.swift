@@ -52,15 +52,15 @@ class ContactViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        DBVCardStore.instance.vcard(for: jid, completionHandler: { vcard in
-            if vcard == nil {
-                self.refreshVCard();
-            } else {
+        Task {
+            if let vcard = await DBVCardStore.instance.vcard(for: jid) {
                 DispatchQueue.main.async {
                     self.vcard = vcard;
                 }
+            } else {
+                try await refreshVCard();
             }
-        })
+        }
         omemoIdentities = DBOMEMOStore.instance.identities(forAccount: account, andName: jid.description);
         tableView.contentInset = UIEdgeInsets(top: -1, left: 0, bottom: 0, right: 0);
         reloadData();
@@ -76,21 +76,15 @@ class ContactViewController: UITableViewController {
     }
     
     @IBAction func refreshVCard(_ sender: UIBarButtonItem) {
-        refreshVCard();
+        Task {
+            try await refreshVCard();
+        }
     }
     
-    func refreshVCard() {
-        DispatchQueue.global(qos: .background).async() {
-            VCardManager.instance.refreshVCard(for: self.jid, on: self.account, completionHandler: { result in
-                switch result {
-                case .success(let vcard):
-                    DispatchQueue.main.async {
-                        self.vcard = vcard;
-                    }
-                case .failure(_):
-                    break;
-                }
-            })
+    func refreshVCard() async throws {
+        let vcard = try await VCardManager.instance.refreshVCard(for: self.jid, on: self.account);
+        DispatchQueue.main.async {
+            self.vcard = vcard;
         }
     }
     
@@ -398,20 +392,18 @@ class ContactViewController: UITableViewController {
             return;
         }
         let newValue = sender.isOn;
-        chat?.updateOptions({ (options) in
-            options.notifications = newValue ? .none : .always;
-        }, completionHandler: {
+        Task {
+            chat?.updateOptions({ (options) in
+                options.notifications = newValue ? .none : .always;
+            });
             if let pushModule = XmppService.instance.getClient(for: account)?.module(.push) as? SiskinPushNotificationsModule, let pushSettings = pushModule.pushSettings {
-                pushModule.reenable(pushSettings: pushSettings, completionHandler: { result in
-                    switch result {
-                    case .success(_):
-                        break;
-                    case .failure(_):
-                        AccountSettings.pushHash(for: account, value: 0);
-                    }
-                });
+                do {
+                    try await pushModule.reenable(pushSettings: pushSettings);
+                } catch {
+                    AccountSettings.pushHash(for: account, value: 0);
+                }
             }
-        });
+        }
     }
     /*
     // MARK: - Navigation

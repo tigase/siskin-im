@@ -41,7 +41,7 @@ extension DBChatStore: RoomStore {
                 let timestamp = Date();
                 let options = RoomOptions(nickname: nickname, password: password);
                 let id = try! self.openConversation(account: context.userBareJid, jid: jid, type: .room, timestamp: timestamp, options: options);
-                let room = Room(queue: self.conversationQueue, context: context, jid: jid, id: id, lastActivity: lastActivity(for: account, jid: jid, conversationType: .room) ?? .none(timestamp: timestamp), unread: 0, options: options);
+                let room = Room(context: context, jid: jid, id: id, lastActivity: lastActivity(for: account, jid: jid, conversationType: .room) ?? .none(timestamp: timestamp), unread: 0, options: options);
                 if self.accountsConversations.add(room) {
                     self.conversationsEventsPublisher.send(.created(room));
                     return .created(room);

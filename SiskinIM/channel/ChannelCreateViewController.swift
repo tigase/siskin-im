@@ -166,6 +166,7 @@ class ChannelCreateViewController: UITableViewController, ChannelSelectAccountAn
         self.tableView.refreshControl?.beginRefreshing();
     }
     
+    @MainActor
     func operationEnded() {
         self.tableView.refreshControl?.endRefreshing();
         self.tableView.refreshControl = nil;
@@ -185,13 +186,22 @@ class ChannelCreateViewController: UITableViewController, ChannelSelectAccountAn
         self.joinButton.isEnabled = (!name.isEmpty) && (kind == .adhoc || !channelId.isEmpty) && self.components.contains(where: { $0.type == (useMix ? .mix : .muc) });
     }
 
+    private var refreshTask: Task<Void,Error>?;
+    
     private func refresh() {
         guard let client = self.client else {
             return;
         }
         let domain = self.domain ?? client.userBareJid.domain;
+        refreshTask?.cancel();
         self.operationStarted(message: NSLocalizedString("Checking…", comment: "channel create view operation label"));
-        ChannelsHelper.findComponents(for: client, at: domain, completionHandler: { components in
+        Task {
+            defer {
+                DispatchQueue.main.async {
+                    self.operationEnded();
+                }
+            }
+            let components = (try? await ChannelsHelper.findComponents(for: client, at: domain)) ?? [];
             DispatchQueue.main.async {
                 self.components = components;
                 let types = Set(components.map({ $0.type }));
@@ -207,14 +217,12 @@ class ChannelCreateViewController: UITableViewController, ChannelSelectAccountAn
                 self.updateJoinButtonStatus();
                 self.operationEnded();
                 if components.isEmpty {
-                    DispatchQueue.main.async {
-                        let alert = UIAlertController(title: NSLocalizedString("Service unavailable", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("There is no service supporting channels for domain %@", comment: "alert message"), domain), preferredStyle: .alert);
-                        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default));
-                        self.present(alert, animated: true, completion: nil);
-                    }
+                    let alert = UIAlertController(title: NSLocalizedString("Service unavailable", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("There is no service supporting channels for domain %@", comment: "alert message"), domain), preferredStyle: .alert);
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default));
+                    self.present(alert, animated: true, completion: nil);
                 }
             }
-        })
+        }
     }
     
     enum ChannelKind {

@@ -48,11 +48,12 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        DBVCardStore.instance.vcard(for: client.userBareJid, completionHandler: { vcard in
+        Task {
+            let vcard = await DBVCardStore.instance.vcard(for: client.userBareJid);
             DispatchQueue.main.async {
                 self.vcard = vcard;
             }
-        })
+        }
     }
     
     override func didReceiveMemoryWarning() {
@@ -80,16 +81,12 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                 let cell = tableView.dequeueReusableCell(withIdentifier: "AvatarEditCell") as! VCardAvatarEditCell;
                 cell.avatarView.set(name: nil, avatar: nil);
                 if let photo = vcard?.photos.first {
-                    VCardManager.instance.fetchPhoto(photo: photo, completionHandler: { result in
-                        switch result {
-                        case .success(let data):
-                            DispatchQueue.main.async {
-                                cell.avatarView.set(name: nil, avatar: UIImage(data: data));
-                            }
-                        case .failure(_):
-                            break;
+                    Task {
+                        let data = try await VCardManager.instance.fetchPhoto(photo: photo);
+                        DispatchQueue.main.async {
+                            cell.avatarView.set(name: nil, avatar: UIImage(data: data));
                         }
-                    });
+                    }
                 }
                 cell.updateCornerRadius();
                 return cell;
@@ -295,77 +292,57 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     }
     
     @IBAction func refreshVCard(_ sender: UIBarButtonItem) {
-        VCardManager.instance.refreshVCard(for: client.userBareJid, on: client.userBareJid, completionHandler: { result in
-            switch result {
-            case .success(let vcard):
-                DispatchQueue.main.async {
-                    self.vcard = vcard;
-                }
-            case .failure(_):
-                break;
+        Task {
+            let vcard = try await VCardManager.instance.refreshVCard(for: client.userBareJid, on: client.userBareJid);
+            DispatchQueue.main.async {
+                self.vcard = vcard;
             }
-        });
+        }
     }
     
     @IBAction func publishVCard(_ sender: UIBarButtonItem) {
         self.tableView.endEditing(true);
         DispatchQueue.main.async {
-            DispatchQueue.global(qos: .default).async {
-                guard let vcard = self.vcard, let client = self.client else {
-                    return;
-                }
-                self.publishVCard(vcard: vcard, completionHandler: { result in
-                    switch result {
-                    case .success(_):
-                        DispatchQueue.main.async() {
-                            _ = self.navigationController?.popViewController(animated: true);
-                        }
-                        DBVCardStore.instance.updateVCard(for: self.client.userBareJid, on: self.client.userBareJid, vcard: vcard);
-                        if let photo = self.vcard?.photos.first {
-                            VCardManager.instance.fetchPhoto(photo: photo, completionHandler: { result in
-                                switch result {
-                                case .success(let data):
-                                    let avatarHash = Insecure.SHA1.hash(toHex: data);
-                                    let x = Element(name: "x", xmlns: "vcard-temp:x:update");
-                                    x.addChild(Element(name: "photo", cdata: avatarHash));
-                                    client.module(.presence).setPresence(show: .online, status: nil, priority: nil, additionalElements: [x]);
-                                case .failure(_):
-                                    break;
-                                }
-                            });
-                        }
-                    case .failure(let errorCondition):
-                        DispatchQueue.main.async {
-                            self.tableView.setEditing(true, animated: true);
-                            let alertController = UIAlertController(title: NSLocalizedString("Failure", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("VCard publication failed: %@", comment: "alert body"), errorCondition.localizedDescription), preferredStyle: .alert);
-                            alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
-                            self.present(alertController, animated: true, completion: nil);
-                        }
+            guard let vcard = self.vcard else {
+                return;
+            }
+            Task {
+                do {
+                    try await self.publishVCard(vcard: vcard);
+                    DispatchQueue.main.async() {
+                        _ = self.navigationController?.popViewController(animated: true);
                     }
-                })
+                    DBVCardStore.instance.updateVCard(for: self.client.userBareJid, on: self.client.userBareJid, vcard: vcard);
+                    if let photo = self.vcard?.photos.first, let data = try? await VCardManager.instance.fetchPhoto(photo: photo) {
+                        let avatarHash = Insecure.SHA1.hash(toHex: data);
+                        let x = Element(name: "x", xmlns: "vcard-temp:x:update");
+                        x.addChild(Element(name: "photo", cdata: avatarHash));
+                        try? await self.client.module(.presence).setPresence(show: .online, status: nil, priority: nil, additionalElements: [x]);
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        self.tableView.setEditing(true, animated: true);
+                        let alertController = UIAlertController(title: NSLocalizedString("Failure", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("VCard publication failed: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
+                        alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
+                        self.present(alertController, animated: true, completion: nil);
+                    }
+                }
             }
         }
     }
     
-    private func publishVCard(vcard: VCard, completionHandler: @escaping (Result<Void, XMPPError>)->Void) {
-        publishVCard(vcard: vcard, module: client.module(.vcard4), completionHandler: { [weak self] result in
-            switch result {
-            case .success(let void):
-                completionHandler(.success(void));
-            case .failure(let error):
-                guard let that = self else {
-                    completionHandler(.failure(error));
-                    return;
-                }
-                that.publishVCard(vcard: vcard, module: that.client.module(.vcardTemp), completionHandler: completionHandler);
+    private func publishVCard(vcard: VCard) async throws {
+        do {
+            try await client.module(.vcard4).publish(vcard: vcard)
+        } catch {
+            guard ((error as? XMPPError ?? .undefined_condition).condition.type == .wait) else {
+                try await client.module(.vcardTemp).publish(vcard: vcard);
+                return;
             }
-        });
+            throw error;
+        }
     }
-    
-    private func publishVCard(vcard: VCard, module: VCardModuleProtocol, completionHandler: @escaping (Result<Void, XMPPError>)->Void) {
-        module.publishVCard(vcard, completionHandler: completionHandler);
-    }
-    
+        
     @objc func photoClicked() {
         if UIImagePickerController.isSourceTypeAvailable(.camera) {
             let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
@@ -417,18 +394,17 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         if pepUserAvatarModule.isPepAvailable {
             let question = UIAlertController(title: nil, message: NSLocalizedString("Do you wish to publish this photo as avatar?", comment: "alert body"), preferredStyle: .actionSheet);
             question.addAction(UIAlertAction(title: NSLocalizedString("Yes", comment: "button label"), style: .default, handler: { (action) in
-                pepUserAvatarModule.publishAvatar(avatar: items, completionHandler: { result in
-                    switch result {
-                    case .success(_):
-                        break;
-                    case .failure(let error):
+                Task {
+                    do {
+                        _ = try await pepUserAvatarModule.publishAvatar(avatar: items);
+                    } catch {
                         DispatchQueue.main.async {
                             let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("User avatar publication failed.\nReason: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
                             alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
                             self.present(alert, animated: true, completion: nil);
                         }
                     }
-                })
+                }
             }));
             question.addAction(UIAlertAction(title: NSLocalizedString("No", comment: "button label"), style: .cancel, handler: nil));
             let cell = self.tableView(tableView, cellForRowAt: IndexPath(row: VCardBaseSectionRows.avatar.rawValue, section: VCardSections.basic.rawValue)) as! VCardAvatarEditCell;

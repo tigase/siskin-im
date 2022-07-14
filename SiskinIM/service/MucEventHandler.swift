@@ -70,8 +70,12 @@ class MucEventHandler: XmppServiceExtension {
             }
             if let xUser = XMucUserElement.extract(from: e.message) {
                 if xUser.statuses.contains(104) {
-                    self.updateRoomName(room: room);
-                    VCardManager.instance.refreshVCard(for: room.roomJid, on: room.account, completionHandler: nil);
+                    Task {
+                        try await self.updateRoomName(room: room);
+                    }
+                    Task {
+                        _ = try await VCardManager.instance.refreshVCard(for: room.roomJid, on: room.account);
+                    }
                 }
             }
             DBChatHistoryStore.instance.append(for: room, message: e.message, source: .stream);
@@ -126,29 +130,33 @@ class MucEventHandler: XmppServiceExtension {
         context.module(.muc).leave(room: room);
     }
             
-    public func updateRoomName(room: Room) {
-        room.context?.module(.disco).info(for: JID(room.jid), completionHandler: { result in
-            switch result {
-            case .success(let info):
-                let newName = info.identities.first(where: { (identity) -> Bool in
-                    return identity.category == "conference";
-                })?.name?.trimmingCharacters(in: .whitespacesAndNewlines);
-                
-                room.updateRoom(name: newName);
-            case .failure(_):
-                break;
-            }
-        });
+    public func updateRoomName(room: Room) async throws {
+        let info = try await room.context!.module(.disco).info(for: room.jid.jid());
+        let newName = info.identities.first(where: { (identity) -> Bool in
+            return identity.category == "conference";
+        })?.name?.trimmingCharacters(in: .whitespacesAndNewlines);
+        
+        room.updateRoom(name: newName);
     }
 }
 
 class CustomMucModule: MucModule {
     
+    override func join(room: RoomProtocol, fetchHistory: RoomHistoryFetch) async throws -> RoomJoinResult {
+        let result = try await super.join(room: room, fetchHistory: fetchHistory);
+        Task {
+            try await MucEventHandler.instance.updateRoomName(room: room as! Room);
+        }
+        return result;
+    }
+    
     override func join(room: RoomProtocol, fetchHistory: RoomHistoryFetch, completionHandler: @escaping (Result<RoomJoinResult,XMPPError>)->Void) {
         super.join(room: room, fetchHistory: fetchHistory, completionHandler: { result in
             switch result {
             case .success(_):
-                MucEventHandler.instance.updateRoomName(room: room as! Room);
+                Task {
+                    try await MucEventHandler.instance.updateRoomName(room: room as! Room);
+                }
             case .failure(_):
                 break;
             }

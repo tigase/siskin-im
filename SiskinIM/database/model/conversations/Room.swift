@@ -108,25 +108,19 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         didSet {
             if self.roomFeatures.contains(.membersOnly) && self.roomFeatures.contains(.nonAnonymous) {
                 if let mucModule = context?.module(.muc) {
-                    var members: [JID] = [];
-                    let group = DispatchGroup();
-                    for affiliation: MucAffiliation in [.member, .admin, .owner] {
-                        group.enter();
-                        mucModule.roomAffiliations(from: self, with: affiliation, completionHandler: { result in
-                            switch result {
-                            case .success(let affs):
-                                members.append(contentsOf: affs.map({ $0.jid }));
-                            case .failure(_):
-                                break;
+                    Task {
+                        let members: [JID] = await withTaskGroup(of: [JID].self, body: { group in
+                            for affiliation: MucAffiliation in [.member, .admin, .owner] {
+                                group.addTask(operation: {
+                                    ((try? await mucModule.roomAffiliations(from: self, with: affiliation)) ?? []) .map({ $0.jid })
+                                })
                             }
-                            group.leave();
-                        });
+                            return await group.reduce(into: [JID](), { $0.append(contentsOf: $1) })
+                        })
+                        withLock({
+                            self._members = members;
+                        })
                     }
-                    group.notify(queue: DispatchQueue.global(), execute: { [weak self] in
-                        self?.queue.async {
-                            self?._members = members;
-                        }
-                    })
                 }
             }
         }
@@ -139,9 +133,9 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     
     private var cancellables: Set<AnyCancellable> = [];
     
-    init(queue: DispatchQueue, context: Context, jid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, options: RoomOptions) {
+    init(context: Context, jid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, options: RoomOptions) {
         self.displayable = RoomDisplayableId(displayName: options.name ?? jid.description, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: jid, mucNickname: nil)), description: nil);
-        super.init(queue: queue, context: context, jid: jid, id: id, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
+        super.init( context: context, jid: jid, id: id, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
         (context.module(.httpFileUpload) as! HttpFileUploadModule).isAvailablePublisher.combineLatest(self.statePublisher, self.$roomFeatures, { isAvailable, state, roomFeatures -> [ConversationFeature] in
             var features: [ConversationFeature] = [];
             if state == .joined {
@@ -171,26 +165,26 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     private static let nonMembersAffiliations: Set<MucAffiliation> = [.none, .outcast];
     private var _members: [JID]?;
     public var members: [JID]? {
-        return queue.sync {
+        return withLock {
             return _members;
         }
     }
     
     public var occupants: [MucOccupant] {
-        return queue.sync {
+        return withLock {
             return self.occupantsStore.occupants;
         }
     }
     
     public func occupant(nickname: String) -> MucOccupant? {
-        return queue.sync {
+        return withLock {
             return occupantsStore.occupant(nickname: nickname);
         }
     }
     
     public func addOccupant(nickname: String, presence: Presence) -> MucOccupant {
         let occupant = MucOccupant(nickname: nickname, presence: presence, for: self);
-        queue.async(flags: .barrier) {
+        withLock {
             self.occupantsStore.add(occupant: occupant);
             if let jid = occupant.jid {
                 if !Room.nonMembersAffiliations.contains(occupant.affiliation) {
@@ -206,7 +200,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     }
     
     public func remove(occupant: MucOccupant) {
-        queue.async(flags: .barrier) {
+        withLock {
             self.occupantsStore.remove(occupant: occupant);
             if let jid = occupant.jid {
                 self._members = self._members?.filter({ $0 != jid });
@@ -215,13 +209,13 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     }
     
     public func addTemp(nickname: String, occupant: MucOccupant) {
-        queue.async(flags: .barrier) {
+        withLock {
             self.occupantsStore.addTemp(nickname: nickname, occupant: occupant);
         }
     }
     
     public func removeTemp(nickname: String) -> MucOccupant? {
-        return queue.sync(flags: .barrier) {
+        withLock {
             return occupantsStore.removeTemp(nickname: nickname);
         }
     }
@@ -232,15 +226,15 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         });
     }
     
-    public override func updateOptions(_ fn: @escaping (inout RoomOptions) -> Void, completionHandler: (()->Void)? = nil) {
-        super.updateOptions(fn, completionHandler: completionHandler);
+    public override func updateOptions(_ fn: @escaping (inout RoomOptions) -> Void) {
+        super.updateOptions(fn);
         DispatchQueue.main.async {
             self.displayable.displayName = self.options.name ?? self.jid.description;
         }
     }
     
     public func update(state: RoomState) {
-        queue.async(flags: .barrier) {
+        withLock {
             self.state = state;
             if state != .joined && state != .requested {
                 self.occupantsStore.removeAll();

@@ -40,7 +40,6 @@ open class DBChatStore: ContextLifecycleAware {
 
     static let instance: DBChatStore = DBChatStore.init();
 
-    public let conversationQueue = DispatchQueue(label: "ConversationDispatcher", attributes: .concurrent)
     public let queue: DispatchQueue;
     
     let accountsConversations = Conversations();
@@ -207,18 +206,18 @@ open class DBChatStore: ContextLifecycleAware {
                     switch type {
                     case .chat:
                         let options: ChatOptions? = cursor.object(for: "options");
-                        return Chat(queue: self.conversationQueue, context: context, jid: jid, id: id, lastActivity: lastActivity, unread: unread, options: options ?? ChatOptions());
+                        return Chat(context: context, jid: jid, id: id, lastActivity: lastActivity, unread: unread, options: options ?? ChatOptions());
                     case .room:
                         guard let options: RoomOptions = cursor.object(for: "options") else {
                             return nil;
                         }
-                        let room = Room(queue: self.conversationQueue, context: context, jid: jid, id: id, lastActivity: lastActivity, unread: unread, options: options);
+                        let room = Room(context: context, jid: jid, id: id, lastActivity: lastActivity, unread: unread, options: options);
                         return room;
                     case .channel:
                         guard let options: ChannelOptions = cursor.object(for: "options") else {
                             return nil;
                         }
-                        return Channel(queue: self.conversationQueue, context: context, channelJid: jid, id: id, lastActivity: lastActivity, unread: unread, options: options, creationTimestamp: cursor.date(for: "creation_timestamp")!);
+                        return Channel(context: context, channelJid: jid, id: id, lastActivity: lastActivity, unread: unread, options: options, creationTimestamp: cursor.date(for: "creation_timestamp")!);
                     }
                 });
             })

@@ -42,12 +42,14 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
         }
     }
     
+    @MainActor
     var joinConversation: (BareJID,String?)? {
         didSet {
             domain = joinConversation?.0.domain;
         }
     }
     
+    @MainActor
     private var components: [ChannelsHelper.Component] = [];
     private var allItems: [DiscoveryModule.Item] = [];
     
@@ -84,6 +86,11 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
         }
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated);
+        queryTask?.cancel();
+    }
+    
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1;
     }
@@ -108,42 +115,31 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
         self.joinButton.isEnabled = false;
     }
     
-    private var queryRemote: String?;
+    private var queryTask: Task<Void,Error>?;
     
     func updateSearchResults(for searchController: UISearchController) {
         updateItems();
-        self.queryRemote = searchController.searchBar.text;
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: { [weak self] in
-            guard let that = self, let remoteQuery = that.queryRemote, let client = that.client, let text = searchController.searchBar.text, remoteQuery == text else {
-                self?.logger.debug("remote query \(self?.queryRemote as Any) , text: \(searchController.searchBar.text as Any)");
-                return;
-            }
-            that.queryRemote = nil;
-            that.logger.debug("executing query for: \(text)");
-            ChannelsHelper.queryChannel(for: client, at: that.components, name: text, completionHandler: { result in
-                switch result {
-                case .success(let items):
-                    self?.logger.debug("got items: \(items)");
-                    DispatchQueue.main.async {
-                        guard let that = self else {
-                            return;
-                        }
-                        var changed = false;
-                        for item in items {
-                            if that.allItems.first(where: { $0.jid == item.jid }) == nil {
-                                that.allItems.append(item);
-                                changed = true;
-                            }
-                        }
-                        if changed {
-                            that.updateItems();
+        queryTask?.cancel();
+        if let text = searchController.searchBar.text, let client = self.client {
+            queryTask = Task {
+                try await Task.sleep(nanoseconds: 2 * 1000 * 1000 * 1000)
+                self.logger.debug("executing query for: \(text)");
+                let items = await ChannelsHelper.queryChannel(for: client, at: components, name: text)
+                self.logger.debug("got items: \(items)");
+                DispatchQueue.main.async {
+                    var changed = false;
+                    for item in items {
+                        if self.allItems.first(where: { $0.jid == item.jid }) == nil {
+                            self.allItems.append(item);
+                            changed = true;
                         }
                     }
-                case .failure(let err):
-                    self?.logger.debug("got error: \(err.description)");
+                    if changed {
+                        self.updateItems();
+                    }
                 }
-            })
-        });
+            }
+        }
     }
     
     @IBAction func cancelClicked(_ sender: Any) {
@@ -182,74 +178,54 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
         self.tableView.refreshControl?.beginRefreshing();
     }
     
+    @MainActor
     func operationFinished() {
         self.tableView.refreshControl?.endRefreshing();
         self.tableView.refreshControl = nil;
     }
 
+    private var refreshTask: Task<Void,Error>?;
+    
     private func refreshItems() {
         guard let client = self.client else {
             return;
         }
         let domain = self.domain ?? client.userBareJid.domain;
+        refreshTask?.cancel();
         self.operationStarted();
-        ChannelsHelper.findComponents(for: client, at: domain, completionHandler: { [weak self] components in
-            guard let that = self, that.client?.userBareJid == client.userBareJid else {
-                return;
-            }
-            let currDomain = that.domain ?? client.userBareJid.domain;
-            guard currDomain == domain else {
-                return;
-            }
-            that.components = components;
-            if let data = that.joinConversation, let name = data.0.localPart {
-                ChannelsHelper.queryChannel(for: client, at: that.components, name: name, completionHandler: { result in
-                    switch result {
-                    case .success(let items):
-                        DispatchQueue.main.async {
-                            guard let that = self else {
-                                return;
-                            }
-                            var changed = false;
-                            for item in items {
-                                if that.allItems.first(where: { $0.jid == item.jid }) == nil {
-                                    that.allItems.append(item);
-                                    changed = true;
-                                }
-                            }
-                            if changed {
-                                that.updateItems();
-                            }
-                            that.operationFinished();
-                        }
-                    case .failure(let err):
-                        break;
-                    }
-                })
-            } else {
-                ChannelsHelper.findChannels(for: client, at: components, completionHandler: { [weak self] allItems in
-                    guard let that = self, that.client?.userBareJid == client.userBareJid else {
-                        return;
-                    }
-                    let currDomain = that.domain ?? client.userBareJid.domain;
-                    guard currDomain == domain else {
-                        return;
-                    }
-                    that.allItems = allItems;
-                    that.updateItems();
-                    that.operationFinished();
-                })
-                if components.isEmpty {
-                    DispatchQueue.main.async {
-                        let alert = UIAlertController(title: NSLocalizedString("Service unavailable", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("There is no service supporting channels for domain %@", comment: "alert message"), domain), preferredStyle: .alert);
-                        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default));
-                        that.present(alert, animated: true, completion: nil);
-                    }
+        refreshTask = Task {
+            defer {
+                DispatchQueue.main.async {
+                    self.operationFinished();
                 }
             }
-        })
+            let components = (try? await ChannelsHelper.findComponents(for: client, at: domain)) ?? [];
+            self.components = components;
+            if let data = self.joinConversation, let name = data.0.localPart {
+                let items = await ChannelsHelper.queryChannel(for: client, at: components, name: name);
+                DispatchQueue.main.async {
+                    var changed = false;
+                    for item in items {
+                        if self.allItems.first(where: { $0.jid == item.jid }) == nil {
+                            self.allItems.append(item);
+                            changed = true;
+                        }
+                    }
+                    if changed {
+                        self.updateItems();
+                    }
+                }
+            } else {
+                let allItems = await ChannelsHelper.findChannels(for: client, at: components);
+                DispatchQueue.main.async {
+                    self.allItems = allItems;
+                    self.updateItems();
+                }
+            }
+        }
     }
     
+    @MainActor
     private func updateItems() {
         let prefix = self.navigationItem.searchController?.searchBar.text ?? "";
         let items = prefix.isEmpty ? allItems : allItems.filter({ item -> Bool in

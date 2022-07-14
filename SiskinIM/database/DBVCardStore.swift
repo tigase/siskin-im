@@ -42,20 +42,22 @@ class DBVCardStore {
         
     }
     
-    open func vcard(for jid: BareJID, completionHandler: @escaping (VCard?)->Void) {
-        queue.async {
-            let data: String? = try! Database.main.reader({ database in
-                try database.select(query: .vcardFindByJid, params: ["jid": jid]).mapFirst({ cursor -> String? in
-                    return cursor.string(for: "data");
-                })
-            });
-            
-            guard let value = data, let elem = Element.from(string: value) else {
-                completionHandler(nil);
-                return;
+    open func vcard(for jid: BareJID) async -> VCard? {
+        await withUnsafeContinuation({ continuation in
+            queue.async {
+                let data: String? = try! Database.main.reader({ database in
+                    try database.select(query: .vcardFindByJid, params: ["jid": jid]).mapFirst({ cursor -> String? in
+                        return cursor.string(for: "data");
+                    })
+                });
+                
+                guard let value = data, let elem = Element.from(string: value) else {
+                    continuation.resume(returning: nil);
+                    return;
+                }
+                continuation.resume(returning: VCard(vcard4: elem) ?? VCard(vcardTemp: elem));
             }
-            completionHandler(VCard(vcard4: elem) ?? VCard(vcardTemp: elem));
-        }
+        })
     }
     
     open func updateVCard(for jid: BareJID, on account: BareJID, vcard: VCard) {

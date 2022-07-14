@@ -53,7 +53,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
     }
     
     public func update(permissions: Set<ChannelPermission>) {
-        queue.async(flags: .barrier) {
+        withLock {
             self.permissions = permissions;
         }
     }
@@ -148,10 +148,10 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         
     }
     
-    init(queue: DispatchQueue, context: Context, channelJid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, options: ChannelOptions, creationTimestamp: Date) {
+    init(context: Context, channelJid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, options: ChannelOptions, creationTimestamp: Date) {
         self.creationTimestamp = creationTimestamp;
         self.displayable = ChannelDisplayableId(displayName: options.name ?? channelJid.description, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: channelJid, mucNickname: nil)), description: options.description);
-        super.init(queue: queue, context: context, jid: channelJid, id: id, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
+        super.init(context: context, jid: channelJid, id: id, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
         context.$state.sink(receiveValue: { [weak self] state in
             self?.connectionState = state;
         }).store(in: &cancellables);
@@ -179,8 +179,8 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         }
     }
     
-    public override func updateOptions(_ fn: @escaping (inout ChannelOptions) -> Void, completionHandler: (()->Void)? = nil) {
-        super.updateOptions(fn, completionHandler: completionHandler);
+    public override func updateOptions(_ fn: @escaping (inout ChannelOptions) -> Void) {
+        super.updateOptions(fn);
         DispatchQueue.main.async {
             self.displayable.displayName = self.options.name ?? self.jid.description;
             self.displayable.description = self.options.description;
@@ -312,7 +312,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
 extension Channel: MixParticipantsProtocol {
     
     public var participants: [MixParticipant] {
-        return queue.sync {
+        return withLock {
             return self.participantsStore.participants;
         }
     }
@@ -322,25 +322,25 @@ extension Channel: MixParticipantsProtocol {
     }
     
     public func participant(withId: String) -> MixParticipant? {
-        return queue.sync {
+        return withLock {
             return self.participantsStore.participant(withId: withId);
         }
     }
     
     public func set(participants: [MixParticipant]) {
-        queue.async(flags: .barrier) {
+        withLock {
             self.participantsStore.set(participants: participants);
         }
     }
     
     public func update(participant: MixParticipant) {
-        queue.async(flags: .barrier) {
+        withLock {
             self.participantsStore.update(participant: participant);
         }
     }
     
     public func removeParticipant(withId id: String) -> MixParticipant? {
-        return queue.sync(flags: .barrier) {
+        return withLock {
             return self.participantsStore.removeParticipant(withId: id);
         }
     }

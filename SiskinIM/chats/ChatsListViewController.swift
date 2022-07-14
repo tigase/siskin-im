@@ -282,29 +282,29 @@ class ChatsListViewController: UITableViewController {
         switch item {
         case let room as Room:
             actions.append(UIContextualAction(style: .normal, title: NSLocalizedString("Leave", comment: "button label"), handler: { (action, view, completion) in
-                room.context?.module(.pepBookmarks).setConferenceAutojoin(false, for: JID(room.jid), completionHandler: { _ in })
-                room.context?.module(.muc).leave(room: room);
-                room.checkTigasePushNotificationRegistrationStatus { (result) in
-                    switch result {
-                    case .failure(_):
-                        break;
-                    case .success(let value):
-                        guard value else {
-                            return;
-                        }
-                        room.registerForTigasePushNotification(false, completionHandler: { (regResult) in
-                            DispatchQueue.main.async {
-                                let alert = UIAlertController(title: NSLocalizedString("Push notifications", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("You've left there room %@ and push notifications for this room were disabled!\nYou may need to reenable them on other devices.", comment: "alert body"), room.name ?? room.roomJid.description), preferredStyle: .actionSheet);
-                                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
-                                alert.popoverPresentationController?.sourceView = self.view;
-                                alert.popoverPresentationController?.sourceRect = tableView.rectForRow(at: indexPath);
-                                self.present(alert, animated: true, completion: nil);
+                Task {
+                    do {
+                        try await room.context?.module(.pepBookmarks).setConferenceAutojoin(false, for: JID(room.jid))
+                        try await room.context?.module(.muc).leave(room: room);
+                        do {
+                            if try await room.checkTigasePushNotificationRegistrationStatus() {
+                                DispatchQueue.main.async {
+                                    let alert = UIAlertController(title: NSLocalizedString("Push notifications", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("You've left there room %@ and push notifications for this room were disabled!\nYou may need to reenable them on other devices.", comment: "alert body"), room.name ?? room.roomJid.description), preferredStyle: .actionSheet);
+                                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
+                                    alert.popoverPresentationController?.sourceView = self.view;
+                                    alert.popoverPresentationController?.sourceRect = tableView.rectForRow(at: indexPath);
+                                    self.present(alert, animated: true, completion: nil);
+                                }
                             }
-                        })
+                        } catch {}
+                        DispatchQueue.main.async {
+                            self.discardNotifications(for: room);
+                            completion(true);
+                        }
+                    } catch {
+                        completion(false)
                     }
                 }
-                self.discardNotifications(for: room);
-                completion(true);
             }))
             if room.affiliation == .owner {
                 actions.append(UIContextualAction(style: .destructive, title: NSLocalizedString("Destroy", comment: "button label"), handler: { (action, view, completion) in
