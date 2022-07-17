@@ -33,47 +33,40 @@ class MainNotificationManagerProvider: NotificationManagerProvider {
         return INImage(imageData: data);
     }
     
-    func conversationNotificationDetails(for account: BareJID, with jid: BareJID, completionHandler: @escaping (ConversationNotificationDetails)->Void) {
+    func conversationNotificationDetails(for account: BareJID, with jid: BareJID) -> ConversationNotificationDetails {
         if let item = DBChatStore.instance.conversation(for: account, with: jid) {
             switch item {
             case let room as Room:
-                completionHandler(ConversationNotificationDetails(name: room.displayName, notifications: item.notifications, type: .room, nick: room.nickname));
-                return;
+                return ConversationNotificationDetails(name: room.displayName, notifications: item.notifications, type: .room, nick: room.nickname);
             case let channel as Channel:
-                completionHandler(ConversationNotificationDetails(name: channel.displayName, notifications: channel.notifications, type: .channel, nick: channel.nickname));
-                return;
+                return ConversationNotificationDetails(name: channel.displayName, notifications: channel.notifications, type: .channel, nick: channel.nickname);
             case let chat as Chat:
-                completionHandler(ConversationNotificationDetails(name: chat.displayName, notifications: chat.notifications, type: .chat, nick: nil));
-                return;
+                return ConversationNotificationDetails(name: chat.displayName, notifications: chat.notifications, type: .chat, nick: nil);
             default:
                 break;
             }
         }
-        completionHandler(ConversationNotificationDetails(name: DBRosterStore.instance.item(for: account, jid: JID(jid))?.name ?? jid.description, notifications: .always, type: .chat, nick: nil));
+        return ConversationNotificationDetails(name: DBRosterStore.instance.item(for: account, jid: JID(jid))?.name ?? jid.description, notifications: .always, type: .chat, nick: nil);
     }
     
-    func countBadge(withThreadId: String?, completionHandler: @escaping (Int) -> Void) {
-        NotificationsManagerHelper.unreadChatsThreadIds() { result in
-            var unreadChats = result;
-        
-            DBChatStore.instance.conversations.filter({ chat -> Bool in
-                return chat.unread > 0;
-            }).forEach { (chat) in
-                unreadChats.insert("account=" + chat.account.description + "|sender=" + chat.jid.description)
-            }
-        
-            if let threadId = withThreadId {
-                unreadChats.insert(threadId);
-            }
-            
-            completionHandler(unreadChats.count);
+    func countBadge(withThreadId: String?) async -> Int {
+        var unreadChats = await NotificationsManagerHelper.unreadChatsThreadIds();
+        DBChatStore.instance.conversations.filter({ chat -> Bool in
+            return chat.unread > 0;
+        }).forEach { (chat) in
+            unreadChats.insert("account=" + chat.account.description + "|sender=" + chat.jid.description)
         }
+    
+        if let threadId = withThreadId {
+            unreadChats.insert(threadId);
+        }
+        
+        return unreadChats.count;
     }
     
-    func shouldShowNotification(account: BareJID, sender jid: BareJID?, body msg: String?, completionHandler: @escaping (Bool)->Void) {
+    func shouldShowNotification(account: BareJID, sender jid: BareJID?, body msg: String?) -> Bool {
         guard let sender = jid, let body = msg else {
-            completionHandler(true);
-            return;
+            return true;
         }
         
         if let conv = DBChatStore.instance.conversation(for: account, with: sender) {
@@ -81,43 +74,41 @@ class MainNotificationManagerProvider: NotificationManagerProvider {
             case let room as Room:
                 switch room.options.notifications {
                 case .none:
-                    completionHandler(false);
+                    return false;
                 case .always:
-                    completionHandler(true);
+                    return true;
                 case .mention:
-                    completionHandler(body.contains(room.nickname));
+                    return body.contains(room.nickname);
                 }
             case let chat as Chat:
                 switch chat.options.notifications {
                 case .none:
-                    completionHandler(false);
+                    return false;
                 default:
                     if Settings.notificationsFromUnknown {
-                        completionHandler(true);
+                        return true;
                     } else {
-                        let known = DBRosterStore.instance.item(for: account, jid: JID(sender)) != nil;
-                    
-                        completionHandler(known)
+                        return DBRosterStore.instance.item(for: account, jid: JID(sender)) != nil;
                     }
                 }
             case let channel as Channel:
                 switch channel.options.notifications {
                 case .none:
-                    completionHandler(false);
+                    return false;
                 case .always:
-                    completionHandler(true);
+                    return true;
                 case .mention:
                     if let nickname = channel.nickname {
-                        completionHandler(body.contains(nickname));
+                        return body.contains(nickname);
                     } else {
-                        completionHandler(false);
+                        return false;
                     }
                 }
             default:
-                completionHandler(true);
+                return true;
             }
         } else {
-            completionHandler(false);
+            return false;
         }
     }
     

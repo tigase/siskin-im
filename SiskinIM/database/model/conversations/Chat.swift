@@ -244,47 +244,6 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
                 try await super.send(message: encryptedMessage.message);
             }
         })
-//
-//            .schedule(for: jid, task: { callback in
-//            switch encryption {
-//            case .none:
-//                super.send(message: message, completionHandler: { result in
-//                    completionHandler(result);
-//                    callback();
-//                });
-//            case .omemo:
-//                guard let context = self.context as? XMPPClient, context.isConnected else {
-//                    completionHandler(.failure(XMPPError(condition: .gone)));
-//                    callback();
-//                    return;
-//                }
-//                message.oob = nil;
-//                context.module(.omemo).encode(message: message, completionHandler: { result in
-//                    switch result {
-//                    case .success(let encodedMessage):
-//                        guard context.isConnected else {
-//                            completionHandler(.failure(XMPPError(condition: .gone)))
-//                            callback();
-//                            return;
-//                        }
-//                        super.send(message: encodedMessage.message, completionHandler: { result in
-//                            completionHandler(result);
-//                            callback();
-//                        });
-//                    case .failure(let error):
-//                        var errorMessage = NSLocalizedString("It was not possible to send encrypted message due to encryption error", comment: "message encryption failure");
-//                        switch error {
-//                        case SignalError.noSession:
-//                            errorMessage = NSLocalizedString("There is no trusted device to send message to", comment: "message encryption failure");
-//                        default:
-//                            break;
-//                        }
-//                        completionHandler(.failure(XMPPError(condition: .unexpected_request, message: errorMessage)));
-//                        callback();
-//                    }
-//                })
-//            }
-//        })
     }
 
     public override func isLocal(sender: ConversationEntrySender) -> Bool {

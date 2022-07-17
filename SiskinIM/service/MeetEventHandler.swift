@@ -48,16 +48,14 @@ class MeetEventHandler: XmppServiceExtension {
                     guard let callManager = CallManager.instance else {
                         return;
                     }
-                                        
-                    callManager.reportIncomingCall(meet, completionHandler: { result in
-                        switch result {
-                        case .success(_):
-                            break;
-                        case .failure(_):
-                            client.module(.meet).sendMessageInitiation(action: .reject(id: id), to: sender);
-                            break;
+                       
+                    Task {
+                        do {
+                            try await callManager.reportIncomingCall(meet);
+                        } catch {
+                            try await client.module(.meet).sendMessageInitiation(action: .reject(id: id), to: sender);
                         }
-                    });
+                    }
                 case .accept(_):
                     break;
                 case .proceed(_):
@@ -76,9 +74,17 @@ class MeetEventHandler: XmppServiceExtension {
         client.module(.disco).$accountDiscoResult.receive(on: self.queue).sink(receiveValue: { [weak self] info in
             self?.supportedAccounts.removeAll(where: { $0 != client.userBareJid });
             if !info.features.isEmpty {
-                client.module(.meet).findMeetComponent(completionHandler: { result in
-                    self?.supportedAccounts.append(client.userBareJid);
-                })
+                guard let that = self else {
+                    return;
+                }
+                Task {
+                    let components = try await client.module(.meet).findMeetComponents();
+                    if !components.isEmpty {
+                        that.queue.async {
+                            that.supportedAccounts.append(client.userBareJid);
+                        }
+                    }
+                }
             }
         }).store(in: &cancellables);
     }

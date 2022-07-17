@@ -34,7 +34,7 @@ class RegisterAccountController: DataFormController {
 
     let trustedServers = [ "tigase.im", "sure.im", "jabber.today" ];
     
-    var task: InBandRegistrationModule.AccountRegistrationTask?;
+    var task: InBandRegistrationModule.AccountRegistrationAsyncTask?;
     
     var activityIndicator: UIActivityIndicatorView!;
     
@@ -73,7 +73,7 @@ class RegisterAccountController: DataFormController {
             self.domain = newValue;
             tableView.deleteSections(IndexSet(0..<count), with: .fade);
             showIndicator();
-            self.retrieveRegistrationForm(domain: newValue!);
+            self.retrieveRegistrationForm(domain: newValue!, acceptedCertificate: nil);
         }
     }
     
@@ -92,8 +92,23 @@ class RegisterAccountController: DataFormController {
         let jid = BareJID(form?.value(for: "username", type: String.self));
         self.account = BareJID(localPart: jid?.localPart ?? jid?.domain, domain: domain!);
         self.password = form?.value(for: "password", type: String.self);
-        task?.submit(form: form!);
-        self.showIndicator();
+        guard let task = task else {
+            return;
+        }
+        Task {
+            self.showIndicator();
+            do {
+                try await task.submit(form: form!);
+                DispatchQueue.main.async {
+                    self.saveAccount(acceptedCertificate: task.acceptedSslCertificate);
+                }
+            } catch {
+                self.onRegistrationError(error as? XMPPError ?? .undefined_condition);
+            }
+            DispatchQueue.main.async {
+                self.hideIndicator();
+            }
+        }
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -201,32 +216,32 @@ class RegisterAccountController: DataFormController {
         }
     }
     
-    func retrieveRegistrationForm(domain: String) {
-        let onForm = {(form: DataForm, bob: [BobData], task: InBandRegistrationModule.AccountRegistrationTask)->Void in
-            DispatchQueue.main.async {
-                self.nextButton.isEnabled = true;
-                self.hideIndicator();
-                if let accountField = form.field(for: "username", type: DataForm.Field.TextSingle.self), accountField.currentValue?.isEmpty ?? true {
-                    accountField.currentValue = self.account?.localPart;
-                }
-                self.bob = bob;
-                self.form = form;
-                
-                self.tableView.insertSections(IndexSet(0..<(self.visibleFields.count + 1)), with: .fade);
+    func retrieveRegistrationForm(domain: String, acceptedCertificate: SslCertificateInfo?) {
+        self.task = InBandRegistrationModule.AccountRegistrationAsyncTask(domainName: domain, preauth: self.preauth);
+        task?.acceptedSslCertificate = acceptedCertificate;
+        Task {
+            do {
+                let result = try await task!.retrieveForm();
+                await MainActor.run(body: {
+                    self.nextButton.isEnabled = true;
+                    self.hideIndicator();
+                    if let accountField = result.form.field(for: "username", type: DataForm.Field.TextSingle.self), accountField.currentValue?.isEmpty ?? true {
+                        accountField.currentValue = self.account?.localPart;
+                    }
+                    self.bob = result.bob;
+                    self.form = result.form;
+                    
+                    self.tableView.insertSections(IndexSet(0..<(self.visibleFields.count + 1)), with: .fade);
+                })
+            } catch XMPPClient.State.DisconnectionReason.sslCertError(let secTrust) {
+                let info = SslCertificateInfo(trust: secTrust);
+                self.onCertificateError(certData: info, accepted: {
+                    self.retrieveRegistrationForm(domain: domain, acceptedCertificate: info);
+                })
+            } catch {
+                self.onRegistrationError(error as? XMPPError ?? .undefined_condition);
             }
-        };
-        let client: XMPPClient? = nil;
-        self.task = InBandRegistrationModule.AccountRegistrationTask(client: client, domainName: domain, preauth: self.preauth, onForm: onForm, sslCertificateValidator: nil, onCertificateValidationError: self.onCertificateError, completionHandler: { result in
-            switch result {
-            case .success:
-                let certData: SslCertificateInfo? = self.task?.getAcceptedCertificate();
-                DispatchQueue.main.async {
-                    self.saveAccount(acceptedCertificate: certData);
-                }
-            case .failure(let error):
-                self.onRegistrationError(error);
-            }
-        });
+        }
     }
     
     func onRegistrationError(_ error: XMPPError) {
@@ -264,8 +279,8 @@ class RegisterAccountController: DataFormController {
         let alert = UIAlertController(title: NSLocalizedString("Registration failure", comment: "alert title"), message: msg, preferredStyle: .alert);
         alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: handler));
         
-        DispatchQueue.main.async {
-            self.present(alert, animated: true, completion: nil);
+        DispatchQueue.main.async { [weak self] in
+            self?.present(alert, animated: true, completion: nil);
         }
     }
     
@@ -290,7 +305,9 @@ class RegisterAccountController: DataFormController {
     }
     
     @objc func dismissView() {
-        task?.cancel();
+        Task {
+            try await task?.cancel();
+        }
         task = nil;
 
         if self.view.window?.rootViewController is SetupViewController {

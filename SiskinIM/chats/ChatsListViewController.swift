@@ -311,7 +311,9 @@ class ChatsListViewController: UITableViewController {
                     DispatchQueue.main.async {
                         let alert = UIAlertController(title: NSLocalizedString("Channel destuction", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("You are about to destroy channel %@. This will remove the channel on the server, remove remote history archive, and kick out all participants. Are you sure?", comment: "alert body"), room.roomJid.description), preferredStyle: .actionSheet);
                         alert.addAction(UIAlertAction(title: NSLocalizedString("Yes", comment: "button label"), style: .destructive, handler: { action in
-                            room.context?.module(.pepBookmarks).remove(bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: JID(room.jid), autojoin: false), completionHandler: { _ in });
+                            Task {
+                                try await room.context?.module(.pepBookmarks).remove(bookmark: Bookmarks.Conference(name: item.jid.localPart!, jid: JID(room.jid), autojoin: false));
+                            }
                             room.context?.module(.muc).destroy(room: room);
                             self.discardNotifications(for: room);
                             completion(true);

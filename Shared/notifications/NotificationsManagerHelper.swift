@@ -43,21 +43,23 @@ public struct ConversationNotificationDetails {
 
 public class NotificationsManagerHelper {
     
-    public static func unreadChatsThreadIds(completionHandler: @escaping (Set<String>)->Void) {
-        unreadThreadIds(for: [.MESSAGE], completionHandler: completionHandler);
+    public static func unreadChatsThreadIds() async -> Set<String> {
+        return await unreadThreadIds(for: [.MESSAGE]);
     }
     
-    public static func unreadThreadIds(for categories: [NotificationCategory], completionHandler: @escaping (Set<String>)->Void) {
-        UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
-            let unreadChats = Set(notifications.filter({(notification) in
-                let category = NotificationCategory.from(identifier: notification.request.content.categoryIdentifier);
-                return categories.contains(category);
-            }).map({ (notification) in
-                return notification.request.content.threadIdentifier;
-            }));
-            
-            completionHandler(unreadChats);
-        }
+    public static func unreadThreadIds(for categories: [NotificationCategory]) async -> Set<String> {
+        return await withUnsafeContinuation({ continuation in
+            UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
+                let unreadChats = Set(notifications.filter({(notification) in
+                    let category = NotificationCategory.from(identifier: notification.request.content.categoryIdentifier);
+                    return categories.contains(category);
+                }).map({ (notification) in
+                    return notification.request.content.threadIdentifier;
+                }));
+                
+                continuation.resume(returning: unreadChats);
+            }
+        })
     }
     
     public static func generateMessageUID(account: BareJID, sender: BareJID?, body: String?) -> String? {
@@ -67,89 +69,83 @@ public class NotificationsManagerHelper {
         return nil;
     }
         
-    public static func prepareNewMessageNotification(content: UNMutableNotificationContent, account: BareJID, sender jid: BareJID?, nickname: String?, body msg: String?, provider: NotificationManagerProvider, completionHandler: @escaping (UNNotificationContent)->Void) {
+    public static func prepareNewMessageNotification(content: UNMutableNotificationContent, account: BareJID, sender jid: BareJID?, nickname: String?, body msg: String?, provider: NotificationManagerProvider) async -> UNNotificationContent {
         let timestamp = Date();
         content.sound = .default;        
         content.categoryIdentifier = NotificationCategory.MESSAGE.rawValue;
+        
         if let sender = jid, let body = msg {
             let uid = generateMessageUID(account: account, sender: sender, body: body)!;
             content.threadIdentifier = "account=\(account.description)|sender=\(sender.description)";
-            provider.conversationNotificationDetails(for: account, with: sender, completionHandler: { details in
-                os_log("%{public}@", log: OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SiskinPush"), "Found: name: \(details.name), type: \(String(describing: details.type.rawValue))");
-
-                var senderId: String = sender.description;
-                var group: INSpeakableString?;
-                switch details.type {
-                case .chat:
-                    content.title = details.name;
-                    if body.starts(with: "/me ") {
+            let details = provider.conversationNotificationDetails(for: account, with: sender);
+            os_log("%{public}@", log: OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SiskinPush"), "Found: name: \(details.name), type: \(String(describing: details.type.rawValue))");
+            
+            var senderId: String = sender.description;
+            var group: INSpeakableString?;
+            switch details.type {
+            case .chat:
+                content.title = details.name;
+                if body.starts(with: "/me ") {
+                    content.body = String(body.dropFirst(4));
+                } else {
+                    content.body = body;
+                }
+            case .channel, .room:
+                content.title = details.name
+                group = INSpeakableString(spokenPhrase: details.name);
+                if body.starts(with: "/me ") {
+                    if let nickname = nickname {
+                        content.body = "\(nickname) \(body.dropFirst(4))";
+                    } else {
                         content.body = String(body.dropFirst(4));
-                    } else {
-                        content.body = body;
                     }
-                case .channel, .room:
-                    content.title = details.name
-                    group = INSpeakableString(spokenPhrase: details.name);
-                    if body.starts(with: "/me ") {
-                        if let nickname = nickname {
-                            content.body = "\(nickname) \(body.dropFirst(4))";
-                        } else {
-                            content.body = String(body.dropFirst(4));
-                        }
-                    } else {
-                        content.body = body;
-                        if let nickname = nickname {
-                            content.subtitle = nickname;
-                            senderId = sender.with(resource: nickname).description;
-                        }
+                } else {
+                    content.body = body;
+                    if let nickname = nickname {
+                        content.subtitle = nickname;
+                        senderId = sender.with(resource: nickname).description;
                     }
                 }
-                
-                content.userInfo = ["account": account.description, "sender": sender.description, "uid": uid, "timestamp": timestamp];
-                provider.countBadge(withThreadId: content.threadIdentifier, completionHandler: { count in
-                    content.badge = count as NSNumber;
-                    if #available(iOS 15.0, *) {
-                        do {
-                            let recipient = INPerson(personHandle: INPersonHandle(value: account.description, type: .unknown), nameComponents: nil, displayName: nil, image: nil, contactIdentifier: nil, customIdentifier: nil, isMe: true, suggestionType: .none);
-                            let avatar = provider.avatar(on: account, for: sender);
-                            let sender = INPerson(personHandle: INPersonHandle(value: senderId, type: .unknown), nameComponents: nil, displayName: group == nil ? details.name : nickname, image: avatar, contactIdentifier: nil, customIdentifier: senderId, isMe: false, suggestionType: .instantMessageAddress);
-                            let intent = INSendMessageIntent(recipients: group == nil ? [recipient] : [recipient, sender], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: group, conversationIdentifier: content.threadIdentifier, serviceName: "Siskin IM", sender: sender, attachments: nil);
-                            if details.type == .chat {
-                                intent.setImage(avatar, forParameterNamed: \.sender);
-                            } else {
-                                intent.setImage(avatar, forParameterNamed: \.speakableGroupName);
-                            }
-                            let interaction = INInteraction(intent: intent, response: nil);
-                            interaction.direction = .incoming;
-                            interaction.donate(completion: nil);
-                            completionHandler(try content.updating(from: intent));
-                        } catch {
-                            // some error happened
-                            completionHandler(content);
-                        }
+            }
+            content.userInfo = ["account": account.description, "sender": sender.description, "uid": uid, "timestamp": timestamp];
+            content.badge = (await provider.countBadge(withThreadId: content.threadIdentifier)) as NSNumber;
+            if #available(iOS 15.0, *) {
+                do {
+                    let recipient = INPerson(personHandle: INPersonHandle(value: account.description, type: .unknown), nameComponents: nil, displayName: nil, image: nil, contactIdentifier: nil, customIdentifier: nil, isMe: true, suggestionType: .none);
+                    let avatar = provider.avatar(on: account, for: sender);
+                    let sender = INPerson(personHandle: INPersonHandle(value: senderId, type: .unknown), nameComponents: nil, displayName: group == nil ? details.name : nickname, image: avatar, contactIdentifier: nil, customIdentifier: senderId, isMe: false, suggestionType: .instantMessageAddress);
+                    let intent = INSendMessageIntent(recipients: group == nil ? [recipient] : [recipient, sender], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: group, conversationIdentifier: content.threadIdentifier, serviceName: "Siskin IM", sender: sender, attachments: nil);
+                    if details.type == .chat {
+                        intent.setImage(avatar, forParameterNamed: \.sender);
                     } else {
-                        completionHandler(content);
+                        intent.setImage(avatar, forParameterNamed: \.speakableGroupName);
                     }
-                });
-            })
+                    let interaction = INInteraction(intent: intent, response: nil);
+                    interaction.direction = .incoming;
+                    interaction.donate(completion: nil);
+                    return try content.updating(from: intent);
+                } catch {
+                    // some error happened
+                }
+            }
+            return content;
         } else {
             content.threadIdentifier = "account=\(account.description)";
             content.body = NSLocalizedString("New message!", comment: "new message without content notification");
-            provider.countBadge(withThreadId: content.threadIdentifier, completionHandler: { count in
-                content.badge = count as NSNumber;
-                completionHandler(content);
-            });
+            content.badge = (await provider.countBadge(withThreadId: content.threadIdentifier)) as NSNumber;
+            
+            return content;
         }
     }
 }
 
 public protocol NotificationManagerProvider {
     
-    func conversationNotificationDetails(for account: BareJID, with jid: BareJID, completionHandler: @escaping (ConversationNotificationDetails)->Void);
+    func conversationNotificationDetails(for account: BareJID, with jid: BareJID) -> ConversationNotificationDetails;
  
-    func countBadge(withThreadId: String?, completionHandler: @escaping (Int)->Void);
+    func countBadge(withThreadId: String?) async -> Int;
     
-    func shouldShowNotification(account: BareJID, sender: BareJID?, body: String?, completionHandler: @escaping (Bool)->Void);
+    func shouldShowNotification(account: BareJID, sender: BareJID?, body: String?) -> Bool;
     
     func avatar(on account: BareJID, for sender: BareJID) -> INImage?;
     

@@ -149,35 +149,35 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
                         let info = try await context.module(.disco).info(for: room.jid.jid());
                         let hasPush = (context.module(.push) as! SiskinPushNotificationsModule).isEnabled && info.features.contains("jabber:iq:register");
                         let pushEnabled = try await room.checkTigasePushNotificationRegistrationStatus();
-                        DispatchQueue.main.async {
+                        await MainActor.run(body: {
                             self.pushNotificationsSwitch.isEnabled = hasPush;
                             self.pushNotificationsSwitch.isOn = pushEnabled;
-                        }
+                        })
                     } catch {
-                        DispatchQueue.main.async {
+                        await MainActor.run(body: {
                             self.pushNotificationsSwitch.isEnabled = false;
-                        }
+                        })
                     }
                 }
                 group.addTask {
                     do {
                         let vcard = try await context.module(.vcardTemp).retrieveVCard(from: room.jid.jid());
                         DBVCardStore.instance.updateVCard(for: room.roomJid, on: room.account, vcard: vcard);
-                        DispatchQueue.main.async {
+                        await MainActor.run(body: {
                             self.canEditVCard = true;
-                        }
+                        })
                     } catch {
-                        DispatchQueue.main.async {
+                        await MainActor.run(body: {
                             self.canEditVCard = false;
-                        }
+                        })
                     }
                 }
                 for await _ in group {
                 }
             })
-            DispatchQueue.main.async {
+            await MainActor.run(body: {
                 self.hideIndicator();
-            }
+            })
         }
     }
     
@@ -268,11 +268,15 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         if room.context?.isConnected ?? false, let pepBookmarksModule = room.context?.module(.pepBookmarks) {
             if pepBookmarksModule.currentBookmarks.conference(for: JID(room.jid)) == nil {
                 alertController.addAction(UIAlertAction(title: NSLocalizedString("Create bookmark", comment: "button label"), style: .default, handler: { action in
-                    pepBookmarksModule.addOrUpdate(bookmark: Bookmarks.Conference(name: self.room.name, jid: JID(self.room.jid), autojoin: false, nick: self.room.nickname, password: self.room.password), completionHandler: { _ in });
+                    Task {
+                        try await pepBookmarksModule.addOrUpdate(bookmark: Bookmarks.Conference(name: self.room.name, jid: JID(self.room.jid), autojoin: false, nick: self.room.nickname, password: self.room.password));
+                    }
                 }))
             } else {
                 alertController.addAction(UIAlertAction(title: NSLocalizedString("Remove bookmark", comment: "button label"), style: .default, handler: { action in
-                    pepBookmarksModule.remove(bookmark: Bookmarks.Conference(name: self.room.name, jid: JID(self.room.jid), autojoin: false), completionHandler: { _ in });
+                    Task {
+                        try await pepBookmarksModule.remove(bookmark: Bookmarks.Conference(name: self.room.name, jid: JID(self.room.jid), autojoin: false));
+                    }
                 }))
             }
         }
@@ -346,20 +350,20 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         
         let vcard = VCard();
         vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: data.base64EncodedString(), types: [.home])];
-        vcardTempModule.publishVCard(vcard, to: room.roomJid, completionHandler: { result in
-            switch result {
-            case .success(_):
+        Task {
+            do {
+                try await vcardTempModule.publish(vcard: vcard, to: room.roomJid);
                 DispatchQueue.main.async {
                     self.roomAvatarView.image = self.squared(image: photo);
                     self.hideIndicator();
                 }
-            case .failure(let errorCondition):
+            } catch {
                 DispatchQueue.main.async {
                     self.hideIndicator();
-                    self.showError(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not set group chat avatar. The server responded with an error: %@", comment: "alert body"), errorCondition.localizedDescription));
+                    self.showError(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not set group chat avatar. The server responded with an error: %@", comment: "alert body"), error.localizedDescription));
                 }
             }
-        });
+        }
     }
     
     private func renameChat() {
@@ -374,26 +378,22 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
                 return;
             }
             self.showIndicator();
-            mucModule.roomConfiguration(of: JID(self.room.jid), completionHandler: { result in
-                switch result {
-                case .success(let form):
+            Task {
+                do {
+                    let form = try await mucModule.roomConfiguration(of: JID(self.room.jid));
                     form.name = newName;
-                    mucModule.roomConfiguration(form, of: JID(self.room.jid), completionHandler: { result in
-                        DispatchQueue.main.async {
-                            self.hideIndicator();
-                            switch result {
-                            case .success(_):
-                                self.roomNameField.text = nameField.text;
-                            case .failure(let error):
-                                self.showError(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not rename group chat. The server responded with an error: %@", comment: "alert body"), error.localizedDescription))
-                            }
-                        }
-                    });
-                case .failure(let error):
-                    self.hideIndicator();
-                    self.showError(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not rename group chat. The server responded with an error: %@", comment: "alert body"), error.localizedDescription))
+                    try await mucModule.roomConfiguration(form, of: JID(self.room.jid));
+                    self.roomNameField.text = nameField.text;
+                    await MainActor.run(body: {
+                        self.hideIndicator();
+                    })
+                } catch {
+                    await MainActor.run(body: {
+                        self.hideIndicator();
+                        self.showError(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Could not rename group chat. The server responded with an error: %@", comment: "alert body"), error.localizedDescription))
+                    })
                 }
-            });
+            }
         }))
         controller.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
         self.present(controller, animated: true, completion: nil);

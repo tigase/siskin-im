@@ -609,6 +609,7 @@
 		FEF19F152348E781005CFE9A /* BaseChatViewControllerWithDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseChatViewControllerWithDataSource.swift; sourceTree = "<group>"; };
 		FEF80DB11CDBBBFE005645A7 /* AccountSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountSettingsViewController.swift; sourceTree = "<group>"; };
 		FEF8255424BA0AFE00820108 /* MessageTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageTextView.swift; sourceTree = "<group>"; };
+		FEF97CE52875EA0B008CF411 /* XMPPError+LocalizedError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XMPPError+LocalizedError.swift"; sourceTree = "<group>"; };
 		FEF97CE728770E5C008CF411 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = localization/de.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		FEF97CE828770E5C008CF411 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = localization/de.lproj/Main.strings; sourceTree = "<group>"; };
 		FEF97CE928770E5C008CF411 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = localization/de.lproj/VoIP.strings; sourceTree = "<group>"; };
@@ -629,7 +630,6 @@
 		FEF97CF828770E80008CF411 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = localization/es.lproj/Conversation.strings; sourceTree = "<group>"; };
 		FEF97CF928770E80008CF411 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = localization/es.lproj/MIX.strings; sourceTree = "<group>"; };
 		FEF97CFA28770E83008CF411 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = localization/es.lproj/MainInterface.strings; sourceTree = "<group>"; };
-		FEF97CE52875EA0B008CF411 /* XMPPError+LocalizedError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XMPPError+LocalizedError.swift"; sourceTree = "<group>"; };
 		FEFB63AC1F31E4EE00EFB3E7 /* MainTabBarController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainTabBarController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 

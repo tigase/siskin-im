@@ -366,23 +366,25 @@ class ContactViewController: UITableViewController {
             if DBRosterStore.instance.item(for: account, jid: jid) == nil {
                 InvitationManager.instance.rejectPresenceSubscription(for: account, from: jid);
             }
-            blockingModule.block(jids: [jid], completionHandler: { [weak sender] result in
-                switch result {
-                case .failure(_):
-                    sender?.isOn = false;
-                case .success(_):
-                    break;
+            Task {
+                do {
+                    try await blockingModule.block(jids: [jid]);
+                } catch {
+                    await MainActor.run(body: {
+                        sender.isOn = false;
+                    })
                 }
-            })
+            }
         } else {
-            blockingModule.unblock(jids: [jid], completionHandler: { [weak sender] result in
-                switch result {
-                case .failure(_):
-                    sender?.isOn = true;
-                default:
-                    break;
+            Task {
+                do {
+                    try await blockingModule.unblock(jids: [jid]);
+                } catch {
+                    await MainActor.run(body: {
+                        sender.isOn = true;
+                    })
                 }
-            })
+            }
         }
     }
     

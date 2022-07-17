@@ -51,23 +51,25 @@ class InviteToMeetingViewController: MultiContactSelectionViewController {
             return;
         }
         
-        meet.allow(jids: participants, completionHandler: { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let jids):
-                    for jid in jids {
-                        meet.client.module(.meet).sendMessageInitiation(action: .propose(id: UUID().uuidString, meetJid: JID(meet.jid), media: [.audio, .video]), to: JID(jid));
-                    }
+        Task {
+            do {
+                try await meet.allow(jids: participants);
+                _ = await participants.concurrentMap({ jid in
+                    try? await meet.client.module(.meet).sendMessageInitiation(action: .propose(id: UUID().uuidString, meetJid: JID(meet.jid), media: [.audio, .video]), to: jid.jid())
+                })
+                await MainActor.run(body: {
                     self.dismiss();
-                case .failure(let error):
+                })
+            } catch {
+                await MainActor.run(body: {
                     let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to grant selected users access to the meeting. Received an error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
                     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: { _ in
                         self.dismiss();
                     }))
                     self.present(alert, animated: true, completion: nil);
-                }
+                })
             }
-        });
+        }
     }
 
     @objc func cancelTapped(_ sender: Any) {

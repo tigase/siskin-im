@@ -155,15 +155,14 @@ class JingleManager: JingleSessionManager {
             guard let callManager = CallManager.instance else {
                 throw XMPPError(condition: .feature_not_implemented);
             }
-            callManager.reportIncomingCall(call, completionHandler: { result in
-                switch result {
-                case .success(_):
-                    // nothing to do as manager will call us back..
-                    break;
-                case .failure(_):
-                    session.decline();
+            
+            Task {
+                do {
+                    try await callManager.reportIncomingCall(call);
+                } catch {
+                    try await session.decline();
                 }
-            });
+            }
         case .retract(let id):
             self.sessionTerminated(account: context.userBareJid, with: jid, sid: id);
         case .accept(let id):
@@ -178,7 +177,7 @@ class JingleManager: JingleSessionManager {
         }
     }
     
-    func sessionInitiated(for context: Context, with jid: JID, sid: String, contents: [Jingle.Content], bundle: [String]?) throws {
+    func sessionInitiated(for context: Context, with jid: JID, sid: String, contents: [Jingle.Content], bundle: Jingle.Bundle?) throws {
         guard CallManager.isAvailable, let content = contents.first, let _ = content.description as? Jingle.RTP.Description else {
             return;
         }
@@ -199,18 +198,17 @@ class JingleManager: JingleSessionManager {
                 throw XMPPError(condition: .feature_not_implemented);
             }
             
-            callManager.reportIncomingCall(call, completionHandler: { result in
-                switch result {
-                case .success(_):
-                    break;
-                case .failure(_):
-                    session.terminate();
+            Task {
+                do {
+                    try await callManager.reportIncomingCall(call);
+                } catch {
+                    try await session.terminate();
                 }
-            })
+            }
         }
     }
     
-    func sessionAccepted(for context: Context, with jid: JID, sid: String, contents: [Jingle.Content], bundle: [String]?) throws {
+    func sessionAccepted(for context: Context, with jid: JID, sid: String, contents: [Jingle.Content], bundle: Jingle.Bundle?) throws {
         guard let session = session(for: context, with: jid, sid: sid) else {
             throw XMPPError(condition: .item_not_found);
         }
@@ -257,7 +255,7 @@ class JingleManager: JingleSessionManager {
         }
     }
     
-    func contentModified(for context: Context, with jid: JID, sid: String, action: Jingle.ContentAction, contents: [Jingle.Content], bundle: [String]?) throws {
+    func contentModified(for context: Context, with jid: JID, sid: String, action: Jingle.ContentAction, contents: [Jingle.Content], bundle: Jingle.Bundle?) throws {
         guard let session = self.session(for: context, with: jid, sid: sid) else {
             throw XMPPError(condition: .item_not_found);
         }

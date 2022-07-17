@@ -160,11 +160,10 @@ open class DBChatStore: ContextLifecycleAware {
         }
     }
 
-    func messageDraft(for account: BareJID, with jid: BareJID, completionHandler: @escaping (String?)->Void) {
-        let text = try! Database.main.reader({ database -> String? in
+    func messageDraft(for account: BareJID, with jid: BareJID) -> String? {
+        return try! Database.main.reader({ database -> String? in
             return try database.select(query: .chatFindMessageDraft, params: ["account": account, "jid": jid]).mapFirst({ $0.string(for: "message_draft") });
         })
-        completionHandler(text);
     }
 
     func storeMessage(draft: String?, for account: BareJID, with jid: BareJID) {

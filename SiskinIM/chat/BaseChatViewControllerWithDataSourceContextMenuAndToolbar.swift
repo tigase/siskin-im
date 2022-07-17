@@ -76,12 +76,14 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
                 case .report:
                     return UIMenu(title: action.title, image: action.image, children: [
                         UIAction(title: NSLocalizedString("Report spam", comment: "context menu action"), attributes: .destructive, handler: { _ in
-                            self.conversation.context?.module(.blockingCommand).block(jid: JID(self.conversation.jid),
-                                                                                      report: .init(cause: .spam), completionHandler: { _ in });
+                            Task {
+                                try await self.conversation.context?.module(.blockingCommand).block(jid: JID(self.conversation.jid), report: .init(cause: .spam));
+                            }
                         }),
                         UIAction(title: NSLocalizedString("Report abuse", comment: "context menu action"), attributes: .destructive, handler: { _ in
-                            self.conversation.context?.module(.blockingCommand).block(jid: JID(self.conversation.jid),
-                                                                                      report: .init(cause: .abuse), completionHandler: { _ in });
+                            Task {
+                                try await self.conversation.context?.module(.blockingCommand).block(jid: JID(self.conversation.jid), report: .init(cause: .abuse));
+                            }
                         }),
                         UIAction(title: NSLocalizedString("Cancel", comment: "context menu action"), handler: { _ in })
                     ])

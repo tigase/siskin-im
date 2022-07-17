@@ -89,9 +89,9 @@ class DBCapabilitiesCache: CapabilitiesCache {
         })
     }
     
-    open func isCached(node: String, handler: @escaping (Bool)->Void) {
-        queue.async {
-            handler(self.isCached(node: node));
+    open func isCached(node: String) -> Bool {
+        queue.sync {
+            return self._isCached(node: node);
         }
     }
     
@@ -99,9 +99,13 @@ class DBCapabilitiesCache: CapabilitiesCache {
         return features(for: node)?.contains(feature) ?? false;
     }
     
+    open func areSupported(features: [String], for node: String) -> Bool {
+        return features.allSatisfy({ isSupported(feature: $0, for: node) });
+    }
+    
     open func store(node: String, identities: [DiscoveryModule.Identity], features: [String]) {
         queue.async(flags: .barrier) {
-            guard !self.isCached(node: node) else {
+            guard !self._isCached(node: node) else {
                 return;
             }
             
@@ -119,7 +123,7 @@ class DBCapabilitiesCache: CapabilitiesCache {
         }
     }
     
-    fileprivate func isCached(node: String) -> Bool {
+    fileprivate func _isCached(node: String) -> Bool {
         do {
             return try Database.main.reader({ database in
                 try database.count(query: .capsCountFeaturesForNode, params: ["node": node]);

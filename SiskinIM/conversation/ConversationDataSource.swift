@@ -74,6 +74,7 @@ public enum ConversationLoadType {
     }
 }
 
+// FIXME: Consider making this async.. maybe actor?
 class ConversationDataSource {
 
     enum State {

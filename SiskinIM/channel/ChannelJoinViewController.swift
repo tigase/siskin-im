@@ -80,10 +80,10 @@ class ChannelJoinViewController: UITableViewController {
         case .join:
             if componentType == .muc {
                 operationStarted(message: NSLocalizedString("Checking…", comment: "channel join view operation label"));
-                client.module(.disco).info(for: JID(channelJid), node: nil, completionHandler: { result in
-                    switch result {
-                    case .success(let info):
-                        DispatchQueue.main.async {
+                Task {
+                    do {
+                        let info = try await client.module(.disco).info(for: JID(channelJid), node: nil);
+                        await MainActor.run(body: {
                             if let name = info.identities.first?.name {
                                 self.nameField.text = name;
                             }
@@ -92,15 +92,15 @@ class ChannelJoinViewController: UITableViewController {
                             self.tableView.reloadData();
                             self.updateJoinButtonStatus();
                             self.operationEnded();
-                        }
-                    case .failure(_):
-                        DispatchQueue.main.async {
+                        })
+                    } catch {
+                        await MainActor.run(body: {
                             self.roomFeatures = [];
                             self.updateJoinButtonStatus();
                             self.operationEnded();
-                        }
+                        })
                     }
-                });
+                }
             } else {
                 self.updateJoinButtonStatus();
             }
@@ -168,6 +168,7 @@ class ChannelJoinViewController: UITableViewController {
         self.tableView.refreshControl?.beginRefreshing();
     }
     
+    @MainActor
     func operationEnded() {
         if let tableView = self.tableView {
             tableView.refreshControl?.endRefreshing();
@@ -356,7 +357,9 @@ class ChannelJoinViewController: UITableViewController {
                     case .created(let room), .joined(let room):
                         let info = try await client.module(.disco).info(for: JID(room.jid));
                         if createBookmark {
-                            client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: info.identities.first?.name ?? room.jid.localPart, jid: JID(room.jid), autojoin: autojoin, nick: nick, password: password), completionHandler: { _ in });
+                            Task {
+                                try await client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: info.identities.first?.name ?? room.jid.localPart, jid: JID(room.jid), autojoin: autojoin, nick: nick, password: password));
+                            }
                         }
                         (room as! Room).updateRoom(name: info.identities.first(where: { $0.category == "conference" })?.name?.trimmingCharacters(in: .whitespacesAndNewlines))
                         (room as! Room).roomFeatures = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));

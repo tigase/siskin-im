@@ -63,7 +63,7 @@ extension JingleManager {
             super.init(context: context, jid: jid, sid: sid, role: role, initiationType: initiationType);
         }
         
-        override func initiated(contents: [Jingle.Content], bundle: [String]?) {
+        override func initiated(contents: [Jingle.Content], bundle: Jingle.Bundle?) {
             super.initiated(contents: contents, bundle: bundle)
             self.received(action: .contentSet(SDP(contents: contents, bundle: bundle)));
         }
@@ -91,21 +91,17 @@ extension JingleManager {
                 self.actionsQueue.removeAll();
             }
         }
-        
-        override func accept() {
-            super.accept();
-        }
                 
-        override func accepted(contents: [Jingle.Content], bundle: [String]?) {
+        override func accepted(contents: [Jingle.Content], bundle: Jingle.Bundle?) {
             super.accepted(contents: contents, bundle: bundle)
             received(action: .contentSet(SDP(contents: contents, bundle: bundle)));
         }
         
-        func decline() {
-            self.terminate(reason: .decline);
+        func decline() async throws {
+            try await self.terminate(reason: .decline);
         }
                 
-        open override func contentModified(action: Jingle.ContentAction, contents: [Jingle.Content], bundle: [String]?) {
+        open override func contentModified(action: Jingle.ContentAction, contents: [Jingle.Content], bundle: Jingle.Bundle?) {
             let sdp = SDP(contents: contents, bundle: bundle);
             received(action: .contentApply(action, sdp));
         }

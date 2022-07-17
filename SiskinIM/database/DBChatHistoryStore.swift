@@ -912,14 +912,13 @@ class DBChatHistoryStore {
         completionHandler(items);
     }
 
-    public func loadAttachments(for conversation: ConversationKey, completionHandler: @escaping ([ConversationEntry])->Void) {
+    public func loadAttachments(for conversation: ConversationKey) async -> [ConversationEntry] {
         let params: [String: Any?] = ["account": conversation.account, "jid": conversation.jid];
-        let attachments = try! Database.main.reader({ database in
+        return try! Database.main.reader({ database in
             return try database.select(query: .messagesFindChatAttachments, cached: false, params: params).mapAll({ cursor -> ConversationEntry? in
                 return self.itemFrom(cursor: cursor, for: conversation);
             })
         })
-        completionHandler(attachments);
     }
 
     fileprivate var linkPreviews: Bool {

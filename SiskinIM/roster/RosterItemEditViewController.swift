@@ -139,31 +139,26 @@ class RosterItemEditViewController: UITableViewController, UIPickerViewDataSourc
             return;
         }
         
-        let resultHandler = { (result: Result<Iq, XMPPError>) in
-            switch result {
-            case .success(_):
-                self.updateSubscriptions(client: client)
-                DispatchQueue.main.async {
-                    self.dismissView();
+        Task {
+            do {
+                if let rosterItem = DBRosterStore.instance.item(for: client, jid: jid!) {
+                    if rosterItem.name != nameTextField.text {
+                        _ = try await client.module(.roster).updateItem(jid: jid!, name: nameTextField.text, groups: rosterItem.groups);
+                    }
+                } else {
+                    _ = try await client.module(.roster).addItem(jid: jid!, name: nameTextField.text, groups: []);
                 }
-            case .failure(let error):
-                DispatchQueue.main.async {
+                self.updateSubscriptions(client: client)
+                await MainActor.run(body: {
+                    self.dismissView();
+                })
+            } catch {
+                await MainActor.run(body: {
                     let alert = UIAlertController.init(title: NSLocalizedString("Failure", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
                     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
                     self.present(alert, animated: true, completion: nil);
-                }
+                })
             }
-        };
-        
-        if let rosterItem = DBRosterStore.instance.item(for: client, jid: jid!) {
-            if rosterItem.name == nameTextField.text {
-                updateSubscriptions(client: client);
-                self.dismissView();
-            } else {
-                client.module(.roster).updateItem(jid: jid!, name: nameTextField.text, groups: rosterItem.groups, completionHandler: resultHandler);
-            }
-        } else {
-            client.module(.roster).addItem(jid: jid!, name: nameTextField.text, groups: [], completionHandler: resultHandler);
         }
     }
     

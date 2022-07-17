@@ -194,7 +194,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 return;
             }
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toDiscard)
-            NotificationManager.instance.updateApplicationIconBadgeNumber(completionHandler: nil);
+            Task {
+                await NotificationManager.instance.updateApplicationIconBadgeNumber();
+            }
         }
     }
     
@@ -208,7 +210,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         XmppService.instance.updateApplicationState(.active);
         applicationKeepOnlineOnAwayFinished(application);
 
-        NotificationManager.instance.updateApplicationIconBadgeNumber(completionHandler: nil);
+        Task {
+            await NotificationManager.instance.updateApplicationIconBadgeNumber();
+        }
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
@@ -535,7 +539,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 let state = XmppService.instance.getClient(for: account.bareJid)?.state;
                 logger.debug("unread messages retrieved, client state = \(state, privacy: .public)");
                 if state != .connected() {
-                    dismissNewMessageNotifications(for: account) {
+                    Task {
+                        await dismissNewMessageNotifications(for: account);
                         completionHandler(.newData);
                     }
                     return;
@@ -573,19 +578,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         completionHandler(.newData);
     }
     
-    func dismissNewMessageNotifications(for account: JID, completionHandler: (()-> Void)?) {
-        UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
-            let toRemove = notifications.filter({ (notification) in
-                switch NotificationCategory.from(identifier: notification.request.content.categoryIdentifier) {
-                case .MESSAGE:
-                    return (notification.request.content.userInfo["account"] as? String) == account.description;
-                default:
-                    return false;
-                }
-            }).map({ (notification) in notification.request.identifier });
-            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
-            NotificationManager.instance.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
-        }
+    func dismissNewMessageNotifications(for account: JID) async {
+        let toRemove: [String] = await withUnsafeContinuation({ continuation in
+            UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
+                let toRemove = notifications.filter({ (notification) in
+                    switch NotificationCategory.from(identifier: notification.request.content.categoryIdentifier) {
+                    case .MESSAGE:
+                        return (notification.request.content.userInfo["account"] as? String) == account.description;
+                    default:
+                        return false;
+                    }
+                }).map({ (notification) in notification.request.identifier });
+                continuation.resume(returning: toRemove);
+            }
+        })
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
+        await NotificationManager.instance.updateApplicationIconBadgeNumber();
     }
     
     @objc func pushNotificationRegistrationFailed(_ notification: NSNotification) {

@@ -58,11 +58,12 @@ class NotificationService: UNNotificationServiceExtension {
                                 self.debug("got decrypted data:", String(data: decoded, encoding: .utf8) as Any);
                                 if let payload = try? JSONDecoder().decode(Payload.self, from: decoded) {
                                     self.debug("decoded payload successfully!");
-                                    NotificationsManagerHelper.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: payload.sender.bareJid, nickname: payload.nickname, body: payload.message, provider: provider, completionHandler: { content in
-                                        DispatchQueue.main.async {
+                                    Task {
+                                        let content = await NotificationsManagerHelper.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: payload.sender.bareJid, nickname: payload.nickname, body: payload.message, provider: provider);
+                                        await MainActor.run(body: {
                                             contentHandler(content);
-                                        }
-                                    });
+                                        })
+                                    }
                                     return;
                                 }
                             }
@@ -70,11 +71,12 @@ class NotificationService: UNNotificationServiceExtension {
                         contentHandler(bestAttemptContent)
                     } else {
                         self.debug("got plain push with", bestAttemptContent.userInfo[AnyHashable("sender")] as? String as Any, bestAttemptContent.userInfo[AnyHashable("body")] as? String as Any, bestAttemptContent.userInfo[AnyHashable("unread-messages")] as? Int as Any, bestAttemptContent.userInfo[AnyHashable("nickname")] as? String as Any);
-                        NotificationsManagerHelper.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: JID(bestAttemptContent.userInfo[AnyHashable("sender")] as? String)?.bareJid, nickname: bestAttemptContent.userInfo[AnyHashable("nickname")] as? String, body: bestAttemptContent.userInfo[AnyHashable("body")] as? String, provider: provider, completionHandler: { content in
-                            DispatchQueue.main.async {
+                        Task {
+                            let content = await NotificationsManagerHelper.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: JID(bestAttemptContent.userInfo[AnyHashable("sender")] as? String)?.bareJid, nickname: bestAttemptContent.userInfo[AnyHashable("nickname")] as? String, body: bestAttemptContent.userInfo[AnyHashable("body")] as? String, provider: provider);
+                            await MainActor.run(body: {
                                 contentHandler(content);
-                            }
-                        });
+                            })
+                        }
                     }
                 }
                 return;
@@ -173,7 +175,7 @@ class ExtensionNotificationManagerProvider: NotificationManagerProvider {
         return UIImage(contentsOfFile: url.path)?.inImage();
     }
     
-    func conversationNotificationDetails(for account: BareJID, with jid: BareJID, completionHandler: @escaping (ConversationNotificationDetails)->Void) {
+    func conversationNotificationDetails(for account: BareJID, with jid: BareJID) -> ConversationNotificationDetails {
         let (type, options) = try! Database.mainReader().select(query: .conversationNotificationDetails, cached: false, params: ["account": account, "jid": jid]).mapFirst({ cursor -> (ConversationType, ConversationOptions) in
             let type = ConversationType(rawValue: cursor.int(for: "type")!) ?? .chat;
             let options: ConversationOptions = cursor.object(for: "options") ?? ConversationOptions();
@@ -183,35 +185,31 @@ class ExtensionNotificationManagerProvider: NotificationManagerProvider {
         
         switch type {
         case .chat:
-            completionHandler(ConversationNotificationDetails(name: try! Database.mainReader().select(query: .buddyName, cached: false, params: ["account": account, "jid": jid]).mapFirst({ $0.string(for: "name") }) ?? jid.description, notifications: options.notifications ?? .always, type: type, nick: nil));
+            return ConversationNotificationDetails(name: try! Database.mainReader().select(query: .buddyName, cached: false, params: ["account": account, "jid": jid]).mapFirst({ $0.string(for: "name") }) ?? jid.description, notifications: options.notifications ?? .always, type: type, nick: nil);
         case .channel, .room:
-            completionHandler(ConversationNotificationDetails(name: options.name ?? jid.description, notifications: options.notifications ?? .always, type: type, nick: options.nick));
+            return ConversationNotificationDetails(name: options.name ?? jid.description, notifications: options.notifications ?? .always, type: type, nick: options.nick);
         }
     }
     
-    func countBadge(withThreadId: String?, completionHandler: @escaping (Int) -> Void) {
-        NotificationsManagerHelper.unreadChatsThreadIds { (result) in
-            var unreadChats = result;
-
-            try? Database.mainReader().select(query: .listUnreadThreads, cached: false, params: []).mapAll({ cursor in
-                if let account = cursor.bareJid(for: "account"), let jid = cursor.bareJid(for: "jid") {
-                    return "account=\(account.description)|sender=\(jid.description)"
-                }
-                return nil;
-            }).forEach({ unreadChats.insert($0) });
-            
-
-            if let threadId = withThreadId {
-                unreadChats.insert(threadId);
+    func countBadge(withThreadId: String?) async -> Int {
+        var unreadChats = await NotificationsManagerHelper.unreadChatsThreadIds();
+        try? Database.mainReader().select(query: .listUnreadThreads, cached: false, params: []).mapAll({ cursor in
+            if let account = cursor.bareJid(for: "account"), let jid = cursor.bareJid(for: "jid") {
+                return "account=\(account.description)|sender=\(jid.description)"
             }
+            return nil;
+        }).forEach({ unreadChats.insert($0) });
+        
 
-            completionHandler(unreadChats.count);
+        if let threadId = withThreadId {
+            unreadChats.insert(threadId);
         }
-        completionHandler(-1);
+        
+        return unreadChats.count;
     }
     
-    func shouldShowNotification(account: BareJID, sender: BareJID?, body: String?, completionHandler: @escaping (Bool)->Void) {
-        completionHandler(true);
+    func shouldShowNotification(account: BareJID, sender: BareJID?, body: String?) -> Bool {
+        return true;
     }
 }
 

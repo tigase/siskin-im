@@ -45,14 +45,15 @@ class ChatAttachmentsController: UICollectionViewController, UICollectionViewDel
         }).store(in: &cancellables);
         if !loaded {
             self.loaded = true;
-            DBChatHistoryStore.instance.loadAttachments(for: conversation, completionHandler: { attachments in
-                DispatchQueue.main.async {
+            Task {
+                let attachments = await DBChatHistoryStore.instance.loadAttachments(for: conversation);
+                await MainActor.run(body: {
                     self.items = attachments.filter({ (attachment) -> Bool in
                         return DownloadStore.instance.url(for: "\(attachment.id)") != nil;
                     });
                     self.collectionView.reloadData();
-                }
-            });
+                })
+            }
         }
     }
     

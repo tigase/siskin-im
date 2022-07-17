@@ -479,8 +479,9 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
             
             return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
                 let kickOutAction = UIAction(title: NSLocalizedString("Kick out", comment: "button label"), image: nil, attributes: .destructive, handler: { action in
-                    controller.meet?.deny(jids: [publisher.jid], completionHandler: { result in
-                    })
+                    Task {
+                        try await controller.meet?.deny(jids: [publisher.jid])
+                    }
                 });
                 return UIMenu(title: "", children: [kickOutAction]);
             })

@@ -67,12 +67,12 @@ class Meet: CallBase {
         leave();
     }
     
-    func start(completionHandler: @escaping (Result<Void, Error>) -> Void) {
-        join(completionHandler: completionHandler);
+    func start() async throws {
+        try await join();
     }
     
-    func accept(offerMedia: [Call.Media], completionHandler: @escaping (Result<Void, Error>) -> Void) {
-        join(completionHandler: completionHandler);
+    func accept(offerMedia: [Call.Media]) async throws {
+        try await join();
     }
     
     func ringing() {
@@ -104,15 +104,16 @@ class Meet: CallBase {
     private var presenceSent = false;
     private var cancellables: Set<AnyCancellable> = [];
     
-    private func join(completionHandler: ((Result<Void,Error>)->Void)?) {
+    private func join() async throws {
         let call = Call(client: client, with: jid, sid: UUID().uuidString, direction: .outgoing, media: [.audio, .video]);
         call.ringing();
 
         if !PresenceStore.instance.isAvailable(for: jid, context: client) {
-            let presence = Presence();
-            presence.to = JID(jid);
-            client.writer.write(stanza: presence);
-            presenceSent = true;
+            Task {
+                let presence = Presence(to: jid.jid());
+                try await client.writer.write(stanza: presence);
+                presenceSent = true;
+            }
         }
         
         client.module(.meet).eventsPublisher.receive(on: Meet.queue).filter({ $0.meetJid == self.jid }).sink(receiveValue: { [weak self] event in
@@ -123,33 +124,26 @@ class Meet: CallBase {
             call.reset();
         }).store(in: &cancellables);
         
-        MeetController.open(meet: self);
+        await MeetController.open(meet: self);
         self.outgoingCall = call;
 
-        call.initiateOutgoingCall(with: JID(jid), completionHandler: { result in
-            switch result {
-            case .success(_):
-                self.logger.info("initiated outgoing call of a meet \(self.jid)")
-                break;
-            case .failure(let error):
-                self.logger.info("initiation of outgoing call of a meet \(self.jid) failed with \(error)")
-                call.reset();
-                self.cancellables.removeAll();
-            }
-            completionHandler?(result);
-        })
+        do {
+            try await call.initiateOutgoingCall(with: jid.jid());
+            self.logger.info("initiated outgoing call of a meet \(self.jid)")
+        } catch {
+            self.logger.info("initiation of outgoing call of a meet \(self.jid) failed with \(error)")
+            call.reset();
+            self.cancellables.removeAll();
+            throw error;
+        }
     }
     
-    public func allow(jids: [BareJID], completionHandler: @escaping (Result<[BareJID],XMPPError>)->Void) {
-        client.module(.meet).allow(jids: jids, in: JID(jid), completionHandler: { result in
-            completionHandler(result.map({ _ in jids }));
-        });
+    public func allow(jids: [BareJID]) async throws {
+        try await client.module(.meet).allow(jids: jids, in: JID(jid));
     }
     
-    public func deny(jids: [BareJID], completionHandler: @escaping (Result<[BareJID],XMPPError>)->Void) {
-        client.module(.meet).deny(jids: jids, in: JID(jid), completionHandler: { result in
-            completionHandler(result.map({ _ in jids }));
-        });
+    public func deny(jids: [BareJID]) async throws {
+        try await client.module(.meet).deny(jids: jids, in: JID(jid));
     }
     
     private func leave() {

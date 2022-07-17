@@ -151,11 +151,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
         super.viewWillAppear(animated);
         
         if self.messageText?.isEmpty ?? true {
-            DBChatStore.instance.messageDraft(for: conversation.account, with: conversation.jid, completionHandler: { text in
-                DispatchQueue.main.async {
-                    self.messageText = text;
-                }
-            })
+            self.messageText = DBChatStore.instance.messageDraft(for: conversation.account, with: conversation.jid);
         }
 //        chatViewInputBar.becomeFirstResponder();
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil);

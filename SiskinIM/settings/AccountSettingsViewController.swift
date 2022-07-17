@@ -348,13 +348,14 @@ class AccountSettingsViewController: UITableViewController {
         let removeAccount: (BareJID, Bool)->Void = { account, fromServer in
             if fromServer {
                 if let client = XmppService.instance.getClient(for: account), client.state == .connected() {
-                    let regModule = client.modulesManager.register(InBandRegistrationModule());
-                    regModule.unregister(completionHandler: { (result) in
-                        DispatchQueue.main.async() {
+                    Task {
+                        let regModule = client.modulesManager.register(InBandRegistrationModule());
+                        _ = try? await regModule.unregister();
+                        await MainActor.run(body: {
                             try? AccountManager.deleteAccount(for: account);
                             self.navigationController?.popViewController(animated: true);
-                        }
-                    });
+                        })
+                    }
                 } else {
                     DispatchQueue.main.async {
                         let alert = UIAlertController(title: NSLocalizedString("Account removal", comment: "alert title"), message: NSLocalizedString("Could not delete account as it was not possible to connect to the XMPP server. Please try again later.", comment: "alert body"), preferredStyle: .alert);
@@ -388,11 +389,11 @@ class AccountSettingsViewController: UITableViewController {
                                     try? AccountManager.save(account: config);
                                     removeAccount(account, removeFromServer);
                                 } catch {
-                                    DispatchQueue.main.async {
+                                    await MainActor.run(body: {
                                         let alert = UIAlertController(title: NSLocalizedString("Account removal", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Push notifications are enabled for %@. They need to be disabled before account can be removed and it is not possible to at this time. Please try again later.", comment: "alert body"), account.description), preferredStyle: .alert);
                                         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
                                         self.present(alert, animated: true, completion: nil);
-                                    }
+                                    })
                                 }
                             }
                         }
@@ -404,11 +405,11 @@ class AccountSettingsViewController: UITableViewController {
                                 try? AccountManager.save(account: config);
                                 removeAccount(account, removeFromServer);
                             } catch {
-                                DispatchQueue.main.async {
+                                await MainActor.run(body: {
                                     let alert = UIAlertController(title: NSLocalizedString("Account removal", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Push notifications are enabled for %@. They need to be disabled before account can be removed and it is not possible to at this time. Please try again later.", comment: "alert body"), account.description), preferredStyle: .alert);
                                     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
                                     self.present(alert, animated: true, completion: nil);
-                                }
+                                })
                             }
                         }
                     }

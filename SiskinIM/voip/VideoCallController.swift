@@ -112,53 +112,37 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
 //    #else
 
         
-    static func checkMediaAvailability(forCall call: Call, completionHandler: @escaping (Result<Void,Error>)->Void) {
-        var errors: Bool = false;
-        let group = DispatchGroup();
-        group.enter();
+    static func checkMediaAvailability(forCall call: Call) async throws {
         for media in call.media {
-            group.enter();
-            self.checkAccesssPermission(media: media, completionHandler: { result in
-                DispatchQueue.main.async {
-                    switch result {
-                    case .success(_):
-                        break;
-                    case .failure(_):
-                        errors = true;
-                    }
-                    group.leave();
-                }
-            })
+            try await checkAccesssPermission(media: media);
         }
-        group.leave();
-        group.notify(queue: DispatchQueue.main, execute: {
-            completionHandler(errors ? .failure(XMPPError(condition: .forbidden)) : .success(Void()));
-        })
     }
 
-    static func checkAccesssPermission(media: Call.Media, completionHandler: @escaping(Result<Void,Error>)->Void) {
+    static func checkAccesssPermission(media: Call.Media) async throws {
         switch AVCaptureDevice.authorizationStatus(for: media.avmedia) {
         case .authorized:
-            completionHandler(.success(Void()));
+            return;
         case .denied, .restricted:
-            completionHandler(.failure(XMPPError(condition: .forbidden)));
+            throw XMPPError(condition: .forbidden);
         case .notDetermined:
-            AVCaptureDevice.requestAccess(for: media.avmedia, completionHandler: { result in
-                completionHandler(result ? .success(Void()) : .failure(XMPPError(condition: .forbidden)));
-            })
+            guard await withUnsafeContinuation({ continuation in
+                AVCaptureDevice.requestAccess(for: media.avmedia, completionHandler: continuation.resume(returning:));
+            }) else {
+                throw XMPPError(condition: .forbidden);
+            }
+            return;
         default:
-            completionHandler(.failure(XMPPError(condition: .forbidden)));
+            throw XMPPError(condition: .forbidden);
         }
     }
     
     static func call(jid: BareJID, from account: BareJID, media: [Call.Media], sender: UIViewController) {
-        call(jid: jid, from: account, media: media, completionHandler: { result in
-            switch result {
-            case .success(_):
-                break;
-            case .failure(let err):
+        Task {
+            do {
+                try await call(jid: jid, from: account, media: media);
+            } catch {
                 var message = NSLocalizedString("It was not possible to establish call", comment: "error message");
-                if let e = err as? XMPPError {
+                if let e = error as? XMPPError {
                     switch e.condition {
                     case .forbidden:
                         message = NSLocalizedString("It was not possible to access camera or microphone. Please check privacy settings", comment: "error message");
@@ -166,59 +150,26 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
                         break;
                     }
                 }
-                DispatchQueue.main.async {
+                await MainActor.run(body: {
                     let alert = UIAlertController(title: NSLocalizedString("Call failed", comment: "alert title"), message: message, preferredStyle: .alert);
                     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
                     sender.present(alert, animated: true, completion: nil);
-                }
+                })
             }
-        });
+        }
     }
     
-    static func call(jid: BareJID, from account: BareJID, media: [Call.Media], completionHandler: @escaping (Result<Void,Error>)->Void) {
+    static func call(jid: BareJID, from account: BareJID, media: [Call.Media]) async throws {
         guard let instance = CallManager.instance else {
-            completionHandler(.failure(XMPPError(condition: .not_allowed)))
-            return;
+            throw XMPPError(condition: .not_allowed)
         }
         guard let client = XmppService.instance.getClient(for: account) else {
-            completionHandler(.failure(XMPPError(condition: .item_not_found)));
-            return;
+            throw XMPPError(condition: .item_not_found);
         }
         
-        let continueCall = {
-            // we do not know "internal id" of a session
-            let call = Call(client: client, with: jid, sid: UUID().uuidString, direction: .outgoing, media: media);
-                
-            checkMediaAvailability(forCall: call, completionHandler: { result in
-                switch result {
-                case .success(_):
-                    instance.reportOutgoingCall(call, completionHandler: completionHandler);
-                case .failure(let err):
-                    completionHandler(.failure(err));
-                }
-
-            })
-        };
-        
-        AVCaptureDevice.requestAccess(for: .audio, completionHandler: { result in
-            if result {
-                if media.contains(.video) {
-                    AVCaptureDevice.requestAccess(for: .audio, completionHandler: { result in
-                        if result {
-                            continueCall();
-                        } else {
-                            completionHandler(.failure(XMPPError(condition: .not_allowed)))
-                        }
-                    });
-                } else {
-                    continueCall();
-                }
-            } else {
-                completionHandler(.failure(XMPPError(condition: .not_allowed)))
-            }
-        });
-        
-        
+        let call = Call(client: client, with: jid, sid: UUID().uuidString, direction: .outgoing, media: media);
+        try await checkMediaAvailability(forCall: call);
+        try await instance.reportOutgoingCall(call);
     }
 
     @IBOutlet var titleLabel: UILabel?;

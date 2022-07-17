@@ -53,7 +53,12 @@ public class NotificationManager {
             self?.markAsRead(on: marked.account, with: marked.jid, itemsIds: marked.messages.map({ $0.id }), before: marked.before);
         }).store(in: &cancellables);
         DBChatStore.instance.unreadMessageCountPublisher.delay(for: 0.1, scheduler: self.queue).throttle(for: 0.1, scheduler: self.queue, latest: true).sink(receiveValue: { [weak self] value in
-            self?.updateApplicationIconBadgeNumber(completionHandler: nil);
+            guard let that = self else {
+                return;
+            }
+            Task {
+                await that.updateApplicationIconBadgeNumber();
+            }
         }).store(in: &cancellables);
         NotificationCenter.default.publisher(for: XmppService.AUTHENTICATION_ERROR).sink(receiveValue: { [weak self] notification in
             let account = notification.object as! BareJID;
@@ -70,27 +75,6 @@ public class NotificationManager {
         content.threadIdentifier = "account=" + account.description;
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil));
     }
-    
-    
-//    public func shouldShowNotification(account: BareJID, sender: BareJID?, body: String?, completionHandler: @escaping (Bool)->Void) {
-//        provider.shouldShowNotification(account: account, sender: sender, body: body) { (result) in
-//            if result {
-//                if let uid = NotificationsManagerHelper.generateMessageUID(account: account, sender: sender, body: body) {
-//                    UNUserNotificationCenter.current().getDeliveredNotifications(completionHandler: { notifications in
-//                        let should = !notifications.contains(where: { (notification) -> Bool in
-//                            guard let nuid = notification.request.content.userInfo["uid"] as? String else {
-//                                return false;
-//                            }
-//                            return nuid == uid;
-//                        });
-//                        completionHandler(should);
-//                    });
-//                    return;
-//                }
-//            }
-//            completionHandler(result);
-//        }
-//    }
 
     func newMessage(_ entry: ConversationEntry) {
         queue.async {
@@ -115,7 +99,9 @@ public class NotificationManager {
             });
                             
             UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
-            self.updateApplicationIconBadgeNumber(completionHandler: nil);
+            Task {
+                await self.updateApplicationIconBadgeNumber();
+            }
         }
     }
     
@@ -143,7 +129,9 @@ public class NotificationManager {
             });
                             
             UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
-            self.updateApplicationIconBadgeNumber(completionHandler: nil);
+            Task {
+                await self.updateApplicationIconBadgeNumber();
+            }
         }
     }
         
@@ -168,8 +156,8 @@ public class NotificationManager {
     
     public func notifyNewMessage(account: BareJID, sender jid: BareJID?, nickname: String?, body: String, date: Date) {
         let id = UUID().uuidString;
-        let content = UNMutableNotificationContent();
-        NotificationsManagerHelper.prepareNewMessageNotification(content: content, account: account, sender: jid, nickname: nickname, body: body, provider: provider) { (content) in
+        Task {
+            let content = await NotificationsManagerHelper.prepareNewMessageNotification(content: UNMutableNotificationContent(), account: account, sender: jid, nickname: nickname, body: body, provider: provider);
             UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil)) { (error) in
                 if let err = error {
                     self.logger.error("message notification error \(err.localizedDescription)");
@@ -189,15 +177,16 @@ public class NotificationManager {
         
         notifyNewMessage(account: conversation.account, sender: conversation.jid, nickname: entry.sender.nickname, body: body, date: entry.timestamp);
     }
-    
-    func updateApplicationIconBadgeNumber(completionHandler: (()->Void)?) {
-        provider.countBadge(withThreadId: nil, completionHandler: { count in
+        
+    func updateApplicationIconBadgeNumber() async {
+        let count = await provider.countBadge(withThreadId: nil);
+        return await withUnsafeContinuation({ continuation in
             DispatchQueue.main.async {
                 self.logger.debug("setting badge to: \(count)");
                 UIApplication.shared.applicationIconBadgeNumber = count;
-                completionHandler?();
+                continuation.resume();
             }
-        });
+        })
     }
     
     struct NotificationQueueKey: Hashable {

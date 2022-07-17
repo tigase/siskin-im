@@ -20,34 +20,28 @@ class BlockedContactsController: UITableViewController {
         super.viewWillAppear(animated);
 
         let clients = XmppService.instance.connectedClients;
-        var items: [Item] = [];
         if !clients.isEmpty {
             showIndicator();
-            let group = DispatchGroup();
-            for client in clients {
-                group.enter();
-                DispatchQueue.global().async {
-                    let account = client.userBareJid;
-                    client.module(.blockingCommand).retrieveBlockedJids(completionHandler: { result in
-                        DispatchQueue.main.async {
-                            switch result {
-                            case .success(let jids):
-                                items.append(contentsOf: jids.map({ jid -> Item in
-                                    return Item(account: account, jid: jid);
-                                }));
-                            case .failure(_):
-                                break;
+            Task {
+                let newItems = await withTaskGroup(of: [Item].self, returning: [Item].self, body: { group in
+                    for client in clients {
+                        group.addTask(operation: {
+                            let account = client.userBareJid;
+                            if let jids = try? await client.module(.blockingCommand).retrieveBlockedJids() {
+                                return jids.map({ Item(account: account, jid: $0); })
+                            } else {
+                                return [];
                             }
-                        }
-                        group.leave();
-                    });
-                }
+                        })
+                    }
+                    return await group.reduce(into: [Item](), { $0.append(contentsOf: $1) })
+                })
+                await MainActor.run(body: {
+                    self.allItems = newItems;
+                    self.updateItems();
+                    self.hideIndicator();
+                })
             }
-            group.notify(queue: DispatchQueue.main, execute: {
-                self.allItems = items.sorted();
-                self.updateItems();
-                self.hideIndicator();
-            })
         }
     }
     
@@ -99,33 +93,28 @@ class BlockedContactsController: UITableViewController {
         }
         
         showIndicator();
-        blockingModule.unblock(jids: [item.jid], completionHandler: { [weak self] result in
-            DispatchQueue.main.async {
-                self?.hideIndicator();
-            }
-            switch result {
-            case .success(_):
-                DispatchQueue.main.async {
-                    guard let that = self else {
-                        return;
-                    }
-                    that.allItems.removeAll { (it) -> Bool in
+        Task {
+            do {
+                try await blockingModule.unblock(jids: [item.jid]);
+                await MainActor.run(body: {
+                    self.allItems.removeAll { (it) -> Bool in
                         return it == item;
                     };
-                    if let idx = that.items.firstIndex(of: item) {
-                        that.items.remove(at: idx);
-                        that.tableView.performBatchUpdates({
-                            that.tableView.deleteRows(at: [IndexPath(item: idx, section: 0)], with: .automatic);
-                            if that.items.count == 0 {
-                                that.tableView.insertRows(at: [IndexPath(item: 0, section: 0)], with: .automatic);
+                    if let idx = self.items.firstIndex(of: item) {
+                        self.items.remove(at: idx);
+                        self.tableView.performBatchUpdates({
+                            self.tableView.deleteRows(at: [IndexPath(item: idx, section: 0)], with: .automatic);
+                            if self.items.count == 0 {
+                                self.tableView.insertRows(at: [IndexPath(item: 0, section: 0)], with: .automatic);
                             }
                         }, completion: nil);
                     }
-                }
-            case .failure(_):
-                break;
-            }
-        });
+                })
+            } catch {}
+            await MainActor.run(body: {
+                self.hideIndicator();
+            })
+        }
     }
     
     func updateItems() {

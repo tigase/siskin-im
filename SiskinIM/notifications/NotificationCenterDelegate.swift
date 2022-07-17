@@ -217,12 +217,16 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         }
         
         guard let senderJid = BareJID(userInfo["sender"] as? String) else {
-            NotificationManager.instance.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
+            Task {
+                await NotificationManager.instance.updateApplicationIconBadgeNumber();
+            }
             return;
         }
 
         if response.actionIdentifier == UNNotificationDismissActionIdentifier {
-            NotificationManager.instance.updateApplicationIconBadgeNumber(completionHandler: completionHandler);
+            Task {
+                await NotificationManager.instance.updateApplicationIconBadgeNumber();
+            }
         } else {
             openChatView(on: accountJid, with: senderJid, completionHandler: completionHandler);
         }

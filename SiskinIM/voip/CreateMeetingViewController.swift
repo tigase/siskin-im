@@ -68,13 +68,13 @@ class CreateMeetingViewController: MultiContactSelectionViewController {
             }
             
             if let that = self {
-                client.module(.meet).findMeetComponent(completionHandler: { result in
-                    switch result {
-                    case .success(let found):
+                Task {
+                    do {
+                        let found = try await client.module(.meet).findMeetComponents();
                         DispatchQueue.main.async {
                             that.meetComponents = found;
                         }
-                    case .failure(_):
+                    } catch {
                         DispatchQueue.main.async {
                             let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: NSLocalizedString("Server of selected account does not provide support for hosting meetings. Please select a different account.", comment: "alert body"), preferredStyle: .alert);
                             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: { _ in
@@ -85,9 +85,8 @@ class CreateMeetingViewController: MultiContactSelectionViewController {
                             }))
                             that.present(alert, animated: true, completion: nil);
                         }
-                        break;
                     }
-                })
+                }
             }
         }).store(in: &cancellables);
         
@@ -116,44 +115,42 @@ class CreateMeetingViewController: MultiContactSelectionViewController {
             return;
         }
         
-        client.module(.meet).createMeet(at: meetComponentJid, media: [.audio,.video], participants: participants, completionHandler: { result in
-            switch result {
-            case .success(let meetJid):
-                DispatchQueue.main.async {
+        Task {
+            do {
+                let meetJid = try await client.module(.meet).createMeet(at: meetComponentJid, media: [.audio,.video], participants: participants);
+                await MainActor.run(body: {
                     self.dismiss();
-                    DispatchQueue.main.async {
-                        guard let manager = CallManager.instance else {
-                            return;
-                        }
-                        manager.reportOutgoingCall(Meet(client: client, jid: meetJid.bareJid, sid: UUID().uuidString), completionHandler: { result in
-                            switch result {
-                            case .success(_):
-                                for jid in participants {
-                                    client.module(.meet).sendMessageInitiation(action: .propose(id: UUID().uuidString, meetJid: meetJid, media: [.audio,.video]), to: JID(jid));
-                                }
-                            case .failure(let error):
-                                DispatchQueue.main.async {
-                                    let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to initiate a call: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
-                                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: { _ in
-                                        self.dismiss();
-                                    }))
-                                    self.present(alert, animated: true, completion: nil);
-                                }
-                            }
-                        });
-                    }
+                })
+                guard let manager = CallManager.instance else {
+                    return;
                 }
-            case .failure(let error):
-                DispatchQueue.main.async {
+                
+                do {
+                    try await manager.reportOutgoingCall(Meet(client: client, jid: meetJid.bareJid, sid: UUID().uuidString));
+                    for jid in participants {
+                        Task {
+                            try await client.module(.meet).sendMessageInitiation(action: .propose(id: UUID().uuidString, meetJid: meetJid, media: [.audio,.video]), to: jid.jid());
+                        }
+                    }
+                } catch {
+                    await MainActor.run(body: {
+                        let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to initiate a call: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: { _ in
+                            self.dismiss();
+                        }))
+                        self.present(alert, animated: true, completion: nil);
+                    })
+                }
+            } catch {
+                await MainActor.run(body: {
                     let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to create a meeting. Server returned an error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
                     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: { _ in
                         self.dismiss();
                     }))
                     self.present(alert, animated: true, completion: nil);
-                }
-                break;
+                })
             }
-        })
+        }
     }
 
     @objc func cancelTapped(_ sender: Any) {
