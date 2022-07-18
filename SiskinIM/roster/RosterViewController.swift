@@ -203,18 +203,17 @@ class RosterViewController: AbstractRosterViewController, UIGestureRecognizerDel
     
     func deleteItem(for account: BareJID, jid: JID) {
         if let rosterModule = XmppService.instance.getClient(for: account)?.module(.roster) {
-            rosterModule.removeItem(jid: jid, completionHandler: { result in
-                switch result {
-                case .failure(let errorCondition):
-                    DispatchQueue.main.async {
-                        let alert = UIAlertController(title: NSLocalizedString("Failure", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert body"), errorCondition.localizedDescription), preferredStyle: .alert);
+            Task {
+                do {
+                    _ = try await rosterModule.removeItem(jid: jid);
+                } catch {
+                    await MainActor.run(body: {
+                        let alert = UIAlertController(title: NSLocalizedString("Failure", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
                         alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
                         self.present(alert, animated: true, completion: nil);
-                    }
-                case .success(_):
-                    break;
+                    })
                 }
-            })
+            }
         }
     }
     
