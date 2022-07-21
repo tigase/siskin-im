@@ -82,7 +82,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                 cell.avatarView.set(name: nil, avatar: nil);
                 if let photo = vcard?.photos.first {
                     Task {
-                        let data = try await VCardManager.instance.fetchPhoto(photo: photo);
+                        let data = try await VCardManager.fetchPhoto(photo: photo);
                         DispatchQueue.main.async {
                             cell.avatarView.set(name: nil, avatar: UIImage(data: data));
                         }
@@ -313,7 +313,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                         _ = self.navigationController?.popViewController(animated: true);
                     }
                     DBVCardStore.instance.updateVCard(for: self.client.userBareJid, on: self.client.userBareJid, vcard: vcard);
-                    if let photo = self.vcard?.photos.first, let data = try? await VCardManager.instance.fetchPhoto(photo: photo) {
+                    if let photo = self.vcard?.photos.first, let data = try? await VCardManager.fetchPhoto(photo: photo) {
                         let avatarHash = Insecure.SHA1.hash(toHex: data);
                         let x = Element(name: "x", xmlns: "vcard-temp:x:update");
                         x.addChild(Element(name: "photo", cdata: avatarHash));

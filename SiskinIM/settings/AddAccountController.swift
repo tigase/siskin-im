@@ -41,7 +41,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     
     var xmppClient: XMPPClient?;
     
-    var accountValidatorTask: AccountValidatorTask?;
+    var accountValidatorTask: Task<Void,Never>?;
     
     var connectivitySettings = AccountConnectivitySettingsViewController.Settings();
     
@@ -123,8 +123,32 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         self.saveButton.isEnabled = false;
         showIndicator();
         
-        self.accountValidatorTask = AccountValidatorTask(controller: self);
-        self.accountValidatorTask?.check(account: jid, password: password, connectivitySettings: connectivitySettings, callback: self.handleResult);
+        self.accountValidatorTask = Task {
+            do {
+                let acceptedCertificate = try await AccountValidatorTask.validate(controller: self, account: jid, password: password, connectivitySettings: connectivitySettings);
+                await MainActor.run(body: {
+                    guard !Task.isCancelled else {
+                        return;
+                    }
+                    saveAccount(acceptedCertificate: acceptedCertificate);
+                })
+            } catch {
+                await MainActor.run(body: {
+                    self.hideIndicator();
+                    self.saveButton.isEnabled = true;
+                    var errorMessage = "";
+                    switch (error as? XMPPError)?.condition ?? .undefined_condition {
+                    case .not_authorized:
+                        errorMessage = NSLocalizedString("Login and password do not match.", comment: "error message");
+                    default:
+                        errorMessage = NSLocalizedString("It was not possible to contact XMPP server and sign in.", comment: "error message");
+                    }
+                    let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: errorMessage, preferredStyle: .alert);
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("Close", comment: "button label"), style: .cancel, handler: nil));
+                    self.present(alert, animated: true, completion: nil);
+                })
+            }
+        }
     }
     
     func saveAccount(acceptedCertificate: SslCertificateInfo?) {
@@ -159,8 +183,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     
     func dismissView() {
         let dismiss = self.view.window?.rootViewController is SetupViewController;
-//        onAccountAdded = nil;
-        accountValidatorTask?.finish();
+        accountValidatorTask?.cancel();
         accountValidatorTask = nil;
         
         if dismiss {
@@ -194,28 +217,6 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         return false;
     }
     
-    func handleResult(result: Result<Void,XMPPError>) {
-        let acceptedCertificate = accountValidatorTask?.acceptedCertificate;
-        self.accountValidatorTask = nil;
-        switch result {
-        case .failure(let error):
-            self.hideIndicator();
-            self.saveButton.isEnabled = true;
-            var errorMessage = "";
-            switch error.condition {
-            case .not_authorized:
-                errorMessage = NSLocalizedString("Login and password do not match.", comment: "error message");
-            default:
-                errorMessage = NSLocalizedString("It was not possible to contact XMPP server and sign in.", comment: "error message");
-            }
-            let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: errorMessage, preferredStyle: .alert);
-            alert.addAction(UIAlertAction(title: NSLocalizedString("Close", comment: "button label"), style: .cancel, handler: nil));
-            self.present(alert, animated: true, completion: nil);
-        case .success(_):
-            self.saveAccount(acceptedCertificate: acceptedCertificate);
-        }
-    }
-    
     func showIndicator() {
         if activityInditcator != nil {
             hideIndicator();
@@ -236,115 +237,47 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     
     class AccountValidatorTask {
         
-        private var cancellables: Set<AnyCancellable> = [];
-        var client: XMPPClient? {
-            didSet {
-                cancellables.removeAll();
-                client?.module(.sasl).$state.filter({ $0 == .authorized || $0.isError }).sink(receiveValue: { [weak self] state in
-                    self?.saslStateChanged(newState: state);
-                }).store(in: &cancellables);
-                client?.$state.sink(receiveValue: { [weak self] state in self?.changedState(state) }).store(in: &cancellables);
-            }
-        }
-        
-        var callback: ((Result<Void,XMPPError>)->Void)? = nil;
-        weak var controller: UIViewController?;
-        var dispatchQueue = DispatchQueue(label: "accountValidatorSync");
-        
-        var acceptedCertificate: SslCertificateInfo? = nil;
-        
-        init(controller: UIViewController) {
-            self.controller = controller;
-            initClient();
-        }
-        
-        fileprivate func initClient() {
+        public static func validate(controller: UIViewController, account: BareJID, password: String, connectivitySettings: AccountConnectivitySettingsViewController.Settings) async throws -> SslCertificateInfo? {
             let client = XMPPClient();
             _ = client.modulesManager.register(StreamFeaturesModule());
             _ = client.modulesManager.register(SaslModule());
             _ = client.modulesManager.register(AuthModule());
-            self.client = client;
-        }
-        
-        public func check(account: BareJID, password: String, connectivitySettings: AccountConnectivitySettingsViewController.Settings, callback: @escaping (Result<Void,XMPPError>)->Void) {
-            self.callback = callback;
-            client?.connectionConfiguration.useSeeOtherHost = false;
-            client?.connectionConfiguration.userJid = account;
-            client?.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
+            _ = client.modulesManager.register(ResourceBinderModule());
+            _ = client.modulesManager.register(SessionEstablishmentModule());
+            client.connectionConfiguration.useSeeOtherHost = false;
+            client.connectionConfiguration.userJid = account;
+            client.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
                 if let host = connectivitySettings.host, let port = connectivitySettings.port {
                     options.connectionDetails = .init(proto: connectivitySettings.useDirectTLS ? .XMPPS : .XMPP, host: host, port: port)
                 }
                 options.networkProcessorProviders.append(connectivitySettings.disableTLS13 ? SSLProcessorProvider(supportedTlsVersions: TLSVersion.TLSv1_2...TLSVersion.TLSv1_2) : SSLProcessorProvider());
             })
-            client?.connectionConfiguration.credentials = .password(password: password, authenticationName: nil, cache: nil);
-            client?.login();
-        }
-        
-        func saslStateChanged(newState: AuthModule.AuthorizationStatus) {
-            dispatchQueue.sync {
-                guard let callback = self.callback else {
-                    return;
-                }
-                
-                DispatchQueue.main.async {
-                    switch newState {
-                    case .error(_):
-                        callback(.failure(XMPPError(condition: .not_authorized)));
-                    case .authorized:
-                        callback(.success(Void()))
-                    default:
-                        callback(.failure(XMPPError(condition: .service_unavailable)));
-                    }
-                }
-                self.finish();
-            }
-        }
-        
-        func changedState(_ state: XMPPClient.State) {
-            dispatchQueue.sync {
-                guard let callback = self.callback else {
-                    return;
-                }
-                
-                switch state {
-                case .disconnected(let reason):
-                    switch reason {
-                    case .sslCertError(let trust):
-                        self.callback = nil;
-                        let certData = SslCertificateInfo(trust: trust);
-                        let alert = CertificateErrorAlert.create(domain: self.client!.userBareJid.domain, certData: certData, onAccept: {
-                            self.acceptedCertificate = certData;
-                            self.client?.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
-                                options.networkProcessorProviders.append(SSLProcessorProvider());
-                                options.sslCertificateValidation = .fingerprint(certData.details.fingerprintSha1);
-                            });
-                            self.callback = callback;
-                            self.client?.login();
-                        }, onDeny: {
-                            self.finish();
-                            callback(.failure(XMPPError(condition: .service_unavailable)));
-                        })
-                        DispatchQueue.main.async {
-                            self.controller?.present(alert, animated: true, completion: nil);
-                        }
-                        return;
-                    default:
-                        break;
-                    }
-                    DispatchQueue.main.async {
-                        callback(.failure(XMPPError(condition: .service_unavailable)));
-                    }
-                    self.finish();
-                default:
-                    break;
+            client.connectionConfiguration.credentials = .password(password: password, authenticationName: nil, cache: nil);
+            defer {
+                Task {
+                    try await client.disconnect();
                 }
             }
-        }
-        
-        public func finish() {
-            self.callback = nil;
-            self.client = nil;
-            self.controller = nil;
+            do {
+                try await client.loginAndWait();
+                return nil;
+            } catch let error as XMPPClient.State.DisconnectionReason {
+                print(error)
+                guard case let .sslCertError(trust) = error else {
+                    throw error;
+                }
+                let certData = SslCertificateInfo(trust: trust);
+                guard await CertificateErrorAlert.show(parent: controller, domain: account.domain, certData: certData) else {
+                    throw error;
+                }
+                client.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
+                    options.networkProcessorProviders.append(SSLProcessorProvider());
+                    options.sslCertificateValidation = .fingerprint(certData.details.fingerprintSha1);
+                });
+                
+                try await client.loginAndWait();
+                return certData;
+            }
         }
     }
 }

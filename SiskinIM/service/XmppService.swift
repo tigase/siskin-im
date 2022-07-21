@@ -99,12 +99,10 @@ open class XmppService {
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "XmppService");
     fileprivate let dnsSrvResolverCache: DNSSrvResolverCache;
     fileprivate let dnsSrvResolver: DNSSrvResolver;
-    fileprivate let streamFeaturesCache: StreamFeaturesCache;
         
     init() {
         self.dnsSrvResolverCache = DNSSrvResolverWithCache.InMemoryCache(store: DNSSrvDiskCache(cacheDirectoryName: "dns-cache"));
         self.dnsSrvResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(directTlsEnabled: true), cache: self.dnsSrvResolverCache);
-        self.streamFeaturesCache = StreamFeaturesCache();
         //self.applicationState = UIApplication.shared.applicationState == .active ? .active : .inactive;
                         
         Settings.$statusType.combineLatest(Settings.$statusMessage, { type, messsage in
@@ -260,16 +258,13 @@ open class XmppService {
         if let pushModule = client.module(.push) as? SiskinPushNotificationsModule {
             pushModule.pushSettings = account.pushSettings;
         }
-        
-        // for push notifications this needs to be far lower value, ie. 60-90 seconds
-        client.modulesManager.module(.streamManagement).maxResumptionTimeout = account.pushNotifications ? 90 : 3600;
 
-        if let streamFeaturesModule: StreamFeaturesModuleWithPipelining = client.modulesManager.moduleOrNil(.streamFeatures) as? StreamFeaturesModuleWithPipelining {
-            streamFeaturesModule.enabled = Settings.xmppPipelining;
-        }
+//        if let streamFeaturesModule: StreamFeaturesModuleWithPipelining = client.modulesManager.moduleOrNil(.streamFeatures) as? StreamFeaturesModuleWithPipelining {
+//            streamFeaturesModule.enabled = Settings.xmppPipelining;
+//        }
         
         let connectorEndpoint: ConnectorEndpoint? = AccountSettings.reconnectionLocation(for: account.name);
-        client.login(lastSeeOtherHost: connectorEndpoint);
+        try! client.login(lastSeeOtherHost: connectorEndpoint);
     }
         
     private class ClientCancellables {
@@ -437,8 +432,8 @@ open class XmppService {
         client.connectionConfiguration.userJid = jid;
 
         _ = client.modulesManager.register(AuthModule());
-        _ = client.modulesManager.register(StreamFeaturesModuleWithPipelining(cache: streamFeaturesCache, enabled: false));
-        _ = client.modulesManager.register(StreamManagementModule());
+        _ = client.modulesManager.register(StreamFeaturesModule());
+        _ = client.modulesManager.register(StreamManagementModule(maxResumptionTimeout: 90));
         _ = client.modulesManager.register(SaslModule());
         // if you do not want Pipelining you may use StreamFeaturesModule instead StreamFeaturesModuleWithPipelining
         //_ = client.modulesManager.register(StreamFeaturesModule());

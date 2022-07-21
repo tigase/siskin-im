@@ -49,7 +49,7 @@ class VCardManager {
         return vcard;
     }
     
-    open func fetchPhoto(photo: VCard.Photo) async throws -> Data {
+    public static func fetchPhoto(photo: VCard.Photo) async throws -> Data {
         if let binval = photo.binval {
             guard let data = Data(base64Encoded: binval, options: .ignoreUnknownCharacters) else {
                 throw XMPPError(condition: .not_acceptable, message: "Unable to decode base64 data");

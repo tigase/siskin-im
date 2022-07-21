@@ -149,11 +149,11 @@ class SetAccountSettingsController: UITableViewController {
                     }
                 } catch {
                     // TODO: Should we notify about this error somehow?
-                    DispatchQueue.main.async {
+                    await MainActor.run(body: {
                         self.setInProgress(value: false);
                         self.completionHandler?();
                         NewFeaturesDetector.instance.showNext(fromController: true);
-                    }
+                    })
                 }
             }
         } else {

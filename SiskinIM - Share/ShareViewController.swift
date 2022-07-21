@@ -294,7 +294,8 @@ class ShareViewController: UITableViewController {
                 }
             }).store(in: &cancellables);
             group.enter();
-            client.login();
+            // FIXME!
+//            client.login();
             return client;
         })
         group.notify(queue: DispatchQueue.main, execute: {

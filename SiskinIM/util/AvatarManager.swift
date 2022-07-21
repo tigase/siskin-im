@@ -238,19 +238,14 @@ class AvatarManager {
             return;
         }
 
-        DispatchQueue.global().async {
-            guard let photo = vcardItem.vcard.photos.first else {
-                return;
-            }
-
-            AvatarManager.fetchData(photo: photo) { data in
-                guard data != nil else {
-                    return;
-                }
-
-                let hash = self.storeAvatar(data: data!);
-                self.updateAvatar(hash: hash, forType: .vcardTemp, forJid: vcardItem.jid, on: vcardItem.account);
-            }
+        guard let photo = vcardItem.vcard.photos.first else {
+            return;
+        }
+        
+        Task {
+            let data = try await VCardManager.fetchPhoto(photo: photo);
+            let hash = self.storeAvatar(data: data);
+            self.updateAvatar(hash: hash, forType: .vcardTemp, forJid: vcardItem.jid, on: vcardItem.account);
         }
     }
 
@@ -268,27 +263,6 @@ class AvatarManager {
                 self.logger.error("could not retrieve avatar from: \(jid), item id: \(hash), got error: \(error.description, privacy: .public)");
             }
         });
-    }
-
-    static func fetchData(photo: VCard.Photo, completionHandler: @escaping (Data?)->Void) {
-        if let data = photo.binval {
-            completionHandler(Data(base64Encoded: data, options: Data.Base64DecodingOptions.ignoreUnknownCharacters));
-        } else if let uri = photo.uri {
-            if uri.hasPrefix("data:image") && uri.contains(";base64,") {
-                let idx = uri.index(uri.firstIndex(of: ",")!, offsetBy: 1);
-                let data = String(uri[idx...]);
-                completionHandler(Data(base64Encoded: data, options: Data.Base64DecodingOptions.ignoreUnknownCharacters));
-            } else if let url = URL(string: uri) {
-                let task = URLSession.shared.dataTask(with: url) { (data, response, err) in
-                    completionHandler(data);
-                }
-                task.resume();
-            } else {
-                completionHandler(nil);
-            }
-        } else {
-            completionHandler(nil);
-        }
     }
     
     public func clearCache() {
