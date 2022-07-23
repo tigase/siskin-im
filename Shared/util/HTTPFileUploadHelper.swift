@@ -27,7 +27,7 @@ open class HTTPFileUploadHelper {
     
     private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "HTTPFileUploadHelper")
     
-    public static func upload(for context: Context, filename: String, inputStream: InputStream, filesize size: Int, mimeType: String, delegate: URLSessionDelegate?) async throws -> URL {
+    public static func upload(for context: Context, filename: String, data: Data, filesize size: Int, mimeType: String, delegate: URLSessionDelegate?) async throws -> URL {
         let httpUploadModule = context.module(.httpFileUpload);
         let components = try await httpUploadModule.findHttpUploadComponents();
         guard let component = components.first(where: { $0.maxSize > size }) else {
@@ -41,7 +41,7 @@ open class HTTPFileUploadHelper {
             request.addValue(v, forHTTPHeaderField: k);
         });
         request.httpMethod = "PUT";
-        request.httpBodyStream = inputStream;
+        request.httpBodyStream = InputStream(data: data);
         request.addValue(String(size), forHTTPHeaderField: "Content-Length");
         request.addValue(mimeType, forHTTPHeaderField: "Content-Type");
         let session = URLSession(configuration: URLSessionConfiguration.default, delegate: delegate, delegateQueue: OperationQueue.main);

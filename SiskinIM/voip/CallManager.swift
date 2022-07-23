@@ -171,8 +171,13 @@ class CallManager: NSObject, CXProviderDelegate {
         
         self.logger.debug("reporting incoming call: \(call.uuid)")
         do {
-            try await withUnsafeThrowingContinuation({ continuation in
+            let _: Void = try await withUnsafeThrowingContinuation({ continuation in
                 self.provider.reportNewIncomingCall(with: call.uuid, update: update, completion: { err in
+                    guard let error = err else {
+                        continuation.resume(returning: Void());
+                        return;
+                    }
+                    continuation.resume(throwing: error);
                 })
             })
             self.activeCallsByUuid[call.uuid] = call;

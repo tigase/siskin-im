@@ -140,7 +140,9 @@ open class XmppService {
             if let client = self.client(for: account.name) {
                 // if client exists and is connected, then reconnect it..
                 if client.state != .disconnected() {
-                    _ = client.disconnect();
+                    Task {
+                        try await  client.disconnect();
+                    }
                 }
             } else {
                 let client = self.initializeClient(for: account);
@@ -150,7 +152,9 @@ open class XmppService {
         case .disabled(let account), .removed(let account):
             if let client = self.client(for: account.name) {
                 let prevState = client.state;
-                _ = client.disconnect();
+                Task {
+                    try await client.disconnect();
+                }
                 if prevState == .disconnected() && client.state == .disconnected() {
                     self.unregisterClient(client);
                 }
@@ -205,8 +209,10 @@ open class XmppService {
     
     private func disconnectClients(force: Bool = false) {
         queue.async {
-            self.clients.values.forEach { client in
-                _ = client.disconnect(force);
+            for client in self.clients.values {
+                Task {
+                    try await client.disconnect(force: true);
+                }
             }
         }
     }

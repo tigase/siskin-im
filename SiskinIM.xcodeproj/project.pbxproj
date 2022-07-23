@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -103,7 +103,7 @@
 		FE4A94AA26679D65000A96E5 /* EnumTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4A94A926679D65000A96E5 /* EnumTableViewCell.swift */; };
 		FE4DDF561F39E0B500A4CE5A /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4DDF551F39E0B500A4CE5A /* ShareViewController.swift */; };
 		FE4DDF591F39E0B500A4CE5A /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE4DDF571F39E0B500A4CE5A /* MainInterface.storyboard */; };
-		FE4DDF5D1F39E0B500A4CE5A /* Siskin IM - Share.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = FE4DDF531F39E0B500A4CE5A /* Siskin IM - Share.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		FE4DDF5D1F39E0B500A4CE5A /* Siskin IM - Share.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FE4DDF531F39E0B500A4CE5A /* Siskin IM - Share.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FE5079F01CD3CA91001A015C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE5079EF1CD3CA91001A015C /* Security.framework */; };
 		FE507A151CDB7B3B001A015C /* ChatsListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5079FE1CDB7B3B001A015C /* ChatsListTableViewCell.swift */; };
 		FE507A161CDB7B3B001A015C /* ChatsListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5079FF1CDB7B3B001A015C /* ChatsListViewController.swift */; };
@@ -133,7 +133,7 @@
 		FE719E7E2274D20D007CEEC9 /* OMEMOFingerprintsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE719E7D2274D20D007CEEC9 /* OMEMOFingerprintsController.swift */; };
 		FE74D510234A4E1F001A925B /* ChatTableViewSystemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE74D50F234A4E1F001A925B /* ChatTableViewSystemCell.swift */; };
 		FE759FA42370ACA4001E78D9 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE759FA32370ACA4001E78D9 /* NotificationService.swift */; };
-		FE759FA82370ACA4001E78D9 /* NotificationService.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = FE759FA12370ACA4001E78D9 /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		FE759FA82370ACA4001E78D9 /* NotificationService.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FE759FA12370ACA4001E78D9 /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FE759FC92370B2A4001E78D9 /* Shared.h in Headers */ = {isa = PBXBuildFile; fileRef = FE759FC72370B2A4001E78D9 /* Shared.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FE759FCC2370B2A4001E78D9 /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE759FC52370B2A4001E78D9 /* Shared.framework */; };
 		FE759FCD2370B2A4001E78D9 /* Shared.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE759FC52370B2A4001E78D9 /* Shared.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -152,6 +152,7 @@
 		FE7F645B1D281B1C00B9DF56 /* DBCapabilitiesCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7F645A1D281B1C00B9DF56 /* DBCapabilitiesCache.swift */; };
 		FE7F9303200FD5AC004C6195 /* AccountManagerScramSaltedPasswordCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7F9302200FD5AC004C6195 /* AccountManagerScramSaltedPasswordCache.swift */; };
 		FE80BDAB1D953FC4001914B0 /* SetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE80BDAA1D953FC4001914B0 /* SetupViewController.swift */; };
+		FE81FA9B288C3598003325A6 /* TigaseSwift in Frameworks */ = {isa = PBXBuildFile; productRef = FE81FA9A288C3598003325A6 /* TigaseSwift */; };
 		FE82A729268C83020049C844 /* ChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE82A728268C83020049C844 /* ChartView.swift */; };
 		FE82A72B268CC0740049C844 /* DeviceMemoryUsageTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE82A72A268CC0740049C844 /* DeviceMemoryUsageTableViewCell.swift */; };
 		FE8885EC26BAEAAE0095E25E /* MultiContactSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8885EB26BAEAAE0095E25E /* MultiContactSelectionView.swift */; };
@@ -303,16 +304,16 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		FE4DDF611F39E0B600A4CE5A /* Embed App Extensions */ = {
+		FE4DDF611F39E0B600A4CE5A /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				FE4DDF5D1F39E0B500A4CE5A /* Siskin IM - Share.appex in Embed App Extensions */,
-				FE759FA82370ACA4001E78D9 /* NotificationService.appex in Embed App Extensions */,
+				FE4DDF5D1F39E0B500A4CE5A /* Siskin IM - Share.appex in Embed Foundation Extensions */,
+				FE759FA82370ACA4001E78D9 /* NotificationService.appex in Embed Foundation Extensions */,
 			);
-			name = "Embed App Extensions";
+			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		FEF80DB71CDCC508005645A7 /* Embed Frameworks */ = {
@@ -660,6 +661,7 @@
 				FE759FE82371C972001E78D9 /* libxml2.tbd in Frameworks */,
 				FE1908B72584D70300CA049F /* OpenSSL.xcframework in Frameworks */,
 				FEC9B1162440E7B500A484EE /* TigaseSwiftOMEMO in Frameworks */,
+				FE81FA9B288C3598003325A6 /* TigaseSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1281,6 +1283,7 @@
 				FEC9B1152440E7B500A484EE /* TigaseSwiftOMEMO */,
 				FEA518B0266159B900523EF2 /* TigaseSQLite3 */,
 				FEA518C1266165A100523EF2 /* TigaseLogging */,
+				FE81FA9A288C3598003325A6 /* TigaseSwift */,
 			);
 			productName = Shared;
 			productReference = FE759FC52370B2A4001E78D9 /* Shared.framework */;
@@ -1296,8 +1299,7 @@
 				FE94E51F1CCBA74F00FAE755 /* Resources */,
 				FECD0F2A1CDB8B1B00420DF5 /* Mark TODO and FIX ME */,
 				FEF80DB71CDCC508005645A7 /* Embed Frameworks */,
-				FE0473391D86CEE700E6D6CE /* Trim Framework Executables */,
-				FE4DDF611F39E0B600A4CE5A /* Embed App Extensions */,
+				FE4DDF611F39E0B600A4CE5A /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
@@ -1320,7 +1322,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1120;
-				LastUpgradeCheck = 1140;
+				LastUpgradeCheck = 1400;
 				ORGANIZATIONNAME = "Tigase, Inc.";
 				TargetAttributes = {
 					FE4DDF521F39E0B500A4CE5A = {
@@ -1458,22 +1460,9 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		FE0473391D86CEE700E6D6CE /* Trim Framework Executables */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Trim Framework Executables";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "#\"${SRCROOT}/\"trim.sh TigaseSwift\n#\"${SRCROOT}/\"trim.sh WebRTC\n";
-		};
 		FEBA835126F8D81900347D89 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -1491,6 +1480,7 @@
 		};
 		FECD0F2A1CDB8B1B00420DF5 /* Mark TODO and FIX ME */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -2166,6 +2156,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -2227,6 +2218,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -2269,7 +2261,6 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 10;
-				DEAD_CODE_STRIPPING = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				ENABLE_BITCODE = NO;
@@ -2309,7 +2300,6 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 10;
-				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -2410,13 +2400,17 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tigase/tigase-swift-omemo/";
 			requirement = {
-                branch = master;
+				branch = master;
 				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		FE81FA9A288C3598003325A6 /* TigaseSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TigaseSwift;
+		};
 		FEA518B0266159B900523EF2 /* TigaseSQLite3 */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = FEA5189D2661573F00523EF2 /* XCRemoteSwiftPackageReference "tigase-sqlite3.swift" */;

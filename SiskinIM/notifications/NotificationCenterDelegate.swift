@@ -321,7 +321,9 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
 //                VideoCallController.accept(session: session, sdpOffer: sdp, withAudio: true, withVideo: false, sender: topController!);
 //            }));
             alert.addAction(UIAlertAction(title: NSLocalizedString("Dismiss", comment: "button label"), style: .cancel, handler: { action in
-                session.decline();
+                Task {
+                    try await session.decline();
+                }
             }));
             topController()?.present(alert, animated: true, completion: nil);
         } else {

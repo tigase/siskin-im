@@ -173,7 +173,7 @@ extension BaseChatViewController: URLSessionDelegate {
 
         if encrypted {
             let (data,fragment) = try OMEMOModule.encryptFile(url: url);
-            let url = try await HTTPFileUploadHelper.upload(for: context, filename: filename, inputStream: InputStream(data: data), filesize: data.count, mimeType: mimeType ?? "application/octet-stream", delegate: self);
+            let url = try await HTTPFileUploadHelper.upload(for: context, filename: filename, data: data, filesize: data.count, mimeType: mimeType ?? "application/octet-stream", delegate: self);
 
             var parts = URLComponents(url: url, resolvingAgainstBaseURL: true)!;
             parts.scheme = "aesgcm";
@@ -181,13 +181,13 @@ extension BaseChatViewController: URLSessionDelegate {
 
             return FileUpload(url: parts.url!, filesize: size, mimeType: mimeType);
         } else {
-            guard let inputStream = InputStream(url: url) else {
+            guard let data = try? Data(contentsOf: url) else {
                 DispatchQueue.main.async {
                     self.hideProgressBar();
                 }
                 throw ShareError.noAccessError;
             }
-            let url = try await HTTPFileUploadHelper.upload(for: context, filename: filename, inputStream: inputStream, filesize: size, mimeType: mimeType ?? "application/octet-stream", delegate: self);
+            let url = try await HTTPFileUploadHelper.upload(for: context, filename: filename, data: data, filesize: size, mimeType: mimeType ?? "application/octet-stream", delegate: self);
             
             return FileUpload(url: url, filesize: size, mimeType: mimeType);
         }

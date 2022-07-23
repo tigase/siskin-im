@@ -161,9 +161,8 @@ class ShareViewController: UITableViewController {
         self.extensionContext?.cancelRequest(withError: error);
     }
     
-    private var cancellables: Set<AnyCancellable> = [];
     private var cancelled = false;
-    private var clients: [XMPPClient] = [];
+//    private var clients: [XMPPClient] = [];
     
     @objc func doneTapped(_ sender: Any) {
         self.navigationItem.rightBarButtonItem?.isEnabled = false;
@@ -187,48 +186,47 @@ class ShareViewController: UITableViewController {
         ])
         alertController?.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: { _ in
             self.cancelled = true;
-            for client in self.clients {
-                _ = client.disconnect();
-            }
-            DispatchQueue.main.async {
-                self.extensionContext?.cancelRequest(withError: ShareError.unknownError);
+            Task {
+                for task in self.clients.values {
+                    task.cancel()
+                }
+                await MainActor.run(body: {
+                    self.extensionContext?.cancelRequest(withError: ShareError.unknownError);
+                })
             }
         }));
         self.present(alertController!, animated: true, completion: nil);
 
-        self.extractAttachments(completionHandler: { result in
-            guard !self.cancelled else {
-                if case let .success(att) = result, case let .file(url, _) = att {
+        Task {
+            do {
+                let attachment = try await extractAttachments();
+                await MainActor.run(body: {
+                    label.text = NSLocalizedString("Sending…", comment: "operation label");
+                })
+                let errors = await share(attachment: attachment);
+                if cancelled, case let .file(url, _) = attachment {
                     try? FileManager.default.removeItem(at: url);
                 }
-                return;
-            }
-            switch result {
-            case .failure(let error):
+                
                 DispatchQueue.main.async {
-                self.alertController?.dismiss(animated: true, completion: {
-                    self.navigationItem.rightBarButtonItem?.isEnabled = true;
-                    self.show(error: error);
+                    self.alertController?.dismiss(animated: true, completion: {
+                        self.navigationItem.rightBarButtonItem?.isEnabled = true;
+                        guard let error = errors.first?.error else {
+                            self.extensionContext?.completeRequest(returningItems: [], completionHandler: nil);
+                            return;
+                        }
+                        self.show(error: error);
+                    });
+                }
+            } catch {
+                await MainActor.run(body: {
+                    self.alertController?.dismiss(animated: true, completion: {
+                        self.navigationItem.rightBarButtonItem?.isEnabled = true;
+                        self.show(error: error);
+                    })
                 })
-                }
-            case .success(let att):
-                DispatchQueue.main.async {
-                    label.text = NSLocalizedString("Sending…", comment: "operation label");
-                }
-                self.share(attachment: att, completionHandler: { errors in
-                    DispatchQueue.main.async {
-                        self.alertController?.dismiss(animated: true, completion: {
-                            self.navigationItem.rightBarButtonItem?.isEnabled = true;
-                            guard let error = errors.first?.error else {
-                                self.extensionContext?.completeRequest(returningItems: [], completionHandler: nil);
-                                return;
-                            }
-                            self.show(error: error);
-                        });
-                    }
-                });
             }
-        })
+        }
     }
     
     private struct ErrorResult {
@@ -236,90 +234,85 @@ class ShareViewController: UITableViewController {
         let error: Error;
     }
     
-    private func share(attachment: Attachment, completionHandler: @escaping ([ErrorResult])->Void) {
-        let accounts = Set(recipients.map({ $0.account }));
-        let group = DispatchGroup();
-        var errors: [ErrorResult] = [];
-        clients = accounts.compactMap({ account -> XMPPClient? in
-            guard let password = getAccountPassword(for: account) else {
-                return nil;
-            }
-            let client = self.createXmppClient(for: account);
-            var wasConnected = false;
-            client.connectionConfiguration.credentials = .password(password: password, authenticationName: nil, cache: nil);
-            client.$state.dropFirst().sink(receiveValue: { [weak client] newState in
-                switch newState {
-                case .connected(_):
-                    guard let client = client else {
-                        return;
+    private var clients: [BareJID: Task<XMPPClient,Error>] = [:];
+    private let clientsLock = UnfairLock();
+    
+    private func client(account: BareJID) async throws -> XMPPClient {
+        let task: Task<XMPPClient,Error> = clientsLock.with {
+            guard let task = clientsLock.with({ clients[account] }) else {
+                let task: Task<XMPPClient,Error> = Task {
+                    guard let password = getAccountPassword(for: account) else {
+                        throw XMPPError(condition: .not_authorized);
                     }
-                    wasConnected = true;
-                    let recipients = self.recipients.filter({ $0.account == account });
-                    switch attachment {
-                    case .file(let tempUrl, let fileInfo):
-                        self.upload(file: tempUrl, fileInfo: fileInfo, using: client, completionHandler: { result in
-                            try? FileManager.default.removeItem(at: tempUrl);
-                            switch result {
-                            case .success(let url):
-                                self.send(using: client, to: recipients, body: url.absoluteString, oob: url.absoluteString, completionHandler: {
-                                    _ = client.disconnect();
-                                })
-                            case .failure(let err):
-                                DispatchQueue.main.async {
-                                    errors.append(contentsOf: recipients.map({ ErrorResult(jid: $0.jid, error: err)}))
-                                }
-                                _ = client.disconnect();
-                            }
-                        });
-                    case .link(let url):
-                        self.send(using: client, to: recipients, body: url.absoluteString, oob: nil, completionHandler: {
-                            _ = client.disconnect();
-                        })
-                    case .text(let text):
-                        self.send(using: client, to: recipients, body: text, oob: nil, completionHandler: {
-                            _ = client.disconnect();
-                        })
-                    }
-                    break;
-                case .disconnected:
-                    if !wasConnected {
-                        let recipients = self.recipients.filter({ $0.account == account });
-                        DispatchQueue.main.async {
-                            errors.append(contentsOf: recipients.map({ ErrorResult(jid: $0.jid, error: ShareError.unknownError)}))
-                        }
-                    }
-                    group.leave();
-                default:
-                    break;
+                    let client = self.createXmppClient(for: account);
+                    client.connectionConfiguration.credentials = .password(password: password, authenticationName: nil, cache: nil);
+                    try await client.loginAndWait();
+                    try Task.checkCancellation()
+                    return client;
                 }
-            }).store(in: &cancellables);
-            group.enter();
-            // FIXME!
-//            client.login();
-            return client;
-        })
-        group.notify(queue: DispatchQueue.main, execute: {
-            completionHandler(errors);
+                clients[account] = task;
+                return task;
+
+            }
+            return task;
+        }
+        return try await task.value;
+    }
+    
+    private var attachmentUpload: [BareJID: Task<URL,Error>] = [:];
+    
+    private func prepareAttachment(_ attachment: Attachment, for account: BareJID) async throws -> (String, String?) {
+        switch attachment {
+        case .file(let tempUrl, let fileInfo):
+            let task: Task<URL,Error> = clientsLock.with({
+                guard let task = attachmentUpload[account] else {
+                    let task: Task<URL,Error> = Task {
+                        let client = try await self.client(account: account);
+                        let result = try await upload(file: tempUrl, fileInfo: fileInfo, using: client);
+                        try Task.checkCancellation()
+                        return result;
+                    }
+                    attachmentUpload[account] = task;
+                    return task;
+                }
+                return task;
+            })
+            let url = try await task.value;
+            return (url.absoluteString, url.absoluteString);
+        case .link(let url):
+            return (url.absoluteString, nil)
+        case .text(let string):
+            return (string, nil);
+        }
+    }
+    
+    private func share(attachment: Attachment) async -> [ErrorResult] {
+        return await withTaskGroup(of: ErrorResult?.self, returning: [ErrorResult].self, body: { group in
+            for recipient in recipients {
+                group.addTask {
+                    do {
+                        let client = try await self.client(account: recipient.account);
+                        let (body, oob) = try await self.prepareAttachment(attachment, for: recipient.account);
+                        try await self.send(using: client, to: recipient, body: body, oob: oob);
+                        return nil;
+                    } catch {
+                        return ErrorResult(jid: recipient.jid, error: error);
+                    }
+                }
+            }
+            
+            return await group.reduce(into: [ErrorResult](), { if let err = $1 { $0.append(err) } });
         })
     }
         
-    private func send(using client: XMPPClient, to recipients: [RosterItem], body: String?, oob: String?, completionHandler: @escaping ()->Void) {
-        let group = DispatchGroup();
-        for recipient in recipients {
-            group.enter();
-            let message = Message(element: Element(name: "message"));
-            message.type = .chat;
-            message.to = JID(recipient.jid)
-            message.id = UUID().uuidString;
-            message.body = body;
-            message.oob = oob;
-            client.writer.write(stanza: message, completionHandler: { result in
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
-                    group.leave();
-                })
-            });
-        }
-        group.notify(queue: DispatchQueue.main, execute: completionHandler);
+    private func send(using client: XMPPClient, to recipient: RosterItem, body: String?, oob: String?) async throws {
+        let message = Message(element: Element(name: "message"));
+        message.type = .chat;
+        message.to = JID(recipient.jid)
+        message.id = UUID().uuidString;
+        message.body = body;
+        message.oob = oob;
+        try await client.writer.write(stanza: message);
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -420,30 +413,28 @@ class ShareViewController: UITableViewController {
         return client;
     }
     
-    private func upload(file localUrl: URL, fileInfo: ShareFileInfo, using client: XMPPClient, completionHandler: @escaping (Result<URL,Error>)->Void) {
+    private func upload(file localUrl: URL, fileInfo: ShareFileInfo, using client: XMPPClient) async throws -> URL {
         let uti = try? localUrl.resourceValues(forKeys: [.typeIdentifierKey]).typeIdentifier;
         let mimeType = uti != nil ? (UTTypeCopyPreferredTagWithClass(uti! as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as String?) : nil;
         let size = try! FileManager.default.attributesOfItem(atPath: localUrl.path)[FileAttributeKey.size] as! UInt64;
       
-        guard let inputStream = InputStream(url: localUrl) else {
-            completionHandler(.failure(ShareError.noAccessError));
-            return;
+        guard let data = try? Data(contentsOf: localUrl) else {
+            throw ShareError.noAccessError;
         }
-        
-        Task {
-            do {
-                let url = try await HTTPFileUploadHelper.upload(for: client, filename: fileInfo.filenameWithSuffix, inputStream: inputStream, filesize: Int(size), mimeType: mimeType ?? "application/octet-stream", delegate: nil);
-                completionHandler(.success(url));
-            } catch {
-                completionHandler(.failure(error));
-            }
-        }
+
+        return try await HTTPFileUploadHelper.upload(for: client, filename: fileInfo.filenameWithSuffix, data: data, filesize: Int(size), mimeType: mimeType ?? "application/octet-stream", delegate: nil);
     }
     
     enum Attachment {
         case file(URL, ShareFileInfo)
         case link(URL)
         case text(String)
+    }
+    
+    private func extractAttachments() async throws -> Attachment {
+        return try await withUnsafeThrowingContinuation({ continuation in
+            extractAttachments(completionHandler: continuation.resume(with:));
+        })
     }
     
     private func extractAttachments(completionHandler: @escaping (Result<Attachment,Error>)->Void) {

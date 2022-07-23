@@ -204,9 +204,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: backgroundRefreshTaskIdentifier);
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
         
-        // TODO: XmppService::initialize() call in application:willFinishLaunchingWithOptions results in starting a connections while it may not always be desired if ie. app is relauched in the background due to crash
-        // Shouldn't it wait for reconnection till it becomes active? or background refresh task is called?
-        
         XmppService.instance.updateApplicationState(.active);
         applicationKeepOnlineOnAwayFinished(application);
 

@@ -113,14 +113,15 @@ open class MediaHelper {
         let fileUrl = FileManager.default.temporaryDirectory.appendingPathComponent(newFileInfo.filenameWithSuffix, isDirectory: false);
         exportSession.outputURL = fileUrl;
         
-        let timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: { _ in
-            progressCallback(exportSession.progress);
-        })
-        
+        let progressTask = Task {
+            repeat {
+                try await Task.sleep(nanoseconds: 100_000_000);
+                progressCallback(exportSession.progress);
+            } while !Task.isCancelled
+        }
+
         defer {
-            DispatchQueue.main.async {
-                timer.invalidate();
-            }
+            progressTask.cancel();
         }
         
         await exportSession.export();

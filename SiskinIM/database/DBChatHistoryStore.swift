@@ -683,10 +683,6 @@ class DBChatHistoryStore {
             return false;
         }
         
-        // FIXME: This does not look like it was working..
-//        DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: Date(timeIntervalSince1970: 0), itemType: nil, message: nil, state: .outgoing_error(.received, errorMessage: error?.localizedDescription ?? "Unknown error")) {
-//          self.itemUpdated(withId: itemId, for: conversation);
-//        }
         self.itemUpdated(withId: itemId, for: conversation);
         return true;
     }
