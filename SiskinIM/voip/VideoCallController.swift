@@ -125,12 +125,9 @@ public class VideoCallController: UIViewController, RTCVideoViewDelegate, CallDe
         case .denied, .restricted:
             throw XMPPError(condition: .forbidden);
         case .notDetermined:
-            guard await withUnsafeContinuation({ continuation in
-                AVCaptureDevice.requestAccess(for: media.avmedia, completionHandler: continuation.resume(returning:));
-            }) else {
+            guard await AVCaptureDevice.requestAccess(for: media.avmedia) else {
                 throw XMPPError(condition: .forbidden);
             }
-            return;
         default:
             throw XMPPError(condition: .forbidden);
         }

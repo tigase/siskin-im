@@ -454,7 +454,6 @@ open class XmppService {
         _ = client.modulesManager.register(VCard4Module());
         _ = client.modulesManager.register(PingModule());
         _ = client.modulesManager.register(ClientStateIndicationModule());
-        _ = client.modulesManager.register(MobileModeModule());
         
         _ = client.modulesManager.register(BlockingCommandModule());
         
@@ -483,10 +482,9 @@ open class XmppService {
          _ = client.modulesManager.register(AdHocCommandsModule());
         
         _ = client.modulesManager.register(SiskinPushNotificationsModule(defaultPushServiceJid: XmppService.pushServiceJid, provider: SiskinPushNotificationsModuleProvider()));
-        let jingleModule = client.modulesManager.register(JingleModule(sessionManager: JingleManager.instance));
+        let jingleModule = client.modulesManager.register(JingleModule(sessionManager: JingleManager.instance, supportsMessageInitiation: true));
         jingleModule.register(transport: Jingle.Transport.ICEUDPTransport.self, features: [Jingle.Transport.ICEUDPTransport.XMLNS, "urn:xmpp:jingle:apps:dtls:0"]);
         jingleModule.register(description: Jingle.RTP.Description.self, features: ["urn:xmpp:jingle:apps:rtp:1", "urn:xmpp:jingle:apps:rtp:audio", "urn:xmpp:jingle:apps:rtp:video"]);
-        jingleModule.supportsMessageInitiation = true;
         _ = client.modulesManager.register(ExternalServiceDiscoveryModule());
         client.modulesManager.register(MeetModule());
         _ = client.modulesManager.register(InBandRegistrationModule());

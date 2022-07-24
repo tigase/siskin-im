@@ -279,7 +279,7 @@ class ChannelJoinViewController: UITableViewController {
                         (room as! Room).updateRoom(name: name);
                         (room as! Room).roomFeatures = features;
                         Task {
-                            let vcard = VCard();
+                            var vcard = VCard();
                             if let binval = avatar?.scaled(maxWidthOrHeight: 512.0)?.jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
                                 vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
                             }

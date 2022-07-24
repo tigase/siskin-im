@@ -78,7 +78,7 @@ class ChannelsHelper {
         return component;
     }
     
-    enum ComponentType {
+    enum ComponentType: Sendable {
         case muc
         case mix
         
@@ -93,12 +93,12 @@ class ChannelsHelper {
         }
     }
     
-    class Component {
+    struct Component: Sendable {
         let jid: JID;
         let name: String?;
         let type: ComponentType;
         
-        convenience init?(jid: JID, name: String?, identities: [DiscoveryModule.Identity], features: [String]) {
+        init?(jid: JID, name: String?, identities: [DiscoveryModule.Identity], features: [String]) {
             guard let type = ComponentType.from(identities: identities, features: features) else {
                 return nil;
             }

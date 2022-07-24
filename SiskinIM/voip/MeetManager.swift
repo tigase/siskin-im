@@ -25,9 +25,9 @@ import TigaseSwift
 import TigaseLogging
 import CallKit
 
-class Meet: CallBase {
+final class Meet: CallBase, @unchecked Sendable {
     
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "meet")
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "meet")
         
     private static let queue = DispatchQueue(label: "MeetDispatcher");
     
@@ -38,7 +38,7 @@ class Meet: CallBase {
     }
     
     let jid: BareJID
-    var sid: String
+    let sid: String
     
     let uuid = UUID();
     
@@ -94,9 +94,9 @@ class Meet: CallBase {
     }
     
     @Published
-    fileprivate(set) var outgoingCall: Call?;
+    private(set) var outgoingCall: Call?;
     @Published
-    fileprivate(set) var incomingCall: Call?;
+    private(set) var incomingCall: Call?;
     
     @Published
     fileprivate(set) var publishers: [MeetModule.Publisher] = [];
@@ -129,9 +129,9 @@ class Meet: CallBase {
 
         do {
             try await call.initiateOutgoingCall(with: jid.jid());
-            self.logger.info("initiated outgoing call of a meet \(self.jid)")
+            Meet.logger.info("initiated outgoing call of a meet \(self.jid)")
         } catch {
-            self.logger.info("initiation of outgoing call of a meet \(self.jid) failed with \(error)")
+            Meet.logger.info("initiation of outgoing call of a meet \(self.jid) failed with \(error)")
             call.reset();
             self.cancellables.removeAll();
             throw error;

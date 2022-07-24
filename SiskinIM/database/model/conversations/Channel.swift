@@ -26,7 +26,7 @@ import Combine
 import Shared
 import Intents
 
-public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtocol, Conversation, LastMessageTimestampAware {
+public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtocol, Conversation, LastMessageTimestampAware, @unchecked Sendable {
     
     open override var defaultMessageType: StanzaType {
         return .groupchat;
@@ -118,7 +118,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         return "Channel(account: \(account), jid: \(jid))";
     }
         
-    public enum Feature: String, Codable {
+    public enum Feature: String, Codable, Sendable {
         case avatar = "avatar"
         case membersOnly = "members-only"
         

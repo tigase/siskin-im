@@ -356,7 +356,7 @@ open class DBChatStore: ContextLifecycleAware {
                 for conversation in items {
                     if let chat = conversation as? Chat {
                         chat.update(remoteChatState: nil);
-                        chat.localChatState = .active;
+                        chat.update(localChatState: .active);
                     }
                 }
             }

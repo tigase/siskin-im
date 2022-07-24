@@ -36,9 +36,10 @@ class AvatarEventHandler: XmppServiceExtension {
             guard let client = client else {
                 return;
             }
-            guard let photoId = e.presence.vcardTempPhoto, let to = e.presence.to?.bareJid else {
+            guard let photoId = e.presence.vcardTempPhoto, let to = e.presence.to?.bareJid, let from = e.presence.from else {
                 return;
             }
+            let jid = e.jid;
             Task {
                 if !e.presence.hasChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") {
                     AvatarManager.instance.avatarHashChanged(for: e.jid.bareJid, on: to, type: .vcardTemp, hash: photoId);
@@ -51,12 +52,12 @@ class AvatarEventHandler: XmppServiceExtension {
                             await withTaskGroup(of: Void.self, body: { group in
                                 for photo in vcard.photos {
                                     group.addTask {
-                                        os_log(OSLogType.debug, log: .avatar, "got photo from %s VCard for avaar hash: %{public}s", e.presence.from!.description, photoId);
+                                        os_log(OSLogType.debug, log: .avatar, "got photo from %s VCard for avaar hash: %{public}s", from.description, photoId);
                                         guard let data = try? await VCardManager.fetchPhoto(photo: photo) else {
                                             return;
                                         }
                                         _ = AvatarManager.instance.storeAvatar(data: data);
-                                        AvatarManager.instance.avatarUpdated(hash: photoId, for: e.jid.bareJid, on: to, withNickname: e.jid.resource);
+                                        AvatarManager.instance.avatarUpdated(hash: photoId, for: jid.bareJid, on: to, withNickname: jid.resource);
                                     }
                                 }
                                 await group.waitForAll();

@@ -29,7 +29,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
 
     var client: XMPPClient!;
         
-    var vcard: VCard? {
+    var vcard: VCard = VCard() {
         didSet {
             tableView.reloadData();
         }
@@ -49,10 +49,12 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     
     override func viewWillAppear(_ animated: Bool) {
         Task {
-            let vcard = await DBVCardStore.instance.vcard(for: client.userBareJid);
-            DispatchQueue.main.async {
-                self.vcard = vcard;
+            guard let vcard = await DBVCardStore.instance.vcard(for: client.userBareJid) else {
+                return;
             }
+            await MainActor.run(body: {
+                self.vcard = vcard;
+            })
         }
     }
     
@@ -80,7 +82,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
             case .avatar:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "AvatarEditCell") as! VCardAvatarEditCell;
                 cell.avatarView.set(name: nil, avatar: nil);
-                if let photo = vcard?.photos.first {
+                if let photo = vcard.photos.first {
                     Task {
                         let data = try await VCardManager.fetchPhoto(photo: photo);
                         DispatchQueue.main.async {
@@ -93,50 +95,50 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
             case .givenName:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
                 cell.textField.placeholder = NSLocalizedString("Given name", comment: "vcard field label")
-                cell.textField.text = vcard?.givenName;
+                cell.textField.text = vcard.givenName;
                 cell.textField.delegate = self;
                 cell.textField.tag = indexPath.row;
                 return cell;
             case .familyName:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
                 cell.textField.placeholder = NSLocalizedString("Family name", comment: "vcard field label")
-                cell.textField.text = vcard?.surname;
+                cell.textField.text = vcard.surname;
                 cell.textField.delegate = self;
                 cell.textField.tag = indexPath.row;
                 return cell;
             case .fullName:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
                 cell.textField.placeholder = NSLocalizedString("Full name", comment: "vcard field label")
-                cell.textField.text = vcard?.fn;
+                cell.textField.text = vcard.fn;
                 cell.textField.delegate = self;
                 cell.textField.tag = indexPath.row;
                 return cell;
             case .birthday:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
                 cell.textField.placeholder = NSLocalizedString("Birthday", comment: "vcard field label")
-                cell.textField.text = vcard?.bday;
+                cell.textField.text = vcard.bday;
                 cell.textField.inputView = self.datePicker;
                 cell.textField.tag = indexPath.row;
                 return cell;
             case .organization:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
                 cell.textField.placeholder = NSLocalizedString("Organization", comment: "vcard field label")
-                cell.textField.text = vcard?.organizations.first?.name;
+                cell.textField.text = vcard.organizations.first?.name;
                 cell.textField.delegate = self;
                 cell.textField.tag = indexPath.row;
                 return cell;
             case .organizationRole:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
                 cell.textField.placeholder = NSLocalizedString("Organization role", comment: "vcard field label")
-                cell.textField.text = vcard?.role;
+                cell.textField.text = vcard.role;
                 cell.textField.delegate = self;
                 cell.textField.tag = indexPath.row;
                 return cell;
             }
         case .phones:
-            if indexPath.row < vcard?.telephones.count ?? 0 {
+            if indexPath.row < vcard.telephones.count {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "PhoneEditCell") as! VCardEditPhoneTableViewCell;
-                cell.phone = vcard?.telephones[indexPath.row];
+                cell.phone = vcard.telephones[indexPath.row];
                 return cell;
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "PhoneAddCell");
@@ -150,9 +152,9 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                 return cell!;
             }
         case .emails:
-            if indexPath.row < vcard?.emails.count ?? 0 {
+            if indexPath.row < vcard.emails.count {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "EmailEditCell") as! VCardEditEmailTableViewCell;
-                cell.email = vcard?.emails[indexPath.row];
+                cell.email = vcard.emails[indexPath.row];
                 return cell;
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "EmailAddCell");
@@ -166,9 +168,9 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                 return cell!;
             }
         case .addresses:
-            if indexPath.row < vcard?.addresses.count ?? 0 {
+            if indexPath.row < vcard.addresses.count {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "AddressEditCell") as! VCardEditAddressTableViewCell;
-                cell.address = vcard?.addresses[indexPath.row];
+                cell.address = vcard.addresses[indexPath.row];
                 return cell;
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "AddressAddCell");
@@ -193,11 +195,11 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         case .basic:
             return false;
         case .phones:
-            return indexPath.row < vcard?.telephones.count ?? 0;
+            return indexPath.row < vcard.telephones.count;
         case .emails:
-            return indexPath.row < vcard?.emails.count ?? 0;
+            return indexPath.row < vcard.emails.count;
         case .addresses:
-            return indexPath.row < vcard?.addresses.count ?? 0;
+            return indexPath.row < vcard.addresses.count;
         }
     }
     
@@ -206,11 +208,11 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         case 0:
             return 7;
         case 1:
-            return (vcard?.telephones.count ?? 0) + 1;
+            return vcard.telephones.count + 1;
         case 2:
-            return (vcard?.emails.count ?? 0) + 1;
+            return vcard.emails.count + 1;
         case 3:
-            return (vcard?.addresses.count ?? 0) + 1;
+            return vcard.addresses.count + 1;
         default:
             return 0;
         }
@@ -238,9 +240,6 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true);
-        guard let vcard = self.vcard else {
-            return;
-        }
         switch VCardSections(rawValue: indexPath.section)! {
         case .basic:
             if indexPath.row == VCardBaseSectionRows.avatar.rawValue {
@@ -268,9 +267,6 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        guard let vcard = self.vcard else {
-            return;
-        }
         if editingStyle == UITableViewCell.EditingStyle.delete {
             if indexPath.section == 1 {
                 vcard.telephones.remove(at: indexPath.row);
@@ -303,9 +299,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     @IBAction func publishVCard(_ sender: UIBarButtonItem) {
         self.tableView.endEditing(true);
         DispatchQueue.main.async {
-            guard let vcard = self.vcard else {
-                return;
-            }
+            let vcard = self.vcard;
             Task {
                 do {
                     try await self.publishVCard(vcard: vcard);
@@ -313,7 +307,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                         _ = self.navigationController?.popViewController(animated: true);
                     }
                     DBVCardStore.instance.updateVCard(for: self.client.userBareJid, on: self.client.userBareJid, vcard: vcard);
-                    if let photo = self.vcard?.photos.first, let data = try? await VCardManager.fetchPhoto(photo: photo) {
+                    if let photo = vcard.photos.first, let data = try? await VCardManager.fetchPhoto(photo: photo) {
                         let avatarHash = Insecure.SHA1.hash(toHex: data);
                         let x = Element(name: "x", xmlns: "vcard-temp:x:update");
                         x.addChild(Element(name: "photo", cdata: avatarHash));
@@ -385,7 +379,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         }
                 
         if let item = items.first {
-            vcard?.photos = [VCard.Photo(type: item.info.mimeType, binval: item.data!.base64EncodedString(options: NSData.Base64EncodingOptions(rawValue: 0)))];
+            vcard.photos = [VCard.Photo(type: item.info.mimeType, binval: item.data!.base64EncodedString(options: NSData.Base64EncodingOptions(rawValue: 0)))];
         }
         tableView.reloadData();
         picker.dismiss(animated: true, completion: nil);
@@ -427,7 +421,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         if let cell = tableView.cellForRow(at: IndexPath(row: VCardBaseSectionRows.birthday.rawValue, section: VCardSections.basic.rawValue)) as? VCardTextEditCell {
             cell.textField.text = string;
         }
-        vcard?.bday = string;
+        vcard.bday = string;
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
@@ -435,15 +429,15 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         if let row = VCardBaseSectionRows(rawValue: textField.tag) {
             switch row {
             case .givenName:
-                vcard?.givenName = text;
+                vcard.givenName = text;
             case .familyName:
-                vcard?.surname = text;
+                vcard.surname = text;
             case .fullName:
-                vcard?.fn = text;
+                vcard.fn = text;
             case .organization:
-                vcard?.organizations = (text?.isEmpty ?? true) ? [] : [VCard.Organization(name: text!, types: [.work])];
+                vcard.organizations = (text?.isEmpty ?? true) ? [] : [VCard.Organization(name: text!, types: [.work])];
             case .organizationRole:
-                vcard?.role = text;
+                vcard.role = text;
             default:
                 break;
             }

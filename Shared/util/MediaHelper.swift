@@ -22,7 +22,7 @@
 import UIKit
 import AVKit
 
-public struct ShareFileInfo {
+public struct ShareFileInfo: Sendable {
     
     public let filename: String;
     public let suffix: String?;
@@ -98,7 +98,7 @@ open class MediaHelper {
         return (fileUrl,newFileInfo);
     }
     
-    public static func compressMovie(url: URL, fileInfo: ShareFileInfo, quality: VideoQuality, progressCallback: @escaping (Float)->Void) async throws -> (URL,ShareFileInfo) {
+    public static func compressMovie(url: URL, fileInfo: ShareFileInfo, quality: VideoQuality, progressCallback: @Sendable @escaping (Float)->Void) async throws -> (URL,ShareFileInfo) {
         guard quality != .original else {
             let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent(fileInfo.with(filename: UUID().uuidString));
             try FileManager.default.copyItem(at: url, to: tempUrl);

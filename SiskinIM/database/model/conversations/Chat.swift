@@ -27,13 +27,20 @@ import Combine
 import Shared
 import Intents
 
-public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conversation {
-        
+public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conversation, @unchecked Sendable {
+    
     public override var defaultMessageType: StanzaType {
         return .chat;
     }
     
-    var localChatState: ChatState = .active;
+    private var _localChatState: ChatState = .active;
+    public var localChatState: ChatState {
+        get {
+            return withLock({
+                return _localChatState;
+            })
+        }
+    }
     @Published
     private(set) var remoteChatState: ChatState? = nil;
     
@@ -46,7 +53,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
     public var debugDescription: String {
         return "Chat(account: \(account), jid: \(jid))";
     }
-
+    
     init(context: Context, jid: BareJID, id: Int, lastActivity: LastConversationActivity, unread: Int, options: ChatOptions) {
         let contact = ContactManager.instance.contact(for: .init(account: context.userBareJid, jid: jid, type: .buddy));
         super.init(context: context, jid: jid, id: id, lastActivity: lastActivity, unread: unread, options: options, displayableId: contact);
@@ -65,19 +72,25 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         return account == jid.bareJid;
     }
     
+    @discardableResult
+    func update(localChatState state: ChatState) -> Bool {
+        return withLock({
+            guard _localChatState != state else {
+                return false;
+            }
+            self._localChatState = state;
+            return true;
+        })
+    }
+    
     func changeChatState(state: ChatState) -> Message? {
-        guard localChatState != state else {
+        guard update(localChatState: state), remoteChatState != nil else {
             return nil;
         }
-        self.localChatState = state;
-        if (remoteChatState != nil) {
-            let msg = Message();
-            msg.to = JID(jid);
-            msg.type = StanzaType.chat;
-            msg.chatState = state;
-            return msg;
-        }
-        return nil;
+        
+        let msg = Message(type: .chat, to: jid.jid());
+        msg.chatState = state;
+        return msg;
     }
     
     private var remoteChatStateTimer: Foundation.Timer?;
@@ -117,7 +130,9 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         msg.chatState = .active;
         msg.isMarkable = true;
         msg.messageDelivery = .request;
-        self.localChatState = .active;
+        withLock({
+            self._localChatState = .active;
+        })
         return msg;
     }
     

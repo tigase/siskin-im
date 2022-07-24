@@ -21,7 +21,7 @@
 
 import UIKit
 
-public enum ImageQuality: String {
+public enum ImageQuality: String, Sendable {
     case original
     case highest
     case high

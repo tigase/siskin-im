@@ -1053,7 +1053,7 @@ extension ConversationEntryState {
     
 }
 
-public enum ItemType: Int {
+public enum ItemType: Int, Sendable {
     case message = 0
     case attachment = 1
     // how about new type called link preview? this way we would have a far less data kept in a single item..
@@ -1065,7 +1065,7 @@ public enum ItemType: Int {
     case location = 6;
 }
 
-class UnsentMessage {
+final class UnsentMessage: Sendable {
     let jid: BareJID;
     let type: ItemType;
     let data: String;

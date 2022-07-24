@@ -27,7 +27,7 @@ import Shared
 import Combine
 import TigaseLogging
 
-public class NotificationManager {
+public class NotificationManager: @unchecked Sendable {
 
     public static let instance: NotificationManager = NotificationManager();
 
@@ -158,10 +158,10 @@ public class NotificationManager {
         let id = UUID().uuidString;
         Task {
             let content = await NotificationsManagerHelper.prepareNewMessageNotification(content: UNMutableNotificationContent(), account: account, sender: jid, nickname: nickname, body: body, provider: provider);
-            UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil)) { (error) in
-                if let err = error {
-                    self.logger.error("message notification error \(err.localizedDescription)");
-                }
+            do {
+                try await UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil));
+            } catch {
+                self.logger.error("message notification error \(error.localizedDescription)");
             }
         }
     }
@@ -180,12 +180,8 @@ public class NotificationManager {
         
     func updateApplicationIconBadgeNumber() async {
         let count = await provider.countBadge(withThreadId: nil);
-        return await withUnsafeContinuation({ continuation in
-            DispatchQueue.main.async {
-                self.logger.debug("setting badge to: \(count)");
-                UIApplication.shared.applicationIconBadgeNumber = count;
-                continuation.resume();
-            }
+        await MainActor.run(body: {
+            self.logger.debug("setting badge to: \(count)");
         })
     }
     

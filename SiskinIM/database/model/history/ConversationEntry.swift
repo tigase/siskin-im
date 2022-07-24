@@ -23,7 +23,7 @@ import UIKit
 import TigaseSwift
 import CoreLocation
 
-public enum ConversationEntryPayload: Hashable {
+public enum ConversationEntryPayload: Hashable, Sendable {
     case message(message: String, correctionTimestamp: Date?)
     case attachment(url: String, appendix: ChatAttachmentAppendix)
     case linkPreview(url: String)
@@ -35,7 +35,7 @@ public enum ConversationEntryPayload: Hashable {
     case location(location: CLLocationCoordinate2D)
 }
 
-public final class ConversationEntry: Hashable {
+public final class ConversationEntry: Hashable, Sendable {
     
     public static func == (lhs: ConversationEntry, rhs: ConversationEntry) -> Bool {
         lhs.id == rhs.id && lhs.timestamp == rhs.timestamp && lhs.payload == rhs.payload && lhs.sender == rhs.sender && lhs.state == rhs.state && lhs.options == rhs.options;
@@ -114,7 +114,7 @@ public final class ConversationEntry: Hashable {
 
 extension ConversationEntry {
     
-    struct Options: Hashable {
+    struct Options: Hashable, Sendable {
         let recipient: ConversationEntryRecipient;
         let encryption: ConversationEntryEncryption;
         let isMarkable: Bool;
@@ -132,7 +132,7 @@ public protocol ConversationEntryRelated {
 
 extension ConversationEntry {
 
-    public enum Order {
+    public enum Order: Sendable {
         case first
         case last
     }

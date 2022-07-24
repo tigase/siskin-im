@@ -21,7 +21,7 @@
 
 import Foundation
 
-public enum ConversationEntryEncryption: Hashable {
+public enum ConversationEntryEncryption: Hashable, Sendable {
     case none
     case decrypted(fingerprint: String?)
     case decryptionFailed(errorCode: Int)

@@ -22,7 +22,7 @@
 import Foundation
 import AVKit
 
-public enum VideoQuality: String {
+public enum VideoQuality: String, Sendable {
     case original
     case high
     case medium

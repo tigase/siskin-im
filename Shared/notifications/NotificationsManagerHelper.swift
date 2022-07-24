@@ -122,7 +122,7 @@ public class NotificationsManagerHelper {
                     }
                     let interaction = INInteraction(intent: intent, response: nil);
                     interaction.direction = .incoming;
-                    interaction.donate(completion: nil);
+                    try await interaction.donate();
                     return try content.updating(from: intent);
                 } catch {
                     // some error happened

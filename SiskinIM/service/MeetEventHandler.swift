@@ -24,7 +24,7 @@ import Combine
 import TigaseSwift
 import UIKit
 
-class MeetEventHandler: XmppServiceExtension {
+final class MeetEventHandler: XmppServiceExtension, @unchecked Sendable {
     
     static let instance = MeetEventHandler();
     

@@ -348,7 +348,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
             return;
         }
         
-        let vcard = VCard();
+        var vcard = VCard();
         vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: data.base64EncodedString(), types: [.home])];
         Task {
             do {

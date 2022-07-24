@@ -140,7 +140,7 @@ class BlockedContactsController: UITableViewController {
         activityIndicator = nil;
     }
     
-    struct Item: Equatable, Comparable {
+    struct Item: Equatable, Comparable, Sendable {
         static func < (i1: BlockedContactsController.Item, i2: BlockedContactsController.Item) -> Bool {
             switch i1.jid.description.compare(i2.jid.description) {
             case.orderedAscending:

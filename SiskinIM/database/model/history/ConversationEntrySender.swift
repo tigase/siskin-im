@@ -23,7 +23,7 @@ import UIKit
 import TigaseSwift
 import Shared
 
-public enum ConversationEntrySender: Hashable {
+public enum ConversationEntrySender: Hashable, Sendable {
     
     case none
     case me(nickname: String)

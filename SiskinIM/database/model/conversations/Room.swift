@@ -27,7 +27,7 @@ import Combine
 import Shared
 import Intents
 
-public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conversation, RoomWithPushSupportProtocol {
+public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conversation, RoomWithPushSupportProtocol, @unchecked Sendable {
         
     open override var defaultMessageType: StanzaType {
         return .groupchat;

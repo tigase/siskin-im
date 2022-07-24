@@ -576,19 +576,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func dismissNewMessageNotifications(for account: JID) async {
-        let toRemove: [String] = await withUnsafeContinuation({ continuation in
-            UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
-                let toRemove = notifications.filter({ (notification) in
-                    switch NotificationCategory.from(identifier: notification.request.content.categoryIdentifier) {
-                    case .MESSAGE:
-                        return (notification.request.content.userInfo["account"] as? String) == account.description;
-                    default:
-                        return false;
-                    }
-                }).map({ (notification) in notification.request.identifier });
-                continuation.resume(returning: toRemove);
+        let notifications = await UNUserNotificationCenter.current().deliveredNotifications();
+        let toRemove: [String] = notifications.filter({ (notification) in
+            switch NotificationCategory.from(identifier: notification.request.content.categoryIdentifier) {
+            case .MESSAGE:
+                return (notification.request.content.userInfo["account"] as? String) == account.description;
+            default:
+                return false;
             }
-        })
+        }).map({ (notification) in notification.request.identifier })
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: toRemove);
         await NotificationManager.instance.updateApplicationIconBadgeNumber();
     }

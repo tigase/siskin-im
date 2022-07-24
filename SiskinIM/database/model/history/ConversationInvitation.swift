@@ -22,7 +22,7 @@
 import Foundation
 import TigaseSwift
 
-public struct ChatInvitationAppendix: AppendixProtocol, Hashable {
+public struct ChatInvitationAppendix: AppendixProtocol, Hashable, Sendable {
     
     let type: InvitationType;
     let inviter: BareJID;

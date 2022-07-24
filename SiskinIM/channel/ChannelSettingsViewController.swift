@@ -69,27 +69,23 @@ class ChannelSettingsViewController: UITableViewController {
                     self?.operationEnded();
                 }
             }
-            _ = await withTaskGroup(of: Void.self, returning: Void.self, body: { group in
-                group.addTask {
-                    do {
-                        _ = try await mixModule.affiliations(for: channel);
-                        DispatchQueue.main.async { [weak self] in
-                            self?.refreshPermissions();
-                        }
-                    } catch {}
+            let tasks = [
+                Task {
+                    _ = try await mixModule.affiliations(for: channel);
+                    await MainActor.run(body: {
+                        self.refreshPermissions();
+                    })
+                },
+                Task {
+                    let avatarInfo = try await mixModule.avatar(for: channel.channelJid)
+                    if !AvatarManager.instance.hasAvatar(withHash: avatarInfo.id) {
+                        AvatarManager.instance.retrievePepUserAvatar(for: channel.channelJid, on: channel.account, hash: avatarInfo.id);
+                    }
                 }
-                group.addTask {
-                    do {
-                        let avatarInfo = try await mixModule.avatar(for: channel.channelJid)
-                        if !AvatarManager.instance.hasAvatar(withHash: avatarInfo.id) {
-                            AvatarManager.instance.retrievePepUserAvatar(for: channel.channelJid, on: channel.account, hash: avatarInfo.id);
-                        }
-                    } catch {}
-                }
-                for await _ in group {}
-                return Void();
-            })
-            
+            ];
+            for task in tasks {
+                _ = try? await task.value;
+            }
         }
     }
     

@@ -183,7 +183,7 @@ extension LastChatActivityType {
 
 typealias ConversationEncryption = ChatEncryption
 
-public enum ChatEncryption: String, Codable, CustomStringConvertible {
+public enum ChatEncryption: String, Codable, CustomStringConvertible, Sendable {
     case none = "none";
     case omemo = "omemo";
     
@@ -206,12 +206,12 @@ public protocol ChatOptionsProtocol: DatabaseConvertibleStringValue {
     func equals(_ options: ChatOptionsProtocol) -> Bool
 }
 
-public struct ChatMarker: Hashable {
+public struct ChatMarker: Hashable, Sendable {
     let sender: ConversationEntrySender;
     let timestamp: Date;
     let type: MarkerType;
         
-    public enum MarkerType: Int, Comparable, Hashable {
+    public enum MarkerType: Int, Comparable, Hashable, Sendable {
         case received = 0
         case displayed = 1
 

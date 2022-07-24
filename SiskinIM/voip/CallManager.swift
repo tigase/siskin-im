@@ -158,7 +158,7 @@ class CallManager: NSObject, CXProviderDelegate {
             let intent = INStartCallIntent(callRecordFilter: nil, callRecordToCallBack: nil, audioRoute: .unknown, destinationType: .unknown, contacts: [sender], callCapability: AVCaptureDevice.authorizationStatus(for: .video) == .authorized && call.media.contains(.video) ? .videoCall : .audioCall)
             let interaction = INInteraction(intent: intent, response: nil);
             interaction.direction = .incoming;
-            interaction.donate(completion: nil);
+            try await interaction.donate();
         }
         
         #if targetEnvironment(simulator)
@@ -207,7 +207,7 @@ class CallManager: NSObject, CXProviderDelegate {
             let intent = INStartCallIntent(callRecordFilter: nil, callRecordToCallBack: nil, audioRoute: .unknown, destinationType: .unknown, contacts: [recipient], callCapability: AVCaptureDevice.authorizationStatus(for: .video) == .authorized && call.media.contains(.video) ? .videoCall : .audioCall)
             let interaction = INInteraction(intent: intent, response: nil);
             interaction.direction = .incoming;
-            interaction.donate(completion: nil);
+            try await interaction.donate();
         }
         
         let startCallAction = CXStartCallAction(call: call.uuid, handle: call.remoteHandle);
@@ -391,7 +391,7 @@ class CallManager: NSObject, CXProviderDelegate {
     }
 }
 
-protocol CallBase: AnyObject, CustomStringConvertible {
+protocol CallBase: AnyObject, CustomStringConvertible, Sendable {
     
     var account: BareJID { get }
     var jid: BareJID { get }
@@ -420,7 +420,7 @@ protocol CallBase: AnyObject, CustomStringConvertible {
     func mute(value: Bool);
 }
 
-class Call: NSObject, CallBase, JingleSessionActionDelegate {
+final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Sendable {
     
     let uuid = UUID();
     
@@ -478,7 +478,7 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
 
     private let establishingSessions = EstablishingSessions();
     
-    private class EstablishingSessions {
+    private class EstablishingSessions: @unchecked Sendable {
         
         private let lock = UnfairLock();
         private var _completed: Bool = false;
@@ -659,7 +659,7 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
          }
      }
     
-    enum Media: String {
+    enum Media: String, Sendable {
         case audio
         case video
         
@@ -680,12 +680,12 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
         }
     }
 
-    enum Direction {
+    enum Direction: Sendable {
         case incoming
         case outgoing
     }
     
-    enum State {
+    enum State: Sendable {
         case new
         case ringing
         case connecting
@@ -756,36 +756,38 @@ class Call: NSObject, CallBase, JingleSessionActionDelegate {
                     let sessions = withJingle.compactMap({ jid -> JingleManager.Session? in
                         let session = JingleManager.instance.open(for: client, with: jid, sid: self.sid, role: .initiator, initiationType: .iq);
                         session.$state.removeDuplicates().sink(receiveValue: { state in
-                            Task {
                             switch state {
                             case .accepted:
-                                guard self.session == nil else {
-                                    try await session.terminate();
-                                    return;
-                                }
-                                
-                                do {
-                                    for sess in try self.establishingSessions.accepted(session: session) {
-                                        Task {
-                                            try await sess.terminate();
-                                        }
+                                Task {
+                                    guard self.session == nil else {
+                                        try await session.terminate();
+                                        return;
                                     }
                                     
-                                    self.session = session;
-                                    self.state = .connecting;
-                                    self.connectRemoteSDPPublishers(session: session);
-                                    self.sendLocalCandidates();
-                                } catch {
-                                    try await session.terminate();
+                                    do {
+                                        for sess in try self.establishingSessions.accepted(session: session) {
+                                            Task {
+                                                try await sess.terminate();
+                                            }
+                                        }
+                                        
+                                        self.session = session;
+                                        self.state = .connecting;
+                                        self.connectRemoteSDPPublishers(session: session);
+                                        self.sendLocalCandidates();
+                                    } catch {
+                                        try await session.terminate();
+                                    }
                                 }
                             case .terminated:
-                                self.establishingSessions.rejected(session: session);
-                                if self.establishingSessions.isCompleted && self.session == nil {
-                                    self.reset();
+                                Task {
+                                    self.establishingSessions.rejected(session: session);
+                                    if self.establishingSessions.isCompleted && self.session == nil {
+                                        self.reset();
+                                    }
                                 }
                             default:
                                 break;
-                            }
                             }
                         }).store(in: &self.cancellables);
                         do {
