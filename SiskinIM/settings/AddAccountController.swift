@@ -151,7 +151,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         }
     }
     
-    func saveAccount(acceptedCertificate: SslCertificateInfo?) {
+    func saveAccount(acceptedCertificate: SSLCertificateInfo?) {
         guard let jid = BareJID(jidTextField.text) else {
             return;
         }
@@ -237,7 +237,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     
     class AccountValidatorTask {
         
-        public static func validate(controller: UIViewController, account: BareJID, password: String, connectivitySettings: AccountConnectivitySettingsViewController.Settings) async throws -> SslCertificateInfo? {
+        public static func validate(controller: UIViewController, account: BareJID, password: String, connectivitySettings: AccountConnectivitySettingsViewController.Settings) async throws -> SSLCertificateInfo? {
             let client = XMPPClient();
             _ = client.modulesManager.register(StreamFeaturesModule());
             _ = client.modulesManager.register(SaslModule());
@@ -266,13 +266,13 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
                 guard case let .sslCertError(trust) = error else {
                     throw error;
                 }
-                let certData = SslCertificateInfo(trust: trust);
+                let certData = SSLCertificateInfo(trust: trust)!;
                 guard await CertificateErrorAlert.show(parent: controller, domain: account.domain, certData: certData) else {
                     throw error;
                 }
                 client.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
                     options.networkProcessorProviders.append(SSLProcessorProvider());
-                    options.sslCertificateValidation = .fingerprint(certData.details.fingerprintSha1);
+                    options.sslCertificateValidation = .fingerprint(certData.subject.fingerprints.first!);
                 });
                 
                 try await client.loginAndWait();

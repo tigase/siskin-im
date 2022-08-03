@@ -195,7 +195,7 @@ class RegisterAccountController: DataFormController {
         super.tableView(tableView, didSelectRowAt: indexPath);
     }
     
-    func saveAccount(acceptedCertificate: SslCertificateInfo?) {
+    func saveAccount(acceptedCertificate: SSLCertificateInfo?) {
         guard let jid = self.account else {
             return;
         }
@@ -216,7 +216,7 @@ class RegisterAccountController: DataFormController {
         }
     }
     
-    func retrieveRegistrationForm(domain: String, acceptedCertificate: SslCertificateInfo?) {
+    func retrieveRegistrationForm(domain: String, acceptedCertificate: SSLCertificateInfo?) {
         self.task = InBandRegistrationModule.AccountRegistrationAsyncTask(domainName: domain, preauth: self.preauth);
         task?.acceptedSslCertificate = acceptedCertificate;
         Task {
@@ -234,7 +234,7 @@ class RegisterAccountController: DataFormController {
                     self.tableView.insertSections(IndexSet(0..<(self.visibleFields.count + 1)), with: .fade);
                 })
             } catch XMPPClient.State.DisconnectionReason.sslCertError(let secTrust) {
-                let info = SslCertificateInfo(trust: secTrust);
+                let info = SSLCertificateInfo(trust: secTrust)!;
                 self.onCertificateError(certData: info, accepted: {
                     self.retrieveRegistrationForm(domain: domain, acceptedCertificate: info);
                 })
@@ -284,7 +284,7 @@ class RegisterAccountController: DataFormController {
         }
     }
     
-    func onCertificateError(certData: SslCertificateInfo, accepted: @escaping ()->Void) {
+    func onCertificateError(certData: SSLCertificateInfo, accepted: @escaping ()->Void) {
         let alert = CertificateErrorAlert.create(domain: domain!, certData: certData, onAccept: accepted, onDeny: {
             self.nextButton.isEnabled = true;
             self.hideIndicator();

@@ -22,16 +22,44 @@
 import Foundation
 import TigaseSwift
 
-open class ServerCertificateInfo: SslCertificateInfo {
+public struct AcceptableServerCertificate: Codable, Equatable {
     
+    enum CodingKeys: CodingKey {
+        case certificate
+        case accepted
+    }
+    
+    public let certificate: SSLCertificateInfo;
     public var accepted: Bool;
     
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self);
+        certificate = try container.decode(SSLCertificateInfo.self, forKey: .certificate)
+        accepted = try container.decode(Bool.self, forKey: .accepted);
+    }
+    
+    public init(certificate: SSLCertificateInfo, accepted: Bool) {
+        self.certificate = certificate;
+        self.accepted = accepted;
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self);
+        try container.encode(certificate, forKey: .certificate)
+        try container.encode(accepted, forKey: .accepted);
+    }
+}
+
+open class ServerCertificateInfoOld: SslCertificateInfoOld {
+
+    public var accepted: Bool;
+        
     public override init(trust: SecTrust) {
         self.accepted = false;
         super.init(trust: trust);
     }
     
-    public init(sslCertificateInfo: SslCertificateInfo, accepted: Bool) {
+    public init(sslCertificateInfo: SslCertificateInfoOld, accepted: Bool) {
         self.accepted = accepted;
         super.init(sslCertificateInfo: sslCertificateInfo);
     }
@@ -46,4 +74,7 @@ open class ServerCertificateInfo: SslCertificateInfo {
         super.encode(with: aCoder);
     }
     
+    public func acceptableServerCertificate() -> AcceptableServerCertificate {
+        return AcceptableServerCertificate(certificate: self.sslCertificateInfo(), accepted: accepted);
+    }
 }

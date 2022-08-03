@@ -24,7 +24,7 @@ import TigaseSwift
 
 class CertificateErrorAlert {
     
-    public static func show(parent: UIViewController, domain: String, certData: SslCertificateInfo) async -> Bool {
+    public static func show(parent: UIViewController, domain: String, certData: SSLCertificateInfo) async -> Bool {
         return await withUnsafeContinuation({ continuation in
             DispatchQueue.main.async {
                 let controller = create(domain: domain, certData: certData, onAccept: {
@@ -37,8 +37,8 @@ class CertificateErrorAlert {
         })
     }
     
-    public static func create(domain: String, certData: SslCertificateInfo, onAccept: (()->Void)?, onDeny: (()->Void)?) -> UIAlertController {
-        return create(domain: domain, certName: certData.details.name, certHash: certData.details.fingerprintSha1, issuerName: certData.issuer?.name, issuerHash: certData.issuer?.fingerprintSha1, onAccept: onAccept, onDeny: onDeny);
+    public static func create(domain: String, certData: SSLCertificateInfo, onAccept: (()->Void)?, onDeny: (()->Void)?) -> UIAlertController {
+        return create(domain: domain, certName: certData.subject.name, certHash: certData.subject.fingerprints.first!.value, issuerName: certData.issuer?.name, issuerHash: certData.issuer?.fingerprints.first?.value, onAccept: onAccept, onDeny: onDeny);
     }
     
     public static func create(domain: String, certName: String, certHash: String, issuerName: String?, issuerHash: String?, onAccept: (()->Void)?, onDeny: (()->Void)?) -> UIAlertController {

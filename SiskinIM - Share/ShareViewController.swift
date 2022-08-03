@@ -541,7 +541,7 @@ class ShareViewController: UITableViewController {
                 for r in results {
                     if let name = r[String(kSecAttrAccount)] as? String {
                         if let data = r[String(kSecAttrGeneric)] as? NSData {
-                            NSKeyedUnarchiver.setClass(ServerCertificateInfo.self, forClassName: "Siskin.ServerCertificateInfo");
+                            NSKeyedUnarchiver.setClass(ServerCertificateInfoOld.self, forClassName: "Siskin.ServerCertificateInfo");
                             let dict = NSKeyedUnarchiver.unarchiveObject(with: data as Data) as? [String:AnyObject];
                             if dict!["active"] as? Bool ?? false {
                                 accounts.append(BareJID(name));

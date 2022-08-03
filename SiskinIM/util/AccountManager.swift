@@ -25,6 +25,7 @@ import Security
 import Shared
 import TigaseSwift
 import Combine
+import TigaseSQLite3
 
 open class AccountManager {
     
@@ -43,9 +44,60 @@ open class AccountManager {
     
     public static let saltedPasswordCache = AccountManagerScramSaltedPasswordCache();
     
+    static func initialize() throws {
+        try reloadAccounts();
+    }
+    
+    static func convertOldAccounts() throws {
+        guard accounts.isEmpty else {
+            return;
+        }
+        
+        let query = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitAll, String(kSecReturnAttributes) : kCFBooleanTrue as Any, String(kSecAttrService) : "xmpp" ] as [String : Any];
+        var result: CFTypeRef?;
+
+        guard SecItemCopyMatching(query as CFDictionary, &result) == noErr else {
+            return;
+        }
+        
+        guard let results = result as? [[String: NSObject]] else {
+            return;
+        }
+
+        let accounts = results.filter({ $0[kSecAttrAccount as String] != nil}).map { item -> BareJID in
+            return BareJID(item[kSecAttrAccount as String] as! String);
+        }.sorted(by: { (j1, j2) -> Bool in
+            j1.description.compare(j2.description) == .orderedAscending
+        });
+        
+        for name in accounts {
+            if let oldAccount = getAccountInt(for: name) {
+                var newAccount = Account(name: name, enabled: oldAccount.active);
+                newAccount.serverEndpoint = oldAccount.endpoint;
+                newAccount.rosterVersion = oldAccount.rosterVersion;
+                newAccount.disableTls13 = oldAccount.disableTLS13;
+                newAccount.omemoDeviceId = AccountSettings.omemoRegistrationId(for: name);
+                newAccount.acceptedCertificate = oldAccount.serverCertificate?.acceptableServerCertificate();
+                newAccount.nickname = oldAccount.nickname;
+                newAccount.statusMessage = oldAccount.presenceDescription;
+                newAccount.push = oldAccount.pushSettings;
+                try DBAccountStore.create(account: newAccount);
+            }
+        }
+        try reloadAccounts();
+    }
+    
+    private static func reloadAccounts() throws {
+        self.accounts.removeAll();
+        let accounts = try DBAccountStore.list();
+        for account in accounts {
+            self.accounts[account.name] = account;
+        }
+    }
+    
     static func getActiveAccounts() -> [Account] {
         return getAccounts().compactMap({ jid -> Account? in
-            guard let account = getAccount(for: jid), account.active else {
+            guard let account = getAccount(for: jid), account.enabled else {
                 return nil;
             }
             return account;
@@ -53,36 +105,10 @@ open class AccountManager {
     }
     
     static func getAccounts() -> [BareJID] {
-        self.queue.sync {
-            guard accounts.isEmpty else {
-                return Array(accounts.keys).sorted(by: { (j1, j2) -> Bool in
-                    j1.description.compare(j2.description) == .orderedAscending;
-                });
-            }
-            
-            let query = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitAll, String(kSecReturnAttributes) : kCFBooleanTrue as Any, String(kSecAttrService) : "xmpp" ] as [String : Any];
-            var result: CFTypeRef?;
-
-            guard SecItemCopyMatching(query as CFDictionary, &result) == noErr else {
-                return [];
-            }
-            
-            guard let results = result as? [[String: NSObject]] else {
-                return [];
-            }
-
-            let accounts = results.filter({ $0[kSecAttrAccount as String] != nil}).map { item -> BareJID in
-                return BareJID(item[kSecAttrAccount as String] as! String);
-            }.sorted(by: { (j1, j2) -> Bool in
-                j1.description.compare(j2.description) == .orderedAscending
+        return self.queue.sync {
+            return accounts.keys.sorted(by: { (j1, j2) -> Bool in
+                j1.description.compare(j2.description) == .orderedAscending;
             });
-            
-            for account in accounts {
-                if let item = getAccountInt(for: account) {
-                    self.accounts[account] = item;
-                }
-            }
-            return accounts;
         }
     }
 
@@ -92,7 +118,7 @@ open class AccountManager {
         }
     }
     
-    private static func getAccountInt(for jid: BareJID) -> Account? {
+    private static func getAccountInt(for jid: BareJID) -> AccountOld? {
         let query = AccountManager.getAccountQuery(jid.description);
         var result: CFTypeRef?;
         
@@ -106,11 +132,11 @@ open class AccountManager {
         
         var dict: [String: Any]? = nil;
         if let data = r[String(kSecAttrGeneric)] as? NSData {
+            NSKeyedUnarchiver.setClass(ServerCertificateInfoOld.self, forClassName: "Siskin.ServerCertificateInfo");
             dict = NSKeyedUnarchiver.unarchiveObject(with: data as Data) as? [String: Any];
         }
         
-        return Account(name: jid, data: dict);
-
+        return AccountOld(name: jid, data: dict);
     }
     
     
@@ -237,14 +263,113 @@ open class AccountManager {
     }
     
     struct Account {
+
+        public var state = CurrentValueSubject<XMPPClient.State,Never>(.disconnected());
+
+        public let name: BareJID;
+        public var enabled: Bool;
+        public var serverEndpoint: SocketConnectorNetwork.Endpoint?; // replaces server and endpoint..
+        public var lastEndpoint: SocketConnectorNetwork.Endpoint?;
+        public var rosterVersion: String?;
+        public var statusMessage: String?;
+        public var push: SiskinPushNotificationsModule.PushSettings?;
+
+        public var additional: Additional;
+
+        public var omemoDeviceId: UInt32? {
+            get {
+                return additional.omemoDeviceId;
+            }
+            set {
+                additional.omemoDeviceId = newValue;
+            }
+        }
+
+        public var acceptedCertificate: AcceptableServerCertificate? {
+            get {
+                return additional.acceptedCertificate;
+            }
+            set {
+                additional.acceptedCertificate = newValue;
+            }
+        }
+
+        public var nickname: String? {
+            get {
+                return additional.nick;
+            }
+            set {
+                additional.nick = newValue;
+            }
+        }
+
+        public var disableTls13: Bool {
+            get {
+                return additional.disableTls13;
+            }
+            set {
+                additional.disableTls13 = newValue;
+            }
+        }
+
+        public struct Additional: Codable, DatabaseConvertibleStringValue, Equatable {
+            public var omemoDeviceId: UInt32?;
+            public var acceptedCertificate: AcceptableServerCertificate?;
+            public var nick: String?;
+            public var disableTls13: Bool;
+
+            init() {
+                self.omemoDeviceId = nil
+                self.acceptedCertificate = nil;
+                self.nick = nil;
+                self.disableTls13 = false;
+            }
+            
+            init(from decoder: Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self);
+                omemoDeviceId = try container.decodeIfPresent(UInt32.self, forKey: .omemoId);
+                acceptedCertificate = try container.decodeIfPresent(AcceptableServerCertificate.self, forKey: .acceptedCertificate)
+                nick = try container.decodeIfPresent(String.self, forKey: .nick)
+                disableTls13 = try container.decode(Bool.self, forKey: .disableTls13);
+            }
+
+            func encode(to encoder: Encoder) throws {
+                var container = encoder.container(keyedBy: CodingKeys.self);
+                try container.encodeIfPresent(omemoDeviceId, forKey: .omemoId);
+                try container.encodeIfPresent(acceptedCertificate, forKey: .acceptedCertificate);
+                try container.encodeIfPresent(nick, forKey: .nick)
+                try container.encodeIfPresent(disableTls13, forKey: .disableTls13);
+            }
+
+            enum CodingKeys: CodingKey {
+                case omemoId
+                case acceptedCertificate
+                case nick
+                case disableTls13
+            }
+        }
+
+        public init(name: BareJID, enabled: Bool, serverEndpoint: SocketConnectorNetwork.Endpoint? = nil, lastEndpoint: SocketConnectorNetwork.Endpoint? = nil, rosterVersion: String? = nil, statusMessage: String? = nil, push: SiskinPushNotificationsModule.PushSettings? = nil, additional: Additional = Additional())  {
+            self.name = name;
+            self.enabled = enabled;
+            self.serverEndpoint = serverEndpoint;
+            self.lastEndpoint = lastEndpoint;
+            self.rosterVersion = rosterVersion;
+            self.push = push;
+            self.additional = additional;
+        }
+                
+    }
+    
+    struct AccountOld {
         
         public var state = CurrentValueSubject<XMPPClient.State,Never>(.disconnected());
-        
+                
+        public let name: BareJID;
+
         fileprivate var data:[String: Any];
         fileprivate var newPassword: String?;
-        
-        public let name: BareJID;
-        
+
         public var active:Bool {
             get {
                 return (data["active"] as? Bool) ?? true;
@@ -341,9 +466,9 @@ open class AccountManager {
             }
         }
         
-        public var serverCertificate: ServerCertificateInfo? {
+        public var serverCertificate: ServerCertificateInfoOld? {
             get {
-                return data["serverCert"] as? ServerCertificateInfo;
+                return data["serverCert"] as? ServerCertificateInfoOld;
             }
             set {
                 if newValue != nil {
@@ -401,12 +526,12 @@ open class AccountManager {
             self.data = data ?? [String: Any]();
         }
         
-        public mutating func acceptCertificate(_ certData: SslCertificateInfo?) {
+        public mutating func acceptCertificate(_ certData: SslCertificateInfoOld?) {
             guard let data = certData else {
                 self.serverCertificate = nil;
                 return;
             }
-            self.serverCertificate = ServerCertificateInfo(sslCertificateInfo: data, accepted: true);
+            self.serverCertificate = ServerCertificateInfoOld(sslCertificateInfo: data, accepted: true);
         }
     }
     

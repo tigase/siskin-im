@@ -28,7 +28,7 @@ import TigaseSwift
 
 open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
     
-    public struct PushSettings: Sendable {
+    public struct PushSettings: Codable, Equatable, Sendable {
                 
         public let jid: JID;
         public let node: String;

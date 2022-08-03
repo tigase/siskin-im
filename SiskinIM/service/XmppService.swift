@@ -536,7 +536,7 @@ open class XmppService {
             AccountSettings.reconnectionLocation(for: client.userBareJid, value: nil);
             switch reason {
             case .sslCertError(let trust):
-                let certData = ServerCertificateInfo(trust: trust);
+                let certData = ServerCertificateInfoOld(trust: trust);
                 if var account = AccountManager.getAccount(for: client.userBareJid) {
                     account.active = false;
                     account.serverCertificate = certData;
