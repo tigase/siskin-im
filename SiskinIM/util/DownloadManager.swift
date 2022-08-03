@@ -21,7 +21,7 @@
 
 import Foundation
 import MobileCoreServices
-import TigaseSwift
+import Martin
 import Shared
 
 class DownloadManager: NSObject {

@@ -21,7 +21,7 @@
 
 import Foundation
 import Shared
-import TigaseSwift
+import Martin
 import Combine
 import UIKit
 

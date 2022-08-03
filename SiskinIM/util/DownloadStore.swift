@@ -21,7 +21,7 @@
 
 import Foundation
 import UIKit
-import TigaseSwift
+import Martin
 
 class DownloadStore {
     

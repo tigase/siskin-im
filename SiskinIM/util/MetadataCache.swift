@@ -21,7 +21,7 @@
 
 import Foundation
 import LinkPresentation
-import TigaseSwift
+import Martin
 
 class MetadataCache {
 

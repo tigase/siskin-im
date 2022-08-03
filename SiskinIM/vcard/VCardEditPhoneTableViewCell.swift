@@ -20,7 +20,7 @@
 //
 
 import UIKit
-import TigaseSwift
+import Martin
 
 class VCardEditPhoneTableViewCell: VCardEntryTypeAwareTableViewCell, UITextFieldDelegate {
     

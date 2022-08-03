@@ -23,7 +23,7 @@ import UIKit
 import Foundation
 import UserNotifications
 import Shared
-import TigaseSwift
+import Martin
 
 open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
     

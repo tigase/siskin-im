@@ -22,7 +22,7 @@
 import UIKit
 import MobileCoreServices
 import LinkPresentation
-import TigaseSwift
+import Martin
 import AVFoundation
 
 class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteractionDelegate {

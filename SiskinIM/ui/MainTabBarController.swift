@@ -20,7 +20,7 @@
 //
 
 import UIKit
-import TigaseSwift
+import Martin
 import Combine
 
 class MainTabBarController: CustomTabBarController, UITabBarControllerDelegate {

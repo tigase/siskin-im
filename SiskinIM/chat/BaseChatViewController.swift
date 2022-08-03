@@ -21,7 +21,7 @@
 
 import UIKit
 import UserNotifications
-import TigaseSwift
+import Martin
 import Combine
 
 class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInputBarDelegate {

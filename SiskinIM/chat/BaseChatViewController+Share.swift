@@ -21,7 +21,7 @@
 
 import UIKit
 import MobileCoreServices
-import TigaseSwift
+import Martin
 import Shared
 
 extension ChatViewInputBar {

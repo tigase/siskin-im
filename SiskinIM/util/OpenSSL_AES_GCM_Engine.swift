@@ -19,7 +19,7 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 import Foundation
-import TigaseSwiftOMEMO
+import MartinOMEMO
 import Shared
 
 class OpenSSL_AES_GCM_Engine: Cipher.AES_GCM, AES_GCM_Engine {

@@ -23,7 +23,7 @@ import UIKit
 import CallKit
 import PushKit
 import WebRTC
-import TigaseSwift
+import Martin
 import TigaseLogging
 import Shared
 import Combine

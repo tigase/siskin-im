@@ -23,7 +23,7 @@
 import Foundation
 import Security
 import Shared
-import TigaseSwift
+import Martin
 import Combine
 
 open class AccountManager {

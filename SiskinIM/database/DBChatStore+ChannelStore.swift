@@ -19,7 +19,7 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 import Foundation
-import TigaseSwift
+import Martin
 
 extension DBChatStore: ChannelStore {
     

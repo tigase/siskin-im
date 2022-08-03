@@ -20,7 +20,7 @@
 //
 
 import UIKit
-import TigaseSwift
+import Martin
 import CoreLocation
 
 public enum ConversationEntryPayload: Hashable {

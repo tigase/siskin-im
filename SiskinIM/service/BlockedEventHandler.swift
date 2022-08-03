@@ -7,10 +7,10 @@
 //
 
 import Foundation
-import TigaseSwift
+import Martin
 
 import Foundation
-import TigaseSwift
+import Martin
 import Combine
 
 class BlockedEventHandler: XmppServiceExtension {

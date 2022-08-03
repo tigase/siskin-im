@@ -84,6 +84,7 @@
 		FE31291C222C0D1500A92863 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31291B222C0D1500A92863 /* AvatarView.swift */; };
 		FE31DDE4201261A200C2AB1D /* DNSSrvDiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */; };
 		FE36B3C821FA52E000D1F037 /* EmptyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */; };
+		FE392E03289AF47D006AA914 /* MartinOMEMO in Frameworks */ = {isa = PBXBuildFile; productRef = FE392E02289AF47D006AA914 /* MartinOMEMO */; };
 		FE3A427526DA70B700D914CE /* ChatViewInputBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3A427426DA70B700D914CE /* ChatViewInputBar.swift */; };
 		FE3A45CF1CE49D3300C36264 /* RosterItemEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */; };
 		FE3DCCEE1FE18334008B6C8B /* CertificateErrorAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3DCCED1FE18334008B6C8B /* CertificateErrorAlert.swift */; };
@@ -200,7 +201,6 @@
 		FEC514261CEB74F8003AF765 /* BaseChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514251CEB74F8003AF765 /* BaseChatViewController.swift */; };
 		FEC514281CEB82E9003AF765 /* MucChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514271CEB82E9003AF765 /* MucChatViewController.swift */; };
 		FEC79195241ABEF4007BE572 /* MessageState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC79194241ABEF4007BE572 /* MessageState.swift */; };
-		FEC9B1162440E7B500A484EE /* TigaseSwiftOMEMO in Frameworks */ = {isa = PBXBuildFile; productRef = FEC9B1152440E7B500A484EE /* TigaseSwiftOMEMO */; };
 		FECEF29423B7933A007EC323 /* MetadataCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECEF29323B7933A007EC323 /* MetadataCache.swift */; };
 		FECEF29623B7B076007EC323 /* DownloadStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECEF29523B7B076007EC323 /* DownloadStore.swift */; };
 		FECEF29B23B7BC02007EC323 /* BaseChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECEF29923B7BBD3007EC323 /* BaseChatTableViewCell.swift */; };
@@ -659,9 +659,9 @@
 				FE759FDE2371989B001E78D9 /* libsqlite3.tbd in Frameworks */,
 				FEA518C2266165A100523EF2 /* TigaseLogging in Frameworks */,
 				FEA518B1266159B900523EF2 /* TigaseSQLite3 in Frameworks */,
+				FE392E03289AF47D006AA914 /* MartinOMEMO in Frameworks */,
 				FE759FE82371C972001E78D9 /* libxml2.tbd in Frameworks */,
 				FE1908B72584D70300CA049F /* OpenSSL.xcframework in Frameworks */,
-				FEC9B1162440E7B500A484EE /* TigaseSwiftOMEMO in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1281,9 +1281,9 @@
 			);
 			name = Shared;
 			packageProductDependencies = (
-				FEC9B1152440E7B500A484EE /* TigaseSwiftOMEMO */,
 				FEA518B0266159B900523EF2 /* TigaseSQLite3 */,
 				FEA518C1266165A100523EF2 /* TigaseLogging */,
+				FE392E02289AF47D006AA914 /* MartinOMEMO */,
 			);
 			productName = Shared;
 			productReference = FE759FC52370B2A4001E78D9 /* Shared.framework */;
@@ -1385,9 +1385,9 @@
 			);
 			mainGroup = FE94E5181CCBA74F00FAE755;
 			packageReferences = (
-				FEC9B1122440E79D00A484EE /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */,
 				FEA5189D2661573F00523EF2 /* XCRemoteSwiftPackageReference "tigase-sqlite3.swift" */,
 				FEA518C0266165A100523EF2 /* XCRemoteSwiftPackageReference "tigase-logging.swift" */,
+				FE392E01289AF3B4006AA914 /* XCRemoteSwiftPackageReference "MartinOMEMO" */,
 			);
 			productRefGroup = FE94E5221CCBA74F00FAE755 /* Products */;
 			projectDirPath = "";
@@ -2394,6 +2394,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		FE392E01289AF3B4006AA914 /* XCRemoteSwiftPackageReference "MartinOMEMO" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tigase/MartinOMEMO";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		FEA5189D2661573F00523EF2 /* XCRemoteSwiftPackageReference "tigase-sqlite3.swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tigase/tigase-sqlite3.swift.git";
@@ -2410,17 +2418,14 @@
 				minimumVersion = 1.0.0;
 			};
 		};
-		FEC9B1122440E79D00A484EE /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/tigase/tigase-swift-omemo/";
-			requirement = {
-				kind = upToNextMinorVersion;
-				minimumVersion = 2.2.1;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		FE392E02289AF47D006AA914 /* MartinOMEMO */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FE392E01289AF3B4006AA914 /* XCRemoteSwiftPackageReference "MartinOMEMO" */;
+			productName = MartinOMEMO;
+		};
 		FEA518B0266159B900523EF2 /* TigaseSQLite3 */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = FEA5189D2661573F00523EF2 /* XCRemoteSwiftPackageReference "tigase-sqlite3.swift" */;
@@ -2430,11 +2435,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FEA518C0266165A100523EF2 /* XCRemoteSwiftPackageReference "tigase-logging.swift" */;
 			productName = TigaseLogging;
-		};
-		FEC9B1152440E7B500A484EE /* TigaseSwiftOMEMO */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FEC9B1122440E79D00A484EE /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */;
-			productName = TigaseSwiftOMEMO;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

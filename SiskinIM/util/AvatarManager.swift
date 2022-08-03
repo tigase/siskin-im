@@ -21,7 +21,7 @@
 
 
 import UIKit
-import TigaseSwift
+import Martin
 import Combine
 import TigaseLogging
 

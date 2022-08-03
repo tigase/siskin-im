@@ -21,7 +21,7 @@
 
 import Foundation
 import TigaseSQLite3
-import TigaseSwift
+import Martin
 import Combine
 import Shared
 
@@ -68,7 +68,7 @@ public protocol Conversation: ConversationProtocol, ConversationKey, Displayable
     func isLocal(sender: ConversationEntrySender) -> Bool;
 }
 
-import TigaseSwiftOMEMO
+import MartinOMEMO
 
 extension Conversation {
      

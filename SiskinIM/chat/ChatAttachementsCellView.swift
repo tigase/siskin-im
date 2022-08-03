@@ -8,7 +8,7 @@
 
 import UIKit
 import MobileCoreServices
-import TigaseSwift
+import Martin
 
 class ChatAttachmentsCellView: UICollectionViewCell, UIDocumentInteractionControllerDelegate, UIContextMenuInteractionDelegate {
 

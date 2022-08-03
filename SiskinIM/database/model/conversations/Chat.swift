@@ -20,8 +20,8 @@
 //
 
 import Foundation
-import TigaseSwift
-import TigaseSwiftOMEMO
+import Martin
+import MartinOMEMO
 import UIKit
 import Combine
 import Shared
