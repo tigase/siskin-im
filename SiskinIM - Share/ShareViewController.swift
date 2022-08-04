@@ -21,7 +21,7 @@
 import UIKit
 import Social
 import Shared
-import TigaseSwift
+import Martin
 import TigaseSQLite3
 import MobileCoreServices
 import Combine

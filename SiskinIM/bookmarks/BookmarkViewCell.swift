@@ -21,7 +21,7 @@
 
 import Foundation
 import UIKit
-import TigaseSwift
+import Martin
 import Combine
 
 public class BookmarkViewCell: UITableViewCell {

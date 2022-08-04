@@ -22,7 +22,7 @@
 import UIKit
 import Shared
 import WebRTC
-import TigaseSwift
+import Martin
 import UserNotifications
 import TigaseLogging
 

@@ -23,7 +23,7 @@ import BackgroundTasks
 import UserNotifications
 import UIKit
 import Shared
-import TigaseSwift
+import Martin
 import os.log
 import TigaseSQLite3
 import Intents

@@ -20,7 +20,7 @@
 //
 
 import UIKit
-import TigaseSwift
+import Martin
 import Shared
 
 public enum ConversationEntrySender: Hashable, Sendable {

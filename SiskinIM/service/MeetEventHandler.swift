@@ -21,7 +21,7 @@
 
 import Foundation
 import Combine
-import TigaseSwift
+import Martin
 import UIKit
 
 final class MeetEventHandler: XmppServiceExtension, @unchecked Sendable {

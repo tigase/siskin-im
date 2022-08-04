@@ -22,7 +22,7 @@
 
 import UIKit
 import UserNotifications
-import TigaseSwift
+import Martin
 import Combine
 
 class LabelWithInsets: UILabel {

@@ -20,7 +20,7 @@
 //
 
 import UIKit
-import TigaseSwift
+import Martin
 
 public actor KeyedTasksQueue {
     typealias Job = @Sendable () async throws -> Void

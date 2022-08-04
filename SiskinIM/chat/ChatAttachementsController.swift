@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import TigaseSwift
+import Martin
 import Combine
 
 class ChatAttachmentsController: UICollectionViewController, UICollectionViewDelegateFlowLayout {

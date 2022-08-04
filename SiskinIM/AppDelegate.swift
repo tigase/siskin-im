@@ -21,7 +21,7 @@
 
 import UIKit
 import UserNotifications
-import TigaseSwift
+import Martin
 import Shared
 import WebRTC
 import BackgroundTasks

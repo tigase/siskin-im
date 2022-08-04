@@ -20,8 +20,8 @@
 //
 
 import UIKit
-import TigaseSwift
-import TigaseSwiftOMEMO
+import Martin
+import MartinOMEMO
 
 class ContactViewController: UITableViewController {
     

@@ -21,7 +21,7 @@
 
 import UIKit
 import Shared
-import TigaseSwift
+import Martin
 import TigaseSQLite3
 
 extension Query {

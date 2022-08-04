@@ -24,7 +24,7 @@ import Foundation
 import UserNotifications
 import CryptoKit
 import Shared
-import TigaseSwift
+import Martin
 
 open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
     

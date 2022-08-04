@@ -20,9 +20,9 @@
 //
 
 import Foundation
-import TigaseSwift
+import Martin
 
-public class XMPPClient: TigaseSwift.XMPPClient {
+public class XMPPClient: Martin.XMPPClient {
     
     var retryNo: Int = 0;
     

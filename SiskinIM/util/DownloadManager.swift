@@ -21,10 +21,10 @@
 
 import Foundation
 import MobileCoreServices
-import TigaseSwift
+import Martin
 import Shared
 import CryptoKit
-import TigaseSwiftOMEMO
+import MartinOMEMO
 
 class DownloadManager: NSObject {
     

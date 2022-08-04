@@ -21,7 +21,7 @@
 
 import UIKit
 import Combine
-import TigaseSwift
+import Martin
 
 class SetAccountSettingsController: UITableViewController {
 

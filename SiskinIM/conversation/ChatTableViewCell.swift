@@ -21,7 +21,7 @@
 
 
 import UIKit
-import TigaseSwift
+import Martin
 
 class ChatTableViewCell: BaseChatTableViewCell, UITextViewDelegate {
 

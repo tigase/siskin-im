@@ -22,7 +22,7 @@
 import UIKit
 import WebRTC
 import Combine
-import TigaseSwift
+import Martin
 import TigaseLogging
 
 class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoViewDelegate, CallDelegate {

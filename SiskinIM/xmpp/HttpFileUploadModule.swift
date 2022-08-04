@@ -21,10 +21,10 @@
 
 import Foundation
 import Combine
-import TigaseSwift
+import Martin
 
 // Dummy implementation - it would be better to replace it with some better feature discovery than on each reconnection
-class HttpFileUploadModule: TigaseSwift.HttpFileUploadModule {
+class HttpFileUploadModule: Martin.HttpFileUploadModule {
     
     @Published
     var isAvailable: Bool = true;

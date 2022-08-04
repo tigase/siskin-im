@@ -21,7 +21,7 @@
 
 import UIKit
 import MobileCoreServices
-import TigaseSwift
+import Martin
 import Shared
 
 extension ChatViewInputBar {
@@ -59,7 +59,7 @@ extension ChatViewInputBar {
 }
 
 import AVFoundation
-import TigaseSwiftOMEMO
+import MartinOMEMO
 
 extension ChatViewInputBar {
     class VoiceMessageButton: ShareButton {

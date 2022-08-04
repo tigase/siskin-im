@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import TigaseSwift
+import Martin
 
 class BlockedContactsController: UITableViewController {
         

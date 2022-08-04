@@ -21,7 +21,7 @@
 
 import Foundation
 import TigaseSQLite3
-import TigaseSwift
+import Martin
 import Combine
 import Shared
 
@@ -74,7 +74,7 @@ public struct SharePreparedAttachment {
     let prepareShareURL: ((URL) -> URL)?;
 }
 
-import TigaseSwiftOMEMO
+import MartinOMEMO
 
 extension Conversation {
      

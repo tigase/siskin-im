@@ -84,6 +84,7 @@
 		FE31291C222C0D1500A92863 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31291B222C0D1500A92863 /* AvatarView.swift */; };
 		FE31DDE4201261A200C2AB1D /* DNSSrvDiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31DDE3201261A200C2AB1D /* DNSSrvDiskCache.swift */; };
 		FE36B3C821FA52E000D1F037 /* EmptyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE36B3C721FA52E000D1F037 /* EmptyViewController.swift */; };
+		FE392E03289AF47D006AA914 /* MartinOMEMO in Frameworks */ = {isa = PBXBuildFile; productRef = FE392E02289AF47D006AA914 /* MartinOMEMO */; };
 		FE3A427526DA70B700D914CE /* ChatViewInputBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3A427426DA70B700D914CE /* ChatViewInputBar.swift */; };
 		FE3A45CF1CE49D3300C36264 /* RosterItemEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3A45CE1CE49D3300C36264 /* RosterItemEditViewController.swift */; };
 		FE3DCCEE1FE18334008B6C8B /* CertificateErrorAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3DCCED1FE18334008B6C8B /* CertificateErrorAlert.swift */; };
@@ -153,7 +154,6 @@
 		FE7F645B1D281B1C00B9DF56 /* DBCapabilitiesCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7F645A1D281B1C00B9DF56 /* DBCapabilitiesCache.swift */; };
 		FE7F9303200FD5AC004C6195 /* AccountManagerScramSaltedPasswordCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7F9302200FD5AC004C6195 /* AccountManagerScramSaltedPasswordCache.swift */; };
 		FE80BDAB1D953FC4001914B0 /* SetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE80BDAA1D953FC4001914B0 /* SetupViewController.swift */; };
-		FE81FA9B288C3598003325A6 /* TigaseSwift in Frameworks */ = {isa = PBXBuildFile; productRef = FE81FA9A288C3598003325A6 /* TigaseSwift */; };
 		FE82A729268C83020049C844 /* ChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE82A728268C83020049C844 /* ChartView.swift */; };
 		FE82A72B268CC0740049C844 /* DeviceMemoryUsageTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE82A72A268CC0740049C844 /* DeviceMemoryUsageTableViewCell.swift */; };
 		FE8885EC26BAEAAE0095E25E /* MultiContactSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8885EB26BAEAAE0095E25E /* MultiContactSelectionView.swift */; };
@@ -165,6 +165,7 @@
 		FE94E52E1CCBA74F00FAE755 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FE94E52D1CCBA74F00FAE755 /* Assets.xcassets */; };
 		FE94E5311CCBA74F00FAE755 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE94E52F1CCBA74F00FAE755 /* LaunchScreen.storyboard */; };
 		FE9625A01D9AE7CB00D07118 /* RosterProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE96259F1D9AE7CB00D07118 /* RosterProvider.swift */; };
+		FE9C435B289BD3E500699EDF /* Martin in Frameworks */ = {isa = PBXBuildFile; productRef = FE9C435A289BD3E500699EDF /* Martin */; };
 		FE9D4DA526C1375300DD295A /* InviteToMeetingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9D4DA426C1375300DD295A /* InviteToMeetingViewController.swift */; };
 		FE9D4DA726C7E87C00DD295A /* AudioSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9D4DA626C7E87C00DD295A /* AudioSession.swift */; };
 		FE9E136D1F25F5F7005C0EE5 /* ChatSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E136C1F25F5F7005C0EE5 /* ChatSettingsViewController.swift */; };
@@ -201,7 +202,6 @@
 		FEC514261CEB74F8003AF765 /* BaseChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514251CEB74F8003AF765 /* BaseChatViewController.swift */; };
 		FEC514281CEB82E9003AF765 /* MucChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC514271CEB82E9003AF765 /* MucChatViewController.swift */; };
 		FEC79195241ABEF4007BE572 /* MessageState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC79194241ABEF4007BE572 /* MessageState.swift */; };
-		FEC9B1162440E7B500A484EE /* TigaseSwiftOMEMO in Frameworks */ = {isa = PBXBuildFile; productRef = FEC9B1152440E7B500A484EE /* TigaseSwiftOMEMO */; };
 		FECEF29423B7933A007EC323 /* MetadataCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECEF29323B7933A007EC323 /* MetadataCache.swift */; };
 		FECEF29623B7B076007EC323 /* DownloadStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECEF29523B7B076007EC323 /* DownloadStore.swift */; };
 		FECEF29B23B7BC02007EC323 /* BaseChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECEF29923B7BBD3007EC323 /* BaseChatTableViewCell.swift */; };
@@ -660,12 +660,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				FE759FDE2371989B001E78D9 /* libsqlite3.tbd in Frameworks */,
+				FE9C435B289BD3E500699EDF /* Martin in Frameworks */,
 				FEA518C2266165A100523EF2 /* TigaseLogging in Frameworks */,
 				FEA518B1266159B900523EF2 /* TigaseSQLite3 in Frameworks */,
+				FE392E03289AF47D006AA914 /* MartinOMEMO in Frameworks */,
 				FE759FE82371C972001E78D9 /* libxml2.tbd in Frameworks */,
 				FE1908B72584D70300CA049F /* OpenSSL.xcframework in Frameworks */,
-				FEC9B1162440E7B500A484EE /* TigaseSwiftOMEMO in Frameworks */,
-				FE81FA9B288C3598003325A6 /* TigaseSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1286,10 +1286,10 @@
 			);
 			name = Shared;
 			packageProductDependencies = (
-				FEC9B1152440E7B500A484EE /* TigaseSwiftOMEMO */,
 				FEA518B0266159B900523EF2 /* TigaseSQLite3 */,
 				FEA518C1266165A100523EF2 /* TigaseLogging */,
-				FE81FA9A288C3598003325A6 /* TigaseSwift */,
+				FE392E02289AF47D006AA914 /* MartinOMEMO */,
+				FE9C435A289BD3E500699EDF /* Martin */,
 			);
 			productName = Shared;
 			productReference = FE759FC52370B2A4001E78D9 /* Shared.framework */;
@@ -1390,9 +1390,9 @@
 			);
 			mainGroup = FE94E5181CCBA74F00FAE755;
 			packageReferences = (
-				FEC9B1122440E79D00A484EE /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */,
 				FEA5189D2661573F00523EF2 /* XCRemoteSwiftPackageReference "tigase-sqlite3.swift" */,
 				FEA518C0266165A100523EF2 /* XCRemoteSwiftPackageReference "tigase-logging.swift" */,
+				FE392E01289AF3B4006AA914 /* XCRemoteSwiftPackageReference "MartinOMEMO" */,
 			);
 			productRefGroup = FE94E5221CCBA74F00FAE755 /* Products */;
 			projectDirPath = "";
@@ -1915,7 +1915,7 @@
 				CODE_SIGN_ENTITLEMENTS = "SiskinIM - Share/SiskinIM - Share.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
@@ -1947,7 +1947,7 @@
 				CODE_SIGN_ENTITLEMENTS = "SiskinIM - Share/SiskinIM - Share.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
@@ -1981,7 +1981,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				ENABLE_BITCODE = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -2020,7 +2020,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				ENABLE_BITCODE = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -2049,6 +2049,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_ENABLE_MODULES = YES;
@@ -2058,7 +2059,7 @@
 				CODE_SIGN_IDENTITY = "";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 11;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -2078,6 +2079,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MARKETING_VERSION = 7.3;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.mobile.Shared;
@@ -2098,6 +2100,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_ENABLE_MODULES = YES;
@@ -2107,7 +2110,7 @@
 				CODE_SIGN_IDENTITY = "";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 11;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -2127,6 +2130,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MARKETING_VERSION = 7.3;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.mobile.Shared;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -2268,7 +2272,7 @@
 				CODE_SIGN_ENTITLEMENTS = SiskinIM.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				ENABLE_BITCODE = NO;
@@ -2309,7 +2313,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -2391,6 +2395,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		FE392E01289AF3B4006AA914 /* XCRemoteSwiftPackageReference "MartinOMEMO" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tigase/MartinOMEMO";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		FEA5189D2661573F00523EF2 /* XCRemoteSwiftPackageReference "tigase-sqlite3.swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tigase/tigase-sqlite3.swift.git";
@@ -2407,20 +2419,17 @@
 				minimumVersion = 1.0.0;
 			};
 		};
-		FEC9B1122440E79D00A484EE /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/tigase/tigase-swift-omemo/";
-			requirement = {
-				branch = master;
-				kind = branch;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		FE81FA9A288C3598003325A6 /* TigaseSwift */ = {
+		FE392E02289AF47D006AA914 /* MartinOMEMO */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = TigaseSwift;
+			package = FE392E01289AF3B4006AA914 /* XCRemoteSwiftPackageReference "MartinOMEMO" */;
+			productName = MartinOMEMO;
+		};
+		FE9C435A289BD3E500699EDF /* Martin */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Martin;
 		};
 		FEA518B0266159B900523EF2 /* TigaseSQLite3 */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -2431,11 +2440,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FEA518C0266165A100523EF2 /* XCRemoteSwiftPackageReference "tigase-logging.swift" */;
 			productName = TigaseLogging;
-		};
-		FEC9B1152440E7B500A484EE /* TigaseSwiftOMEMO */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FEC9B1122440E79D00A484EE /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */;
-			productName = TigaseSwiftOMEMO;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
