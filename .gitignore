@@ -112,5 +112,5 @@ xcuserdata
 
 *.moved-aside
 
-Documentation/restructured/locale/pl/LC_MESSAGES/*.mo
+Documentation/restructured/locale/*/LC_MESSAGES/*.mo
 Documentation/restructured/_build/
