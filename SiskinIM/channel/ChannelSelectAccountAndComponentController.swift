@@ -30,8 +30,10 @@ class ChannelSelectAccountAndComponentController: UITableViewController, UIPicke
     weak var delegate: ChannelSelectAccountAndComponentControllerDelgate?;
 
     private let accountPicker = UIPickerView();
+    private var accounts: [BareJID] = [];
     
     override func viewWillAppear(_ animated: Bool) {
+        self.accounts = AccountManager.activeAccounts().map({ $0.name }).sorted(by: { $0.description < $1.description })
         super.viewWillAppear(animated);
         let accountPicker = UIPickerView();
         accountPicker.dataSource = self;
@@ -55,11 +57,11 @@ class ChannelSelectAccountAndComponentController: UITableViewController, UIPicke
     }
     
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return AccountManager.getActiveAccounts().count;
+        return accounts.count;
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return AccountManager.getActiveAccounts()[row].name.description;
+        return accounts[row].description;
     }
     
     func  pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {

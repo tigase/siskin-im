@@ -72,7 +72,7 @@ class ChannelJoinViewController: UITableViewController {
         self.nameField.text = name;
         self.jidField.text = channelJid?.description;
         self.passwordField.text = password
-        self.nicknameField.text = self.nickname ?? AccountManager.getAccount(for: self.client.userBareJid)?.nickname;
+        self.nicknameField.text = self.nickname ?? AccountManager.account(for: self.client.userBareJid)?.nickname;
                
         bookmarkCreateSwitch.isOn = Settings.enableBookmarksSync;
         

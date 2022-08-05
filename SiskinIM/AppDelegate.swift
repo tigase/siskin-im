@@ -49,7 +49,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //        RTCInitFieldTrialDictionary([:]);
         RTCInitializeSSL();
         //RTCSetupInternalTracer();
-        AccountSettings.initialize();
+        try! AccountManager.convertOldAccounts();
+        try! AccountManager.initialize();
         
         switch Settings.appearance {
         case .light:
@@ -95,13 +96,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             guard case .removed(_) = action else {
                 return;
             }
-            if AccountManager.getAccounts().isEmpty {
+            if AccountManager.accountNames().isEmpty {
                 self?.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SetupViewController");
             }
         }).store(in: &cancellables);
 
         (self.window?.rootViewController as? UISplitViewController)?.preferredDisplayMode = .allVisible;
-        if AccountManager.getAccounts().isEmpty {
+        if AccountManager.accountNames().isEmpty {
             self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SetupViewController");
         }
                 
@@ -225,7 +226,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return false;
         }
         
-        guard let account = BareJID(intent.sender?.personHandle?.value), AccountManager.getAccount(for: account)?.active ?? false else {
+        guard let account = BareJID(intent.sender?.personHandle?.value), AccountManager.account(for: account)?.enabled ?? false else {
             return false;
         }
         
@@ -377,7 +378,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         case .roster:
             if let dict = xmppUri.dict, let ibr = dict["ibr"], ibr == "y" {
-                guard !AccountManager.getAccounts().isEmpty else {
+                guard !AccountManager.accountNames().isEmpty else {
                     self.open(xmppUri: XmppUri(jid: JID(xmppUri.jid.domain), action: .register, dict: dict), action: .register, then: {
                         DispatchQueue.main.async {
                             self.open(xmppUri: xmppUri, action: action);

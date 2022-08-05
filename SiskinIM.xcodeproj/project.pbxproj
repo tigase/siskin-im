@@ -166,6 +166,7 @@
 		FE94E5311CCBA74F00FAE755 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE94E52F1CCBA74F00FAE755 /* LaunchScreen.storyboard */; };
 		FE9625A01D9AE7CB00D07118 /* RosterProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE96259F1D9AE7CB00D07118 /* RosterProvider.swift */; };
 		FE9C435B289BD3E500699EDF /* Martin in Frameworks */ = {isa = PBXBuildFile; productRef = FE9C435A289BD3E500699EDF /* Martin */; };
+		FE9C435D289D145000699EDF /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9C435C289D145000699EDF /* Account.swift */; };
 		FE9D4DA526C1375300DD295A /* InviteToMeetingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9D4DA426C1375300DD295A /* InviteToMeetingViewController.swift */; };
 		FE9D4DA726C7E87C00DD295A /* AudioSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9D4DA626C7E87C00DD295A /* AudioSession.swift */; };
 		FE9E136D1F25F5F7005C0EE5 /* ChatSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E136C1F25F5F7005C0EE5 /* ChatSettingsViewController.swift */; };
@@ -521,6 +522,7 @@
 		FE94E5321CCBA74F00FAE755 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FE94E55D1CCCC14E00FAE755 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		FE96259F1D9AE7CB00D07118 /* RosterProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RosterProvider.swift; sourceTree = "<group>"; };
+		FE9C435C289D145000699EDF /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
 		FE9D4DA226BE9EFD00DD295A /* foreman.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = foreman.mp4; sourceTree = "<group>"; };
 		FE9D4DA426C1375300DD295A /* InviteToMeetingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteToMeetingViewController.swift; sourceTree = "<group>"; };
 		FE9D4DA626C7E87C00DD295A /* AudioSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSession.swift; sourceTree = "<group>"; };
@@ -712,6 +714,7 @@
 				FE11D2F02662393900CC883F /* history */,
 				FE11D2EE2662392200CC883F /* conversations */,
 				FE11D2F12662394B00CC883F /* DisplayableIdProtocol.swift */,
+				FE9C435C289D145000699EDF /* Account.swift */,
 			);
 			path = model;
 			sourceTree = "<group>";
@@ -1610,6 +1613,7 @@
 				FE0AE0B626AED7870010D2E2 /* GetInTouchViewController.swift in Sources */,
 				FE0E30E92535BA910030F8C5 /* BaseChatViewController+ShareMedia.swift in Sources */,
 				FE7F645B1D281B1C00B9DF56 /* DBCapabilitiesCache.swift in Sources */,
+				FE9C435D289D145000699EDF /* Account.swift in Sources */,
 				FE11D36026623D6D00CC883F /* Chat.swift in Sources */,
 				FE43E43823BF3DE80079BD9B /* ChatAttachementsController.swift in Sources */,
 				FEDE93891D081C3D00CA60A9 /* Settings.swift in Sources */,

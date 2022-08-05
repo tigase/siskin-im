@@ -22,33 +22,33 @@
 import Foundation
 import Martin
 
-open class AccountManagerScramSaltedPasswordCache: ScramSaltedPasswordCacheProtocol {
-    
-    public init() {
-    }
-    
-    public func getSaltedPassword(for context: Context, id: String) -> Data? {
-        guard let salted = AccountManager.getAccount(for: context.userBareJid)?.saltedPassword else {
-            return nil;
-        }
-        return salted.id == id ? Data(salted.value) : nil;
-    }
-    
-    public func store(for context: Context, id: String, saltedPassword: Data) {
-        setSaltedPassword(AccountManager.SaltEntry(id: id, value: saltedPassword.map({ $0 })), for: context);
-    }
-    
-    public func clearCache(for context: Context) {
-        setSaltedPassword(nil, for: context)
-    }
-    
-    fileprivate func setSaltedPassword(_ value: AccountManager.SaltEntry?, for context: Context) {
-        guard var account = AccountManager.getAccount(for: context.userBareJid) else {
-            return;
-        }
-        
-        account.saltedPassword = value;
-        try? AccountManager.save(account: account, reconnect: false);
-    }
-    
-}
+//open class AccountManagerScramSaltedPasswordCache: ScramSaltedPasswordCacheProtocol {
+//    
+//    public init() {
+//    }
+//    
+//    public func getSaltedPassword(for context: Context, id: String) -> Data? {
+//        guard let salted = AccountManager.getAccount(for: context.userBareJid)?.saltedPassword else {
+//            return nil;
+//        }
+//        return salted.id == id ? Data(salted.value) : nil;
+//    }
+//    
+//    public func store(for context: Context, id: String, saltedPassword: Data) {
+//        setSaltedPassword(AccountManager.SaltEntry(id: id, value: saltedPassword.map({ $0 })), for: context);
+//    }
+//    
+//    public func clearCache(for context: Context) {
+//        setSaltedPassword(nil, for: context)
+//    }
+//    
+//    fileprivate func setSaltedPassword(_ value: AccountManager.SaltEntry?, for context: Context) {
+//        guard var account = AccountManager.getAccount(for: context.userBareJid) else {
+//            return;
+//        }
+//        
+//        account.saltedPassword = value;
+//        try? AccountManager.save(account: account, reconnect: false);
+//    }
+//    
+//}

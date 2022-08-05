@@ -30,7 +30,13 @@ import TigaseSQLite3
 open class AccountManager {
     
     private static let queue = DispatchQueue(label: "AccountManager");
-    private static var accounts: [BareJID: Account] = [:];
+    private static var _accounts: [BareJID: Account] = [:];
+    
+    static var accounts: [Account] {
+        return queue.sync {
+            return Array(_accounts.values);
+        }
+    }
     
     static let accountEventsPublisher = PassthroughSubject<Event,Never>();
     static var defaultAccount: BareJID? {
@@ -42,83 +48,70 @@ open class AccountManager {
         }
     }
     
-    public static let saltedPasswordCache = AccountManagerScramSaltedPasswordCache();
+//    public static let saltedPasswordCache = AccountManagerScramSaltedPasswordCache();
     
     static func initialize() throws {
         try reloadAccounts();
     }
     
+    @available(*, deprecated, message: "Will be removed in future versions after account data conversion is completed")
     static func convertOldAccounts() throws {
-        guard accounts.isEmpty else {
-            return;
-        }
-        
-        let query = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitAll, String(kSecReturnAttributes) : kCFBooleanTrue as Any, String(kSecAttrService) : "xmpp" ] as [String : Any];
-        var result: CFTypeRef?;
-
-        guard SecItemCopyMatching(query as CFDictionary, &result) == noErr else {
-            return;
-        }
-        
-        guard let results = result as? [[String: NSObject]] else {
-            return;
-        }
-
-        let accounts = results.filter({ $0[kSecAttrAccount as String] != nil}).map { item -> BareJID in
-            return BareJID(item[kSecAttrAccount as String] as! String);
-        }.sorted(by: { (j1, j2) -> Bool in
-            j1.description.compare(j2.description) == .orderedAscending
-        });
-        
-        for name in accounts {
-            if let oldAccount = getAccountInt(for: name) {
-                var newAccount = Account(name: name, enabled: oldAccount.active);
-                newAccount.serverEndpoint = oldAccount.endpoint;
-                newAccount.rosterVersion = oldAccount.rosterVersion;
-                newAccount.disableTls13 = oldAccount.disableTLS13;
-                newAccount.omemoDeviceId = AccountSettings.omemoRegistrationId(for: name);
-                newAccount.acceptedCertificate = oldAccount.serverCertificate?.acceptableServerCertificate();
-                newAccount.nickname = oldAccount.nickname;
-                newAccount.statusMessage = oldAccount.presenceDescription;
-                newAccount.push = oldAccount.pushSettings;
-                try DBAccountStore.create(account: newAccount);
+        try queue.sync {
+            guard _accounts.isEmpty else {
+                return;
             }
-        }
-        try reloadAccounts();
-    }
-    
-    private static func reloadAccounts() throws {
-        self.accounts.removeAll();
-        let accounts = try DBAccountStore.list();
-        for account in accounts {
-            self.accounts[account.name] = account;
-        }
-    }
-    
-    static func getActiveAccounts() -> [Account] {
-        return getAccounts().compactMap({ jid -> Account? in
-            guard let account = getAccount(for: jid), account.enabled else {
-                return nil;
+            
+            let query = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitAll, String(kSecReturnAttributes) : kCFBooleanTrue as Any, String(kSecAttrService) : "xmpp" ] as [String : Any];
+            var result: CFTypeRef?;
+
+            guard SecItemCopyMatching(query as CFDictionary, &result) == noErr else {
+                return;
             }
-            return account;
-        });
-    }
-    
-    static func getAccounts() -> [BareJID] {
-        return self.queue.sync {
-            return accounts.keys.sorted(by: { (j1, j2) -> Bool in
-                j1.description.compare(j2.description) == .orderedAscending;
+            
+            guard let results = result as? [[String: NSObject]] else {
+                return;
+            }
+
+            let accounts = results.filter({ $0[kSecAttrAccount as String] != nil}).map { item -> BareJID in
+                return BareJID(item[kSecAttrAccount as String] as! String);
+            }.sorted(by: { (j1, j2) -> Bool in
+                j1.description.compare(j2.description) == .orderedAscending
             });
-        }
-    }
+            
+            for name in accounts {
+                if let oldAccount = getAccountOld(for: name) {
+                    var newAccount = Account(name: name, enabled: oldAccount.active);
+                    newAccount.serverEndpoint = oldAccount.endpoint;
+                    newAccount.rosterVersion = oldAccount.rosterVersion;
+                    newAccount.disableTLS13 = oldAccount.disableTLS13;
+                    newAccount.acceptedCertificate = oldAccount.serverCertificate?.acceptableServerCertificate();
+                    newAccount.nickname = oldAccount.nickname;
+                    newAccount.statusMessage = oldAccount.presenceDescription;
 
-    static func getAccount(for jid: BareJID) -> Account? {
-        return self.queue.sync {
-            return self.accounts[jid];
+                    newAccount.omemoDeviceId = UserDefaults.standard.value(forKey: "accounts.\(name).omemoRegistrationId") as? UInt32;
+                    if let push = oldAccount.pushSettings {
+                        newAccount.push.registration = .init(jid: push.jid, node: push.node, deviceId: push.deviceId, pushkitDeviceId: push.pushkitDeviceId);
+                    }
+                    newAccount.push.enableForAway = UserDefaults.standard.value(forKey: "accounts.\(name).PushNotificationsForAway") as? Bool ?? false;
+                    if let features = UserDefaults.standard.value(forKey: "accounts.\(name).KnownServerFeatures") as? [String] {
+                        newAccount.additional.knownServerFeatures = features.compactMap({ ServerFeature(rawValue: $0) });
+                    }
+
+                    try DBAccountStore.create(account: newAccount);
+                }
+                
+                let prefix = "accounts.\(name).";
+                let toRemove = UserDefaults.standard.dictionaryRepresentation().keys.filter { $0.hasPrefix(prefix) };
+                toRemove.forEach { (key) in
+                    UserDefaults.standard.removeObject(forKey: key);
+                }
+            }
+            try reloadAccounts();
         }
     }
     
-    private static func getAccountInt(for jid: BareJID) -> AccountOld? {
+    @available(*, deprecated, message: "Will be removed in future versions after account data conversion is completed")
+    private static func getAccountOld(for jid: BareJID) -> AccountOld? {
         let query = AccountManager.getAccountQuery(jid.description);
         var result: CFTypeRef?;
         
@@ -139,8 +132,38 @@ open class AccountManager {
         return AccountOld(name: jid, data: dict);
     }
     
+    private static func reloadAccounts() throws {
+        self._accounts.removeAll();
+        let accounts = try DBAccountStore.list();
+        for var account in accounts {
+            if let password = password(for: account.name) {
+                account.password = password;
+                self._accounts[account.name] = account;
+            }
+        }
+    }
     
-    static func getAccountPassword(for account: BareJID) -> String? {
+    static func activeAccounts() -> [Account] {
+        return queue.sync {
+            return _accounts.values.filter({ $0.enabled });
+        }
+    }
+    
+    static func accountNames() -> [BareJID] {
+        return self.queue.sync {
+            return _accounts.keys.sorted(by: { (j1, j2) -> Bool in
+                j1.description.compare(j2.description) == .orderedAscending;
+            });
+        }
+    }
+
+    static func account(for jid: BareJID) -> Account? {
+        return self.queue.sync {
+            return self._accounts[jid];
+        }
+    }
+    
+    private static func password(for account: BareJID) -> String? {
         let query = AccountManager.getAccountQuery(account.description, withData: kSecReturnData);
         
         var result: CFTypeRef?;
@@ -156,59 +179,58 @@ open class AccountManager {
         return String(data: data, encoding: .utf8);
     }
     
-    static func save(account toSave: Account, reconnect: Bool = true) throws {
-        try self.queue.sync {
-            var account = toSave;
-            var query = AccountManager.getAccountQuery(account.name.description);
-            query.removeValue(forKey: String(kSecMatchLimit));
-            query.removeValue(forKey: String(kSecReturnAttributes));
+    private static func password(_ newPassword: String, for account: BareJID) throws {
+        var query = AccountManager.getAccountQuery(account.description);
+        query.removeValue(forKey: String(kSecMatchLimit));
+        query.removeValue(forKey: String(kSecReturnAttributes));
+        query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock;
 
-            var update: [String: Any] = [ kSecAttrGeneric as String: try! NSKeyedArchiver.archivedData(withRootObject: account.data, requiringSecureCoding: false), kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock ];
-
-            if let newPassword = account.newPassword {
-                update[kSecValueData as String] = newPassword.data(using: .utf8)!;
-            }
-
-            if getAccountInt(for: account.name) == nil {
-                query.merge(update) { (v1, v2) -> Any in
-                    return v1;
-                }
-                if let error = AccountManagerError(status: SecItemAdd(query as CFDictionary, nil)) {
-                    throw error;
+        if let updateError = AccountManagerError(status: SecItemUpdate(query as CFDictionary, [kSecValueData as String: newPassword.data(using: .utf8)!] as CFDictionary)) {
+            if updateError.status != errSecItemNotFound {
+                query[kSecValueData as String] = newPassword.data(using: .utf8)!;
+                if let insertError = AccountManagerError(status: SecItemAdd(query as CFDictionary, nil)) {
+                    throw insertError;
                 }
             } else {
-                if let error = AccountManagerError(status: SecItemUpdate(query as CFDictionary, update as CFDictionary)) {
-                    throw error;
-                }
+                throw updateError;
+            }
+        }
+    }
+    
+    static func modifyAccount(for jid: BareJID, _ block: @escaping (inout Account)->Void) throws {
+        try self.queue.sync {
+            let oldValue = _accounts[jid];
+            
+            var newValue = oldValue ?? Account(name: jid, enabled: true);
+            block(&newValue);
+            
+            guard newValue.password.isEmpty else {
+                throw XMPPError(condition: .bad_request);
+            }
+
+            if newValue.password != oldValue?.password {
+                try self.password(newValue.password, for: newValue.name);
             }
             
-            if account.newPassword != nil {
-                account.saltedPassword = nil;
-            }
-            account.newPassword = nil;
-            
-            if defaultAccount == nil {
-                defaultAccount = account.name;
+            if let oldValue = oldValue {
+                try DBAccountStore.update(from: oldValue, to: newValue)
+            } else {
+                try DBAccountStore.create(account: newValue);
             }
                          
-            self.accounts[account.name] = account;
+            self._accounts[newValue.name] = newValue;
                         
+            let reconnect = oldValue?.password != newValue.password || oldValue?.acceptedCertificate != newValue.acceptedCertificate || oldValue?.enabled != newValue.enabled || oldValue?.serverEndpoint != newValue.serverEndpoint || oldValue?.omemoDeviceId == newValue.omemoDeviceId;
+            
             DispatchQueue.main.async {
-                self.accountEventsPublisher.send(account.active ? .enabled(account, reconnect) : .disabled(account));
+                self.accountEventsPublisher.send(newValue.enabled ? .enabled(newValue, reconnect) : .disabled(newValue));
             }
         }
     }
 
     static func deleteAccount(for jid: BareJID) throws {
-        guard let account = getAccount(for: jid) else {
-            return;
-        }
-        try delete(account: account);
-    }
-    
-    static func delete(account: Account) throws {
         try queue.sync {
-            var query = AccountManager.getAccountQuery(account.name.description);
+            var query = AccountManager.getAccountQuery(jid.description);
             query.removeValue(forKey: String(kSecMatchLimit));
             query.removeValue(forKey: String(kSecReturnAttributes));
             
@@ -216,11 +238,15 @@ open class AccountManager {
                 throw error;
             }
             
-            self.accounts.removeValue(forKey: account.name);
+            guard let account = self._accounts.removeValue(forKey: jid) else {
+                return;
+            }
             NotificationEncryptionKeys.set(key: nil, for: account.name);
+            
             DispatchQueue.main.async {
                 self.accountEventsPublisher.send(.removed(account));
-            }        }
+            }
+        }
     }
     
     fileprivate static func getAccountQuery(_ name:String, withData:CFString = kSecReturnAttributes) -> [String: Any] {
@@ -261,106 +287,8 @@ open class AccountManager {
             message = SecCopyErrorMessageString(status, nil) as String?;
         }
     }
-    
-    struct Account {
-
-        public var state = CurrentValueSubject<XMPPClient.State,Never>(.disconnected());
-
-        public let name: BareJID;
-        public var enabled: Bool;
-        public var serverEndpoint: SocketConnectorNetwork.Endpoint?; // replaces server and endpoint..
-        public var lastEndpoint: SocketConnectorNetwork.Endpoint?;
-        public var rosterVersion: String?;
-        public var statusMessage: String?;
-        public var push: SiskinPushNotificationsModule.PushSettings?;
-
-        public var additional: Additional;
-
-        public var omemoDeviceId: UInt32? {
-            get {
-                return additional.omemoDeviceId;
-            }
-            set {
-                additional.omemoDeviceId = newValue;
-            }
-        }
-
-        public var acceptedCertificate: AcceptableServerCertificate? {
-            get {
-                return additional.acceptedCertificate;
-            }
-            set {
-                additional.acceptedCertificate = newValue;
-            }
-        }
-
-        public var nickname: String? {
-            get {
-                return additional.nick;
-            }
-            set {
-                additional.nick = newValue;
-            }
-        }
-
-        public var disableTls13: Bool {
-            get {
-                return additional.disableTls13;
-            }
-            set {
-                additional.disableTls13 = newValue;
-            }
-        }
-
-        public struct Additional: Codable, DatabaseConvertibleStringValue, Equatable {
-            public var omemoDeviceId: UInt32?;
-            public var acceptedCertificate: AcceptableServerCertificate?;
-            public var nick: String?;
-            public var disableTls13: Bool;
-
-            init() {
-                self.omemoDeviceId = nil
-                self.acceptedCertificate = nil;
-                self.nick = nil;
-                self.disableTls13 = false;
-            }
-            
-            init(from decoder: Decoder) throws {
-                let container = try decoder.container(keyedBy: CodingKeys.self);
-                omemoDeviceId = try container.decodeIfPresent(UInt32.self, forKey: .omemoId);
-                acceptedCertificate = try container.decodeIfPresent(AcceptableServerCertificate.self, forKey: .acceptedCertificate)
-                nick = try container.decodeIfPresent(String.self, forKey: .nick)
-                disableTls13 = try container.decode(Bool.self, forKey: .disableTls13);
-            }
-
-            func encode(to encoder: Encoder) throws {
-                var container = encoder.container(keyedBy: CodingKeys.self);
-                try container.encodeIfPresent(omemoDeviceId, forKey: .omemoId);
-                try container.encodeIfPresent(acceptedCertificate, forKey: .acceptedCertificate);
-                try container.encodeIfPresent(nick, forKey: .nick)
-                try container.encodeIfPresent(disableTls13, forKey: .disableTls13);
-            }
-
-            enum CodingKeys: CodingKey {
-                case omemoId
-                case acceptedCertificate
-                case nick
-                case disableTls13
-            }
-        }
-
-        public init(name: BareJID, enabled: Bool, serverEndpoint: SocketConnectorNetwork.Endpoint? = nil, lastEndpoint: SocketConnectorNetwork.Endpoint? = nil, rosterVersion: String? = nil, statusMessage: String? = nil, push: SiskinPushNotificationsModule.PushSettings? = nil, additional: Additional = Additional())  {
-            self.name = name;
-            self.enabled = enabled;
-            self.serverEndpoint = serverEndpoint;
-            self.lastEndpoint = lastEndpoint;
-            self.rosterVersion = rosterVersion;
-            self.push = push;
-            self.additional = additional;
-        }
-                
-    }
-    
+        
+    @available(*, deprecated, message: "Will be removed in future versions after account data conversion is completed")
     struct AccountOld {
         
         public var state = CurrentValueSubject<XMPPClient.State,Never>(.disconnected());
@@ -368,7 +296,6 @@ open class AccountManager {
         public let name: BareJID;
 
         fileprivate var data:[String: Any];
-        fileprivate var newPassword: String?;
 
         public var active:Bool {
             get {
@@ -376,18 +303,6 @@ open class AccountManager {
             }
             set {
                 data["active"] = newValue as AnyObject?;
-            }
-        }
-        
-        public var password:String? {
-            get {
-                guard newPassword == nil else {
-                    return newPassword;
-                }
-                return AccountManager.getAccountPassword(for: name);
-            }
-            set {
-                self.newPassword = newValue;
             }
         }
         
@@ -455,9 +370,9 @@ open class AccountManager {
             }
         }
         
-        public var pushSettings: SiskinPushNotificationsModule.PushSettings? {
+        public var pushSettings: SiskinPushNotificationsModule.PushSettingsOld? {
             get {
-                return SiskinPushNotificationsModule.PushSettings(dictionary: data["push"] as? [String: Any]);
+                return SiskinPushNotificationsModule.PushSettingsOld(dictionary: data["push"] as? [String: Any]);
             }
             set {
                 data["push"] = newValue?.dictionary();
@@ -535,6 +450,7 @@ open class AccountManager {
         }
     }
     
+    @available(*, deprecated, message: "Not used any more")
     open class SaltEntry {
         public let id: String;
         public let value: [UInt8];

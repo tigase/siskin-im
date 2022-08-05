@@ -226,7 +226,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         message.lastMessageCorrectionId = correctedMessageOriginId;
         
         if #available(iOS 15.0, *) {
-            let sender = INPerson(personHandle: INPersonHandle(value: account.description, type: .unknown), nameComponents: nil, displayName: AccountManager.getAccount(for: self.account)?.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: account.description, isMe: true, suggestionType: .instantMessageAddress);
+            let sender = INPerson(personHandle: INPersonHandle(value: account.description, type: .unknown), nameComponents: nil, displayName: AccountManager.account(for: self.account)?.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: account.description, isMe: true, suggestionType: .instantMessageAddress);
             let recipient = INPerson(personHandle: INPersonHandle(value: jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: jid.description, isMe: false, suggestionType: .instantMessageAddress);
             let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: nil, conversationIdentifier: "account=\(account.description)|sender=\(jid.description)", serviceName: "Siskin IM", sender: sender, attachments: nil);
             let interaction = INInteraction(intent: intent, response: nil);

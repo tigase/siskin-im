@@ -81,17 +81,14 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         let userInfo = content.userInfo;
             if userInfo["cert-name"] != nil {
                 let accountJid = BareJID(userInfo["account"] as! String);
-                let alert = CertificateErrorAlert.create(domain: accountJid.domain, certName: userInfo["cert-name"] as! String, certHash: userInfo["cert-hash-sha1"] as! String, issuerName: userInfo["issuer-name"] as? String, issuerHash: userInfo["issuer-hash-sha1"] as? String, onAccept: {
-                    guard var account = AccountManager.getAccount(for: accountJid) else {
-                        return;
-                    }
-                    let certInfo = account.serverCertificate;
-                    certInfo?.accepted = true;
-                    account.serverCertificate = certInfo;
-                    account.active = true;
-                    AccountSettings.lastError(for: accountJid, value: nil);
+                let alert = CertificateErrorAlert.create(domain: accountJid.domain, certName: userInfo["cert-name"] as! String, certHash: userInfo["cert-hash-sha1"] as! String, issuerName: userInfo["issuer-name"] as? String, issuerHash: userInfo["issuer-hash-sha1"] as? String, onAccept: {                    
                     do {
-                        try AccountManager.save(account: account);
+                        try AccountManager.modifyAccount(for: accountJid, { account in
+                            if let certInfo = account.acceptedCertificate?.certificate {
+                                account.acceptedCertificate = AcceptableServerCertificate(certificate: certInfo, accepted: true);
+                            }
+                            account.enabled = true;
+                        })
                     } catch {
                         let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to save account details: %@ Please try again later.", comment: "alert title body"), error.localizedDescription), preferredStyle: .alert);
                         alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button lable"), style: .cancel, handler: nil));

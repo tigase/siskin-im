@@ -23,7 +23,7 @@ import UIKit
 import Martin
 import Combine
 
-enum ServerFeature: String {
+enum ServerFeature: String, Codable {
     case mam
     case push
     
@@ -70,7 +70,7 @@ class NewFeaturesDetector: XmppServiceExtension {
     }
     
     private func newFeatures(_ newFeatures: [ServerFeature], for account: BareJID) {
-        let oldFeatures = AccountSettings.knownServerFeatures(for: account);
+        let oldFeatures = AccountManager.account(for: account)?.additional.knownServerFeatures ?? [];
         let change = newFeatures.filter({ !oldFeatures.contains($0) });
         
         guard !change.isEmpty else {
@@ -132,7 +132,9 @@ class NewFeaturesDetector: XmppServiceExtension {
                     }
                 
                     controller.completionHandler = {
-                        AccountSettings.knownServerFeatures(for: item.account, value: item.features);
+                        try? AccountManager.modifyAccount(for: item.account, { account in
+                            account.additional.knownServerFeatures = item.features;
+                        })
                     }
                     
                     controller.tableView.reloadData();

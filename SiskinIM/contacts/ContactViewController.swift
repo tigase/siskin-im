@@ -398,12 +398,8 @@ class ContactViewController: UITableViewController {
             chat?.updateOptions({ (options) in
                 options.notifications = newValue ? .none : .always;
             });
-            if let pushModule = XmppService.instance.getClient(for: account)?.module(.push) as? SiskinPushNotificationsModule, let pushSettings = pushModule.pushSettings {
-                do {
-                    try await pushModule.reenable(pushSettings: pushSettings);
-                } catch {
-                    AccountSettings.pushHash(for: account, value: 0);
-                }
+            if let pushModule = XmppService.instance.getClient(for: account)?.module(.push) as? SiskinPushNotificationsModule, let pushSettings = AccountManager.account(for: account)?.push {
+                try await pushModule.enable(settings: pushSettings);
             }
         }
     }

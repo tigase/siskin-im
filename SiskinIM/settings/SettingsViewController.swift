@@ -73,7 +73,7 @@ class SettingsViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
         case 0:
-            return AccountManager.getAccounts().count + 1;
+            return AccountManager.accountNames().count + 1;
         case 1:
             return 2;
         case 2:
@@ -94,13 +94,13 @@ class SettingsViewController: UITableViewController {
             let cellIdentifier = "AccountTableViewCell";
             let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! AccountTableViewCell;
             cell.accessoryType = .disclosureIndicator;
-            let accounts = AccountManager.getAccounts();
+            let accounts = AccountManager.accountNames();
             if accounts.count > indexPath.row {
                 cell.avatarStatusView.isHidden = false;
                 cell.set(account: accounts[indexPath.row]);
-                if AccountSettings.lastError(for :accounts[indexPath.row]) != nil {
-                    cell.avatarStatusView.statusImageView.image = UIImage(systemName: "xmark.circle.fill")!;
-                }
+//                if AccountSettings.lastError(for :accounts[indexPath.row]) != nil {
+//                    cell.avatarStatusView.statusImageView.image = UIImage(systemName: "xmark.circle.fill")!;
+//                }
                 cell.avatarStatusView.updateCornerRadius();
             } else {
                 cell.nameLabel.text = NSLocalizedString("Add account", comment: "cell label");
@@ -189,7 +189,7 @@ class SettingsViewController: UITableViewController {
         tableView.deselectRow(at: indexPath as IndexPath, animated: true);
         
         if indexPath.section == 0 {
-            let accounts = AccountManager.getAccounts();
+            let accounts = AccountManager.accountNames();
             if indexPath.row == accounts.count {
                 let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet);
                 alert.addAction(UIAlertAction(title: NSLocalizedString("Create new", comment: "button label"), style: .default, handler: { (action) in

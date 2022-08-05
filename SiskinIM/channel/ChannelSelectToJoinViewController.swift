@@ -76,7 +76,7 @@ class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsU
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
         if client == nil {
-            if let account = AccountManager.getActiveAccounts().first?.name {
+            if let account = AccountManager.defaultAccount ?? AccountManager.activeAccounts().map({ $0.name }).sorted().first {
                 client = XmppService.instance.getClient(for: account);
             }
         }

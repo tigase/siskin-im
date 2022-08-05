@@ -139,8 +139,7 @@ class JingleManager: JingleSessionManager {
         switch action {
         case .propose(let id, let descriptions):
             if case .connected(_) = context.state {
-                let pushModule = context.module(.push) as! SiskinPushNotificationsModule;
-                guard (!context.module(.disco).accountDiscoResult.features.contains("tigase:push:jingle:0")) && pushModule.isEnabled else {
+                guard (!context.module(.disco).accountDiscoResult.features.contains("tigase:push:jingle:0")) && AccountManager.account(for: context.userBareJid)?.push.registration != nil else {
                     return;
                 }
             }

@@ -26,9 +26,21 @@ import CryptoKit
 import Shared
 import Martin
 
-open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
+public struct PushSettings: Codable, Equatable, Sendable {
+    public var registration: SiskinPushNotificationsModule.PushRegistration?;
+    public var enableForAway: Bool;
     
-    public struct PushSettings: Codable, Equatable, Sendable {
+    public init() {
+        registration = nil;
+        enableForAway = false;
+    }
+    
+}
+
+
+open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
+
+    public struct PushSettingsOld: Codable, Equatable, Sendable {
                 
         public let jid: JID;
         public let node: String;
@@ -71,20 +83,23 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         }
         
     }
-    
-    open var pushSettings: PushSettings?;
-    
-    open var isEnabled: Bool {
-        return pushSettings != nil;
-    }
-    
-    open func isEnabled(for deviceId: String) -> Bool {
-        guard let settings = self.pushSettings else {
-            return false;
+        
+    public struct PushRegistration: Codable, Equatable, Sendable {
+                        
+        public let jid: JID;
+        public let node: String;
+        public let deviceId: String;
+        public let pushkitDeviceId: String?;
+        
+        init(jid: JID, node: String, deviceId: String, pushkitDeviceId: String? = nil) {
+            self.jid = jid;
+            self.node = node;
+            self.deviceId = deviceId;
+            self.pushkitDeviceId = pushkitDeviceId;
         }
-        return settings.deviceId == deviceId;
+        
     }
-    
+        
     public let defaultPushServiceJid: JID;
 
     fileprivate let providerId = "tigase:messenger:apns:1";
@@ -96,16 +111,16 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         super.init();
     }
     
-    open func registerDeviceAndEnable(deviceId: String, pushkitDeviceId: String?) async throws -> PushSettings {
+    open func registerDevice(deviceId: String, pushkitDeviceId: String?) async throws -> PushRegistration {
         do {
             let jid = try await self.findPushComponent();
-            return try await self.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, pushServiceJid: jid);
+            return try await self.registerDevice(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, pushServiceJid: jid);
         } catch {
-            return try await self.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, pushServiceJid: self.defaultPushServiceJid);
+            return try await self.registerDevice(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, pushServiceJid: self.defaultPushServiceJid);
         }
     }
-
-    private func prepareExtensions(for context: Context, componentSupportsEncryption: Bool, maxSize: Int?) -> [PushNotificationsModuleExtension] {
+    
+    private func prepareExtensions(for context: Context, settings: PushSettings, componentSupportsEncryption: Bool, maxSize: Int?) -> [PushNotificationsModuleExtension] {
         var extensions: [PushNotificationsModuleExtension] = [];
         
         if !Settings.notificationsFromUnknown {
@@ -135,7 +150,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
             }
         }
         
-        if AccountSettings.pushNotificationsForAway(for: context.userBareJid) {
+        if settings.enableForAway {
             extensions.append(TigasePushNotificationsModule.PushForAway());
         }
         
@@ -146,87 +161,43 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
         return extensions;
     }
     
-    open func registerDeviceAndEnable(deviceId: String, pushkitDeviceId: String? = nil, pushServiceJid: JID) async throws -> PushSettings {
+    open func registerDevice(deviceId: String, pushkitDeviceId: String? = nil, pushServiceJid: JID) async throws -> PushRegistration {
         let data = try await self.registerDevice(serviceJid: pushServiceJid, provider: self.providerId, deviceId: deviceId, pushkitDeviceId: pushkitDeviceId);
-        return try await self.enable(serviceJid: pushServiceJid, node: data.node, deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, features: data.features ?? [], maxSize: data.maxPayloadSize);
+        return PushRegistration(jid: pushServiceJid, node: data.node, deviceId: deviceId, pushkitDeviceId: pushkitDeviceId);
     }
     
-    open func reenable(pushSettings: PushSettings) async throws {
-        _ = try await self.enable(serviceJid: pushSettings.jid, node: pushSettings.node, deviceId: pushSettings.deviceId, features: pushSettings.encryption ? [TigasePushNotificationsModule.Encryption.XMLNS] : [], maxSize: pushSettings.maxSize);
-    }
-    
-    private func hash(extensions: [PushNotificationsModuleExtension]) -> Int {
-        var hasher = Hasher();
-        for ext in extensions {
-            ext.hash(into: &hasher);
-        }
-        let hash = hasher.finalize();
-        if hash == 0 {
-            return 1;
-        }
-        return hash;
-    }
-    
-    private func enable(serviceJid: JID, node: String, deviceId: String, pushkitDeviceId: String? = nil, features: [String], maxSize: Int?, publishOptions: PubSubSubscribeOptions? = nil) async throws -> PushSettings {
-        
+    open func enable(settings: PushSettings, publishOptions: PubSubSubscribeOptions? = nil) async throws {
         guard let context = self.context else {
             throw XMPPError(condition: .remote_server_timeout);
         }
-        
-        let extensions: [PushNotificationsModuleExtension] = self.prepareExtensions(for: context, componentSupportsEncryption: features.contains(TigasePushNotificationsModule.Encryption.XMLNS), maxSize: maxSize);
-        
-        let newHash = hash(extensions: extensions);
-        if let oldSettings = self.pushSettings {
-            guard newHash != AccountSettings.pushHash(for: context.userBareJid) else {
-                return oldSettings;
-            }
+        guard let registration = settings.registration else {
+            throw XMPPError(condition: .bad_request);
         }
         
+        let extensions: [PushNotificationsModuleExtension] = self.prepareExtensions(for: context, settings: settings, componentSupportsEncryption: true, maxSize: 3072);
+                
         let encryption = extensions.first(where: { ext in
             return ext is TigasePushNotificationsModule.Encryption;
         }) as? TigasePushNotificationsModule.Encryption;
                 
-        let settings = PushSettings(jid: serviceJid, node: node, deviceId: deviceId, pushkitDeviceId: pushkitDeviceId, encryption: encryption != nil, maxSize: maxSize);
-
         do {
-            _ = try await self.enable(serviceJid: serviceJid, node: node, extensions: extensions);
+            _ = try await self.enable(serviceJid: registration.jid, node: registration.node, extensions: extensions);
             let accountJid = context.userBareJid;
             NotificationEncryptionKeys.set(key: encryption?.key, for: accountJid);
-            AccountSettings.pushHash(for: accountJid, value: newHash);
-            self.pushSettings = settings;
-            if var config = AccountManager.getAccount(for: accountJid) {
-                config.pushSettings = settings;
-                config.pushNotifications = true;
-                try? AccountManager.save(account: config, reconnect: false);
-            }
-            return settings;
         } catch {
             do {
-                try await self.unregisterDevice(serviceJid: serviceJid, provider: self.providerId, deviceId: deviceId);
+                try await self.unregisterDevice(serviceJid: registration.jid, provider: self.providerId, deviceId: registration.deviceId);
             } catch {}
             throw error;
         }
     }
         
-    public func unregisterDeviceAndDisable() async throws {
-        if let settings = self.pushSettings, let context = self.context {
-            AccountSettings.pushHash(for: context.userBareJid, value: 0);
-            defer {
-                DispatchQueue.main.async {
-                    self.pushSettings = nil;
-                    let accountJid = context.userBareJid;
-                    NotificationEncryptionKeys.set(key: nil, for: accountJid);
-                    if var config = AccountManager.getAccount(for: accountJid) {
-                        config.pushSettings = nil;
-                        config.pushNotifications = false;
-                        try? AccountManager.save(account: config, reconnect: false);
-                    }
-                }
-            }
+    public func unregisterDeviceAndDisable(registration: PushRegistration) async throws {
+        if let context = self.context {
             try await withThrowingTaskGroup(of: Void.self, returning: Void.self, body: { group in
                 group.addTask {
                     do {
-                        _ = try await self.disable(serviceJid: settings.jid, node: settings.node);
+                        _ = try await self.disable(serviceJid: registration.jid, node: registration.node);
                     } catch let error as XMPPError {
                         guard error.condition == .item_not_found else {
                             throw error;
@@ -235,7 +206,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
                 }
                 group.addTask {
                     do {
-                        try await self.unregisterDevice(serviceJid: settings.jid, provider: self.providerId, deviceId: settings.deviceId);
+                        try await self.unregisterDevice(serviceJid: registration.jid, provider: self.providerId, deviceId: registration.deviceId);
                     } catch let error as XMPPError {
                         guard error.condition == .item_not_found else {
                             throw error;

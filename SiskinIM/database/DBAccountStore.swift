@@ -1,9 +1,22 @@
 //
-//  DBAccountStore.swift
-//  Siskin IM
+// DBAccountStore.swift
 //
-//  Created by Andrzej Wójcik on 25/07/2022.
-//  Copyright © 2022 Tigase, Inc. All rights reserved.
+// Siskin IM
+// Copyright (C) 2022 "Tigase, Inc." <office@tigase.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. Look for COPYING file in the top folder.
+// If not, see https://www.gnu.org/licenses/.
 //
 
 import Foundation
@@ -24,19 +37,19 @@ public class DBAccountStore {
         self.database = database;
     }
     
-    static func create(account: AccountManager.Account) throws {
+    static func create(account: Account) throws {
         try database.writer({ writer in
             try writer.insert(query: .accountInsert, params: ["name": account.name, "enabled": account.enabled, "server_endpoint": account.serverEndpoint, "roster_version": account.rosterVersion, "status_message": account.statusMessage, "push": account.push, "additional": account.additional])
         })
     }
     
-    static func delete(account: AccountManager.Account) throws {
+    static func delete(account: Account) throws {
         try database.writer({ writer in
             try writer.delete(query: .accountDelete, params: ["name", account.name]);
         })
     }
     
-    static func update(from: AccountManager.Account, to: AccountManager.Account) throws {
+    static func update(from: Account, to: Account) throws {
         guard from.name == to.name else {
             throw XMPPError(condition: .not_acceptable);
         }
@@ -73,10 +86,10 @@ public class DBAccountStore {
         })
     }
     
-    static func list() throws -> [AccountManager.Account] {
+    static func list() throws -> [Account] {
         return try database.reader({ reader in
             try reader.select(query: .accountsList, params: [:]).mapAll({ cursor in
-                return AccountManager.Account(name: cursor.bareJid(for: "name")!, enabled: cursor.bool(for: "enabled"), serverEndpoint: cursor.object(for: "server_endpoint"), lastEndpoint: cursor.object(for: "last_endpoint"), rosterVersion: cursor.string(for: "roster_version"), statusMessage: cursor.string(for: "status_message"), push: cursor.object(for: "push"), additional: cursor.object(for: "additional")!);
+                return Account(name: cursor.bareJid(for: "name")!, enabled: cursor.bool(for: "enabled"), serverEndpoint: cursor.object(for: "server_endpoint"), lastEndpoint: cursor.object(for: "last_endpoint"), rosterVersion: cursor.string(for: "roster_version"), statusMessage: cursor.string(for: "status_message"), push: cursor.object(for: "push")!, additional: cursor.object(for: "additional")!);
             })
         })
     }

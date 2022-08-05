@@ -145,10 +145,12 @@ class ChatsListViewController: UITableViewController {
         setColors();
 
         settingsButton.image = UIImage(systemName: "gear");
+//        XmppService.instance.$clients.combineLatest(XmppService.instance.$connectedClients).map({ (clients, connectedClients) -> Int in
+//            return (clients.count - connectedClients.count) + AccountManager.accountNames().filter({(name)->Bool in
+//                return AccountSettings.lastError(for: name) != nil
+//            }).count;
         XmppService.instance.$clients.combineLatest(XmppService.instance.$connectedClients).map({ (clients, connectedClients) -> Int in
-            return (clients.count - connectedClients.count) + AccountManager.getAccounts().filter({(name)->Bool in
-                return AccountSettings.lastError(for: name) != nil
-            }).count;
+            return (clients.count - connectedClients.count);
         }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
             self?.settingsButton.setBadge(text: value == 0 ? nil : "\(value)")
         }).store(in: &cancellables);

@@ -147,7 +147,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
                 group.addTask {
                     do {
                         let info = try await context.module(.disco).info(for: room.jid.jid());
-                        let hasPush = (context.module(.push) as! SiskinPushNotificationsModule).isEnabled && info.features.contains("jabber:iq:register");
+                        let hasPush = AccountManager.account(for: context.userBareJid)?.push.registration != nil && info.features.contains("jabber:iq:register");
                         let pushEnabled = try await room.checkTigasePushNotificationRegistrationStatus();
                         await MainActor.run(body: {
                             self.pushNotificationsSwitch.isEnabled = hasPush;
@@ -231,13 +231,9 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
                     room.updateOptions({ options in
                         options.notifications = value;
                     })
-                    if let pushModule = (room.context?.module(.push) as? SiskinPushNotificationsModule), let pushSettings = pushModule.pushSettings {
+                    if let pushModule = (room.context?.module(.push) as? SiskinPushNotificationsModule), let pushSettings = AccountManager.account(for: room.account)?.push {
                         Task {
-                            do {
-                                try await pushModule.reenable(pushSettings: pushSettings);
-                            } catch {
-                                AccountSettings.pushHash(for: room.account, value: 0);
-                            }
+                            try await pushModule.enable(settings: pushSettings);
                         }
                     }
                 });

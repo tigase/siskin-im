@@ -81,7 +81,7 @@ class NotificationSettingsViewController: UITableViewController {
     }
     
     private func anyAccountHasPush() -> Bool {
-        return !AccountManager.getAccounts().filter({ AccountSettings.knownServerFeatures(for: $0).contains(.push) }).isEmpty;
+        return AccountManager.accounts.contains(where: { $0.additional.knownServerFeatures.contains(.push) })
     }
     
     internal enum SettingsEnum {

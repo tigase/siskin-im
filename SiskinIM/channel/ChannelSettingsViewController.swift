@@ -126,13 +126,9 @@ class ChannelSettingsViewController: UITableViewController {
                 self?.channel.updateOptions({ options in
                     options.notifications = value;
                 })
-                if let account = self?.channel.account, let pushModule = self?.channel.context?.module(.push) as? SiskinPushNotificationsModule, let pushSettings = pushModule.pushSettings {
+                if let account = self?.channel.account, let pushModule = self?.channel.context?.module(.push) as? SiskinPushNotificationsModule, let pushSettings = AccountManager.account(for: account)?.push, pushSettings.registration != nil {
                     Task {
-                        do {
-                            try await pushModule.reenable(pushSettings: pushSettings);
-                        } catch {
-                            AccountSettings.pushHash(for: account, value: 0);
-                        }
+                        try await pushModule.enable(settings: pushSettings);
                     }
                 }
             });

@@ -56,9 +56,9 @@ class AccountTableViewCell: UITableViewCell {
         cancellables.removeAll();
         avatarObj = AvatarManager.instance.avatarPublisher(for: .init(account: accountJid, jid: accountJid, mucNickname: nil));
         nameLabel.text = accountJid.description;
-        if let acc = AccountManager.getAccount(for: accountJid) {
+        if let acc = AccountManager.account(for: accountJid) {
             descriptionLabel.text = acc.nickname;
-            if acc.active {
+            if acc.enabled {
                 avatarStatusView.statusImageView.isHidden = false;
                 acc.state.map({ value -> Presence.Show? in
                     switch value {

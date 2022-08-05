@@ -242,9 +242,10 @@ extension BaseChatViewController: UIImagePickerControllerDelegate, UINavigationC
             }
         }
         
-        let (fileUrl,fileInfo) = try await MediaHelper.compressMovie(url: url, fileInfo: fileInfo, quality: quality, progressCallback: { [weak self] progress in
+        let progressBar = self.progressBar;
+        let (fileUrl,fileInfo) = try await MediaHelper.compressMovie(url: url, fileInfo: fileInfo, quality: quality, progressCallback: { progress in
             DispatchQueue.main.async {
-                self?.progressBar?.progress = progress;
+               progressBar?.progress = progress;
             }
         });
         

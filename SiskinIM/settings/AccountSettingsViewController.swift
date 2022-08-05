@@ -59,11 +59,11 @@ class AccountSettingsViewController: UITableViewController {
             }
         }).store(in: &cancellables);
         
-        let config = AccountManager.getAccount(for: account);
-        enabledSwitch.isOn = config?.active ?? false;
+        let config = AccountManager.account(for: account);
+        enabledSwitch.isOn = config?.enabled ?? false;
         nicknameLabel.text = config?.nickname;
         archivingEnabledSwitch.isOn = false;
-        pushNotificationsForAwaySwitch.isOn = (config?.pushNotifications ?? false) && AccountSettings.pushNotificationsForAway(for: account);
+        pushNotificationsForAwaySwitch.isOn = (config?.push.registration != nil) && config?.push.enableForAway ?? false;
 
         updateView();
         
@@ -84,7 +84,7 @@ class AccountSettingsViewController: UITableViewController {
             }
         }).store(in: &cancellables);
         
-        let localDeviceId = Int32(bitPattern: AccountSettings.omemoRegistrationId(for: self.account) ?? 0);
+        let localDeviceId = Int32(bitPattern: config?.omemoDeviceId ?? 0);
         if let omemoIdentity = DBOMEMOStore.instance.identities(forAccount: self.account, andName: self.account.description).first(where: { (identity) -> Bool in
             return identity.address.deviceId == localDeviceId;
         }) {
@@ -128,15 +128,14 @@ class AccountSettingsViewController: UITableViewController {
         if indexPath.section == 1 && indexPath.row == 3 {
             let controller = UIAlertController(title: NSLocalizedString("Nickname", comment: "alert title"), message: NSLocalizedString("Enter default nickname to use in chats", comment: "alert body"), preferredStyle: .alert);
             controller.addTextField(configurationHandler: { textField in
-                textField.text = AccountManager.getAccount(for: self.account)?.nickname ?? "";
+                textField.text = AccountManager.account(for: self.account)?.nickname ?? "";
             });
             controller.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: { _ in
                 let nickname = controller.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines);
-                if var account = AccountManager.getAccount(for: self.account) {
+                try? AccountManager.modifyAccount(for: self.account, { account in
                     account.nickname = nickname;
-                    try? AccountManager.save(account: account, reconnect: false);
-                    self.nicknameLabel.text = account.nickname;
-                }
+                })
+                self.nicknameLabel.text = nickname;
             }))
             self.navigationController?.present(controller, animated: true, completion: nil);
         }
@@ -162,7 +161,7 @@ class AccountSettingsViewController: UITableViewController {
     func updateView() {
         let client = XmppService.instance.getClient(for: account);
         if let pushModule = client?.module(.push) as? SiskinPushNotificationsModule {
-            pushNotificationsForAwaySwitch.isEnabled = pushModule.isEnabled && pushModule.isSupported(extension: TigasePushNotificationsModule.PushForAway.self);
+            pushNotificationsForAwaySwitch.isEnabled = AccountManager.account(for: account)?.push.registration != nil && pushModule.isSupported(extension: TigasePushNotificationsModule.PushForAway.self);
         } else {
             pushNotificationsForAwaySwitch.isEnabled = false;
         }
@@ -215,54 +214,53 @@ class AccountSettingsViewController: UITableViewController {
     @IBAction func enabledSwitchChangedValue(_ sender: AnyObject) {
         let newState = enabledSwitch.isOn;
         let account = self.account!;
-        AccountSettings.lastError(for: account, value: nil);
         
         if newState {
-            if var config = AccountManager.getAccount(for: account) {
-                config.active = newState
-                AccountSettings.lastError(for: account, value: nil);
-                try? AccountManager.save(account: config);
-            }
+            try? AccountManager.modifyAccount(for: account, { config in
+                config.enabled = newState;
+            })
         } else {
-            if let client = XmppService.instance.getClient(for: account), client.isConnected, let pushModule = client.module(.push) as? SiskinPushNotificationsModule, pushModule.isEnabled {
+            if let client = XmppService.instance.getClient(for: account), client.isConnected, let pushModule = client.module(.push) as? SiskinPushNotificationsModule, let registration = AccountManager.account(for: account)?.push.registration {
                 self.enabledSwitch.isEnabled = false;
                 Task {
-                    try? await pushModule.unregisterDeviceAndDisable();
-                    if var config = AccountManager.getAccount(for: account) {
-                        config.active = newState;
-                        AccountSettings.lastError(for: account, value: nil);
-                        try? AccountManager.save(account: config);
-                    }
+                    try? await pushModule.unregisterDeviceAndDisable(registration: registration);
+                    try? AccountManager.modifyAccount(for: account, { config in
+                        config.enabled = newState;
+                        config.push = .init();
+                    })
                     self.enabledSwitch.isEnabled = true;
                 }
             } else {
-                if var config = AccountManager.getAccount(for: account) {
-                    config.active = enabledSwitch.isOn;
-                    AccountSettings.lastError(for: account, value: nil);
-                    try? AccountManager.save(account: config);
-                }
+                try? AccountManager.modifyAccount(for: account, { config in
+                    config.enabled = newState;
+                })
             }
         }
     }
     
     @IBAction func pushNotificationsForAwaySwitchChangedValue(_ sender: Any) {
-        AccountSettings.pushNotificationsForAway(for: account, value: self.pushNotificationsForAwaySwitch.isOn);
+        let newValue = pushNotificationsForAwaySwitch.isOn;
+        try? AccountManager.modifyAccount(for: account, { account in
+            account.push.enableForAway = newValue;
+        })
 
         guard let pushModule = XmppService.instance.getClient(for: account)?.module(.push) as? SiskinPushNotificationsModule else {
             return;
         }
         
-        guard let pushSettings = pushModule.pushSettings else {
+        guard let pushSettings = AccountManager.account(for: account)?.push else {
             return;
         }
         Task {
             do {
-                try await pushModule.reenable(pushSettings: pushSettings);
+                try await pushModule.enable(settings: pushSettings);
             } catch {
-                DispatchQueue.main.async {
+                await MainActor.run(body: {
                     self.pushNotificationsForAwaySwitch.isOn = !self.pushNotificationsForAwaySwitch.isOn;
-                    AccountSettings.pushNotificationsForAway(for: self.account, value: self.pushNotificationsForAwaySwitch.isOn);
-                }
+                    try? AccountManager.modifyAccount(for: account, { account in
+                        account.push.enableForAway = !newValue;
+                    })
+                })
             }
         }
     }
@@ -341,7 +339,7 @@ class AccountSettingsViewController: UITableViewController {
     }
     
     func deleteAccount() {
-        guard let account = self.account, var config = AccountManager.getAccount(for: account) else {
+        guard let account = self.account, var config = AccountManager.account(for: account) else {
             return;
         }
         
@@ -376,17 +374,21 @@ class AccountSettingsViewController: UITableViewController {
         self.askAboutAccountRemoval(account: account, atRow: IndexPath(row: 0, section: 5), completionHandler: { result in
             switch result {
             case .success(let removeFromServer):
-                if let pushSettings = config.pushSettings {
+                if let registration = config.push.registration {
                     if let client = XmppService.instance.getClient(for: account), client.state == .connected(), let pushModule = client.module(.push) as? SiskinPushNotificationsModule {
                         Task {
                             do {
-                                try await pushModule.unregisterDeviceAndDisable();
+                                try await pushModule.unregisterDeviceAndDisable(registration: registration);
+                                try? AccountManager.modifyAccount(for: account, { config in
+                                    config.push = .init();
+                                })
                                 removeAccount(account, removeFromServer);
                             } catch {
                                 do {
-                                    try await PushEventHandler.unregisterDevice(from: pushSettings.jid.bareJid, account: account, deviceId: pushSettings.deviceId);
-                                    config.pushSettings = nil;
-                                    try? AccountManager.save(account: config);
+                                    try await PushEventHandler.unregisterDevice(from: registration.jid.bareJid, account: account, deviceId: registration.deviceId);
+                                    try? AccountManager.modifyAccount(for: account, { config in
+                                        config.push = .init();
+                                    })
                                     removeAccount(account, removeFromServer);
                                 } catch {
                                     await MainActor.run(body: {
@@ -400,9 +402,10 @@ class AccountSettingsViewController: UITableViewController {
                     } else {
                         Task {
                             do {
-                                try await PushEventHandler.unregisterDevice(from: pushSettings.jid.bareJid, account: account, deviceId: pushSettings.deviceId);
-                                config.pushSettings = nil;
-                                try? AccountManager.save(account: config);
+                                try await PushEventHandler.unregisterDevice(from: registration.jid.bareJid, account: account, deviceId: registration.deviceId);
+                                try? AccountManager.modifyAccount(for: account, { config in
+                                    config.push = .init();
+                                })
                                 removeAccount(account, removeFromServer);
                             } catch {
                                 await MainActor.run(body: {

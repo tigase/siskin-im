@@ -75,7 +75,7 @@ public enum ConversationEntrySender: Hashable, Sendable {
     }
     
     static func me(conversation: ConversationKey) -> ConversationEntrySender {
-        return .me(nickname: AccountManager.getAccount(for: conversation.account)?.nickname ?? conversation.account.description);
+        return .me(nickname: AccountManager.account(for: conversation.account)?.nickname ?? conversation.account.description);
     }
     
     static func buddy(conversation: ConversationKey) -> ConversationEntrySender {

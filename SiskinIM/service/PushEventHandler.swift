@@ -114,26 +114,36 @@ open class PushEventHandler: XmppServiceExtension {
         
         Task {
             do {
-            if hasPush && shouldEnable {
-                if let pushSettings = pushModule.pushSettings {
-                    if pushSettings.deviceId != deviceId || pushSettings.pushkitDeviceId != pushkitDeviceId {
+                guard var settings = AccountManager.account(for: client.userBareJid)?.push else {
+                    return;
+                }
+                
+                if hasPush && shouldEnable {
+                    if settings.registration?.deviceId != deviceId || settings.registration?.pushkitDeviceId != pushkitDeviceId {
                         self.logger.debug("reregistration for account: \(client.userBareJid)")
-                        try await pushModule.unregisterDeviceAndDisable();
-                        _ = try await pushModule.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId);
-                    } else if AccountSettings.pushHash(for: client.userBareJid) == 0 {
-                        self.logger.debug("reenabling device for account: \(client.userBareJid)")
-                        try await pushModule.reenable(pushSettings: pushSettings);
+                        if let registration = settings.registration {
+                            do {
+                                try await pushModule.unregisterDeviceAndDisable(registration: registration);
+                            } catch {}
+                        }
+                        let registration = try await pushModule.registerDevice(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId);
+                        try AccountManager.modifyAccount(for: client.userBareJid, { account in
+                            account.push.registration = registration;
+                            settings = account.push;
+                        })
                     }
+                    
+                    self.logger.debug("reenabling device for account: \(client.userBareJid)")
+                    try await pushModule.enable(settings: settings);
                 } else {
-                    self.logger.debug("automatic registration for account: \(client.userBareJid)")
-                    _ = try await pushModule.registerDeviceAndEnable(deviceId: deviceId, pushkitDeviceId: pushkitDeviceId);
-                }
-            } else {
-                if pushModule.pushSettings != nil, (!hasPush) || (!shouldEnable) {
                     self.logger.debug("automatic deregistration for account: \(client.userBareJid)");
-                    try await pushModule.unregisterDeviceAndDisable();
+                    if let registration = settings.registration {
+                        try? await pushModule.unregisterDeviceAndDisable(registration: registration);
+                    }
+                    try AccountManager.modifyAccount(for: client.userBareJid, { account in
+                        account.push.registration = nil;
+                    })
                 }
-            }
             } catch {
                 self.logger.debug("changing push registration for account \(client.userBareJid) failed: \(error)")
             }
@@ -165,16 +175,11 @@ open class PushEventHandler: XmppServiceExtension {
     }
     
     func updateAccountPushSettings(for account: BareJID) {
-        guard AccountSettings.pushHash(for: account) != 0 else {
-            return;
-        }
-        if let client = XmppService.instance.getClient(for: account), client.state == .connected(), let pushModule = client.module(.push) as? SiskinPushNotificationsModule, let pushSettings = pushModule.pushSettings {
+        if let client = XmppService.instance.getClient(for: account), client.state == .connected(), let pushModule = client.module(.push) as? SiskinPushNotificationsModule, let pushSettings = AccountManager.account(for: account)?.push {
             Task {
                 self.logger.debug("updating account push settings finished for account: \(client.userBareJid)");
-                try await pushModule.reenable(pushSettings: pushSettings)
+                try await pushModule.enable(settings: pushSettings)
             }
-        } else {
-            AccountSettings.pushHash(for: account, value: 0);
         }
     }
     

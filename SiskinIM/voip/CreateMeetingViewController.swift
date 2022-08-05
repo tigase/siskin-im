@@ -213,6 +213,7 @@ class SelectAccountController: UITableViewController, UIPickerViewDataSource, UI
     weak var delegate: CreateMeetingViewController?;
 
     private let accountPicker = UIPickerView();
+    private var accounts: [BareJID] = [];
     
     override func viewDidLoad() {
         super.viewDidLoad();
@@ -220,6 +221,7 @@ class SelectAccountController: UITableViewController, UIPickerViewDataSource, UI
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        accounts = AccountManager.activeAccounts().map({ $0.name }).sorted();
         super.viewWillAppear(animated);
         let accountPicker = UIPickerView();
         accountPicker.dataSource = self;
@@ -253,11 +255,11 @@ class SelectAccountController: UITableViewController, UIPickerViewDataSource, UI
     }
     
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return AccountManager.getActiveAccounts().count;
+        return accounts.count;
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return AccountManager.getActiveAccounts()[row].name.description;
+        return accounts[row].description;
     }
     
     func  pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {

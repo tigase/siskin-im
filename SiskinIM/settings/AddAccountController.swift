@@ -51,11 +51,10 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         super.viewDidLoad();
         if account != nil {
             jidTextField.text = account;
-            passwordTextField.text = AccountManager.getAccountPassword(for: BareJID(account)!);
             jidTextField.isEnabled = false;
-            if let acc = AccountManager.getAccount(for: BareJID(account)!) {
+            if let acc = AccountManager.account(for: BareJID(account)!) {
                 connectivitySettings.disableTLS13 = acc.disableTLS13;
-                if let endpoint = acc.endpoint {
+                if let endpoint = acc.serverEndpoint {
                     connectivitySettings.host = endpoint.host;
                     connectivitySettings.port = endpoint.port;
                     connectivitySettings.useDirectTLS = endpoint.proto == .XMPPS;
@@ -155,22 +154,27 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         guard let jid = BareJID(jidTextField.text) else {
             return;
         }
-        var account = AccountManager.getAccount(for: jid) ?? AccountManager.Account(name: jid);
-        account.acceptCertificate(acceptedCertificate);
-        account.password = passwordTextField.text!;
-        if let host = connectivitySettings.host, let port = connectivitySettings.port {
-            account.endpoint = .init(proto: connectivitySettings.useDirectTLS ? .XMPPS : .XMPP, host: host, port: port)
-        }
-        account.disableTLS13 = connectivitySettings.disableTLS13;
-
-        var cancellables: Set<AnyCancellable> = [];
+        let connectivitySettings = self.connectivitySettings;
+        let newPassword = passwordTextField.text!;
+        
         do {
-            try AccountManager.save(account: account);
+            try AccountManager.modifyAccount(for: jid, { account in
+                account.enabled = true;
+                if let certInfo = acceptedCertificate {
+                    account.acceptedCertificate = AcceptableServerCertificate(certificate: certInfo, accepted: true);
+                } else {
+                    account.acceptedCertificate = nil;
+                }
+                account.password = newPassword;
+                if let host = connectivitySettings.host, let port = connectivitySettings.port {
+                    account.serverEndpoint = .init(proto: connectivitySettings.useDirectTLS ? .XMPPS : .XMPP, host: host, port: port)
+                }
+                account.disableTLS13 = connectivitySettings.disableTLS13;
+            })
             self.dismissView();
             (UIApplication.shared.delegate as? AppDelegate)?.showSetup(value: false);
         } catch {
             self.hideIndicator();
-            cancellables.removeAll();
             let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("It was not possible to save account details: %@", comment: "alert body"), error.localizedDescription), preferredStyle: .alert);
             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default));
             self.present(alert, animated: true, completion: nil);

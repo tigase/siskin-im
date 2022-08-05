@@ -136,7 +136,6 @@ open class XmppService {
             guard reconnect else {
                 return;
             }
-            AccountSettings.reconnectionLocation(for: account.name, value: nil);
             if let client = self.client(for: account.name) {
                 // if client exists and is connected, then reconnect it..
                 if client.state != .disconnected() {
@@ -164,7 +163,7 @@ open class XmppService {
     }
     
     open func initialize() {
-        for account in AccountManager.getActiveAccounts() {
+        for account in AccountManager.activeAccounts() {
             let client = self.initializeClient(for: account);
             self.queue.sync {
                 _ = self.register(client: client, for: account);
@@ -227,7 +226,7 @@ open class XmppService {
     
     private func reconnect(client: XMPPClient, ignoreCheck: Bool = false) {
         self.queue.async {
-            guard client.state == .disconnected(), let account = AccountManager.getAccount(for: client.userBareJid), account.active, ignoreCheck || self.status.shouldConnect  else {
+            guard client.state == .disconnected(), let account = AccountManager.account(for: client.userBareJid), account.enabled, ignoreCheck || self.status.shouldConnect  else {
                 return;
             }
             
@@ -235,15 +234,15 @@ open class XmppService {
         }
     }
     
-    private func connect(client: XMPPClient, for account: AccountManager.Account) {
-        client.connectionConfiguration.credentials = .password(password: account.password ?? "", authenticationName: nil, cache: nil);
+    private func connect(client: XMPPClient, for account: Account) {
+        client.connectionConfiguration.credentials = .password(password: account.password, authenticationName: nil, cache: nil);
         client.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
-            if let serverCertificate = account.serverCertificate, serverCertificate.accepted {
-                options.sslCertificateValidation = .fingerprint(serverCertificate.details.fingerprintSha1);
+            if let acceptableCertificate = account.acceptedCertificate, acceptableCertificate.accepted, let fingerprint = acceptableCertificate.certificate.subject.fingerprints.first {
+                options.sslCertificateValidation = .fingerprint(fingerprint);
             } else {
                 options.sslCertificateValidation = .default;
             }
-            options.connectionDetails = account.endpoint;
+            options.connectionDetails = account.serverEndpoint;
             if let idx = options.networkProcessorProviders.firstIndex(where: { $0 is SSLProcessorProvider }) {
                 options.networkProcessorProviders.remove(at: idx);
             }
@@ -260,17 +259,12 @@ open class XmppService {
 //            let val = account.resourceName;
 //            client.connectionConfiguration.resource = (val == nil || val!.isEmpty) ? nil : val;
 //        }
-        
-        if let pushModule = client.module(.push) as? SiskinPushNotificationsModule {
-            pushModule.pushSettings = account.pushSettings;
-        }
 
 //        if let streamFeaturesModule: StreamFeaturesModuleWithPipelining = client.modulesManager.moduleOrNil(.streamFeatures) as? StreamFeaturesModuleWithPipelining {
 //            streamFeaturesModule.enabled = Settings.xmppPipelining;
 //        }
         
-        let connectorEndpoint: ConnectorEndpoint? = AccountSettings.reconnectionLocation(for: account.name);
-        try! client.login(lastSeeOtherHost: connectorEndpoint);
+        try! client.login(lastSeeOtherHost: account.lastEndpoint);
     }
         
     private class ClientCancellables {
@@ -285,7 +279,7 @@ open class XmppService {
             DBChatStore.instance.resetChatStates(for: accountName);
         }
         self.queue.sync {
-            let active = AccountManager.getAccount(for: accountName)?.active
+            let active = AccountManager.account(for: accountName)?.enabled
             if !(active ?? false) {
                 self.unregisterClient(client, removed: active == nil);
             }
@@ -426,7 +420,7 @@ open class XmppService {
         self.fetchState?.expired();
     }
     
-    fileprivate func initializeClient(for account: AccountManager.Account) -> XMPPClient {
+    fileprivate func initializeClient(for account: Account) -> XMPPClient {
         let jid = account.name;
         let client = XMPPClient();
         
@@ -501,7 +495,7 @@ open class XmppService {
     
 
     // call only on internal queue
-    fileprivate func register(client: XMPPClient, for account: AccountManager.Account) -> XMPPClient {
+    fileprivate func register(client: XMPPClient, for account: Account) -> XMPPClient {
         let clientCancellables = ClientCancellables();
         self.clientCancellables[account.name] = clientCancellables;
                         
@@ -533,15 +527,15 @@ open class XmppService {
             self.queue.async {
                 self.connectedClients.remove(client);
             }
-            AccountSettings.reconnectionLocation(for: client.userBareJid, value: nil);
+            try? AccountManager.modifyAccount(for: client.userBareJid, { $0.lastEndpoint = nil })
             switch reason {
             case .sslCertError(let trust):
-                let certData = ServerCertificateInfoOld(trust: trust);
-                if var account = AccountManager.getAccount(for: client.userBareJid) {
-                    account.active = false;
-                    account.serverCertificate = certData;
-                    try? AccountManager.save(account: account);
-                    NotificationCenter.default.post(name: XmppService.SERVER_CERTIFICATE_ERROR, object: client.userBareJid, userInfo: ["account": client.userBareJid.description, "cert-name": certData.details.name, "cert-hash-sha1": certData.details.fingerprintSha1, "issuer-name": certData.issuer?.name as Any, "issuer-hash-sha1": certData.issuer?.fingerprintSha1 as Any]);
+                if let certData = SSLCertificateInfo(trust: trust) {
+                    try? AccountManager.modifyAccount(for: client.userBareJid, { account in
+                        account.enabled = false;
+                        account.acceptedCertificate = AcceptableServerCertificate(certificate: certData, accepted: false);
+                    })
+                    NotificationCenter.default.post(name: XmppService.SERVER_CERTIFICATE_ERROR, object: client.userBareJid, userInfo: ["account": client.userBareJid.description, "cert-name": certData.subject.name, "cert-hash-sha1": certData.subject.fingerprints.first as Any, "issuer-name": certData.issuer?.name as Any, "issuer-hash-sha1": certData.issuer?.fingerprints.first as Any]);
                 }
             case .authenticationFailure(let err):
                 if let error = err as? SaslError {
@@ -556,7 +550,9 @@ open class XmppService {
                     reportSaslError(on: client.userBareJid, error: .not_authorized);
                 }
             case .none:
-                AccountSettings.reconnectionLocation(for: client.userBareJid, value: client.connector?.currentEndpoint);
+                try? AccountManager.modifyAccount(for: client.userBareJid, {
+                    $0.lastEndpoint = client.connector?.currentEndpoint as? SocketConnectorNetwork.Endpoint
+                })
             default:
                 break;
             }
@@ -567,11 +563,9 @@ open class XmppService {
     }
     
     private func reportSaslError(on accountJID: BareJID, error: SaslError) {
-        guard var account = AccountManager.getAccount(for: accountJID) else {
-            return;
-        }
-        account.active = false;
-        try? AccountManager.save(account: account);
+        try? AccountManager.modifyAccount(for: accountJID, { account in
+            account.enabled = false;
+        })
         NotificationCenter.default.post(name: XmppService.AUTHENTICATION_ERROR, object: accountJID, userInfo: ["error": error]);
     }
         

@@ -39,14 +39,4 @@ open class DNSSrvDiskCache: DNSSrvResolverWithCache.DiskCache {
         });
     }
     
-    @objc fileprivate func accountChanged(_ notification: Notification) {
-        guard let account = notification.object as? AccountManager.Account else {
-            return;
-        }
-        guard !(AccountManager.getAccount(for: account.name)?.active ?? false) else {
-            return;
-        }
-        
-        self.store(for: account.name.domain, result: nil);
-    }
 }

@@ -58,9 +58,12 @@ class RosterItemEditViewController: UITableViewController, UIPickerViewDataSourc
                 self.receivePresenceUpdatesSwitch.isOn = rosterItem.subscription.isTo;
             }
         } else {
-            if account == nil && !AccountManager.getAccounts().isEmpty {
-                self.account = AccountManager.getAccounts().first;
-                self.accountTextField.text = account?.description;
+            if account == nil {
+                let accounts = AccountManager.accountNames();
+                if !accounts.isEmpty {
+                    self.account = accounts.first;
+                    self.accountTextField.text = account?.description;
+                }
             }
             self.nameTextField.text = nil;
         }
@@ -130,10 +133,9 @@ class RosterItemEditViewController: UITableViewController, UIPickerViewDataSourc
                 _ = self.navigationController?.popViewController(animated: true);
             }));
             alert.addAction(UIAlertAction(title: NSLocalizedString("Yes", comment: "button label"), style: .default, handler: {(alertAction) in
-                if var account = AccountManager.getAccount(for: self.account!) {
-                    account.active = true;
-                    try? AccountManager.save(account: account);
-                }
+                try? AccountManager.modifyAccount(for: self.account!, { account in
+                    account.enabled = true;
+                })
             }));
             self.present(alert, animated: true, completion: nil);
             return;
@@ -201,11 +203,11 @@ class RosterItemEditViewController: UITableViewController, UIPickerViewDataSourc
     }
     
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return AccountManager.getAccounts().count;
+        return AccountManager.accountNames().count;
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return AccountManager.getAccounts()[row].description;
+        return AccountManager.accountNames()[row].description;
     }
     
     func  pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {

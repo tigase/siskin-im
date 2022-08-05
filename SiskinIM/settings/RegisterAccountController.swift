@@ -199,18 +199,20 @@ class RegisterAccountController: DataFormController {
         guard let jid = self.account else {
             return;
         }
-        
-        var account = AccountManager.getAccount(for: jid) ?? AccountManager.Account(name: jid);
-        account.acceptCertificate(acceptedCertificate);
-        var cancellables: Set<AnyCancellable> = [];
+
         do {
-            account.password = self.password!;
-            try AccountManager.save(account: account);
+            try AccountManager.modifyAccount(for: jid, { account in
+                if let certInfo = acceptedCertificate {
+                    account.acceptedCertificate = AcceptableServerCertificate(certificate: certInfo, accepted: true);
+                } else {
+                    account.acceptedCertificate = nil;
+                }
+                account.password = self.password!;
+            })
             self.onAccountAdded?();
             self.dismissView();
             (UIApplication.shared.delegate as? AppDelegate)?.showSetup(value: false);
         } catch {
-            cancellables.removeAll();
             let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: NSLocalizedString("It was not possible to save account details", comment: "alert title"), preferredStyle: .alert);
             self.present(alert, animated: true, completion: nil);
         }
