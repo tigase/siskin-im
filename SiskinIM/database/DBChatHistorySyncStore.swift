@@ -24,6 +24,7 @@ import Martin
 import os
 import TigaseSQLite3
 import Combine
+import Shared
 
 extension Query {
     static let mamSyncInsertPeriod = Query("INSERT INTO chat_history_sync (id, account, component, from_timestamp, from_id, to_timestamp) VALUES (:id, :account, :component, :from_timestamp, :from_id, :to_timestamp)");

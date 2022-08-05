@@ -25,6 +25,7 @@ import Martin
 import Combine
 import TigaseLogging
 import CryptoKit
+import Shared
 
 struct AvatarWeakRef {
     weak var avatar: Avatar?;

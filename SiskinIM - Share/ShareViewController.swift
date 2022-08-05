@@ -33,17 +33,6 @@ extension Query {
     
 }
 
-enum AvatarType: String {
-    case vcardTemp
-    case pepUserAvatar
-}
-
-struct AvatarKey: Hashable {
-    let account: BareJID;
-    let jid: BareJID;
-    let type: AvatarType;
-}
-
 struct RosterItem: Equatable {
     let account: BareJID;
     let jid: BareJID;
@@ -73,10 +62,10 @@ class ShareViewController: UITableViewController {
     var recipients: [RosterItem] = [];
     
     var sharedDefaults = UserDefaults(suiteName: "group.TigaseMessenger.Share");
-    var avatarCacheUrl: URL?;
     
-    var avatars: [AvatarKey: String] = [:];
     var rosterItems: [RosterItem] = [];
+    
+    private let avatarStore = AvatarStore();
     
     var imageQuality: ImageQuality {
         if let valueStr = sharedDefaults?.string(forKey: "imageQuality"), let value = ImageQuality(rawValue: valueStr) {
@@ -93,6 +82,8 @@ class ShareViewController: UITableViewController {
     }
 
     override func viewDidLoad() {
+        try! AccountManager.initialize();
+        
         super.viewDidLoad();
         
         self.navigationItem.title = NSLocalizedString("Select recipients", comment: "view title");
@@ -110,32 +101,25 @@ class ShareViewController: UITableViewController {
             self.present(controller, animated: true, completion: nil);
         }
         
-        let database = try! Database(path: dbUrl.path, flags: SQLITE_OPEN_WAL | SQLITE_OPEN_READONLY);
-        let accounts = Set(getActiveAccounts());
-        try! database.select(query: .selectAvatars, params: []).forEach({ c in
-            guard let account = c.bareJid(for: "account"), let jid = c.bareJid(for: "jid"), let type = AvatarType(rawValue: c.string(for: "type")!), let hash = c.string(for: "hash") else {
-                return;
-            }
-            
-            avatars[.init(account: account, jid: jid, type: type)] = hash;
-        })
-        rosterItems = try! database.select(query: .selectRosterItems, cached: false, params: []).mapAll({ c -> RosterItem? in
-            guard let account = c.bareJid(for: "account"), accounts.contains(account), let jid = c.bareJid(for: "jid") else {
-                return nil;
-            }
-            
-            if let data: DBRosterData = c.object(for: "data") {
-                guard data.annotations.isEmpty else {
+        let accounts = Set(AccountManager.activeAccounts().map({ $0.name }));
+        rosterItems = try! Database.main.reader({ database in
+            try! database.select(query: .selectRosterItems, cached: false, params: []).mapAll({ c -> RosterItem? in
+                guard let account = c.bareJid(for: "account"), accounts.contains(account), let jid = c.bareJid(for: "jid") else {
                     return nil;
                 }
-            }
-            
-            return RosterItem(account: account, jid: jid, name: c.string(for: "name"));
+                
+                if let data: DBRosterData = c.object(for: "data") {
+                    guard data.annotations.isEmpty else {
+                        return nil;
+                    }
+                }
+                
+                return RosterItem(account: account, jid: jid, name: c.string(for: "name"));
+            })
         }).sorted(by: { r1, r2 -> Bool in
             return r1.displayName.lowercased() < r2.displayName.lowercased();
         })
         
-        avatarCacheUrl = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.siskinim.shared")!.appendingPathComponent("Library", isDirectory: true).appendingPathComponent("Caches", isDirectory: true).appendingPathComponent("avatars", isDirectory: true);
         for url in try! FileManager.default.contentsOfDirectory(at: FileManager.default.temporaryDirectory, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles]) {
             try? FileManager.default.removeItem(at: url);
         }
@@ -239,20 +223,28 @@ class ShareViewController: UITableViewController {
     
     private func client(account: BareJID) async throws -> XMPPClient {
         let task: Task<XMPPClient,Error> = clientsLock.with {
-            guard let task = clientsLock.with({ clients[account] }) else {
+            guard let task = clients[account] else {
                 let task: Task<XMPPClient,Error> = Task {
-                    guard let password = getAccountPassword(for: account) else {
+                    guard let config = AccountManager.account(for: account) else {
                         throw XMPPError(condition: .not_authorized);
                     }
                     let client = self.createXmppClient(for: account);
-                    client.connectionConfiguration.credentials = .password(password: password, authenticationName: nil, cache: nil);
-                    try await client.loginAndWait();
+                    client.configure(for: config);
+                    client.connectionConfiguration.resource = UUID().uuidString;
+                    do {
+                        try await client.loginAndWait(lastSeeOtherHost: config.lastEndpoint);
+                    } catch {
+                        if config.lastEndpoint != nil {
+                            try await client.loginAndWait();
+                        } else {
+                            throw error;
+                        }
+                    }
                     try Task.checkCancellation()
                     return client;
                 }
                 clients[account] = task;
                 return task;
-
             }
             return task;
         }
@@ -340,15 +332,11 @@ class ShareViewController: UITableViewController {
     }
     
     func avatar(for item: RosterItem) -> UIImage? {
-        guard let hash = avatars[.init(account: item.account, jid: item.jid, type: .pepUserAvatar)] ?? avatars[.init(account: item.account, jid: item.jid, type: .vcardTemp)] else {
+        guard let hash = avatarStore.avatarHash(for: item.jid, on: item.account).sorted().first else {
             return nil;
         }
-        
-        guard let path = avatarCacheUrl?.appendingPathComponent(hash).path else {
-            return nil;
-        }
-        
-        return UIImage(contentsOfFile: path)?.scaled(maxWidthOrHeight: 40);
+
+        return avatarStore.avatar(for: hash.hash)?.scaled(maxWidthOrHeight: 40);
     }
     
     func generateAvatar(for item: RosterItem) -> UIImage? {
@@ -393,11 +381,7 @@ class ShareViewController: UITableViewController {
         let client = XMPPClient();
 
         client.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
-            options.networkProcessorProviders.append(SSLProcessorProvider());
             options.connectionTimeout = 15;
-            options.sslCertificateValidation = .customValidator({ _ in
-                return true;
-            })
         })
         client.connectionConfiguration.userJid = account;
 
@@ -445,16 +429,21 @@ class ShareViewController: UITableViewController {
                         completionHandler(.failure(error!));
                         return;
                     }
-                    Task {
-                        defer {
-                            try? FileManager.default.removeItem(at: url);
+                    do {
+                        let localUrl = try self.copyFileLocally(url: url);
+                        Task {
+                            defer {
+                                try? FileManager.default.removeItem(at: localUrl);
+                            }
+                            do {
+                                let (url,fileInfo) = try await MediaHelper.compressMovie(url: localUrl, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "mov"), quality: self.videoQuality, progressCallback: { _ in });
+                                completionHandler(.success(.file(url, fileInfo)));
+                            } catch {
+                                completionHandler(.failure(error));
+                            }
                         }
-                        do {
-                            let (url,fileInfo) = try await MediaHelper.compressMovie(url: url, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "mov"), quality: self.videoQuality, progressCallback: { _ in });
-                            completionHandler(.success(.file(url, fileInfo)));
-                        } catch {
-                            completionHandler(.failure(error));
-                        }
+                    } catch {
+                        completionHandler(.failure(error))
                     }
                 });
             } else if provider.hasItemConformingToTypeIdentifier(kUTTypeImage as String) {
@@ -463,16 +452,21 @@ class ShareViewController: UITableViewController {
                         completionHandler(.failure(error!));
                         return;
                     }
-                    Task {
-                        defer {
-                            try? FileManager.default.removeItem(at: url);
+                    do {
+                        let localUrl = try self.copyFileLocally(url: url);
+                        Task {
+                            defer {
+                                try? FileManager.default.removeItem(at: localUrl);
+                            }
+                            do {
+                                let (url,fileInfo) = try MediaHelper.compressImage(url: localUrl, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "jpg"), quality: self.imageQuality);
+                                completionHandler(.success(.file(url, fileInfo)));
+                            } catch {
+                                completionHandler(.failure(error));
+                            }
                         }
-                        do {
-                            let (url,fileInfo) = try MediaHelper.compressImage(url: url, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "jpg"), quality: self.imageQuality);
-                            completionHandler(.success(.file(url, fileInfo)));
-                        } catch {
-                            completionHandler(.failure(error));
-                        }
+                    } catch {
+                        completionHandler(.failure(error))
                     }
                 });
             } else if provider.hasItemConformingToTypeIdentifier(kUTTypeFileURL as String) {
@@ -481,10 +475,9 @@ class ShareViewController: UITableViewController {
                         completionHandler(.failure(error!));
                         return;
                     }
-                    let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString);
                     do {
-                        try FileManager.default.copyItem(at: url, to: tempUrl);
-                        completionHandler(.success(.file(tempUrl, ShareFileInfo.from(url: url, defaultSuffix: nil))));
+                        let localUrl = try self.copyFileLocally(url: url);
+                        completionHandler(.success(.file(localUrl, ShareFileInfo.from(url: url, defaultSuffix: nil))));
                     } catch {
                         completionHandler(.failure(error));
                     }
@@ -513,6 +506,18 @@ class ShareViewController: UITableViewController {
         }
     }
         
+    private func copyFileLocally(url: URL) throws -> URL {
+        let filename = url.lastPathComponent;
+        var suffix: String = "";
+        if let idx = filename.lastIndex(of: ".") {
+            suffix = String(filename.suffix(from: idx));
+        }
+        
+        let tmpUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + suffix, isDirectory: false);
+        try FileManager.default.copyItem(at: url, to: tmpUrl);
+        return tmpUrl;
+    }
+    
     func show(error: Error) {
         showAlert(title: NSLocalizedString("Failure", comment: "alert title"), message: (error as? ShareError)?.message ?? error.localizedDescription);
     }
@@ -527,49 +532,49 @@ class ShareViewController: UITableViewController {
         }
     }
 
-    func getActiveAccounts() -> [BareJID] {
-        var accounts = [BareJID]();
-        let query = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitAll, String(kSecReturnAttributes) : kCFBooleanTrue as Any, String(kSecAttrService) : "xmpp" ] as [String : Any];
-        var result:AnyObject?;
-        
-        let lastResultCode: OSStatus = withUnsafeMutablePointer(to: &result) {
-            SecItemCopyMatching(query as CFDictionary, UnsafeMutablePointer($0));
-        }
-        
-        if lastResultCode == noErr {
-            if let results = result as? [[String:NSObject]] {
-                for r in results {
-                    if let name = r[String(kSecAttrAccount)] as? String {
-                        if let data = r[String(kSecAttrGeneric)] as? NSData {
-                            NSKeyedUnarchiver.setClass(ServerCertificateInfoOld.self, forClassName: "Siskin.ServerCertificateInfo");
-                            let dict = NSKeyedUnarchiver.unarchiveObject(with: data as Data) as? [String:AnyObject];
-                            if dict!["active"] as? Bool ?? false {
-                                accounts.append(BareJID(name));
-                            }
-                        }
-                    }
-                }
-            }
-            
-        }
-        return accounts;
-    }
-
-    func getAccountPassword(for account: BareJID) -> String? {
-        let query: [String: NSObject] = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitOne, String(kSecReturnData) : kCFBooleanTrue, String(kSecAttrService) : "xmpp" as NSObject, String(kSecAttrAccount) : account.description as NSObject ];
-
-        var result:AnyObject?;
-
-        let lastResultCode: OSStatus = withUnsafeMutablePointer(to: &result) {
-            SecItemCopyMatching(query as CFDictionary, UnsafeMutablePointer($0));
-        }
-
-        if lastResultCode == noErr {
-            if let data = result as? NSData {
-                return String(data: data as Data, encoding: String.Encoding.utf8);
-            }
-        }
-        return nil;
-    }
+//    func getActiveAccounts() -> [BareJID] {
+//        var accounts = [BareJID]();
+//        let query = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitAll, String(kSecReturnAttributes) : kCFBooleanTrue as Any, String(kSecAttrService) : "xmpp" ] as [String : Any];
+//        var result:AnyObject?;
+//
+//        let lastResultCode: OSStatus = withUnsafeMutablePointer(to: &result) {
+//            SecItemCopyMatching(query as CFDictionary, UnsafeMutablePointer($0));
+//        }
+//
+//        if lastResultCode == noErr {
+//            if let results = result as? [[String:NSObject]] {
+//                for r in results {
+//                    if let name = r[String(kSecAttrAccount)] as? String {
+//                        if let data = r[String(kSecAttrGeneric)] as? NSData {
+//                            NSKeyedUnarchiver.setClass(ServerCertificateInfoOld.self, forClassName: "Siskin.ServerCertificateInfo");
+//                            let dict = NSKeyedUnarchiver.unarchiveObject(with: data as Data) as? [String:AnyObject];
+//                            if dict!["active"] as? Bool ?? false {
+//                                accounts.append(BareJID(name));
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//
+//        }
+//        return accounts;
+//    }
+//
+//    func getAccountPassword(for account: BareJID) -> String? {
+//        let query: [String: NSObject] = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitOne, String(kSecReturnData) : kCFBooleanTrue, String(kSecAttrService) : "xmpp" as NSObject, String(kSecAttrAccount) : account.description as NSObject ];
+//
+//        var result:AnyObject?;
+//
+//        let lastResultCode: OSStatus = withUnsafeMutablePointer(to: &result) {
+//            SecItemCopyMatching(query as CFDictionary, UnsafeMutablePointer($0));
+//        }
+//
+//        if lastResultCode == noErr {
+//            if let data = result as? NSData {
+//                return String(data: data as Data, encoding: String.Encoding.utf8);
+//            }
+//        }
+//        return nil;
+//    }
     
 }

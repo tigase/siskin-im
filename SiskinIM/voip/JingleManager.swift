@@ -23,6 +23,7 @@ import Foundation
 import Martin
 import WebRTC
 import Combine
+import Shared
 
 class JingleManager: JingleSessionManager {
     

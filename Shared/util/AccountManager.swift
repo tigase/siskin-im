@@ -22,7 +22,6 @@
 
 import Foundation
 import Security
-import Shared
 import Martin
 import Combine
 import TigaseSQLite3
@@ -32,30 +31,24 @@ open class AccountManager {
     private static let queue = DispatchQueue(label: "AccountManager");
     private static var _accounts: [BareJID: Account] = [:];
     
-    static var accounts: [Account] {
+    public static var accounts: [Account] {
         return queue.sync {
             return Array(_accounts.values);
         }
     }
     
-    static let accountEventsPublisher = PassthroughSubject<Event,Never>();
-    static var defaultAccount: BareJID? {
-        get {
-            return BareJID(Settings.defaultAccount);
-        }
-        set {
-            Settings.defaultAccount = newValue?.description;
-        }
-    }
+    public static let accountEventsPublisher = PassthroughSubject<Event,Never>();
     
 //    public static let saltedPasswordCache = AccountManagerScramSaltedPasswordCache();
     
-    static func initialize() throws {
-        try reloadAccounts();
+    public static func initialize() throws {
+        try queue.sync {
+            try reloadAccounts();
+        }
     }
     
     @available(*, deprecated, message: "Will be removed in future versions after account data conversion is completed")
-    static func convertOldAccounts() throws {
+    public static func convertOldAccounts() throws {
         try queue.sync {
             guard _accounts.isEmpty else {
                 return;
@@ -133,23 +126,40 @@ open class AccountManager {
     }
     
     private static func reloadAccounts() throws {
-        self._accounts.removeAll();
+//        self._accounts.removeAll();
         let accounts = try DBAccountStore.list();
-        for var account in accounts {
-            if let password = password(for: account.name) {
-                account.password = password;
-                self._accounts[account.name] = account;
+        for source in accounts {
+            if var account = self._accounts[source.name] {
+                if let password = password(for: account.name) {
+                    account.password = password;
+                    account.serverEndpoint = source.serverEndpoint;
+                    account.acceptedCertificate = source.acceptedCertificate;
+                    account.push = source.push;
+                    account.enabled = source.enabled;
+                    account.additional = source.additional;
+                    self._accounts[account.name] = account;
+                    
+                    DispatchQueue.main.async {
+                        self.accountEventsPublisher.send(account.enabled ? .enabled(account, false) : .disabled(account));
+                    }
+                }
+            } else {
+                var account = source;
+                if let password = password(for: account.name) {
+                    account.password = password;
+                    self._accounts[account.name] = account;
+                }
             }
         }
     }
     
-    static func activeAccounts() -> [Account] {
+    public static func activeAccounts() -> [Account] {
         return queue.sync {
             return _accounts.values.filter({ $0.enabled });
         }
     }
     
-    static func accountNames() -> [BareJID] {
+    public static func accountNames() -> [BareJID] {
         return self.queue.sync {
             return _accounts.keys.sorted(by: { (j1, j2) -> Bool in
                 j1.description.compare(j2.description) == .orderedAscending;
@@ -157,7 +167,7 @@ open class AccountManager {
         }
     }
 
-    static func account(for jid: BareJID) -> Account? {
+    public static func account(for jid: BareJID) -> Account? {
         return self.queue.sync {
             return self._accounts[jid];
         }
@@ -186,7 +196,7 @@ open class AccountManager {
         query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock;
 
         if let updateError = AccountManagerError(status: SecItemUpdate(query as CFDictionary, [kSecValueData as String: newPassword.data(using: .utf8)!] as CFDictionary)) {
-            if updateError.status != errSecItemNotFound {
+            if updateError.status == errSecItemNotFound {
                 query[kSecValueData as String] = newPassword.data(using: .utf8)!;
                 if let insertError = AccountManagerError(status: SecItemAdd(query as CFDictionary, nil)) {
                     throw insertError;
@@ -197,14 +207,14 @@ open class AccountManager {
         }
     }
     
-    static func modifyAccount(for jid: BareJID, _ block: @escaping (inout Account)->Void) throws {
+    public static func modifyAccount(for jid: BareJID, _ block: @escaping (inout Account)->Void) throws {
         try self.queue.sync {
             let oldValue = _accounts[jid];
             
             var newValue = oldValue ?? Account(name: jid, enabled: true);
             block(&newValue);
             
-            guard newValue.password.isEmpty else {
+            guard !newValue.password.isEmpty else {
                 throw XMPPError(condition: .bad_request);
             }
 
@@ -228,7 +238,7 @@ open class AccountManager {
         }
     }
 
-    static func deleteAccount(for jid: BareJID) throws {
+    public static func deleteAccount(for jid: BareJID) throws {
         try queue.sync {
             var query = AccountManager.getAccountQuery(jid.description);
             query.removeValue(forKey: String(kSecMatchLimit));
@@ -253,33 +263,33 @@ open class AccountManager {
         return [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitOne, String(withData) : kCFBooleanTrue!, String(kSecAttrService) : "xmpp" as NSObject, String(kSecAttrAccount) : name as NSObject ];
     }
     
-    enum Event {
+    public enum Event {
             case enabled(Account,Bool)
             case disabled(Account)
             case removed(Account)
         }
         
-    struct AccountManagerError: LocalizedError, CustomDebugStringConvertible {
-        let status: OSStatus;
-        let message: String?;
+    public struct AccountManagerError: LocalizedError, CustomDebugStringConvertible {
+        public let status: OSStatus;
+        public let message: String?;
         
-        var errorDescription: String? {
+        public var errorDescription: String? {
             return "\(NSLocalizedString("It was not possible to modify account.", comment: "error description message"))\n\(message ?? "\(NSLocalizedString("Error code", comment: "error description message - detail")): \(status)")";
         }
         
-        var failureReason: String? {
+        public var failureReason: String? {
             return message;
         }
         
-        var recoverySuggestion: String? {
+        public var recoverySuggestion: String? {
             return NSLocalizedString("Try again. If removal failed, try accessing Keychain to update account credentials manually.", comment: "error recovery suggestion");
         }
         
-        var debugDescription: String {
+        public var debugDescription: String {
             return "AccountManagerError(status: \(status), message: \(message ?? "nil"))";
         }
         
-        init?(status: OSStatus) {
+        public init?(status: OSStatus) {
             guard status != noErr else {
                 return nil;
             }
@@ -370,9 +380,9 @@ open class AccountManager {
             }
         }
         
-        public var pushSettings: SiskinPushNotificationsModule.PushSettingsOld? {
+        public var pushSettings: PushSettingsOld? {
             get {
-                return SiskinPushNotificationsModule.PushSettingsOld(dictionary: data["push"] as? [String: Any]);
+                return PushSettingsOld(dictionary: data["push"] as? [String: Any]);
             }
             set {
                 data["push"] = newValue?.dictionary();
@@ -448,6 +458,51 @@ open class AccountManager {
             }
             self.serverCertificate = ServerCertificateInfoOld(sslCertificateInfo: data, accepted: true);
         }
+    }
+    
+    @available(*, deprecated, message: "Will be removed in the next version")
+    public struct PushSettingsOld: Codable, Equatable, Sendable {
+                
+        public let jid: JID;
+        public let node: String;
+        public let deviceId: String;
+        public let pushkitDeviceId: String?;
+        public let encryption: Bool;
+        public let maxSize: Int?;
+
+        init?(dictionary: [String: Any]?) {
+            guard let dict = dictionary else {
+                return nil;
+            }
+            guard let jid = JID(dict["jid"] as? String), let node = dict["node"] as? String, let deviceId = dict["device"] as? String else {
+                return nil;
+            }
+            self.init(jid: jid, node: node, deviceId: deviceId, pushkitDeviceId: dict["pushkitDevice"] as? String, encryption: dict["encryption"] as? Bool ?? false, maxSize: dict["maxSize"] as? Int);
+        }
+        
+        init(jid: JID, node: String, deviceId: String, pushkitDeviceId: String? = nil, encryption: Bool, maxSize: Int?) {
+            self.jid = jid;
+            self.node = node;
+            self.deviceId = deviceId;
+            self.pushkitDeviceId = pushkitDeviceId;
+            self.encryption = encryption;
+            self.maxSize = maxSize;
+        }
+        
+        func dictionary() -> [String: Any] {
+            var dict: [String: Any] =  ["jid": jid.description, "node": node, "device": deviceId];
+            if let pushkitDevice = self.pushkitDeviceId {
+                dict["pushkitDevice"] = pushkitDevice;
+            }
+            if encryption {
+                dict["encryption"] = true;
+            }
+            if maxSize != nil {
+                dict["maxSize"] = maxSize;
+            }
+            return dict;
+        }
+        
     }
     
     @available(*, deprecated, message: "Not used any more")

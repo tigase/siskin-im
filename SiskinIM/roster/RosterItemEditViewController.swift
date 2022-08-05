@@ -21,6 +21,7 @@
 
 import UIKit
 import Martin
+import Shared
 
 class RosterItemEditViewController: UITableViewController, UIPickerViewDataSource, UIPickerViewDelegate {
 

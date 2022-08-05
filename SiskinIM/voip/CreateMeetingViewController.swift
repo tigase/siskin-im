@@ -22,6 +22,7 @@
 import UIKit
 import Combine
 import Martin
+import Shared
 
 class CreateMeetingViewController: MultiContactSelectionViewController {
 

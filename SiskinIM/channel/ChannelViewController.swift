@@ -22,6 +22,7 @@
 import UIKit
 import Martin
 import Combine
+import Shared
 
 class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar {
 

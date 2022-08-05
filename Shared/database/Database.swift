@@ -22,12 +22,45 @@
 import Foundation
 import TigaseSQLite3
 import Martin
+import TigaseLogging
+
+extension DatabasePool {
+    
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "sqlite");
+    
+    convenience init(dbUrl: URL, schemaMigrator: DatabaseSchemaMigrator? = nil) throws {
+        try self.init(configuration: Configuration(path: dbUrl.path, schemaMigrator: schemaMigrator));
+        DatabasePool.logger.info("Initialized database: \(dbUrl.path)");
+    }
+}
 
 extension Database {
+    
+    public static func openSharedDatabase(at url: URL) throws -> DatabasePool {
+        let coordinator = NSFileCoordinator(filePresenter: nil);
+        var coordinatorError: NSError?;
+        var dbPool: DatabasePool?;
+        var dbError: Error?;
+        coordinator.coordinate(writingItemAt: url, options: .forMerging, error: &coordinatorError, byAccessor: { url in
+            do {
+                dbPool = try DatabasePool(dbUrl: url, schemaMigrator: DatabaseMigrator());
+            } catch {
+                dbError = error;
+            }
+        })
+        if let error = dbError ?? coordinatorError {
+            throw error;
+        }
+        return dbPool!;
+    }
     
     public static func mainDatabaseUrl() -> URL {
         return FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.siskinim.shared")!.appendingPathComponent("siskinim_main.db");
     }
+    
+    public static let main: DatabasePool = {
+        return try! openSharedDatabase(at: mainDatabaseUrl());
+    }();
     
 }
 

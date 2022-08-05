@@ -26,79 +26,7 @@ import CryptoKit
 import Shared
 import Martin
 
-public struct PushSettings: Codable, Equatable, Sendable {
-    public var registration: SiskinPushNotificationsModule.PushRegistration?;
-    public var enableForAway: Bool;
-    
-    public init() {
-        registration = nil;
-        enableForAway = false;
-    }
-    
-}
-
-
 open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
-
-    public struct PushSettingsOld: Codable, Equatable, Sendable {
-                
-        public let jid: JID;
-        public let node: String;
-        public let deviceId: String;
-        public let pushkitDeviceId: String?;
-        public let encryption: Bool;
-        public let maxSize: Int?;
-
-        init?(dictionary: [String: Any]?) {
-            guard let dict = dictionary else {
-                return nil;
-            }
-            guard let jid = JID(dict["jid"] as? String), let node = dict["node"] as? String, let deviceId = dict["device"] as? String else {
-                return nil;
-            }
-            self.init(jid: jid, node: node, deviceId: deviceId, pushkitDeviceId: dict["pushkitDevice"] as? String, encryption: dict["encryption"] as? Bool ?? false, maxSize: dict["maxSize"] as? Int);
-        }
-        
-        init(jid: JID, node: String, deviceId: String, pushkitDeviceId: String? = nil, encryption: Bool, maxSize: Int?) {
-            self.jid = jid;
-            self.node = node;
-            self.deviceId = deviceId;
-            self.pushkitDeviceId = pushkitDeviceId;
-            self.encryption = encryption;
-            self.maxSize = maxSize;
-        }
-        
-        func dictionary() -> [String: Any] {
-            var dict: [String: Any] =  ["jid": jid.description, "node": node, "device": deviceId];
-            if let pushkitDevice = self.pushkitDeviceId {
-                dict["pushkitDevice"] = pushkitDevice;
-            }
-            if encryption {
-                dict["encryption"] = true;
-            }
-            if maxSize != nil {
-                dict["maxSize"] = maxSize;
-            }
-            return dict;
-        }
-        
-    }
-        
-    public struct PushRegistration: Codable, Equatable, Sendable {
-                        
-        public let jid: JID;
-        public let node: String;
-        public let deviceId: String;
-        public let pushkitDeviceId: String?;
-        
-        init(jid: JID, node: String, deviceId: String, pushkitDeviceId: String? = nil) {
-            self.jid = jid;
-            self.node = node;
-            self.deviceId = deviceId;
-            self.pushkitDeviceId = pushkitDeviceId;
-        }
-        
-    }
         
     public let defaultPushServiceJid: JID;
 

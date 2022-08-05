@@ -1,8 +1,8 @@
 //
-// XMPPClient_extension.swift
+// AccountManager+extensions.swift
 //
 // Siskin IM
-// Copyright (C) 2021 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2022 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,9 +21,17 @@
 
 import Foundation
 import Martin
+import Shared
 
-public class XMPPClient: Martin.XMPPClient {
+extension AccountManager {
     
-    var retryNo: Int = 0;
+    static var defaultAccount: BareJID? {
+        get {
+            return BareJID(Settings.defaultAccount);
+        }
+        set {
+            Settings.defaultAccount = newValue?.description;
+        }
+    }
     
 }

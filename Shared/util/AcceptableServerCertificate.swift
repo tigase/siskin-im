@@ -1,5 +1,5 @@
 //
-// ServerCertificateInfo.swift
+// AcceptableServerCertificate.swift
 //
 // Siskin IM
 // Copyright (C) 2021 "Tigase, Inc." <office@tigase.com>

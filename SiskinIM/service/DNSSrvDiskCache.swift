@@ -22,6 +22,7 @@
 import Foundation
 import Martin
 import Combine
+import Shared
 
 open class DNSSrvDiskCache: DNSSrvResolverWithCache.DiskCache {
     

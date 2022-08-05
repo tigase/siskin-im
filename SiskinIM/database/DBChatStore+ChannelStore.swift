@@ -20,6 +20,7 @@
 //
 import Foundation
 import Martin
+import Shared
 
 extension DBChatStore: ChannelStore {
     

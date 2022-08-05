@@ -24,6 +24,7 @@ import Foundation
 import Martin
 import TigaseSQLite3
 import TigaseLogging
+import Shared
 import Combine
 import CoreLocation
 
@@ -1051,18 +1052,6 @@ extension ConversationEntryState {
         return ConversationEntryState.from(code: stateInt, errorMessage: cursor["error"]);
     }
     
-}
-
-public enum ItemType: Int, Sendable {
-    case message = 0
-    case attachment = 1
-    // how about new type called link preview? this way we would have a far less data kept in a single item..
-    // we could even have them separated to the new item/entry during adding message to the store..
-    case linkPreview = 2
-    // with that in place we can have separate metadata kept "per" message as it is only one, so message id can be id of associated metadata..
-    case invitation = 3
-    case retraction = 4
-    case location = 6;
 }
 
 final class UnsentMessage: Sendable {

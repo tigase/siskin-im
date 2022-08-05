@@ -23,6 +23,7 @@ import Foundation
 import UIKit
 import Martin
 import Combine
+import Shared
 
 class RegisterAccountController: DataFormController {
     

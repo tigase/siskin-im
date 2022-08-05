@@ -1,8 +1,8 @@
 //
-// XMPPClient_extension.swift
+// ChatEncryption.swift
 //
 // Siskin IM
-// Copyright (C) 2021 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2022 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,10 +20,17 @@
 //
 
 import Foundation
-import Martin
 
-public class XMPPClient: Martin.XMPPClient {
+public enum ChatEncryption: String, Codable, CustomStringConvertible, Sendable {
+    case none = "none";
+    case omemo = "omemo";
     
-    var retryNo: Int = 0;
-    
+    public var description: String {
+        switch self {
+        case .none:
+            return NSLocalizedString("None", comment: "encyption option");
+        case .omemo:
+            return NSLocalizedString("OMEMO", comment: "encryption option");
+        }
+    }
 }

@@ -21,6 +21,7 @@
 
 import UIKit
 import Combine
+import Shared
 
 class NotificationSettingsViewController: UITableViewController {
     

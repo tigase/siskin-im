@@ -49,8 +49,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //        RTCInitFieldTrialDictionary([:]);
         RTCInitializeSSL();
         //RTCSetupInternalTracer();
-        try! AccountManager.convertOldAccounts();
         try! AccountManager.initialize();
+        try! AccountManager.convertOldAccounts();
         
         switch Settings.appearance {
         case .light:

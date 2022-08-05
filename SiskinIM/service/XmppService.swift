@@ -235,20 +235,7 @@ open class XmppService {
     }
     
     private func connect(client: XMPPClient, for account: Account) {
-        client.connectionConfiguration.credentials = .password(password: account.password, authenticationName: nil, cache: nil);
-        client.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
-            if let acceptableCertificate = account.acceptedCertificate, acceptableCertificate.accepted, let fingerprint = acceptableCertificate.certificate.subject.fingerprints.first {
-                options.sslCertificateValidation = .fingerprint(fingerprint);
-            } else {
-                options.sslCertificateValidation = .default;
-            }
-            options.connectionDetails = account.serverEndpoint;
-            if let idx = options.networkProcessorProviders.firstIndex(where: { $0 is SSLProcessorProvider }) {
-                options.networkProcessorProviders.remove(at: idx);
-            }
-            options.networkProcessorProviders.append(account.disableTLS13 ? SSLProcessorProvider(supportedTlsVersions: TLSVersion.TLSv1_2...TLSVersion.TLSv1_2) : SSLProcessorProvider());
-        });
-
+        client.configure(for: account);
         client.connectionConfiguration.resource = UIDevice.current.name;
 //        switch account.resourceType {
 //        case .automatic:

@@ -148,12 +148,12 @@ class SetAccountSettingsController: UITableViewController {
                         try await MessageEventHandler.syncMessagePeriods(for: client);
                     }
                 } catch {
-                    await MainActor.run(body: {
-                        self.setInProgress(value: false);
-                        self.completionHandler?();
-                        NewFeaturesDetector.instance.showNext(fromController: true);
-                    })
                 }
+                await MainActor.run(body: {
+                    self.setInProgress(value: false);
+                    self.completionHandler?();
+                    NewFeaturesDetector.instance.showNext(fromController: true);
+                })
             }
         } else {
             completionHandler?();

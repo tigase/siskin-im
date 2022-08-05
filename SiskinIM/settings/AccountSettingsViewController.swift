@@ -22,6 +22,7 @@
 import UIKit
 import Martin
 import Combine
+import Shared
 
 class AccountSettingsViewController: UITableViewController {
     
@@ -339,7 +340,7 @@ class AccountSettingsViewController: UITableViewController {
     }
     
     func deleteAccount() {
-        guard let account = self.account, var config = AccountManager.account(for: account) else {
+        guard let account = self.account, let config = AccountManager.account(for: account) else {
             return;
         }
         

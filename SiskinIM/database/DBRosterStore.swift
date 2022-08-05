@@ -22,6 +22,7 @@
 import Foundation
 import Martin
 import TigaseSQLite3
+import Shared
 
 extension Query {
     static let rosterInsertItem = Query("INSERT INTO roster_items (account, jid, name, subscription, timestamp, ask, data) VALUES (:account, :jid, :name, :subscription, :timestamp, :ask, :data)");
@@ -221,13 +222,6 @@ open class DBRosterStore: RosterStore {
         }
     }
 
-}
-
-struct DBRosterData: Codable, DatabaseConvertibleStringValue {
-    
-    let groups: [String];
-    let annotations: [RosterItemAnnotation];
-        
 }
 
 public class RosterItem: Martin.RosterItemBase, Identifiable, Hashable {

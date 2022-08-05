@@ -20,7 +20,6 @@
 //
 
 import UIKit
-import Shared
 import Martin
 import TigaseSQLite3
 
@@ -98,7 +97,7 @@ open class AvatarStore {
         }
     }
 
-    func avatar(for hash: String, completionHandler: @escaping (Result<UIImage,XMPPError>)->Void) {
+    open func avatar(for hash: String, completionHandler: @escaping (Result<UIImage,XMPPError>)->Void) {
         queue.async {
             if let image = self.cache.object(forKey: hash as NSString) {
                 completionHandler(.success(image));
@@ -180,9 +179,13 @@ public struct AvatarHash: Comparable, Equatable {
     }
     
     
-    let type: AvatarType;
-    let hash: String;
+    public let type: AvatarType;
+    public let hash: String;
     
+    public init(type: AvatarType, hash: String) {
+        self.type = type
+        self.hash = hash
+    }
 }
 
 public enum AvatarType: String, Comparable {

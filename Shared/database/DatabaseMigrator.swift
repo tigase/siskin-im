@@ -122,7 +122,7 @@ CREATE INDEX chat_history_account_jid_correction_stanza_id on chat_history (acco
     }
     
     private func loadSchema(to database: DatabaseWriter, fromFile fileName: String) throws {
-        let resourcePath = Bundle.main.resourcePath! + fileName;
+        let resourcePath = Bundle(for: type(of: self)).resourcePath! + fileName;
         logger.debug("trying to load SQL from file \(resourcePath)");
         if let dbSchema = try? String(contentsOfFile: resourcePath, encoding: String.Encoding.utf8) {
             logger.debug("read schema: \(dbSchema)");

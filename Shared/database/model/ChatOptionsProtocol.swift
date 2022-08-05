@@ -1,8 +1,8 @@
 //
-// XMPPClient_extension.swift
+// ChatOptionsProtocol.swift
 //
 // Siskin IM
-// Copyright (C) 2021 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2022 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,10 +20,15 @@
 //
 
 import Foundation
-import Martin
+import TigaseSQLite3
 
-public class XMPPClient: Martin.XMPPClient {
+public protocol ConversationOptionsProtocol: DatabaseConvertibleStringValue {
     
-    var retryNo: Int = 0;
+    var notifications: ConversationNotification { get }
     
+    var confirmMessages: Bool { get }
+    
+    func equals(_ options: ChatOptionsProtocol) -> Bool
 }
+
+public typealias ChatOptionsProtocol = ConversationOptionsProtocol

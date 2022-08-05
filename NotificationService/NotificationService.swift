@@ -140,19 +140,6 @@ class NotificationService: UNNotificationServiceExtension {
 
 }
 
-extension Database {
-    
-    private static var mainReaderInstance: DatabaseReader?;
-    
-    static func mainReader() throws -> DatabaseReader {
-        if mainReaderInstance == nil {
-            mainReaderInstance = try Database(path: Database.mainDatabaseUrl().path, flags: SQLITE_OPEN_READONLY |  SQLITE_OPEN_NOMUTEX);
-        }
-        return mainReaderInstance!;
-    }
-    
-}
-
 extension Query {
     
     static let buddyName = Query("select name from roster_items where account = :account and jid = :jid");
@@ -164,40 +151,59 @@ extension Query {
 
 class ExtensionNotificationManagerProvider: NotificationManagerProvider {
     
-    static let GET_UNREAD_CHATS = "s";
+    private let avatarStore = AvatarStore();
     
     func avatar(on account: BareJID, for sender: BareJID) -> INImage? {
-        guard let hash = try? Database.mainReader().select(query: .findAvatar, params: ["account": account, "jid": sender]).mapFirst({ $0.string(for: "hash") }) else {
+        guard let hash = avatarStore.avatarHash(for: sender, on: account).sorted().first else {
             return nil;
         }
         
-        let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.siskinim.shared")!.appendingPathComponent("Library", isDirectory: true).appendingPathComponent("Caches", isDirectory: true).appendingPathComponent("avatars", isDirectory: true).appendingPathComponent(hash);
-        return UIImage(contentsOfFile: url.path)?.inImage();
+        return avatarStore.avatar(for: hash.hash)?.inImage();
     }
     
     func conversationNotificationDetails(for account: BareJID, with jid: BareJID) -> ConversationNotificationDetails {
-        let (type, options) = try! Database.mainReader().select(query: .conversationNotificationDetails, cached: false, params: ["account": account, "jid": jid]).mapFirst({ cursor -> (ConversationType, ConversationOptions) in
-            let type = ConversationType(rawValue: cursor.int(for: "type")!) ?? .chat;
-            let options: ConversationOptions = cursor.object(for: "options") ?? ConversationOptions();
-            
-            return (type, options);
-        }) ?? (.chat, ConversationOptions());
+        let options = try! Database.main.reader({ database in
+            return try database.select(query: .conversationNotificationDetails, cached: false, params: ["account": account, "jid": jid]).mapFirst({ cursor -> ConversationOptionsProtocol in
+                let type = ConversationType(rawValue: cursor.int(for: "type")!) ?? .chat;
+                switch type {
+                case .chat:
+                    let options: ChatOptions = cursor.object(for: "options") ?? ChatOptions();
+                    return options;
+                case .room:
+                    let options: RoomOptions
+                    = cursor.object(for: "options") ?? RoomOptions();
+                    return options;
+                case .channel:
+                    let options: ChannelOptions = cursor.object(for: "options")!;
+                    return options;
+                }
+            })
+        }) ?? ChatOptions();
         
-        switch type {
-        case .chat:
-            return ConversationNotificationDetails(name: try! Database.mainReader().select(query: .buddyName, cached: false, params: ["account": account, "jid": jid]).mapFirst({ $0.string(for: "name") }) ?? jid.description, notifications: options.notifications ?? .always, type: type, nick: nil);
-        case .channel, .room:
-            return ConversationNotificationDetails(name: options.name ?? jid.description, notifications: options.notifications ?? .always, type: type, nick: options.nick);
+        switch options {
+        case let options as ChatOptions:
+            let name = try! Database.main.reader({ database in
+                return try database.select(query: .buddyName, cached: false, params: ["account": account, "jid": jid]).mapFirst({ $0.string(for: "name") });
+            }) ?? jid.description;
+            return ConversationNotificationDetails(name: name, notifications: options.notifications, type: .chat, nick: nil);
+        case let options as RoomOptions:
+            return ConversationNotificationDetails(name: options.name ?? jid.description, notifications: options.notifications, type: .room, nick: options.nickname);
+        case let options as ChannelOptions:
+            return ConversationNotificationDetails(name: options.name ?? jid.description, notifications: options.notifications, type: .channel, nick: options.nick);
+        default:
+            fatalError("Unsupported conversation type");
         }
     }
     
     func countBadge(withThreadId: String?) async -> Int {
         var unreadChats = await NotificationsManagerHelper.unreadChatsThreadIds();
-        try? Database.mainReader().select(query: .listUnreadThreads, cached: false, params: []).mapAll({ cursor in
-            if let account = cursor.bareJid(for: "account"), let jid = cursor.bareJid(for: "jid") {
-                return "account=\(account.description)|sender=\(jid.description)"
-            }
-            return nil;
+        try? Database.main.reader({ database in
+            return try database.select(query: .listUnreadThreads, cached: false, params: []).mapAll({ cursor in
+                if let account = cursor.bareJid(for: "account"), let jid = cursor.bareJid(for: "jid") {
+                    return "account=\(account.description)|sender=\(jid.description)"
+                }
+                return nil;
+            })
         }).forEach({ unreadChats.insert($0) });
         
 
@@ -218,43 +224,43 @@ class Provider {
 
     
 }
-
-public struct ConversationOptions: Codable {
-    
-    var name: String?;
-    var nick: String?;
-    var notifications: ConversationNotification?;
-    
-    init(name: String? = nil, nick: String? = nil, notifications: ConversationNotification? = nil) {
-        self.name = name;
-        self.nick = nick;
-        self.notifications = notifications;
-    }
-    
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self);
-        name = try container.decodeIfPresent(String.self, forKey: .name);
-        nick = try container.decode(String.self, forKey: .nick);
-        if let notificationsString = try container.decodeIfPresent(String.self, forKey: .notifications) {
-            notifications = ConversationNotification(rawValue: notificationsString);
-        } else {
-            notifications = nil;
-        }
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self);
-        try container.encodeIfPresent(name, forKey: .name);
-        try container.encodeIfPresent(nick, forKey: .nick);
-        try container.encodeIfPresent(notifications?.rawValue, forKey: .notifications);
-    }
-    
-    enum CodingKeys: String, CodingKey {
-        case name = "name";
-        case notifications = "notifications";
-        case nick = "nick";
-    }
-
-}
+//
+//public struct ConversationOptions: Codable {
+//
+//    var name: String?;
+//    var nick: String?;
+//    var notifications: ConversationNotification?;
+//
+//    init(name: String? = nil, nick: String? = nil, notifications: ConversationNotification? = nil) {
+//        self.name = name;
+//        self.nick = nick;
+//        self.notifications = notifications;
+//    }
+//
+//    public init(from decoder: Decoder) throws {
+//        let container = try decoder.container(keyedBy: CodingKeys.self);
+//        name = try container.decodeIfPresent(String.self, forKey: .name);
+//        nick = try container.decode(String.self, forKey: .nick);
+//        if let notificationsString = try container.decodeIfPresent(String.self, forKey: .notifications) {
+//            notifications = ConversationNotification(rawValue: notificationsString);
+//        } else {
+//            notifications = nil;
+//        }
+//    }
+//
+//    public func encode(to encoder: Encoder) throws {
+//        var container = encoder.container(keyedBy: CodingKeys.self);
+//        try container.encodeIfPresent(name, forKey: .name);
+//        try container.encodeIfPresent(nick, forKey: .nick);
+//        try container.encodeIfPresent(notifications?.rawValue, forKey: .notifications);
+//    }
+//
+//    enum CodingKeys: String, CodingKey {
+//        case name = "name";
+//        case notifications = "notifications";
+//        case nick = "nick";
+//    }
+//
+//}
 
 

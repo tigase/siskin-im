@@ -1,8 +1,8 @@
 //
-// Database.swift
+// DBRosterData.swift
 //
 // Siskin IM
-// Copyright (C) 2016 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2022 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,26 +20,17 @@
 //
 
 import Foundation
-import TigaseSQLite3
 import Martin
-import TigaseLogging
+import TigaseSQLite3
 
-extension Database {
+public struct DBRosterData: Codable, DatabaseConvertibleStringValue {
     
-    static let main: DatabasePool = {
-        return try! DatabasePool(dbUrl: mainDatabaseUrl(), schemaMigrator: DatabaseMigrator());
-    }();
-    
-}
-
-extension DatabasePool {
-    
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "sqlite");
-    
-    convenience init(dbUrl: URL, schemaMigrator: DatabaseSchemaMigrator? = nil) throws {
-        try self.init(configuration: Configuration(path: dbUrl.path, schemaMigrator: schemaMigrator));
-        DatabasePool.logger.info("Initialized database: \(dbUrl.path)");
+    public let groups: [String];
+    public let annotations: [RosterItemAnnotation];
+        
+    public init(groups: [String], annotations: [RosterItemAnnotation]) {
+        self.groups = groups
+        self.annotations = annotations
     }
+    
 }
-
-

@@ -25,6 +25,7 @@ import MartinOMEMO
 import os
 import Combine
 import TigaseLogging
+import Shared
 
 class MessageEventHandler: XmppServiceExtension {
     

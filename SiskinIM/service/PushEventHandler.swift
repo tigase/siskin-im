@@ -23,6 +23,7 @@ import Foundation
 import Martin
 import Combine
 import TigaseLogging
+import Shared
 
 open class PushEventHandler: XmppServiceExtension {
     

@@ -22,26 +22,7 @@
 import UIKit
 import Martin
 import Combine
-
-enum ServerFeature: String, Codable {
-    case mam
-    case push
-    
-    public static func from(info: DiscoveryModule.DiscoveryInfoResult) -> [ServerFeature] {
-        return from(features: info.features);
-    }
-    
-    public static func from(features: [String]) -> [ServerFeature] {
-        var serverFeatures: [ServerFeature] = [];
-        if features.contains(MessageArchiveManagementModule.MAM_XMLNS) || features.contains(MessageArchiveManagementModule.MAM2_XMLNS) {
-            serverFeatures.append(.mam);
-        }
-        if features.contains(PushNotificationsModule.PUSH_NOTIFICATIONS_XMLNS) {
-            serverFeatures.append(.push);
-        }
-        return serverFeatures;
-    }
-}
+import Shared
 
 class NewFeaturesDetector: XmppServiceExtension {
     

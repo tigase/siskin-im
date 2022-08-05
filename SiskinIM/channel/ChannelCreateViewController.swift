@@ -21,6 +21,7 @@
 
 import UIKit
 import Martin
+import Shared
 
 class ChannelCreateViewController: UITableViewController, ChannelSelectAccountAndComponentControllerDelgate {
  

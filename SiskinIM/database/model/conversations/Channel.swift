@@ -117,36 +117,8 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
     public var debugDescription: String {
         return "Channel(account: \(account), jid: \(jid))";
     }
-        
-    public enum Feature: String, Codable, Sendable {
-        case avatar = "avatar"
-        case membersOnly = "members-only"
-        
-        public static func from(node nodeStr: String?) -> Feature? {
-            guard let node = nodeStr else {
-                return nil;
-            }
-            
-            switch node {
-            case "urn:xmpp:mix:nodes:allowed":
-                return .membersOnly;
-            case "urn:xmpp:avatar:metadata":
-                return .avatar;
-            default:
-                return nil;
-            }
-        }
-        
-        public init(from decoder: Decoder) throws {
-            self = Feature(rawValue: try decoder.singleValueContainer().decode(String.self))!
-        }
-        
-        public func encode(to encoder: Encoder) throws {
-            var container = encoder.singleValueContainer();
-            try container.encode(self.rawValue);
-        }
-        
-    }
+
+    typealias Feature = ChannelFeature;
     
     init(context: Context, channelJid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, options: ChannelOptions, creationTimestamp: Date) {
         self.creationTimestamp = creationTimestamp;
@@ -343,68 +315,6 @@ extension Channel: MixParticipantsProtocol {
         return withLock {
             return self.participantsStore.removeParticipant(withId: id);
         }
-    }
-}
-
-public struct ChannelOptions: Codable, ChatOptionsProtocol, Equatable {
-    
-    var participantId: String;
-    var nick: String?;
-    var name: String?;
-    var description: String?;
-    var state: ChannelState;
-    public var notifications: ConversationNotification = .always;
-    var features: Set<Channel.Feature> = [];
-    public var confirmMessages: Bool = true;
-    
-    public init(participantId: String, nick: String?, state: ChannelState) {
-        self.participantId = participantId;
-        self.nick = nick;
-        self.state = state;
-    }
-    
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self);
-        participantId = try container.decode(String.self, forKey: .participantId);
-        state = try container.decodeIfPresent(Int.self, forKey: .state).map({ ChannelState(rawValue: $0) ?? .joined }) ?? .joined;
-        nick = try container.decodeIfPresent(String.self, forKey: .nick);
-        name = try container.decodeIfPresent(String.self, forKey: .name);
-        description = try container.decodeIfPresent(String.self, forKey: .description);
-        notifications = ConversationNotification(rawValue: try container.decodeIfPresent(String.self, forKey: .notifications) ?? "") ?? .always;
-        features = try container.decodeIfPresent(Set<Channel.Feature>.self, forKey: .features) ?? [];
-        confirmMessages = try container.decodeIfPresent(Bool.self, forKey: .confirmMessages) ?? true;
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self);
-        try container.encode(participantId, forKey: .participantId);
-        try container.encode(state.rawValue, forKey: .state);
-        try container.encodeIfPresent(nick, forKey: .nick);
-        try container.encodeIfPresent(name, forKey: .name);
-        try container.encodeIfPresent(description, forKey: .description);
-        if notifications != .always {
-            try container.encode(notifications.rawValue, forKey: .notifications);
-        }
-        try container.encode(features, forKey: .features);
-        try container.encode(confirmMessages, forKey: .confirmMessages);
-    }
-    
-    public func equals(_ options: ChatOptionsProtocol) -> Bool {
-        guard let options = options as? ChannelOptions else {
-            return false;
-        }
-        return options == self;
-    }
-    
-    enum CodingKeys: String, CodingKey {
-        case participantId = "participantId"
-        case nick = "nick";
-        case state = "state"
-        case notifications = "notifications";
-        case name = "name";
-        case description = "desc";
-        case features = "features";
-        case confirmMessages = "confirmMessages";
     }
 }
 

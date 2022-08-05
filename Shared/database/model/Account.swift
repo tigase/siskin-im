@@ -24,7 +24,7 @@ import Combine
 import Martin
 import TigaseSQLite3
 
-struct Account {
+public struct Account {
 
     public var state = CurrentValueSubject<XMPPClient.State,Never>(.disconnected());
 
@@ -82,7 +82,7 @@ struct Account {
         public var disableTLS13: Bool;
         public var knownServerFeatures: [ServerFeature];
 
-        init() {
+        public init() {
             self.omemoDeviceId = nil
             self.acceptedCertificate = nil;
             self.nick = nil;
@@ -90,7 +90,7 @@ struct Account {
             self.knownServerFeatures = [];
         }
         
-        init(from decoder: Decoder) throws {
+        public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self);
             omemoDeviceId = try container.decodeIfPresent(UInt32.self, forKey: .omemoId);
             acceptedCertificate = try container.decodeIfPresent(AcceptableServerCertificate.self, forKey: .acceptedCertificate)
@@ -99,7 +99,7 @@ struct Account {
             knownServerFeatures = try container.decodeIfPresent([ServerFeature].self, forKey: .knownServerFeatures) ?? [];
         }
 
-        func encode(to encoder: Encoder) throws {
+        public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self);
             try container.encodeIfPresent(omemoDeviceId, forKey: .omemoId);
             try container.encodeIfPresent(acceptedCertificate, forKey: .acceptedCertificate);

@@ -22,6 +22,7 @@
 import UIKit
 import Martin
 import TigaseLogging
+import Shared
 
 class ChannelJoinViewController: UITableViewController {
     

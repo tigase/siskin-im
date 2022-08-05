@@ -22,6 +22,7 @@
 import UIKit
 import Martin
 import MartinOMEMO
+import Shared
 
 class OMEMOFingerprintsController: UITableViewController {
     

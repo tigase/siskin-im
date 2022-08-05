@@ -183,29 +183,6 @@ extension LastChatActivityType {
 
 typealias ConversationEncryption = ChatEncryption
 
-public enum ChatEncryption: String, Codable, CustomStringConvertible, Sendable {
-    case none = "none";
-    case omemo = "omemo";
-    
-    public var description: String {
-        switch self {
-        case .none:
-            return NSLocalizedString("None", comment: "encyption option");
-        case .omemo:
-            return NSLocalizedString("OMEMO", comment: "encryption option");
-        }
-    }
-}
-
-public protocol ChatOptionsProtocol: DatabaseConvertibleStringValue {
-    
-    var notifications: ConversationNotification { get }
-    
-    var confirmMessages: Bool { get }
-    
-    func equals(_ options: ChatOptionsProtocol) -> Bool
-}
-
 public struct ChatMarker: Hashable, Sendable {
     let sender: ConversationEntrySender;
     let timestamp: Date;

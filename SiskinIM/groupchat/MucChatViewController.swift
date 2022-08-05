@@ -23,6 +23,7 @@ import UIKit
 import Martin
 import MartinOMEMO
 import Combine
+import Shared
 
 class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar {
 
