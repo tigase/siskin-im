@@ -24,6 +24,8 @@ import UIKit
 import UserNotifications
 import Martin
 import Combine
+import SwiftUI
+import Shared
 
 class LabelWithInsets: UILabel {
     
@@ -128,21 +130,159 @@ class BadgedBarButtonItem: UIBarButtonItem {
     
 }
 
-class ChatsListViewController: UITableViewController {
+class ChatsListViewController: UITableViewController, UISearchResultsUpdating {
     
     @IBOutlet var addMucButton: UIBarButtonItem!
     @IBOutlet var settingsButton: BadgedBarButtonItem!;
     
     var dataSource: ChatsDataSource?;
+    var searchController: UISearchController?;
+    private let progressView: UIActivityIndicatorView = UIActivityIndicatorView(style: .large);
     
+    @available(iOS 14.0, *)
+    private var searchResultsView: SearchResultsView {
+        get {
+            return (searchController!.searchResultsController as! UIHostingController<SearchResultsView>).rootView
+
+        }
+        set {
+            (searchController!.searchResultsController as! UIHostingController<SearchResultsView>).rootView = newValue;
+        }
+    }
     private var cancellables: Set<AnyCancellable> = [];
     
     override func viewDidLoad() {
         dataSource = ChatsDataSource(controller: self);
         super.viewDidLoad();
         
+        if #available(iOS 14, *) {
+            progressView.hidesWhenStopped = true;
+            progressView.translatesAutoresizingMaskIntoConstraints = false;
+            progressView.color = UIColor.white;
+            self.view.addSubview(progressView);
+            NSLayoutConstraint.activate([
+                progressView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+                progressView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor)
+            ]);
+            searchController = UISearchController(searchResultsController: UIHostingController(rootView: SearchResultsView()));
+            searchController?.searchResultsUpdater = self;
+            searchController?.obscuresBackgroundDuringPresentation = true;
+            searchController?.showsSearchResultsController = true;
+            searchController?.searchBar.searchBarStyle = .prominent;
+            searchController?.hidesNavigationBarDuringPresentation = true;
+            searchController?.searchBar.isOpaque = false;
+            searchController?.searchBar.autocapitalizationType = .none;
+            searchController?.searchBar.autocorrectionType  = .no;
+            searchController?.searchBar.isTranslucent = true;
+            searchController?.searchBar.placeholder = NSLocalizedString("Chat with…", comment: "placeholder for text field to search for conversation to open")
+                        
+            navigationItem.searchController = searchController;
+            navigationItem.hidesSearchBarWhenScrolling = true;
+            searchResultsView.selection = { [weak self] selected in
+                self?.searchController?.searchBar.text = "";
+                self?.searchController?.dismiss(animated: true, completion: {
+                    guard let account = selected.account else {
+                        if let that = self {
+                            AccountSelectionView.selectAccount(parentController: that, completionHandler: { account in
+                                guard let client = XmppService.instance.getClient(for: account) else {
+                                    return;
+                                }
+                                that.progressView.startAnimating();
+                                Task {
+                                    do {
+                                        let result = try await client.module(.disco).info(for: selected.jid.jid());
+                                        that.progressView.stopAnimating();
+                                        if result.features.contains("urn:xmpp:mix:core:1") {
+                                            // this is MIX
+                                            if selected.jid.localPart == nil {
+                                                let navController = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelJoinNavigationViewController") as! UINavigationController;
+                                                (navController.visibleViewController as! ChannelSelectToJoinViewController).client = client;
+                                                (navController.visibleViewController as! ChannelSelectToJoinViewController).domain = selected.jid.domain;
+                                                
+                                                navController.modalPresentationStyle = .formSheet;
+                                                that.present(navController, animated: true)
+                                            } else {
+                                                let controller = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelJoinViewController") as! ChannelJoinViewController;
+                                                
+                                                controller.client = client;
+                                                controller.channelJid = selected.jid;
+                                                controller.componentType = .mix;
+                                                controller.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: controller, action: #selector(ChannelJoinViewController.cancelClicked(_:)));
+                                                
+                                                let navController = UINavigationController(rootViewController: controller);
+                                                navController.modalPresentationStyle = .formSheet;
+                                                that.present(navController, animated: true)
+                                            }
+                                        } else if result.features.contains("http://jabber.org/protocol/muc") {
+                                            // this is MUC
+                                            if selected.jid.localPart == nil {
+                                                let navController = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelJoinNavigationViewController") as! UINavigationController;
+                                                (navController.visibleViewController as! ChannelSelectToJoinViewController).client = client;
+                                                (navController.visibleViewController as! ChannelSelectToJoinViewController).domain = selected.jid.domain;
+                                                
+                                                navController.modalPresentationStyle = .formSheet;
+                                                that.present(navController, animated: true)
+                                            } else {
+                                                let controller = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelJoinViewController") as! ChannelJoinViewController;
+                                                
+                                                controller.client = XmppService.instance.getClient(for: account);
+                                                controller.channelJid = selected.jid;
+                                                controller.componentType = .muc;
+                                                controller.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: controller, action: #selector(ChannelJoinViewController.cancelClicked(_:)));
+                                                
+                                                let navController = UINavigationController(rootViewController: controller);
+                                                navController.modalPresentationStyle = .formSheet;
+                                                that.present(navController, animated: true)
+                                            }
+                                        } else {
+                                            // this is 1-1 if it supports any messaging
+                                            guard let conv = client.modulesManager.module(.message).chatManager.createChat(for: client, with: selected.jid) as? Conversation else {
+                                                return;
+                                            }
+                                            that.openConversation(conv);
+                                        }
+                                    } catch {
+                                        that.progressView.stopAnimating();
+                                    }
+                                }
+                            })
+                        }
+                        return;
+                    }
+                    guard let conv = DBChatStore.instance.conversation(for: account, with: selected.jid) else {
+                        guard let contact = selected.displayableId as? Contact else {
+                            guard let client = XmppService.instance.getClient(for: account), let conference = client.module(.pepBookmarks).currentBookmarks.conference(for: selected.jid.jid()) else {
+                                return;
+                            }
+                            
+                            let controller = UIStoryboard(name: "MIX", bundle: nil).instantiateViewController(withIdentifier: "ChannelJoinViewController") as! ChannelJoinViewController;
+                        
+                            controller.client = XmppService.instance.getClient(for: account);
+                            controller.channelJid = selected.jid;
+                            controller.nickname = conference.nick;
+                            controller.componentType = .muc;
+                            controller.password = conference.password;
+
+                            controller.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: controller, action: #selector(ChannelJoinViewController.cancelClicked(_:)));
+                            
+                            let navController = UINavigationController(rootViewController: controller);
+                            navController.modalPresentationStyle = .formSheet;
+                            self?.present(navController, animated: true)
+                            return;
+                        }
+                        guard let client = XmppService.instance.getClient(for: contact.account), let conv = client.modulesManager.module(.message).chatManager.createChat(for: client, with: contact.jid) as? Conversation else {
+                            return;
+                        }
+                        self?.openConversation(conv);
+                        return;
+                    }
+                    self?.openConversation(conv);
+                });
+            }
+        }
         tableView.dataSource = self;
         setColors();
+        updateNavBarColors();
 
         settingsButton.image = UIImage(systemName: "gear");
 //        XmppService.instance.$clients.combineLatest(XmppService.instance.$connectedClients).map({ (clients, connectedClients) -> Int in
@@ -154,6 +294,39 @@ class ChatsListViewController: UITableViewController {
         }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
             self?.settingsButton.setBadge(text: value == 0 ? nil : "\(value)")
         }).store(in: &cancellables);
+    }
+    
+    func updateSearchResults(for searchController: UISearchController) {
+        if #available(iOS 14.0, *) {
+            guard let query = searchController.searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(), !query.isEmpty else {
+                searchResultsView.conversations = [];
+                return;
+            }
+            
+            let conversations: [DisplayableIdWithKeyProtocol] = DBChatStore.instance.conversations.filter({ $0.displayName.lowercased().contains(query) || $0.jid.localPart?.lowercased().contains(query) ?? false || $0.jid.domain.lowercased().contains(query) });
+
+            var keys = Set(conversations.map({ Contact.Key(account: $0.account, jid: $0.jid, type: .buddy) }));
+                        
+            let contacts: [DisplayableIdWithKeyProtocol] = DBRosterStore.instance.items.filter({ $0.name?.lowercased().contains(query) ?? false || $0.jid.localPart?.lowercased().contains(query) ?? false || $0.jid.domain.lowercased().contains(query) }).compactMap({ item -> Contact? in
+            guard let account = item.context?.userBareJid, !keys.contains(.init(account: account, jid: item.jid.bareJid, type: .buddy)) else {
+                                return nil;
+                            }
+                return ContactManager.instance.contact(for: .init(account: account, jid: item.jid.bareJid, type: .buddy))
+            });
+                        
+            keys = Set(keys + contacts.map({ Contact.Key(account: $0.account, jid: $0.jid, type: .buddy) }));
+                    
+            let bookmarks = XmppService.instance.clients.values.flatMap({ client in client.module(.pepBookmarks).currentBookmarks.items.compactMap({ $0 as? Bookmarks.Conference }).filter({ $0.name?.lowercased().contains(query) ?? false || $0.jid.localPart?.lowercased().contains(query) ?? false || $0.jid.domain.lowercased().contains(query) }).filter({ !keys.contains(.init(account: client.userBareJid, jid: $0.jid.bareJid, type: .buddy)) }).map({ ConversationSearchResult(jid: $0.jid.bareJid, account: client.userBareJid, name: String.localizedStringWithFormat(NSLocalizedString("Join %@", comment: "action join bookmark item"), $0.name ?? $0.jid.description), displayableId: nil) }) });
+                        
+                        
+            var items: [ConversationSearchResult] = ((contacts + conversations).map({ ConversationSearchResult(jid: $0.jid, account: $0.account, name: $0.displayName, displayableId: $0) }) + bookmarks).sorted(by: { c1, c2 -> Bool in c1.name.lowercased() < c2.name.lowercased() })
+                        
+//            if !closedSuggestionsList {
+            items.append(ConversationSearchResult(jid: BareJID(query), account: nil, name: query, displayableId: nil));
+//            }
+                        
+            searchResultsView.conversations = items;
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -224,8 +397,20 @@ class ChatsListViewController: UITableViewController {
         appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialDark);
         navigationController?.navigationBar.standardAppearance = appearance;
         navigationController?.navigationBar.scrollEdgeAppearance = appearance;
+        searchController?.searchBar.barStyle = .black;
+        searchController?.searchBar.tintColor = UIColor.white;
         navigationController?.navigationBar.barTintColor = UIColor(named: "chatslistBackground");
         navigationController?.navigationBar.tintColor = UIColor.white;
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection);
+        updateNavBarColors();
+    }
+    
+    func updateNavBarColors() {
+        searchController?.searchBar.searchTextField.textColor = UIColor.white;
+        searchController?.searchBar.searchTextField.backgroundColor = (self.traitCollection.userInterfaceStyle != .dark ? UIColor.black : UIColor.white).withAlphaComponent(0.2);
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -473,6 +658,11 @@ class ChatsListViewController: UITableViewController {
         guard let item = dataSource!.item(at: indexPath)?.chat else {
             return;
         }
+        
+        openConversation(item);
+    }
+    
+    private func openConversation(_ item: Conversation) {
         var identifier: String!;
         var controller: UIViewController? = nil;
         switch item {
@@ -534,19 +724,6 @@ class ChatsListViewController: UITableViewController {
         controller.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
         
         self.present(controller, animated: true, completion: nil);
-    }
-    
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection);
-//        if #available(iOS 13.0, *) {
-//            let changed = previousTraitCollection?.hasDifferentColorAppearance(comparedTo: traitCollection) ?? false;
-//            
-//            let subtype: Appearance.SubColorType = traitCollection.userInterfaceStyle == .dark ? .dark : .light;
-//            let colorType = Appearance.current.colorType;
-//            Appearance.current = Appearance.values.first(where: { (item) -> Bool in
-//                return item.colorType == colorType && item.subtype == subtype;
-//            })
-//        }
     }
     
     fileprivate func closeBaseChatView(for account: BareJID, jid: BareJID) {

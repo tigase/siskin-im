@@ -106,13 +106,64 @@ class AvatarView: UIImageView {
             return nil;
         }
         
-        UIGraphicsBeginImageContextWithOptions(size, false, scale);
+        return UIImage.withInitials(text, size: size);
+//        UIGraphicsBeginImageContextWithOptions(size, false, scale);
+//        guard let ctx = UIGraphicsGetCurrentContext() else {
+//            UIGraphicsEndImageContext();
+//            return nil;
+//        }
+//        let path = CGPath(ellipseIn: self.bounds, transform: nil);
+//        ctx.addPath(path);
+//
+//        let colors = [UIColor.systemGray.adjust(brightness: 0.52).cgColor, UIColor.systemGray.adjust(brightness: 0.48).cgColor];
+//        let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors as CFArray, locations: [0.0, 1.0])!;
+//        ctx.drawLinearGradient(gradient, start: CGPoint.zero, end: CGPoint(x: 0, y: size.height), options: []);
+////        ctx.setFillColor(UIColor.systemGray.cgColor);
+////        ctx.fill(CGRect(x: 0, y: 0, width: size.width, height: size.height));
+//
+//        let textAttr: [NSAttributedString.Key: Any] = [.foregroundColor: UIColor.white.withAlphaComponent(0.9), .font: UIFont.systemFont(ofSize: size.width * 0.4, weight: .medium)];
+//        let textSize = text.size(withAttributes: textAttr);
+//
+//        text.draw(in: CGRect(x: size.width/2 - textSize.width/2, y: size.height/2 - textSize.height/2, width: textSize.width, height: textSize.height), withAttributes: textAttr);
+//
+//        let image = UIGraphicsGetImageFromCurrentImageContext();
+//        UIGraphicsEndImageContext();
+//
+//        return image;
+    }
+    
+}
+
+extension String {
+    
+    var initials: String? {
+        let parts = self.uppercased().components(separatedBy: CharacterSet.letters.inverted);
+        guard let first = parts.first?.first else {
+            return nil;
+        }
+        guard let last = parts.count > 1 ? parts.last?.first : nil else {
+            return "\(first)";
+        }
+        
+        return "\(first)\(last)";
+    }
+    
+}
+
+extension UIImage {
+    
+    static func withInitials(_ text: String?, size: CGSize) -> UIImage? {
+        guard let text, size.width > 0 && size.height > 0 else {
+            return nil;
+        }
+        
+        UIGraphicsBeginImageContext(size);
         guard let ctx = UIGraphicsGetCurrentContext() else {
             UIGraphicsEndImageContext();
             return nil;
         }
-        let path = CGPath(ellipseIn: self.bounds, transform: nil);
-        ctx.addPath(path);
+//        let path = CGPath(ellipseIn: self.bounds, transform: nil);
+//        ctx.addPath(path);
                 
         let colors = [UIColor.systemGray.adjust(brightness: 0.52).cgColor, UIColor.systemGray.adjust(brightness: 0.48).cgColor];
         let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors as CFArray, locations: [0.0, 1.0])!;

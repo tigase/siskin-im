@@ -151,6 +151,9 @@
    presence status */
 "Chat" = "Chat";
 
+/* placeholder for text field to search for conversation to open */
+"Chat with…" = "Chat con…";
+
 /* channel create view operation label
    channel join view operation label
    channel settings view opeartion label */
@@ -501,6 +504,9 @@
 
 /* button label */
 "Join" = "Unirse";
+
+/* action join bookmark item */
+"Join %@" = "Unirse a %@";
 
 /* label for chats list new converation action */
 "Join group chat" = "Unirse al grupo";
@@ -881,6 +887,9 @@
 
 /* placeholder */
 "Search to add…" = "Buscar para añadir…";
+
+/* ask user to select acount */
+"Select account" = "Seleccionar cuenta";
 
 /* alert body */
 "Select account to open chat from" = "Seleccionar cuenta desde la que abrir el chat";

@@ -10,6 +10,8 @@
 		FE00157D2017617B00490340 /* StreamFeaturesCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE00157C2017617B00490340 /* StreamFeaturesCache.swift */; };
 		FE00157F2019090300490340 /* ExperimentalSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE00157E2019090300490340 /* ExperimentalSettingsViewController.swift */; };
 		FE01ADA91E224CF400FA7E65 /* SiskinPushNotificationsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE01ADA81E224CF400FA7E65 /* SiskinPushNotificationsModule.swift */; };
+		FE05ADBE289FC845008BC5D9 /* SearchResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE05ADBD289FC845008BC5D9 /* SearchResultsView.swift */; };
+		FE05ADC028A137CD008BC5D9 /* AccountSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE05ADBF28A137CD008BC5D9 /* AccountSelectionView.swift */; };
 		FE0AE0B426A9DD6D0010D2E2 /* SetAccountSettingsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0AE0B326A9DD6D0010D2E2 /* SetAccountSettingsController.swift */; };
 		FE0AE0B626AED7870010D2E2 /* GetInTouchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0AE0B526AED7870010D2E2 /* GetInTouchViewController.swift */; };
 		FE0AE13526B575820010D2E2 /* MeetController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0AE13426B575820010D2E2 /* MeetController.swift */; };
@@ -350,6 +352,8 @@
 		FE00157C2017617B00490340 /* StreamFeaturesCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamFeaturesCache.swift; sourceTree = "<group>"; };
 		FE00157E2019090300490340 /* ExperimentalSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperimentalSettingsViewController.swift; sourceTree = "<group>"; };
 		FE01ADA81E224CF400FA7E65 /* SiskinPushNotificationsModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SiskinPushNotificationsModule.swift; sourceTree = "<group>"; };
+		FE05ADBD289FC845008BC5D9 /* SearchResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultsView.swift; sourceTree = "<group>"; };
+		FE05ADBF28A137CD008BC5D9 /* AccountSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSelectionView.swift; sourceTree = "<group>"; };
 		FE0691FC27F4D69F004E341E /* .bartycrouch.toml */ = {isa = PBXFileReference; lastKnownFileType = text; path = .bartycrouch.toml; sourceTree = "<group>"; };
 		FE0691FE27F4D84B004E341E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/Groupchat.strings; sourceTree = "<group>"; };
 		FE06920027F4D8D8004E341E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/VoIP.strings; sourceTree = "<group>"; };
@@ -940,6 +944,7 @@
 				FE4A94A926679D65000A96E5 /* EnumTableViewCell.swift */,
 				FE82A728268C83020049C844 /* ChartView.swift */,
 				FE0AE0B526AED7870010D2E2 /* GetInTouchViewController.swift */,
+				FE05ADBF28A137CD008BC5D9 /* AccountSelectionView.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -1266,6 +1271,7 @@
 			children = (
 				FE5079FE1CDB7B3B001A015C /* ChatsListTableViewCell.swift */,
 				FE5079FF1CDB7B3B001A015C /* ChatsListViewController.swift */,
+				FE05ADBD289FC845008BC5D9 /* SearchResultsView.swift */,
 			);
 			path = chats;
 			sourceTree = "<group>";
@@ -1693,6 +1699,7 @@
 				FECEF29E23B7C390007EC323 /* AttachmentChatTableViewCell.swift in Sources */,
 				FED353892270C1D000B69C53 /* DBOMEMOStore.swift in Sources */,
 				FEF97CE62875EA0B008CF411 /* XMPPError+LocalizedError.swift in Sources */,
+				FE05ADBE289FC845008BC5D9 /* SearchResultsView.swift in Sources */,
 				FE8DD9C5221B153A0090F5AA /* InviteViewController.swift in Sources */,
 				FEB5EC9D1F6AE448007FE0E7 /* BaseChatViewControllerWithDataSourceContextMenuAndToolbar.swift in Sources */,
 				FEE9608A22F191980009B191 /* MucChatSettingsViewController.swift in Sources */,
@@ -1769,6 +1776,7 @@
 				FE11D35C26623D6D00CC883F /* Room.swift in Sources */,
 				FEC79195241ABEF4007BE572 /* MessageState.swift in Sources */,
 				FE719E7C22730DC3007CEEC9 /* OMEMOIdentityTableViewCell.swift in Sources */,
+				FE05ADC028A137CD008BC5D9 /* AccountSelectionView.swift in Sources */,
 				FEDE93901D09BB8300CA60A9 /* VCardEditPhoneTableViewCell.swift in Sources */,
 				FE507A221CDB7B3B001A015C /* AvatarStatusView.swift in Sources */,
 				FE719E782271B439007CEEC9 /* MessageEncryption.swift in Sources */,
