@@ -21,8 +21,9 @@
 
 import Foundation
 import Martin
+import TigaseSQLite3
 
-extension SocketConnectorNetwork.Endpoint: Codable {
+extension SocketConnectorNetwork.Endpoint: Codable, DatabaseConvertibleStringValue {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self);

@@ -27,6 +27,7 @@ import MartinOMEMO
 import Combine
 import Shared
 import TigaseLogging
+import CryptoKit
 
 extension Presence.Show: Codable {
     
@@ -226,7 +227,7 @@ open class XmppService {
     
     private func reconnect(client: XMPPClient, ignoreCheck: Bool = false) {
         self.queue.async {
-            guard client.state == .disconnected(), let account = AccountManager.account(for: client.userBareJid), account.enabled, ignoreCheck || self.status.shouldConnect  else {
+            guard client.state == .disconnected(), let account = AccountManager.account(for: client.userBareJid), account.enabled, ignoreCheck || self.expectedStatus.value.shouldConnect  else {
                 return;
             }
             
@@ -237,6 +238,8 @@ open class XmppService {
     private func connect(client: XMPPClient, for account: Account) {
         client.configure(for: account);
         client.connectionConfiguration.resource = UIDevice.current.name;
+        client.module(.sasl2).deviceName = UIDevice.current.name;
+        client.module(.sasl2).deviceId = SHA256.hash(toHex: UIDevice.current.name, using: .utf8);
 //        switch account.resourceType {
 //        case .automatic:
 //            client.connectionConfiguration.resource = nil;
@@ -273,7 +276,7 @@ open class XmppService {
         }
         
         
-        guard self.status.shouldConnect else {
+        guard self.expectedStatus.value.shouldConnect else {
             return;
         }
         
@@ -420,8 +423,10 @@ open class XmppService {
 
         _ = client.modulesManager.register(AuthModule());
         _ = client.modulesManager.register(StreamFeaturesModule());
-        _ = client.modulesManager.register(StreamManagementModule(maxResumptionTimeout: 90));
+        _ = client.modulesManager.register(StreamManagementModule(mode: .resumption, maxResumptionTimeout: 90));
         _ = client.modulesManager.register(SaslModule());
+        let sasl2 = client.modulesManager.register(Sasl2Module());
+        sasl2.software = Bundle.main.infoDictionary!["CFBundleName"] as! String;
         // if you do not want Pipelining you may use StreamFeaturesModule instead StreamFeaturesModuleWithPipelining
         //_ = client.modulesManager.register(StreamFeaturesModule());
         _ = client.modulesManager.register(ResourceBinderModule());
@@ -442,6 +447,8 @@ open class XmppService {
         _ = client.modulesManager.register(PEPUserAvatarModule());
         _ = client.modulesManager.register(PEPBookmarksModule());
 
+        _ = client.modulesManager.register(HttpFileUploadModule());
+
         let messageModule = MessageModule(chatManager: ChatManagerBase(store: DBChatStore.instance));
         _ = client.modulesManager.register(messageModule);
 
@@ -450,8 +457,6 @@ open class XmppService {
 
         _ = client.modulesManager.register(MessageDeliveryReceiptsModule()).sendReceived = false;
         _ = client.modulesManager.register(ChatMarkersModule());
-
-        _ = client.modulesManager.register(HttpFileUploadModule());
 
         _ = client.modulesManager.register(PresenceModule(store: PresenceStore.instance));
         client.modulesManager.register(CapabilitiesModule(cache: DBCapabilitiesCache.instance, additionalFeatures: [.lastMessageCorrection, .messageRetraction]));
@@ -522,7 +527,7 @@ open class XmppService {
                         account.enabled = false;
                         account.acceptedCertificate = AcceptableServerCertificate(certificate: certData, accepted: false);
                     })
-                    NotificationCenter.default.post(name: XmppService.SERVER_CERTIFICATE_ERROR, object: client.userBareJid, userInfo: ["account": client.userBareJid.description, "cert-name": certData.subject.name, "cert-hash-sha1": certData.subject.fingerprints.first as Any, "issuer-name": certData.issuer?.name as Any, "issuer-hash-sha1": certData.issuer?.fingerprints.first as Any]);
+                    NotificationCenter.default.post(name: XmppService.SERVER_CERTIFICATE_ERROR, object: client.userBareJid, userInfo: ["account": client.userBareJid.description, "cert-name": certData.subject.name, "cert-hash-sha1": certData.subject.fingerprints.first?.value as Any, "issuer-name": certData.issuer?.name as Any, "issuer-hash-sha1": certData.issuer?.fingerprints.first?.value as Any]);
                 }
             case .authenticationFailure(let err):
                 if let error = err as? SaslError {
