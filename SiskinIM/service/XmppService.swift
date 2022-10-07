@@ -221,7 +221,7 @@ open class XmppService {
     
     private func reconnect(client: XMPPClient, ignoreCheck: Bool = false) {
         self.dispatcher.sync {
-            guard client.state == .disconnected(), let account = AccountManager.getAccount(for: client.userBareJid), account.active, ignoreCheck || self.status.shouldConnect  else {
+            guard client.state == .disconnected(), let account = AccountManager.getAccount(for: client.userBareJid), account.active, ignoreCheck || self.expectedStatus.value.shouldConnect  else {
                 return;
             }
             
@@ -289,7 +289,7 @@ open class XmppService {
         }
         
         
-        guard self.status.shouldConnect else {
+        guard self.expectedStatus.value.shouldConnect else {
             return;
         }
         let retry = client.retryNo;
@@ -456,6 +456,8 @@ open class XmppService {
         _ = client.modulesManager.register(PubSubModule());
         _ = client.modulesManager.register(PEPUserAvatarModule());
         _ = client.modulesManager.register(PEPBookmarksModule());
+        
+        _ = client.modulesManager.register(HttpFileUploadModule());
 
         let messageModule = MessageModule(chatManager: ChatManagerBase(store: DBChatStore.instance));
         _ = client.modulesManager.register(messageModule);
@@ -465,8 +467,6 @@ open class XmppService {
 
         _ = client.modulesManager.register(MessageDeliveryReceiptsModule()).sendReceived = false;
         _ = client.modulesManager.register(ChatMarkersModule());
-
-        _ = client.modulesManager.register(HttpFileUploadModule());
 
         _ = client.modulesManager.register(PresenceModule(store: PresenceStore.instance));
         client.modulesManager.register(CapabilitiesModule(cache: DBCapabilitiesCache.instance, additionalFeatures: [.lastMessageCorrection, .messageRetraction]));
