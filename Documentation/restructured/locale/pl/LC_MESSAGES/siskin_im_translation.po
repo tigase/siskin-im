@@ -8,14 +8,127 @@ msgid ""
 msgstr ""
 "Project-Id-Version: TigaseDoc \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-07 12:13-0700\n"
+"POT-Creation-Date: 2022-08-04 16:54-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.9.1\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: ../../Advanced_Options.rst:2
+msgid "Advanced Options"
+msgstr ""
+
+#: ../../Advanced_Options.rst:4
+msgid ""
+"This section contains information about advanced settings and options "
+"that are available to the application, but may not be typically "
+"considered for users."
+msgstr ""
+
+#: ../../Advanced_Options.rst:7
+msgid "Account Settings"
+msgstr ""
+
+#: ../../Advanced_Options.rst:9
+msgid ""
+"For each connected account, there are sever-specific settings that are "
+"available. This may be brought up by selecting More…​ and then choosing "
+"the account you wish to edit."
+msgstr ""
+
+#: ../../Advanced_Options.rst:11
+msgid "|images/acctsetting|"
+msgstr ""
+
+#: ../../Advanced_Options.rst:44
+msgid "images/acctsetting"
+msgstr ""
+
+#: ../../Advanced_Options.rst:13 ../../Tigase_Messenger_iOS.rst:238
+msgid "**General**"
+msgstr ""
+
+#: ../../Advanced_Options.rst
+msgid "Enabled:"
+msgstr ""
+
+#: ../../Advanced_Options.rst
+msgid ""
+"Whether or not to enable this account. If it is disabled, it will be "
+"considered unavailable and offline."
+msgstr ""
+
+#: ../../Advanced_Options.rst:20
+msgid "Push notifications will not work if the account is disabled!"
+msgstr ""
+
+#: ../../Advanced_Options.rst
+msgid "Change account settings:"
+msgstr ""
+
+#: ../../Advanced_Options.rst
+msgid "This screen allows changing of the account password if needed."
+msgstr ""
+
+#: ../../Advanced_Options.rst:25
+msgid ""
+"**Push Notifications** Tigase Messenger for iOS supports `XEP-0357 Push "
+"Notifications <https://xmpp.org/extensions/xep-0357.html>`__ which will "
+"receive notifications when a device may be inactive, or the application "
+"is closed by the system. Devices must be registered for push "
+"notifications and must register them VIA the Tigase XMPP Push Component, "
+"enabling push components will register the device you are using."
+msgstr ""
+
+#: ../../Advanced_Options.rst
+msgid ""
+"Enables Push notification support. Enabling this will register the "
+"device, and enable notifcations."
+msgstr ""
+
+#: ../../Advanced_Options.rst
+msgid "When in Away/XA/DND state:"
+msgstr ""
+
+#: ../../Advanced_Options.rst
+msgid ""
+"When enabled, push notifications will be delivered when in Away, Extended"
+" away, or Do not disturb statuses which may exist while the device is "
+"inactive."
+msgstr ""
+
+#: ../../Advanced_Options.rst:33
+msgid "**Message Archiving**"
+msgstr ""
+
+#: ../../Advanced_Options.rst
+msgid ""
+"Enabling this will allow the device to use the server’s message archive "
+"component. This will allow storage and retrieval of messages."
+msgstr ""
+
+#: ../../Advanced_Options.rst
+msgid "Automatic synchronization:"
+msgstr ""
+
+#: ../../Advanced_Options.rst
+msgid ""
+"If this is enabled, it will synchronize with the server upon connection, "
+"sharing and retrieving message history."
+msgstr ""
+
+#: ../../Advanced_Options.rst
+msgid "Synchronization:"
+msgstr ""
+
+#: ../../Advanced_Options.rst
+msgid ""
+"Choose the level of synchronization that the device will retrieve and "
+"send to the server."
+msgstr ""
 
 #: ../../Tigase_Messenger_iOS.rst:2
 msgid "Tigase Messenger for iOS Interface"
@@ -689,10 +802,6 @@ msgstr ""
 msgid "Whether or not to display contacts that are added to the \"hidden\" group."
 msgstr ""
 
-#: ../../Tigase_Messenger_iOS.rst:238
-msgid "**General**"
-msgstr ""
-
 #: ../../Tigase_Messenger_iOS.rst
 msgid "Auto-authorize contacts:"
 msgstr ""
@@ -714,5 +823,255 @@ msgid ""
 "server administrators) will not be sent to the native notification "
 "section of the device. Instead, you will have to see them under the "
 "Recent menu."
+msgstr ""
+
+#: ../../Welcome.rst:2
+msgid "Welcome"
+msgstr ""
+
+#: ../../Welcome.rst:4
+msgid "Welcome to the documentation for Tigase Messenger for iOS."
+msgstr ""
+
+#: ../../Welcome.rst:7
+msgid "Minimum Requirements"
+msgstr ""
+
+#: ../../Welcome.rst:9
+msgid ""
+"Tigase Messenger for iOS requires an apple device running iOS v10 or "
+"later. Compatible devices are listed below:"
+msgstr ""
+
+#: ../../Welcome.rst:11
+msgid "**iPhone**"
+msgstr ""
+
+#: ../../Welcome.rst:12
+msgid "- iPhone 5"
+msgstr ""
+
+#: ../../Welcome.rst:13
+msgid "- iPhone 5C"
+msgstr ""
+
+#: ../../Welcome.rst:14
+msgid "- iPhone 5S"
+msgstr ""
+
+#: ../../Welcome.rst:15
+msgid "- iPhone 6"
+msgstr ""
+
+#: ../../Welcome.rst:16
+msgid "- iPhone 6 Plus"
+msgstr ""
+
+#: ../../Welcome.rst:17
+msgid "- iPhone 6S"
+msgstr ""
+
+#: ../../Welcome.rst:18
+msgid "- iPhone 6S Plus"
+msgstr ""
+
+#: ../../Welcome.rst:19
+msgid "- iPhone 7"
+msgstr ""
+
+#: ../../Welcome.rst:20
+msgid "- iPhone 7 Plus"
+msgstr ""
+
+#: ../../Welcome.rst:21
+msgid "- iPhone SE"
+msgstr ""
+
+#: ../../Welcome.rst:23
+msgid "**iPod Touch**"
+msgstr ""
+
+#: ../../Welcome.rst:24
+msgid "- iPod Touch (6th generation)"
+msgstr ""
+
+#: ../../Welcome.rst:26
+msgid "**iPad**"
+msgstr ""
+
+#: ../../Welcome.rst:27
+msgid "- iPad (4th generation)"
+msgstr ""
+
+#: ../../Welcome.rst:28
+msgid "- iPad (5th generation)"
+msgstr ""
+
+#: ../../Welcome.rst:29
+msgid "- iPad Air"
+msgstr ""
+
+#: ../../Welcome.rst:30
+msgid "- iPad Air 2"
+msgstr ""
+
+#: ../../Welcome.rst:31
+msgid "- iPad Mini 2"
+msgstr ""
+
+#: ../../Welcome.rst:32
+msgid "- iPad Mini 3"
+msgstr ""
+
+#: ../../Welcome.rst:33
+msgid "- iPad Mini 4"
+msgstr ""
+
+#: ../../Welcome.rst:34
+msgid "- iPad Pro"
+msgstr ""
+
+#: ../../Welcome.rst:37
+msgid "Installation"
+msgstr ""
+
+#: ../../Welcome.rst:39
+msgid ""
+"Tigase Messenger for iOS can be installed the same way any apple approved"
+" app can be found: through the appstore. Search for Tigase in the store "
+"search function and then tap install and follow the prompts to install "
+"Tigase Messenger."
+msgstr ""
+
+#: ../../Welcome.rst:42
+msgid "Account Setup"
+msgstr ""
+
+#: ../../Welcome.rst:44
+msgid ""
+"Upon running Tigase Messenger for iOS for the first time, you will be "
+"greeted with the following screen:"
+msgstr ""
+
+#: ../../Welcome.rst:46
+msgid "|images/home|"
+msgstr ""
+
+#: ../../Welcome.rst:88
+msgid "images/home"
+msgstr ""
+
+#: ../../Welcome.rst:48
+msgid ""
+"Your options are to `register <#reg>`__ for a new account, or to use an "
+"`existing <#existing>`__ account."
+msgstr ""
+
+#: ../../Welcome.rst:50
+msgid "**Registering for a New Account**"
+msgstr ""
+
+#: ../../Welcome.rst:52
+msgid ""
+"The application supports creating a new account registration using in-"
+"band registration. This means that on servers supporting it, you can sign"
+" up for a new account straight from the client! A list of servers that "
+"support this is located `here <https://list.jabber.at/>`__. We have "
+"provided quick-links to Tigase maintained servers where you can register "
+"an account. However, you may use another domain if you wish. If you wish "
+"to use a custom domain, enter the domain address in the top bar, the "
+"application will then check with the server to ensure registration is "
+"supported."
+msgstr ""
+
+#: ../../Welcome.rst:54
+msgid "You will be presented with an error message if it is not supported."
+msgstr ""
+
+#: ../../Welcome.rst:56
+msgid "|images/regfailure|"
+msgstr ""
+
+#: ../../Welcome.rst:89
+msgid "images/regfailure"
+msgstr ""
+
+#: ../../Welcome.rst:58
+msgid "If registration is supported, you will see the following prompts:"
+msgstr ""
+
+#: ../../Welcome.rst:60
+msgid "|images/registernew|"
+msgstr ""
+
+#: ../../Welcome.rst:90
+msgid "images/registernew"
+msgstr ""
+
+#: ../../Welcome.rst:62
+msgid ""
+"Fill out the fields for username, password, and E-mail. You do not need "
+"to add the domain to your username, it will be added for you so your JID "
+"will look like ``yourusername@domain.com``"
+msgstr ""
+
+#: ../../Welcome.rst:64
+msgid ""
+"An E-mail is required in case a server administrator needs to get in "
+"contact with you, or you lose your password and might need recovery."
+msgstr ""
+
+#: ../../Welcome.rst:66
+msgid ""
+"Once you tap Register, the application will connect and register your "
+"account with the server."
+msgstr ""
+
+#: ../../Welcome.rst:68
+msgid "**Use an Existing Account**"
+msgstr ""
+
+#: ../../Welcome.rst:70
+msgid ""
+"If you already have an XMPP account on a server, select this option to "
+"login using Tigase Messenger for iOS. Enter your username and password as"
+" normal and tap Save to add the account."
+msgstr ""
+
+#: ../../Welcome.rst:74
+msgid ""
+"Your device name will serve as the resource for your account. iPad or "
+"iPhone will automatically be used as the resource."
+msgstr ""
+
+#: ../../Welcome.rst:77
+msgid "Certificate Errors"
+msgstr ""
+
+#: ../../Welcome.rst:79
+msgid ""
+"You may receive certificate errors from servers that may not have "
+"certificate chains installed, invalid, or expired certificates. You will "
+"receive an unable to connect to server error, however servers with these "
+"errors will ask the user to accept or deny these security exceptions but "
+"they will show up at system notifications."
+msgstr ""
+
+#: ../../Welcome.rst:81
+msgid "After doing so you may reattempt the connection to the server."
+msgstr ""
+
+#: ../../Welcome.rst:84
+msgid "Final Steps"
+msgstr ""
+
+#: ../../Welcome.rst:86
+msgid ""
+"Once your account is verified, the application will log you in as online "
+"and display the recent screen."
+msgstr ""
+
+#: ../../index.rst:4
+msgid "Tigase Messenger for iOS - Version 1.0"
 msgstr ""
 
