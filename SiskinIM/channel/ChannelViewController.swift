@@ -55,6 +55,9 @@ class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             self?.navigationItem.rightBarButtonItem?.isEnabled = options.state == .joined;
         }).store(in: &cancellables);
         channel.displayNamePublisher.map({ $0 }).assign(to: \.name, on: self.titleView).store(in: &cancellables);
+        channel.avatarPublisher.combineLatest(channel.displayNamePublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] avatar, name in
+            self?.titleView.avatarView.set(name: nil, avatar: avatar ?? AvatarManager.instance.defaultGroupchatAvatar);
+        }).store(in: &cancellables);
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -136,6 +139,7 @@ class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
 
 class ChannelTitleView: UIView {
     
+    @IBOutlet var avatarView: AvatarView!;
     @IBOutlet var nameView: UILabel!;
     @IBOutlet var statusView: UILabel!;
     
@@ -155,7 +159,7 @@ class ChannelTitleView: UIView {
     override func didMoveToSuperview() {
         super.didMoveToSuperview();
         if let superview = self.superview {
-            NSLayoutConstraint.activate([ self.widthAnchor.constraint(lessThanOrEqualTo: superview.widthAnchor, multiplier: 0.6)]);
+            NSLayoutConstraint.activate([ self.widthAnchor.constraint(lessThanOrEqualTo: superview.widthAnchor, multiplier: 1.0)]);
         }
     }
         

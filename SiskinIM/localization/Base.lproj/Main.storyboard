@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="vAU-gJ-Tx3">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="vAU-gJ-Tx3">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -29,20 +29,20 @@
                         <color key="backgroundColor" name="chatslistBackground"/>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="ChatsListTableViewCellNew" id="0IJ-1b-Ma3" customClass="ChatsListTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="44.5" width="414" height="60"/>
+                                <rect key="frame" x="0.0" y="50" width="414" height="60"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <tableViewCellContentView key="contentView" multipleTouchEnabled="YES" contentMode="center" tableViewCell="0IJ-1b-Ma3" id="f45-bS-0LJ">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="60"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="T3U-9K-htv">
-                                            <rect key="frame" x="66" y="10" width="338" height="40"/>
+                                            <rect key="frame" x="66" y="7.5" width="338" height="45"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="LO5-5f-Vfd">
-                                                    <rect key="frame" x="0.0" y="0.0" width="338" height="18"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="338" height="20.5"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="Chat with" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Qr0-8H-IJq">
-                                                            <rect key="frame" x="0.0" y="0.5" width="271.5" height="17"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="267" height="20.5"/>
                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
@@ -51,7 +51,7 @@
                                                             </attributedString>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Timestamp" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ga8-2K-hxE">
-                                                            <rect key="frame" x="279.5" y="2.5" width="58.5" height="13.5"/>
+                                                            <rect key="frame" x="275" y="3" width="63" height="14.5"/>
                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                                                             <color key="textColor" name="chatslistItemSecondaryLabel"/>
                                                             <nil key="highlightedColor"/>
@@ -62,10 +62,10 @@
                                                     </subviews>
                                                 </stackView>
                                                 <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="IMb-xe-10j">
-                                                    <rect key="frame" x="0.0" y="22" width="338" height="18"/>
+                                                    <rect key="frame" x="0.0" y="24.5" width="338" height="20.5"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="200" horizontalCompressionResistancePriority="749" text="Last message" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wE7-Lf-1a4">
-                                                            <rect key="frame" x="0.0" y="2" width="299" height="14.5"/>
+                                                            <rect key="frame" x="0.0" y="1.5" width="297" height="18"/>
                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                                             <color key="textColor" name="chatslistItemSecondaryLabel"/>
                                                             <nil key="highlightedColor"/>
@@ -74,7 +74,7 @@
                                                             </attributedString>
                                                         </label>
                                                         <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" verticalCompressionResistancePriority="250" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="aKh-IF-QJS" customClass="BadgeButton" customModule="Siskin" customModuleProvider="target">
-                                                            <rect key="frame" x="307" y="0.0" width="31" height="18"/>
+                                                            <rect key="frame" x="305" y="1" width="33" height="19"/>
                                                             <color key="backgroundColor" name="chatslistItemSecondaryLabel"/>
                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                                                             <inset key="contentEdgeInsets" minX="6" minY="2" maxX="6" maxY="2"/>
@@ -145,7 +145,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="ChatsListTableViewCellBig" id="S4B-4u-yaC" customClass="ChatsListTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="104.5" width="414" height="60"/>
+                                <rect key="frame" x="0.0" y="110" width="414" height="60"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <tableViewCellContentView key="contentView" multipleTouchEnabled="YES" contentMode="center" tableViewCell="S4B-4u-yaC" id="MVZ-Mn-eTj">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="60"/>
@@ -184,13 +184,13 @@
                                             </connections>
                                         </view>
                                         <stackView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" verticalCompressionResistancePriority="1000" axis="vertical" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="Env-7g-dFc">
-                                            <rect key="frame" x="66" y="8" width="338" height="39"/>
+                                            <rect key="frame" x="66" y="8" width="338" height="43.5"/>
                                             <subviews>
-                                                <stackView opaque="NO" contentMode="scaleToFill" verticalCompressionResistancePriority="1000" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="eZM-3k-bfg">
-                                                    <rect key="frame" x="0.0" y="0.0" width="338" height="17"/>
+                                                <stackView opaque="NO" contentMode="scaleToFill" verticalCompressionResistancePriority="1000" ambiguous="YES" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="eZM-3k-bfg">
+                                                    <rect key="frame" x="0.0" y="0.0" width="338" height="20.5"/>
                                                     <subviews>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Chat with" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pwo-hA-mvf">
-                                                            <rect key="frame" x="0.0" y="0.0" width="271.5" height="17"/>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" ambiguous="YES" text="Chat with" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pwo-hA-mvf">
+                                                            <rect key="frame" x="0.0" y="0.0" width="267" height="20.5"/>
                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
@@ -198,8 +198,8 @@
                                                                 <fragment content="#bc-ignore!"/>
                                                             </attributedString>
                                                         </label>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Timestamp" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZDx-ML-hEZ">
-                                                            <rect key="frame" x="279.5" y="2" width="58.5" height="13.5"/>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" ambiguous="YES" text="Timestamp" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZDx-ML-hEZ">
+                                                            <rect key="frame" x="275" y="3" width="63" height="14.5"/>
                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                                                             <color key="textColor" name="chatslistItemSecondaryLabel"/>
                                                             <nil key="highlightedColor"/>
@@ -209,11 +209,11 @@
                                                         </label>
                                                     </subviews>
                                                 </stackView>
-                                                <stackView opaque="NO" contentMode="scaleToFill" verticalCompressionResistancePriority="1000" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="X2S-kj-XM8">
-                                                    <rect key="frame" x="0.0" y="21" width="338" height="18"/>
+                                                <stackView opaque="NO" contentMode="scaleToFill" verticalCompressionResistancePriority="1000" ambiguous="YES" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="X2S-kj-XM8">
+                                                    <rect key="frame" x="0.0" y="24.5" width="338" height="19"/>
                                                     <subviews>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="200" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="1000" text="Last message" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fb1-8R-8Ff">
-                                                            <rect key="frame" x="0.0" y="2" width="299" height="14.5"/>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="200" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="1000" ambiguous="YES" text="Last message" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fb1-8R-8Ff">
+                                                            <rect key="frame" x="0.0" y="0.5" width="297" height="18"/>
                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                                             <color key="textColor" name="chatslistItemSecondaryLabel"/>
                                                             <nil key="highlightedColor"/>
@@ -221,8 +221,8 @@
                                                                 <fragment content="#bc-ignore!"/>
                                                             </attributedString>
                                                         </label>
-                                                        <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" horizontalHuggingPriority="760" verticalCompressionResistancePriority="250" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uYb-hA-rRS" customClass="BadgeButton" customModule="Siskin" customModuleProvider="target">
-                                                            <rect key="frame" x="307" y="0.0" width="31" height="18"/>
+                                                        <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" horizontalHuggingPriority="760" verticalCompressionResistancePriority="250" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uYb-hA-rRS" customClass="BadgeButton" customModule="Siskin" customModuleProvider="target">
+                                                            <rect key="frame" x="305" y="0.0" width="33" height="19"/>
                                                             <color key="backgroundColor" name="chatslistItemSecondaryLabel"/>
                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                                                             <inset key="contentEdgeInsets" minX="6" minY="2" maxX="6" maxY="2"/>
@@ -303,7 +303,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gYg-Wz-iZc">
-                                <rect key="frame" x="0.0" y="88" width="414" height="725"/>
+                                <rect key="frame" x="0.0" y="92" width="414" height="721"/>
                                 <connections>
                                     <segue destination="GGV-aa-8IC" kind="embed" id="585-T5-dGR"/>
                                 </connections>
@@ -321,24 +321,40 @@
                         <nil key="title"/>
                         <barButtonItem key="backBarButtonItem" title=" " id="Dx3-QU-3cN"/>
                         <view key="titleView" contentMode="scaleToFill" id="fc4-l0-VbW" customClass="ChatTitleView" customModule="Siskin" customModuleProvider="target">
-                            <rect key="frame" x="12" y="2" width="390" height="40"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <rect key="frame" x="20" y="2" width="374" height="40"/>
+                            <autoresizingMask key="autoresizingMask"/>
                             <subviews>
+                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="JOh-lT-4Cw" customClass="AvatarView" customModule="Siskin" customModuleProvider="target">
+                                    <rect key="frame" x="0.0" y="4" width="32" height="32"/>
+                                    <constraints>
+                                        <constraint firstAttribute="width" secondItem="JOh-lT-4Cw" secondAttribute="height" multiplier="1:1" id="xQC-2R-uj5"/>
+                                    </constraints>
+                                </imageView>
                                 <stackView opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="749" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="vls-oU-dVk">
-                                    <rect key="frame" x="0.0" y="4.5" width="390" height="31.5"/>
+                                    <rect key="frame" x="36" y="3" width="338" height="34"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Jane Done" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UWL-vQ-lxc">
-                                            <rect key="frame" x="0.0" y="0.0" width="390" height="17"/>
-                                            <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
-                                            <nil key="textColor"/>
-                                            <nil key="highlightedColor"/>
-                                            <attributedString key="userComments">
-                                                <fragment content="#bc-ignore!"/>
-                                            </attributedString>
-                                        </label>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="Here I'm again..." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="m0n-Ls-5LF">
-                                            <rect key="frame" x="0.0" y="17" width="390" height="14.5"/>
-                                            <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="pWV-Yo-KY7">
+                                            <rect key="frame" x="0.0" y="0.0" width="338" height="20.5"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalCompressionResistancePriority="751" text="Jane Done" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZqX-XL-D5w">
+                                                    <rect key="frame" x="0.0" y="0.0" width="84" height="20.5"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                    <attributedString key="userComments">
+                                                        <fragment content="#bc-ignore!"/>
+                                                    </attributedString>
+                                                </label>
+                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="752" verticalCompressionResistancePriority="751" image="chevron.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="tp4-mx-Vou">
+                                                    <rect key="frame" x="88" y="3" width="250" height="14.5"/>
+                                                    <color key="tintColor" name="tintColor"/>
+                                                    <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="small"/>
+                                                </imageView>
+                                            </subviews>
+                                        </stackView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="Here I'm again..." lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="m0n-Ls-5LF">
+                                            <rect key="frame" x="0.0" y="20.5" width="338" height="13.5"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="11"/>
                                             <color key="textColor" systemColor="secondaryLabelColor"/>
                                             <nil key="highlightedColor"/>
                                             <attributedString key="userComments">
@@ -349,14 +365,17 @@
                                 </stackView>
                             </subviews>
                             <constraints>
-                                <constraint firstItem="vls-oU-dVk" firstAttribute="centerY" secondItem="fc4-l0-VbW" secondAttribute="centerY" id="4gX-JJ-Zfl"/>
-                                <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="vls-oU-dVk" secondAttribute="bottom" id="6AP-p2-51c"/>
-                                <constraint firstItem="vls-oU-dVk" firstAttribute="leading" secondItem="fc4-l0-VbW" secondAttribute="leading" id="Bl1-gt-MQR"/>
-                                <constraint firstItem="vls-oU-dVk" firstAttribute="top" relation="greaterThanOrEqual" secondItem="fc4-l0-VbW" secondAttribute="top" id="euM-zD-NCW"/>
-                                <constraint firstAttribute="trailing" secondItem="vls-oU-dVk" secondAttribute="trailing" id="mR3-hH-AZz"/>
+                                <constraint firstAttribute="trailing" secondItem="vls-oU-dVk" secondAttribute="trailing" id="5en-ur-rmn"/>
+                                <constraint firstItem="vls-oU-dVk" firstAttribute="top" relation="greaterThanOrEqual" secondItem="fc4-l0-VbW" secondAttribute="top" id="REh-gc-913"/>
+                                <constraint firstItem="vls-oU-dVk" firstAttribute="leading" secondItem="JOh-lT-4Cw" secondAttribute="trailing" constant="4" id="UMK-Lr-Kqr"/>
+                                <constraint firstItem="vls-oU-dVk" firstAttribute="centerY" secondItem="fc4-l0-VbW" secondAttribute="centerY" id="dzq-gQ-rZh"/>
+                                <constraint firstItem="JOh-lT-4Cw" firstAttribute="leading" secondItem="fc4-l0-VbW" secondAttribute="leading" id="h90-2X-KX0"/>
+                                <constraint firstItem="JOh-lT-4Cw" firstAttribute="centerY" secondItem="fc4-l0-VbW" secondAttribute="centerY" id="nac-uu-khA"/>
+                                <constraint firstItem="JOh-lT-4Cw" firstAttribute="top" secondItem="fc4-l0-VbW" secondAttribute="top" constant="4" id="yzN-Ne-VSM"/>
                             </constraints>
                             <connections>
-                                <outlet property="nameView" destination="UWL-vQ-lxc" id="EiA-33-ClS"/>
+                                <outlet property="avatarView" destination="JOh-lT-4Cw" id="loz-Vl-3Nj"/>
+                                <outlet property="nameView" destination="ZqX-XL-D5w" id="YKi-QR-4ch"/>
                                 <outlet property="statusView" destination="m0n-Ls-5LF" id="Q0q-Hj-PF9"/>
                             </connections>
                         </view>
@@ -403,7 +422,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Siskin IM" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="V18-Iv-6Re">
-                                <rect key="frame" x="137.5" y="447.5" width="139.5" height="38.5"/>
+                                <rect key="frame" x="137.5" y="451.5" width="139.5" height="38.5"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="32"/>
                                 <nil key="highlightedColor"/>
                                 <size key="shadowOffset" width="0.0" height="0.0"/>
@@ -412,7 +431,7 @@
                                 </attributedString>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="by Tigase, Inc." textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8ba-yZ-XRA">
-                                <rect key="frame" x="154.5" y="486" width="145.5" height="26.5"/>
+                                <rect key="frame" x="154.5" y="490" width="145.5" height="26.5"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-MediumItalic" family="Helvetica Neue" pointSize="22"/>
                                 <nil key="highlightedColor"/>
                             </label>
@@ -440,7 +459,7 @@
                                 </connections>
                             </button>
                             <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="appLogo" translatesAutoresizingMaskIntoConstraints="NO" id="P5D-Hi-rSq">
-                                <rect key="frame" x="28" y="69" width="358" height="358.5"/>
+                                <rect key="frame" x="28" y="73" width="358" height="358.5"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="P5D-Hi-rSq" secondAttribute="height" multiplier="1:1" id="ZYD-Yr-y5b"/>
                                 </constraints>
@@ -531,7 +550,7 @@
                         <color key="backgroundColor" name="chatslistBackground"/>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="RosterItemTableViewCell" selectionStyle="none" indentationWidth="10" reuseIdentifier="RosterItemTableViewCell" rowHeight="56" id="ONc-pU-DYD" customClass="RosterItemTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="44.5" width="414" height="56"/>
+                                <rect key="frame" x="0.0" y="50" width="414" height="56"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" multipleTouchEnabled="YES" contentMode="center" ambiguous="YES" tableViewCell="ONc-pU-DYD" translatesAutoresizingMaskIntoConstraints="NO" id="UqK-Bi-A4U">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="56"/>
@@ -569,10 +588,10 @@
                                             </connections>
                                         </view>
                                         <stackView opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="748" ambiguous="YES" axis="vertical" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="fPJ-VF-UlI">
-                                            <rect key="frame" x="62" y="10.5" width="37" height="35.5"/>
+                                            <rect key="frame" x="62" y="10.5" width="43.5" height="42.5"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" horizontalCompressionResistancePriority="746" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vEG-as-CLS">
-                                                    <rect key="frame" x="0.0" y="0.0" width="37" height="17"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="43.5" height="20.5"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
@@ -581,7 +600,7 @@
                                                     </attributedString>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="747" verticalCompressionResistancePriority="749" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tRD-rd-7dm">
-                                                    <rect key="frame" x="0.0" y="21" width="37" height="14.5"/>
+                                                    <rect key="frame" x="0.0" y="24.5" width="43.5" height="18"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                                     <color key="textColor" name="chatslistItemSecondaryLabel"/>
                                                     <nil key="highlightedColor"/>
@@ -640,7 +659,7 @@
                     <tabBarItem key="tabBarItem" title="Chats" image="message.fill" catalog="system" id="acW-dT-cKf"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="7zK-CH-Y1Y">
-                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <rect key="frame" x="0.0" y="48" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -662,7 +681,7 @@
                 <navigationController storyboardIdentifier="ChatViewNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="XmR-SP-8PN" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="ZXL-ae-Ls9">
-                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <rect key="frame" x="0.0" y="48" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="tintColor" systemColor="labelColor"/>
                     </navigationBar>
@@ -695,7 +714,7 @@
                     </tabBarItem>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="QfB-Do-9or">
-                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <rect key="frame" x="0.0" y="48" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     </navigationBar>
@@ -714,7 +733,7 @@
                 <navigationController storyboardIdentifier="RosterItemEditNavigationController" id="DqK-vA-tM9" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="c2l-7V-bZB">
-                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <rect key="frame" x="0.0" y="48" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -738,7 +757,7 @@
                             <tableViewSection headerTitle="Account" id="Mfv-HJ-QDO">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="mk1-zp-AU3">
-                                        <rect key="frame" x="0.0" y="49.5" width="414" height="44"/>
+                                        <rect key="frame" x="0.0" y="55.5" width="414" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="mk1-zp-AU3" id="Da1-kS-KYt">
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -766,7 +785,7 @@
                             <tableViewSection headerTitle="XMPP Address (JID)" id="Qgj-eQ-geg" userLabel="XMPP Address (JID)">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="ubC-3x-1ej">
-                                        <rect key="frame" x="0.0" y="143.5" width="414" height="44"/>
+                                        <rect key="frame" x="0.0" y="155.5" width="414" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="ubC-3x-1ej" id="6FY-Rq-hWY">
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -791,7 +810,7 @@
                             <tableViewSection headerTitle="Name" id="Kfl-J5-hdD">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="bnU-C3-Ei1">
-                                        <rect key="frame" x="0.0" y="237.5" width="414" height="44"/>
+                                        <rect key="frame" x="0.0" y="255.5" width="414" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="bnU-C3-Ei1" id="sWs-wY-Vy8">
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -816,7 +835,7 @@
                             <tableViewSection headerTitle="PRESENCE" id="Q28-Ig-9NP">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="yky-H4-cbk">
-                                        <rect key="frame" x="0.0" y="331.5" width="414" height="44"/>
+                                        <rect key="frame" x="0.0" y="355.5" width="414" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="yky-H4-cbk" id="Qga-yz-bXa">
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -842,7 +861,7 @@
                                         </tableViewCellContentView>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="GLY-Pk-gl9">
-                                        <rect key="frame" x="0.0" y="375.5" width="414" height="44"/>
+                                        <rect key="frame" x="0.0" y="399.5" width="414" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="GLY-Pk-gl9" id="P7U-6w-pcx">
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -909,7 +928,7 @@
                         <color key="backgroundColor" red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="BasicInfoCell" rowHeight="94" id="C58-uk-LaV" customClass="ContactBasicTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="49.5" width="414" height="94"/>
+                                <rect key="frame" x="0.0" y="55.5" width="414" height="94"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="C58-uk-LaV" id="ZeZ-oS-SaN">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="94"/>
@@ -986,7 +1005,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="ContactFormCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ContactFormCell" rowHeight="51" id="pQL-wq-Sb9" customClass="ContactFormTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="143.5" width="414" height="51"/>
+                                <rect key="frame" x="0.0" y="149.5" width="414" height="51"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="pQL-wq-Sb9" id="9Se-nj-MAA">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="51"/>
@@ -1027,7 +1046,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="AddressCell" rowHeight="80" id="73R-lk-SWh" customClass="ContactFormTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="194.5" width="414" height="80"/>
+                                <rect key="frame" x="0.0" y="200.5" width="414" height="80"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="73R-lk-SWh" id="AoC-2k-RUL">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="80"/>
@@ -1068,7 +1087,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="BlockContactCell" textLabel="kwQ-p7-cX2" rowHeight="44" style="IBUITableViewCellStyleDefault" id="Mn6-i8-kwI">
-                                <rect key="frame" x="0.0" y="274.5" width="414" height="44"/>
+                                <rect key="frame" x="0.0" y="280.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Mn6-i8-kwI" id="0S2-hp-vS3">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -1085,7 +1104,7 @@
                                 </tableViewCellContentView>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="MuteContactCell" textLabel="g8N-kr-fax" rowHeight="44" style="IBUITableViewCellStyleDefault" id="rXF-fn-cOY">
-                                <rect key="frame" x="0.0" y="318.5" width="414" height="44"/>
+                                <rect key="frame" x="0.0" y="324.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="rXF-fn-cOY" id="Cfg-a8-bA5">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -1102,10 +1121,10 @@
                                 </tableViewCellContentView>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="OMEMOEncryptionCell" textLabel="XZp-oZ-XpC" detailTextLabel="vIB-ar-uog" rowHeight="44" style="IBUITableViewCellStyleValue1" id="EPN-iV-X5r" customClass="EnumTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="362.5" width="414" height="44"/>
+                                <rect key="frame" x="0.0" y="368.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="EPN-iV-X5r" id="cx2-fQ-N3b">
-                                    <rect key="frame" x="0.0" y="0.0" width="385.5" height="44"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="383.5" height="44"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Message encryption" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="XZp-oZ-XpC">
@@ -1116,7 +1135,7 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Detail" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="vIB-ar-uog">
-                                            <rect key="frame" x="333.5" y="12" width="44" height="20.5"/>
+                                            <rect key="frame" x="331.5" y="12" width="44" height="20.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <color key="textColor" systemColor="secondaryLabelColor"/>
@@ -1129,14 +1148,14 @@
                                 </tableViewCellContentView>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="OMEMOIdentityCell" id="3q3-ov-q6z" customClass="OMEMOIdentityTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="406.5" width="414" height="63"/>
+                                <rect key="frame" x="0.0" y="412.5" width="414" height="64"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="3q3-ov-q6z" id="ArO-fK-TDf">
-                                    <rect key="frame" x="0.0" y="0.0" width="414" height="63"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="64"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="diN-oY-G54">
-                                            <rect key="frame" x="10" y="23" width="324.5" height="34"/>
+                                            <rect key="frame" x="10" y="24" width="324.5" height="34"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="34" id="P0U-51-Isi"/>
                                             </constraints>
@@ -1154,13 +1173,13 @@
                                             </attributedString>
                                         </label>
                                         <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bsQ-Fj-zSv">
-                                            <rect key="frame" x="355" y="24.5" width="51" height="31"/>
+                                            <rect key="frame" x="355" y="25.5" width="51" height="31"/>
                                             <connections>
                                                 <action selector="valueChanged:" destination="3q3-ov-q6z" eventType="valueChanged" id="YOR-XP-dbc"/>
                                             </connections>
                                         </switch>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Device 11111111" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Xm-hp-sUz">
-                                            <rect key="frame" x="10" y="6" width="86.5" height="15"/>
+                                            <rect key="frame" x="10" y="6" width="92.5" height="16"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                             <color key="textColor" systemColor="secondaryLabelColor"/>
                                             <nil key="highlightedColor"/>
@@ -1188,14 +1207,14 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="AttachmentsCell" textLabel="EpU-tc-DIx" rowHeight="44" style="IBUITableViewCellStyleDefault" id="09h-vH-qSu">
-                                <rect key="frame" x="0.0" y="469.5" width="414" height="44"/>
+                                <rect key="frame" x="0.0" y="476.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="09h-vH-qSu" id="Khc-ES-FDl">
-                                    <rect key="frame" x="0.0" y="0.0" width="385.5" height="44"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="383.5" height="44"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Attachments" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="EpU-tc-DIx">
-                                            <rect key="frame" x="20" y="0.0" width="357.5" height="44"/>
+                                            <rect key="frame" x="20" y="0.0" width="355.5" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
@@ -1236,7 +1255,7 @@
                 <navigationController restorationIdentifier="ContactViewNavigationController" storyboardIdentifier="ContactViewNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="JIC-ew-OGP" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="26o-Nz-6qA">
-                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <rect key="frame" x="0.0" y="48" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -1304,7 +1323,7 @@
                     <tabBarItem key="tabBarItem" title="Bookmarks" image="bookmark.circle.fill" catalog="system" id="dgT-Yo-7nF"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="BWe-az-1Sv">
-                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <rect key="frame" x="0.0" y="48" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -1326,7 +1345,7 @@
                         <color key="backgroundColor" name="chatslistBackground"/>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="bookmarkCell" id="2Pz-rv-NGY" customClass="BookmarkViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="44.5" width="414" height="60.5"/>
+                                <rect key="frame" x="0.0" y="50" width="414" height="60.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="2Pz-rv-NGY" id="FcJ-ju-Pff">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="60.5"/>
@@ -1340,10 +1359,10 @@
                                             </constraints>
                                         </imageView>
                                         <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="r1C-OG-oGw">
-                                            <rect key="frame" x="66" y="11.5" width="338" height="38"/>
+                                            <rect key="frame" x="66" y="8" width="338" height="45"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="Bookmark label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oGF-gw-aag">
-                                                    <rect key="frame" x="0.0" y="0.0" width="338" height="17"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="338" height="20.5"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
@@ -1352,7 +1371,7 @@
                                                     </attributedString>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="200" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="1000" text="conference@muc.example.net" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LTO-Jq-ee6">
-                                                    <rect key="frame" x="0.0" y="21" width="338" height="17"/>
+                                                    <rect key="frame" x="0.0" y="24.5" width="338" height="20.5"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                                     <color key="textColor" name="chatslistItemSecondaryLabel"/>
                                                     <nil key="highlightedColor"/>
@@ -1397,14 +1416,15 @@
     </scenes>
     <resources>
         <image name="appLogo" width="1024" height="1024"/>
-        <image name="bookmark.circle.fill" catalog="system" width="128" height="121"/>
+        <image name="bookmark.circle.fill" catalog="system" width="128" height="123"/>
+        <image name="chevron.right" catalog="system" width="97" height="128"/>
         <image name="defaultAvatar" width="100" height="100"/>
         <image name="first" width="30" height="30"/>
-        <image name="gear" catalog="system" width="128" height="119"/>
-        <image name="message.fill" catalog="system" width="128" height="113"/>
-        <image name="person.crop.circle.fill" catalog="system" width="128" height="121"/>
-        <image name="person.crop.circle.fill.badge.plus" catalog="system" width="128" height="113"/>
-        <image name="square.and.pencil" catalog="system" width="128" height="115"/>
+        <image name="gear" catalog="system" width="128" height="122"/>
+        <image name="message.fill" catalog="system" width="128" height="114"/>
+        <image name="person.crop.circle.fill" catalog="system" width="128" height="123"/>
+        <image name="person.crop.circle.fill.badge.plus" catalog="system" width="128" height="114"/>
+        <image name="square.and.pencil" catalog="system" width="128" height="113"/>
         <namedColor name="chatslistBackground">
             <color red="0.36862745098039218" green="0.36862745098039218" blue="0.54117647058823526" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
@@ -1421,7 +1441,7 @@
             <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="labelColor">
-            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="secondaryLabelColor">
             <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>

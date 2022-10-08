@@ -79,6 +79,9 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
 
         conversation.context?.$state.map({ $0 == .connected() }).receive(on: DispatchQueue.main).assign(to: \.connected, on: self.titleView).store(in: &cancellables);
         conversation.displayNamePublisher.map({ $0 }).assign(to: \.name, on: self.titleView).store(in: &cancellables);
+        conversation.avatarPublisher.combineLatest(conversation.displayNamePublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] avatar, name in
+            self?.titleView.avatarView.set(name: name, avatar: avatar);
+        }).store(in: &cancellables);
         conversation.statusPublisher.combineLatest(conversation.descriptionPublisher, chat.optionsPublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (show, description, options) in
             self?.titleView.setStatus(show, description: description, encryption: options.encryption);
         }).store(in: &cancellables)        
@@ -193,11 +196,12 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
 
 class BaseConversationTitleView: UIView {
     
+    @IBOutlet var avatarView: AvatarView!;
     @IBOutlet var nameView: UILabel!;
     @IBOutlet var statusView: UILabel!;
     
     override var intrinsicContentSize: CGSize {
-        return UIView.layoutFittingExpandedSize
+        return UIView.layoutFittingExpandedSize;
     }
 }
 
@@ -242,7 +246,7 @@ class ChatTitleView: BaseConversationTitleView {
     override func didMoveToSuperview() {
         super.didMoveToSuperview();
         if let superview = self.superview {
-            NSLayoutConstraint.activate([ self.widthAnchor.constraint(lessThanOrEqualTo: superview.widthAnchor, multiplier: 0.6)]);
+            NSLayoutConstraint.activate([ self.widthAnchor.constraint(lessThanOrEqualTo: superview.widthAnchor, multiplier: 1.0)]);
         }
     }
     
