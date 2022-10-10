@@ -25,6 +25,7 @@ class ContactFormTableViewCell: UITableViewCell {
     
     @IBOutlet var typeView: UILabel!
     @IBOutlet var labelView: UILabel!
+    @IBOutlet var iconView: UIImageView!;
     
     override func awakeFromNib() {
         super.awakeFromNib()

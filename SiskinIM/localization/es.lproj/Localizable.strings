@@ -656,6 +656,9 @@
    muc room status label */
 "Not connected" = "No conectado";
 
+/* title - account not connected */
+"Not connected!" = "No conectado!";
+
 /* channel status label */
 "Not joined" = "No unido";
 
@@ -1151,6 +1154,9 @@
 
 /* push notifications not allowed warning */
 "You need to allow application to show notifications and for background refresh." = "Debes permitir que la aplicación muestre notificaciones y se actualice en segundo plano.";
+
+/* cannot edit profile if not connected message */
+"You need to enable account and wait for establishing connection before you can edit profile." = "Debe habilitar la cuenta y esperar a que se establezca la conexión antes de poder editar el perfil.";
 
 /* alert body */
 "You've left there room %@ and push notifications for this room were disabled!\nYou may need to reenable them on other devices." = "¡Has abandonado la sala %@ y las notificaciones push par esta sala han sido deshabilitadas!\nEs posible que debas volver a habilitarlas en otros dispositivos.";

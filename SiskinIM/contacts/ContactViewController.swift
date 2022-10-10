@@ -224,7 +224,7 @@ class ContactViewController: UITableViewController {
             
             cell.typeView.text = type;
             cell.labelView.text = phone.number?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines);
-            
+            cell.iconView.image = UIImage(systemName: "phone")
             return cell;
         case .emails:
             let cell = tableView.dequeueReusableCell(withIdentifier: "ContactFormCell", for: indexPath) as! ContactFormTableViewCell;
@@ -233,7 +233,7 @@ class ContactViewController: UITableViewController {
             
             cell.typeView.text = type;
             cell.labelView.text = email.address?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines);
-            
+            cell.iconView.image = UIImage(systemName: "mail")
             return cell;
         case .addresses:
             let cell = tableView.dequeueReusableCell(withIdentifier: "AddressCell", for: indexPath ) as! ContactFormTableViewCell;
@@ -321,20 +321,7 @@ class ContactViewController: UITableViewController {
             }
         case .addresses:
             let address = addresses[indexPath.row];
-            var parts = [String]();
-            if let street = address.street {
-                parts.append(street);
-            }
-            if let locality = address.locality {
-                parts.append(locality);
-            }
-            if let country = address.country {
-                parts.append(country);
-            }
-            let query = parts.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!;
-            if let url = URL(string: "http://maps.apple.com/?q=" + query) {
-                UIApplication.shared.open(url);
-            }
+            ContactViewController.openInMaps(address: address);
         }
     }
     
@@ -404,6 +391,98 @@ class ContactViewController: UITableViewController {
             }
         }
     }
+    
+    static func copyToPasteboard(address: VCard.Address) {
+        var parts = [String]();
+        if let street = address.street {
+            parts.append(street);
+        }
+        var localityLine = "";
+        if let postalCode = address.postalCode {
+            localityLine.append(postalCode);
+        }
+        if let locality = address.locality {
+            if !localityLine.isEmpty {
+                localityLine.append(" ")
+            }
+            localityLine.append(locality)
+        }
+        if !localityLine.isEmpty {
+            parts.append(localityLine);
+        }
+        if let region = address.region {
+            parts.append(region);
+        }
+        if let country = address.country {
+            parts.append(country);
+        }
+        UIPasteboard.general.string = parts.joined(separator: "\n");
+    }
+    
+    static func openInMaps(address: VCard.Address) {
+        var parts = [String]();
+        if let street = address.street {
+            parts.append(street);
+        }
+        if let locality = address.locality {
+            parts.append(locality);
+        }
+        if let country = address.country {
+            parts.append(country);
+        }
+        let query = parts.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!;
+        if let url = URL(string: "http://maps.apple.com/?q=" + query) {
+            UIApplication.shared.open(url);
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        switch sections[indexPath.section] {
+        case .phones:
+            let phone = phones[indexPath.row];
+            return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
+                return UIMenu(title: "", options: [], children: [
+                    UIAction(title: "Call", image: UIImage(systemName: "phone"), handler: { action in
+                        if let url = URL(string: "tel:" + phone.number!) {
+                            UIApplication.shared.open(url);
+                        }
+                    }),
+                    UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc"), handler: { action in
+                        UIPasteboard.general.string = phone.number;
+                    })
+                ])
+            })
+        case .emails:
+            let email = emails[indexPath.row];
+            return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
+                return UIMenu(title: "", options: [], children: [
+                    UIAction(title: "Send email", image: UIImage(systemName: "mail"), handler: { action in
+                        if let url = URL(string: "mailto:" + email.address!) {
+                            UIApplication.shared.open(url);
+                        }
+                    }),
+                    UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc"), handler: { action in
+                        UIPasteboard.general.string = email.address;
+                    })
+                ])
+            })
+        case .addresses:
+            let address = addresses[indexPath.row];
+            return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { suggestedActions in
+                return UIMenu(title: "", options: [], children: [
+                    UIAction(title: "Open in maps", image: UIImage(systemName: "map"), handler: { action in
+                        ContactViewController.openInMaps(address: address);
+                    }),
+                    UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc"), handler: { action in
+                        ContactViewController.copyToPasteboard(address: address);
+                    })
+                ])
+            })
+        default:
+            return nil;
+        }
+    }
+    
     /*
     // MARK: - Navigation
 

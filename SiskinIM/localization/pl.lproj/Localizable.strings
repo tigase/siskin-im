@@ -642,6 +642,9 @@
 /* channel status label */
 "Not connected" = "Nie połączono";
 
+/* title - account not connected */
+"Not connected!" = "Nie połączono!";
+
 /* channel status label */
 "Not joined" = "Nie dołączono";
 
@@ -1129,6 +1132,9 @@
 
 /* push notifications not allowed warning */
 "You need to allow application to show notifications and for background refresh." = "Musisz zezwolić aplikacji na powiadomienia oraz na odświeżanie w tle.";
+
+/* cannot edit profile if not connected message */
+"You need to enable account and wait for establishing connection before you can edit profile." = "Musisz włączyć konto i poczekać aż będzie połączone nim będziesz mógł edytować profil.";
 
 /* alert body */
 "You've left there room %@ and push notifications for this room were disabled!\nYou may need to reenable them on other devices." = "Opuściłeś pokój %@ i powiadomienia push dla tego pokoju zostały wyłączone.\nMożesz musieć jest włączyć na innych urządzeniach.";

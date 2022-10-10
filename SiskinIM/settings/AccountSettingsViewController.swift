@@ -211,6 +211,18 @@ class AccountSettingsViewController: UITableViewController {
             break;
         }
     }
+    
+    override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
+        if identifier == "EditAccountVCardSegue" {
+            guard let client = XmppService.instance.getClient(for: self.account), case .connected(_) = client.state else {
+                let alert = UIAlertController(title: NSLocalizedString("Not connected!", comment: "title - account not connected"), message: NSLocalizedString("You need to enable account and wait for establishing connection before you can edit profile.", comment: "cannot edit profile if not connected message"), preferredStyle: .alert);
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default));
+                present(alert, animated: true, completion: nil);
+                return false;
+            }
+        }
+        return true;
+    }
         
     @IBAction func enabledSwitchChangedValue(_ sender: AnyObject) {
         let newState = enabledSwitch.isOn;

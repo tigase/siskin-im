@@ -22,12 +22,24 @@
 
 import UIKit
 
-class AboutController: UIViewController {
+class AboutController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1;
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 1;
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        return tableView.dequeueReusableCell(withIdentifier: "LicenseCell", for: indexPath);
+    }
+    
     
     @IBOutlet var logoView: UIImageView!;
     @IBOutlet var nameLabel: UILabel!
     @IBOutlet var versionLabel: UILabel!;
-    @IBOutlet var copyrightTextView: UITextView!;
     
     override func viewDidLoad() {
         logoView.layer.cornerRadius = 8;

@@ -37,6 +37,10 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     
     var datePicker: UIDatePicker!;
     
+    private let sections: [VCardSections] = [ .basic, .organization, .phones, .emails, .addresses ];
+    private let basicRows: [VCardBaseSectionRows] = [.avatar, .givenName, .familyName, .fullName, .birthday ];
+    private let orgRows: [VCardOrgSectionRows] = [.organizationName, .organizationRole];
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -76,9 +80,10 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     */
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch VCardSections(rawValue: indexPath.section)! {
+        switch sections[indexPath.section] {
         case .basic:
-            switch VCardBaseSectionRows(rawValue: indexPath.row)! {
+            let row = basicRows[indexPath.row];
+            switch row {
             case .avatar:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "AvatarEditCell") as! VCardAvatarEditCell;
                 cell.avatarView.set(name: nil, avatar: nil);
@@ -97,42 +102,46 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                 cell.textField.placeholder = NSLocalizedString("Given name", comment: "vcard field label")
                 cell.textField.text = vcard.givenName;
                 cell.textField.delegate = self;
-                cell.textField.tag = indexPath.row;
+                cell.textField.tag = row.rawValue;
                 return cell;
             case .familyName:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
                 cell.textField.placeholder = NSLocalizedString("Family name", comment: "vcard field label")
                 cell.textField.text = vcard.surname;
                 cell.textField.delegate = self;
-                cell.textField.tag = indexPath.row;
+                cell.textField.tag = row.rawValue;
                 return cell;
             case .fullName:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
                 cell.textField.placeholder = NSLocalizedString("Full name", comment: "vcard field label")
                 cell.textField.text = vcard.fn;
                 cell.textField.delegate = self;
-                cell.textField.tag = indexPath.row;
+                cell.textField.tag = row.rawValue;
                 return cell;
             case .birthday:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
                 cell.textField.placeholder = NSLocalizedString("Birthday", comment: "vcard field label")
                 cell.textField.text = vcard.bday;
                 cell.textField.inputView = self.datePicker;
-                cell.textField.tag = indexPath.row;
+                cell.textField.tag = row.rawValue;
                 return cell;
-            case .organization:
+            }
+        case .organization:
+            let row = orgRows[indexPath.row];
+            switch row {
+            case .organizationName:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
                 cell.textField.placeholder = NSLocalizedString("Organization", comment: "vcard field label")
                 cell.textField.text = vcard.organizations.first?.name;
                 cell.textField.delegate = self;
-                cell.textField.tag = indexPath.row;
+                cell.textField.tag = row.rawValue;
                 return cell;
             case .organizationRole:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "TextEditCell") as! VCardTextEditCell;
                 cell.textField.placeholder = NSLocalizedString("Organization role", comment: "vcard field label")
                 cell.textField.text = vcard.role;
                 cell.textField.delegate = self;
-                cell.textField.tag = indexPath.row;
+                cell.textField.tag = row.rawValue;
                 return cell;
             }
         case .phones:
@@ -191,8 +200,10 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     }
     
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        switch VCardSections(rawValue: indexPath.section)! {
+        switch sections[indexPath.section] {
         case .basic:
+            return false;
+        case .organization:
             return false;
         case .phones:
             return indexPath.row < vcard.telephones.count;
@@ -206,12 +217,14 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
         case 0:
-            return 7;
+            return basicRows.count;
         case 1:
-            return vcard.telephones.count + 1;
+            return orgRows.count;
         case 2:
-            return vcard.emails.count + 1;
+            return vcard.telephones.count + 1;
         case 3:
+            return vcard.emails.count + 1;
+        case 4:
             return vcard.addresses.count + 1;
         default:
             return 0;
@@ -219,9 +232,11 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     }
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        switch VCardSections(rawValue: section)! {
+        switch sections[section] {
         case .basic:
             return nil;
+        case .organization:
+            return NSLocalizedString("Organization", comment: "vcard section label")
         case .phones:
             return NSLocalizedString("Phones", comment: "vcard section label");
         case .emails:
@@ -232,7 +247,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     }
     
     override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        if VCardSections(rawValue: section)! == .basic {
+        if sections[section] == .basic {
             return 1.0;
         }
         return super.tableView(tableView, heightForHeaderInSection: section);
@@ -240,11 +255,13 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true);
-        switch VCardSections(rawValue: indexPath.section)! {
+        switch sections[indexPath.section] {
         case .basic:
-            if indexPath.row == VCardBaseSectionRows.avatar.rawValue {
+            if basicRows[indexPath.row] == .avatar {
                 self.photoClicked();
             }
+            return;
+        case .organization:
             return;
         case .phones:
             if indexPath.row == vcard.telephones.count {
@@ -268,23 +285,24 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == UITableViewCell.EditingStyle.delete {
-            if indexPath.section == 1 {
+            switch sections[indexPath.section] {
+            case .phones:
                 vcard.telephones.remove(at: indexPath.row);
                 tableView.reloadData();
-            }
-            if indexPath.section == 2 {
+            case .emails:
                 vcard.emails.remove(at: indexPath.row);
                 tableView.reloadData();
-            }
-            if indexPath.section == 3 {
+            case .addresses:
                 vcard.addresses.remove(at: indexPath.row);
                 tableView.reloadData();
+            default:
+                break;
             }
         }
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 4;
+        return sections.count;
     }
     
     @IBAction func refreshVCard(_ sender: UIBarButtonItem) {
@@ -347,7 +365,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                 self.selectPhoto(.photoLibrary);
             }));
             alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil));
-            let cell = self.tableView(tableView, cellForRowAt: IndexPath(row: VCardBaseSectionRows.avatar.rawValue, section: VCardSections.basic.rawValue)) as! VCardAvatarEditCell;
+            let cell = self.tableView(tableView, cellForRowAt: IndexPath(row: basicRows.firstIndex(of: .avatar) ?? 0, section: sections.firstIndex(of: .basic) ?? 0)) as! VCardAvatarEditCell;
             alert.popoverPresentationController?.sourceView = cell.avatarView;
             alert.popoverPresentationController?.sourceRect = cell.avatarView!.bounds;
             present(alert, animated: true, completion: nil);
@@ -401,7 +419,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                 }
             }));
             question.addAction(UIAlertAction(title: NSLocalizedString("No", comment: "button label"), style: .cancel, handler: nil));
-            let cell = self.tableView(tableView, cellForRowAt: IndexPath(row: VCardBaseSectionRows.avatar.rawValue, section: VCardSections.basic.rawValue)) as! VCardAvatarEditCell;
+            let cell = self.tableView(tableView, cellForRowAt: IndexPath(row: basicRows.firstIndex(of: .avatar) ?? 0, section: sections.firstIndex(of: .basic) ?? 0)) as! VCardAvatarEditCell;
             question.popoverPresentationController?.sourceView = cell.avatarView;
             question.popoverPresentationController?.sourceRect = cell.avatarView!.bounds;
             
@@ -418,7 +436,7 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         formatter.timeStyle = .none;
         formatter.dateFormat = "yyyy-MM-dd";
         let string = formatter.string(from: sender.date);
-        if let cell = tableView.cellForRow(at: IndexPath(row: VCardBaseSectionRows.birthday.rawValue, section: VCardSections.basic.rawValue)) as? VCardTextEditCell {
+        if let cell = tableView.cellForRow(at: IndexPath(row: basicRows.firstIndex(of: .birthday) ?? 0, section: sections.firstIndex(of: .basic) ?? 0)) as? VCardTextEditCell {
             cell.textField.text = string;
         }
         vcard.bday = string;
@@ -434,7 +452,13 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
                 vcard.surname = text;
             case .fullName:
                 vcard.fn = text;
-            case .organization:
+            default:
+                break;
+            }
+        }
+        if let row = VCardOrgSectionRows(rawValue: textField.tag) {
+            switch row {
+            case .organizationName:
                 vcard.organizations = (text?.isEmpty ?? true) ? [] : [VCard.Organization(name: text!, types: [.work])];
             case .organizationRole:
                 vcard.role = text;
@@ -444,11 +468,12 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         }
     }
     
-    enum VCardSections: Int {
-        case basic = 0
-        case phones = 1
-        case emails = 2
-        case addresses = 3
+    enum VCardSections {
+        case basic
+        case organization
+        case phones
+        case emails
+        case addresses
     }
     
     enum VCardBaseSectionRows: Int {
@@ -457,8 +482,11 @@ class VCardEditViewController: UITableViewController, UIImagePickerControllerDel
         case familyName = 2
         case fullName = 3
         case birthday = 4
-        case organization = 5
-        case organizationRole = 6
+    }
+    
+    enum VCardOrgSectionRows: Int {
+        case organizationName = 10
+        case organizationRole = 11
     }
 }
 
