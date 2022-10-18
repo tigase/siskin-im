@@ -64,9 +64,6 @@ class CallManager: NSObject, CXProviderDelegate {
     private let callController: CXCallController;
     
     private let queue = DispatchQueue(label: "CallManager");
-    @Published
-    private var activeCalls: [CallBase] = [];
-    private var activeCallsByUuid: [UUID: CallBase] = [:];
     private var cancellables: Set<AnyCancellable> = [];
     
     private override init() {
@@ -94,8 +91,8 @@ class CallManager: NSObject, CXProviderDelegate {
         
         pushRegistry.delegate = self;
         pushRegistry.desiredPushTypes = [.voIP];
-        $activeCalls.map({ !$0.isEmpty }).assign(to: \.onCall, on: XmppService.instance).store(in: &cancellables);
-        $activeCalls.map({ !$0.isEmpty }).sink(receiveValue: { callInProgress in
+        activeCalls.publisher.map({ !$0.isEmpty }).assign(to: \.onCall, on: XmppService.instance).store(in: &cancellables);
+        activeCalls.publisher.map({ !$0.isEmpty }).sink(receiveValue: { callInProgress in
             DispatchQueue.main.async {
                 UIApplication.shared.isIdleTimerDisabled = callInProgress;
             }
@@ -108,43 +105,86 @@ class CallManager: NSObject, CXProviderDelegate {
 //        delegate?.callStateChanged(self);
 //    }
     
-    private actor ActiveCalls {
+    private class ActiveCalls {
 
-        private var activeCalls: [CallBase] = [];
+        public var publisher: Published<[CallBase]>.Publisher {
+            return $calls;
+        }
+        @Published
+        private var calls: [CallBase] = [];
+        private let lock = UnfairLock();
+        private var callsByUuid: [UUID: CallBase] = [:];
         
         func reportIncoming(call: CallBase) throws -> CallBase {
-            guard self.activeCalls.allSatisfy({ !call.isEqual($0) }) else {
-               throw XMPPError(condition: .conflict, message: "Call already registered!");
-            }
-            
-            if let c = call as? Call {
-                if let meet = self.activeCalls.compactMap({ m -> Meet? in
-                    guard m.account == c.account && m.jid == c.jid, let meet = m as? Meet else {
-                        return nil;
-                    }
-                    return meet;
-                }).first {
-                    return meet;
+            return try lock.with({
+                guard self.calls.allSatisfy({ !call.isEqual($0) }) else {
+                   throw XMPPError(condition: .conflict, message: "Call already registered!");
                 }
-            }
-            
-            self.activeCalls.append(call);
-            return call;
+                
+                if let c = call as? Call {
+                    if let meet = self.calls.compactMap({ m -> Meet? in
+                        guard m.account == c.account && m.jid == c.jid, let meet = m as? Meet else {
+                            return nil;
+                        }
+                        return meet;
+                    }).first {
+                        return meet;
+                    }
+                }
+                
+                self.calls.append(call);
+                return call;
+            })
         }
         
         func reportOutgoing(call: CallBase) throws {
-            guard self.activeCalls.allSatisfy({ !call.isEqual($0) }) else {
-                throw XMPPError(condition: .conflict, message: "Call already registered!");
-            }
-            self.activeCalls.append(call);
+            try lock.with({
+                guard self.calls.allSatisfy({ !call.isEqual($0) }) else {
+                    throw XMPPError(condition: .conflict, message: "Call already registered!");
+                }
+                self.calls.append(call);
+            })
+        }
+        
+        func call(forAccount account: BareJID, jid: BareJID, sid: String) -> CallBase? {
+            return lock.with({
+                return calls.first(where: { $0.account == account && $0.jid == jid && $0.sid == sid })
+            })
+        }
+        
+        func call(forAccount account: BareJID, sid: String) -> CallBase? {
+            return lock.with({
+                return calls.first(where: { $0.account == account && $0.sid == sid })
+            })
+        }
+        
+        func call(forUUID key: UUID) -> CallBase? {
+            return lock.with({
+                return callsByUuid[key];
+            })
+        }
+        
+        func register(call: CallBase) {
+            lock.with({
+                callsByUuid[call.uuid] = call;
+            })
+        }
+        
+        func unregister(call: CallBase) {
+            lock.with({
+                if let idx = calls.firstIndex(where: { $0 === call }) {
+                    calls.remove(at: idx);
+                }
+                callsByUuid.removeValue(forKey: call.uuid);
+            })
         }
         
     }
     
-    private let activeCalls2 = ActiveCalls();
+    private let activeCalls = ActiveCalls();
     
     func reportIncomingCall(_ inCall: CallBase) async throws {
-        let call = try await activeCalls2.reportIncoming(call: inCall);
+        let call = try activeCalls.reportIncoming(call: inCall);
         if let meet = call as? Meet, let c = inCall as? Call {
             self.queue.sync {
                 c.ringing();
@@ -200,7 +240,7 @@ class CallManager: NSObject, CXProviderDelegate {
     }
     
     func reportOutgoingCall(_ call: CallBase) async throws {
-        try await activeCalls2.reportOutgoing(call: call);
+        try activeCalls.reportOutgoing(call: call);
         
         if #available(iOS 15.0, *) {
             let recipient = INPerson(personHandle: INPersonHandle(value: call.jid.description, type: .unknown), nameComponents: nil, displayName: call.name, image: AvatarManager.instance.avatar(for: call.jid, on: call.account)?.inImage(), contactIdentifier: nil, customIdentifier: call.jid.description, isMe: false, suggestionType: .instantMessageAddress);
@@ -217,7 +257,7 @@ class CallManager: NSObject, CXProviderDelegate {
         self.logger.debug("reporting outgoing call: \(call.uuid)")
         do {
             try await self.callController.request(transaction);
-            self.activeCallsByUuid[call.uuid] = call;
+            activeCalls.register(call: call);
             call.ringing();
         } catch {
             self.callEnded(call);
@@ -232,7 +272,7 @@ class CallManager: NSObject, CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
         self.logger.debug("starting call: \(action.uuid)")
 
-        guard let call = activeCallsByUuid[action.callUUID] else {
+        guard let call = activeCalls.call(forUUID: action.callUUID) else {
             action.fail();
             return;
         }
@@ -252,7 +292,7 @@ class CallManager: NSObject, CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
         self.logger.debug("answering call: \(action.uuid)")
 
-        guard let call = activeCallsByUuid[action.callUUID] else {
+        guard let call = activeCalls.call(forUUID: action.callUUID) else {
             action.fail();
             return;
         }
@@ -290,7 +330,7 @@ class CallManager: NSObject, CXProviderDelegate {
     
     func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         self.logger.debug("ending call: \(action.uuid)")
-        guard let call = activeCallsByUuid[action.callUUID] else {
+        guard let call = activeCalls.call(forUUID: action.callUUID) else {
             action.fail();
             return;
         }
@@ -301,7 +341,7 @@ class CallManager: NSObject, CXProviderDelegate {
     }
     
     func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
-        guard let call = activeCallsByUuid[action.callUUID] else {
+        guard let call = activeCalls.call(forUUID: action.callUUID) else {
             action.fail();
             return;
         }
@@ -335,7 +375,7 @@ class CallManager: NSObject, CXProviderDelegate {
     }
     
     func endCall(_ call: CallBase) {
-        guard activeCallsByUuid[call.uuid] != nil else {
+        guard activeCalls.call(forUUID: call.uuid) != nil else {
             return;
         }
         let endCallAction = CXEndCallAction(call: call.uuid);
@@ -354,7 +394,7 @@ class CallManager: NSObject, CXProviderDelegate {
     func endCall(on account: BareJID, with jid: BareJID, sid: String, completionHandler: @escaping ()->Void) {
         logger.debug("endCall(on account) called");
         queue.async {
-            guard let call = self.activeCalls.first(where: { $0.account == account && $0.jid == jid && $0.sid == sid }) else {
+            guard let call = self.activeCalls.call(forAccount: account, jid: jid, sid: sid) else {
                 completionHandler();
                 return;
             }
@@ -370,7 +410,7 @@ class CallManager: NSObject, CXProviderDelegate {
     func endCall(on account: BareJID, sid: String, completionHandler: (()->Void)? = nil) {
         logger.debug("endCall(on account) called");
         queue.async {
-            guard let call = self.activeCalls.first(where: { $0.account == account && $0.sid == sid }) else {
+            guard let call = self.activeCalls.call(forAccount: account, sid: sid) else {
                 completionHandler?();
                 return;
             }
@@ -384,10 +424,7 @@ class CallManager: NSObject, CXProviderDelegate {
     }
 
     private func callEnded(_ call: CallBase) {
-        self.activeCallsByUuid.removeValue(forKey: call.uuid);
-        if let idx = self.activeCalls.firstIndex(where: { $0 === call }) {
-            self.activeCalls.remove(at: idx);
-        }
+        self.activeCalls.unregister(call: call);
     }
 }
 
