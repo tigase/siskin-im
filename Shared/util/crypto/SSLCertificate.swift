@@ -51,7 +51,7 @@ open class SSLCertificate: Martin.SSLCertificate {
         }
         
         defer {
-            X509_free(OpaquePointer.init(buf));
+            free(buf);
         }
         
         return Data(bytes: UnsafeRawPointer(buf!), count: Int(len));
