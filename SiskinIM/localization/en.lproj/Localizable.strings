@@ -44,6 +44,9 @@
 /* filter scope */
 "All" = "All";
 
+/* alert message - unblock communication with server */
+"All communication with users from %@ is blocked. Do you wish to unblock communication with this server?" = "All communication with users from %@ is blocked. Do you wish to unblock communication with this server?";
+
 /* alert body */
 "All messages will be deleted and all participants will be kicked out. Are you sure?" = "All messages will be deleted and all participants will be kicked out. Are you sure?";
 
@@ -106,8 +109,17 @@
 /* button label */
 "Block and report" = "Block and report";
 
+/* context menu item */
+"Block contact" = "Block contact";
+
 /* action */
 "Block participant" = "Block participant";
+
+/* context menu item */
+"Block server" = "Block server";
+
+/* user status - contact blocked */
+"Blocked" = "Blocked";
 
 /* channel participants view operation */
 "Blocking…" = "Blocking…";
@@ -949,6 +961,9 @@
 /* ssl certificate alert dialog body */
 "Server for domain %@ provided invalid certificate for %@\n with fingerprint\n%@%@.\nDo you trust this certificate?" = "Server for domain %1$@ provided invalid certificate for %2$@\n with fingerprint\n%3$@%4$@.\nDo you trust this certificate?";
 
+/* alert title - unblock communication with server */
+"Server is blocked" = "Server is blocked";
+
 /* alert body */
 "Server of selected account does not provide support for hosting meetings. Please select a different account." = "Server of selected account does not provide support for hosting meetings. Please select a different account.";
 
@@ -1051,6 +1066,9 @@
 /* action
    button label */
 "Unblock" = "Unblock";
+
+/* context menu action */
+"Unblock server" = "Unblock server";
 
 /* alert body */
 "Unknown error occurred" = "Unknown error occurred";

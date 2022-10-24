@@ -85,6 +85,9 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
                                 try await self.conversation.context?.module(.blockingCommand).block(jid: JID(self.conversation.jid), report: .init(cause: .abuse));
                             }
                         }),
+                        UIAction(title: NSLocalizedString("Block server", comment: "context menu action - block communication with server"), attributes: [.destructive], handler: { _ in
+                            self.conversation.context?.module(.blockingCommand).block(jid: JID(self.conversation.jid.domain), completionHandler: { _ in });
+                        }),
                         UIAction(title: NSLocalizedString("Cancel", comment: "context menu action"), handler: { _ in })
                     ])
                 default:

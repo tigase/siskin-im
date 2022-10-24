@@ -82,8 +82,10 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
         conversation.avatarPublisher.combineLatest(conversation.displayNamePublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] avatar, name in
             self?.titleView.avatarView.set(name: name, avatar: avatar);
         }).store(in: &cancellables);
-        conversation.statusPublisher.combineLatest(conversation.descriptionPublisher, chat.optionsPublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (show, description, options) in
-            self?.titleView.setStatus(show, description: description, encryption: options.encryption);
+        let jid = JID(chat.jid);
+        conversation.statusPublisher.combineLatest(conversation.descriptionPublisher, chat.optionsPublisher, conversation.context!.module(.blockingCommand).$blockedJids).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (show, description, options, blockedJids) in
+            let isBlocked = (blockedJids?.contains(jid) ?? false || blockedJids?.contains(JID(jid.domain)) ?? false);
+            self?.titleView.setStatus(show, description: description, encryption: options.encryption, isBlocked: isBlocked);
         }).store(in: &cancellables)        
     }
     
@@ -235,11 +237,13 @@ class ChatTitleView: BaseConversationTitleView {
 
     private var statusShow: Presence.Show? = nil;
     private var statusDescription: String? = nil;
+    private var isBlocked: Bool = false;
     
-    func setStatus(_ show: Presence.Show?, description: String?, encryption: ChatEncryption?) {
+    func setStatus(_ show: Presence.Show?, description: String?, encryption: ChatEncryption?, isBlocked: Bool) {
         statusShow = show;
         statusDescription = description;
         self.encryption = encryption;
+        self.isBlocked = isBlocked;
         refresh();
     }
     
@@ -264,33 +268,39 @@ class ChatTitleView: BaseConversationTitleView {
             let encryption = self.encryption ?? Settings.messageEncryption;
             if self.connected {
                 let statusIcon = NSTextAttachment();
-                statusIcon.image = AvatarStatusView.getStatusImage(self.statusShow);
+                statusIcon.image = self.isBlocked ? UIImage(systemName: "hand.raised")?.withTintColor(UIColor.systemRed) : AvatarStatusView.getStatusImage(self.statusShow);
                 let height = self.statusView.font.pointSize;
                 statusIcon.bounds = CGRect(x: 0, y: -2, width: height, height: height);
-                var desc = self.statusDescription;
-                if desc == nil {
-                    let show = self.statusShow;
-                    if show == nil {
-                        desc = NSLocalizedString("Offline", comment: "user status");
-                    } else {
-                        switch(show!) {
-                        case .online:
-                            desc = NSLocalizedString("Online", comment: "user status");
-                        case .chat:
-                            desc = NSLocalizedString("Free for chat", comment: "user status");
-                        case .away:
-                            desc = NSLocalizedString("Be right back", comment: "user status");
-                        case .xa:
-                            desc = NSLocalizedString("Away", comment: "user status");
-                        case .dnd:
-                            desc = NSLocalizedString("Do not disturb", comment: "user status");
+                if self.isBlocked {
+                    let statusText = NSMutableAttributedString(attachment: statusIcon);
+                    statusText.append(NSAttributedString(string: NSLocalizedString("Blocked", comment: "user status - contact blocked")));
+                    self.statusView.attributedText = statusText;
+                } else {
+                    var desc = self.statusDescription;
+                    if desc == nil {
+                        let show = self.statusShow;
+                        if show == nil {
+                            desc = NSLocalizedString("Offline", comment: "user status");
+                        } else {
+                            switch(show!) {
+                            case .online:
+                                desc = NSLocalizedString("Online", comment: "user status");
+                            case .chat:
+                                desc = NSLocalizedString("Free for chat", comment: "user status");
+                            case .away:
+                                desc = NSLocalizedString("Be right back", comment: "user status");
+                            case .xa:
+                                desc = NSLocalizedString("Away", comment: "user status");
+                            case .dnd:
+                                desc = NSLocalizedString("Do not disturb", comment: "user status");
+                            }
                         }
                     }
+                    let statusText = NSMutableAttributedString(string: encryption == .none ? "" : "\u{1F512} ");
+                    statusText.append(NSAttributedString(attachment: statusIcon));
+                    statusText.append(NSAttributedString(string: desc!));
+                    self.statusView.attributedText = statusText;
                 }
-                let statusText = NSMutableAttributedString(string: encryption == .none ? "" : "\u{1F512} ");
-                statusText.append(NSAttributedString(attachment: statusIcon));
-                statusText.append(NSAttributedString(string: desc!));
-                self.statusView.attributedText = statusText;
             } else {
                 switch encryption {
                 case .omemo:

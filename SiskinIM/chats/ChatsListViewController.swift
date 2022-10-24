@@ -639,6 +639,84 @@ class ChatsListViewController: UITableViewController, UISearchResultsUpdating {
         return config;
     }
     
+    override func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        guard let item = dataSource!.item(at: indexPath)?.chat else {
+            return nil;
+        }
+        switch item {
+        case let chat as Chat:
+            return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: contextMenuActionProvider(for: chat));
+        default:
+            return nil;
+        }
+    }
+    
+    private func contextMenuActionProvider(for chat: Chat) -> UIContextMenuActionProvider? {
+        return { suggestedActions -> UIMenu? in
+            var actions: [UIMenuElement] = [];
+            
+            if let context = chat.context, let blockingModule = chat.context?.module(.blockingCommand), blockingModule.isAvailable {
+                if blockingModule.blockedJids?.contains(JID(chat.jid)) ?? false {
+                    actions.append(UIAction(title: NSLocalizedString("Unblock", comment: "context menu action"), image: UIImage(systemName: "hand.raised"), handler: { _ in
+                        blockingModule.unblock(jids: [JID(chat.jid)], completionHandler: { _ in })
+                    }))
+                } else if blockingModule.blockedJids?.contains(JID(chat.jid.domain)) ?? false {
+                    actions.append(UIAction(title: NSLocalizedString("Unblock server", comment: "context menu action"), image: UIImage(systemName: "hand.raised"), handler: { _ in
+                        let alert = UIAlertController(title: NSLocalizedString("Server is blocked", comment: "alert title - unblock communication with server"), message: String.localizedStringWithFormat(NSLocalizedString("All communication with users from %@ is blocked. Do you wish to unblock communication with this server?", comment: "alert message - unblock communication with server"), chat.jid.domain), preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("Unblock", comment: "unblock server"), style: .default, handler: { _ in
+                            blockingModule.unblock(jids: [JID(chat.jid.domain), JID(chat.jid)], completionHandler: { _ in })
+                        }))
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "cancel operation"), style: .cancel, handler: { _ in }))
+                        self.present(alert, animated: true);
+                    }))
+                } else {
+                    var items = [UIMenuElement]();
+                    if blockingModule.isReportingSupported {
+                        items.append(UIAction(title: NSLocalizedString("Report spam", comment: "context menu action"), attributes: .destructive, handler: { _ in
+                            blockingModule.block(jid: JID(chat.jid), report: .init(cause: .spam), completionHandler: { _ in });
+                        }));
+                        
+                        items.append(UIAction(title: NSLocalizedString("Report abuse", comment: "context menu action"), attributes: .destructive, handler: { _ in
+                            blockingModule.block(jid: JID(chat.jid), report: .init(cause: .abuse), completionHandler: { _ in });
+                        }));
+                    } else {
+                        items.append(UIAction(title: NSLocalizedString("Block contact", comment: "context menu item"), attributes: .destructive, handler: { _ in
+                            blockingModule.block(jid: JID(chat.jid), completionHandler: { result in
+                                switch result {
+                                case .success(_):
+                                    _ = DBChatStore.instance.close(chat: chat);
+                                case .failure(_):
+                                    break;
+                                }
+                            })
+                        }))
+                    }
+                    items.append(UIAction(title: NSLocalizedString("Block server", comment: "context menu item"), attributes: .destructive, handler: { _ in
+                        blockingModule.block(jid: JID(chat.jid.domain), completionHandler: { result in
+                            switch result {
+                            case .success(_):
+                                let blockedChats = DBChatStore.instance.chats(for: context).filter({ $0.jid.domain == chat.jid.domain });
+                                for blockedChat in blockedChats {
+                                    _ = DBChatStore.instance.close(chat: blockedChat);
+                                }
+                            case .failure(_):
+                                break;
+                            }
+                        })
+                    }))
+                    items.append(UIAction(title: NSLocalizedString("Cancel", comment: "context menu action"), handler: { _ in }));
+                    actions.append(UIMenu(title: NSLocalizedString("Report & block…", comment: "context action label"), image: UIImage(systemName: "hand.raised"), children: items));
+                }
+            }
+            
+            guard !actions.isEmpty else {
+                return nil;
+            }
+            
+            return UIMenu(title: "", children: actions);
+        }
+    }
+    
     func discardNotifications(for item: Conversation) {
         let accountStr = item.account.description.lowercased();
         let jidStr = item.jid.description.lowercased();
