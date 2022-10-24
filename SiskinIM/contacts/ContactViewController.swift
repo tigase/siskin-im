@@ -178,7 +178,7 @@ class ContactViewController: UITableViewController {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "BlockContactCell", for: indexPath);
                 let btn = UISwitch(frame: .zero);
                 if let blockingModule = XmppService.instance.getClient(for: account)?.module(.blockingCommand), blockingModule.isAvailable {
-                    btn.isOn = blockingModule.blockedJids?.contains(JID(jid)) ?? false;
+                    btn.isOn = (blockingModule.blockedJids?.contains(JID(jid)) ?? false) || (blockingModule.blockedJids?.contains(JID(jid.domain)) ?? false);
                     btn.isEnabled = true;
                 } else {
                     btn.isOn = false;
@@ -381,14 +381,32 @@ class ContactViewController: UITableViewController {
                 }
             })
         } else {
-            blockingModule.unblock(jids: [jid], completionHandler: { [weak sender] result in
-                switch result {
-                case .failure(_):
+            if blockingModule.blockedJids?.contains(JID(jid.domain)) ?? false {
+                let alert = UIAlertController(title: NSLocalizedString("Server is blocked", comment: "alert title - unblock communication with server"), message: String.localizedStringWithFormat(NSLocalizedString("All communication with users from %@ is blocked. Do you wish to unblock communication with this server?", comment: "alert message - unblock communication with server"), jid.domain), preferredStyle: .alert);
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Unblock", comment: "unblock server"), style: .default, handler: { _ in
+                    blockingModule.unblock(jids: [JID(jid.domain), jid], completionHandler: { [weak sender] result in
+                        switch result {
+                        case .failure(_):
+                            sender?.isOn = true;
+                        default:
+                            break;
+                        }
+                    })
+                }))
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "cancel operation"), style: .cancel, handler: { [weak sender] _ in
                     sender?.isOn = true;
-                default:
-                    break;
-                }
-            })
+                }))
+                self.present(alert, animated: true);
+            } else {
+                blockingModule.unblock(jids: [jid], completionHandler: { [weak sender] result in
+                    switch result {
+                    case .failure(_):
+                        sender?.isOn = true;
+                    default:
+                        break;
+                    }
+                })
+            }
         }
     }
     

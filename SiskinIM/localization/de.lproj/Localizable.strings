@@ -44,6 +44,9 @@
 /* filter scope */
 "All" = "Alle";
 
+/* alert message - unblock communication with server */
+"All communication with users from %@ is blocked. Do you wish to unblock communication with this server?" = "Jegliche Kommunikation mit Benutzern von %@ ist blockiert. Möchten Sie die Kommunikation mit diesem Server entsperren?";
+
 /* alert body */
 "All messages will be deleted and all participants will be kicked out. Are you sure?" = "Alle Nachrichten werden gelöscht und alle Teilnehmer werden rausgeworfen. Bist du dir sicher?";
 
@@ -106,8 +109,17 @@
 /* button label */
 "Block and report" = "Sperren und melden";
 
+/* context menu item */
+"Block contact" = "Kontakt sperren";
+
 /* action */
 "Block participant" = "Teilnehmer sperren";
+
+/* context menu item */
+"Block server" = "Server sperren";
+
+/* user status - contact blocked */
+"Blocked" = "Verboten";
 
 /* channel participants view operation */
 "Blocking…" = "Sperren…";
@@ -919,6 +931,9 @@
 /* ssl certificate alert dialog body */
 "Server for domain %@ provided invalid certificate for %@\n with fingerprint\n%@%@.\nDo you trust this certificate?" = "Server für Domain %1$@ hat ungültiges Zertifikat für %2$@\n mit Fingerabdruck\n%3$@%4$@.\nVertraust du diesem Zertifikat?";
 
+/* alert title - unblock communication with server */
+"Server is blocked" = "Server ist gesperrt";
+
 /* alert body */
 "Server of selected account does not provide support for hosting meetings. Please select a different account." = "Der Server des ausgewählten Kontos bietet keine Unterstützung für Konferenzen. Bitte wähle ein anderes Konto.";
 
@@ -1012,6 +1027,9 @@
 /* action
    button label */
 "Unblock" = "Entsperren";
+
+/* context menu action */
+"Unblock server" = "Server entsperren";
 
 /* alert body */
 "Unknown error occurred" = "Unbekannter Fehler aufgetreten";
