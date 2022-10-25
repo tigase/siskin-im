@@ -166,6 +166,9 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     }
     
     private func closed(conversation: Conversation) {
+        guard self.conversation.id == conversation.id else {
+            return;
+        }
         if let navigationController = self.navigationController {
             if navigationController.viewControllers.count == 1 {
                 self.showDetailViewController(UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "emptyDetailViewController"), sender: self);
