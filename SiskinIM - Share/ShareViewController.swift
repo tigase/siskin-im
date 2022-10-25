@@ -470,8 +470,8 @@ class ShareViewController: UITableViewController {
                     }
                 });
             } else if provider.hasItemConformingToTypeIdentifier(kUTTypeFileURL as String) {
-                provider.loadFileRepresentation(forTypeIdentifier: kUTTypeFileURL as String, completionHandler: { (url, error) in
-                    guard let url = url else {
+                provider.loadItem(forTypeIdentifier: kUTTypeURL as String, options: nil, completionHandler: { (item, error) in
+                    guard let url = item as? URL else {
                         completionHandler(.failure(error!));
                         return;
                     }
