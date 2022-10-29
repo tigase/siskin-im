@@ -220,7 +220,7 @@ class CallManager: NSObject, CXProviderDelegate {
                     continuation.resume(throwing: error);
                 })
             })
-            self.activeCallsByUuid[call.uuid] = call;
+            activeCalls.register(call: call);
     
             self.queue.sync {
                 call.ringing();
