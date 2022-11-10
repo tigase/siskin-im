@@ -208,7 +208,7 @@ class RegisterAccountController: DataFormController {
                 } else {
                     account.acceptedCertificate = nil;
                 }
-                account.password = self.password!;
+                account.credentials = .password(self.password!);
             })
             self.onAccountAdded?();
             self.dismissView();

@@ -474,8 +474,6 @@ open class XmppService {
         _ = client.modulesManager.register(ExternalServiceDiscoveryModule());
         client.modulesManager.register(MeetModule());
         _ = client.modulesManager.register(InBandRegistrationModule());
-        // TODO: restore support for caching salted password
-//        ScramMechanism.setSaltedPasswordCache(AccountManager.saltedPasswordCache, sessionObject: client.sessionObject);
         
         let signalStorage = OMEMOStoreWrapper(context: client.context);
         let signalContext = SignalContext(withStorage: signalStorage)!;
@@ -500,6 +498,18 @@ open class XmppService {
         client.$state.combineLatest($applicationState).sink(receiveValue: { [weak client] (clientState, applicationState) in
             if clientState == .connected() {
                 _ = client?.module(.csi).setState(applicationState == .active);
+            }
+        }).store(in: &clientCancellables.cancellables);
+        
+        let accountJid = account.name;
+        client.connectionConfiguration.credentialsPublisher.sink(receiveValue: { newCredentials in
+            do {
+                self.logger.debug("storing changed credentials: \(String(data: try! JSONEncoder().encode(newCredentials), encoding: .utf8)!)");
+                try AccountManager.modifyAccount(for: accountJid, { account in
+                    account.credentials = newCredentials;
+                })
+            } catch {
+                self.logger.error("storing updated credentials failed: \(error.localizedDescription)");
             }
         }).store(in: &clientCancellables.cancellables);
                     

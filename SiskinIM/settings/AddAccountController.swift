@@ -165,7 +165,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
                 } else {
                     account.acceptedCertificate = nil;
                 }
-                account.password = newPassword;
+                account.credentials = .password(newPassword);
                 if let host = connectivitySettings.host, let port = connectivitySettings.port {
                     account.serverEndpoint = .init(proto: connectivitySettings.useDirectTLS ? .XMPPS : .XMPP, host: host, port: port)
                 }
@@ -256,7 +256,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
                 }
                 options.networkProcessorProviders.append(connectivitySettings.disableTLS13 ? SSLProcessorProvider(supportedTlsVersions: TLSVersion.TLSv1_2...TLSVersion.TLSv1_2) : SSLProcessorProvider());
             })
-            client.connectionConfiguration.credentials = .password(password: password, authenticationName: nil, cache: nil);
+            client.connectionConfiguration.credentials = .password(password);//, authenticationName: nil, cache: nil);
             defer {
                 Task {
                     try await client.disconnect();
