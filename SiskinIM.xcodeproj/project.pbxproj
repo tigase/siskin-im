@@ -2479,7 +2479,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tigase/MartinOMEMO";
 			requirement = {
-				branch = master;
+				branch = devel;
 				kind = branch;
 			};
 		};

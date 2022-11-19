@@ -104,7 +104,7 @@ class DBOMEMOStore {
             // should we remove this key?
             return false;
         }
-        guard let publicKeyData = key.publicKey else {
+        guard let publicKeyData = key.publicKeyData else {
             return false;
         }
         
