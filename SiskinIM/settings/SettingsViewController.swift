@@ -28,7 +28,7 @@ import Shared
 class SettingsViewController: UITableViewController {
    
     var statusNames: [Presence.Show: String] = [
-        .chat : NSLocalizedString("Chat", comment: "presence status"),
+        .chat : NSLocalizedString("Chatty", comment: "presence status"),
         .online : NSLocalizedString("Online", comment: "presence status"),
         .away : NSLocalizedString("Away", comment: "presence status"),
         .xa : NSLocalizedString("Extended away", comment: "presence status"),

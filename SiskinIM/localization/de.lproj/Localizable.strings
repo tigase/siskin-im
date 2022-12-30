@@ -166,6 +166,9 @@
 /* placeholder for text field to search for conversation to open */
 "Chat with…" = "Plaudern mit…";
 
+/* presence status */
+"Chatty" = "Gesprächig";
+
 /* channel create view operation label
    channel join view operation label
    channel settings view opeartion label */

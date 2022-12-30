@@ -157,12 +157,14 @@
 /* alert title */
 "Channel destuction" = "Usuwanie kanału";
 
-/* action label
-   presence status */
-"Chat" = "Chętny do rozmowy";
+/* action label */
+"Chat" = "Rozmowa";
 
 /* placeholder for text field to search for conversation to open */
 "Chat with…" = "Rozmowa z…";
+
+/* presence status */
+"Chatty" = "Chętny do rozmowy";
 
 /* channel create view operation label
    channel join view operation label
