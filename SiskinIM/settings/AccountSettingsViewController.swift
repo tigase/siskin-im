@@ -77,7 +77,7 @@ class AccountSettingsViewController: UITableViewController {
         avatarView.layer.masksToBounds = true;
         avatarView.layer.cornerRadius = avatarView.frame.width / 2;
         
-        AvatarManager.instance.avatarPublisher(for: .init(account: account, jid: account, mucNickname: nil)).avatarPublisher.receive(on: DispatchQueue.main).assign(to: \.image, on: avatarView).store(in: &cancellables);
+        AvatarManager.instance.avatarPublisher(for: .init(account: account, jid: account, mucNickname: nil)).receive(on: DispatchQueue.main).assign(to: \.image, on: avatarView).store(in: &cancellables);
         
         XmppService.instance.$connectedClients.map({ [weak self] clients in clients.first(where: { c in c.userBareJid == self?.account }) }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] _ in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

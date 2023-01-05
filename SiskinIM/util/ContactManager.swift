@@ -54,9 +54,6 @@ public class Contact: DisplayableIdWithKeyProtocol {
     }
     
     public let avatar: Avatar;
-    public var avatarPublisher: AnyPublisher<UIImage?, Never> {
-        return avatar.avatarPublisher;
-    }
 
     public init(key: Key, displayName: String, status: Presence.Show?) {
         self.key = key;

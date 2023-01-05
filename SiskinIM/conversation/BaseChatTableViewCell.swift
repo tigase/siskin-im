@@ -136,7 +136,7 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
         
         if let avatarView = self.avatarView, let avatar = item.sender.avatar(for: item.conversation) {
             let name = item.sender.nickname;
-            avatar.avatarPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { image in
+            avatar.receive(on: DispatchQueue.main).sink(receiveValue: { image in
                 avatarView.set(name: name, avatar: image);
             }).store(in: &cancellables);
             self.avatar = avatar;

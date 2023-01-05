@@ -39,7 +39,7 @@ class ChannelSettingsViewController: UITableViewController {
         channel.displayNamePublisher.map({ $0 }).assign(to: \.text, on: channelNameField!).store(in: &cancellables);
         channelAvatarView.layer.cornerRadius = channelAvatarView.frame.width / 2;
         channelAvatarView.layer.masksToBounds = true;
-        channel.avatarPublisher.replaceNil(with: AvatarManager.instance.defaultGroupchatAvatar).receive(on: DispatchQueue.main).assign(to: \.avatar, on: channelAvatarView).store(in: &cancellables);
+        channel.avatar.replaceNil(with: AvatarManager.instance.defaultGroupchatAvatar).receive(on: DispatchQueue.main).assign(to: \.avatar, on: channelAvatarView).store(in: &cancellables);
         channel.descriptionPublisher.assign(to: \.text, on: channelDescriptionField).store(in: &cancellables);
         channel.optionsPublisher.map({ ChannelSettingsViewController.labelFor(conversationNotification: $0.notifications) as String? }).assign(to: \.text, on: notificationsField!).store(in: &cancellables);
         

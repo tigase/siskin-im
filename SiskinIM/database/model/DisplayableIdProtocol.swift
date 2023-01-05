@@ -33,7 +33,7 @@ public protocol DisplayableIdProtocol {
     var status: Presence.Show? { get }
     var statusPublisher: Published<Presence.Show?>.Publisher { get }
     
-    var avatarPublisher: AnyPublisher<UIImage?,Never> { get }
+    var avatar: Avatar { get }
     
     var description: String? { get }
     var descriptionPublisher: Published<String?>.Publisher { get }

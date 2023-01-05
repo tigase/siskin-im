@@ -60,7 +60,7 @@ struct AccountSelectionView: View {
             ScrollView {
                 LazyVStack(alignment: .leading) {
                     ForEach(accounts, id: \.description) { account in
-                        AccountView(account: account)
+                        AccountView(account: account, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: account, jid: account, mucNickname: nil)))
                             .scaledToFill()
                             .onTapGesture {
                                 selection?(account);
@@ -76,14 +76,20 @@ struct AccountSelectionView: View {
     struct AccountView: View {
         
         var account: BareJID = BareJID("")
+        var avatar: Avatar;
         
+        @State
+        private var avatarImage: UIImage? = nil;
         var body: some View {
             HStack {
-                Image(uiImage: AvatarManager.instance.avatar(for: account, on: account) ?? UIImage.withInitials(AccountManager.account(for: account)?.nickname, size: .init(width: 36, height: 36)) ?? AvatarManager.instance.defaultAvatar)
+                Image(uiImage: avatarImage ?? AvatarManager.instance.defaultAvatar)
                     .resizable()
                     .scaledToFill()
                     .frame(width: 36, height: 36)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .onReceive(avatar, perform: { newAvatar in
+                        self.avatarImage = newAvatar ?? .withInitials(AccountManager.account(for: account)?.nickname, size: .init(width: 36, height: 36)) ?? AvatarManager.instance.defaultAvatar;
+                    })
                 Text(account.description)
                     .font(.headline)
                     .scaledToFill()

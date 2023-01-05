@@ -34,7 +34,7 @@ class AccountTableViewCell: UITableViewCell {
     private var cancellables: Set<AnyCancellable> = [];
     private var avatarObj: Avatar? {
         didSet {
-            avatarObj?.avatarPublisher.receive(on: DispatchQueue.main).assign(to: \.avatar, on: avatarStatusView.avatarImageView).store(in: &cancellables);
+            avatarObj?.receive(on: DispatchQueue.main).assign(to: \.avatar, on: avatarStatusView.avatarImageView).store(in: &cancellables);
         }
     }
     

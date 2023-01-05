@@ -526,7 +526,7 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
                 cancellables.removeAll();
                 if let contact = contact {
                     contact.$displayName.map({ $0 as String? }).receive(on: DispatchQueue.main).assign(to: \.text, on: nameLabel).store(in: &cancellables);
-                    contact.avatarPublisher.combineLatest(contact.$displayName).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] avatar, name in
+                    contact.avatar.combineLatest(contact.$displayName).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] avatar, name in
                         self?.avatarView.set(name: name, avatar: avatar)
                     }).store(in: &cancellables);
                 }

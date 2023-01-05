@@ -37,7 +37,7 @@ class AvatarStatusView: UIView {
     var displayableId: DisplayableIdProtocol? {
         didSet {
             cancellables.removeAll();
-            if let namePublisher = displayableId?.displayNamePublisher, let avatarPublisher = displayableId?.avatarPublisher {
+            if let namePublisher = displayableId?.displayNamePublisher, let avatarPublisher = displayableId?.avatar {
                 namePublisher.combineLatest(avatarPublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] name, image in
                     self?.avatarImageView.set(name: name, avatar: image);
                 }).store(in: &cancellables);

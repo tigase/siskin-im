@@ -58,7 +58,7 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             self?.navigationItem.rightBarButtonItem?.isEnabled = state == .joined;
         }).store(in: &cancellables);
         room.displayNamePublisher.map({ $0 }).assign(to: \.name, on: self.titleView).store(in: &cancellables);
-        room.avatarPublisher.combineLatest(room.displayNamePublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] avatar, name in
+        room.avatar.combineLatest(room.displayNamePublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] avatar, name in
             self?.titleView.avatarView.set(name: nil, avatar: avatar ?? AvatarManager.instance.defaultGroupchatAvatar);
         }).store(in: &cancellables);
     }

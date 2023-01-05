@@ -97,6 +97,10 @@ class AbstractRosterViewController: UITableViewController, UISearchResultsUpdati
         
         return cell;
     }
+    
+    override func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        (cell as? RosterItemTableViewCell)?.avatarStatusView.displayableId = nil;
+    }
         
     override func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         if let v = view as? UITableViewHeaderFooterView {

@@ -47,7 +47,7 @@ class MucChatSettingsViewController: UITableViewController, UIImagePickerControl
         roomAvatarView.layer.masksToBounds = true;
 //        roomAvatarView.widthAnchor.constraint(equalTo: roomAvatarView.heightAnchor).isActive = true;
         room.optionsPublisher.compactMap({ $0.name }).receive(on: DispatchQueue.main).assign(to: \.text, on: roomNameField).store(in: &cancellables);
-        room.avatarPublisher.map({ $0 ?? AvatarManager.instance.defaultGroupchatAvatar }).receive(on: DispatchQueue.main).assign(to: \.avatar, on: roomAvatarView).store(in: &cancellables);
+        room.avatar.map({ $0 ?? AvatarManager.instance.defaultGroupchatAvatar }).receive(on: DispatchQueue.main).assign(to: \.avatar, on: roomAvatarView).store(in: &cancellables);
         room.descriptionPublisher.receive(on: DispatchQueue.main).assign(to: \.text, on: roomSubjectField).store(in: &cancellables);
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "pencil.circle"), style: .plain, target: self, action: #selector(MucChatSettingsViewController.editClicked(_:)));
 //        room.$affiliation.map({ $0 == .admin || $0 == .owner }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in

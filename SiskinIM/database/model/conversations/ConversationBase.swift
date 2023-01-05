@@ -56,8 +56,8 @@ public class ConversationBase: Martin.ConversationBase, Identifiable, Hashable, 
         return displayableId.statusPublisher;
     }
     
-    public var avatarPublisher: AnyPublisher<UIImage?, Never> {
-        return displayableId.avatarPublisher;
+    public var avatar: Avatar {
+        return displayableId.avatar;
     }
     
     public var description: String? {

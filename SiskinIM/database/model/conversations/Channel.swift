@@ -267,9 +267,6 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         }
         
         let avatar: Avatar;
-        var avatarPublisher: AnyPublisher<UIImage?, Never> {
-            return avatar.avatarPublisher.replaceNil(with: AvatarManager.instance.defaultGroupchatAvatar).eraseToAnyPublisher();
-        }
         
         init(displayName: String, status: Presence.Show?, avatar: Avatar, description: String?) {
             self.displayName = displayName;

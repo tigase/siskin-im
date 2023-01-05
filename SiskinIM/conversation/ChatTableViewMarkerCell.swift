@@ -40,7 +40,7 @@ class ChatTableViewMarkerCell: UITableViewCell {
             view.clipsToBounds = true;
             NSLayoutConstraint.activate([view.heightAnchor.constraint(equalToConstant: 14), view.widthAnchor.constraint(equalToConstant: 14)]);
             view.scalesLargeContentImage = true;
-            if let avatarPublisher = senders[idx].avatar(for: item.conversation)?.avatarPublisher {
+            if let avatarPublisher = senders[idx].avatar(for: item.conversation) {
                 let name = senders[idx].nickname;
                 avatarPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { avatar in
                     view.set(name: name, avatar: avatar);

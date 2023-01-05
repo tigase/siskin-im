@@ -186,7 +186,7 @@ class MultiContactSelectionViewController: UITableViewController, UISearchContro
                 cancellables.removeAll();
                 contact?.$displayName.map({ $0 as String? }).receive(on: DispatchQueue.main).assign(to: \.text, on: label).store(in: &cancellables);
                 if let contact = self.contact {
-                    contact.$displayName.combineLatest(contact.avatarPublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (name, avatar) in
+                    contact.$displayName.combineLatest(contact.avatar).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (name, avatar) in
                         self?.avatarView.set(name: name, avatar: avatar);
                     }).store(in: &cancellables);
                 }

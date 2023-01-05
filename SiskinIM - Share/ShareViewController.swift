@@ -318,7 +318,14 @@ class ShareViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "recipientTableViewCell", for: indexPath);
         let item = rosterItems[indexPath.row];
-        cell.imageView?.image = avatar(for: item) ?? generateAvatar(for: item);
+        cell.imageView?.image = generateAvatar(for: item);
+        Task { [weak cell] in
+            if let avatar = await avatar(for: item) {
+                if cell?.detailTextLabel?.text == item.jid.description {
+                    cell?.imageView?.image = avatar;
+                }
+            }
+        }
         cell.imageView?.layer.cornerRadius = 20;
         cell.imageView?.layer.masksToBounds = true;
         cell.textLabel?.text = item.displayName;
@@ -331,12 +338,12 @@ class ShareViewController: UITableViewController {
         return cell;
     }
     
-    func avatar(for item: RosterItem) -> UIImage? {
+    func avatar(for item: RosterItem) async -> UIImage? {
         guard let hash = avatarStore.avatarHash(for: item.jid, on: item.account).sorted().first else {
             return nil;
         }
 
-        return avatarStore.avatar(for: hash.hash)?.scaled(maxWidthOrHeight: 40);
+        return await avatarStore.avatar(for: hash.hash)?.scaled(maxWidthOrHeight: 40);
     }
     
     func generateAvatar(for item: RosterItem) -> UIImage? {

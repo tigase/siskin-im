@@ -31,47 +31,99 @@ struct AvatarWeakRef {
     weak var avatar: Avatar?;
 }
 
-public class Avatar {
+public class Avatar: Publisher {
 
-    private enum AvatarResult: Equatable {
+    private struct AvatarSubscription: Subscription {
+        
+        let combineIdentifier = CombineIdentifier();
+        
+        private let avatar: Avatar;
+        private let subscription: Subscription;
+        
+        init(avatar: Avatar, subscription: Subscription) {
+            self.avatar = avatar;
+            self.subscription = subscription;
+        }
+        
+        @inlinable
+        func request(_ demand: Subscribers.Demand) {
+            subscription.request(demand);
+        }
+        
+        @inlinable
+        func cancel() {
+            subscription.cancel();
+        }
+        
+    }
+
+    private struct AvatarSubscriber<Input,Failure: Error>: Subscriber {
+               
+        let combineIdentifier = CombineIdentifier();
+
+        private let receiveInput: (Input) -> Subscribers.Demand;
+        private let receiveCompletion: (Subscribers.Completion<Failure>) -> Void;
+        private let receiveSubscription: (Subscription)->Void;
+        
+        init<S: Subscriber>(avatar: Avatar, subscriber: S) where Input == S.Input, Failure == S.Failure {
+            self.receiveInput = { input in
+                subscriber.receive(input);
+            }
+            self.receiveCompletion = { completion in
+                subscriber.receive(completion: completion);
+            }
+            self.receiveSubscription = { subscription in
+                subscriber.receive(subscription: AvatarSubscription(avatar: avatar, subscription: subscription));
+            }
+        }
+        
+        @inlinable
+        func receive(subscription: Subscription) {
+            receiveSubscription(subscription);
+        }
+        
+        @inlinable
+        func receive(_ input: Input) -> Subscribers.Demand {
+            receiveInput(input);
+        }
+        
+        @inlinable
+        func receive(completion: Subscribers.Completion<Failure>) {
+            receiveCompletion(completion);
+        }
+        
+    }
+    
+    public func receive<S>(subscriber: S) where S : Subscriber, Never == S.Failure, UIImage? == S.Input {
+        self.publisher!.receive(subscriber: AvatarSubscriber(avatar: self, subscriber: subscriber));
+    }
+    
+    public typealias Output = UIImage?
+    public typealias Failure = Never
+    
+    public enum Hash: Equatable {
         case notReady
-        case ready(UIImage?)
+        case hash(String?)
     }
     
     private let key: Key;
 
-    public var hash: String? {
-        didSet {
-            if let hash = hash {
-                AvatarManager.instance.avatar(withHash: hash, completionHandler: { result in
-                    guard hash == self.hash else {
-                        return;
-                    }
-                    switch result {
-                    case .success(let avatar):
-                        self.avatarSubject.send(.ready(avatar));
-                    case .failure(_):
-                        self.avatarSubject.send(.ready(nil));
-                    }
-
-                });
-            } else {
-                self.avatarSubject.send(.ready(nil));
-            }
-        }
-    }
-    
-    private let avatarSubject = CurrentValueSubject<AvatarResult,Never>(.notReady);
-    public let avatarPublisher: AnyPublisher<UIImage?,Never>;
+    @Published
+    public var hash: Hash = .notReady;
+    private var publisher: AnyPublisher<UIImage?,Never>?;
     
     init(key: Key) {
         self.key = key;
-        self.avatarPublisher = avatarSubject.filter({ .notReady != $0 }).map({
+        self.publisher = $hash.filter({ .notReady != $0 }).map({
             switch $0 {
             case .notReady:
                 return nil;
-            case .ready(let image):
-                return image;
+            case .hash(let hash):
+                if let hash {
+                    return AvatarManager.instance.avatar(withHash: hash);
+                } else {
+                    return nil;
+                }
             }
         }).removeDuplicates().eraseToAnyPublisher();
     }
@@ -94,11 +146,9 @@ public class Avatar {
 
 class AvatarManager {
 
-    public static let AVATAR_CHANGED = Notification.Name("avatarChanged");
-    public static let AVATAR_FOR_HASH_CHANGED = Notification.Name("avatarForHashChanged");
     public static let instance = AvatarManager();
 
-    fileprivate let store = AvatarStore();
+    private let store = AvatarStore();
     public var defaultAvatar: UIImage {
         return UIImage(named: "defaultAvatar")!;
     }
@@ -120,7 +170,10 @@ class AvatarManager {
             guard let avatar = avatars[key]?.avatar else {
                 let avatar = Avatar(key: key);
                 DispatchQueue.global(qos: .userInitiated).async {
-                    avatar.hash = self.avatarHash(for: key.jid, on: key.account, withNickname: key.mucNickname);
+                    let start = Date();
+                    avatar.hash = .hash(self.avatarHash(for: key.jid, on: key.account, withNickname: key.mucNickname));
+                    let end = Date();
+                    print("avatar loaded in: \(end.timeIntervalSince(start) * 1000) ms")
                 }
                 avatars[key] = AvatarWeakRef(avatar: avatar);
                 return avatar;
@@ -165,6 +218,7 @@ class AvatarManager {
         }
     }
     
+    // TODO: consider reviewing usage and replacing this code with async-await
     open func avatar(for jid: BareJID, on account: BareJID) -> UIImage? {
         guard let hash = store.avatarHash(for: jid, on: account).first?.hash else {
             return nil;
@@ -173,47 +227,45 @@ class AvatarManager {
     }
     
     open func hasAvatar(withHash hash: String) -> Bool {
-        return store.hasAvatarFor(hash: hash);
+        return store.hasAvatar(forHash: hash);
     }
     
+    // TODO: consider reviewing usage and replacing this code with async-await
     open func avatar(withHash hash: String) -> UIImage? {
         return store.avatar(for: hash);
     }
-    
-    open func avatar(withHash hash: String, completionHandler: @escaping (Result<UIImage,XMPPError>)->Void) {
-        store.avatar(for: hash, completionHandler: completionHandler);
-    }
-    
+        
     open func storeAvatar(data: Data) -> String {
         let hash = Insecure.SHA1.hash(toHex: data);
         self.store.storeAvatar(data: data, for: hash);
-        NotificationCenter.default.post(name: AvatarManager.AVATAR_FOR_HASH_CHANGED, object: hash);
-        return hash;
+       return hash;
     }
     
     open func updateAvatar(hash: String, forType type: AvatarType, forJid jid: BareJID, on account: BareJID) {
-        self.store.updateAvatarHash(for: jid, on: account, hash: .init(type: type, hash: hash), completionHandler: { result in
-            switch result {
-            case .notChanged:
-                break;
-            case .noAvatar:
-                self.avatarUpdated(hash: nil, for: jid, on: account, withNickname: nil);
-            case .newAvatar(let hash):
-                self.avatarUpdated(hash: hash, for: jid, on: account, withNickname: nil);
-            }
-        })
+        guard self.store.updateAvatarHash(for: jid, on: account, hash: .init(type: type, hash: hash)) else {
+            return;
+        }
+        guard self.store.avatarHash(for: jid, on: account).first?.type != type else {
+            return;
+        }
+        
+        guard let avatar = self.existingAvatarPublisher(for: .init(account: account, jid: jid, mucNickname: nil)) else {
+            return;
+        }
+        
+        avatar.hash = .hash(hash);
     }
     
-    public func avatarUpdated(hash: String?, for jid: BareJID, on account: BareJID, withNickname nickname: String?) {
+    public func avatarUpdated(hash: String?, for jid: BareJID, on account: BareJID, withNickname nickname: String) {
         if let avatar = self.existingAvatarPublisher(for: .init(account: account, jid: jid, mucNickname: nickname)) {
-            if hash == nil, let nickname = nickname {
+            if hash == nil {
                 if let room = DBChatStore.instance.conversation(for: account, with: jid) as? Room, let occupantJid = room.occupant(nickname: nickname)?.jid?.bareJid {
-                    avatar.hash = store.avatarHash(for: occupantJid, on: account).first?.hash;
+                    avatar.hash = .hash(store.avatarHash(for: occupantJid, on: account).first?.hash);
                 } else {
-                    avatar.hash = hash;
+                    avatar.hash = .hash(hash);
                 }
             } else {
-                avatar.hash = hash;
+                avatar.hash = .hash(hash);
             }
         }
     }
@@ -243,7 +295,7 @@ class AvatarManager {
             return;
         }
         
-        Task {
+        Task.detached {
             let data = try await VCardManager.fetchPhoto(photo: photo);
             let hash = self.storeAvatar(data: data);
             self.updateAvatar(hash: hash, forType: .vcardTemp, forJid: vcardItem.jid, on: vcardItem.account);
@@ -258,8 +310,10 @@ class AvatarManager {
         pepModule.retrieveAvatar(from: jid, itemId: hash, completionHandler: { result in
             switch result {
             case .success(let avatarData):
-                self.store.storeAvatar(data: avatarData.data, for: hash);
-                self.updateAvatar(hash: hash, forType: .pepUserAvatar, forJid: jid, on: account);
+                Task.detached {
+                    self.store.storeAvatar(data: avatarData.data, for: hash);
+                    self.updateAvatar(hash: hash, forType: .pepUserAvatar, forJid: jid, on: account);
+                }
             case .failure(let error):
                 self.logger.error("could not retrieve avatar from: \(jid), item id: \(hash), got error: \(error.description, privacy: .public)");
             }

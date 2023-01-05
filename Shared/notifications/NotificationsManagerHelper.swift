@@ -112,7 +112,7 @@ public class NotificationsManagerHelper {
             if #available(iOS 15.0, *) {
                 do {
                     let recipient = INPerson(personHandle: INPersonHandle(value: account.description, type: .unknown), nameComponents: nil, displayName: nil, image: nil, contactIdentifier: nil, customIdentifier: nil, isMe: true, suggestionType: .none);
-                    let avatar = provider.avatar(on: account, for: sender);
+                    let avatar = await provider.avatar(on: account, for: sender);
                     let sender = INPerson(personHandle: INPersonHandle(value: senderId, type: .unknown), nameComponents: nil, displayName: group == nil ? details.name : nickname, image: avatar, contactIdentifier: nil, customIdentifier: senderId, isMe: false, suggestionType: .instantMessageAddress);
                     let intent = INSendMessageIntent(recipients: group == nil ? [recipient] : [recipient, sender], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: group, conversationIdentifier: content.threadIdentifier, serviceName: "Siskin IM", sender: sender, attachments: nil);
                     if details.type == .chat {
@@ -147,7 +147,7 @@ public protocol NotificationManagerProvider {
     
     func shouldShowNotification(account: BareJID, sender: BareJID?, body: String?) -> Bool;
     
-    func avatar(on account: BareJID, for sender: BareJID) -> INImage?;
+    func avatar(on account: BareJID, for sender: BareJID) async -> INImage?;
     
 }
 

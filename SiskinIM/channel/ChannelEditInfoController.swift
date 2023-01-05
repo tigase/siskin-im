@@ -40,7 +40,7 @@ class ChannelEditInfoController: UITableViewController, UIImagePickerControllerD
         
         avatarView.contentMode = .scaleAspectFill;
         channel.displayNamePublisher.map({ $0 as String? }).receive(on: DispatchQueue.main).assign(to: \.text, on: nameField).store(in: &cancellables);
-        channel.avatarPublisher.map({ $0 ?? AvatarManager.instance.defaultGroupchatAvatar }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] avatar in
+        channel.avatar.map({ $0 ?? AvatarManager.instance.defaultGroupchatAvatar }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] avatar in
             self?.avatarView.set(name: nil, avatar: avatar);
         }).store(in: &cancellables);
         channel.descriptionPublisher.receive(on: DispatchQueue.main).assign(to: \.text, on: descriptionField).store(in: &cancellables);

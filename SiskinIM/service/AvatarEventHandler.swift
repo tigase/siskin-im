@@ -53,11 +53,11 @@ class AvatarEventHandler: XmppServiceExtension {
                                 for photo in vcard.photos {
                                     group.addTask {
                                         os_log(OSLogType.debug, log: .avatar, "got photo from %s VCard for avaar hash: %{public}s", from.description, photoId);
-                                        guard let data = try? await VCardManager.fetchPhoto(photo: photo) else {
+                                        guard let resource = jid.resource, let data = try? await VCardManager.fetchPhoto(photo: photo) else {
                                             return;
                                         }
                                         _ = AvatarManager.instance.storeAvatar(data: data);
-                                        AvatarManager.instance.avatarUpdated(hash: photoId, for: jid.bareJid, on: to, withNickname: jid.resource);
+                                        AvatarManager.instance.avatarUpdated(hash: photoId, for: jid.bareJid, on: to, withNickname: resource);
                                     }
                                 }
                                 await group.waitForAll();
@@ -66,7 +66,9 @@ class AvatarEventHandler: XmppServiceExtension {
                             os_log(OSLogType.debug, log: .avatar, "got error %{public}s from %s VCard for avaar hash: %{public}s", error.localizedDescription, e.presence.from!.description, photoId);
                         }
                     } else {
-                        AvatarManager.instance.avatarUpdated(hash: photoId, for: e.jid.bareJid, on: to, withNickname: e.jid.resource);
+                        if let resource = jid.resource {
+                            AvatarManager.instance.avatarUpdated(hash: photoId, for: jid.bareJid, on: to, withNickname: resource);
+                        }
                     }
                 }
             }

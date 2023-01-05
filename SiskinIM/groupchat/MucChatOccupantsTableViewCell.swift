@@ -76,7 +76,7 @@ class MucChatOccupantsTableViewCell: UITableViewCell {
     private var avatarObj: Avatar? {
         didSet {
             let name = self.nicknameLabel.text;
-            avatarObj?.avatarPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] image in
+            avatarObj?.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] image in
                 self?.avatarStatusView.avatarImageView.set(name: name, avatar: image);
             }).store(in: &cancellables);
         }

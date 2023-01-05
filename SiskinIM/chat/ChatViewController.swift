@@ -79,7 +79,7 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
 
         conversation.context?.$state.map({ $0 == .connected() }).receive(on: DispatchQueue.main).assign(to: \.connected, on: self.titleView).store(in: &cancellables);
         conversation.displayNamePublisher.map({ $0 }).assign(to: \.name, on: self.titleView).store(in: &cancellables);
-        conversation.avatarPublisher.combineLatest(conversation.displayNamePublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] avatar, name in
+        conversation.avatar.combineLatest(conversation.displayNamePublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] avatar, name in
             self?.titleView.avatarView.set(name: name, avatar: avatar);
         }).store(in: &cancellables);
         let jid = JID(chat.jid);
