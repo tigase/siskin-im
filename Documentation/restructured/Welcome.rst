@@ -1,91 +1,88 @@
 Welcome
 ========
 
-Welcome to the documentation for Tigase Messenger for iOS.
+Welcome to the documentation for Siskin IM for iOS.
+
+Siskin IM has some nice feature:
+
+encrypted chats and group chats
+sending and receiving files/pictures
+audio- and videocalls
+recording and sending voice messages (Siskin IM 7.0)
+Sending your geolocation (Siskin IM 7.0)
 
 Minimum Requirements
 --------------------------
 
-Tigase Messenger for iOS requires an apple device running iOS v10 or later. Compatible devices are listed below:
+**iPhone**
+Requires iOS 13.0 or later.
 
-| **iPhone**
-| - iPhone 5
-| - iPhone 5C
-| - iPhone 5S
-| - iPhone 6
-| - iPhone 6 Plus
-| - iPhone 6S
-| - iPhone 6S Plus
-| - iPhone 7
-| - iPhone 7 Plus
-| - iPhone SE
+**iPad**
+Requires iPadOS 13.0 or later.
 
-| **iPod Touch**
-| - iPod Touch (6th generation)
+**iPod touch**
+Requires iOS 13.0 or later.
 
-| **iPad**
-| - iPad (4th generation)
-| - iPad (5th generation)
-| - iPad Air
-| - iPad Air 2
-| - iPad Mini 2
-| - iPad Mini 3
-| - iPad Mini 4
-| - iPad Pro
+**Mac**
+Requires macOS 11.0 or later and a Mac with Apple M1 chip or later.
+
 
 Installation
 -------------
 
-Tigase Messenger for iOS can be installed the same way any apple approved app can be found: through the appstore. Search for Tigase in the store search function and then tap install and follow the prompts to install Tigase Messenger.
+Siskin IM is a good choice if you want to use an XMPP account on your iPhone or iPad. You can get Siskin IM from the App Store (`external <https://apps.apple.com/us/app/siskin-im/id1153516838>`__ ). Please keep in mind that Siskin IM is available in English only.
+
 
 Account Setup
---------------
+----------------------------
 
-Upon running Tigase Messenger for iOS for the first time, you will be greeted with the following screen:
+After downloading Siskin IM from the App Store you can start it by clicking the Siskin IM icon. At first Siskin IM asks if it is allowed to send notifications. You should allow Siskin IM to do so.
 
-|images/home|
+Your options now are to creat new XMPP account, or to use an existing XMPP account(if you do not already have one). 
 
-Your options are to `register <#reg>`__ for a new account, or to use an `existing <#existing>`__ account.
+Registering for a New Account
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**Registering for a New Account**
+You have the choice between a lot of different XMPP providers. Your XMPP address will be the username you choose followed by the @-sign and the domain of the chosen provider.
 
-The application supports creating a new account registration using in-band registration. This means that on servers supporting it, you can sign up for a new account straight from the client! A list of servers that support this is located `here <https://list.jabber.at/>`__. We have provided quick-links to Tigase maintained servers where you can register an account. However, you may use another domain if you wish. If you wish to use a custom domain, enter the domain address in the top bar, the application will then check with the server to ensure registration is supported.
+Some examples for XMPP providers are:
 
-You will be presented with an error message if it is not supported.
+magicbroccoli.de: Registration (`external <https://magicbroccoli.de/register/>`__ ). 
+wiuwiu.de: Registration (`external link <https://wiuwiu.de/>`__ ). 
+You can also choose a provider by looking at this list: (`external <https://apps.apple.com/us/app/siskin-im/id1153516838>`__ ). 
 
-|images/regfailure|
+If you do not know any XMPP server domain names, then you could select one of trusted servers from the list of sisin IM provided.
 
-If registration is supported, you will see the following prompts:
+|images/register01|
 
-|images/registernew|
+After you select trusted servers, Fill out the fields for username, password, and E-mail. You do not need to add the domain to your username, it will be added for you so your JID will look like yourusername@domain.com
 
-Fill out the fields for username, password, and E-mail. You do not need to add the domain to your username, it will be added for you so your JID will look like ``yourusername@domain.com``
+|images/register02|
 
 An E-mail is required in case a server administrator needs to get in contact with you, or you lose your password and might need recovery.
 
-Once you tap Register, the application will connect and register your account with the server.
+Once you tap Register, the application will connect and register your account with the server. And you will receive the email confirmation with the link to confirm the new XMPP account.
 
-**Use an Existing Account**
+Use an Existing Account
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you already have an XMPP account on a server, select this option to login using Tigase Messenger for iOS. Enter your username and password as normal and tap Save to add the account.
+Now you select Sign in to an existing XMPP account since you already registered an address in the previous section. Afterwards, you have to enter your XMPP address, your password and finish these steps by clicking Save. Please keep in mind that in this tutorial the XMPP address userfortest@tigase.im is used as an example account.
 
-.. Note::
+|images/siskin01|
 
-   Your device name will serve as the resource for your account. iPad or iPhone will automatically be used as the resource.
 
-Certificate Errors
-^^^^^^^^^^^^^^^^^^^^^
+|images/siskin02|
 
-You may receive certificate errors from servers that may not have certificate chains installed, invalid, or expired certificates. You will receive an unable to connect to server error, however servers with these errors will ask the user to accept or deny these security exceptions but they will show up at system notifications.
+You will see a notification, which asks if you want to allow the Siskin server to send you Push Notifications. You should **enable** this setting to get notifications (even if the app is in the background). Siskin will now show you your XMPP address and that the setting Message Synchronization is activated. You can simply click on Done.
 
-After doing so you may reattempt the connection to the server.
+Your XMPP address is now configured to be used in Siskin IM. 
+
 
 Final Steps
 ------------
+Once your account is verified, the application will log you in as online and display the chat screen.
 
-Once your account is verified, the application will log you in as online and display the recent screen.
-
-.. |images/home| image:: images/Home.PNG
-.. |images/regfailure| image:: images/regfailure.png
-.. |images/registernew| image:: images/registernew.png
-
+.. |images/register01| image:: images/register01.PNG
+.. |images/register02| image:: images/register02.PNG
+.. |images/siskin01| image:: images/siskin01.jpg
+.. |images/siskin02| image:: images/siskin02.png
