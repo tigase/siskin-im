@@ -882,6 +882,9 @@
 /* selection information */
 "Select appearance" = "Seleccionar aspecto";
 
+/* selection application icon information */
+"Select application icon" = "Seleccione el icono de la aplicación";
+
 /* title for multiple contact selection */
 "Select contacts" = "Seleccionar contactos";
 
@@ -973,6 +976,9 @@
 
 /* notifications from unknown description */
 "Show notifications from people not in your contact list" = "Mostrar notificaciones de gente que no está en tu lista de contactos";
+
+/* App icon */
+"Simple" = "Sencillo";
 
 /* audio output label */
 "Speaker" = "Altavoz";

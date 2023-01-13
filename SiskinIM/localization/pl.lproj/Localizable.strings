@@ -864,6 +864,9 @@
 /* selection information */
 "Select appearance" = "Wybiesz wygląd";
 
+/* selection application icon information */
+"Select application icon" = "Wybierz ikonę aplikacji";
+
 /* title for multiple contact selection */
 "Select contacts" = "Wybierz kontakty";
 
@@ -952,6 +955,9 @@
 
 /* notifications from unknown description */
 "Show notifications from people not in your contact list" = "Pokaż powiadomienia od osób z poza listy kontaktów";
+
+/* App icon */
+"Simple" = "Prosta";
 
 /* audio output label */
 "Speaker" = "Głośnik";

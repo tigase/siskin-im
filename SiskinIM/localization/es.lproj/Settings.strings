@@ -100,6 +100,9 @@
 /* Class = "UILabel"; text = "Groupchats bookmarks sync"; ObjectID = "Tbt-L3-jpa"; */
 "Tbt-L3-jpa.text" = "Sincronización de marcadores de grupos";
 
+/* Class = "UILabel"; text = "Icon"; ObjectID = "X1h-yo-uZt"; */
+"X1h-yo-uZt.text" = "Icono";
+
 /* Class = "UITableViewController"; title = "Contacts settings"; ObjectID = "xRS-v5-T5C"; */
 "xRS-v5-T5C.title" = "Ajustes de contactos";
 
