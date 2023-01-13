@@ -3,43 +3,53 @@ Advanced Options
 
 This section contains information about advanced settings and options that are available to the application, but may not be typically considered for users.
 
-Account Settings
------------------
+-  | activation of end-to-end-encryption
+-  | requesting delivery receipts
+-  | activation of auto-authorization of contacts
+-  | optimization of settings for file exchange (files and pictures)
+-  | activation of group chat synchronization
 
-For each connected account, there are sever-specific settings that are available. This may be brought up by selecting More…​ and then choosing the account you wish to edit.
+Chats
+-------
 
-|images/acctsetting|
+First, you visit the settings menu by selecting Chats. Then you need to tap the upper left. In this submenu you can activate the end-to-end-encryption (called OMEMO). Afterwards, you go back to the settings menu by clicking Settings.
 
-**General**
+|images/setting01| |images/setting02| |images/setting03| 
 
--  | Enabled:
-   | Whether or not to enable this account. If it is disabled, it will be considered unavailable and offline.
+.. Note::
 
-.. Tip::
+   There is a bug in Siskin 7.0. Siskin ignores the default encryption setting and sends messages unencrypted instead. You need to activate the encryption in each chat manually. This bug will hopefully be fixed in version 7.0.1..
 
-   Push notifications will not work if the account is disabled!
+Contacts
+---------
 
--  | Change account settings:
-   | This screen allows changing of the account password if needed.
+In the settings menu you have to select Contacts. You activate the switch Auto-authorize contacts and you could return to the settings menu by clicking Settings. 
 
-**Push Notifications** Tigase Messenger for iOS supports `XEP-0357 Push Notifications <https://xmpp.org/extensions/xep-0357.html>`__ which will receive notifications when a device may be inactive, or the application is closed by the system. Devices must be registered for push notifications and must register them VIA the Tigase XMPP Push Component, enabling push components will register the device you are using.
+|images/setting04| |images/setting05| 
 
--  | Enabled:
-   | Enables Push notification support. Enabling this will register the device, and enable notifcations.
+Media
+------
 
--  | When in Away/XA/DND state:
-   | When enabled, push notifications will be delivered when in Away, Extended away, or Do not disturb statuses which may exist while the device is inactive.
+In the settings menu you have to select Media.In this submenu you can optimize the settings for file exchange. You should select **File sharing via HTTP** and set the **File download limit** to 4 MB. Now you can send files and upload them to your XMPP server (instead of sending them directly to your communication partner). Files which you receive will be downloaded automatically if their size is below 4 MB.
 
-**Message Archiving**
+|images/setting07| |images/setting06| 
 
--  | Enabled:
-   | Enabling this will allow the device to use the server’s message archive component. This will allow storage and retrieval of messages.
+Experimental
+------------
 
--  | Automatic synchronization:
-   | If this is enabled, it will synchronize with the server upon connection, sharing and retrieving message history.
+In the settings menu you have to select select Experimental. Here you can activate the Groupchat bookmark sync to be able to see your group chats on multiple devices. Additionally, I recommend to deactive the usage of public STUN servers. Most todays XMPP servers already provide a STUN-service.
 
--  | Synchronization:
-   | Choose the level of synchronization that the device will retrieve and send to the server.
+|images/setting08| 
 
-.. |images/acctsetting| image:: images/acctsetting.png
+After this step you can go back to the settings menu and close it. The optimization of settings is done.
+
+.. |images/setting01| image:: images/setting01.png
+.. |images/setting02| image:: images/setting02.png
+.. |images/setting03| image:: images/setting03.png
+.. |images/setting04| image:: images/setting04.png
+.. |images/setting05| image:: images/setting05.png
+.. |images/setting06| image:: images/setting06.png
+.. |images/setting07| image:: images/setting07.png
+.. |images/setting08| image:: images/setting08.png
+
 
