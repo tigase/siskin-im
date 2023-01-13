@@ -1,0 +1,711 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2004-2022, Tigase, Inc
+# This file is distributed under the same license as the TigaseDoc package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: TigaseDoc \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-01-12 23:10-0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../Advanced_Options.rst:2
+msgid "Advanced Options"
+msgstr ""
+
+#: ../../Advanced_Options.rst:4
+msgid ""
+"This section contains information about advanced settings and options "
+"that are available to the application, but may not be typically "
+"considered for users."
+msgstr ""
+
+#: ../../Advanced_Options.rst
+msgid "activation of end-to-end-encryption"
+msgstr ""
+
+#: ../../Advanced_Options.rst
+msgid "requesting delivery receipts"
+msgstr ""
+
+#: ../../Advanced_Options.rst
+msgid "activation of auto-authorization of contacts"
+msgstr ""
+
+#: ../../Advanced_Options.rst
+msgid "optimization of settings for file exchange (files and pictures)"
+msgstr ""
+
+#: ../../Advanced_Options.rst
+msgid "activation of group chat synchronization"
+msgstr ""
+
+#: ../../Advanced_Options.rst:13 ../../Tigase_Messenger_iOS.rst:83
+msgid "Chats"
+msgstr ""
+
+#: ../../Advanced_Options.rst:15
+msgid ""
+"First, you visit the settings menu by selecting Chats. Then you need to "
+"tap the upper left. In this submenu you can activate the end-to-end-"
+"encryption (called OMEMO). Afterwards, you go back to the settings menu "
+"by clicking Settings."
+msgstr ""
+
+#: ../../Advanced_Options.rst:17
+msgid "|images/setting01| |images/setting02| |images/setting03|"
+msgstr ""
+
+#: ../../Advanced_Options.rst:46
+msgid "images/setting01"
+msgstr ""
+
+#: ../../Advanced_Options.rst:47
+msgid "images/setting02"
+msgstr ""
+
+#: ../../Advanced_Options.rst:48
+msgid "images/setting03"
+msgstr ""
+
+#: ../../Advanced_Options.rst:21
+msgid ""
+"There is a bug in Siskin 7.0. Siskin ignores the default encryption "
+"setting and sends messages unencrypted instead. You need to activate the "
+"encryption in each chat manually. This bug will hopefully be fixed in "
+"version 7.0.1.."
+msgstr ""
+
+#: ../../Advanced_Options.rst:24 ../../Tigase_Messenger_iOS.rst:7
+#: ../../Tigase_Messenger_iOS.rst:95
+msgid "Contacts"
+msgstr ""
+
+#: ../../Advanced_Options.rst:26
+msgid ""
+"In the settings menu you have to select Contacts. You activate the switch"
+" Auto-authorize contacts and you could return to the settings menu by "
+"clicking Settings."
+msgstr ""
+
+#: ../../Advanced_Options.rst:28
+msgid "|images/setting04| |images/setting05|"
+msgstr ""
+
+#: ../../Advanced_Options.rst:49
+msgid "images/setting04"
+msgstr ""
+
+#: ../../Advanced_Options.rst:50
+msgid "images/setting05"
+msgstr ""
+
+#: ../../Advanced_Options.rst:31 ../../Tigase_Messenger_iOS.rst:119
+msgid "Media"
+msgstr ""
+
+#: ../../Advanced_Options.rst:33
+msgid ""
+"In the settings menu you have to select Media.In this submenu you can "
+"optimize the settings for file exchange. You should select **File sharing"
+" via HTTP** and set the **File download limit** to 4 MB. Now you can send"
+" files and upload them to your XMPP server (instead of sending them "
+"directly to your communication partner). Files which you receive will be "
+"downloaded automatically if their size is below 4 MB."
+msgstr ""
+
+#: ../../Advanced_Options.rst:35
+msgid "|images/setting07| |images/setting06|"
+msgstr ""
+
+#: ../../Advanced_Options.rst:52
+msgid "images/setting07"
+msgstr ""
+
+#: ../../Advanced_Options.rst:51
+msgid "images/setting06"
+msgstr ""
+
+#: ../../Advanced_Options.rst:38
+msgid "Experimental"
+msgstr ""
+
+#: ../../Advanced_Options.rst:40
+msgid ""
+"In the settings menu you have to select select Experimental. Here you can"
+" activate the Groupchat bookmark sync to be able to see your group chats "
+"on multiple devices. Additionally, I recommend to deactive the usage of "
+"public STUN servers. Most todays XMPP servers already provide a STUN-"
+"service."
+msgstr ""
+
+#: ../../Advanced_Options.rst:42
+msgid "|images/setting08|"
+msgstr ""
+
+#: ../../Advanced_Options.rst:53
+msgid "images/setting08"
+msgstr ""
+
+#: ../../Advanced_Options.rst:44
+msgid ""
+"After this step you can go back to the settings menu and close it. The "
+"optimization of settings is done."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:2
+msgid "Tigase Messenger for iOS Interface"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:4
+msgid ""
+"The menu interface for Tigase Messenger for iOS is broken up into three "
+"main panels; Chats, Contacts and Bookmarks."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:9
+msgid ""
+"The contacts panel serves as your Roster, displaying all the contacts you"
+" have on your roster, and displaying statuses along with their names. "
+"Tigase Messenger for iOS supports vCard-Temp Avatars and will retrieve "
+"them if they are uploaded by a user."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:11
+msgid ""
+"Contacts with green icons are available or free to chat status. Contacts "
+"with yellow icons are away or extended away. Contacts with red icons are "
+"in do not disturb status. Contacts with gray icons are offline or "
+"unavailable."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:16
+msgid ""
+"Note that contacts will remain gray if you decide not to allow presence "
+"notifications in the settings."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:18
+msgid ""
+"You may delete or edit contacts by tapping a contact and tapping Delete. "
+"You also have the ability to edit a contact, explained in the next "
+"section. Deleting the contact will remove them from your roster, and "
+"remove any presence sharing permissions from the contact."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:21
+msgid "Adding a contact"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:24
+msgid ""
+"To add a contact, you have to click on Contacts and select the +-sign at "
+"the top of the screen. Select the account friends list you wish the new "
+"contact to be added too. Then type in the JID of the user, do not use "
+"resources, just bare JID. You may enter a friendly nickname for the "
+"contact to be added to your friend list.In this tutorial *my friend* is "
+"selected as the name for the contact. When adding users, you have two "
+"options to select:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:26
+msgid "|images/siskin03|  |images/join01|"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:141
+msgid "images/siskin03"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:142
+msgid "images/join01"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:28
+msgid "|images/join02|"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:143
+msgid "images/join02"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:31
+msgid ""
+"Disclose my online status - This will allow sending of presence status "
+"and changes to this user on your roster. You may disable this to reduce "
+"network usage, however you will not be able to obtain status information."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:33
+msgid ""
+"Ask for presence updates - Turning this on will enable the applications "
+"to send presence changes to this person on the roster. You may disable "
+"this to reduce network usage, however they will not receive notifications"
+" if you turn off the phone"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:37
+msgid ""
+"These options are on by default and enable Tigase siskin IM for iOS to "
+"behave like a traditional client."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:40
+msgid "Editing a contact"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:42
+msgid ""
+"When editing a contact, you may chose to change the account that has "
+"friended the user, XMPP name, edit a roster name (which will be shown on "
+"your roster). Here, you may also decide to selectively approve or deny "
+"subscription requests to and from the user. If you do not send presence "
+"updates, they will not know whether you are online, busy, or away. If you"
+" elect not to receive presence updates, you will not receive information "
+"if they are online, busy or away."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:44
+msgid ""
+"Tap the contact you want to edit, click \"edit\", after it is done, click"
+" \"save\""
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:46
+msgid "|images/editcontacts01| |images/editcontacts02|"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:144
+msgid "images/editcontacts01"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:145
+msgid "images/editcontacts02"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:50
+msgid "Settings"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:53
+msgid ""
+"click \"Chats\" on the bottom of mian panel and click the upper left, "
+"below are settings for the operation and behavior of the application."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:56
+msgid "Automatic"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:58
+msgid ""
+"To save data usage, your account status will be managed automatically "
+"using the following rules by default"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:61
+msgid "Status"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:61
+msgid "Behavior"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:63
+msgid "Online"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:63
+msgid "Application has focus on the device."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:65
+msgid "Away / XA"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:65
+msgid "Application is running in the background."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:67
+msgid "Offline"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:67
+msgid ""
+"Application is killed or disconnected. If the device is turned off for a "
+"period of time, this will also set status to offline."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:70
+msgid ""
+"However, you may override this logic by tapping Automatic and selecting a"
+" status manually."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:72
+msgid "|images/status|"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:146
+msgid "images/status"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:76
+msgid "Apperance"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "auto, light and dark"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "adjust background brightness"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Lines of preview:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"Sets the lines of preview text to keep within the chat window without "
+"using internal or message archive."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Send messages on return:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"If you are offline or away from connection, messages may be resent when "
+"you are back online or back in connection if this option is checked."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Chat markers & reeipts:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Whether or not the message has been read by the receipts."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Contacts in groups:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"Allows contacts to be displayed in groups as defined by the roster. "
+"Disabling this will show contacts in a flat organization."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "\"Hidden\" group:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Whether or not to display contacts that are added to the \"hidden\" group."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Auto-authorize contacts:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"Selecting this will automatically request subscription to users added to "
+"contacts."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:107
+msgid "Notifications"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Notifications from unknown"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"whether or not notifications from unknown sources will be sent to the "
+"native notification section of the device."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Push notifications"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "whether or not notificaitons of new messages or calls will be received"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:116
+msgid "This section has one option: Whether to accept notifications from unknown."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "File sharing via HTTP:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"This setting turns on the use of HTTP file sharing using the application."
+" The server you are connected to must support this component to enable "
+"this option."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Simplified link to HTTP file:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"This creates a simplified link to the file after uploading rather than "
+"directly sending the file. This may be useful for intermittent "
+"communications."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "File download limit:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"Sets the maximum size of files being sent to the user which may be "
+"automatically donwload."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Clear download cache:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"User can choose clears the devices cache of all downloaded and saved "
+"files retrieved from HTTP upload component or older than 7 days."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid "Clear link previews cache:"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst
+msgid ""
+"User can choose clears the devices cache of all previews or older than 7 "
+"days."
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:137
+msgid "Vcard"
+msgstr ""
+
+#: ../../Tigase_Messenger_iOS.rst:139
+msgid ""
+"You can set and change vCard data for your account. Tap the account you "
+"wish to edit and you will be presented with a number of fields that may "
+"be filled out. Click \"change avatar\" at the top where you may upload a "
+"photo as your avatar."
+msgstr ""
+
+#: ../../Welcome.rst:2
+msgid "Welcome"
+msgstr ""
+
+#: ../../Welcome.rst:4
+msgid "Welcome to the documentation for Siskin IM for iOS."
+msgstr ""
+
+#: ../../Welcome.rst:6
+msgid "Siskin IM has some nice feature:"
+msgstr ""
+
+#: ../../Welcome.rst:8
+msgid ""
+"encrypted chats and group chats sending and receiving files/pictures "
+"audio- and videocalls recording and sending voice messages (Siskin IM "
+"7.0) Sending your geolocation (Siskin IM 7.0)"
+msgstr ""
+
+#: ../../Welcome.rst:15
+msgid "Minimum Requirements"
+msgstr ""
+
+#: ../../Welcome.rst:17
+msgid "**iPhone** Requires iOS 13.0 or later."
+msgstr ""
+
+#: ../../Welcome.rst:20
+msgid "**iPad** Requires iPadOS 13.0 or later."
+msgstr ""
+
+#: ../../Welcome.rst:23
+msgid "**iPod touch** Requires iOS 13.0 or later."
+msgstr ""
+
+#: ../../Welcome.rst:26
+msgid ""
+"**Mac** Requires macOS 11.0 or later and a Mac with Apple M1 chip or "
+"later."
+msgstr ""
+
+#: ../../Welcome.rst:31
+msgid "Installation"
+msgstr ""
+
+#: ../../Welcome.rst:33
+msgid ""
+"Siskin IM is a good choice if you want to use an XMPP account on your "
+"iPhone or iPad. You can get Siskin IM from the App Store (`external "
+"<https://apps.apple.com/us/app/siskin-im/id1153516838>`__ ). Please keep "
+"in mind that Siskin IM is available in English only."
+msgstr ""
+
+#: ../../Welcome.rst:37
+msgid "Account Setup"
+msgstr ""
+
+#: ../../Welcome.rst:39
+msgid ""
+"After downloading Siskin IM from the App Store you can start it by "
+"clicking the Siskin IM icon. At first Siskin IM asks if it is allowed to "
+"send notifications. You should allow Siskin IM to do so."
+msgstr ""
+
+#: ../../Welcome.rst:41
+msgid ""
+"Your options now are to creat new XMPP account, or to use an existing "
+"XMPP account(if you do not already have one)."
+msgstr ""
+
+#: ../../Welcome.rst:44
+msgid "Registering for a New Account"
+msgstr ""
+
+#: ../../Welcome.rst:46
+msgid ""
+"You have the choice between a lot of different XMPP providers. Your XMPP "
+"address will be the username you choose followed by the @-sign and the "
+"domain of the chosen provider."
+msgstr ""
+
+#: ../../Welcome.rst:48
+msgid "Some examples for XMPP providers are:"
+msgstr ""
+
+#: ../../Welcome.rst:50
+msgid ""
+"magicbroccoli.de: Registration (`external "
+"<https://magicbroccoli.de/register/>`__ ). wiuwiu.de: Registration "
+"(`external link <https://wiuwiu.de/>`__ ). You can also choose a provider"
+" by looking at this list: (`external <https://apps.apple.com/us/app"
+"/siskin-im/id1153516838>`__ )."
+msgstr ""
+
+#: ../../Welcome.rst:54
+msgid ""
+"If you do not know any XMPP server domain names, then you could select "
+"one of trusted servers from the list of sisin IM provided."
+msgstr ""
+
+#: ../../Welcome.rst:56
+msgid "|images/register01|"
+msgstr ""
+
+#: ../../Welcome.rst:85
+msgid "images/register01"
+msgstr ""
+
+#: ../../Welcome.rst:58
+msgid ""
+"After you select trusted servers, Fill out the fields for username, "
+"password, and E-mail. You do not need to add the domain to your username,"
+" it will be added for you so your JID will look like "
+"yourusername@domain.com"
+msgstr ""
+
+#: ../../Welcome.rst:60
+msgid "|images/register02|"
+msgstr ""
+
+#: ../../Welcome.rst:86
+msgid "images/register02"
+msgstr ""
+
+#: ../../Welcome.rst:62
+msgid ""
+"An E-mail is required in case a server administrator needs to get in "
+"contact with you, or you lose your password and might need recovery."
+msgstr ""
+
+#: ../../Welcome.rst:64
+msgid ""
+"Once you tap Register, the application will connect and register your "
+"account with the server. And you will receive the email confirmation with"
+" the link to confirm the new XMPP account."
+msgstr ""
+
+#: ../../Welcome.rst:67
+msgid "Use an Existing Account"
+msgstr ""
+
+#: ../../Welcome.rst:69
+msgid ""
+"Now you select Sign in to an existing XMPP account since you already "
+"registered an address in the previous section. Afterwards, you have to "
+"enter your XMPP address, your password and finish these steps by clicking"
+" Save. Please keep in mind that in this tutorial the XMPP address "
+"userfortest@tigase.im is used as an example account."
+msgstr ""
+
+#: ../../Welcome.rst:71
+msgid "|images/siskin01|"
+msgstr ""
+
+#: ../../Welcome.rst:87
+msgid "images/siskin01"
+msgstr ""
+
+#: ../../Welcome.rst:74
+msgid "|images/siskin02|"
+msgstr ""
+
+#: ../../Welcome.rst:88
+msgid "images/siskin02"
+msgstr ""
+
+#: ../../Welcome.rst:76
+msgid ""
+"You will see a notification, which asks if you want to allow the Siskin "
+"server to send you Push Notifications. You should **enable** this setting"
+" to get notifications (even if the app is in the background). Siskin will"
+" now show you your XMPP address and that the setting Message "
+"Synchronization is activated. You can simply click on Done."
+msgstr ""
+
+#: ../../Welcome.rst:78
+msgid "Your XMPP address is now configured to be used in Siskin IM."
+msgstr ""
+
+#: ../../Welcome.rst:82
+msgid "Final Steps"
+msgstr ""
+
+#: ../../Welcome.rst:83
+msgid ""
+"Once your account is verified, the application will log you in as online "
+"and display the chat screen."
+msgstr ""
+
+#: ../../index.rst:4
+msgid "Tigase Messenger for iOS - Version 1.0"
+msgstr ""
+
