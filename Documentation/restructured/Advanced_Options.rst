@@ -16,10 +16,6 @@ First, you visit the settings menu by selecting Chats. Then you need to tap the 
 
 |images/setting01| |images/setting02| |images/setting03| 
 
-.. Note::
-
-   There is a bug in Siskin 7.0. Siskin ignores the default encryption setting and sends messages unencrypted instead. You need to activate the encryption in each chat manually. This bug will hopefully be fixed in version 7.0.1..
-
 Contacts
 ---------
 
