@@ -8,8 +8,8 @@ Siskin IM has some nice feature:
 encrypted chats and group chats
 sending and receiving files/pictures
 audio- and videocalls
-recording and sending voice messages (Siskin IM 7.0)
-Sending your geolocation (Siskin IM 7.0)
+recording and sending voice messages 
+Sending your geolocation 
 
 Minimum Requirements
 --------------------------
