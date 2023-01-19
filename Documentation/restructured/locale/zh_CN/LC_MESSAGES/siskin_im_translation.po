@@ -3,54 +3,58 @@
 # This file is distributed under the same license as the TigaseDoc package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: TigaseDoc \n"
+"Project-Id-Version: TigaseDoc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-01-17 00:18-0800\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"PO-Revision-Date: 2023-01-19 06:49+0000\n"
+"Last-Translator: Qian Luo <qian.luo@tigase.net>\n"
+"Language-Team: Chinese (Simplified) <http://translate.tigase.net/projects/"
+"siskin-im-documentation/siskin-im-documentation/zh_Hans/>\n"
+"Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 4.11.2\n"
 "Generated-By: Babel 2.11.0\n"
 
 #: ../../Advanced_Options.rst:2
 msgid "Advanced Options"
-msgstr ""
+msgstr "高级选项"
 
 #: ../../Advanced_Options.rst:4
 msgid ""
 "This section contains information about advanced settings and options "
 "that are available to the application, but may not be typically "
 "considered for users."
-msgstr ""
+msgstr "本部分包含有关应用程序可用的高级设置和选项的信息，但用户通常不会考虑这些设置"
+"和选项。"
 
 #: ../../Advanced_Options.rst
 msgid "activation of end-to-end-encryption"
-msgstr ""
+msgstr "激活端到端加密"
 
 #: ../../Advanced_Options.rst
 msgid "requesting delivery receipts"
-msgstr ""
+msgstr "要求交付凭据"
 
 #: ../../Advanced_Options.rst
 msgid "activation of auto-authorization of contacts"
-msgstr ""
+msgstr "激活联系人的自动授权"
 
 #: ../../Advanced_Options.rst
 msgid "optimization of settings for file exchange (files and pictures)"
-msgstr ""
+msgstr "优化文件交换设置（文件和图片）"
 
 #: ../../Advanced_Options.rst
 msgid "activation of group chat synchronization"
-msgstr ""
+msgstr "激活群聊同步"
 
 #: ../../Advanced_Options.rst:13 ../../Tigase_Messenger_iOS.rst:83
 msgid "Chats"
-msgstr ""
+msgstr "聊天"
 
 #: ../../Advanced_Options.rst:15
 msgid ""
@@ -59,50 +63,54 @@ msgid ""
 "encryption (called OMEMO). Afterwards, you go back to the settings menu "
 "by clicking Settings."
 msgstr ""
+"首先，您可以通过选择“聊天”来访问设置菜单。然后你需要点击左上角。在此子菜单中"
+"，您可以激活端到端加密（称为 "
+"OMEMO）。之后，您可以通过单击“设置”返回设置菜单。"
 
 #: ../../Advanced_Options.rst:17
 msgid "|images/setting01| |images/setting02| |images/setting03|"
-msgstr ""
+msgstr "|images/setting01| |images/setting02| |images/setting03|"
 
 #: ../../Advanced_Options.rst:42
 msgid "images/setting01"
-msgstr ""
+msgstr "images/setting01"
 
 #: ../../Advanced_Options.rst:43
 msgid "images/setting02"
-msgstr ""
+msgstr "images/setting02"
 
 #: ../../Advanced_Options.rst:44
 msgid "images/setting03"
-msgstr ""
+msgstr "images/setting03"
 
 #: ../../Advanced_Options.rst:20 ../../Tigase_Messenger_iOS.rst:7
 #: ../../Tigase_Messenger_iOS.rst:95
 msgid "Contacts"
-msgstr ""
+msgstr "联系人"
 
 #: ../../Advanced_Options.rst:22
 msgid ""
 "In the settings menu you have to select Contacts. You activate the switch"
 " Auto-authorize contacts and you could return to the settings menu by "
 "clicking Settings."
-msgstr ""
+msgstr "在设置菜单中，您必须选择“联系人”。您激活开关自动授权联系人，您可以通过单击“设"
+"置”返回设置菜单。"
 
 #: ../../Advanced_Options.rst:24
 msgid "|images/setting04| |images/setting05|"
-msgstr ""
+msgstr "|images/setting04| |images/setting05|"
 
 #: ../../Advanced_Options.rst:45
 msgid "images/setting04"
-msgstr ""
+msgstr "images/setting04"
 
 #: ../../Advanced_Options.rst:46
 msgid "images/setting05"
-msgstr ""
+msgstr "images/setting05"
 
 #: ../../Advanced_Options.rst:27 ../../Tigase_Messenger_iOS.rst:119
 msgid "Media"
-msgstr ""
+msgstr "媒体"
 
 #: ../../Advanced_Options.rst:29
 msgid ""
@@ -113,22 +121,27 @@ msgid ""
 "directly to your communication partner). Files which you receive will be "
 "downloaded automatically if their size is below 4 MB."
 msgstr ""
+"在设置菜单中，您必须选择“媒体”。在此子菜单中，您可以优化文件交换设置。您应该"
+"选择**通过 HTTP 共享文件**并将**文件下载限制**设置为 4 MB。"
+"现在您可以发送文件并将它们上传到您的 XMPP "
+"服务器（而不是直接将它们发送给您的通信伙伴）。如果文件大小低于 4 "
+"MB，您收到的文件将自动下载。"
 
 #: ../../Advanced_Options.rst:31
 msgid "|images/setting07| |images/setting06|"
-msgstr ""
+msgstr "|images/setting07| |images/setting06|"
 
 #: ../../Advanced_Options.rst:48
 msgid "images/setting07"
-msgstr ""
+msgstr "images/setting07"
 
 #: ../../Advanced_Options.rst:47
 msgid "images/setting06"
-msgstr ""
+msgstr "images/setting06"
 
 #: ../../Advanced_Options.rst:34
 msgid "Experimental"
-msgstr ""
+msgstr "实验"
 
 #: ../../Advanced_Options.rst:36
 msgid ""
@@ -138,30 +151,33 @@ msgid ""
 "public STUN servers. Most todays XMPP servers already provide a STUN-"
 "service."
 msgstr ""
+"在设置菜单中，您必须选择“实验”。您可以在此处激活群聊书签同步，以便能够在多台"
+"设备上查看您的群聊。此外，我建议停用公共 STUN 服务器的使用。大多数当今的 "
+"XMPP 服务器已经提供了 STUN 服务。"
 
 #: ../../Advanced_Options.rst:38
 msgid "|images/setting08|"
-msgstr ""
+msgstr "|images/setting08|"
 
 #: ../../Advanced_Options.rst:49
 msgid "images/setting08"
-msgstr ""
+msgstr "images/setting08"
 
 #: ../../Advanced_Options.rst:40
 msgid ""
 "After this step you can go back to the settings menu and close it. The "
 "optimization of settings is done."
-msgstr ""
+msgstr "完成此步骤后，您可以返回设置菜单并将其关闭。设置优化完成。"
 
 #: ../../Tigase_Messenger_iOS.rst:2
 msgid "Tigase Messenger for iOS Interface"
-msgstr ""
+msgstr "iOS 界面的 Tigase Messenger"
 
 #: ../../Tigase_Messenger_iOS.rst:4
 msgid ""
 "The menu interface for Tigase Messenger for iOS is broken up into three "
 "main panels; Chats, Contacts and Bookmarks."
-msgstr ""
+msgstr "iOS版 Tigase Messenger 的菜单界面分为三个主要面板；聊天、联系人和书签。"
 
 #: ../../Tigase_Messenger_iOS.rst:9
 msgid ""
@@ -170,6 +186,9 @@ msgid ""
 "Tigase Messenger for iOS supports vCard-Temp Avatars and will retrieve "
 "them if they are uploaded by a user."
 msgstr ""
+"联系人面板用作您的花名册，显示您名册上的所有联系人，并显示状态及其姓名。"
+"适用于 iOS 的 Tigase Messenger 支持 vCard-Temp "
+"Avatars，如果用户上传它们，将会检索它们。"
 
 #: ../../Tigase_Messenger_iOS.rst:11
 msgid ""
@@ -178,12 +197,15 @@ msgid ""
 "in do not disturb status. Contacts with gray icons are offline or "
 "unavailable."
 msgstr ""
+"带有绿色图标的联系人表示此用户可以聊天。带有黄色图标的联系人表示已离开或长时"
+"间离开。带有红色图标的联系人处于请勿打扰状态。带有灰色图标的联系人处于离线状"
+"态或不可用。"
 
 #: ../../Tigase_Messenger_iOS.rst:16
 msgid ""
 "Note that contacts will remain gray if you decide not to allow presence "
 "notifications in the settings."
-msgstr ""
+msgstr "请注意，如果您决定不允许在设置中显示状态通知，那么联系人将保持灰色。"
 
 #: ../../Tigase_Messenger_iOS.rst:18
 msgid ""
@@ -192,10 +214,13 @@ msgid ""
 "section. Deleting the contact will remove them from your roster, and "
 "remove any presence sharing permissions from the contact."
 msgstr ""
+"您可以通过点击联系人并点击删除来删除联系人。您还可以编辑联系人，这将在下一节"
+"中进行说明。删除联系人会将他们从您的花名册中移除，并移除该联系人的所有状态共"
+"享权限。"
 
 #: ../../Tigase_Messenger_iOS.rst:21
 msgid "Adding a contact"
-msgstr ""
+msgstr "添加联系人"
 
 #: ../../Tigase_Messenger_iOS.rst:24
 msgid ""
@@ -207,33 +232,38 @@ msgid ""
 "selected as the name for the contact. When adding users, you have two "
 "options to select:"
 msgstr ""
+"要添加联系人，您必须单击联系人并选择屏幕顶部的 +号。选择您希望添加新联系人的"
+"帐户好友列表。然后输入用户的JID，不使用资源，只是裸JID。您可以为要添加到您的"
+"朋友列表中的联系人输入一个友好的昵称。在本教程中，选择 *my friend* "
+"作为联系人的姓名。添加用户时，您有两个选项可供选择："
 
 #: ../../Tigase_Messenger_iOS.rst:26
 msgid "|images/siskin03|  |images/join01|"
-msgstr ""
+msgstr "|images/siskin03|  |images/join01|"
 
 #: ../../Tigase_Messenger_iOS.rst:141
 msgid "images/siskin03"
-msgstr ""
+msgstr "images/siskin03"
 
 #: ../../Tigase_Messenger_iOS.rst:142
 msgid "images/join01"
-msgstr ""
+msgstr "images/join01"
 
 #: ../../Tigase_Messenger_iOS.rst:28
 msgid "|images/join02|"
-msgstr ""
+msgstr "|images/join02|"
 
 #: ../../Tigase_Messenger_iOS.rst:143
 msgid "images/join02"
-msgstr ""
+msgstr "images/join02"
 
 #: ../../Tigase_Messenger_iOS.rst:31
 msgid ""
 "Disclose my online status - This will allow sending of presence status "
 "and changes to this user on your roster. You may disable this to reduce "
 "network usage, however you will not be able to obtain status information."
-msgstr ""
+msgstr "公开我的在线状态 - 这将允许向您名册上的该用户发送在线状态和更改。您可以禁用此"
+"功能以减少网络使用，但是您将无法获得状态信息。"
 
 #: ../../Tigase_Messenger_iOS.rst:33
 msgid ""
@@ -242,16 +272,19 @@ msgid ""
 "this to reduce network usage, however they will not receive notifications"
 " if you turn off the phone"
 msgstr ""
+"询问在线状态更新 - 打开此功能将使应用程序能够将在线状态更改发送给名册上的此人"
+"。您可以禁用此功能以减少网络使用，但是如果您关闭手机，他们将不会收到通知"
 
 #: ../../Tigase_Messenger_iOS.rst:37
 msgid ""
 "These options are on by default and enable Tigase siskin IM for iOS to "
 "behave like a traditional client."
-msgstr ""
+msgstr "这些选项在默认情况下处于启用状态，并使适用于 iOS 的 Tigase siskin IM "
+"能够像传统客户端一样运行。"
 
 #: ../../Tigase_Messenger_iOS.rst:40
 msgid "Editing a contact"
-msgstr ""
+msgstr "编辑联系人"
 
 #: ../../Tigase_Messenger_iOS.rst:42
 msgid ""
@@ -263,242 +296,250 @@ msgid ""
 " elect not to receive presence updates, you will not receive information "
 "if they are online, busy or away."
 msgstr ""
+"编辑联系人时，您可以选择更改已加好友的帐户、XMPP 名称、编辑名册名称（将显示在"
+"您的名册中）。在这里，您还可以决定有选择地批准或拒绝用户的订阅请求。如果您不"
+"发送状态更新，他们将不知道您是否在线、忙碌或离开。如果您选择不接收状态更新，"
+"您将不会收到他们在线、忙碌或离开时的信息。"
 
 #: ../../Tigase_Messenger_iOS.rst:44
 msgid ""
 "Tap the contact you want to edit, click \"edit\", after it is done, click"
 " \"save\""
-msgstr ""
+msgstr "点击要编辑的联系人，点击\"edit\"，完成后点击\"save\""
 
 #: ../../Tigase_Messenger_iOS.rst:46
 msgid "|images/editcontacts01| |images/editcontacts02|"
-msgstr ""
+msgstr "|images/editcontacts01| |images/editcontacts02|"
 
 #: ../../Tigase_Messenger_iOS.rst:144
 msgid "images/editcontacts01"
-msgstr ""
+msgstr "images/editcontacts01"
 
 #: ../../Tigase_Messenger_iOS.rst:145
 msgid "images/editcontacts02"
-msgstr ""
+msgstr "images/editcontacts02"
 
 #: ../../Tigase_Messenger_iOS.rst:50
 msgid "Settings"
-msgstr ""
+msgstr "设置"
 
 #: ../../Tigase_Messenger_iOS.rst:53
 msgid ""
 "click \"Chats\" on the bottom of mian panel and click the upper left, "
 "below are settings for the operation and behavior of the application."
-msgstr ""
+msgstr "单击主面板底部的 \"Chats\"，然后单击左上角，下面是应用程序操作和行为的设置。"
 
 #: ../../Tigase_Messenger_iOS.rst:56
 msgid "Automatic"
-msgstr ""
+msgstr "自动"
 
 #: ../../Tigase_Messenger_iOS.rst:58
 msgid ""
 "To save data usage, your account status will be managed automatically "
 "using the following rules by default"
-msgstr ""
+msgstr "为了节省数据使用量，您的帐户状态将默认使用以下规则自动管理"
 
 #: ../../Tigase_Messenger_iOS.rst:61
 msgid "Status"
-msgstr ""
+msgstr "状态"
 
 #: ../../Tigase_Messenger_iOS.rst:61
 msgid "Behavior"
-msgstr ""
+msgstr "行为"
 
 #: ../../Tigase_Messenger_iOS.rst:63
 msgid "Online"
-msgstr ""
+msgstr "在线"
 
 #: ../../Tigase_Messenger_iOS.rst:63
 msgid "Application has focus on the device."
-msgstr ""
+msgstr "应用程序已将焦点放在设备上。"
 
 #: ../../Tigase_Messenger_iOS.rst:65
 msgid "Away / XA"
-msgstr ""
+msgstr "离开/ XA"
 
 #: ../../Tigase_Messenger_iOS.rst:65
 msgid "Application is running in the background."
-msgstr ""
+msgstr "应用程序正在后台运行。"
 
 #: ../../Tigase_Messenger_iOS.rst:67
 msgid "Offline"
-msgstr ""
+msgstr "离线"
 
 #: ../../Tigase_Messenger_iOS.rst:67
 msgid ""
 "Application is killed or disconnected. If the device is turned off for a "
 "period of time, this will also set status to offline."
-msgstr ""
+msgstr "应用程序被中止或断开连接。如果设备关闭一段时间，这也会将状态设置为离线。"
 
 #: ../../Tigase_Messenger_iOS.rst:70
 msgid ""
 "However, you may override this logic by tapping Automatic and selecting a"
 " status manually."
-msgstr ""
+msgstr "但是，您可以通过点击Automatic并手动选择状态来覆盖此默认状态。"
 
 #: ../../Tigase_Messenger_iOS.rst:72
 msgid "|images/status|"
-msgstr ""
+msgstr "|images/status|"
 
 #: ../../Tigase_Messenger_iOS.rst:146
 msgid "images/status"
-msgstr ""
+msgstr "images/status"
 
 #: ../../Tigase_Messenger_iOS.rst:76
 msgid "Apperance"
-msgstr ""
+msgstr "外观"
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid "auto, light and dark"
-msgstr ""
+msgstr "自动，明和暗"
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid "adjust background brightness"
-msgstr ""
+msgstr "调整背景亮度"
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid "Lines of preview:"
-msgstr ""
+msgstr "预览行："
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid ""
 "Sets the lines of preview text to keep within the chat window without "
 "using internal or message archive."
-msgstr ""
+msgstr "将预览文本行设置为保留在聊天窗口中，而不使用内部或消息存档。"
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid "Send messages on return:"
-msgstr ""
+msgstr "返回时发送消息："
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid ""
 "If you are offline or away from connection, messages may be resent when "
 "you are back online or back in connection if this option is checked."
-msgstr ""
+msgstr "如果您处于离线或断开连接状态，当选中此选项时，那么当您重新在线或重新连接时可"
+"能会重新发送消息。"
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid "Chat markers & reeipts:"
-msgstr ""
+msgstr "聊天标记和凭证："
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid "Whether or not the message has been read by the receipts."
-msgstr ""
+msgstr "消息是否已被收信人阅读。"
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid "Contacts in groups:"
-msgstr ""
+msgstr "群组联系人："
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid ""
 "Allows contacts to be displayed in groups as defined by the roster. "
 "Disabling this will show contacts in a flat organization."
-msgstr ""
+msgstr "允许按花名册定义的组显示联系人。禁用此功能将显示扁平组织中的联系人。"
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid "\"Hidden\" group:"
-msgstr ""
+msgstr "\"Hidden\" 组:"
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid "Whether or not to display contacts that are added to the \"hidden\" group."
-msgstr ""
+msgstr "是否显示添加到\"hidden\" 组的联系人。"
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid "Auto-authorize contacts:"
-msgstr ""
+msgstr "自动授权联系人："
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid ""
 "Selecting this will automatically request subscription to users added to "
 "contacts."
-msgstr ""
+msgstr "选择此项将自动请求订阅添加到联系人的用户。"
 
 #: ../../Tigase_Messenger_iOS.rst:107
 msgid "Notifications"
-msgstr ""
+msgstr "通知"
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid "Notifications from unknown"
-msgstr ""
+msgstr "来自未知来源的通知"
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid ""
 "whether or not notifications from unknown sources will be sent to the "
 "native notification section of the device."
-msgstr ""
+msgstr "来自未知来源的通知是否会发送到设备的本机通知部分。"
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid "Push notifications"
-msgstr ""
+msgstr "推送通知"
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid "whether or not notificaitons of new messages or calls will be received"
-msgstr ""
+msgstr "是否收到新消息或来电通知"
 
 #: ../../Tigase_Messenger_iOS.rst:116
 msgid "This section has one option: Whether to accept notifications from unknown."
-msgstr ""
+msgstr "本节有一个选项：是否接受来自未知来源的通知。"
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid "File sharing via HTTP:"
-msgstr ""
+msgstr "通过 HTTP 共享文件："
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid ""
 "This setting turns on the use of HTTP file sharing using the application."
 " The server you are connected to must support this component to enable "
 "this option."
-msgstr ""
+msgstr "此设置启用使用应用程序的 HTTP "
+"文件共享。您连接的服务器必须支持此组件才能启用此选项。"
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid "Simplified link to HTTP file:"
-msgstr ""
+msgstr "HTTP 文件的简化链接："
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid ""
 "This creates a simplified link to the file after uploading rather than "
 "directly sending the file. This may be useful for intermittent "
 "communications."
-msgstr ""
+msgstr "这会在上传后创建指向文件的简化链接，而不是直接发送文件。这可能对间歇性通信有"
+"用。"
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid "File download limit:"
-msgstr ""
+msgstr "文件下载限制："
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid ""
 "Sets the maximum size of files being sent to the user which may be "
 "automatically donwload."
-msgstr ""
+msgstr "设置发送给用户的可以自动下载的最大文件大小。"
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid "Clear download cache:"
-msgstr ""
+msgstr "清除下载缓存："
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid ""
 "User can choose clears the devices cache of all downloaded and saved "
 "files retrieved from HTTP upload component or older than 7 days."
-msgstr ""
+msgstr "用户可以选择清除设备缓存中从 HTTP 上传组件检索到的或早于 7 "
+"天的所有下载和保存的文件。"
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid "Clear link previews cache:"
-msgstr ""
+msgstr "清除链接预览缓存："
 
 #: ../../Tigase_Messenger_iOS.rst
 msgid ""
 "User can choose clears the devices cache of all previews or older than 7 "
 "days."
-msgstr ""
+msgstr "用户可以选择清除所有预览或早于 7 天的设备缓存。"
 
 #: ../../Tigase_Messenger_iOS.rst:137
 msgid "Vcard"
-msgstr ""
+msgstr "电子名片"
 
 #: ../../Tigase_Messenger_iOS.rst:139
 msgid ""
@@ -507,51 +548,54 @@ msgid ""
 "be filled out. Click \"change avatar\" at the top where you may upload a "
 "photo as your avatar."
 msgstr ""
+"您可以为您的帐户设置和更改电子名片数据。点击您要编辑的帐户，您将看到许多可以"
+"填写的字段。点击顶部的\"change avatar\"，您可以上传照片作为您的头像。"
 
 #: ../../Welcome.rst:2
 msgid "Welcome"
-msgstr ""
+msgstr "欢迎"
 
 #: ../../Welcome.rst:4
 msgid "Welcome to the documentation for Siskin IM for iOS."
-msgstr ""
+msgstr "欢迎使用 iOS 版 Siskin IM 文档。"
 
 #: ../../Welcome.rst:6
 msgid "Siskin IM has some nice feature:"
-msgstr ""
+msgstr "Siskin IM 有一些不错的功能："
 
 #: ../../Welcome.rst:8
 msgid ""
 "encrypted chats and group chats sending and receiving files/pictures "
 "audio- and videocalls recording and sending voice messages Sending your "
 "geolocation"
-msgstr ""
+msgstr "加密聊天和群组聊天发送和接收文件/图片 ,音频和视频通话 "
+",录制和发送语音消息并发送您的地理位置"
 
 #: ../../Welcome.rst:15
 msgid "Minimum Requirements"
-msgstr ""
+msgstr "最低要求"
 
 #: ../../Welcome.rst:17
 msgid "**iPhone** Requires iOS 13.0 or later."
-msgstr ""
+msgstr "**iPhone** 需要 iOS 13.0 或更高版本。"
 
 #: ../../Welcome.rst:20
 msgid "**iPad** Requires iPadOS 13.0 or later."
-msgstr ""
+msgstr "**iPad** 需要 iPadOS 13.0 或更高版本。"
 
 #: ../../Welcome.rst:23
 msgid "**iPod touch** Requires iOS 13.0 or later."
-msgstr ""
+msgstr "**iPod touch** 需要 iOS 13.0 或更高版本。"
 
 #: ../../Welcome.rst:26
 msgid ""
 "**Mac** Requires macOS 11.0 or later and a Mac with Apple M1 chip or "
 "later."
-msgstr ""
+msgstr "**Mac** 需要 macOS 11.0 或更高版本以及配备 Apple M1 芯片或更高版本的 Mac。"
 
 #: ../../Welcome.rst:31
 msgid "Installation"
-msgstr ""
+msgstr "安装"
 
 #: ../../Welcome.rst:33
 msgid ""
@@ -560,10 +604,13 @@ msgid ""
 "<https://apps.apple.com/us/app/siskin-im/id1153516838>`__ ). Please keep "
 "in mind that Siskin IM is available in English only."
 msgstr ""
+"如果您想在 iPhone 或 iPad 上使用 XMPP 帐户，Siskin IM 是一个不错的选择。"
+"您可以从 App Store 获取 Siskin IM（`external <https://apps.apple.com/us/app/"
+"siskin-im/id1153516838>`__）。请记住，Siskin IM 仅提供英文版本。"
 
 #: ../../Welcome.rst:37
 msgid "Account Setup"
-msgstr ""
+msgstr "帐户设置"
 
 #: ../../Welcome.rst:39
 msgid ""
@@ -571,27 +618,30 @@ msgid ""
 "clicking the Siskin IM icon. At first Siskin IM asks if it is allowed to "
 "send notifications. You should allow Siskin IM to do so."
 msgstr ""
+"从 App Store 下载 Siskin IM 后，您可以通过单击 Siskin IM 图标启动它。起初 "
+"Siskin IM 询问是否允许发送通知。您应该允许 Siskin IM 这样做"
 
 #: ../../Welcome.rst:41
 msgid ""
 "Your options now are to creat new XMPP account, or to use an existing "
 "XMPP account(if you do not already have one)."
-msgstr ""
+msgstr "您现在的选择是创建新的 XMPP 帐户（如果您还没有）, 或使用现有的 XMPP 帐户。"
 
 #: ../../Welcome.rst:44
 msgid "Registering for a New Account"
-msgstr ""
+msgstr "注册一个新帐户"
 
 #: ../../Welcome.rst:46
 msgid ""
 "You have the choice between a lot of different XMPP providers. Your XMPP "
 "address will be the username you choose followed by the @-sign and the "
 "domain of the chosen provider."
-msgstr ""
+msgstr "您可以在许多不同的 XMPP 提供商之间进行选择。您的 XMPP "
+"地址将是您选择的用户名，后跟 @ 符号和所选提供商的域。"
 
 #: ../../Welcome.rst:48
 msgid "Some examples for XMPP providers are:"
-msgstr ""
+msgstr "XMPP 提供商的一些示例是："
 
 #: ../../Welcome.rst:50
 msgid ""
@@ -601,20 +651,25 @@ msgid ""
 " by looking at this list: (`external <https://apps.apple.com/us/app"
 "/siskin-im/id1153516838>`__ )."
 msgstr ""
+"magicbroccoli.de: 注册 (`external <https://magicbroccoli.de/register/>`__ "
+")。wiuwiu.de: 注册 (`external link <https://wiuwiu.de/>`__ "
+").。您还可以通过查看此列表来选择提供商： (`external <https://apps.apple.com/"
+"us/app/siskin-im/id1153516838>`__ )。"
 
 #: ../../Welcome.rst:54
 msgid ""
 "If you do not know any XMPP server domain names, then you could select "
 "one of trusted servers from the list of sisin IM provided."
-msgstr ""
+msgstr "如果您不知道任何 XMPP 服务器域名，那么您可以从提供的 sisin IM "
+"列表中选择一个受信任的服务器。"
 
 #: ../../Welcome.rst:56
 msgid "|images/register01|"
-msgstr ""
+msgstr "|images/register01|"
 
 #: ../../Welcome.rst:85
 msgid "images/register01"
-msgstr ""
+msgstr "images/register01"
 
 #: ../../Welcome.rst:58
 msgid ""
@@ -623,31 +678,34 @@ msgid ""
 " it will be added for you so your JID will look like "
 "yourusername@domain.com"
 msgstr ""
+"选择受信任的服务器后，填写用户名、密码和电子邮件字段。您不需要将域添加到您的"
+"用户名，它将为您添加，因此您的 JID 看起来像 yourusername@domain.com"
 
 #: ../../Welcome.rst:60
 msgid "|images/register02|"
-msgstr ""
+msgstr "|images/register02|"
 
 #: ../../Welcome.rst:86
 msgid "images/register02"
-msgstr ""
+msgstr "images/register02"
 
 #: ../../Welcome.rst:62
 msgid ""
 "An E-mail is required in case a server administrator needs to get in "
 "contact with you, or you lose your password and might need recovery."
-msgstr ""
+msgstr "需要一个电子邮件以防服务器管理员需要与您联系，或者您丢失密码并可能需要恢复。"
 
 #: ../../Welcome.rst:64
 msgid ""
 "Once you tap Register, the application will connect and register your "
 "account with the server. And you will receive the email confirmation with"
 " the link to confirm the new XMPP account."
-msgstr ""
+msgstr "点击注册后，应用程序将连接并向服务器注册您的帐户。您将收到带有确认新 XMPP "
+"帐户链接的电子邮件确认。"
 
 #: ../../Welcome.rst:67
 msgid "Use an Existing Account"
-msgstr ""
+msgstr "使用现有帐户"
 
 #: ../../Welcome.rst:69
 msgid ""
@@ -657,22 +715,26 @@ msgid ""
 " Save. Please keep in mind that in this tutorial the XMPP address "
 "userfortest@tigase.im is used as an example account."
 msgstr ""
+"现在您选择登录现有的 XMPP 帐户，因为您已经在上一节中注册了一个地址。之后，"
+"您必须输入您的 XMPP "
+"地址、密码并通过单击保存完成这些步骤。请记住，在本教程中，XMPP 地址 "
+"userfortest@tigase.im 用作示例帐户。"
 
 #: ../../Welcome.rst:71
 msgid "|images/siskin01|"
-msgstr ""
+msgstr "|images/siskin01|"
 
 #: ../../Welcome.rst:87
 msgid "images/siskin01"
-msgstr ""
+msgstr "images/siskin01"
 
 #: ../../Welcome.rst:74
 msgid "|images/siskin02|"
-msgstr ""
+msgstr "|images/siskin02|"
 
 #: ../../Welcome.rst:88
 msgid "images/siskin02"
-msgstr ""
+msgstr "images/siskin02"
 
 #: ../../Welcome.rst:76
 msgid ""
@@ -682,24 +744,27 @@ msgid ""
 " now show you your XMPP address and that the setting Message "
 "Synchronization is activated. You can simply click on Done."
 msgstr ""
+"您将看到一条通知，询问您是否要允许 Siskin 服务器向您发送推送通知。您应该**启"
+"用**此设置以获取通知（即使应用程序在后台）。 Siskin 现在将向您显示您的 XMPP "
+"地址，并且消息同步设置已激活。您只需单击完成即可。"
 
 #: ../../Welcome.rst:78
 msgid "Your XMPP address is now configured to be used in Siskin IM."
-msgstr ""
+msgstr "您的 XMPP 地址现已配置并在 Siskin IM 中使用。"
 
 #: ../../Welcome.rst:82
 msgid "Final Steps"
-msgstr ""
+msgstr "最后的步骤"
 
 #: ../../Welcome.rst:83
 msgid ""
 "Once your account is verified, the application will log you in as online "
 "and display the chat screen."
-msgstr ""
+msgstr "一旦验证您的帐户后，该应用程序将使您在线登录并显示聊天屏幕。"
 
 #: ../../index.rst:4
 msgid "Tigase Messenger for iOS - Version 1.0"
-msgstr ""
+msgstr "适用于 iOS 的 Tigase Messenger - 版本 1.0"
 
 #~ msgid ""
 #~ "There is a bug in Siskin 7.0. "
@@ -718,4 +783,3 @@ msgstr ""
 #~ "messages (Siskin IM 7.0) Sending your"
 #~ " geolocation (Siskin IM 7.0)"
 #~ msgstr ""
-
