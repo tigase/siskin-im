@@ -26,7 +26,7 @@
         <!-- See https://github.com/ewilderj/doap/issues/49 -->
         <language>en</language>
 
-        <schema:logo rdf:resource="https://raw.githubusercontent.com/tigase/siskin-im/master/SiskinIM/Assets.xcassets/appLogo.imageset/IMG_1607-1024.jpg"/>
+        <schema:logo rdf:resource="https://raw.githubusercontent.com/tigase/siskin-im/master/SiskinIM/Assets.xcassets/appLogo.imageset/1024.png"/>
 
         <programming-language>Swift</programming-language>
 
