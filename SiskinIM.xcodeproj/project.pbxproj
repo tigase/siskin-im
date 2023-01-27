@@ -62,6 +62,8 @@
 		FE1908AA2584D6BC00CA049F /* OpenSSL.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE1908962584D69400CA049F /* OpenSSL.xcframework */; };
 		FE1908AB2584D6BC00CA049F /* OpenSSL.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE1908962584D69400CA049F /* OpenSSL.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE1908B72584D70300CA049F /* OpenSSL.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE1908962584D69400CA049F /* OpenSSL.xcframework */; };
+		FE1977C22982ED8400E2C096 /* ItemSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1977C12982ED8400E2C096 /* ItemSelectorView.swift */; };
+		FE1977C429830FE900E2C096 /* AppearanceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1977C329830FE900E2C096 /* AppearanceSettingsView.swift */; };
 		FE1A07482525EDD4004F38A0 /* ExternalServiceDiscovery_Service_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A07472525EDD4004F38A0 /* ExternalServiceDiscovery_Service_extension.swift */; };
 		FE1A34A7258CD3EE0058B86A /* WebRTC.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE1A349F258CD3E10058B86A /* WebRTC.xcframework */; };
 		FE1A34A8258CD3EE0058B86A /* WebRTC.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE1A349F258CD3E10058B86A /* WebRTC.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -417,6 +419,8 @@
 		FE168ACC1CCD197A003F8B26 /* db-schema-1.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-1.sql"; sourceTree = "<group>"; };
 		FE17808C23EB4C7F00A1EA76 /* AccountQRCodeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountQRCodeController.swift; sourceTree = "<group>"; };
 		FE1908962584D69400CA049F /* OpenSSL.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = OpenSSL.xcframework; sourceTree = "<group>"; };
+		FE1977C12982ED8400E2C096 /* ItemSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemSelectorView.swift; sourceTree = "<group>"; };
+		FE1977C329830FE900E2C096 /* AppearanceSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSettingsView.swift; sourceTree = "<group>"; };
 		FE1A07472525EDD4004F38A0 /* ExternalServiceDiscovery_Service_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServiceDiscovery_Service_extension.swift; sourceTree = "<group>"; };
 		FE1A349F258CD3E10058B86A /* WebRTC.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = WebRTC.xcframework; sourceTree = "<group>"; };
 		FE1AC8F6216B8AB700D4CDAB /* NewFeaturesDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewFeaturesDetector.swift; sourceTree = "<group>"; };
@@ -916,6 +920,7 @@
 				FE82A72A268CC0740049C844 /* DeviceMemoryUsageTableViewCell.swift */,
 				FE0AE0B326A9DD6D0010D2E2 /* SetAccountSettingsController.swift */,
 				FED4043F283E9C5800C91BCF /* AccountConnectivitySettingsViewController.swift */,
+				FE1977C329830FE900E2C096 /* AppearanceSettingsView.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -945,6 +950,7 @@
 				FE82A728268C83020049C844 /* ChartView.swift */,
 				FE0AE0B526AED7870010D2E2 /* GetInTouchViewController.swift */,
 				FE05ADBF28A137CD008BC5D9 /* AccountSelectionView.swift */,
+				FE1977C12982ED8400E2C096 /* ItemSelectorView.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -1680,6 +1686,7 @@
 				FE11D3A126623F4100CC883F /* Array+IndexChanges.swift in Sources */,
 				FE507A161CDB7B3B001A015C /* ChatsListViewController.swift in Sources */,
 				FE3E38842427E34300D3A8E8 /* ChannelJoinViewController.swift in Sources */,
+				FE1977C22982ED8400E2C096 /* ItemSelectorView.swift in Sources */,
 				FE75A0122376E73C001E78D9 /* SiskinPushNotificationsModuleProvider.swift in Sources */,
 				FE3E3890242A98C000D3A8E8 /* ChannelParticipantsController.swift in Sources */,
 				FE01ADA91E224CF400FA7E65 /* SiskinPushNotificationsModule.swift in Sources */,
@@ -1748,6 +1755,7 @@
 				FE11D35326623D6800CC883F /* ConversationEntry.swift in Sources */,
 				FE507A151CDB7B3B001A015C /* ChatsListTableViewCell.swift in Sources */,
 				FE9EA16B23BF9DB2008C401A /* ChatAttachementsCellView.swift in Sources */,
+				FE1977C429830FE900E2C096 /* AppearanceSettingsView.swift in Sources */,
 				FEF19F102348A046005CFE9A /* PresenceRosterEventHandler.swift in Sources */,
 				FE94E5251CCBA74F00FAE755 /* AppDelegate.swift in Sources */,
 				FEF80DB21CDBBBFE005645A7 /* AccountSettingsViewController.swift in Sources */,

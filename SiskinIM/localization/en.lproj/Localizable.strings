@@ -53,6 +53,9 @@
 /* conversation notifications status */
 "Always" = "Always";
 
+/* appearance settings */
+"Appearance" = "Appearance";
+
 /* attachemt label for conversations list */
 "Attachment" = "Attachment";
 
@@ -424,6 +427,9 @@
 /* address type
    address type label */
 "Home" = "Home";
+
+/* application icon */
+"Icon" = "Icon";
 
 /* alert body
    push notifications option description */

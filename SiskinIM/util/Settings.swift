@@ -143,7 +143,7 @@ extension UserDefaults {
     }
 }
 
-class SettingsStore {
+class SettingsStore: ObservableObject {
     @UserDefaultsSetting(key: "defaultAccount")
     var defaultAccount: String?;
     @UserDefaultsOptionalRawSetting(key: "StatusType", defaultValue: nil)
@@ -201,11 +201,37 @@ class SettingsStore {
     @UserDefaultsSetting(key: "enablePush", defaultValue: nil)
     var enablePush: Bool?;
     
+    enum AppIcon: String, SelectableItem {
+        case `default` = "AppIcon"
+        case `simple` = "AppIcon-Simple"
+        
+        var label: String {
+            switch self {
+            case .default:
+                return NSLocalizedString("Default", comment: "App icon")
+            case .simple:
+                return NSLocalizedString("Simple", comment: "App icon")
+            }
+        }
+        
+        var icon: UIImage? {
+            return UIImage(named: self.rawValue);
+        }
+        
+        var id: AppIcon {
+            return self;
+        }
+        
+    }
+    
+    @Published var appIcon: AppIcon;
+    
     public static let sharedDefaults = UserDefaults(suiteName: "group.TigaseMessenger.Share")!;
     
     private var cancellables: Set<AnyCancellable> = [];
     
     fileprivate init() {
+        appIcon = AppIcon(rawValue: UIApplication.shared.alternateIconName ?? "") ?? .default;
         $sharingViaHttpUpload.sink(receiveValue: { value in
             SettingsStore.sharedDefaults.setValue(value, forKey: "SharingViaHttpUpload");
         }).store(in: &cancellables);
@@ -277,7 +303,23 @@ let Settings: SettingsStore = {
     return SettingsStore();
 }();
 
-enum Appearance: String, CustomStringConvertible {
+enum Appearance: String, CustomStringConvertible, SelectableItem {
+    var label: String {
+        return description;
+    }
+    
+    var icon: UIImage? {
+        return nil;
+    }
+    
+    var id: Appearance {
+        return self;
+    }
+    
+    var value: Appearance {
+        return self;
+    }
+    
     case auto
     case light
     case dark
@@ -293,7 +335,7 @@ enum Appearance: String, CustomStringConvertible {
         }
     }
     
-    var value: UIUserInterfaceStyle {
+    var uiInterfaceStyle: UIUserInterfaceStyle {
         switch self {
         case .auto:
             return .unspecified;

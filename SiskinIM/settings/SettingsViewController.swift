@@ -24,6 +24,7 @@ import UIKit
 import Martin
 import Combine
 import Shared
+import SwiftUI
 
 class SettingsViewController: UITableViewController {
     
@@ -34,12 +35,7 @@ class SettingsViewController: UITableViewController {
         .xa : NSLocalizedString("Extended away", comment: "presence status"),
         .dnd : NSLocalizedString("Do not disturb", comment: "presence status"),
     ];
-    
-    override func viewDidLoad() {
-        self.appIcon = AppIcon(rawValue: UIApplication.shared.alternateIconName ?? "") ?? .default;
-        super.viewDidLoad();
-    }
-    
+        
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
         tableView.reloadData();
@@ -90,22 +86,6 @@ class SettingsViewController: UITableViewController {
     private var statusMessageCancellable: AnyCancellable?;
     private var statusTypeCancellable1: AnyCancellable?;
     private var statusTypeCancellable2: AnyCancellable?;
-    
-    enum AppIcon: String, CustomStringConvertible {
-        case `default` = "AppIcon"
-        case `simple` = "AppIcon-Simple"
-        
-        var description: String {
-            switch self {
-            case .default:
-                return NSLocalizedString("Default", comment: "App icon")
-            case .simple:
-                return NSLocalizedString("Simple", comment: "App icon")
-            }
-        }
-    }
-    @Published
-    private var appIcon: AppIcon = .default;
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if (indexPath.section == 0) {
@@ -158,17 +138,7 @@ class SettingsViewController: UITableViewController {
         } else if (indexPath.section == 2) {
             switch SettingsGroup.groups[indexPath.row] {
             case .appearance:
-                let cell = tableView.dequeueReusableCell(withIdentifier: "AppearanceViewCell", for: indexPath) as! EnumTableViewCell;
-                cell.bind({ cell in
-                    cell.assign(from: Settings.$appearance.map({ $0.description as String? }).eraseToAnyPublisher());
-                })
-                cell.accessoryType = .disclosureIndicator;
-                return cell;
-            case .icon:
-                let cell = tableView.dequeueReusableCell(withIdentifier: "AppIconCellView", for: indexPath) as! EnumTableViewCell;
-                cell.bind({ cell in
-                    cell.assign(from: self.$appIcon.map({ $0.description }).eraseToAnyPublisher());
-                })
+                let cell = tableView.dequeueReusableCell(withIdentifier: "AppearanceViewCell", for: indexPath);
                 cell.accessoryType = .disclosureIndicator;
                 return cell;
             case .chat:
@@ -273,22 +243,7 @@ class SettingsViewController: UITableViewController {
         } else if indexPath.section == 2 {
             switch SettingsGroup.groups[indexPath.row] {
             case .appearance:
-                let controller = TablePickerViewController<Appearance>(style: .grouped, message: NSLocalizedString("Select appearance", comment: "selection information"), options: [.auto, .light, .dark], value: Settings.appearance);
-                controller.sink(to: \.appearance, on: Settings);
-                self.navigationController?.pushViewController(controller, animated: true);
-            case .icon:
-                let controller = TablePickerViewController<AppIcon>(style: .grouped, message: NSLocalizedString("Select application icon", comment: "selection application icon information"), options: [.default,.simple], value: appIcon);
-                controller.sink(receiveValue: { [weak self] value in
-                    self?.appIcon = value;
-                    let strValue = value == .default ? nil : value.rawValue;
-                    if UIApplication.shared.alternateIconName != strValue {
-                        UIApplication.shared.setAlternateIconName(strValue) { error in
-                            if error != nil {
-                                self?.appIcon = AppIcon(rawValue: UIApplication.shared.alternateIconName ?? "") ?? .default;
-                            }
-                        }
-                    }
-                })
+                let controller = UIHostingController(rootView: AppearanceSettingsView());
                 self.navigationController?.pushViewController(controller, animated: true);
             default:
                 break;
@@ -330,7 +285,6 @@ class SettingsViewController: UITableViewController {
     
     enum SettingsGroup {
         case appearance
-        case icon
         case chat
         case contacts
         case notifications
@@ -338,7 +292,7 @@ class SettingsViewController: UITableViewController {
         case experimental
         //case about
         
-        static let groups: [SettingsGroup] = [.appearance, .icon, .chat, .contacts, .notifications, .media, .experimental];
+        static let groups: [SettingsGroup] = [.appearance, .chat, .contacts, .notifications, .media, .experimental];
     }
     
     enum AboutGroup {

@@ -64,7 +64,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         default:
             break;
         }
-        Settings.$appearance.map({ $0.value }).receive(on: DispatchQueue.main).sink(receiveValue: { value in
+        Settings.$appearance.map({ $0.uiInterfaceStyle }).receive(on: DispatchQueue.main).sink(receiveValue: { value in
             for window in application.windows {
                 window.overrideUserInterfaceStyle = value;
             }

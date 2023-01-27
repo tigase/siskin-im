@@ -34,7 +34,7 @@ class TablePickerViewController<Value>: UITableViewController where Value: Equat
     
     private var cancellables: Set<AnyCancellable> = [];
     
-    init(style: UITableView.Style = .grouped, message: String? = nil, footer: String? = nil, options: [Value], value: Value, labelFn: (Value)->String) {
+    init(style: UITableView.Style = .insetGrouped, message: String? = nil, footer: String? = nil, options: [Value], value: Value, labelFn: (Value)->String) {
         self.message = message;
         self.footer = footer;
         self.options = options;
@@ -93,7 +93,7 @@ class TablePickerViewController<Value>: UITableViewController where Value: Equat
 
 extension TablePickerViewController where Value : CustomStringConvertible {
         
-    convenience init(style: UITableView.Style = .grouped, message: String? = nil, footer: String? = nil, options: [Value], value: Value) {
+    convenience init(style: UITableView.Style = .insetGrouped, message: String? = nil, footer: String? = nil, options: [Value], value: Value) {
         self.init(style: style, message: message, footer: footer, options: options, value: value, labelFn: { v in v.description });
     }
 }
