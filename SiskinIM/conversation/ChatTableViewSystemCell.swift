@@ -38,6 +38,9 @@ class ChatTableViewMeCell: UITableViewCell {
         let message = NSMutableAttributedString(string: "\(nickname) ", attributes: [.font: UIFont(descriptor: preferredFont.fontDescriptor.withSymbolicTraits([.traitBold,.traitItalic])!, size: 0), .foregroundColor: UIColor.secondaryLabel]);
         message.append(NSAttributedString(string: "\(msg.dropFirst(4))", attributes: [.font: UIFont(descriptor: preferredFont.fontDescriptor.withSymbolicTraits(.traitItalic)!, size: 0), .foregroundColor: UIColor.secondaryLabel]));
         self.messageView.attributedText = message;
+        
+        self.accessibilityAttributedLabel = message;
+        self.isAccessibilityElement = true
     }
 
 }
