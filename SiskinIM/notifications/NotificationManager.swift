@@ -37,7 +37,7 @@ public class NotificationManager: @unchecked Sendable {
     
     private let queue = DispatchQueue(label: "NotificationManager");
     private var cancellables: Set<AnyCancellable> = [];
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "NotificationManager");
+    private let logger = TigaseLogging.Logger(subsystem: Bundle.main.bundleIdentifier!, category: "NotificationManager");
     
     private init() {
         self.provider = MainNotificationManagerProvider();

@@ -1,15 +1,3 @@
-/* Class = "UITableViewSection"; headerTitle = "Application"; ObjectID = "1Kk-Xc-9Ce"; */
-"1Kk-Xc-9Ce.headerTitle" = "Aplicación";
-
-/* Class = "UILabel"; text = "Website"; ObjectID = "4wJ-8E-L1J"; */
-"4wJ-8E-L1J.text" = "Sitio web";
-
-/* Class = "UILabel"; text = "Website"; ObjectID = "56G-hc-AcV"; */
-"56G-hc-AcV.text" = "Sitio web";
-
-/* Class = "UITableViewController"; title = "Get in touch"; ObjectID = "5mK-5u-qus"; */
-"5mK-5u-qus.title" = "Contactar";
-
 /* Class = "UIViewController"; title = "Licences"; ObjectID = "aAD-xV-1Ta"; */
 "aAD-xV-1Ta.title" = "Licencias";
 
@@ -24,9 +12,3 @@
 
 /* Class = "UILabel"; text = "Licenses"; ObjectID = "Gp2-gY-ov4"; */
 "Gp2-gY-ov4.text" = "Licencias";
-
-/* Class = "UITableViewSection"; headerTitle = "Company"; ObjectID = "kdx-K5-gSV"; */
-"kdx-K5-gSV.headerTitle" = "Compañía";
-
-/* Class = "UILabel"; text = "XMPP Channel"; ObjectID = "U4z-jz-alK"; */
-"U4z-jz-alK.text" = "Canal XMPP";

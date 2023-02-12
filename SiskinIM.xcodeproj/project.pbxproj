@@ -13,7 +13,6 @@
 		FE05ADBE289FC845008BC5D9 /* SearchResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE05ADBD289FC845008BC5D9 /* SearchResultsView.swift */; };
 		FE05ADC028A137CD008BC5D9 /* AccountSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE05ADBF28A137CD008BC5D9 /* AccountSelectionView.swift */; };
 		FE0AE0B426A9DD6D0010D2E2 /* SetAccountSettingsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0AE0B326A9DD6D0010D2E2 /* SetAccountSettingsController.swift */; };
-		FE0AE0B626AED7870010D2E2 /* GetInTouchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0AE0B526AED7870010D2E2 /* GetInTouchViewController.swift */; };
 		FE0AE13526B575820010D2E2 /* MeetController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0AE13426B575820010D2E2 /* MeetController.swift */; };
 		FE0AE13726B58C4F0010D2E2 /* MeetManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0AE13626B58C4F0010D2E2 /* MeetManager.swift */; };
 		FE0AE13926B7EA770010D2E2 /* MeetEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0AE13826B7EA770010D2E2 /* MeetEventHandler.swift */; };
@@ -123,6 +122,7 @@
 		FE507A231CDB7B3B001A015C /* CustomTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A101CDB7B3B001A015C /* CustomTabBarController.swift */; };
 		FE507A241CDB7B3B001A015C /* GlobalSplitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A111CDB7B3B001A015C /* GlobalSplitViewController.swift */; };
 		FE507A261CDB7B3B001A015C /* AvatarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A141CDB7B3B001A015C /* AvatarManager.swift */; };
+		FE5F30A9299960C60090882F /* GetInTouchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5F30A8299960C60090882F /* GetInTouchView.swift */; };
 		FE64445E281314ED002D6E8E /* BookmarksController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE64445D281314ED002D6E8E /* BookmarksController.swift */; };
 		FE64446028131538002D6E8E /* BookmarkViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE64445F28131538002D6E8E /* BookmarkViewCell.swift */; };
 		FE644462281334ED002D6E8E /* BookmarkItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE644461281334ED002D6E8E /* BookmarkItem.swift */; };
@@ -367,7 +367,6 @@
 		FE06920C27F4DA12004E341E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/MIX.strings; sourceTree = "<group>"; };
 		FE06920D27F4DA58004E341E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FE0AE0B326A9DD6D0010D2E2 /* SetAccountSettingsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetAccountSettingsController.swift; sourceTree = "<group>"; };
-		FE0AE0B526AED7870010D2E2 /* GetInTouchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetInTouchViewController.swift; sourceTree = "<group>"; };
 		FE0AE13426B575820010D2E2 /* MeetController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetController.swift; sourceTree = "<group>"; };
 		FE0AE13626B58C4F0010D2E2 /* MeetManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetManager.swift; sourceTree = "<group>"; };
 		FE0AE13826B7EA770010D2E2 /* MeetEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetEventHandler.swift; sourceTree = "<group>"; };
@@ -490,6 +489,7 @@
 		FE507A131CDB7B3B001A015C /* AccountManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountManager.swift; sourceTree = "<group>"; };
 		FE507A141CDB7B3B001A015C /* AvatarManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarManager.swift; sourceTree = "<group>"; };
 		FE523B96288D930700A973AC /* db-schema-20.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-20.sql"; sourceTree = "<group>"; };
+		FE5F30A8299960C60090882F /* GetInTouchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetInTouchView.swift; sourceTree = "<group>"; };
 		FE60F29B1ED48B470030D411 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
 		FE64445D281314ED002D6E8E /* BookmarksController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarksController.swift; sourceTree = "<group>"; };
 		FE64445F28131538002D6E8E /* BookmarkViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkViewCell.swift; sourceTree = "<group>"; };
@@ -921,6 +921,7 @@
 				FE0AE0B326A9DD6D0010D2E2 /* SetAccountSettingsController.swift */,
 				FED4043F283E9C5800C91BCF /* AccountConnectivitySettingsViewController.swift */,
 				FE1977C329830FE900E2C096 /* AppearanceSettingsView.swift */,
+				FE5F30A8299960C60090882F /* GetInTouchView.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -948,7 +949,6 @@
 				FEF8255424BA0AFE00820108 /* MessageTextView.swift */,
 				FE4A94A926679D65000A96E5 /* EnumTableViewCell.swift */,
 				FE82A728268C83020049C844 /* ChartView.swift */,
-				FE0AE0B526AED7870010D2E2 /* GetInTouchViewController.swift */,
 				FE05ADBF28A137CD008BC5D9 /* AccountSelectionView.swift */,
 				FE1977C12982ED8400E2C096 /* ItemSelectorView.swift */,
 			);
@@ -1652,6 +1652,7 @@
 				FEDC678A238A9F16005C0FAB /* BlockedEventHandler.swift in Sources */,
 				FE4071E821E2653700F09B58 /* RoundButton.swift in Sources */,
 				FEAC717B1CECE70100ABABEF /* MucChatOccupantsTableViewCell.swift in Sources */,
+				FE5F30A9299960C60090882F /* GetInTouchView.swift in Sources */,
 				FE11D3B5266241BD00CC883F /* Publisher+OnlyGetter.swift in Sources */,
 				FE7F9303200FD5AC004C6195 /* AccountManagerScramSaltedPasswordCache.swift in Sources */,
 				FE11D3BF2662852A00CC883F /* XMPPClient_extension.swift in Sources */,
@@ -1693,7 +1694,6 @@
 				FE507A1F1CDB7B3B001A015C /* AccountTableViewCell.swift in Sources */,
 				FE11D38126623D7700CC883F /* DBChatStore+RoomStore.swift in Sources */,
 				FEF19F122348A3B8005CFE9A /* AvatarEventHandler.swift in Sources */,
-				FE0AE0B626AED7870010D2E2 /* GetInTouchViewController.swift in Sources */,
 				FE0E30E92535BA910030F8C5 /* BaseChatViewController+ShareMedia.swift in Sources */,
 				FE7F645B1D281B1C00B9DF56 /* DBCapabilitiesCache.swift in Sources */,
 				FE11D36026623D6D00CC883F /* Chat.swift in Sources */,
@@ -2010,7 +2010,7 @@
 					"$(SDK_DIR)/usr/include/libxml2",
 				);
 				INFOPLIST_FILE = "SiskinIM - Share/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2043,7 +2043,7 @@
 					"$(SDK_DIR)/usr/include/libxml2",
 				);
 				INFOPLIST_FILE = "SiskinIM - Share/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2078,7 +2078,7 @@
 					"$(SDK_DIR)/usr/include/libxml2/**",
 				);
 				INFOPLIST_FILE = NotificationService/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2117,7 +2117,7 @@
 					"$(SDK_DIR)/usr/include/libxml2/**",
 				);
 				INFOPLIST_FILE = NotificationService/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2161,7 +2161,7 @@
 				);
 				INFOPLIST_FILE = Shared/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2213,7 +2213,7 @@
 				);
 				INFOPLIST_FILE = Shared/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2379,7 +2379,7 @@
 					"$(SDK_DIR)/usr/include/libxml2/**",
 				);
 				INFOPLIST_FILE = SiskinIM/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2420,7 +2420,7 @@
 					"$(SDK_DIR)/usr/include/libxml2/**",
 				);
 				INFOPLIST_FILE = SiskinIM/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

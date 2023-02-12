@@ -248,6 +248,14 @@ class SettingsViewController: UITableViewController {
             default:
                 break;
             }
+        } else if indexPath.section == 3 {
+            switch indexPath.row {
+            case 0:
+                let controller = UIHostingController(rootView: GetInTouchView());
+                self.navigationController?.pushViewController(controller, animated: true);
+            default:
+                break;
+            }
         }
     }
     

@@ -154,14 +154,14 @@
                                 <accessibility key="accessibilityConfiguration" identifier="maxImagePreviewSizeTableViewCell"/>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="clearImagePreviewTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ClearDownloadStoreTableViewCell" id="tua-q1-OwE" userLabel="ClearImagePreviewTableViewCell">
-                                <rect key="frame" x="20" y="229.5" width="374" height="43"/>
+                                <rect key="frame" x="20" y="229.5" width="374" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="tua-q1-OwE" id="Zpy-kb-3zH">
-                                    <rect key="frame" x="0.0" y="0.0" width="374" height="43"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="374" height="44"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Clear download cache" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Hu1-2i-RSO">
-                                            <rect key="frame" x="20" y="11" width="334" height="21"/>
+                                            <rect key="frame" x="20" y="11" width="334" height="22"/>
                                             <accessibility key="accessibilityConfiguration" identifier="accountName"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
@@ -178,14 +178,14 @@
                                 <accessibility key="accessibilityConfiguration" identifier="clearImagePreviewTableViewCell"/>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="clearMetadataStoreTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="ClearMetadataStoreTableViewCell" id="dp5-Tw-K7m" userLabel="ClearMetadataStoreTableViewCell">
-                                <rect key="frame" x="20" y="272.5" width="374" height="43"/>
+                                <rect key="frame" x="20" y="273.5" width="374" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="dp5-Tw-K7m" id="sKm-mV-wFS">
-                                    <rect key="frame" x="0.0" y="0.0" width="374" height="43"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="374" height="44"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Clear link previews cache" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Zff-Y8-Nz6">
-                                            <rect key="frame" x="20" y="11" width="334" height="21"/>
+                                            <rect key="frame" x="20" y="11" width="334" height="22"/>
                                             <accessibility key="accessibilityConfiguration" identifier="accountName"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
@@ -202,7 +202,7 @@
                                 <accessibility key="accessibilityConfiguration" identifier="clearMetadataStoreTableViewCell"/>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="DeviceMemoryUsageTableViewCell" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DeviceMemoryUsageTableViewCell" id="AT2-7Z-eYM" customClass="DeviceMemoryUsageTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="20" y="315.5" width="374" height="43.5"/>
+                                <rect key="frame" x="20" y="317.5" width="374" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="AT2-7Z-eYM" id="AgB-cf-My2">
                                     <rect key="frame" x="0.0" y="0.0" width="374" height="43.5"/>
@@ -538,9 +538,6 @@
                                     </subviews>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="getInTouchSettingsViewCell"/>
-                                <connections>
-                                    <segue destination="ldP-3A-ef2" kind="show" id="zui-Ca-apa"/>
-                                </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="aboutSettingsViewCall" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="AboutSettingsViewCell" textLabel="9cK-3e-Nqx" style="IBUITableViewCellStyleDefault" id="JXS-R7-2mh" userLabel="AboutSettingsViewCall">
                                 <rect key="frame" x="20" y="495.5" width="374" height="44"/>
@@ -670,7 +667,7 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="By presence and time" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LAc-oF-22z">
-                                            <rect key="frame" x="189" y="12" width="165" height="20.5"/>
+                                            <rect key="frame" x="189" y="11.5" width="165" height="21"/>
                                             <accessibility key="accessibilityConfiguration">
                                                 <accessibilityTraits key="traits" staticText="YES" summaryElement="YES"/>
                                             </accessibility>
@@ -1337,16 +1334,6 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Tlr-f3-jiC" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2518.840579710145" y="1853.5714285714284"/>
-        </scene>
-        <!--GetInTouchViewController-->
-        <scene sceneID="FMI-Eq-DFP">
-            <objects>
-                <viewControllerPlaceholder storyboardName="Info" referencedIdentifier="GetInTouchViewController" id="ldP-3A-ef2" sceneMemberID="viewController">
-                    <navigationItem key="navigationItem" id="B9c-lC-QSW"/>
-                </viewControllerPlaceholder>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="RdE-Wn-ru9" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="3242" y="1596"/>
         </scene>
         <!--AboutController-->
         <scene sceneID="5Mf-Za-3AY">

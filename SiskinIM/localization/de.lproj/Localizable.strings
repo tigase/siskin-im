@@ -56,6 +56,9 @@
 /* appearance settings */
 "Appearance" = "Darstellung";
 
+/* label */
+"Application" = "Anwendung";
+
 /* attachemt label for conversations list */
 "Attachment" = "Anhang";
 
@@ -179,6 +182,9 @@
 
 /* button label */
 "Close" = "Schließen";
+
+/* label */
+"Company" = "Firma";
 
 /* channel join status view label */
 "Component" = "Komponente";
@@ -415,6 +421,12 @@
 /* section label */
 "General" = "Allgemein";
 
+/* label for button */
+"Get in touch" = "Kontakt aufnehmen";
+
+/* label for opening GitHub */
+"GitHub" = "GitHub";
+
 /* vcard field label */
 "Given name" = "Vorname";
 
@@ -580,6 +592,9 @@
 
 /* video quality */
 "Low" = "Niedrig";
+
+/* label for opening Mastodon */
+"Mastodon" = "Mastodon";
 
 /* muc error reason */
 "Maximum number of users exceeded" = "Maximale Teilnehmerzahl überschritten";
@@ -1075,6 +1090,9 @@
 /* error recovery suggestion */
 "Try again. If removal failed, try accessing Keychain to update account credentials manually." = "Versuche es erneut. Wenn die Entfernung fehlgeschlagen ist, dann versuche, auf den Schlüsselbund zuzugreifen, um die Kontozugangsdaten manuell zu aktualisieren.";
 
+/* label for opening Twitter */
+"Twitter" = "Twitter";
+
 /* synchronization period value */
 "Two weeks" = "Zwei Wochen";
 
@@ -1142,6 +1160,9 @@
    used space label */
 "We are using %@ of storage." = "Wir nutzen %@ des Speichers.";
 
+/* label for website link/button */
+"Website" = "Webseite";
+
 /* synchronization period value */
 "Week" = "Woche";
 
@@ -1160,6 +1181,9 @@
 /* address type
    address type label */
 "Work" = "Arbeit";
+
+/* label for opening XMPP channel */
+"XMPP Channel" = "XMPP-Channel";
 
 /* synchronization period value */
 "Year" = "Jahr";

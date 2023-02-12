@@ -33,7 +33,7 @@ class MessageEventHandler: XmppServiceExtension {
         
     public static let eventsPublisher = PassthroughSubject<SyncEvent,Never>();
     
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "MessageEventHandler");
+    private static let logger = TigaseLogging.Logger(subsystem: Bundle.main.bundleIdentifier!, category: "MessageEventHandler");
     
     enum SyncEvent {
         case started(account: BareJID, with: BareJID?)

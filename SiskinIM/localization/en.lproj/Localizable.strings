@@ -56,6 +56,9 @@
 /* appearance settings */
 "Appearance" = "Appearance";
 
+/* label */
+"Application" = "Application";
+
 /* attachemt label for conversations list */
 "Attachment" = "Attachment";
 
@@ -179,6 +182,9 @@
 
 /* button label */
 "Close" = "Close";
+
+/* label */
+"Company" = "Company";
 
 /* channel join status view label */
 "Component" = "Component";
@@ -415,6 +421,12 @@
 /* section label */
 "General" = "General";
 
+/* label for button */
+"Get in touch" = "Get in touch";
+
+/* label for opening GitHub */
+"GitHub" = "GitHub";
+
 /* vcard field label */
 "Given name" = "Given name";
 
@@ -580,6 +592,9 @@
 
 /* video quality */
 "Low" = "Low";
+
+/* label for opening Mastodon */
+"Mastodon" = "Mastodon";
 
 /* muc error reason */
 "Maximum number of users exceeded" = "Maximum number of users exceeded";
@@ -1075,6 +1090,9 @@
 /* error recovery suggestion */
 "Try again. If removal failed, try accessing Keychain to update account credentials manually." = "Try again. If removal failed, try accessing Keychain to update account credentials manually.";
 
+/* label for opening Twitter */
+"Twitter" = "Twitter";
+
 /* synchronization period value */
 "Two weeks" = "Two weeks";
 
@@ -1142,6 +1160,9 @@
    used space label */
 "We are using %@ of storage." = "We are using %@ of storage.";
 
+/* label for website link/button */
+"Website" = "Website";
+
 /* synchronization period value */
 "Week" = "Week";
 
@@ -1160,6 +1181,9 @@
 /* address type
    address type label */
 "Work" = "Work";
+
+/* label for opening XMPP channel */
+"XMPP Channel" = "XMPP Channel";
 
 /* synchronization period value */
 "Year" = "Year";
