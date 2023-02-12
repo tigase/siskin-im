@@ -309,7 +309,9 @@ class CallManager: NSObject, CXProviderDelegate {
         }
 
         let controller = UIStoryboard(name: "VoIP", bundle: nil).instantiateViewController(withIdentifier: "VideoCallController") as! VideoCallController;
-        topController?.show(controller, sender: self);
+        controller.modalPresentationStyle = .fullScreen;
+        topController?.present(controller, animated: true);
+//        topController?.show(controller, sender: self);
         completionHandler(controller);
     }
         
