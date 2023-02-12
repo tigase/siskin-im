@@ -53,6 +53,14 @@ class ChatTableViewCell: BaseChatTableViewCell, UITextViewDelegate {
         messageTextView.textView.delegate = self;
         set(item: item);
         
+        let accessibilityLabel = NSMutableAttributedString(string: "")
+        if let nickname = self.nicknameView?.text {
+            accessibilityLabel.append(NSAttributedString(string: "\(nickname)"))
+        }
+        if let timestamp = self.timestampView?.text {
+            accessibilityLabel.append(NSAttributedString(string: " \(timestamp)"))
+        }
+        
         if correctionTimestamp != nil, case .incoming(_) = item.state {
             self.stateView?.text = "✏️\(self.stateView!.text ?? "")";
         }
@@ -93,6 +101,15 @@ class ChatTableViewCell: BaseChatTableViewCell, UITextViewDelegate {
 
         }
         self.messageTextView.attributedText = attrText;
+        
+        if accessibilityLabel.length > 0 {
+            accessibilityLabel.append(NSAttributedString(string: " "));
+        }
+        accessibilityLabel.append(attrText);
+        
+        self.accessibilityAttributedLabel = accessibilityLabel;
+        self.isAccessibilityElement = true
+
 //        if item.state.isError {
 //            if (self.messageTextView.text?.isEmpty ?? true), let error = item.error {
 //                self.messageTextView.text = "Error: \(error)";
