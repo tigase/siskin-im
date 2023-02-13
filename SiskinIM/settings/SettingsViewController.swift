@@ -254,6 +254,8 @@ class SettingsViewController: UITableViewController {
                 let controller = UIHostingController(rootView: GetInTouchView());
                 self.navigationController?.pushViewController(controller, animated: true);
             default:
+                let controller = UIHostingController(rootView: AboutApplicationView());
+                self.navigationController?.pushViewController(controller, animated: true);
                 break;
             }
         }

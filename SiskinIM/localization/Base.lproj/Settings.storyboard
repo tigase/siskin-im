@@ -556,9 +556,6 @@
                                     </subviews>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="aboutSettingsViewCall"/>
-                                <connections>
-                                    <segue destination="5B4-ae-wmU" kind="show" id="cQ2-TJ-bKk"/>
-                                </connections>
                             </tableViewCell>
                         </prototypes>
                         <connections>
@@ -1334,16 +1331,6 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Tlr-f3-jiC" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2518.840579710145" y="1853.5714285714284"/>
-        </scene>
-        <!--AboutController-->
-        <scene sceneID="5Mf-Za-3AY">
-            <objects>
-                <viewControllerPlaceholder storyboardName="Info" referencedIdentifier="AboutController" id="5B4-ae-wmU" sceneMemberID="viewController">
-                    <navigationItem key="navigationItem" id="XxE-3L-zjI"/>
-                </viewControllerPlaceholder>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="f6S-Ox-AWU" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="3125" y="1477"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>

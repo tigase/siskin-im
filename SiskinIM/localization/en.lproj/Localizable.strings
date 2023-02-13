@@ -16,6 +16,9 @@
 /* ssl certificate info - issue part */
 "\nissued by\n%@\n with fingerprint\n%@" = "\nissued by\n%1$@\n with fingerprint\n%2$@";
 
+/* title for about application view */
+"About application" = "About application";
+
 /* button label */
 "Accept" = "Accept";
 
@@ -571,6 +574,9 @@
 
 /* leaving channel title */
 "Leaving channel" = "Leaving channel";
+
+/* title for licences view */
+"Licences" = "Licences";
 
 /* appearance type */
 "Light" = "Light";

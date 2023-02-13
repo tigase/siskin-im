@@ -123,6 +123,9 @@
 		FE507A241CDB7B3B001A015C /* GlobalSplitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A111CDB7B3B001A015C /* GlobalSplitViewController.swift */; };
 		FE507A261CDB7B3B001A015C /* AvatarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE507A141CDB7B3B001A015C /* AvatarManager.swift */; };
 		FE5F30A9299960C60090882F /* GetInTouchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5F30A8299960C60090882F /* GetInTouchView.swift */; };
+		FE5F30AB299A26990090882F /* AboutApplicationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5F30AA299A26990090882F /* AboutApplicationView.swift */; };
+		FE5F30AD299A8CA90090882F /* LicencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5F30AC299A8CA90090882F /* LicencesView.swift */; };
+		FE5F30AF299A8DC50090882F /* Licences.rtf in Resources */ = {isa = PBXBuildFile; fileRef = FE5F30AE299A8DC50090882F /* Licences.rtf */; };
 		FE64445E281314ED002D6E8E /* BookmarksController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE64445D281314ED002D6E8E /* BookmarksController.swift */; };
 		FE64446028131538002D6E8E /* BookmarkViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE64445F28131538002D6E8E /* BookmarkViewCell.swift */; };
 		FE644462281334ED002D6E8E /* BookmarkItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE644461281334ED002D6E8E /* BookmarkItem.swift */; };
@@ -490,6 +493,9 @@
 		FE507A141CDB7B3B001A015C /* AvatarManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarManager.swift; sourceTree = "<group>"; };
 		FE523B96288D930700A973AC /* db-schema-20.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-20.sql"; sourceTree = "<group>"; };
 		FE5F30A8299960C60090882F /* GetInTouchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetInTouchView.swift; sourceTree = "<group>"; };
+		FE5F30AA299A26990090882F /* AboutApplicationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutApplicationView.swift; sourceTree = "<group>"; };
+		FE5F30AC299A8CA90090882F /* LicencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicencesView.swift; sourceTree = "<group>"; };
+		FE5F30AE299A8DC50090882F /* Licences.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Licences.rtf; sourceTree = "<group>"; };
 		FE60F29B1ED48B470030D411 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
 		FE64445D281314ED002D6E8E /* BookmarksController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarksController.swift; sourceTree = "<group>"; };
 		FE64445F28131538002D6E8E /* BookmarkViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkViewCell.swift; sourceTree = "<group>"; };
@@ -922,6 +928,8 @@
 				FED4043F283E9C5800C91BCF /* AccountConnectivitySettingsViewController.swift */,
 				FE1977C329830FE900E2C096 /* AppearanceSettingsView.swift */,
 				FE5F30A8299960C60090882F /* GetInTouchView.swift */,
+				FE5F30AA299A26990090882F /* AboutApplicationView.swift */,
+				FE5F30AC299A8CA90090882F /* LicencesView.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -1158,6 +1166,7 @@
 				FEBA830A26F76A9C00347D89 /* Conversation.storyboard */,
 				FEBA830D26F76AA200347D89 /* MIX.storyboard */,
 				FEBA835626F8DF1300347D89 /* Localizable.strings */,
+				FE5F30AE299A8DC50090882F /* Licences.rtf */,
 			);
 			path = SiskinIM;
 			sourceTree = "<group>";
@@ -1519,6 +1528,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FEBA82FF26F76A8D00347D89 /* Info.storyboard in Resources */,
+				FE5F30AF299A8DC50090882F /* Licences.rtf in Resources */,
 				FE94E5311CCBA74F00FAE755 /* LaunchScreen.storyboard in Resources */,
 				FEBA835426F8DF1300347D89 /* Localizable.strings in Resources */,
 				FEBA82FC26F76A8700347D89 /* Groupchat.storyboard in Resources */,
@@ -1766,6 +1776,7 @@
 				FE507A231CDB7B3B001A015C /* CustomTabBarController.swift in Sources */,
 				FEA8D6621F30F54B0077C12F /* XmppService.swift in Sources */,
 				FEF19F0A2347619D005CFE9A /* TasksQueue.swift in Sources */,
+				FE5F30AD299A8CA90090882F /* LicencesView.swift in Sources */,
 				FE8DD9C7221B15DC0090F5AA /* AbstractRosterViewController.swift in Sources */,
 				FE11D35026623D6800CC883F /* ConversationEntryEncryption.swift in Sources */,
 				FEA7BF5D21E50CAB00D9E36C /* JingleManager_Session.swift in Sources */,
@@ -1824,6 +1835,7 @@
 				FEA308D01F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift in Sources */,
 				FEA7BF5B21E50C5800D9E36C /* JingleManager.swift in Sources */,
 				FE11D35226623D6800CC883F /* ConversationEntryState.swift in Sources */,
+				FE5F30AB299A26990090882F /* AboutApplicationView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
