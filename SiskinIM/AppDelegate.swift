@@ -101,7 +101,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }).store(in: &cancellables);
 
-        (self.window?.rootViewController as? UISplitViewController)?.preferredDisplayMode = .allVisible;
+        (self.window?.rootViewController as? UISplitViewController)?.preferredDisplayMode = .oneBesideSecondary;
         if AccountManager.accountNames().isEmpty {
             self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SetupViewController");
         }
@@ -636,7 +636,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func hideSetupGuide() {
         self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateInitialViewController();
-        (self.window?.rootViewController as? UISplitViewController)?.preferredDisplayMode = .allVisible;
+        (self.window?.rootViewController as? UISplitViewController)?.preferredDisplayMode = .oneBesideSecondary;
     }
  
     struct XmppUri {

@@ -39,10 +39,10 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
             if (AppDelegate.isChatVisible(account: account, with: sender) && XmppService.instance.applicationState == .active) {
                 completionHandler([]);
             } else {
-                completionHandler([.alert, .sound]);
+                completionHandler([.banner, .list, .sound]);
             }
         default:
-            completionHandler([.alert, .sound]);
+            completionHandler([.banner, .list, .sound]);
         }
     }
     

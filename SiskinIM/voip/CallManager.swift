@@ -67,7 +67,7 @@ class CallManager: NSObject, CXProviderDelegate {
     private var cancellables: Set<AnyCancellable> = [];
     
     private override init() {
-        let config = CXProviderConfiguration(localizedName: "SiskinIM");
+        let config = CXProviderConfiguration();
         if #available(iOS 13.0, *) {
             if let image = UIImage(systemName: "message.fill") {
                 config.iconTemplateImageData = image.pngData();

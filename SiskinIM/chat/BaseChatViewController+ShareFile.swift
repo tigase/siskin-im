@@ -46,7 +46,7 @@ extension BaseChatViewController: UIDocumentPickerDelegate {
         guard checkIfEnabledOrAsk(completionHandler: { [weak self] in self?.selectFile(); }) else {
             return;
         }
-        let picker = UIDocumentPickerViewController(documentTypes: [String(kUTTypeData)], in: .open);
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.data]);
         picker.delegate = self;
         picker.allowsMultipleSelection = false;
         self.present(picker, animated: true, completion: nil);

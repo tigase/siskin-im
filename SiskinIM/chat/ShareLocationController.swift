@@ -106,7 +106,7 @@ class ShareLocationController: UIViewController, MKMapViewDelegate, CLLocationMa
     
     @available(iOS, obsoleted: 15, message: "We are using CLLocationButton now!")
     @objc func requestCurrentLocationPreiOS15(_ sender: UIButton) {
-        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse || CLLocationManager.authorizationStatus() == .authorizedAlways {
+        if locationManager.authorizationStatus == .authorizedWhenInUse || locationManager.authorizationStatus == .authorizedAlways {
             requestCurrentLocation();
         } else {
             locationManager.delegate = self;
@@ -116,7 +116,7 @@ class ShareLocationController: UIViewController, MKMapViewDelegate, CLLocationMa
     
     @available(iOS 15.0, *)
     @objc func requestCurrentLocationiOS15() {
-        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse || CLLocationManager.authorizationStatus() == .authorizedAlways {
+        if locationManager.authorizationStatus == .authorizedWhenInUse || locationManager.authorizationStatus == .authorizedAlways {
             requestCurrentLocation();
         } else {
             locationManager.delegate = self;
@@ -140,7 +140,7 @@ class ShareLocationController: UIViewController, MKMapViewDelegate, CLLocationMa
     
     @available(iOS, obsoleted: 15, message: "We are using CLLocationButton now!")
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse || CLLocationManager.authorizationStatus() == .authorizedAlways {
+        if locationManager.authorizationStatus == .authorizedWhenInUse || locationManager.authorizationStatus == .authorizedAlways {
             requestCurrentLocation();
         }
     }
