@@ -73,7 +73,7 @@ class SettingsViewController: UITableViewController {
         case 0:
             return AccountManager.accountNames().count + 1;
         case 1:
-            return 2;
+            return 1;
         case 2:
             return SettingsGroup.groups.count;
         case 3:
@@ -83,10 +83,6 @@ class SettingsViewController: UITableViewController {
         }
     }
     
-    private var statusMessageCancellable: AnyCancellable?;
-    private var statusTypeCancellable1: AnyCancellable?;
-    private var statusTypeCancellable2: AnyCancellable?;
-
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if (indexPath.section == 0) {
             let cellIdentifier = "AccountTableViewCell";
@@ -108,33 +104,9 @@ class SettingsViewController: UITableViewController {
             }
             return cell;
         } else if (indexPath.section == 1) {
-            if indexPath.row == 1 {
-                let cell = tableView.dequeueReusableCell(withIdentifier: "StatusTableViewCell", for: indexPath);
-                let label = cell.viewWithTag(1)! as! UILabel;
-                self.statusMessageCancellable = Settings.$statusMessage.assign(to: \.text, on: label);
-                return cell;
-            } else {
-                let cell = tableView.dequeueReusableCell(withIdentifier: "StatusTypeSettingsViewCell", for: indexPath);
-                self.statusTypeCancellable1 = Settings.$statusType.map({ [weak self] v in self?.getStatusIcon(type: v) }).sink(receiveValue: { [weak cell] image in
-                    if image == nil {
-                        (cell?.contentView.subviews[0] as? UIImageView)?.isHidden = true;
-                    } else {
-                        (cell?.contentView.subviews[0] as? UIImageView)?.image = image;
-                        (cell?.contentView.subviews[0] as? UIImageView)?.isHidden = false;
-                    }
-                });
-                self.statusTypeCancellable2 = Settings.$statusType.map({ [weak self] type in
-                    if let value = type {
-                        return self?.statusNames[value];
-                    } else {
-                        return NSLocalizedString("Automatic", comment: "presence status");
-                    }
-                }).sink(receiveValue: { [weak cell] name in
-                    (cell?.contentView.subviews[1] as? UILabel)?.text = name;
-                });
-                cell.accessoryType = .disclosureIndicator;
-                return cell;
-            }
+            let cell = tableView.dequeueReusableCell(withIdentifier: "StatusTypeSettingsViewCell", for: indexPath) as! StatusTableViewCell;
+            cell.initialize();
+            return cell;
         } else if (indexPath.section == 2) {
             switch SettingsGroup.groups[indexPath.row] {
             case .appearance:
@@ -208,37 +180,8 @@ class SettingsViewController: UITableViewController {
             }
         } else if indexPath.section == 1 {
             if indexPath.row == 0 {
-                let alert = UIAlertController(title: NSLocalizedString("Select status", comment: "alert title"), message: nil, preferredStyle: .actionSheet);
-                let options: [Presence.Show?] = [nil, .chat, .online, .away, .xa, .dnd];
-                for type in options {
-                    let name = type == nil ? NSLocalizedString("Automatic", comment: "presence automatic") : self.statusNames[type!];
-                    let action = UIAlertAction(title: name, style: .default) { (a) in
-                        Settings.statusType = type;
-                    };
-                    if type != nil {
-                        action.setValue(getStatusIcon(type: type!), forKey: "image")
-                    }
-                    alert.addAction(action);
-                }
-            
-                let action = UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .cancel, handler: nil);
-                alert.addAction(action);
-                
-                alert.popoverPresentationController?.sourceView = self.tableView;
-                alert.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: indexPath);
-                
-                self.present(alert, animated: true, completion: nil);
-            }
-            else if indexPath.row == 1 {
-                let alert = UIAlertController(title: NSLocalizedString("Status", comment: "alert title"), message: NSLocalizedString("Enter status message", comment: "alert body"), preferredStyle: .alert);
-                alert.addTextField(configurationHandler: { (textField) in
-                    textField.text = Settings.statusMessage;
-                })
-                alert.addAction(UIAlertAction(title: NSLocalizedString("Set", comment: "button label"), style: .default, handler: { (action) -> Void in
-                    Settings.statusMessage = (alert.textFields![0] as UITextField).text;
-                    self.tableView.reloadData();
-                }));
-                self.present(alert, animated: true, completion: nil);
+                let controller = UIHostingController(rootView: SetStatusView(automatic: Settings.statusType == nil, status: Settings.statusType ?? .online, message: Settings.statusMessage ?? ""));
+                self.navigationController?.pushViewController(controller, animated: true);
             }
         } else if indexPath.section == 2 {
             switch SettingsGroup.groups[indexPath.row] {
@@ -310,5 +253,41 @@ class SettingsViewController: UITableViewController {
         case aboutTheApp
         
         static let groups: [AboutGroup] = [.getInTouch, .aboutTheApp]
+    }
+}
+
+class StatusTableViewCell: UITableViewCell {
+    
+    public let statusNames: [Presence.Show: String] = [
+        .chat : NSLocalizedString("Chatty", comment: "presence status"),
+        .online : NSLocalizedString("Online", comment: "presence status"),
+        .away : NSLocalizedString("Away", comment: "presence status"),
+        .xa : NSLocalizedString("Extended away", comment: "presence status"),
+        .dnd : NSLocalizedString("Do not disturb", comment: "presence status"),
+    ];
+    
+    @IBOutlet var statusIcon: UIImageView!;
+    @IBOutlet var statusTypeLabel: UILabel!;
+    @IBOutlet var statusMessage: UILabel!;
+    
+    private var cancellables: Set<AnyCancellable> = [];
+    
+    public func initialize() {
+        Settings.$statusType.sink(receiveValue: { [weak self] type in
+            if type == nil {
+                self?.statusIcon.isHidden = true;
+            } else {
+                self?.statusIcon.image = AvatarStatusView.getStatusImage(type);
+                self?.statusIcon.isHidden = false;
+            }
+        }).store(in: &cancellables)
+        Settings.$statusType.map({ [weak self] type in
+            if let value = type {
+                return self?.statusNames[value];
+            } else {
+                return NSLocalizedString("Automatic", comment: "presence status");
+            }
+        }).assign(to: \.text, on: statusTypeLabel).store(in: &cancellables)
+        Settings.$statusMessage.assign(to: \.text, on: statusMessage).store(in: &cancellables)
     }
 }

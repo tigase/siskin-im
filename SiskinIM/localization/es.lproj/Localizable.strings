@@ -87,6 +87,9 @@
    channel join status view label */
 "Automatic" = "Automático";
 
+/* description of automatic status behaviour */
+"Automatic status will be set according to the application state without a need of user interaction." = "El estado automático se establecerá de acuerdo con el estado de la aplicación sin necesidad de interacción del usuario.";
+
 /* filter scope */
 "Available" = "Disponible";
 
@@ -1056,6 +1059,9 @@
    section label */
 "Status" = "Estado";
 
+/* header label for section related to setting presence status message */
+"Status message" = "Mensaje de estado";
+
 /* alert title */
 "Subscribe to %@" = "Suscribir a %@";
 
@@ -1080,6 +1086,9 @@
 
 /* message encryption failure */
 "There is no trusted device to send message to" = "No hay dispositivo de confianza para enviar mensajes";
+
+/* description of status message */
+"This message will be visible to you contacts when you are online" = "Este mensaje será visible para sus contactos cuando esté en línea.";
 
 /* alert body */
 "This room is not capable of sending encrypted messages. Please change encryption settings to be able to send messages" = "Esta sala no es capaz de enviar mensajes cifrados. Por favor, cambia los ajustes de cifrado para poder enviar mensajes";

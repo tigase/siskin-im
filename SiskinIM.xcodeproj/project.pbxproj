@@ -126,6 +126,7 @@
 		FE5F30AB299A26990090882F /* AboutApplicationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5F30AA299A26990090882F /* AboutApplicationView.swift */; };
 		FE5F30AD299A8CA90090882F /* LicencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5F30AC299A8CA90090882F /* LicencesView.swift */; };
 		FE5F30AF299A8DC50090882F /* Licences.rtf in Resources */ = {isa = PBXBuildFile; fileRef = FE5F30AE299A8DC50090882F /* Licences.rtf */; };
+		FE5F30B1299BFB5D0090882F /* SetStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5F30B0299BFB5D0090882F /* SetStatusView.swift */; };
 		FE64445E281314ED002D6E8E /* BookmarksController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE64445D281314ED002D6E8E /* BookmarksController.swift */; };
 		FE64446028131538002D6E8E /* BookmarkViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE64445F28131538002D6E8E /* BookmarkViewCell.swift */; };
 		FE644462281334ED002D6E8E /* BookmarkItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE644461281334ED002D6E8E /* BookmarkItem.swift */; };
@@ -494,6 +495,7 @@
 		FE5F30AA299A26990090882F /* AboutApplicationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutApplicationView.swift; sourceTree = "<group>"; };
 		FE5F30AC299A8CA90090882F /* LicencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicencesView.swift; sourceTree = "<group>"; };
 		FE5F30AE299A8DC50090882F /* Licences.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Licences.rtf; sourceTree = "<group>"; };
+		FE5F30B0299BFB5D0090882F /* SetStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetStatusView.swift; sourceTree = "<group>"; };
 		FE60F29B1ED48B470030D411 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
 		FE64445D281314ED002D6E8E /* BookmarksController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarksController.swift; sourceTree = "<group>"; };
 		FE64445F28131538002D6E8E /* BookmarkViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkViewCell.swift; sourceTree = "<group>"; };
@@ -924,6 +926,7 @@
 				FE5F30A8299960C60090882F /* GetInTouchView.swift */,
 				FE5F30AA299A26990090882F /* AboutApplicationView.swift */,
 				FE5F30AC299A8CA90090882F /* LicencesView.swift */,
+				FE5F30B0299BFB5D0090882F /* SetStatusView.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -1804,6 +1807,7 @@
 				FE0AE0B426A9DD6D0010D2E2 /* SetAccountSettingsController.swift in Sources */,
 				FE11D3B4266241BD00CC883F /* Publisher+ThrottledSink.swift in Sources */,
 				FE2D481A24505F1600C13CE5 /* CallManager.swift in Sources */,
+				FE5F30B1299BFB5D0090882F /* SetStatusView.swift in Sources */,
 				FE3E388C2429FAC500D3A8E8 /* ChannelSettingsViewController.swift in Sources */,
 				FE00157D2017617B00490340 /* StreamFeaturesCache.swift in Sources */,
 				FE3E388E242A251E00D3A8E8 /* ChannelEditInfoController.swift in Sources */,

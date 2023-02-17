@@ -79,6 +79,34 @@ class AvatarStatusView: UIView {
     func set(name: String?, avatar: UIImage?) {
         self.avatarImageView.set(name: name, avatar: avatar);
     }
+    
+    static func statusImageName(_ status: Presence.Show) -> String {
+        switch status {
+        case .chat:
+            return "asterisk.circle.fill";
+        case .online:
+            return "circle.fill";
+        case .away:
+            return "clock.fill";
+        case .xa:
+            return "ellipsis.circle.fill";
+        case .dnd:
+            return "moon.circle.fill";
+        }
+    }
+    
+    static func statusColor(_ status: Presence.Show) -> UIColor {
+        switch status {
+        case .chat:
+            return .green;
+        case .online:
+            return .systemGreen;
+        case .away, .xa:
+            return .systemOrange;
+        case .dnd:
+            return .systemRed;
+        }
+    }
         
     static func getStatusImage(_ status: Presence.Show?) -> UIImage? {
         // default color as for offline contact

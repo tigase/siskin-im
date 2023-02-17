@@ -87,6 +87,9 @@
    channel join status view label */
 "Automatic" = "Automatisch";
 
+/* description of automatic status behaviour */
+"Automatic status will be set according to the application state without a need of user interaction." = "Der automatische Status wird entsprechend dem Anwendungsstatus ohne Benutzerinteraktion festgelegt.";
+
 /* filter scope */
 "Available" = "Verfügbar";
 
@@ -1056,6 +1059,9 @@
    section label */
 "Status" = "Status";
 
+/* header label for section related to setting presence status message */
+"Status message" = "Statusnachricht";
+
 /* alert title */
 "Subscribe to %@" = "%@ abonnieren";
 
@@ -1080,6 +1086,9 @@
 
 /* message encryption failure */
 "There is no trusted device to send message to" = "Es gibt kein vertrauenswürdiges Gerät, an das eine Nachricht gesendet werden kann";
+
+/* description of status message */
+"This message will be visible to you contacts when you are online" = "Diese Nachricht ist für Ihre Kontakte sichtbar, wenn Sie online sind";
 
 /* alert body */
 "This room is not capable of sending encrypted messages. Please change encryption settings to be able to send messages" = "Dieser Gruppenchat ist nicht in der Lage, verschlüsselte Nachrichten zu versenden. Bitte ändere die Verschlüsselungseinstellungen, um Nachrichten senden zu können";
