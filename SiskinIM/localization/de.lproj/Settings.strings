@@ -10,9 +10,6 @@
 /* Class = "UILabel"; text = "Notifications"; ObjectID = "3pd-ay-sAI"; */
 "3pd-ay-sAI.text" = "Benachrichtigungen";
 
-/* Class = "UILabel"; text = "Notifications from unknown"; ObjectID = "67H-51-GcY"; */
-"67H-51-GcY.text" = "Benachrichtigungen von Unbekannten";
-
 /* Class = "UILabel"; text = "Media"; ObjectID = "8G3-tm-sCO"; */
 "8G3-tm-sCO.text" = "Medien";
 
@@ -46,9 +43,6 @@
 /* Class = "UILabel"; text = "Contacts in groups"; ObjectID = "BSk-tI-BDM"; */
 "BSk-tI-BDM.text" = "Kontakte in Gruppen";
 
-/* Class = "UILabel"; text = "Push notifications"; ObjectID = "cyb-st-Bmw"; */
-"cyb-st-Bmw.text" = "Push-Benachrichtigungen";
-
 /* Class = "UILabel"; text = "XMPP Quickstart / Pipelining"; ObjectID = "dbq-Tl-d6b"; */
 "dbq-Tl-d6b.text" = "XMPP-Schnellstart / Pipelining";
 
@@ -69,9 +63,6 @@
 
 /* Class = "UILabel"; text = "2 lines"; ObjectID = "g4v-o5-nXZ"; */
 "g4v-o5-nXZ.text" = "2 Zeilen";
-
-/* Class = "UITableViewController"; title = "Notification settings"; ObjectID = "GfS-6V-cuc"; */
-"GfS-6V-cuc.title" = "Benachrichtigungseinstellungen";
 
 /* Class = "UILabel"; text = "Contacts"; ObjectID = "hGX-FI-YNj"; */
 "hGX-FI-YNj.text" = "Kontakte";

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="vAU-gJ-Tx3">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="vAU-gJ-Tx3">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -696,14 +696,6 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="a9P-31-x8S" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="3805" y="-737"/>
-        </scene>
-        <!--AboutController-->
-        <scene sceneID="fmD-ua-nHb">
-            <objects>
-                <viewControllerPlaceholder storyboardName="Info" referencedIdentifier="AboutController" id="Igc-un-1eD" sceneMemberID="viewController"/>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="OGW-FA-s91" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="2261" y="1248"/>
         </scene>
         <!--Contacts-->
         <scene sceneID="uRP-6G-Yz7">
@@ -1461,7 +1453,7 @@
             <color red="0.36899998784065247" green="0.36899998784065247" blue="0.54100000858306885" alpha="0.5" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <namedColor name="tintColor">
-            <color red="0.33000001311302185" green="0.33000001311302185" blue="0.48800000548362732" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+            <color red="0.32941176470588235" green="0.32941176470588235" blue="0.48627450980392156" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <systemColor name="labelColor">
             <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

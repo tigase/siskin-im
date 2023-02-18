@@ -188,6 +188,9 @@ class SettingsViewController: UITableViewController {
             case .appearance:
                 let controller = UIHostingController(rootView: AppearanceSettingsView());
                 self.navigationController?.pushViewController(controller, animated: true);
+            case .notifications:
+                let controller = UIHostingController(rootView: NotificationsView());
+                self.navigationController?.pushViewController(controller, animated: true);
             default:
                 break;
             }

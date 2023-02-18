@@ -464,9 +464,6 @@
                                     </constraints>
                                 </tableViewCellContentView>
                                 <accessibility key="accessibilityConfiguration" identifier="notificationSettingsViewCell"/>
-                                <connections>
-                                    <segue destination="GfS-6V-cuc" kind="show" id="o28-Sv-MLl"/>
-                                </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="contactsSettingsViewCell" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="ContactsSettingsViewCell" id="pIQ-KZ-iid" userLabel="ContactsSettingsViewCell">
                                 <rect key="frame" x="20" y="319.5" width="374" height="44"/>
@@ -1064,92 +1061,6 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="457-GN-xTK" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1732" y="2656"/>
-        </scene>
-        <!--Notification settings-->
-        <scene sceneID="mUd-RV-MKr">
-            <objects>
-                <tableViewController title="Notification settings" id="GfS-6V-cuc" userLabel="Notification settings" customClass="NotificationSettingsViewController" customModule="Siskin" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="44" sectionHeaderHeight="18" sectionFooterHeight="18" id="9fx-51-CpF">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="pushNotificationsTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="PushNotificationsTableViewCell" id="9Qc-YH-MOd" userLabel="PushNotificationsTableViewCell" customClass="SwitchTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="20" y="55.5" width="374" height="44"/>
-                                <autoresizingMask key="autoresizingMask"/>
-                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="9Qc-YH-MOd" id="WJb-IH-sqx">
-                                    <rect key="frame" x="0.0" y="0.0" width="374" height="44"/>
-                                    <autoresizingMask key="autoresizingMask"/>
-                                    <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" text="Push notifications" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cyb-st-Bmw">
-                                            <rect key="frame" x="20" y="11.5" width="135.5" height="21"/>
-                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                        <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="F6a-44-qRE">
-                                            <rect key="frame" x="305" y="6.5" width="51" height="31"/>
-                                            <connections>
-                                                <action selector="valueChanged:" destination="9Qc-YH-MOd" eventType="valueChanged" id="HCp-CX-c1K"/>
-                                            </connections>
-                                        </switch>
-                                    </subviews>
-                                    <constraints>
-                                        <constraint firstAttribute="trailingMargin" secondItem="F6a-44-qRE" secondAttribute="trailing" id="7zb-I8-KPS"/>
-                                        <constraint firstItem="F6a-44-qRE" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="cyb-st-Bmw" secondAttribute="trailing" constant="8" id="XFN-bH-TLN"/>
-                                        <constraint firstItem="cyb-st-Bmw" firstAttribute="centerY" secondItem="WJb-IH-sqx" secondAttribute="centerY" id="ZlL-M7-NPf"/>
-                                        <constraint firstAttribute="leadingMargin" secondItem="cyb-st-Bmw" secondAttribute="leading" id="n7y-tM-wfm"/>
-                                        <constraint firstItem="F6a-44-qRE" firstAttribute="centerY" secondItem="WJb-IH-sqx" secondAttribute="centerY" id="q0w-qr-cKx"/>
-                                    </constraints>
-                                </tableViewCellContentView>
-                                <accessibility key="accessibilityConfiguration" identifier="notificationsFromUnknownTableViewCell"/>
-                                <connections>
-                                    <outlet property="switchView" destination="F6a-44-qRE" id="yHh-U9-EmR"/>
-                                </connections>
-                            </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="notificationsFromUnknownTableViewCell" selectionStyle="default" indentationWidth="10" reuseIdentifier="NotificationsFromUnknownTableViewCell" id="eoW-on-CkP" userLabel="NotificationsFromUnknownTableViewCell" customClass="SwitchTableViewCell" customModule="Siskin" customModuleProvider="target">
-                                <rect key="frame" x="20" y="99.5" width="374" height="44"/>
-                                <autoresizingMask key="autoresizingMask"/>
-                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="eoW-on-CkP" id="A90-dF-abf">
-                                    <rect key="frame" x="0.0" y="0.0" width="374" height="44"/>
-                                    <autoresizingMask key="autoresizingMask"/>
-                                    <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" text="Notifications from unknown" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="67H-51-GcY">
-                                            <rect key="frame" x="20" y="11.5" width="209" height="21"/>
-                                            <accessibility key="accessibilityConfiguration" identifier="accountName"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                        <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qxn-eJ-M2N">
-                                            <rect key="frame" x="305" y="6.5" width="51" height="31"/>
-                                            <connections>
-                                                <action selector="valueChanged:" destination="eoW-on-CkP" eventType="valueChanged" id="Pi6-3Y-dtV"/>
-                                            </connections>
-                                        </switch>
-                                    </subviews>
-                                    <constraints>
-                                        <constraint firstItem="qxn-eJ-M2N" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="67H-51-GcY" secondAttribute="trailing" constant="8" id="7r6-np-dcJ"/>
-                                        <constraint firstAttribute="leadingMargin" secondItem="67H-51-GcY" secondAttribute="leading" id="KMj-Gy-giZ"/>
-                                        <constraint firstItem="67H-51-GcY" firstAttribute="centerY" secondItem="A90-dF-abf" secondAttribute="centerY" id="Ous-Yc-vje"/>
-                                        <constraint firstItem="qxn-eJ-M2N" firstAttribute="centerY" secondItem="A90-dF-abf" secondAttribute="centerY" id="ab0-hZ-EPe"/>
-                                        <constraint firstAttribute="trailingMargin" secondItem="qxn-eJ-M2N" secondAttribute="trailing" id="sD7-p8-VbC"/>
-                                    </constraints>
-                                </tableViewCellContentView>
-                                <accessibility key="accessibilityConfiguration" identifier="notificationsFromUnknownTableViewCell"/>
-                                <connections>
-                                    <outlet property="switchView" destination="qxn-eJ-M2N" id="oWf-hT-nO6"/>
-                                </connections>
-                            </tableViewCell>
-                        </prototypes>
-                        <connections>
-                            <outlet property="dataSource" destination="GfS-6V-cuc" id="5Eh-Or-1ys"/>
-                            <outlet property="delegate" destination="GfS-6V-cuc" id="2dN-UO-5iU"/>
-                        </connections>
-                    </tableView>
-                    <navigationItem key="navigationItem" id="hQb-W7-sgu"/>
-                </tableViewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="h70-11-ntf" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="870" y="1854"/>
         </scene>
         <!--Experimental Settings Scene-->
         <scene sceneID="4hq-he-9by">

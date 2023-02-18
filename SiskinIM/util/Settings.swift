@@ -23,6 +23,31 @@ import UIKit
 import Martin
 import Combine
 import Shared
+import SwiftUI
+
+@propertyWrapper
+struct Setting<T>: DynamicProperty {
+    private let key: ReferenceWritableKeyPath<SettingsStore, T>;
+    @ObservedObject private var settings = Settings;
+
+    var wrappedValue: T {
+        get {
+            settings[keyPath: key];
+        }
+        set {
+            settings[keyPath: key] = newValue;
+        }
+    }
+    
+    var projectedValue: Binding<T> {
+        return settings.binding(keyPath: key);
+    }
+    
+    init(_ key: ReferenceWritableKeyPath<SettingsStore, T>) {
+        self.key = key;
+    }
+    
+}
 
 @propertyWrapper class UserDefaultsSetting<Value> {
     let key: String;
@@ -46,6 +71,20 @@ import Shared
         set {
             storage.setValue(newValue, forKey: key);
             self.value.value = newValue;
+        }
+    }
+    
+    public static subscript<EnclosingSelf: ObservableObject>(
+        _enclosingInstance object: EnclosingSelf,
+        wrapped wrappedKeyPath: ReferenceWritableKeyPath<EnclosingSelf, Value>,
+        storage storageKeyPath: ReferenceWritableKeyPath<EnclosingSelf, UserDefaultsSetting<Value>>
+    ) -> Value {
+        get {
+            return object[keyPath: storageKeyPath].wrappedValue;
+        }
+        set {
+            (object.objectWillChange as? ObservableObjectPublisher)?.send();
+            object[keyPath: storageKeyPath].wrappedValue = newValue;
         }
     }
     
@@ -79,6 +118,20 @@ import Shared
         set {
             storage.setValue(newValue, forKey: key);
             self.value.value = newValue;
+        }
+    }
+    
+    public static subscript<EnclosingSelf: ObservableObject>(
+        _enclosingInstance object: EnclosingSelf,
+        wrapped wrappedKeyPath: ReferenceWritableKeyPath<EnclosingSelf, Value>,
+        storage storageKeyPath: ReferenceWritableKeyPath<EnclosingSelf, UserDefaultsRawSetting<Value>>
+    ) -> Value {
+        get {
+            return object[keyPath: storageKeyPath].wrappedValue;
+        }
+        set {
+            (object.objectWillChange as? ObservableObjectPublisher)?.send();
+            object[keyPath: storageKeyPath].wrappedValue = newValue;
         }
     }
     
@@ -135,6 +188,20 @@ extension UserDefaults {
         }
     }
     
+    public static subscript<EnclosingSelf: ObservableObject>(
+        _enclosingInstance object: EnclosingSelf,
+        wrapped wrappedKeyPath: ReferenceWritableKeyPath<EnclosingSelf, Value?>,
+        storage storageKeyPath: ReferenceWritableKeyPath<EnclosingSelf, UserDefaultsOptionalRawSetting<Value>>
+    ) -> Value? {
+        get {
+            return object[keyPath: storageKeyPath].wrappedValue;
+        }
+        set {
+            (object.objectWillChange as? ObservableObjectPublisher)?.send();
+            object[keyPath: storageKeyPath].wrappedValue = newValue;
+        }
+    }
+    
     init(key: String, defaultValue: Value?, storage: UserDefaults = .standard) {
         self.key = key;
         self.storage = storage;
@@ -142,6 +209,8 @@ extension UserDefaults {
         self.value = CurrentValueSubject<Value?,Never>(value);
     }
 }
+
+import SwiftUI
 
 class SettingsStore: ObservableObject {
     @UserDefaultsSetting(key: "defaultAccount")
@@ -161,7 +230,7 @@ class SettingsStore: ObservableObject {
     @UserDefaultsSetting(key: "AutoSubscribeOnAcceptedSubscriptionRequest", defaultValue: true)
     var autoSubscribeOnAcceptedSubscriptionRequest: Bool;
     @UserDefaultsSetting(key: "NotificationsFromUnknown", defaultValue: true)
-    var notificationsFromUnknown: Bool;
+    var notificationsFromUnknown: Bool
     @UserDefaultsSetting(key: "RecentsMessageLinesNo", defaultValue: 2)
     var recentsMessageLinesNo: Int;
     @UserDefaultsSetting(key: "SharingViaHttpUpload", defaultValue: false)
@@ -200,6 +269,14 @@ class SettingsStore: ObservableObject {
 
     @UserDefaultsSetting(key: "enablePush", defaultValue: nil)
     var enablePush: Bool?;
+    
+    func binding<T>(keyPath: ReferenceWritableKeyPath<SettingsStore,T>) -> Binding<T> {
+        return .init(get: {
+            return self[keyPath: keyPath];
+        }, set: { value in
+            self[keyPath: keyPath] = value;
+        })
+    }
     
     enum AppIcon: String, SelectableItem {
         case `default` = "AppIcon"

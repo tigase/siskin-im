@@ -710,6 +710,12 @@
 /* action label */
 "Nothing" = "Nichts";
 
+/* view label */
+"Notifications" = "Benachrichtigungen";
+
+/* section label */
+"Notifications from unknown" = "Benachrichtigungen von Unbekannten";
+
 /* muc room status
    user status */
 "Offline" = "Offline";

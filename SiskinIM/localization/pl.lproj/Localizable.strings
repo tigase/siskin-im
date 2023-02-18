@@ -695,6 +695,12 @@
 /* action label */
 "Nothing" = "Nic";
 
+/* view label */
+"Notifications" = "Powiadomienia";
+
+/* section label */
+"Notifications from unknown" = "Powiadomienia od nieznanych";
+
 /* muc room status
    user status */
 "Offline" = "Rozłączony";

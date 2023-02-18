@@ -127,6 +127,7 @@
 		FE5F30AD299A8CA90090882F /* LicencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5F30AC299A8CA90090882F /* LicencesView.swift */; };
 		FE5F30AF299A8DC50090882F /* Licences.rtf in Resources */ = {isa = PBXBuildFile; fileRef = FE5F30AE299A8DC50090882F /* Licences.rtf */; };
 		FE5F30B1299BFB5D0090882F /* SetStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5F30B0299BFB5D0090882F /* SetStatusView.swift */; };
+		FE5F30B3299FFC2E0090882F /* NotificationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5F30B2299FFC2E0090882F /* NotificationsView.swift */; };
 		FE64445E281314ED002D6E8E /* BookmarksController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE64445D281314ED002D6E8E /* BookmarksController.swift */; };
 		FE64446028131538002D6E8E /* BookmarkViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE64445F28131538002D6E8E /* BookmarkViewCell.swift */; };
 		FE644462281334ED002D6E8E /* BookmarkItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE644461281334ED002D6E8E /* BookmarkItem.swift */; };
@@ -208,7 +209,6 @@
 		FE9D4DA526C1375300DD295A /* InviteToMeetingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9D4DA426C1375300DD295A /* InviteToMeetingViewController.swift */; };
 		FE9D4DA726C7E87C00DD295A /* AudioSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9D4DA626C7E87C00DD295A /* AudioSession.swift */; };
 		FE9E136D1F25F5F7005C0EE5 /* ChatSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E136C1F25F5F7005C0EE5 /* ChatSettingsViewController.swift */; };
-		FE9E136F1F26049A005C0EE5 /* NotificationSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E136E1F26049A005C0EE5 /* NotificationSettingsViewController.swift */; };
 		FE9E13711F2606E9005C0EE5 /* ContactsSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E13701F2606E9005C0EE5 /* ContactsSettingsViewController.swift */; };
 		FE9E13731F260B33005C0EE5 /* StepperTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E13721F260B33005C0EE5 /* StepperTableViewCell.swift */; };
 		FE9EA16B23BF9DB2008C401A /* ChatAttachementsCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9EA16A23BF9DB2008C401A /* ChatAttachementsCellView.swift */; };
@@ -496,6 +496,7 @@
 		FE5F30AC299A8CA90090882F /* LicencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicencesView.swift; sourceTree = "<group>"; };
 		FE5F30AE299A8DC50090882F /* Licences.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Licences.rtf; sourceTree = "<group>"; };
 		FE5F30B0299BFB5D0090882F /* SetStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetStatusView.swift; sourceTree = "<group>"; };
+		FE5F30B2299FFC2E0090882F /* NotificationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsView.swift; sourceTree = "<group>"; };
 		FE60F29B1ED48B470030D411 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
 		FE64445D281314ED002D6E8E /* BookmarksController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarksController.swift; sourceTree = "<group>"; };
 		FE64445F28131538002D6E8E /* BookmarkViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkViewCell.swift; sourceTree = "<group>"; };
@@ -567,7 +568,6 @@
 		FE9D4DA426C1375300DD295A /* InviteToMeetingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteToMeetingViewController.swift; sourceTree = "<group>"; };
 		FE9D4DA626C7E87C00DD295A /* AudioSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSession.swift; sourceTree = "<group>"; };
 		FE9E136C1F25F5F7005C0EE5 /* ChatSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatSettingsViewController.swift; sourceTree = "<group>"; };
-		FE9E136E1F26049A005C0EE5 /* NotificationSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NotificationSettingsViewController.swift; sourceTree = "<group>"; };
 		FE9E13701F2606E9005C0EE5 /* ContactsSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactsSettingsViewController.swift; sourceTree = "<group>"; };
 		FE9E13721F260B33005C0EE5 /* StepperTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StepperTableViewCell.swift; sourceTree = "<group>"; };
 		FE9EA16A23BF9DB2008C401A /* ChatAttachementsCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAttachementsCellView.swift; sourceTree = "<group>"; };
@@ -910,7 +910,6 @@
 				FE6545611E9E7FDE006A14AC /* AccountDomainTableViewCell.swift */,
 				FE6545631E9E8B67006A14AC /* ServerSelectorTableViewCell.swift */,
 				FE9E136C1F25F5F7005C0EE5 /* ChatSettingsViewController.swift */,
-				FE9E136E1F26049A005C0EE5 /* NotificationSettingsViewController.swift */,
 				FE9E13701F2606E9005C0EE5 /* ContactsSettingsViewController.swift */,
 				FE00157E2019090300490340 /* ExperimentalSettingsViewController.swift */,
 				FE2809802167CE18002F5BD0 /* server_features_list.xml */,
@@ -927,6 +926,7 @@
 				FE5F30AA299A26990090882F /* AboutApplicationView.swift */,
 				FE5F30AC299A8CA90090882F /* LicencesView.swift */,
 				FE5F30B0299BFB5D0090882F /* SetStatusView.swift */,
+				FE5F30B2299FFC2E0090882F /* NotificationsView.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -1718,7 +1718,6 @@
 				FE3E38822427BF8600D3A8E8 /* ChannelSelectAccountAndComponentController.swift in Sources */,
 				FE0E30FE253714050030F8C5 /* MediaHelper.swift in Sources */,
 				FE11D35426623D6800CC883F /* ConversationInvitation.swift in Sources */,
-				FE9E136F1F26049A005C0EE5 /* NotificationSettingsViewController.swift in Sources */,
 				FE11D3E126639D3300CC883F /* ContactManager.swift in Sources */,
 				FE9C438F289D7E1C00699EDF /* AccountManager+extensions.swift in Sources */,
 				FE31291C222C0D1500A92863 /* AvatarView.swift in Sources */,
@@ -1739,6 +1738,7 @@
 				FE11D3ED26639E0100CC883F /* VCardManager.swift in Sources */,
 				FE0E31122537288A0030F8C5 /* MediaSettingsVIewController.swift in Sources */,
 				FEDE93871D07564F00CA60A9 /* SwitchTableViewCell.swift in Sources */,
+				FE5F30B3299FFC2E0090882F /* NotificationsView.swift in Sources */,
 				FE507A171CDB7B3B001A015C /* ChatTableViewCell.swift in Sources */,
 				FE31DDE4201261A200C2AB1D /* DNSSrvDiskCache.swift in Sources */,
 				FEDE00D0266CEF5E0019CC1C /* ChatTableViewMarkerCell.swift in Sources */,
