@@ -41,6 +41,7 @@ extension Query {
     static let messageFindLinkPreviewsForMessage = Query("SELECT id, account, jid, data FROM chat_history WHERE master_id = :master_id AND item_type = \(ItemType.linkPreview.rawValue)");
     static let messageDelete = Query("DELETE FROM chat_history WHERE id = :id");
     static let messageFindMessageOriginId = Query("select stanza_id from chat_history where id = :id");
+    static let messageFindStableIds = Query("SELECT server_msg_id, remote_msg_id FROM chat_history WHERE id = :id");
     static let messagesFindUnsent = Query("SELECT ch.account as account, ch.jid as jid, ch.item_type as item_type, ch.data as data, ch.stanza_id as stanza_id, ch.encryption as encryption, ch.markable FROM chat_history ch WHERE ch.account = :account AND ch.state = \(ConversationEntryState.outgoing(.unsent).rawValue) ORDER BY timestamp ASC");
     static let messagesFindForChat = Query("SELECT id, author_nickname, author_jid, recipient_nickname, participant_id, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, correction_timestamp, markable FROM chat_history WHERE account = :account AND jid = :jid AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.retraction.rawValue), \(ItemType.attachment.rawValue), \(ItemType.invitation.rawValue), \(ItemType.location.rawValue))) ORDER BY timestamp DESC LIMIT :limit OFFSET :offset");
     static let messageFindPositionInChat = Query("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id <> :msgId AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue), \(ItemType.invitation.rawValue), \(ItemType.location.rawValue))) AND timestamp > (SELECT timestamp FROM chat_history WHERE id = :msgId)");
@@ -304,6 +305,19 @@ class DBChatHistoryStore {
             self.retractMessageSync(for: conversation, stanzaId: retractedId, sender: sender, retractionStanzaId: originId, retractionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
             return;
         }
+        
+        if message.type == .groupchat, let moderation = message.moderated {
+            switch moderation.retraction {
+            case .retract(let stanzaIdToRetract):
+                guard let oldItemId = findItemId(for: conversation, remoteMsgId: stanzaIdToRetract), let oldItem = self.message(for: conversation, withId: oldItemId) else {
+                    return;
+                }
+                retractMessageSync(oldItem: oldItem, for: conversation, sender: oldItem.sender, retractionStanzaId: stanzaId, retractionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
+            case .retracted(let retractionTimestamp):
+                self.appendItemSync(for: conversation, state: state, sender: sender, type: .retraction, timestamp: timestamp, stanzaId: stanzaId, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, data: "", chatState: nil, appendix: ChatAttachmentAppendix(), options: .init(recipient: recipient, encryption: .none, isMarkable: true), linkPreviewAction: .none);
+            }
+            return;
+        }
 
         let (decryptedBody, encryption) = MessageEventHandler.prepareBody(message: message, forAccount: conversation.account, serverMsgId: serverMsgId);
         
@@ -358,7 +372,7 @@ class DBChatHistoryStore {
                         }
                         MessageEventHandler.instance.sendReceived(for: conversation, timestamp: timestamp, stanzaId: originId, receipts: receipts);
                     }
-                case .occupant(_,_), .participant(_, _, _):
+                case .occupant(_,_), .participant(_, _, _), .channel:
                     if let stanzaId = remoteMsgId {
                         let receipts: [MessageEventHandler.ReceiptType] = options.isMarkable ? [.chatMarker] : [];
                         MessageEventHandler.instance.sendReceived(for: conversation, timestamp: timestamp, stanzaId: stanzaId, receipts: receipts);
@@ -389,7 +403,7 @@ class DBChatHistoryStore {
     func findItemId(for conversation: ConversationKey, originId: String, sender: ConversationEntrySender) -> Int? {
         var params: [String: Any?] = ["stanza_id": originId, "account": conversation.account, "jid": conversation.jid, "author_nickname": nil, "participant_id": nil];
         switch sender {
-        case .none, .buddy(_), .me(_):
+        case .none, .buddy(_), .me(_), .channel:
             break;
         case .occupant(let nickname, _):
             params["author_nickname"] = nickname;
@@ -446,7 +460,7 @@ class DBChatHistoryStore {
             var params: [String:Any?] = ["account": conversation.account, "jid": conversation.jid, "timestamp": timestamp, "data": data, "item_type": type.rawValue, "state": state.code, "stanza_id": stanzaId, "author_nickname": nil, "author_jid": nil, "recipient_nickname": options.recipient.nickname, "participant_id": nil, "encryption": options.encryption.value.rawValue, "fingerprint": options.encryption.fingerprint ?? (options.encryption.errorCode != nil ? "\(options.encryption.errorCode!)" : nil), "error": state.errorMessage, "appendix": appendix, "server_msg_id": serverMsgId, "remote_msg_id": remoteMsgId, "master_id": masterId, "markable": options.isMarkable];
 
             switch sender {
-            case .none, .me(_), .buddy(_):
+            case .none, .me(_), .buddy(_), .channel:
                 break;
             case .occupant(let nickname, let jid):
                 params["author_nickname"] = nickname;
@@ -564,33 +578,37 @@ class DBChatHistoryStore {
 
     private func retractMessageSync(for conversation: ConversationKey, stanzaId: String, sender: ConversationEntrySender, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) {
         if let oldItem = self.findItem(for: conversation, originId: stanzaId, sender: sender) {
-            let itemId = oldItem.id;
-            let itemType: ItemType = .retraction;
-            let params: [String: Any?] = ["id": itemId, "item_type": itemType.rawValue, "correction_stanza_id": retractionStanzaId, "remote_msg_id": remoteMsgId, "server_msg_id": serverMsgId, "correction_timestamp": retractionTimestamp];
-            let updated = try! Database.main.writer({ database -> Int in
-                try database.update(query: .messageRetract, params: params);
-                return database.changes;
-            })
-            if updated > 0 {
-                var markAsReadTimestamp = oldItem.timestamp;
-                if case  .message(_, let prevCorrectionTime) = oldItem.payload, let timestamp = prevCorrectionTime {
-                    markAsReadTimestamp = timestamp;
-                }
-                markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)], before: markAsReadTimestamp.addingTimeInterval(0.1), onlyLocally: true));
-
-                // what should be sent to "newMessage" how to reatract message from there??
-                let activity: LastChatActivity = .init(timestamp: oldItem.timestamp, sender: sender, payload: .retraction);
-                DBChatStore.instance.newActivity(activity, isUnread: false, for: conversation.account, with: conversation.jid, completionHandler: {
-                    self.logger.debug("chat store state updated with message retraction for \(itemId)");
-                })
-                if oldItem.state.isUnread {
-                    DBChatStore.instance.markAsRead(for: conversation.account, with: conversation.jid, count: 1);
-                }
-
-                self.itemUpdated(withId: itemId, for: conversation);
-//                   self.itemRemoved(withId: itemId, for: account, with: jid);
-                self.generatePreviews(forItem: itemId, conversation: conversation, state: oldItem.state, action: .remove);
+            retractMessageSync(oldItem: oldItem, for: conversation, sender: sender, retractionStanzaId: retractionStanzaId, retractionTimestamp: retractionTimestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
+        }
+    }
+    
+    private func retractMessageSync(oldItem: ConversationEntry, for conversation: ConversationKey, sender: ConversationEntrySender, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) {
+        let itemId = oldItem.id;
+        let itemType: ItemType = .retraction;
+        let params: [String: Any?] = ["id": itemId, "item_type": itemType.rawValue, "correction_stanza_id": retractionStanzaId, "remote_msg_id": remoteMsgId, "server_msg_id": serverMsgId, "correction_timestamp": retractionTimestamp];
+        let updated = try! Database.main.writer({ database -> Int in
+            try database.update(query: .messageRetract, params: params);
+            return database.changes;
+        })
+        if updated > 0 {
+            var markAsReadTimestamp = oldItem.timestamp;
+            if case  .message(_, let prevCorrectionTime) = oldItem.payload, let timestamp = prevCorrectionTime {
+                markAsReadTimestamp = timestamp;
             }
+            markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)], before: markAsReadTimestamp.addingTimeInterval(0.1), onlyLocally: true));
+
+            // what should be sent to "newMessage" how to reatract message from there??
+            let activity: LastChatActivity = .init(timestamp: oldItem.timestamp, sender: sender, payload: .retraction);
+            DBChatStore.instance.newActivity(activity, isUnread: false, for: conversation.account, with: conversation.jid, completionHandler: {
+                self.logger.debug("chat store state updated with message retraction for \(itemId)");
+            })
+            if oldItem.state.isUnread {
+                DBChatStore.instance.markAsRead(for: conversation.account, with: conversation.jid, count: 1);
+            }
+
+            self.itemUpdated(withId: itemId, for: conversation);
+//                   self.itemRemoved(withId: itemId, for: account, with: jid);
+            self.generatePreviews(forItem: itemId, conversation: conversation, state: oldItem.state, action: .remove);
         }
     }
 
@@ -804,6 +822,17 @@ class DBChatHistoryStore {
                 self.itemRemoved(withId: id, for: ConversationKeyItem(account: account, jid: jid));
             }
         }
+    }
+    
+    public struct StableIds {
+        let server: String?;
+        let remote: String?;
+    }
+    
+    func stableIds(forId id: Int) -> StableIds? {
+        return try! Database.main.reader({ database in
+            try database.select(query: .messageFindStableIds, cached: true, params: ["id": id]).mapFirst({ StableIds(server: $0.string(for: "server_msg_id"), remote: $0.string(for: "remote_msg_id")) });
+        })
     }
 
     func originId(for key: ConversationKey, id: Int) -> String? {
