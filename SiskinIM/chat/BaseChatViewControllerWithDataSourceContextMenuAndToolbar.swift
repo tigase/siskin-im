@@ -26,7 +26,7 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
 
     fileprivate weak var timestampsSwitch: UIBarButtonItem? = nil;
     
-    var contextActions: [ContextAction] = [.showMap, .copy, .reply, .share, .report, .correct, .retract, .more];
+    var contextActions: [ContextAction] = [.showMap, .copy, .reply, .share, .report, .correct, .retract, .moderate, .more];
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
@@ -132,7 +132,7 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
                     }
                 });
             }
-        case .retract:
+        case .retract, .moderate:
             // that is per-chat-type sepecific
             break;
         case .more:
@@ -174,7 +174,7 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
                 return true;
             }
             return false;
-        case .retract:
+        case .retract,.moderate:
             return false;
         case .more:
             return true;
@@ -188,6 +188,7 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         case report
         case correct
         case retract
+        case moderate
         case more
         case showMap
         
@@ -207,6 +208,8 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
                 return NSLocalizedString("Correct…", comment: "context action label");
             case .retract:
                 return NSLocalizedString("Retract", comment: "context action label");
+            case .moderate:
+                return NSLocalizedString("Moderate", comment: "context action label");
             case .more:
                 return NSLocalizedString("More…", comment: "context action label");
             }
@@ -228,6 +231,8 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
                 return UIImage(systemName: "pencil.and.ellipsis.rectangle");
             case .retract:
                 return UIImage(systemName: "trash");
+            case .moderate:
+                return UIImage(systemName: "trash.circle");
             case .more:
                 return UIImage(systemName: "ellipsis");
             }
@@ -235,7 +240,7 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
         
         var isDesctructive: Bool {
             switch self {
-            case .retract:
+            case .retract, .moderate:
                 return true;
             default:
                 return false;

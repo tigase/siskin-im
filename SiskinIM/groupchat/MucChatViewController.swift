@@ -73,6 +73,8 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         switch action {
         case .retract:
             return item.state.direction == .outgoing && room.context?.state == .connected() && room.state == .joined;
+        case .moderate:
+            return item.state.direction == .incoming && item.payload != .messageRetracted && room.context?.state == .connected() && room.state == .joined && room.role == .moderator && room.roomFeatures.contains(.messageModeration);
         default:
             return super.canExecuteContext(action: action, forItem: item, at: indexPath);
         }
@@ -86,6 +88,19 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
             }
             
             room.retract(entry: item);
+        case .moderate:
+            room.moderate(entry: item, completionHandler: { result in
+                switch result {
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(title: NSLocalizedString("Failure", comment: "alert title"), message: NSLocalizedString("Message moderation failed!", comment: "alert body"), preferredStyle: .alert);
+                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil));
+                        self.present(alert, animated: true, completion: nil);
+                    }
+                case .success(_):
+                    break;
+                }
+            });
         default:
             super.executeContext(action: action, forItem: item, at: indexPath);
         }

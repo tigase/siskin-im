@@ -576,6 +576,9 @@
    message encryption failure */
 "Message decryption failed! Error code: %d" = "Deszyfrowanie wiadomości nie udało się! Kod błędu: %d";
 
+/* alert body */
+"Message moderation failed!" = "Moderacja wiadomości nie powiodła się!";
+
 /* section label */
 "Message synchronization" = "Synchronizacja wiadomości";
 
@@ -596,6 +599,9 @@
 
 /* alert body */
 "Missed incoming call from %@" = "Nieodebrane połączenie od %@";
+
+/* context action label */
+"Moderate" = "Moderuj";
 
 /* list of users with this role */
 "Moderators" = "Moderatorzy";
