@@ -37,6 +37,7 @@ extension Query {
     static let messageFindIdByRemoteMsgId = Query("SELECT id FROM chat_history WHERE account = :account AND jid = :jid AND remote_msg_id = :remote_msg_id");
     static let messageFindIdByOriginId = Query("SELECT id, timestamp FROM chat_history indexed by chat_history_account_jid_stanza_id WHERE account = :account AND jid = :jid AND stanza_id = :stanza_id AND (:author_nickname IS NULL OR author_nickname = :author_nickname) AND (:participant_id IS NULL OR participant_id = :participant_id) UNION ALL SELECT id, timestamp FROM chat_history indexed by chat_history_account_jid_correction_stanza_id WHERE account = :account AND jid = :jid AND correction_stanza_id = :stanza_id AND (:author_nickname IS NULL OR author_nickname = :author_nickname) AND (:participant_id IS NULL OR participant_id = :participant_id) ORDER BY timestamp DESC");
     static let messageUpdateServerMsgId = Query("UPDATE chat_history SET server_msg_id = :server_msg_id WHERE id = :id AND server_msg_id is null");
+    static let messageUpdateRemoteMsgId = Query("UPDATE chat_history SET remote_msg_id = :remote_msg_id WHERE id = :id AND remote_msg_id is null");
     static let messageFindLinkPreviewsForMessage = Query("SELECT id, account, jid, data FROM chat_history WHERE master_id = :master_id AND item_type = \(ItemType.linkPreview.rawValue)");
     static let messageDelete = Query("DELETE FROM chat_history WHERE id = :id");
     static let messageFindMessageOriginId = Query("select stanza_id from chat_history where id = :id");
@@ -245,6 +246,11 @@ class DBChatHistoryStore {
             if let stableId = serverMsgId {
                 try! Database.main.writer({ database in
                     try database.update(query: .messageUpdateServerMsgId, params: ["id": existingMessageId, "server_msg_id": stableId]);
+                })
+            }
+            if let remoteId = remoteMsgId {
+                try! Database.main.writer({ database in
+                    try database.update(query: .messageUpdateRemoteMsgId, params: ["id": existingMessageId, "remote_msg_id": remoteId]);
                 })
             }
             return;
