@@ -43,7 +43,7 @@ class GetInTouchViewController: UITableViewController {
             case 1:
                 UIApplication.shared.open(URL(string: "https://twitter.com/tigase")!);
             case 2:
-                UIApplication.shared.open(URL(string: "https://mastodon.technology/@tigase")!);
+                UIApplication.shared.open(URL(string: "https://fosstodon.org/@tigase")!);
             default:
                 UIApplication.shared.open(URL(string: "https://tigase.net")!);
             }
