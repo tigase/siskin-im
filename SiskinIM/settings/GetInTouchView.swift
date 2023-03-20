@@ -37,7 +37,7 @@ struct GetInTouchView: View {
             Section(header: Text(NSLocalizedString("Company", comment: "label"))) {
                 link(image: Image(systemName: "safari"), label: NSLocalizedString("Website", comment: "label for website link/button"), destination: "https://tigase.net")
                 link(image: Image(systemName: "safari"), label: NSLocalizedString("Twitter", comment: "label for opening Twitter"), destination: "https://twitter.com/tigase")
-                link(image: Image(systemName: "safari"), label: NSLocalizedString("Mastodon", comment: "label for opening Mastodon"), destination: "https://mastodon.technology/@tigase")
+                link(image: Image(systemName: "safari"), label: NSLocalizedString("Mastodon", comment: "label for opening Mastodon"), destination: "https://fosstodon.org/@tigase")
             }
         }.navigationBarTitle(NSLocalizedString("Get in touch", comment: "label for button"))
     }
