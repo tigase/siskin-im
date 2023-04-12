@@ -43,7 +43,7 @@ public enum ConversationEntrySender: Hashable, Sendable {
         }
     }
     
-    func avatar(for key: ConversationKey) -> Avatar? {
+    func avatar(for key: ConversationKey) -> Avatar {
         switch self {
         case .me:
             return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: key.account, mucNickname: nil));
@@ -62,7 +62,7 @@ public enum ConversationEntrySender: Hashable, Sendable {
                 return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: BareJID(localPart: "\(participantId)#\(key.jid.localPart ?? "")", domain: key.jid.domain), mucNickname: nil));
             }
         case .none, .channel:
-            return nil;
+            return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: key.jid, mucNickname: nil));
         }
     }
     

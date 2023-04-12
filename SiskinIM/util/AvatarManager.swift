@@ -31,7 +31,7 @@ struct AvatarWeakRef {
     weak var avatar: Avatar?;
 }
 
-public class Avatar: Publisher {
+public class Avatar: Publisher, ObservableObject {
 
     private struct AvatarSubscription: Subscription {
         

@@ -80,6 +80,8 @@
 		FE2809812167CE18002F5BD0 /* server_features_list.xml in Resources */ = {isa = PBXBuildFile; fileRef = FE2809802167CE18002F5BD0 /* server_features_list.xml */; };
 		FE2809832167CF1B002F5BD0 /* ServerFeaturesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2809822167CF1B002F5BD0 /* ServerFeaturesViewController.swift */; };
 		FE2A00BB27F89BF500AF0152 /* Publisher+ThrottleFixed.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2A00BA27F89BF500AF0152 /* Publisher+ThrottleFixed.swift */; };
+		FE2C13EF29C8BAE500F6BC5A /* UIHostingConfigurationBackport.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2C13EE29C8BAE500F6BC5A /* UIHostingConfigurationBackport.swift */; };
+		FE2C13F129C8BC1000F6BC5A /* ChatEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2C13F029C8BC1000F6BC5A /* ChatEntryView.swift */; };
 		FE2D481A24505F1600C13CE5 /* CallManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2D481924505F1600C13CE5 /* CallManager.swift */; };
 		FE2D481C24518C2800C13CE5 /* RTCCameraVideoCapturer_Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2D481B24518C2800C13CE5 /* RTCCameraVideoCapturer_Format.swift */; };
 		FE31291C222C0D1500A92863 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE31291B222C0D1500A92863 /* AvatarView.swift */; };
@@ -440,6 +442,8 @@
 		FE2A00BA27F89BF500AF0152 /* Publisher+ThrottleFixed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publisher+ThrottleFixed.swift"; sourceTree = "<group>"; };
 		FE2A00BD28048D6C00AF0152 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/MainInterface.strings; sourceTree = "<group>"; };
 		FE2A0E8D1F74012D006ADF08 /* db-schema-2.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-2.sql"; sourceTree = "<group>"; };
+		FE2C13EE29C8BAE500F6BC5A /* UIHostingConfigurationBackport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIHostingConfigurationBackport.swift; sourceTree = "<group>"; };
+		FE2C13F029C8BC1000F6BC5A /* ChatEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatEntryView.swift; sourceTree = "<group>"; };
 		FE2D481924505F1600C13CE5 /* CallManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallManager.swift; sourceTree = "<group>"; };
 		FE2D481B24518C2800C13CE5 /* RTCCameraVideoCapturer_Format.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTCCameraVideoCapturer_Format.swift; sourceTree = "<group>"; };
 		FE31291B222C0D1500A92863 /* AvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
@@ -782,6 +786,7 @@
 				FE2332E0242CCDB400008ED4 /* InvitationChatTableViewCell.swift */,
 				FEDE00C8266CEF270019CC1C /* ChatTableViewMarkerCell.swift */,
 				FEA6DCBB271A01770079DBEC /* LocationChatTableViewCell.swift */,
+				FE2C13F029C8BC1000F6BC5A /* ChatEntryView.swift */,
 			);
 			path = conversation;
 			sourceTree = "<group>";
@@ -956,6 +961,7 @@
 				FE82A728268C83020049C844 /* ChartView.swift */,
 				FE05ADBF28A137CD008BC5D9 /* AccountSelectionView.swift */,
 				FE1977C12982ED8400E2C096 /* ItemSelectorView.swift */,
+				FE2C13EE29C8BAE500F6BC5A /* UIHostingConfigurationBackport.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -1697,6 +1703,7 @@
 				FE3E3890242A98C000D3A8E8 /* ChannelParticipantsController.swift in Sources */,
 				FE01ADA91E224CF400FA7E65 /* SiskinPushNotificationsModule.swift in Sources */,
 				FE507A1F1CDB7B3B001A015C /* AccountTableViewCell.swift in Sources */,
+				FE2C13EF29C8BAE500F6BC5A /* UIHostingConfigurationBackport.swift in Sources */,
 				FE11D38126623D7700CC883F /* DBChatStore+RoomStore.swift in Sources */,
 				FEF19F122348A3B8005CFE9A /* AvatarEventHandler.swift in Sources */,
 				FE0E30E92535BA910030F8C5 /* BaseChatViewController+ShareMedia.swift in Sources */,
@@ -1812,6 +1819,7 @@
 				FE00157D2017617B00490340 /* StreamFeaturesCache.swift in Sources */,
 				FE3E388E242A251E00D3A8E8 /* ChannelEditInfoController.swift in Sources */,
 				FE9D4DA726C7E87C00DD295A /* AudioSession.swift in Sources */,
+				FE2C13F129C8BC1000F6BC5A /* ChatEntryView.swift in Sources */,
 				FEC514261CEB74F8003AF765 /* BaseChatViewController.swift in Sources */,
 				FE11D39826623EC500CC883F /* ConversationDataSource.swift in Sources */,
 				FE11D35E26623D6D00CC883F /* ConversationBase.swift in Sources */,

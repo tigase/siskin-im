@@ -22,6 +22,7 @@
 import Foundation
 import LinkPresentation
 import Martin
+import Combine
 
 class MetadataCache {
 
@@ -32,6 +33,7 @@ class MetadataCache {
     private let queue = DispatchQueue(label: "MetadataCache");
 
     private var inProgress: [URL: OperationQueue] = [:];
+    private var cancellables: Set<AnyCancellable> = [];
     
     var size: Int {
         guard let enumerator: FileManager.DirectoryEnumerator = FileManager.default.enumerator(at: diskCacheUrl, includingPropertiesForKeys: [.totalFileAllocatedSizeKey, .isRegularFileKey]) else {
@@ -46,14 +48,14 @@ class MetadataCache {
         if !FileManager.default.fileExists(atPath: diskCacheUrl.path) {
             try! FileManager.default.createDirectory(at: diskCacheUrl, withIntermediateDirectories: true, attributes: nil);
         }
-        NotificationCenter.default.addObserver(self, selector: #selector(messageRemoved), name: DBChatHistoryStore.MESSAGE_REMOVED, object: nil);
-    }
-    
-    @objc func messageRemoved(_ notification: Notification) {
-        guard let item = notification.object as? ConversationEntry, case .deleted = item.payload else {
-            return;
-        }
-        removeMetadata(for: "\(item.id)");
+        DBChatHistoryStore.instance.events.sink(receiveValue: { [weak self] event in
+            switch event {
+            case .removed(let item):
+                self?.removeMetadata(for: "\(item.id)");
+            default:
+                break;
+            }
+        }).store(in: &cancellables);
     }
 
     func store(_ value: LPLinkMetadata, for id: String) {
@@ -70,7 +72,7 @@ class MetadataCache {
             return nil;
         }
 
-        return try? NSKeyedUnarchiver.unarchivedObject(ofClass: LPLinkMetadata.self, from: data);
+        return try! NSKeyedUnarchiver.unarchivedObject(ofClass: LPLinkMetadata.self, from: data);
     }
     
     func removeMetadata(for id: String) {

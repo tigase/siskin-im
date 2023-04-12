@@ -113,9 +113,28 @@ class ConversationDataSource {
     private var knownItems: Set<Int> = [];
     
     init() {
-        NotificationCenter.default.addObserver(self, selector: #selector(messageNew), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(messageUpdated(_:)), name: DBChatHistoryStore.MESSAGE_UPDATED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(messageRemoved(_:)), name: DBChatHistoryStore.MESSAGE_REMOVED, object: nil);
+        DBChatHistoryStore.instance.events.sink(receiveValue: { [weak self] event in
+            guard let self else {
+                return;
+            }
+            switch event {
+            case .added(let entry):
+                guard let conversation = delegate?.conversation, entry.conversation.account == conversation.account, entry.conversation.jid == conversation.jid else {
+                    return;
+                }
+                self.add(item: entry);
+            case .removed(let entry):
+                guard let conversation = delegate?.conversation, entry.conversation.account == conversation.account, entry.conversation.jid == conversation.jid else {
+                    return;
+                }
+                self.remove(item: entry)
+            case .updated(let entry):
+                guard let conversation = delegate?.conversation, entry.conversation.account == conversation.account, entry.conversation.jid == conversation.jid else {
+                    return;
+                }
+                self.update(item: entry);
+            }
+        }).store(in: &cancellables);
         Settings.$linkPreviews.dropFirst().sink(receiveValue: { [weak self] _ in
             guard let that = self else {
                 return;

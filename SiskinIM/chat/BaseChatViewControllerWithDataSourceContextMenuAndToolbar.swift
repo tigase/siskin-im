@@ -21,6 +21,7 @@
 
 import UIKit
 import Martin
+import SwiftUI
 
 class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatViewControllerWithDataSource, UITableViewDelegate {
 
@@ -45,13 +46,11 @@ class BaseChatViewControllerWithDataSourceAndContextMenuAndToolbar: BaseChatView
             
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         return UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: {
-            let cell = self.conversationLogController!.tableView(tableView, cellForRowAt: indexPath);
-            cell.contentView.transform = .identity;
-            let view = UIViewController();
+            let cell = self.conversationLogController!.tableView(tableView, cellForRowAt: indexPath) as! HostingCell<ChatEntryView>;
             let size = self.conversationLogController!.tableView.rectForRow(at: indexPath).size;
-            view.view = cell.contentView;
-            view.preferredContentSize = size;
-            return view;
+            let controller = UIHostingController(rootView: cell.hostingController.rootView);
+            controller.preferredContentSize = size;
+            return controller;
         }) { suggestedActions -> UIMenu? in
             return self.prepareContextMenu(for: indexPath);
         };

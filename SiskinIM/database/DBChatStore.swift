@@ -137,12 +137,11 @@ open class DBChatStore: ContextLifecycleAware {
         }
     }
 
-    func newActivity(_ activity: LastChatActivity, isUnread: Bool, for account: BareJID, with jid: BareJID, completionHandler: @escaping ()->Void) {
+    func newActivity(_ activity: LastChatActivity, isUnread: Bool, for account: BareJID, with jid: BareJID) {
         queue.async {
             if let conversation = self.accountsConversations.conversation(for: account, with: jid) {
                 self.accountsConversations.newActivity(activity, isUnread: isUnread, for: conversation);
             }
-            completionHandler();
         }
     }
 

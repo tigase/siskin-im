@@ -23,6 +23,7 @@ import UIKit
 import Combine
 import CoreLocation
 import MapKit
+import SwiftUI
 
 class ConversationLogController: UIViewController, ConversationDataSourceDelegate, UITableViewDataSource {
     
@@ -48,6 +49,8 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
         super.viewDidLoad();
         
         dataSource.delegate = self;
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SwiftUITableViewCell");
+        tableView.register(HostingCell<ChatEntryView>.self, forCellReuseIdentifier: "HostingCell");
 
         tableView.rowHeight = UITableView.automaticDimension;
         tableView.estimatedRowHeight = 160.0;
@@ -103,7 +106,28 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
         guard let item = dataSource.getItem(at: indexPath.row) else {
             return tableView.dequeueReusableCell(withIdentifier: "ChatTableViewCellIncoming", for: indexPath);
         }
-
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "HostingCell", for: indexPath) as! HostingCell<ChatEntryView>;
+        cell.contentView.transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0);
+        var continuation = isContinuation(at: indexPath.row, for: item);
+        if case let .linkPreview(_) = item.payload {
+            continuation = true;
+        }
+        cell.set(rootView: ChatEntryView(item: item, isContinuation: continuation, needResize: { [weak tableView] in
+            tableView?.reloadRows(at: [indexPath], with: .automatic)
+        }), parentController: self)
+        
+        return cell;
+        
+//        let cell = tableView.dequeueReusableCell(withIdentifier: "SwiftUITableViewCell", for: indexPath);
+//        cell.prepareForReuse();
+//        cell.contentConfiguration = UIHostingConfigurationBackport(content: {
+//            ChatEntryView(item: item, isContinuation: isContinuation(at: indexPath.row, for: item))
+//        })
+//        cell.contentView.transform = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 0);
+//        cell.updateConstraintsIfNeeded()
+//        return cell;
+        
         switch item.payload {
         case .unreadMessages:
             let cell: ChatTableViewSystemCell = tableView.dequeueReusableCell(withIdentifier: "ChatTableViewSystemCell", for: indexPath) as! ChatTableViewSystemCell;

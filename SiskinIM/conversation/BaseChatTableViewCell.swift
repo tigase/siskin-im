@@ -134,7 +134,8 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
     func set(item: ConversationEntry) {
         cancellables.removeAll();
         
-        if let avatarView = self.avatarView, let avatar = item.sender.avatar(for: item.conversation) {
+        if let avatarView = self.avatarView {
+            let avatar = item.sender.avatar(for: item.conversation)
             let name = item.sender.nickname;
             avatar.receive(on: DispatchQueue.main).sink(receiveValue: { image in
                 avatarView.set(name: name, avatar: image);

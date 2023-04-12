@@ -22,6 +22,7 @@
 import Foundation
 import UIKit
 import Martin
+import Combine
 
 class DownloadStore {
     
@@ -30,6 +31,7 @@ class DownloadStore {
     fileprivate let queue = DispatchQueue(label: "download_store_queue");
 
     let diskCacheUrl: URL;
+    private var cancellables: Set<AnyCancellable> = [];
     
     //let cache = NSCache<NSString, NSImage>();
     var size: Int {
@@ -49,15 +51,14 @@ class DownloadStore {
         if !FileManager.default.fileExists(atPath: diskCacheUrl.path) {
             try! FileManager.default.createDirectory(at: diskCacheUrl, withIntermediateDirectories: true, attributes: nil);
         }
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(messageRemoved(_:)), name: DBChatHistoryStore.MESSAGE_REMOVED, object: nil);
-    }
-    
-    @objc func messageRemoved(_ notification: Notification) {
-        guard let item = notification.object as? ConversationEntry else {
-            return;
-        }
-        self.deleteFile(for: "\(item.id)")
+        DBChatHistoryStore.instance.events.sink(receiveValue: { [weak self] event in
+            switch event {
+            case .removed(let item):
+                self?.deleteFile(for: "\(item.id)");
+            default:
+                break;
+            }
+        }).store(in: &cancellables);
     }
     
     func clear(olderThan: Date? = nil) {
