@@ -42,6 +42,8 @@ final class HostingCell<Content: View>: UITableViewCell {
 //            view.needResize = self.invalidateIntrinsicContentSize;
 //            self.hostingController.rootView = view as! Content;
 //        } else {
+        self.clipsToBounds = false;
+        self.contentView.clipsToBounds = false;
         self.hostingController.rootView = rootView
         self.hostingController.view.invalidateIntrinsicContentSize();
         

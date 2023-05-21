@@ -1,22 +1,28 @@
 //
-//  ChatEntryView.swift
-//  Siskin IM
+// ChatEntryView.swift
 //
-//  Created by Andrzej Wójcik on 20/03/2023.
-//  Copyright © 2023 Tigase, Inc. All rights reserved.
+// Siskin IM
+// Copyright (C) 2023 "Tigase, Inc." <office@tigase.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. Look for COPYING file in the top folder.
+// If not, see https://www.gnu.org/licenses/.
 //
 
 import MapKit
 import SwiftUI
 import Martin
 import LinkPresentation
-
-class CustomLinkView: LPLinkView {
-//    override var intrinsicContentSize: CGSize {
-//        CGSize(width: super.intrinsicContentSize.width,
-//               height: super.intrinsicContentSize.height)
-//    }
-}
 
 struct LinkViewRepresentable: UIViewRepresentable {
     
@@ -35,7 +41,7 @@ struct LinkViewRepresentable: UIViewRepresentable {
     }
         
     func makeUIView(context: Self.Context) -> LPLinkView {
-        guard let metadata = metadata else { return CustomLinkView() }
+        guard let metadata = metadata else { return LPLinkView() }
         let linkView = LPLinkView(metadata: metadata)
         linkView.setContentCompressionResistancePriority(.fittingSizeLevel, for: .horizontal)
         linkView.setContentHuggingPriority(.defaultLow, for: .horizontal)
@@ -222,42 +228,11 @@ extension Text {
             return Section(id: counter, style: paragraph.style, parts: parts);
         })
         
-//        let texts = paragraphs.map({ paragraph in
-//            var result = Text("");
-//            str.enumerateAttributes(in: paragraph.range, using: { attrs, range, _ in
-//                var text = Text(str.attributedSubstring(from: range).string);
-//                if let color = attrs[.foregroundColor] as? UIColor {
-//                    text = text.foregroundColor(Color(color))
-//                }
-//                if let font = attrs[.font] as? UIFont {
-//                    text = text.font(Font(font as CTFont))
-//                }
-//                if attrs[.underlineStyle] != nil {
-//                    text = text.underline()
-//                }
-////                    if let style = attrs[.paragraphStyle] as? NSParagraphStyle {
-////                        if style === Markdown.codeParagraphStyle {
-////                            text = text.foregroundColor(.secondary).fontWeight(.medium)
-////                        } else if style === Markdown.quoteParagraphStyle {
-////                            text = text.foregroundColor(.secondary).fontWeight(.medium)
-////                        }
-////                    }
-//                result = result + text;
-//            })
-//            return result;
-//        })
-//
         return VStack(alignment: .leading) {
             ForEach(sections) { section in
-//                var result = Text("");
-//                for part in section.parts {
-//
-//                }
-//                result
                 section.text()
             }
         }
-//        }
     }
     
 }
@@ -305,6 +280,98 @@ struct MapLocation: View {
 import MobileCoreServices
 import AVFoundation
 
+import QuickLook
+
+struct PreviewController: UIViewControllerRepresentable {
+    
+    let url: URL
+    var cancelPresentation: ()->Void;
+    
+    func makeUIViewController(context: UIViewControllerRepresentableContext<PreviewController>) -> UIViewController {
+        let controller = QLPreviewController()
+        controller.dataSource = context.coordinator
+        controller.navigationItem.leftBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .done, target: context.coordinator,
+            action: #selector(context.coordinator.dismiss)
+        )
+
+        let navigationController = UINavigationController(
+            rootViewController: controller
+        )
+        return navigationController
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        return Coordinator(parent: self)
+    }
+    
+    func updateUIViewController(
+        _ uiViewController: UIViewController, context: UIViewControllerRepresentableContext<PreviewController>) {}
+    
+    class Coordinator: QLPreviewControllerDataSource {
+        let parent: PreviewController
+        
+        init(parent: PreviewController) {
+            self.parent = parent
+        }
+        
+        func numberOfPreviewItems(
+            in controller: QLPreviewController
+        ) -> Int {
+            return 1
+        }
+        
+        func previewController(
+            _ controller: QLPreviewController,
+            previewItemAt index: Int
+        ) -> QLPreviewItem {
+            return parent.url as NSURL
+        }
+        
+        @objc func dismiss() {
+            parent.cancelPresentation();
+        }
+    }
+}
+
+struct ActivityView: UIViewControllerRepresentable {
+    
+    let items: [Any];
+    @Environment(\.presentationMode) var presentationMode
+    
+    func makeUIViewController(context: UIViewControllerRepresentableContext<ActivityView>) -> some UIViewController {
+        let controller = UIActivityViewController(activityItems: items, applicationActivities: nil);
+        controller.modalPresentationStyle = .automatic;
+        controller.completionWithItemsHandler = { (activityType, completed, returnedItems, error) in
+            self.presentationMode.wrappedValue.dismiss();
+        }
+        return controller;
+    }
+    
+    func updateUIViewController(_ uiViewController: UIViewControllerType, context: UIViewControllerRepresentableContext<ActivityView>) {
+    }
+    
+}
+
+extension View {
+    
+    @ViewBuilder
+    func `if`<Content: View>(_ condition: @autoclosure ()-> Bool, transform: (Self) -> Content) -> some View {
+        if (condition()) {
+            transform(self)
+        } else {
+            self
+        }
+    }
+        
+}
+
+extension URL: Identifiable {
+    public var id: URL {
+        return self;
+    }
+}
+
 struct AppendixView: View {
     
     let appendix: ChatAttachmentAppendix;
@@ -312,14 +379,17 @@ struct AppendixView: View {
     let item: ConversationEntry;
     var metadata: LPLinkMetadata?;
     var downloadedUrl: URL?;
-//    @State var isPlaying: Bool = false;
     @StateObject private var audioHandler: AudioHandler = AudioHandler()
+    @State var downloadInProgress: Bool = false;
+    @State var showPreview: URL? = nil;
+    @State var showShare: URL? = nil;
     
-    init(item: ConversationEntry, appendix: ChatAttachmentAppendix, url: String) {
+    init(item: ConversationEntry, appendix: ChatAttachmentAppendix, url: String, needRefresh: (()->Void)?) {
         self.appendix = appendix;
         print("appendix: \(appendix)")
         self.url = url;
         self.item = item;
+        self.downloadInProgress = DownloadManager.instance.downloadInProgress(for: item);
         if let localUrl = DownloadStore.instance.url(for: "\(item.id)") {
             self.downloadedUrl = localUrl;
             metadata = MetadataCache.instance.metadata(for: "\(item.id)");
@@ -328,6 +398,9 @@ struct AppendixView: View {
                     if let meta = newMeta {
                         MetadataCache.instance.store(meta, for: "\(item.id)")
                         // need refresh!
+                        DispatchQueue.main.async {
+                            needRefresh?();
+                        }
                     }
                 })
             } else {
@@ -340,35 +413,43 @@ struct AppendixView: View {
     }
     
     var body: some View {
-        if !(appendix.mimetype?.starts(with: "audio/") ?? false), let metadata = metadata {
-            LinkViewRepresentable(metadata: metadata, isUserInteractionEnabled: false).compositingGroup().contextMenu(menuItems: { self.contextMenu })
-        } else {
-            if appendix.state == .new {
-                attachmentView.onAppear(perform: {
+        attachmentView
+            .compositingGroup().contextMenu(menuItems: { self.contextMenu })
+            .sheet(item: $showPreview, content: { url in
+                PreviewController(url: url, cancelPresentation: {
+                    showPreview = nil;
+                });
+            })
+            .sheet(item: $showShare, content: { url in
+                ActivityView(items: [url])
+            })
+            .if(appendix.state == .new, transform: {
+                $0.onAppear(perform: {
                     if DownloadStore.instance.url(for: "\(item.id)") == nil {
                         let sizeLimit = Settings.fileDownloadSizeLimit;
                         if sizeLimit > 0 {
-//                            if (DBRosterStore.instance.item(for: item.conversation.account, jid: JID(item.conversation.jid))?.subscription ?? .none).isFrom || (DBChatStore.instance.conversation(for: item.conversation.account, with: item.conversation.jid) as? Room != nil) {
+                            if (DBRosterStore.instance.item(for: item.conversation.account, jid: JID(item.conversation.jid))?.subscription ?? .none).isFrom || (DBChatStore.instance.conversation(for: item.conversation.account, with: item.conversation.jid) as? Room != nil) {
                                 _ = DownloadManager.instance.download(item: item, url: url, maxSize: sizeLimit >= Int.max ? Int64.max : Int64(sizeLimit * 1024 * 1024));
-//                                attachmentInfo.progress(show: true);
+                                self.downloadInProgress = true;
+    //                                attachmentInfo.progress(show: true);
                                 return;
                             }
-//                        }
-//                        attachmentInfo.progress(show: DownloadManager.instance.downloadInProgress(for: item));
+                        }
                     }
                 })
-            } else {
-                attachmentView
-            }
-//            let task = Task {
-//                let provider = LPMetadataProvider();
-//                guard let meta = try? await provider.startFetchingMetadata(for: URL(string: url)!) else { return; }
-//                self.metadata = meta;
-//            }
+            })
+    }
+    
+    @ViewBuilder
+    var attachmentView: some View {
+        if !(appendix.mimetype?.starts(with: "audio/") ?? false), let metadata = metadata {
+            LinkViewRepresentable(metadata: metadata, isUserInteractionEnabled: false)
+        } else {
+            attachmentFileView
         }
     }
     
-    var attachmentView: some View {
+    var attachmentFileView: some View {
         HStack(alignment: .center) {
             filetypeIcon.resizable().aspectRatio(contentMode: .fit).frame(maxWidth: 30, maxHeight: 30)
             VStack(alignment: .leading) {
@@ -384,7 +465,6 @@ struct AppendixView: View {
             }
             Spacer()
             if let fileUrl = downloadedUrl {
-                let _ = print("mimetype: \(appendix.mimetype)")
                 if appendix.mimetype?.starts(with: "audio/") ?? false {
                     Button(action: {
                         if audioHandler.isPlaying {
@@ -400,15 +480,18 @@ struct AppendixView: View {
                         }
                     })
                 }
-            } else if appendix.state == .downloaded {
+            }
+            if appendix.state == .downloaded {
                 Menu(content: {
                     contextMenu
                 }, label: {
                     Image(systemName: "ellipsis.circle")
                 })
+            } else if downloadInProgress {
+                ProgressView()
             } else {
                 Button(action: {
-                    _ = DownloadManager.instance.download(item: item, url: url, maxSize: Int64.max)
+                    downloadFile();
                 }, label: {
                     Image(systemName: "arrow.down.circle").scaledToFill()
                 })
@@ -418,30 +501,49 @@ struct AppendixView: View {
     
     @ViewBuilder
     var contextMenu: some View {
+        if let downloadedUrl {
             Button(action: {
-                // FIX ME: we need to implement his
+                self.showPreview = downloadedUrl;
             }, label: {
-                Label("Open", systemImage: "eye.fill")
+                Label(NSLocalizedString("Preview", comment: "attachment cell context action"), systemImage: "eye.fill")
             })
             Button(action: {
                 UIPasteboard.general.strings = [url];
                 UIPasteboard.general.string = url;
             }, label: {
-                Label("Copy", systemImage: "doc.on.doc")
+                Label(NSLocalizedString("Copy", comment: "attachment cell context action"), systemImage: "doc.on.doc")
             })
-            Button(action: {
-                // FIX ME: we need to implement his
-            }, label: {
-                Label("Share", systemImage: "square.and.arrow.up")
-            })
+            if #available(iOS 16.4, *) {
+                ShareLink(items: [downloadedUrl]) {
+                    Label(NSLocalizedString("Share…", comment: "attachment cell context action"), systemImage: "square.and.arrow.up")
+                }
+            } else {
+                Button(action: {
+                    self.showShare = downloadedUrl;
+                }, label: {
+                    Label(NSLocalizedString("Share…", comment: "attachment cell context action"), systemImage: "square.and.arrow.up")
+                })
+            }
             Button(action: {
                 DownloadStore.instance.deleteFile(for: "\(item.id)")
                 DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                     appendix.state = .removed;
                 })
             }, label: {
-                Label("Delete", systemImage: "trash.circle")
+                Label(NSLocalizedString("Delete", comment: "attachment cell context action"), systemImage: "trash.circle")
             })
+        } else {
+            Button(action: {
+                downloadFile()
+            }, label: {
+                Label(NSLocalizedString("Download", comment: "attachment cell context action"), systemImage: "arrow.down.circle")
+            })
+        }
+    }
+    
+    func downloadFile() {
+        _ = DownloadManager.instance.download(item: item, url: url, maxSize: Int64.max)
+        self.downloadInProgress = true;
     }
     
     private class AudioHandler: NSObject, ObservableObject, AVAudioPlayerDelegate {
@@ -465,7 +567,6 @@ struct AppendixView: View {
                 audioPlayer?.volume = 1.0;
                 audioPlayer?.play();
                 isPlaying = true;
-//                self.actionButton.setImage(UIImage(systemName: "pause.circle.fill")!, for: .normal);
             } catch {
                 self.stopPlayingAudio();
             }
@@ -475,27 +576,8 @@ struct AppendixView: View {
             audioPlayer?.stop();
             audioPlayer = nil;
             isPlaying = false;
-            //self.actionButton.setImage(UIImage(systemName: "play.circle.fill"), for: .normal);
         }
     }
-    
-    
-    
-//    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-//        audioPlayer?.stop();
-//        audioPlayer = nil;
-//        self.actionButton.setImage(UIImage(systemName: "play.circle.fill"), for: .normal);
-//    }
-//
-//    @objc func actionTapped(_ sender: Any) {
-//        if audioPlayer == nil {
-//            self.startPlayingAudio();
-//        } else {
-//            self.stopPlayingAudio();
-//        }
-//    }
-//}
-
     
     var filename: String {
         if let fileUrl = self.downloadedUrl {
@@ -568,7 +650,7 @@ struct ChatEntryView: View {
                 Text("Unread messages").font(.headline).foregroundColor(.secondary).padding(.top)
             }.frame(maxWidth: .infinity, alignment: .top)
         } else {
-            HStack(alignment: . top) {
+            HStack(alignment: .top) {
                 if case let .marker(type, senders) = item.payload {
                     Spacer()
                     ForEach(senders.prefix(3).map({ ConversationEntrySenderIdentifiable(sender: $0) })) { sender in
@@ -586,7 +668,7 @@ struct ChatEntryView: View {
                     } else {
                         AvatarViewNew(nickname: item.sender.nickname, avatar: item.sender.avatar(for: item.conversation), size: 30)
                     }
-                    VStack(alignment: .trailing) {
+                    VStack(alignment: .leading, spacing: 0.0) {
                         if !isContinuation {
                             HStack(alignment: .bottom) {
                                 if let nickname = item.sender.nickname {
@@ -603,21 +685,6 @@ struct ChatEntryView: View {
                                 Spacer()
                             }
                             
-                            //                    if let meta = metadata {
-                            //    //                    HStack {
-                            //    //                        Spacer()
-                            //                            LinkViewRepresentable(metadata: meta).scaledToFit()
-                            //    //                    }
-                            //                    } else {
-                            //                        LinkViewRepresentable(url: URL(string: "https://www.hackingwithswift.com/quick-start/swiftui/how-to-add-advanced-text-styling-using-attributedstring")!).onAppear(perform: {
-                            //                            let task = Task {
-                            //                                let provider = LPMetadataProvider();
-                            //                                guard let meta = try? await provider.startFetchingMetadata(for: URL(string: "https://www.hackingwithswift.com/quick-start/swiftui/how-to-add-advanced-text-styling-using-attributedstring")!) else { return; }
-                            //                                self.metadata = meta;
-                            //                                self.needResize?();
-                            //                            }
-                            //                        }).scaledToFit()
-                            //                    }
                         case .linkPreview(let url):
                             if let metadata = metadata {
                                 LinkViewRepresentable(metadata: metadata)
@@ -639,7 +706,7 @@ struct ChatEntryView: View {
                         case .location(let location):
                             MapLocation(location: location).frame(height: 300)
                         case .attachment(let url, let appendix):
-                            AppendixView(item: item, appendix: appendix, url: url).scaledToFill()
+                            AppendixView(item: item, appendix: appendix, url: url, needRefresh: needResize)//.scaledToFill()
                         default:
                             let _ = "1";
                         }
