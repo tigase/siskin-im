@@ -88,11 +88,11 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
     private var muteButton: RoundButton?;
     private var moreButton: RoundButton?;
     
-    #if targetEnvironment(simulator)
-    private let localVideoRenderer = RTCEAGLVideoView();
-    #else
+//    #if targetEnvironment(simulator)
+//    private let localVideoRenderer = RTCEAGLVideoView();
+//    #else
     private let localVideoRenderer = RTCMTLVideoView();
-    #endif
+//    #endif
     private var localVideoRendererWidth: NSLayoutConstraint?;
     
     private var cancellables: Set<AnyCancellable> = [];
@@ -501,11 +501,11 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
         private let nameLabel: UILabel = UILabel();
         private let nameBox = UIView();
         
-        #if targetEnvironment(simulator)
-        private let videoRenderer = RTCEAGLVideoView(frame: .zero);
-        #else
+//        #if targetEnvironment(simulator)
+//        private let videoRenderer = RTCEAGLVideoView(frame: .zero);
+//        #else
         private let videoRenderer = RTCMTLVideoView(frame: .zero);
-        #endif
+//        #endif
 
         private var cancellables: Set<AnyCancellable> = [];
             
