@@ -63,6 +63,8 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
         let newSections = IndexSet(newGroups.map({ $0.name }).filter({ name in !oldGroups.contains(where: { $0.name == name })}).compactMap({ name in newGroups.firstIndex(where: { $0.name == name }) }));
         
         let rowChanges = calculateChanges(newGroups: newGroups, oldGroups: oldGroups);
+        let rowRemovals = rowChanges.flatMap({ $0.removed });
+        let rowInserts = rowChanges.flatMap({ $0.inserted });
         
         DispatchQueue.main.sync {
             self.groups = newGroups;
@@ -72,11 +74,9 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
             } else {
                 self.controller?.tableView.beginUpdates();
                 self.controller?.tableView.deleteSections(removeSections, with: .fade);
-                for changes in rowChanges {
-                    self.controller?.tableView.deleteRows(at: changes.removed, with: .fade);
-                    self.controller?.tableView.insertRows(at: changes.inserted, with: .fade);
-                }
+                self.controller?.tableView.deleteRows(at: rowRemovals, with: .fade);
                 self.controller?.tableView.insertSections(newSections, with: .fade);
+                self.controller?.tableView.insertRows(at: rowInserts, with: .fade);
                 self.controller?.tableView.endUpdates();
             }
         }
@@ -86,13 +86,14 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
         let inserted: [IndexPath];
         let removed: [IndexPath];
     }
-    
+        
     private func calculateChanges(newGroups: [RosterProviderGroup], oldGroups: [RosterProviderGroup]) -> [GroupChanges] {
         var results: [GroupChanges] = [];
-        for newGroup in newGroups {
-            if let oldGroup = oldGroups.first(where: { $0.name == newGroup.name }) {
+        for (newGroupIdx, newGroup) in newGroups.enumerated() {
+            if let oldGroupIdx = oldGroups.firstIndex(where: { $0.name == newGroup.name }) {
+                let oldGroup = oldGroups[oldGroupIdx];
                 let diff = newGroup.items.calculateChanges(from: oldGroup.items);
-                results.append(GroupChanges(inserted: diff.inserted.map({ [results.count, $0] }), removed: diff.removed.map({ [results.count, $0] })));
+                results.append(GroupChanges(inserted: diff.inserted.map({ [newGroupIdx, $0] }), removed: diff.removed.map({ [oldGroupIdx, $0] })));
             }
         }
         return results;
