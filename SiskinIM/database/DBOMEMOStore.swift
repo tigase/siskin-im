@@ -24,6 +24,7 @@ import Martin
 import MartinOMEMO
 import TigaseSQLite3
 import Shared
+import TigaseLogging
 
 extension Query {
     static let omemoKeyPairForAccount = Query("SELECT key FROM omemo_identities WHERE account = :account AND name = :name AND device_id = :deviceId AND own = 1");
@@ -62,6 +63,8 @@ class DBOMEMOStore {
     
     public static let instance = DBOMEMOStore();
         
+    private let logger = Logger(subsystem: "BeagleIM", category: "DBOMEMOStore");
+    
     func keyPair(forAccount account: BareJID) -> SignalIdentityKeyPairProtocol? {
         guard let deviceId = localRegistrationId(forAccount: account) else {
             return nil;
@@ -73,7 +76,12 @@ class DBOMEMOStore {
             return nil;
         }
         
-        return SignalIdentityKeyPair(fromKeyPairData: data);
+        do {
+            return try SignalIdentityKeyPair(fromKeyPairData: data);
+        } catch {
+            logger.error("failed to load identity key pair for account \(account): \(error)")
+            return nil;
+        }
     }
     
     func identityFingerprint(forAccount account: BareJID, andAddress address: SignalAddress) -> String? {
@@ -473,7 +481,7 @@ class OMEMOStoreWrapper: SignalStorage {
                 return false;
             }
 
-            let keyPair = SignalIdentityKeyPair.generateKeyPair(context: signalContext);
+            let keyPair = try! SignalIdentityKeyPair.generateKeyPair(context: signalContext);
             if !identityKeyStore.save(identity: SignalAddress(name: context!.userBareJid.description, deviceId: Int32(identityKeyStore.localRegistrationId())), key: keyPair) {
             }
         }
