@@ -540,7 +540,7 @@ open class XmppService {
                 }
             case .authenticationFailure(let err):
                 if let error = err as? SaslError {
-                    switch error {
+                    switch error.cause {
                     case .aborted, .temporary_auth_failure:
                         // those are temporary errors, we shoud retry
                         break;
@@ -548,7 +548,7 @@ open class XmppService {
                         reportSaslError(on: client.userBareJid, error: error);
                     }
                 } else {
-                    reportSaslError(on: client.userBareJid, error: .not_authorized);
+                    reportSaslError(on: client.userBareJid, error: SaslError(cause: .not_authorized, message: nil));
                 }
             case .none:
                 try? AccountManager.modifyAccount(for: client.userBareJid, {

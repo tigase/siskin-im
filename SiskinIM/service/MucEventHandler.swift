@@ -23,11 +23,14 @@ import Foundation
 import Martin
 import UserNotifications
 import Combine
+import TigaseLogging
 
 class MucEventHandler: XmppServiceExtension {
         
     static let instance = MucEventHandler();
 
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "MucEventHandler");
+    
     func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
         client.$state.combineLatest(XmppService.instance.$isFetch).sink(receiveValue: { [weak client] state, isFetch in
             guard let client = client, case .connected(let resumed) = state, !resumed, !isFetch else {
@@ -42,6 +45,7 @@ class MucEventHandler: XmppServiceExtension {
                     if let timestamp = (room as? Room)?.timestamp {
                         if !mamVersions.isEmpty {
                             let result = try await room.rejoin(fetchHistory: .skip);
+                            self.logger.info("\(client.userBareJid) joined room \(room.jid) with result \(result), MAM versions: \(mamVersions) since: \(timestamp)")
                             switch result {
                             case .created(let room), .joined(let room):
                                 guard let client = room.context as? XMPPClient else {
@@ -53,11 +57,12 @@ class MucEventHandler: XmppServiceExtension {
                             }
                         } else {
                             DBChatMarkersStore.instance.syncCompleted(forAccount: room.account, with: room.jid);
-                            _ = try await room.rejoin(fetchHistory: .from(timestamp))
+                            let result = try await room.rejoin(fetchHistory: .from(timestamp))
                         }
                     } else {
                         DBChatMarkersStore.instance.syncCompleted(forAccount: room.account, with: room.jid);
-                        _ = try await room.rejoin(fetchHistory: .initial);
+                        let result = try await room.rejoin(fetchHistory: .initial);
+                        self.logger.info("\(client.userBareJid) joined room \(room.jid) with result \(result), MAM versions: \(mamVersions), no sync 2")
                     }
                 }
             }
@@ -148,20 +153,6 @@ class CustomMucModule: MucModule {
             try await MucEventHandler.instance.updateRoomName(room: room as! Room);
         }
         return result;
-    }
-    
-    override func join(room: RoomProtocol, fetchHistory: RoomHistoryFetch, completionHandler: @escaping (Result<RoomJoinResult,XMPPError>)->Void) {
-        super.join(room: room, fetchHistory: fetchHistory, completionHandler: { result in
-            switch result {
-            case .success(_):
-                Task {
-                    try await MucEventHandler.instance.updateRoomName(room: room as! Room);
-                }
-            case .failure(_):
-                break;
-            }
-            completionHandler(result);
-        });
     }
     
 }
