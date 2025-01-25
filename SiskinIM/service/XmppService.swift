@@ -234,9 +234,6 @@ open class XmppService {
     
     private func connect(client: XMPPClient, for account: Account) {
         client.configure(for: account);
-        client.connectionConfiguration.resource = UIDevice.current.name;
-        client.module(.sasl2).deviceName = UIDevice.current.name;
-        client.module(.sasl2).deviceId = SHA256.hash(toHex: UIDevice.current.name, using: .utf8);
 //        switch account.resourceType {
 //        case .automatic:
 //            client.connectionConfiguration.resource = nil;
@@ -431,7 +428,6 @@ open class XmppService {
         _ = client.modulesManager.register(StreamManagementModule(mode: .resumption, maxResumptionTimeout: 90));
         _ = client.modulesManager.register(SaslModule());
         let sasl2 = client.modulesManager.register(Sasl2Module());
-        sasl2.software = Bundle.main.infoDictionary!["CFBundleName"] as! String;
         // if you do not want Pipelining you may use StreamFeaturesModule instead StreamFeaturesModuleWithPipelining
         //_ = client.modulesManager.register(StreamFeaturesModule());
         _ = client.modulesManager.register(ResourceBinderModule());

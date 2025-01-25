@@ -21,6 +21,7 @@
 
 import Foundation
 import Martin
+import UIKit
 
 extension XMPPClient {
     
@@ -38,6 +39,10 @@ extension XMPPClient {
             }
             options.networkProcessorProviders.append(account.disableTLS13 ? SSLProcessorProvider(supportedTlsVersions: TLSVersion.TLSv1_2...TLSVersion.TLSv1_2) : SSLProcessorProvider());
         });
+        connectionConfiguration.resource = UIDevice.current.name;
+        module(.sasl2).deviceName = UIDevice.current.name;
+        module(.sasl2).deviceId = account.uuid.uuidString
+        module(.sasl2).software = Bundle.main.infoDictionary![kCFBundleNameKey as String] as? String;
     }
     
 }

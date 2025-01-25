@@ -135,6 +135,7 @@
 		FE6545621E9E7FDE006A14AC /* AccountDomainTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6545611E9E7FDE006A14AC /* AccountDomainTableViewCell.swift */; };
 		FE6545641E9E8B67006A14AC /* ServerSelectorTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6545631E9E8B67006A14AC /* ServerSelectorTableViewCell.swift */; };
 		FE65D62822E9F8EB0065DEA5 /* Markdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE65D62722E9F8EB0065DEA5 /* Markdown.swift */; };
+		FE6CCB452D45283B00F607F3 /* db-schema-21.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE6CCB442D45283300F607F3 /* db-schema-21.sql */; };
 		FE719E782271B439007CEEC9 /* MessageEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE719E772271B439007CEEC9 /* MessageEncryption.swift */; };
 		FE719E7C22730DC3007CEEC9 /* OMEMOIdentityTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE719E7B22730DC3007CEEC9 /* OMEMOIdentityTableViewCell.swift */; };
 		FE719E7E2274D20D007CEEC9 /* OMEMOFingerprintsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE719E7D2274D20D007CEEC9 /* OMEMOFingerprintsController.swift */; };
@@ -505,6 +506,7 @@
 		FE6545611E9E7FDE006A14AC /* AccountDomainTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountDomainTableViewCell.swift; sourceTree = "<group>"; };
 		FE6545631E9E8B67006A14AC /* ServerSelectorTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerSelectorTableViewCell.swift; sourceTree = "<group>"; };
 		FE65D62722E9F8EB0065DEA5 /* Markdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Markdown.swift; sourceTree = "<group>"; };
+		FE6CCB442D45283300F607F3 /* db-schema-21.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-21.sql"; sourceTree = "<group>"; };
 		FE719E732271AF88007CEEC9 /* db-schema-5.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-5.sql"; sourceTree = "<group>"; };
 		FE719E772271B439007CEEC9 /* MessageEncryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEncryption.swift; sourceTree = "<group>"; };
 		FE719E7B22730DC3007CEEC9 /* OMEMOIdentityTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OMEMOIdentityTableViewCell.swift; sourceTree = "<group>"; };
@@ -1014,6 +1016,7 @@
 		FE759FC62370B2A4001E78D9 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				FE6CCB442D45283300F607F3 /* db-schema-21.sql */,
 				FE168ACC1CCD197A003F8B26 /* db-schema-1.sql */,
 				FE2A0E8D1F74012D006ADF08 /* db-schema-2.sql */,
 				FE4496C31F87911C009F649C /* db-schema-3.sql */,
@@ -1503,6 +1506,7 @@
 			files = (
 				FE9C4371289D35E900699EDF /* db-schema-8.sql in Resources */,
 				FE9C4375289D35E900699EDF /* db-schema-1.sql in Resources */,
+				FE6CCB452D45283B00F607F3 /* db-schema-21.sql in Resources */,
 				FE9C4372289D35E900699EDF /* db-schema-3.sql in Resources */,
 				FE9C4376289D35E900699EDF /* db-schema-5.sql in Resources */,
 				FE9C436E289D35E900699EDF /* db-schema-13.sql in Resources */,

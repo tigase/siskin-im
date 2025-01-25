@@ -74,7 +74,7 @@ open class AccountManager {
             
             for name in accounts {
                 if let oldAccount = getAccountOld(for: name) {
-                    var newAccount = Account(name: name, enabled: oldAccount.active);
+                    var newAccount = Account(uuid: UUID(), name: name, enabled: oldAccount.active);
                     newAccount.serverEndpoint = oldAccount.endpoint;
                     newAccount.rosterVersion = oldAccount.rosterVersion;
                     newAccount.disableTLS13 = oldAccount.disableTLS13;
@@ -238,7 +238,7 @@ open class AccountManager {
         try self.queue.sync {
             let oldValue = _accounts[jid];
             
-            var newValue = oldValue ?? Account(name: jid, enabled: true);
+            var newValue = oldValue ?? Account(uuid: UUID(),name: jid, enabled: true);
             block(&newValue);
             
             guard !newValue.credentials.isEmpty else {

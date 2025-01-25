@@ -24,8 +24,8 @@ import Martin
 import TigaseSQLite3
 
 extension Query {
-    static let accountsList = Query("SELECT name, enabled, server_endpoint, roster_version, status_message, push, last_endpoint, additional FROM accounts");
-    static let accountInsert = Query("INSERT INTO accounts (name, enabled, server_endpoint, roster_version, status_message, push, additional) VALUES (:name, :enabled, :server_endpoint, :roster_version, :status_message, :push, :additional)");
+    static let accountsList = Query("SELECT uuid, name, enabled, server_endpoint, roster_version, status_message, push, last_endpoint, additional FROM accounts");
+    static let accountInsert = Query("INSERT INTO accounts (uuid, name, enabled, server_endpoint, roster_version, status_message, push, additional) VALUES (:uuid, :name, :enabled, :server_endpoint, :roster_version, :status_message, :push, :additional)");
     static let accountDelete = Query("DELETE FROM accounts WHERE name = :name");
 }
 
@@ -33,7 +33,7 @@ public class DBAccountStore {
         
     static func create(account: Account) throws {
         try Database.main.writer({ writer in
-            try writer.insert(query: .accountInsert, params: ["name": account.name, "enabled": account.enabled, "server_endpoint": account.serverEndpoint, "roster_version": account.rosterVersion, "status_message": account.statusMessage, "push": account.push, "additional": account.additional])
+            try writer.insert(query: .accountInsert, params: ["uuid": account.uuid.uuidString, "name": account.name, "enabled": account.enabled, "server_endpoint": account.serverEndpoint, "roster_version": account.rosterVersion, "status_message": account.statusMessage, "push": account.push, "additional": account.additional])
         })
     }
     
@@ -83,7 +83,7 @@ public class DBAccountStore {
     static func list() throws -> [Account] {
         return try Database.main.reader({ reader in
             try reader.select(query: .accountsList, params: [:]).mapAll({ cursor in
-                return Account(name: cursor.bareJid(for: "name")!, enabled: cursor.bool(for: "enabled"), serverEndpoint: cursor.object(for: "server_endpoint"), lastEndpoint: cursor.object(for: "last_endpoint"), rosterVersion: cursor.string(for: "roster_version"), statusMessage: cursor.string(for: "status_message"), push: cursor.object(for: "push")!, additional: cursor.object(for: "additional")!);
+                return Account(uuid: UUID(uuidString: cursor.string(for: "uuid")!), name: cursor.bareJid(for: "name")!, enabled: cursor.bool(for: "enabled"), serverEndpoint: cursor.object(for: "server_endpoint"), lastEndpoint: cursor.object(for: "last_endpoint"), rosterVersion: cursor.string(for: "roster_version"), statusMessage: cursor.string(for: "status_message"), push: cursor.object(for: "push")!, additional: cursor.object(for: "additional")!);
             })
         })
     }
