@@ -169,10 +169,10 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         }
         
         Task {
-            try await room.sendMessage(text: text, correctedMessageOriginId: correctedMessageOriginId);
-            DispatchQueue.main.async {
-                self.messageText = nil;
-            }
+            try? await room.sendMessage(text: text, correctedMessageOriginId: correctedMessageOriginId);
+        }
+        DispatchQueue.main.async {
+            self.messageText = nil;
         }
     }
     

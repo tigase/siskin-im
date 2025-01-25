@@ -182,10 +182,10 @@ class ChatViewController : BaseChatViewControllerWithDataSourceAndContextMenuAnd
         }
         
         Task {
-            try await chat.sendMessage(text: text, correctedMessageOriginId: self.correctedMessageOriginId)
-            DispatchQueue.main.async {
-                self.messageText = nil;
-            }
+            try? await chat.sendMessage(text: text, correctedMessageOriginId: self.correctedMessageOriginId)
+        }
+        DispatchQueue.main.async {
+            self.messageText = nil;
         }
     }
     

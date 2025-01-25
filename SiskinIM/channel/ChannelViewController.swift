@@ -124,10 +124,10 @@ class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
         }
         
         Task {
-            try await channel.sendMessage(text: text, correctedMessageOriginId: self.correctedMessageOriginId);
-            DispatchQueue.main.async {
-                self.messageText = nil;
-            }
+            try? await channel.sendMessage(text: text, correctedMessageOriginId: self.correctedMessageOriginId);
+        }
+        DispatchQueue.main.async {
+            self.messageText = nil;
         }
     }
     
