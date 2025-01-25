@@ -33,7 +33,7 @@ class JingleManager: JingleSessionManager {
     
     fileprivate var connections: [Session] = [];
     
-    private var cancellables: Set<AnyCancellable> = [];
+    private var cancellables: [String:AnyCancellable] = [:];
     
     let queue = DispatchQueue(label: "jingleEventHandler");
     
@@ -59,12 +59,12 @@ class JingleManager: JingleSessionManager {
         return queue.sync {
             let session = Session(context: context, jid: jid, sid: sid, role: role, initiationType: initiationType);
             self.connections.append(session);
-            session.$state.removeDuplicates().sink(receiveValue: { [weak self, weak session] state in
+            self.cancellables[sid] = session.$state.removeDuplicates().sink(receiveValue: { [weak self, weak session] state in
                 guard state == .terminated, let session = session else {
                     return;
                 }
                 self?.close(session: session);
-            }).store(in: &cancellables);
+            });
             return session;
         }
     }
@@ -77,6 +77,7 @@ class JingleManager: JingleSessionManager {
                 return nil;
             }
             let session =  self.connections.remove(at: idx);
+            self.cancellables.removeValue(forKey: sid)?.cancel();
             return session;
         }
     }
@@ -160,7 +161,7 @@ class JingleManager: JingleSessionManager {
                 do {
                     try await callManager.reportIncomingCall(call);
                 } catch {
-                    try? await session.decline();
+                    try? await session.terminate(reason: .cancel);
                 }
             }
         case .retract(let id):

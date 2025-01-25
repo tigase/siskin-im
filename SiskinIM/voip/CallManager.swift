@@ -641,7 +641,7 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
         if self.state == .new || self.state == .ringing {
             self.reject();
         } else {
-            self.reset();
+            self.reset(reason: .success);
         }
     }
     
@@ -665,10 +665,14 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
     }
     
     func reset() {
-         DispatchQueue.main.async {
-             self.currentConnection?.close();
-             self.currentConnection = nil;
-             if self.localCapturer != nil {
+        reset(reason: .success)
+    }
+    
+    func reset(reason: JingleSessionTerminateReason) {
+        DispatchQueue.main.async {
+            self.currentConnection?.close();
+            self.currentConnection = nil;
+            if self.localCapturer != nil {
                 #if targetEnvironment(simulator)
                 self.localCapturer?.stopCapture();
                 #else
@@ -677,24 +681,24 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
                     self.localCapturer = nil;
                 })
                 #endif
-             }
-             self.localVideoTrack = nil;
-             self.localAudioTrack = nil;
-             self.localVideoSource = nil;
-             self.delegate?.callDidEnd(self);
-             Task {
-                 _ = try? await self.session?.terminate();
-             }
-             self.session = nil;
-             self.delegate = nil;
-             
-             for session in self.establishingSessions.rejectAll() {
-                 Task {
-                     try? await session.terminate();
-
-                 }
-             }
-             self.state = .ended;
+            }
+            self.localVideoTrack = nil;
+            self.localAudioTrack = nil;
+            self.localVideoSource = nil;
+            self.delegate?.callDidEnd(self);
+            if let session = self.session {
+                Task {
+                    _ = try? await session.terminate(reason: reason);
+                }
+            }
+            self.session = nil;
+            self.delegate = nil;
+            for session in self.establishingSessions.rejectAll() {
+                Task {
+                    try? await session.terminate(reason: reason);
+                }
+            }
+            self.state = .ended;
          }
      }
     
@@ -836,8 +840,8 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
                             return nil;
                         }
                     })
-                    for session in sessions {
-                        Task {
+                    Task {
+                        _ = try? await sessions.concurrentMap({ session in
                             do {
                                 try await session.initiate(contents: sdp.contents, bundle: sdp.bundle);
                             } catch let error as XMPPError {
@@ -850,7 +854,8 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
                                     throw error;
                                 }
                             }
-                        }
+                        })
+                        self.isLocalSessionDescriptionSent = true;
                     }
                 } catch {
                     self.reset();
@@ -869,6 +874,8 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
                 let sdp = try await generateOfferAndSet(peerConnection: peerConnection, creatorProvider: session.contentCreator(of:), localRole: session.role);
                 self.connectRemoteSDPPublishers(session: session);
                 try await session.initiate(contents: sdp.contents, bundle: sdp.bundle);
+                isLocalSessionDescriptionSent = true
+                sendLocalCandidates();
             } catch {
                 self.reset();
             }
@@ -898,6 +905,7 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
     var audioSession: AudioSesion?;
     
     private func initiateWebRTC(iceServers: [RTCIceServer], offerMedia media: [Media]) throws {
+        logger.debug("intiating WebRTC with iceServers: \(iceServers)")
         self.currentConnection = VideoCallController.initiatePeerConnection(iceServers: iceServers, withDelegate: self);
         if self.currentConnection != nil {
             if media.contains(.audio) {
@@ -977,7 +985,7 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
     
     func reject() {
         guard let session = self.session else {
-            reset();
+            reset(reason: .cancel);
             return;
         }
         Task {
@@ -987,6 +995,20 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
     }
     
     private var localSessionDescription: SDP?;
+    private var _isLocalSessionDescriptionSent: Bool = false;
+    private let lock = UnfairLock();
+    private var isLocalSessionDescriptionSent: Bool {
+        get {
+            return lock.with {
+                return _isLocalSessionDescriptionSent;
+            }
+        }
+        set {
+            lock.with {
+                _isLocalSessionDescriptionSent = newValue
+            }
+        }
+    };
     private var remoteSessionDescription: SDP?;
     
     private let remoteSessionSemaphore = DispatchSemaphore(value: 1);
@@ -1000,7 +1022,7 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
         remoteSessionSemaphore.wait();
             
         if case let .transportAdd(candidate, contentName) = action {
-            if let idx = remoteSessionDescription?.contents.firstIndex(where: { $0.name == contentName }) {
+            if candidate.protocolType != .tcp, let idx = remoteSessionDescription?.contents.firstIndex(where: { $0.name == contentName }) {
                 logger.debug("adding remote ice candidate: \(candidate.toSDP())")
                 peerConnection.add(RTCIceCandidate(sdp: candidate.toSDP(), sdpMLineIndex: Int32(idx), sdpMid: contentName), completionHandler: { err in
                     guard let err else {
@@ -1023,7 +1045,16 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
         let prevLocalSDP = self.localSessionDescription;
         Task {
             do {
-                if let localSDP = try await setRemoteDescription(newSDP, peerConnection: peerConnection, session: session) {
+                if let localSDP = try await Task(operation: {
+                    defer {
+                        self.remoteSessionSemaphore.signal();
+                    }
+                    do {
+                        return try await setRemoteDescription(newSDP, peerConnection: peerConnection, session: session)
+                    } catch {
+                        throw error;
+                    }
+                }).value {
                     if let prevLocalSDP {
                         let changes = localSDP.diff(from: prevLocalSDP);
                         if let addSDP = changes[.add] {
@@ -1038,12 +1069,14 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
                         Task {
                             try? await session.accept(contents: localSDP.contents, bundle: localSDP.bundle)
                         }
-                        Task {
-                            try await Task.sleep(nanoseconds: 100 * 1000 * 1000);
-                            sendLocalCandidates();
-                        }
+                        isLocalSessionDescriptionSent = true
+//                        Task {
+//                            try await Task.sleep(nanoseconds: 100 * 1000 * 1000);
+                        sendLocalCandidates();
+//                        }
                     }
                 }
+                sendLocalCandidates();
             } catch {
                 self.logger.debug("error setting remote description: \(error)");
                 self.reset();
@@ -1096,6 +1129,7 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
     
     private func setLocalDescription(peerConnection: RTCPeerConnection, sdp localSDP: RTCSessionDescription, creatorProvider: @escaping (String)->Jingle.Content.Creator, localRole: Jingle.Content.Creator) async throws -> SDP {
         logger.debug("\(self), setting local description: \(localSDP.sdp)");
+        isLocalSessionDescriptionSent = false;
         try await peerConnection.setLocalDescription(localSDP);
         guard let (sdp, _) = SDP.parse(sdpString: localSDP.sdp, creatorProvider: creatorProvider, localRole: localRole) else {
             throw XMPPError(condition: .not_acceptable);
@@ -1263,6 +1297,7 @@ extension Call: RTCPeerConnectionDelegate {
     }
         
     func peerConnection(_ peerConnection: RTCPeerConnection, didGenerate candidate: RTCIceCandidate) {
+        logger.debug("generated local ice candidate: \(candidate.sdp)")
         JingleManager.instance.queue.async {
             self.localCandidates.append(candidate);
             self.sendLocalCandidates();
@@ -1270,27 +1305,25 @@ extension Call: RTCPeerConnectionDelegate {
     }
         
     private func sendLocalCandidates() {
-        guard let session = self.session, !localCandidates.isEmpty else {
-            return;
-        }
-        
-        for candidate in localCandidates {
-            Task {
-                try? await sendLocalCandidate(candidate, session: session)
+        JingleManager.instance.queue.async {
+            guard let session = self.session, self.isLocalSessionDescriptionSent, let localSessionDescription = self.localSessionDescription else {
+                return;
             }
+            for candidate in self.localCandidates {
+                Task {
+                    try? await self.sendLocalCandidate(candidate, session: session, localSessionDescription: localSessionDescription);
+                }
+            }
+            self.localCandidates = [];
         }
-        localCandidates = [];
     }
         
-    private func sendLocalCandidate(_ candidate: RTCIceCandidate, session: JingleManager.Session) async throws {
+    private func sendLocalCandidate(_ candidate: RTCIceCandidate, session: JingleManager.Session, localSessionDescription sdp: SDP) async throws {
         guard let jingleCandidate = Jingle.Transport.ICEUDPTransport.Candidate(fromSDP: candidate.sdp) else {
             throw XMPPError(condition: .not_acceptable);
         }
         guard let mid = candidate.sdpMid else {
             throw XMPPError(condition: .not_acceptable);
-        }
-        guard let sdp = self.localSessionDescription else {
-            throw XMPPError(condition: .unexpected_request);
         }
         
         logger.debug("sending local ice candidate: \(sdp)")

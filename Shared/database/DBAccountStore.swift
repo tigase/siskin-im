@@ -83,7 +83,7 @@ public class DBAccountStore {
     static func list() throws -> [Account] {
         return try Database.main.reader({ reader in
             try reader.select(query: .accountsList, params: [:]).mapAll({ cursor in
-                return Account(uuid: UUID(uuidString: cursor.string(for: "uuid")!), name: cursor.bareJid(for: "name")!, enabled: cursor.bool(for: "enabled"), serverEndpoint: cursor.object(for: "server_endpoint"), lastEndpoint: cursor.object(for: "last_endpoint"), rosterVersion: cursor.string(for: "roster_version"), statusMessage: cursor.string(for: "status_message"), push: cursor.object(for: "push")!, additional: cursor.object(for: "additional")!);
+                return Account(uuid: UUID(uuidString: cursor.string(for: "uuid")!)!, name: cursor.bareJid(for: "name")!, enabled: cursor.bool(for: "enabled"), serverEndpoint: cursor.object(for: "server_endpoint"), lastEndpoint: cursor.object(for: "last_endpoint"), rosterVersion: cursor.string(for: "roster_version"), statusMessage: cursor.string(for: "status_message"), push: cursor.object(for: "push")!, additional: cursor.object(for: "additional")!);
             })
         })
     }
