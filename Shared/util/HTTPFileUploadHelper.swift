@@ -33,7 +33,7 @@ open class HTTPFileUploadHelper {
         guard let component = components.first(where: { $0.maxSize > size }) else {
             throw ShareError.fileTooBig;
         }
-
+        
         let slot = try await httpUploadModule.requestUploadSlot(componentJid: component.jid, filename: filename, size: size, contentType: mimeType);
         
         var request = URLRequest(url: slot.putUri);
@@ -41,31 +41,19 @@ open class HTTPFileUploadHelper {
             request.addValue(v, forHTTPHeaderField: k);
         });
         request.httpMethod = "PUT";
-        request.httpBodyStream = InputStream(data: data);
         request.addValue(String(size), forHTTPHeaderField: "Content-Length");
         request.addValue(mimeType, forHTTPHeaderField: "Content-Type");
         let session = URLSession(configuration: URLSessionConfiguration.default, delegate: delegate, delegateQueue: OperationQueue.main);
-        return try await withUnsafeThrowingContinuation({ continuation in
-            session.dataTask(with: request) { (data, response, error) in
-                let code = (response as? HTTPURLResponse)?.statusCode ?? 500;
-                guard error == nil && (code == 200 || code == 201) else {
-                    logger.error("upload of file \(filename) failed, error: \(error as Any), response: \(response as Any)");
-                    continuation.resume(throwing: ShareError.httpError);
-                    return;
-                }
-                if code == 200 {
-                    continuation.resume(throwing: ShareError.invalidResponseCode(url: slot.getUri));
-                } else {
-                    continuation.resume(returning: slot.getUri);
-                }
-            }.resume()
-        })
+        let (_, response) = try await session.upload(for: request, from: data);
+        let code = (response as? HTTPURLResponse)?.statusCode ?? 500;
+        switch code {
+        case 200, 201:
+            return slot.getUri
+        default:
+            throw ShareError.httpError;
+        }
     }
     
-//    public enum UploadResult {
-//        case success(url: URL, filesize: Int, mimeType: String?)
-//        case failure(ShareError)
-//    }
 }
 
 public struct FileUpload {
