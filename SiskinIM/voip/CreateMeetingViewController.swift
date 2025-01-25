@@ -130,7 +130,7 @@ class CreateMeetingViewController: MultiContactSelectionViewController {
                     try await manager.reportOutgoingCall(Meet(client: client, jid: meetJid.bareJid, sid: UUID().uuidString));
                     for jid in participants {
                         Task {
-                            try await client.module(.meet).sendMessageInitiation(action: .propose(id: UUID().uuidString, meetJid: meetJid, media: [.audio,.video]), to: jid.jid());
+                            try? await client.module(.meet).sendMessageInitiation(action: .propose(id: UUID().uuidString, meetJid: meetJid, media: [.audio,.video]), to: jid.jid());
                         }
                     }
                 } catch {

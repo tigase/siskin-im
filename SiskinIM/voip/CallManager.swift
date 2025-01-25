@@ -683,14 +683,14 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
              self.localVideoSource = nil;
              self.delegate?.callDidEnd(self);
              Task {
-                 _ = try await self.session?.terminate();
+                 _ = try? await self.session?.terminate();
              }
              self.session = nil;
              self.delegate = nil;
              
              for session in self.establishingSessions.rejectAll() {
                  Task {
-                     try await session.terminate();
+                     try? await session.terminate();
 
                  }
              }
@@ -794,19 +794,19 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
                     let sdp = try await generateOfferAndSet(peerConnection: peerConnection, creatorProvider: { _ in Jingle.Content.Creator.initiator }, localRole: .initiator);
                     let sessions = withJingle.compactMap({ jid -> JingleManager.Session? in
                         let session = JingleManager.instance.open(for: client, with: jid, sid: self.sid, role: .initiator, initiationType: .iq);
-                        session.$state.removeDuplicates().sink(receiveValue: { state in
+                        session.$state.removeDuplicates().receive(on: DispatchQueue.main).sink(receiveValue: { state in
                             switch state {
                             case .accepted:
                                 Task {
                                     guard self.session == nil else {
-                                        try await session.terminate();
+                                        try? await session.terminate();
                                         return;
                                     }
                                     
                                     do {
                                         for sess in try self.establishingSessions.accepted(session: session) {
                                             Task {
-                                                try await sess.terminate();
+                                                try? await sess.terminate();
                                             }
                                         }
                                         
@@ -981,7 +981,7 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
             return;
         }
         Task {
-            try await session.decline();
+            try? await session.decline();
         }
         reset();
     }
@@ -1001,9 +1001,15 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
             
         if case let .transportAdd(candidate, contentName) = action {
             if let idx = remoteSessionDescription?.contents.firstIndex(where: { $0.name == contentName }) {
-                peerConnection.add(RTCIceCandidate(sdp: candidate.toSDP(), sdpMLineIndex: Int32(idx), sdpMid: contentName), completionHandler: { _ in });
-                remoteSessionSemaphore.signal();
+                logger.debug("adding remote ice candidate: \(candidate.toSDP())")
+                peerConnection.add(RTCIceCandidate(sdp: candidate.toSDP(), sdpMLineIndex: Int32(idx), sdpMid: contentName), completionHandler: { err in
+                    guard let err else {
+                        return;
+                    }
+                    self.logger.error("failed to add ice candidate \(candidate.toSDP()) with error \(err.localizedDescription)")
+                });
             }
+            remoteSessionSemaphore.signal();
             return;
         }
             
@@ -1018,7 +1024,7 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
         Task {
             do {
                 if let localSDP = try await setRemoteDescription(newSDP, peerConnection: peerConnection, session: session) {
-                    if let prevLocalSDP = prevLocalSDP {
+                    if let prevLocalSDP {
                         let changes = localSDP.diff(from: prevLocalSDP);
                         if let addSDP = changes[.add] {
                             Task {
@@ -1030,7 +1036,7 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
                         }
                     } else {
                         Task {
-                            try await session.accept(contents: localSDP.contents, bundle: localSDP.bundle)
+                            try? await session.accept(contents: localSDP.contents, bundle: localSDP.bundle)
                         }
                         Task {
                             try await Task.sleep(nanoseconds: 100 * 1000 * 1000);
@@ -1039,7 +1045,7 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
                     }
                 }
             } catch {
-                self.logger.error("error setting remote description: \(error)");
+                self.logger.debug("error setting remote description: \(error)");
                 self.reset();
             }
         }
@@ -1065,8 +1071,9 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
     }
     
     private func setRemoteDescription(_ remoteDescription: SDP, peerConnection: RTCPeerConnection, session: JingleSession) async throws -> SDP? {
-        logger.debug("\(self), setting remote description: \(remoteDescription.toString(withSid: "", localRole: session.role, direction: .incoming))");
-        try await peerConnection.setRemoteDescription(RTCSessionDescription(type: self.direction == .incoming ? .offer : .answer, sdp: remoteDescription.toString(withSid: self.webrtcSid!, localRole: session.role, direction: .incoming)));
+        let descr = remoteDescription.toString(withSid: self.webrtcSid!, localRole: session.role, direction: .incoming);
+        logger.debug("\(self), setting remote description: \(descr)")
+        try await peerConnection.setRemoteDescription(RTCSessionDescription(type: self.direction == .incoming ? .offer : .answer, sdp: descr));
         self.remoteSessionDescription = remoteDescription;
         if peerConnection.signalingState == .haveRemoteOffer {
             return try await self.generateAnswerAndSet(peerConnection: peerConnection, creatorProvider: session.contentCreator(of:), localRole: session.role);
@@ -1100,6 +1107,17 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
     func changeState(_ state: State) {
         self.state = state;
         self.delegate?.callStateChanged(self);
+    }
+    
+    func muted(value: Bool) {
+        self.localAudioTrack?.isEnabled = !value;
+        self.localVideoTrack?.isEnabled = !value;
+        let infos: [Jingle.SessionInfo] = self.localSessionDescription?.contents.filter({ $0.description?.media == "audio" || $0.description?.media == "video" }).map({ $0.name }).map({ value ? .mute(contentName: $0) : .unmute(contentName: $0) }) ?? [];
+        if !infos.isEmpty {
+            Task {
+                try? await session?.sessionInfo(infos);
+            }
+        }
     }
     
     func switchCameraDevice() {
@@ -1227,6 +1245,7 @@ extension Call: RTCPeerConnectionDelegate {
     }
         
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceConnectionState) {
+        logger.debug("changed ice connection state to \(newState.name)")
         switch newState {
         case .disconnected:
             break;
@@ -1257,7 +1276,7 @@ extension Call: RTCPeerConnectionDelegate {
         
         for candidate in localCandidates {
             Task {
-                try await sendLocalCandidate(candidate, session: session)
+                try? await sendLocalCandidate(candidate, session: session)
             }
         }
         localCandidates = [];
@@ -1273,6 +1292,8 @@ extension Call: RTCPeerConnectionDelegate {
         guard let sdp = self.localSessionDescription else {
             throw XMPPError(condition: .unexpected_request);
         }
+        
+        logger.debug("sending local ice candidate: \(sdp)")
         
         guard let content = sdp.contents.first(where: { c -> Bool in
             return c.name == mid;
@@ -1329,6 +1350,14 @@ extension Call: RTCPeerConnectionDelegate {
             }
         }
     }
+    
+    func peerConnection(_ peerConnection: RTCPeerConnection, didChangeLocalCandidate local: RTCIceCandidate, remoteCandidate remote: RTCIceCandidate, lastReceivedMs lastDataReceivedMs: Int32, changeReason reason: String) {
+        logger.debug("changing ice connection candidates, local: \(local.sdp), remote: \(remote.sdp), reason: \(reason)")
+    }
+    
+    func peerConnection(_ peerConnection: RTCPeerConnection, didFailToGatherIceCandidate event: RTCIceCandidateErrorEvent) {
+        logger.debug("failed to gather ice candidate: \(event.errorCode) \(event.errorText) \(event.address):\(event.port) \(event.url)")
+    }
 }
 
 extension Call {
@@ -1341,7 +1370,7 @@ extension Call {
     
     func addRemoteCandidate(_ candidate: RTCIceCandidate) {
         DispatchQueue.main.async {
-        guard let peerConnection = self.currentConnection else {
+            guard let peerConnection = self.currentConnection else {
                 return;
             }
             peerConnection.add(candidate, completionHandler: { _ in });
@@ -1349,4 +1378,29 @@ extension Call {
     }
     
     
+}
+
+extension RTCIceConnectionState {
+    var name: String {
+        switch self {
+        case .new:
+            return "new"
+        case .checking:
+            return "checking"
+        case .connected:
+            return "connected"
+        case .completed:
+            return "completed"
+        case .failed:
+            return "failed"
+        case .disconnected:
+            return "disconnected"
+        case .closed:
+            return "closed"
+        case .count:
+            return "count";
+        @unknown default:
+            return "unknown"
+        }
+    }
 }

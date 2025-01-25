@@ -103,6 +103,8 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         return "Room(account: \(account), jid: \(jid))";
     }
     
+    public var allowedPM: RoomConfig.AllowPM = .anyone;
+    
     @Published
     public var roomFeatures: Set<Feature> = [] {
         didSet {

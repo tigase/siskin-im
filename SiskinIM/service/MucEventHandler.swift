@@ -32,37 +32,54 @@ class MucEventHandler: XmppServiceExtension {
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "MucEventHandler");
     
     func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
-        client.$state.combineLatest(XmppService.instance.$isFetch).sink(receiveValue: { [weak client] state, isFetch in
-            guard let client = client, case .connected(let resumed) = state, !resumed, !isFetch else {
+        client.$state.filter({
+            if case .connected(let resumed) = $0 {
+                return !resumed
+            } else {
+                return false;
+            }
+        }).sink(receiveValue: { [weak client] state in
+            guard let client = client else {
                 return;
             }
             client.module(.muc).roomManager.rooms(for: client).forEach { (room) in
                 Task {
                     DBChatMarkersStore.instance.awaitingSync(for: room as! Room);
-                    let info = try await client.module(.disco).info(for: JID(room.jid));
-                    let mamVersions = info.features.compactMap(MessageArchiveManagementModule.Version.init(rawValue:));
-                    (room as! Room).roomFeatures = Set(info.features.compactMap(Room.Feature.init(rawValue:)));
-                    if let timestamp = (room as? Room)?.timestamp {
-                        if !mamVersions.isEmpty {
-                            let result = try await room.rejoin(fetchHistory: .skip);
-                            self.logger.info("\(client.userBareJid) joined room \(room.jid) with result \(result), MAM versions: \(mamVersions) since: \(timestamp)")
-                            switch result {
-                            case .created(let room), .joined(let room):
-                                guard let client = room.context as? XMPPClient else {
-                                    return;
+                    do {
+                        let info = try await client.module(.disco).info(for: JID(room.jid));
+                        let mamVersions = info.features.compactMap(MessageArchiveManagementModule.Version.init(rawValue:));
+                        (room as! Room).roomFeatures = Set(info.features.compactMap(Room.Feature.init(rawValue:)));
+                        let config = RoomConfig(form: info.form);
+                        if let allowPM = config.allowPM {
+                            (room as! Room).allowedPM = allowPM;
+                        } else {
+                            (room as! Room).allowedPM = .none;
+                        }
+                        if let timestamp = (room as? Room)?.timestamp {
+                            if !mamVersions.isEmpty {
+                                let result = try await room.rejoin(fetchHistory: .skip);
+                                self.logger.info("\(client.userBareJid) joined room \(room.jid) with result \(result), MAM versions: \(mamVersions) since: \(timestamp)")
+                                switch result {
+                                case .created(let room), .joined(let room):
+                                    guard let client = room.context as? XMPPClient else {
+                                        return;
+                                    }
+                                    Task {
+                                        try await MessageEventHandler.syncMessages(for: client, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: JID(room.jid), since: timestamp);
+                                    }
                                 }
-                                Task {
-                                    try await MessageEventHandler.syncMessages(for: client, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: JID(room.jid), since: timestamp);
-                                }
+                            } else {
+                                DBChatMarkersStore.instance.syncCompleted(forAccount: room.account, with: room.jid);
+                                let result = try await room.rejoin(fetchHistory: .from(timestamp))
                             }
                         } else {
                             DBChatMarkersStore.instance.syncCompleted(forAccount: room.account, with: room.jid);
-                            let result = try await room.rejoin(fetchHistory: .from(timestamp))
+                            let result = try await room.rejoin(fetchHistory: .initial);
+                            self.logger.info("\(client.userBareJid) joined room \(room.jid) with result \(result), MAM versions: \(mamVersions), no sync 2")
                         }
-                    } else {
+                    } catch {
+                        self.logger.error("join to room \(room.jid) failed: \(error)")
                         DBChatMarkersStore.instance.syncCompleted(forAccount: room.account, with: room.jid);
-                        let result = try await room.rejoin(fetchHistory: .initial);
-                        self.logger.info("\(client.userBareJid) joined room \(room.jid) with result \(result), MAM versions: \(mamVersions), no sync 2")
                     }
                 }
             }
@@ -136,7 +153,8 @@ class MucEventHandler: XmppServiceExtension {
     }
             
     public func updateRoomName(room: Room) async throws {
-        let info = try await room.context!.module(.disco).info(for: room.jid.jid());
+        guard let context = room.context else { return }
+        let info = try await context.module(.disco).info(for: room.jid.jid());
         let newName = info.identities.first(where: { (identity) -> Bool in
             return identity.category == "conference";
         })?.name?.trimmingCharacters(in: .whitespacesAndNewlines);

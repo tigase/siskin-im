@@ -24,7 +24,7 @@ import Combine
 import Martin
 
 // Dummy implementation - it would be better to replace it with some better feature discovery than on each reconnection
-class HttpFileUploadModule: Martin.HttpFileUploadModule {
+class HttpFileUploadModule: Martin.HttpFileUploadModule, @unchecked Sendable {
     
     @Published
     var isAvailable: Bool = true;

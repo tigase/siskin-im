@@ -160,7 +160,7 @@ class JingleManager: JingleSessionManager {
                 do {
                     try await callManager.reportIncomingCall(call);
                 } catch {
-                    try await session.decline();
+                    try? await session.decline();
                 }
             }
         case .retract(let id):
@@ -179,7 +179,7 @@ class JingleManager: JingleSessionManager {
     
     func sessionInitiated(for context: Context, with jid: JID, sid: String, contents: [Jingle.Content], bundle: Jingle.Bundle?) throws {
         guard CallManager.isAvailable, let content = contents.first, let _ = content.description as? Jingle.RTP.Description else {
-            return;
+            throw XMPPError(condition: .bad_request, message: "Unsupported content type");
         }
 
         let sdp = SDP(contents: contents, bundle: bundle);
@@ -202,7 +202,7 @@ class JingleManager: JingleSessionManager {
                 do {
                     try await callManager.reportIncomingCall(call);
                 } catch {
-                    try await session.terminate();
+                    try? await session.terminate();
                 }
             }
         }

@@ -134,12 +134,9 @@ open class XmppService {
     private func accountChanged(event: AccountManager.Event) {
         switch event {
         case .enabled(let account, let reconnect):
-            guard reconnect else {
-                return;
-            }
             if let client = self.client(for: account.name) {
                 // if client exists and is connected, then reconnect it..
-                if client.state != .disconnected() {
+                if client.state != .disconnected() && reconnect {
                     Task {
                         try await  client.disconnect();
                     }
@@ -154,9 +151,9 @@ open class XmppService {
                 let prevState = client.state;
                 Task {
                     try await client.disconnect();
-                }
-                if prevState == .disconnected() && client.state == .disconnected() {
-                    self.unregisterClient(client);
+                    if prevState == .disconnected() {
+                        self.unregisterClient(client);
+                    }
                 }
             }
             self.dnsSrvResolverCache.store(for: account.name.domain, result: nil);
@@ -259,6 +256,10 @@ open class XmppService {
         
     private class ClientCancellables {
         var cancellables: Set<AnyCancellable> = [];
+        
+        deinit {
+            cancellables.forEach({ $0.cancel() })
+        }
     }
 
     private var clientCancellables: [BareJID:ClientCancellables] = [:];
@@ -268,11 +269,15 @@ open class XmppService {
         defer {
             DBChatStore.instance.resetChatStates(for: accountName);
         }
-        self.queue.sync {
+        guard self.queue.sync(execute: {
             let active = AccountManager.account(for: accountName)?.enabled
             if !(active ?? false) {
                 self.unregisterClient(client, removed: active == nil);
+                return false;
             }
+            return true;
+        }) else {
+            return;
         }
         
         
