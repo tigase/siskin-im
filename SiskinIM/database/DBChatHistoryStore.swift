@@ -22,7 +22,7 @@
 
 import Foundation
 import Martin
-import TigaseSQLite3
+@preconcurrency import TigaseSQLite3
 import TigaseLogging
 import Shared
 import Combine
@@ -72,12 +72,13 @@ extension Query {
     static let messagesCountUnsent = Query("SELECT count(id) FROM chat_history WHERE state = \(ConversationEntryState.outgoing(.unsent).rawValue)");
 }
 
+@preconcurrency
 class DBChatHistoryStore {
 
     static let MESSAGE_NEW = Notification.Name("messageAdded");
     static let MESSAGE_UPDATED = Notification.Name("messageUpdated");
     static let MESSAGE_REMOVED = Notification.Name("messageRemoved");
-    static var instance: DBChatHistoryStore = DBChatHistoryStore.init();
+    static let instance: DBChatHistoryStore = DBChatHistoryStore.init();
     
     static func convertToAttachments() {
         let diskCacheUrl = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!.appendingPathComponent(Bundle.main.bundleIdentifier!).appendingPathComponent("download", isDirectory: true);
@@ -193,7 +194,7 @@ class DBChatHistoryStore {
         
         private var accountLocks: [BareJID: AccountLock] = [:];
         
-        func execute(for jid: BareJID, body: @escaping () async -> Void) {
+        func execute(for jid: BareJID, body: sending @escaping () async -> Void) {
             lock.lock();
             let accountLock = ensureAccountLock(for: jid);
             accountLock.counter = accountLock.counter + 1;
@@ -222,15 +223,16 @@ class DBChatHistoryStore {
             accountLocks.removeValue(forKey: jid);
         }
                                     
-        private class AccountLock {
+        private class AccountLock: @unchecked Sendable {
             var counter: Int = 0;
             let semaphore = DispatchSemaphore(value: 1);
             
-            func execute(_ body: @escaping () async -> Void) {
+            func execute(_ body: sending @escaping () async -> Void) {
                 semaphore.wait();
+                let semaphore = self.semaphore;
                 Task {
                     await body();
-                    self.semaphore.signal();
+                    semaphore.signal();
                 };
             }
         }
@@ -501,9 +503,8 @@ class DBChatHistoryStore {
                 let entry = ConversationEntry(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, payload: payload, options: options);
 
                 if let activityPayload = LastChatActivityType.from(payload) {
-                    DBChatStore.instance.newActivity(.init(timestamp: timestamp, sender: sender, payload: activityPayload), isUnread: state.isUnread, for: conversation.account, with: conversation.jid, completionHandler: {
-                        NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: entry);
-                    })
+                    DBChatStore.instance.newActivity(.init(timestamp: timestamp, sender: sender, payload: activityPayload), isUnread: state.isUnread, for: conversation.account, with: conversation.jid);
+                    NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: entry);
                 }
                 
                 self.events.send(.added(entry));
@@ -555,8 +556,7 @@ class DBChatHistoryStore {
                 markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)], before: markAsReadTimestamp.addingTimeInterval(0.1), onlyLocally: true));
 
                 let newMessageState: ConversationEntryState = (oldItem.state.direction == .incoming) ? (oldItem.state.isUnread ? .incoming(.displayed) : .incoming(newState.isUnread ? .received : .displayed)) : (.outgoing(.sent));
-                DBChatStore.instance.newActivity(.init(timestamp: oldItem.timestamp, sender: sender, payload: .message(message: data)), isUnread: newMessageState.isUnread, for: conversation.account, with: conversation.jid, completionHandler: {
-                })
+                DBChatStore.instance.newActivity(.init(timestamp: oldItem.timestamp, sender: sender, payload: .message(message: data)), isUnread: newMessageState.isUnread, for: conversation.account, with: conversation.jid)
 
                 logger.debug("correcing previews for master id: \(itemId)");
                 self.itemUpdated(withId: itemId, for: conversation);
@@ -605,9 +605,8 @@ class DBChatHistoryStore {
 
             // what should be sent to "newMessage" how to reatract message from there??
             let activity: LastChatActivity = .init(timestamp: oldItem.timestamp, sender: sender, payload: .retraction);
-            DBChatStore.instance.newActivity(activity, isUnread: false, for: conversation.account, with: conversation.jid, completionHandler: {
-                self.logger.debug("chat store state updated with message retraction for \(itemId)");
-            })
+            DBChatStore.instance.newActivity(activity, isUnread: false, for: conversation.account, with: conversation.jid);
+            self.logger.debug("chat store state updated with message retraction for \(itemId)");
             if oldItem.state.isUnread {
                 DBChatStore.instance.markAsRead(for: conversation.account, with: conversation.jid, count: 1);
             }

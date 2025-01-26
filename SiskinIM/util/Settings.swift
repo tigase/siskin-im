@@ -212,7 +212,10 @@ extension UserDefaults {
 
 import SwiftUI
 
-class SettingsStore: ObservableObject {
+extension UserDefaults: @unchecked Sendable {}
+extension ReferenceWritableKeyPath: @unchecked Sendable {}
+
+class SettingsStore: ObservableObject, @unchecked Sendable {
     @UserDefaultsSetting(key: "defaultAccount")
     var defaultAccount: String?;
     @UserDefaultsOptionalRawSetting(key: "StatusType", defaultValue: nil)
@@ -308,7 +311,10 @@ class SettingsStore: ObservableObject {
     private var cancellables: Set<AnyCancellable> = [];
     
     fileprivate init() {
-        appIcon = AppIcon(rawValue: UIApplication.shared.alternateIconName ?? "") ?? .default;
+        appIcon = .default;
+        Task {
+            appIcon = AppIcon(rawValue: await UIApplication.shared.alternateIconName ?? "") ?? .default
+        }
         $sharingViaHttpUpload.sink(receiveValue: { value in
             SettingsStore.sharedDefaults.setValue(value, forKey: "SharingViaHttpUpload");
         }).store(in: &cancellables);

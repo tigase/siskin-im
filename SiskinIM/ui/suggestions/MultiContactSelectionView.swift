@@ -248,6 +248,7 @@ class MultiContactSelectionViewController: UITableViewController, UISearchContro
     
 }
 
+@MainActor
 protocol MultiContactSearchControllerDelegate: AnyObject {
     
     var selectedItems: [MultiContactSelectionViewController.Item] { get }

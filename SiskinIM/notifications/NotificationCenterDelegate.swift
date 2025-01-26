@@ -26,48 +26,49 @@ import Martin
 import UserNotifications
 import TigaseLogging
 
+@preconcurrency 
 class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
 
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "NotificationCenterDelegate");
     
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
         switch NotificationCategory.from(identifier: notification.request.content.categoryIdentifier) {
         case .MESSAGE:
             let account = notification.request.content.userInfo["account"] as? String;
             let sender = notification.request.content.userInfo["sender"] as? String;
-            if (AppDelegate.isChatVisible(account: account, with: sender) && XmppService.instance.applicationState == .active) {
-                completionHandler([]);
+            if (await AppDelegate.isChatVisible(account: account, with: sender) && XmppService.instance.applicationState == .active) {
+                return []
             } else {
-                completionHandler([.banner, .list, .sound]);
+               return [.banner, .list, .sound];
             }
         default:
-            completionHandler([.banner, .list, .sound]);
+            return [.banner, .list, .sound];
         }
     }
     
-    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
         let content = response.notification.request.content;
          
         switch NotificationCategory.from(identifier: response.notification.request.content.categoryIdentifier) {
         case .ERROR:
-            didReceive(error: content, withCompletionHandler: completionHandler);
+            await didReceive(error: content);
         case .SUBSCRIPTION_REQUEST:
-            didReceive(subscriptionRequest: content, withCompletionHandler: completionHandler);
+            await didReceive(subscriptionRequest: content);
         case .MUC_ROOM_INVITATION:
-            didReceive(mucInvitation: content, withCompletionHandler: completionHandler);
+            await didReceive(mucInvitation: content);
         case .MESSAGE:
-            didReceive(messageResponse: response, withCompletionHandler: completionHandler);
+            await didReceive(messageResponse: response);
         case .CALL:
-            didReceive(call: content, withCompletionHandler: completionHandler);
+            await didReceive(call: content);
         case .UNSENT_MESSAGES:
-            completionHandler();
+            break;
         case .UNKNOWN:
             self.logger.error("received unknown notification category: \( response.notification.request.content.categoryIdentifier)");
-            completionHandler();
+            break
         }
      }
     
+    @MainActor
     func topController() -> UIViewController? {
         var controler: UIViewController? = UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.rootViewController;
         while (controler?.presentedViewController != nil) {
@@ -77,7 +78,8 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         return controler;
     }
 
-    func didReceive(error content: UNNotificationContent, withCompletionHandler completionHandler: @escaping () -> Void) {
+    @MainActor
+    func didReceive(error content: UNNotificationContent) async {
         let userInfo = content.userInfo;
             if userInfo["cert-name"] != nil {
                 let accountJid = BareJID(userInfo["account"] as! String);
@@ -111,10 +113,10 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
                                 
                 topController()?.present(alert, animated: true, completion: nil);
             }
-        completionHandler();
     }
     
-    func didReceive(subscriptionRequest content: UNNotificationContent, withCompletionHandler completionHandler: @escaping () -> Void) {
+    @MainActor
+    func didReceive(subscriptionRequest content: UNNotificationContent) async {
         let userInfo = content.userInfo;
         let senderJid = BareJID(userInfo["sender"] as! String);
         let accountJid = BareJID(userInfo["account"] as! String);
@@ -181,10 +183,10 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         }
         
         topController()?.present(alert, animated: true, completion: nil);
-        completionHandler();
     }
-    
-    func didReceive(mucInvitation content: UNNotificationContent, withCompletionHandler completionHandler: @escaping () -> Void) {
+ 
+    @MainActor
+    func didReceive(mucInvitation content: UNNotificationContent) async {
         guard let account = BareJID(content.userInfo["account"] as? String), let roomJid: BareJID = BareJID(content.userInfo["roomJid"] as? String) else {
             return;
         }
@@ -203,13 +205,12 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         let navController = UINavigationController(rootViewController: controller);
         navController.modalPresentationStyle = .formSheet;
         topController()?.present(navController, animated: true, completion: nil);
-        completionHandler();
     }
-    
-    func didReceive(messageResponse response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+
+    @MainActor
+    func didReceive(messageResponse response: UNNotificationResponse) async {
         let userInfo = response.notification.request.content.userInfo;
         guard let accountJid = BareJID(userInfo["account"] as? String) else {
-            completionHandler();
             return;
         }
         
@@ -225,16 +226,19 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
                 await NotificationManager.instance.updateApplicationIconBadgeNumber();
             }
         } else {
-            openChatView(on: accountJid, with: senderJid, completionHandler: completionHandler);
+            await openChatView(on: accountJid, with: senderJid);
         }
     }
     
-    private func openChatView(on account: BareJID, with jid: BareJID, completionHandler: @escaping ()->Void) {
+    @MainActor
+    private func openChatView(on account: BareJID, with jid: BareJID) async {
         var topController = UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.rootViewController;
         while (topController?.presentedViewController != nil) {
             if let tmp = topController?.presentedViewController, tmp.modalPresentationStyle != .none {
                 tmp.dismiss(animated: true, completion: {
-                    self.openChatView(on: account, with: jid, completionHandler: completionHandler);
+                    Task {
+                        await self.openChatView(on: account, with: jid);
+                    }
                 });
                 return;
             } else {
@@ -244,7 +248,6 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         
         if topController != nil {
             guard let conversation = DBChatStore.instance.conversation(for: account, with: jid), let controller = viewController(for: conversation) else {
-                completionHandler();
                 return;
             }
             
@@ -278,6 +281,7 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         }
     }
     
+    @MainActor
     private func viewController(for item: Conversation) -> UINavigationController? {
         switch item {
         case is Room:
@@ -291,7 +295,8 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         }
     }
     
-    func didReceive(call content: UNNotificationContent, withCompletionHandler completionHandler: @escaping () -> Void) {
+    @MainActor
+    func didReceive(call content: UNNotificationContent) async {
         #if targetEnvironment(simulator)
         #else
         let userInfo = content.userInfo;
@@ -331,6 +336,5 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
             topController()?.present(alert, animated: true, completion: nil);
         }
         #endif
-        completionHandler();
     }
 }

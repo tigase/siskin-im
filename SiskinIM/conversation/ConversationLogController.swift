@@ -34,7 +34,11 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
     
     let dataSource = ConversationDataSource();
 
-    var conversation: Conversation!;
+    var conversation: Conversation! {
+        didSet {
+            dataSource.conversation = conversation;
+        }
+    }
         
     weak var conversationLogDelegate: ConversationLogDelegate?;
 
@@ -447,6 +451,7 @@ extension ConversationLogController {
     }
 }
 
+@MainActor
 protocol ConversationLogDelegate: AnyObject {
  
     var navigationItem: UINavigationItem { get }

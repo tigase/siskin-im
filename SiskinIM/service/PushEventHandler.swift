@@ -25,6 +25,7 @@ import Combine
 import TigaseLogging
 import Shared
 
+@preconcurrency
 open class PushEventHandler: XmppServiceExtension {
     
     static let instance = PushEventHandler();

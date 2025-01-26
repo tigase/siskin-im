@@ -61,9 +61,13 @@ final class MeetEventHandler: XmppServiceExtension, @unchecked Sendable {
                 case .proceed(_):
                     break;
                 case .retract(let id):
-                    CallManager.instance?.endCall(on: client.userBareJid, sid: id);
+                    Task {
+                        await CallManager.instance?.endCall(on: client.userBareJid, sid: id);
+                    }
                 case .reject(let id):
-                    CallManager.instance?.endCall(on: client.userBareJid, sid: id);
+                    Task {
+                        await CallManager.instance?.endCall(on: client.userBareJid, sid: id);
+                    }
                 }
 
                 break;

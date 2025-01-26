@@ -21,7 +21,7 @@
 
 import Foundation
 import Martin
-import TigaseSQLite3
+@preconcurrency import TigaseSQLite3
 
 extension Query {
     static let markerFind = Query("SELECT type, timestamp FROM chat_markers WHERE account = :account AND jid = :jid AND sender_nick = :sender_nick AND sender_id = :sender_id AND sender_jid = :sender_jid");
@@ -30,6 +30,7 @@ extension Query {
     static let markersList = Query("SELECT sender_nick, sender_id, sender_jid, timestamp, type FROM chat_markers WHERE account = :account AND jid = :jid");
 }
 
+@preconcurrency 
 public class DBChatMarkersStore {
     
     public static let instance = DBChatMarkersStore();

@@ -22,13 +22,20 @@
 import Foundation
 import Combine
 
+@preconcurrency
 struct CurrentTimePublisher {
-    
-    private static var cancellable: Cancellable?;
-    public private(set) static var publisher: AnyPublisher<Date,Never> = {
-        let publisher = CurrentValueSubject<Date,Never>(Date());
-        cancellable = Timer.publish(every: 30, on: .main, in: .default).autoconnect().assign(to: \.value, on: publisher);
-        return publisher.eraseToAnyPublisher();
-    }();
 
+    public static var publisher: CurrentValueSubject<Date,Never> {
+        return instance.publisher;
+    }
+
+    private static let instance = CurrentTimePublisher();
+    
+    private let cancellable: Cancellable;
+    private let publisher: CurrentValueSubject<Date,Never>;
+    
+    init() {
+        publisher = CurrentValueSubject<Date,Never>(Date());
+        cancellable = Timer.publish(every: 30, on: .main, in: .default).autoconnect().assign(to: \.value, on: publisher);
+    }
 }

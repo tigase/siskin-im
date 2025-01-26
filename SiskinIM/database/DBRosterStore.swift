@@ -20,8 +20,8 @@
 //
 
 import Foundation
-import Martin
-import TigaseSQLite3
+@preconcurrency import Martin
+@preconcurrency import TigaseSQLite3
 import Shared
 
 extension Query {
@@ -31,7 +31,7 @@ extension Query {
     static let rosterFindItemsForAccount = Query("SELECT id, jid, name, subscription, ask, data FROM roster_items WHERE account = :account");
 }
 
-class AccountRoster {
+final class AccountRoster: @unchecked Sendable {
     
     private var roster = [JID: RosterItem]();
     
@@ -73,6 +73,7 @@ class AccountRoster {
     
 }
 
+@preconcurrency
 open class DBRosterStore: RosterStore {
     
     public typealias RosterItem = Siskin.RosterItem
@@ -224,6 +225,7 @@ open class DBRosterStore: RosterStore {
 
 }
 
+@preconcurrency
 public class RosterItem: Martin.RosterItemBase, Identifiable, Hashable {
     
     public static func == (lhs: RosterItem, rhs: RosterItem) -> Bool {

@@ -25,7 +25,7 @@ import UIKit
 import Combine
 import Shared
 
-public class ConversationBase: Martin.ConversationBase, Identifiable, Hashable, DisplayableIdWithKeyProtocol {
+public class ConversationBase: Martin.ConversationBase, Identifiable, Hashable, DisplayableIdWithKeyProtocol, @unchecked Sendable {
     
     public static func == (lhs: ConversationBase, rhs: ConversationBase) -> Bool {
         return lhs.id == rhs.id;
@@ -178,7 +178,7 @@ public class ConversationBase: Martin.ConversationBase, Identifiable, Hashable, 
     }
 }
 
-public class ConversationBaseWithOptions<Options: ChatOptionsProtocol>: ConversationBase {
+public class ConversationBaseWithOptions<Options: ChatOptionsProtocol>: ConversationBase, @unchecked Sendable {
     
     @Published
     private var _options: Options;

@@ -34,7 +34,11 @@ class BlockedContactsController: UITableViewController {
                             }
                         })
                     }
-                    return await group.reduce(into: [Item](), { $0.append(contentsOf: $1) })
+                    var results = [Item]();
+                    for await x in group {
+                        results.append(contentsOf: x)
+                    }
+                    return results;
                 })
                 await MainActor.run(body: {
                     self.allItems = newItems;

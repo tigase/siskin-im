@@ -25,7 +25,7 @@ import UIKit
 
 extension XMPPClient {
     
-    public func configure(for account: Account) {
+    public func configure(for account: Account) async {
         connectionConfiguration.credentials = account.credentials //.password(password: account.password, authenticationName: nil, cache: nil);
         connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
             if let acceptableCertificate = account.acceptedCertificate, acceptableCertificate.accepted, let fingerprint = acceptableCertificate.certificate.subject.fingerprints.first {
@@ -39,10 +39,12 @@ extension XMPPClient {
             }
             options.networkProcessorProviders.append(account.disableTLS13 ? SSLProcessorProvider(supportedTlsVersions: TLSVersion.TLSv1_2...TLSVersion.TLSv1_2) : SSLProcessorProvider());
         });
-        connectionConfiguration.resource = UIDevice.current.name;
-        module(.sasl2).deviceName = UIDevice.current.name;
-        module(.sasl2).deviceId = account.uuid.uuidString
-        module(.sasl2).software = Bundle.main.infoDictionary![kCFBundleNameKey as String] as? String;
+        await MainActor.run(body: {
+            connectionConfiguration.resource = UIDevice.current.name;
+            module(.sasl2).deviceName = UIDevice.current.name;
+            module(.sasl2).deviceId = account.uuid.uuidString
+            module(.sasl2).software = Bundle.main.infoDictionary![kCFBundleNameKey as String] as? String;
+        })
     }
     
 }

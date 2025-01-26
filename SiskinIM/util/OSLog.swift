@@ -23,7 +23,7 @@ import os
 
 extension OSLog {
     
-    private static var subsystem = Bundle.main.bundleIdentifier!;
+    private static let subsystem = Bundle.main.bundleIdentifier!;
     
     static let chatStore = OSLog(subsystem: subsystem, category: "ChatStore");
     static let chatHistorySync = OSLog(subsystem: subsystem, category: "mam-sync");

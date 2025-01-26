@@ -139,9 +139,13 @@ class ShareLocationController: UIViewController, MKMapViewDelegate, CLLocationMa
     }
     
     @available(iOS, obsoleted: 15, message: "We are using CLLocationButton now!")
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        if locationManager.authorizationStatus == .authorizedWhenInUse || locationManager.authorizationStatus == .authorizedAlways {
-            requestCurrentLocation();
+    nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        Task {
+            await MainActor.run {
+                if locationManager.authorizationStatus == .authorizedWhenInUse || locationManager.authorizationStatus == .authorizedAlways {
+                    requestCurrentLocation();
+                }
+            }
         }
     }
     
@@ -186,23 +190,31 @@ class ShareLocationController: UIViewController, MKMapViewDelegate, CLLocationMa
         }
     }
     
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        activityIndicator?.stopAnimating();
-        guard let location = locations.first else {
-            return;
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        Task {
+            await MainActor.run(body: {
+                activityIndicator?.stopAnimating();
+                guard let location = locations.first else {
+                    return;
+                }
+                
+                setCurrentLocation(location, zoomIn: true);
+            })
         }
-        
-        setCurrentLocation(location, zoomIn: true);
     }
     
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        activityIndicator?.stopAnimating();
-        if #available(iOS 15.0, *), let err = error as? CLError, err.code == .denied {
-            return;
+    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        Task {
+            await MainActor.run(body: {
+                activityIndicator?.stopAnimating();
+                if #available(iOS 15.0, *), let err = error as? CLError, err.code == .denied {
+                    return;
+                }
+                let alert = UIAlertController(title: NSLocalizedString("Failure", comment: "alert window title"), message: error.localizedDescription, preferredStyle: .alert);
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "action label"), style: .cancel, handler: nil));
+                self.present(alert, animated: true, completion: nil);
+            })
         }
-        let alert = UIAlertController(title: NSLocalizedString("Failure", comment: "alert window title"), message: error.localizedDescription, preferredStyle: .alert);
-        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "action label"), style: .cancel, handler: nil));
-        self.present(alert, animated: true, completion: nil);
     }
     
     func setCurrentLocation(placemark place: CLPlacemark, coordinate: CLLocationCoordinate2D, zoomIn: Bool) {

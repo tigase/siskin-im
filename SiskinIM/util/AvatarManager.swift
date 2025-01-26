@@ -31,6 +31,7 @@ struct AvatarWeakRef {
     weak var avatar: Avatar?;
 }
 
+@preconcurrency
 public class Avatar: Publisher {
 
     private struct AvatarSubscription: Subscription {
@@ -144,6 +145,7 @@ public class Avatar: Publisher {
 
 }
 
+@preconcurrency
 class AvatarManager {
 
     public static let instance = AvatarManager();

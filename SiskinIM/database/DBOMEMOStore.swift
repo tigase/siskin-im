@@ -22,7 +22,7 @@
 import Foundation
 import Martin
 import MartinOMEMO
-import TigaseSQLite3
+@preconcurrency import TigaseSQLite3
 import Shared
 import TigaseLogging
 
@@ -58,7 +58,8 @@ extension Query {
     static let omemoDevicesFind = Query("SELECT device_id FROM omemo_sessions WHERE account = :account AND name = :name");
     static let omemoDevicesFindActiveAndTrusted = Query("SELECT s.device_id FROM omemo_sessions s LEFT JOIN omemo_identities i ON s.account = i.account AND s.name = i.name AND s.device_id = i.device_id WHERE s.account = :account AND s.name = :name AND ((i.status >= 0 AND i.status % 2 = 0) OR i.status IS NULL)");
 }
-    
+  
+@preconcurrency
 class DBOMEMOStore {
     
     public static let instance = DBOMEMOStore();
@@ -330,6 +331,7 @@ class SignalIdentityKeyStore: SignalIdentityKeyStoreProtocol, ContextAware {
     
 }
 
+@preconcurrency 
 class SignalPreKeyStore: SignalPreKeyStoreProtocol, ContextAware {
     
     //fileprivate(set) var currentPreKeyId: UInt32 = 0;

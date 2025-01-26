@@ -20,11 +20,11 @@
 //
 
 import Foundation
-import Combine
-import Martin
+@preconcurrency import Combine
+@preconcurrency import Martin
 import TigaseSQLite3
 
-public struct Account {
+public struct Account: Sendable {
 
     public var state = CurrentValueSubject<XMPPClient.State,Never>(.disconnected());
 
@@ -76,7 +76,7 @@ public struct Account {
         }
     }
 
-    public struct Additional: Codable, DatabaseConvertibleStringValue, Equatable {
+    public struct Additional: Codable, DatabaseConvertibleStringValue, Equatable, Sendable {
         public var omemoDeviceId: UInt32?;
         public var acceptedCertificate: AcceptableServerCertificate?;
         public var nick: String?;

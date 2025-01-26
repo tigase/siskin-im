@@ -22,7 +22,7 @@
 import Foundation
 import Combine
 import Martin
-import TigaseLogging
+@preconcurrency import TigaseLogging
 import CallKit
 
 final class Meet: CallBase, @unchecked Sendable {

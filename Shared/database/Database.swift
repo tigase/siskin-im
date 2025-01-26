@@ -20,9 +20,9 @@
 //
 
 import Foundation
-import TigaseSQLite3
+@preconcurrency import TigaseSQLite3
 import Martin
-import TigaseLogging
+@preconcurrency import TigaseLogging
 
 extension DatabasePool {
     

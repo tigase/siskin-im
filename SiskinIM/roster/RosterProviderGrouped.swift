@@ -23,6 +23,7 @@ import UIKit
 import Shared
 import Martin
 
+@preconcurrency
 public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGroupedItem>, RosterProvider {
     
     private var groups = [RosterProviderGroup]();
@@ -113,7 +114,7 @@ public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGrouped
     
 }
 
-public class RosterProviderGroup {
+public final class RosterProviderGroup: Sendable {
     
     public let name: String;
     public let items: [RosterProviderGroupedItem];
@@ -125,7 +126,7 @@ public class RosterProviderGroup {
     
 }
 
-public class RosterProviderGroupedItem: RosterProviderItem, Hashable {
+public final class RosterProviderGroupedItem: RosterProviderItem, Hashable, Sendable {
     
     public static func == (lhs: RosterProviderGroupedItem, rhs: RosterProviderGroupedItem) -> Bool {
         return lhs.account == rhs.account && lhs.jid == rhs.jid && lhs.displayName == rhs.displayName;

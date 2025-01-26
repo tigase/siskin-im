@@ -24,6 +24,7 @@ import Martin
 import Combine
 import Shared
 
+@preconcurrency
 class NewFeaturesDetector: XmppServiceExtension {
     
     public static let instance = NewFeaturesDetector();
@@ -134,6 +135,7 @@ class NewFeaturesDetector: XmppServiceExtension {
         }
     }
     
+    @MainActor
     private func ensureNavController() -> UINavigationController? {
         guard let navController = self.navController else {
             let navController = UIStoryboard(name: "Account", bundle: nil).instantiateViewController(withIdentifier: "SetAccountSettingsNavController") as! UINavigationController;
@@ -145,6 +147,7 @@ class NewFeaturesDetector: XmppServiceExtension {
         return navController;
     }
     
+    @MainActor
     private func visibleController() -> UIViewController? {
         let window = UIApplication.shared.windows.first(where: { $0.isKeyWindow });
         if let controller = window?.rootViewController {
@@ -154,6 +157,7 @@ class NewFeaturesDetector: XmppServiceExtension {
         }
     }
     
+    @MainActor
     private func visibleController(parent: UIViewController) -> UIViewController {
         guard let presented = parent.presentedViewController else {
             return parent;
@@ -170,6 +174,7 @@ class NewFeaturesDetector: XmppServiceExtension {
         return presented;
     }
     
+    @MainActor
     private func showPushQuestion(completionHandler: @escaping ()->Void) {
         let alert = UIAlertController(title: NSLocalizedString("Push Notifications", comment: "alert title"), message: NSLocalizedString("If enabled, you will receive notifications of new messages or calls even if SiskinIM is in background. SiskinIM servers will forward those notifications for you from XMPP servers.", comment: "alert body"), preferredStyle: .alert);
         alert.addAction(UIAlertAction(title: NSLocalizedString("Enable", comment: "button label"), style: .default, handler: { _ in

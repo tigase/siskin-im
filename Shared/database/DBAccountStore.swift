@@ -21,7 +21,7 @@
 
 import Foundation
 import Martin
-import TigaseSQLite3
+@preconcurrency import TigaseSQLite3
 
 extension Query {
     static let accountsList = Query("SELECT uuid, name, enabled, server_endpoint, roster_version, status_message, push, last_endpoint, additional FROM accounts");

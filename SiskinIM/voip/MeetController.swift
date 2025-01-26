@@ -20,18 +20,18 @@
 //
 
 import UIKit
-import WebRTC
+@preconcurrency import WebRTC
 import Combine
 import Martin
 import TigaseLogging
 
 class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoViewDelegate, CallDelegate {
     
-    func callDidStart(_ sender: Call) {
+    nonisolated func callDidStart(_ sender: Call) {
         // nothing to do..
     }
     
-    func callDidEnd(_ sender: Call) {
+    nonisolated func callDidEnd(_ sender: Call) {
         DispatchQueue.main.async {
             let alert = UIAlertController(title: NSLocalizedString("Meeting ended", comment: "alert title"), message: NSLocalizedString("Meeting has ended", comment: "alert body"), preferredStyle: .alert);
             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: { _ in
@@ -41,17 +41,17 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
         }
     }
     
-    func callStateChanged(_ sender: Call) {
+    nonisolated func callStateChanged(_ sender: Call) {
         // nothing to do..
     }
     
-    func call(_ sender: Call, didReceiveLocalVideoTrack localTrack: RTCVideoTrack) {
+    nonisolated func call(_ sender: Call, didReceiveLocalVideoTrack localTrack: RTCVideoTrack) {
         DispatchQueue.main.async {
             localTrack.add(self.localVideoRenderer);
         }
     }
     
-    func call(_ sender: Call, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack, forStream mid: String, fromReceiver receiverId: String) {
+    nonisolated func call(_ sender: Call, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack, forStream mid: String, fromReceiver receiverId: String) {
         DispatchQueue.main.async {
             self.items.append(Item(mid: mid, videoTrack: remoteTrack, receiverId: receiverId));
             self.collectionView.performBatchUpdates({
@@ -60,7 +60,7 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
         }
     }
     
-    func call(_ sender: Call, goneRemoteVideoTrack remoteTrack: RTCVideoTrack, fromReceiver receiverId: String) {
+    nonisolated func call(_ sender: Call, goneRemoteVideoTrack remoteTrack: RTCVideoTrack, fromReceiver receiverId: String) {
         DispatchQueue.main.async {
             if let idx = self.items.firstIndex(where: { $0.receiverId == receiverId }) {
                 self.items.remove(at: idx);
@@ -389,7 +389,7 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
         })
     }
     
-    func videoView(_ videoView: RTCVideoRenderer, didChangeVideoSize size: CGSize) {
+    nonisolated func videoView(_ videoView: RTCVideoRenderer, didChangeVideoSize size: CGSize) {
         DispatchQueue.main.async {
             self.localVideoRendererWidth?.constant = (size.width * self.localVideoRenderer.frame.height) / size.height;
         }
@@ -618,7 +618,7 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
               
         private var videoSize: CGSize = .zero;
         
-        func videoView(_ videoView: RTCVideoRenderer, didChangeVideoSize videoSize: CGSize) {
+        nonisolated func videoView(_ videoView: RTCVideoRenderer, didChangeVideoSize videoSize: CGSize) {
             #if targetEnvironment(simulator)
             self.videoSize = videoSize;
             self.setNeedsLayout();

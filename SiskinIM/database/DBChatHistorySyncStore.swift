@@ -22,7 +22,7 @@
 import Foundation
 import Martin
 import os
-import TigaseSQLite3
+@preconcurrency import TigaseSQLite3
 import Combine
 import Shared
 
@@ -37,6 +37,7 @@ extension Query {
     static let mamSyncUpdatePeriodTo = Query("UPDATE chat_history_sync SET to_timestamp = :to_timestamp WHERE id = :id");
 }
 
+@preconcurrency 
 class DBChatHistorySyncStore {
     
     static let instance = DBChatHistorySyncStore()

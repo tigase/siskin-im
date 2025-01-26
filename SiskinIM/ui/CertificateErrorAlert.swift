@@ -37,10 +37,12 @@ class CertificateErrorAlert {
         })
     }
     
+    @MainActor
     public static func create(domain: String, certData: SSLCertificateInfo, onAccept: (()->Void)?, onDeny: (()->Void)?) -> UIAlertController {
         return create(domain: domain, certName: certData.subject.name, certHash: certData.subject.fingerprints.first!.value, issuerName: certData.issuer?.name, issuerHash: certData.issuer?.fingerprints.first?.value, onAccept: onAccept, onDeny: onDeny);
     }
     
+    @MainActor
     public static func create(domain: String, certName: String, certHash: String, issuerName: String?, issuerHash: String?, onAccept: (()->Void)?, onDeny: (()->Void)?) -> UIAlertController {
         let issuer = issuerName != nil ? String.localizedStringWithFormat(NSLocalizedString("\nissued by\n%@\n with fingerprint\n%@", comment: "ssl certificate info - issue part"), issuerName!, issuerHash!) : "";
         let alert = UIAlertController(title: NSLocalizedString("Certificate issue", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Server for domain %@ provided invalid certificate for %@\n with fingerprint\n%@%@.\nDo you trust this certificate?", comment: "ssl certificate alert dialog body"), domain, certName, certHash, issuer), preferredStyle: .alert);

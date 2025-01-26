@@ -22,7 +22,7 @@
 import Foundation
 import Martin
 
-public struct AcceptableServerCertificate: Codable, Equatable {
+public struct AcceptableServerCertificate: Codable, Equatable, Sendable {
     
     enum CodingKeys: CodingKey {
         case certificate
@@ -50,7 +50,7 @@ public struct AcceptableServerCertificate: Codable, Equatable {
     }
 }
 
-open class ServerCertificateInfoOld: SslCertificateInfoOld {
+open class ServerCertificateInfoOld: SslCertificateInfoOld, @unchecked Sendable {
 
     public var accepted: Bool;
         

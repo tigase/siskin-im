@@ -13,7 +13,7 @@ import Foundation
 import Martin
 import Combine
 
-class BlockedEventHandler: XmppServiceExtension {
+final class BlockedEventHandler: XmppServiceExtension, Sendable {
     
     static let instance = BlockedEventHandler();
 

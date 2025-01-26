@@ -21,7 +21,7 @@
 
 import UIKit
 import MobileCoreServices
-import LinkPresentation
+@preconcurrency import LinkPresentation
 import Martin
 import AVFoundation
 
@@ -60,12 +60,14 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
     
     override func awakeFromNib() {
         super.awakeFromNib();
-        tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapGestureDidFire));
-        tapGestureRecognizer?.cancelsTouchesInView = false;
-        tapGestureRecognizer?.numberOfTapsRequired = 2;
-        customView.addGestureRecognizer(tapGestureRecognizer!);
-        
-        customView.addInteraction(UIContextMenuInteraction(delegate: self));
+        MainActor.assumeIsolated {
+            tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapGestureDidFire));
+            tapGestureRecognizer?.cancelsTouchesInView = false;
+            tapGestureRecognizer?.numberOfTapsRequired = 2;
+            customView.addGestureRecognizer(tapGestureRecognizer!);
+            
+            customView.addInteraction(UIContextMenuInteraction(delegate: self));
+        }
     }
         
     func set(item: ConversationEntry, url: String, appendix: ChatAttachmentAppendix) {
@@ -113,8 +115,11 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
                 
             if isNew {
                 MetadataCache.instance.generateMetadata(for: localUrl, withId: "\(item.id)", completionHandler: { [weak self] meta1 in
-                    DispatchQueue.main.async {
-                        guard let that = self, meta1 != nil, that.item?.id == item.id else {
+                    guard meta1 != nil else {
+                        return;
+                    }
+                    DispatchQueue.main.async { [weak self] in
+                        guard let that = self, that.item?.id == item.id else {
                             return;
                         }
                         NotificationCenter.default.post(name: ConversationLogController.REFRESH_CELL, object: that);
@@ -614,10 +619,14 @@ class AttachmentChatTableViewCell: BaseChatTableViewCell, UIContextMenuInteracti
             self.actionButton.setImage(UIImage(systemName: "play.circle.fill"), for: .normal);
         }
         
-        func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-            audioPlayer?.stop();
-            audioPlayer = nil;
-            self.actionButton.setImage(UIImage(systemName: "play.circle.fill"), for: .normal);
+        nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+            Task {
+                await MainActor.run(body: {
+                    audioPlayer?.stop();
+                    audioPlayer = nil;
+                    self.actionButton.setImage(UIImage(systemName: "play.circle.fill"), for: .normal);
+                })
+            }
         }
         
         @objc func actionTapped(_ sender: Any) {
@@ -669,6 +678,7 @@ extension FileManager {
 }
 
 extension UIImage {
+    @MainActor
     class func icon(forFile url: URL, mimeType: String?) -> UIImage? {
         let controller = UIDocumentInteractionController(url: url);
         if mimeType != nil, let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimeType! as CFString, nil)?.takeRetainedValue() as String? {
@@ -681,6 +691,7 @@ extension UIImage {
         return icons.last;
     }
 
+    @MainActor
     class func icon(forUTI utiString: String) -> UIImage? {
         let controller = UIDocumentInteractionController(url: URL(fileURLWithPath: "temp.file"));
         controller.uti = utiString;

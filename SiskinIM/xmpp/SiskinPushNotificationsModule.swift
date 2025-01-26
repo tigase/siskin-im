@@ -26,7 +26,7 @@ import CryptoKit
 import Shared
 import Martin
 
-open class SiskinPushNotificationsModule: TigasePushNotificationsModule {
+open class SiskinPushNotificationsModule: TigasePushNotificationsModule, @unchecked Sendable {
         
     public let defaultPushServiceJid: JID;
 

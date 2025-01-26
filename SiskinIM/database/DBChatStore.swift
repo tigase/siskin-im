@@ -21,9 +21,9 @@
 
 import Foundation
 import Martin
-import TigaseSQLite3
+@preconcurrency import TigaseSQLite3
 import Combine
-import Shared
+@preconcurrency import Shared
 
 extension Query {
     static let chatInsert = Query("INSERT INTO chats (account, jid, timestamp, type, options) VALUES (:account, :jid, :timestamp, :type, :options)");
@@ -36,6 +36,7 @@ extension Query {
     static let chatFindLastActivity = Query("SELECT last.timestamp as timestamp, last1.item_type, last1.data, last1.encryption, last1.fingerprint, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(ConversationEntryState.incoming(.received).rawValue), \(ConversationEntryState.incoming_error(.received).rawValue), \(ConversationEntryState.outgoing_error(.received).rawValue))) as unread, last1.author_nickname FROM (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.jid = :jid AND ch.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue),\(ItemType.location.rawValue)) GROUP BY ch.account, ch.jid) last LEFT JOIN chat_history last1 ON last1.account = last.account AND last1.jid = last.jid AND last1.timestamp = last.timestamp AND last1.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue),\(ItemType.location.rawValue))");
 }
 
+@preconcurrency
 open class DBChatStore: ContextLifecycleAware {
 
     static let instance: DBChatStore = DBChatStore.init();
@@ -137,12 +138,11 @@ open class DBChatStore: ContextLifecycleAware {
         }
     }
 
-    func newActivity(_ activity: LastChatActivity, isUnread: Bool, for account: BareJID, with jid: BareJID, completionHandler: @escaping ()->Void) {
+    func newActivity(_ activity: LastChatActivity, isUnread: Bool, for account: BareJID, with jid: BareJID) {
         queue.async {
             if let conversation = self.accountsConversations.conversation(for: account, with: jid) {
                 self.accountsConversations.newActivity(activity, isUnread: isUnread, for: conversation);
             }
-            completionHandler();
         }
     }
 

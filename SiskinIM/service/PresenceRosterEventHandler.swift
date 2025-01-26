@@ -23,7 +23,7 @@ import Foundation
 import Martin
 import Combine
 
-class PresenceRosterEventHandler: XmppServiceExtension {
+final class PresenceRosterEventHandler: XmppServiceExtension, Sendable {
     
     public static let instance = PresenceRosterEventHandler();
     

@@ -73,7 +73,9 @@ class AvatarStatusView: UIView {
     override func awakeFromNib() {
         super.awakeFromNib();
         //avatarImageView.image = UIImage(named: "first");
-        updateCornerRadius();
+        MainActor.assumeIsolated {
+            updateCornerRadius();
+        }
     }
     
     func set(name: String?, avatar: UIImage?) {

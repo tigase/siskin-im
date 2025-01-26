@@ -24,7 +24,7 @@ import Combine
 import Martin
 import UserNotifications
 
-class InvitationManager {
+final class InvitationManager: Sendable {
  
     static let instance = InvitationManager();
     

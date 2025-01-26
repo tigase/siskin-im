@@ -42,10 +42,12 @@ class VCardEditAddressTableViewCell: VCardEntryTypeAwareTableViewCell, UITextFie
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
-        streetView.delegate = self;
-        postalCodeView.delegate = self;
-        countryView.delegate = self;
-        cityView.delegate = self;
+        MainActor.assumeIsolated {
+            streetView.delegate = self;
+            postalCodeView.delegate = self;
+            countryView.delegate = self;
+            cityView.delegate = self;
+        }
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {

@@ -22,6 +22,7 @@
 import UIKit
 import AVFoundation
 
+@MainActor
 class AudioSesion {
     
     private(set) var outputMode: AudioOutputMode = .automatic;
@@ -46,6 +47,7 @@ class AudioSesion {
         case videoChat
     }
     
+    @MainActor
     enum AudioOutputMode: Equatable {
         case automatic
         case builtin

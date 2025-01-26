@@ -122,6 +122,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
         self.saveButton.isEnabled = false;
         showIndicator();
         
+        let connectivitySettings = self.connectivitySettings;
         self.accountValidatorTask = Task {
             do {
                 let acceptedCertificate = try await AccountValidatorTask.validate(controller: self, account: jid, password: password, connectivitySettings: connectivitySettings);

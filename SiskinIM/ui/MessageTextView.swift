@@ -57,37 +57,38 @@ public class MessageTextView: UIView {
     
     public override func awakeFromNib() {
         super.awakeFromNib();
-        
-        self.backgroundColor = UIColor.blue;
-        let layoutManager = CustomLayoutManager();
-        let textContainer = NSTextContainer(size: CGSize(width: 0, height: CGFloat.greatestFiniteMagnitude));
-        textContainer.widthTracksTextView = true;
-        let textStorage = NSTextStorage();
-        textStorage.addLayoutManager(layoutManager);
-        layoutManager.addTextContainer(textContainer);
-        //textContainer.replaceLayoutManager(layoutManager);
-        self.textView = UITextView(frame: .zero, textContainer: textContainer);
-        textView.translatesAutoresizingMaskIntoConstraints = false;
-        textView.isScrollEnabled = false;
-        textContainer.lineFragmentPadding = 1;
-        self.textView.textContainerInset = .zero;
-//        textContainer.widthTracksTextView = false;
-        textContainer.heightTracksTextView = false;
-        textView.isEditable = false;
-        textView.isSelectable = true;
-        textView.isUserInteractionEnabled = true;
-        textView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
-        textView.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
-        textView.font = UIFont.preferredFont(forTextStyle: .subheadline);
-        textView.textColor = UIColor(named: "chatMessageText");
-        textView.usesStandardTextScaling = false;
-        self.addSubview(textView);
-        NSLayoutConstraint.activate([
-            self.leadingAnchor.constraint(equalTo: textView.leadingAnchor),
-            self.trailingAnchor.constraint(equalTo: textView.trailingAnchor),
-            self.topAnchor.constraint(equalTo: textView.topAnchor),
-            self.bottomAnchor.constraint(equalTo: textView.bottomAnchor)
-        ])
+        MainActor.assumeIsolated {
+            self.backgroundColor = UIColor.blue;
+            let layoutManager = CustomLayoutManager();
+            let textContainer = NSTextContainer(size: CGSize(width: 0, height: CGFloat.greatestFiniteMagnitude));
+            textContainer.widthTracksTextView = true;
+            let textStorage = NSTextStorage();
+            textStorage.addLayoutManager(layoutManager);
+            layoutManager.addTextContainer(textContainer);
+            //textContainer.replaceLayoutManager(layoutManager);
+            self.textView = UITextView(frame: .zero, textContainer: textContainer);
+            textView.translatesAutoresizingMaskIntoConstraints = false;
+            textView.isScrollEnabled = false;
+            textContainer.lineFragmentPadding = 1;
+            self.textView.textContainerInset = .zero;
+            //        textContainer.widthTracksTextView = false;
+            textContainer.heightTracksTextView = false;
+            textView.isEditable = false;
+            textView.isSelectable = true;
+            textView.isUserInteractionEnabled = true;
+            textView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
+            textView.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
+            textView.font = UIFont.preferredFont(forTextStyle: .subheadline);
+            textView.textColor = UIColor(named: "chatMessageText");
+            textView.usesStandardTextScaling = false;
+            self.addSubview(textView);
+            NSLayoutConstraint.activate([
+                self.leadingAnchor.constraint(equalTo: textView.leadingAnchor),
+                self.trailingAnchor.constraint(equalTo: textView.trailingAnchor),
+                self.topAnchor.constraint(equalTo: textView.topAnchor),
+                self.bottomAnchor.constraint(equalTo: textView.bottomAnchor)
+            ])
+        }
     }
     
     class CustomLayoutManager: NSLayoutManager {

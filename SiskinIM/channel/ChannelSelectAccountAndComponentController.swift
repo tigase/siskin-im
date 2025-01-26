@@ -71,6 +71,7 @@ class ChannelSelectAccountAndComponentController: UITableViewController, UIPicke
 
 }
 
+@MainActor
 protocol ChannelSelectAccountAndComponentControllerDelgate: AnyObject {
     var client: XMPPClient? { get set }
     var domain: String? { get set }

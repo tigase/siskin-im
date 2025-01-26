@@ -22,7 +22,7 @@ import UIKit
 import Social
 import Shared
 import Martin
-import TigaseSQLite3
+@preconcurrency import TigaseSQLite3
 import MobileCoreServices
 import Combine
 
@@ -213,7 +213,7 @@ class ShareViewController: UITableViewController {
         }
     }
     
-    private struct ErrorResult {
+    private struct ErrorResult: Sendable {
         let jid: BareJID;
         let error: Error;
     }
@@ -229,7 +229,7 @@ class ShareViewController: UITableViewController {
                         throw XMPPError(condition: .not_authorized);
                     }
                     let client = self.createXmppClient(for: account);
-                    client.configure(for: config);
+                    await client.configure(for: config);
                     client.connectionConfiguration.resource = UUID().uuidString;
                     do {
                         try await client.loginAndWait(lastSeeOtherHost: config.lastEndpoint);
@@ -293,7 +293,13 @@ class ShareViewController: UITableViewController {
                 }
             }
             
-            return await group.reduce(into: [ErrorResult](), { if let err = $1 { $0.append(err) } });
+            var result: [ErrorResult] = []
+            for await x in group {
+                if let x {
+                    result.append(x)
+                }
+            }
+            return result;            
         })
     }
         
@@ -343,7 +349,7 @@ class ShareViewController: UITableViewController {
             return nil;
         }
 
-        return await avatarStore.avatar(for: hash.hash)?.scaled(maxWidthOrHeight: 40);
+        return avatarStore.avatar(for: hash.hash)?.scaled(maxWidthOrHeight: 40);
     }
     
     func generateAvatar(for item: RosterItem) -> UIImage? {
@@ -428,7 +434,7 @@ class ShareViewController: UITableViewController {
         })
     }
     
-    private func extractAttachments(completionHandler: @escaping (Result<Attachment,Error>)->Void) {
+    private func extractAttachments(completionHandler: @escaping @Sendable (sending Result<Attachment,Error>)->Void) {
         if let provider = (self.extensionContext?.inputItems.first as? NSExtensionItem)?.attachments?.first {
             if provider.hasItemConformingToTypeIdentifier(kUTTypeVideo as String) {
                 provider.loadFileRepresentation(forTypeIdentifier: kUTTypeVideo as String, completionHandler: { url, error in
@@ -437,7 +443,7 @@ class ShareViewController: UITableViewController {
                         return;
                     }
                     do {
-                        let localUrl = try self.copyFileLocally(url: url);
+                        let localUrl = try copyFileLocally(url: url);
                         Task {
                             defer {
                                 try? FileManager.default.removeItem(at: localUrl);
@@ -460,13 +466,13 @@ class ShareViewController: UITableViewController {
                         return;
                     }
                     do {
-                        let localUrl = try self.copyFileLocally(url: url);
+                        let localUrl = try copyFileLocally(url: url);
                         Task {
                             defer {
                                 try? FileManager.default.removeItem(at: localUrl);
                             }
                             do {
-                                let (url,fileInfo) = try MediaHelper.compressImage(url: localUrl, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "jpg"), quality: self.imageQuality);
+                                let (url,fileInfo) = try await MediaHelper.compressImage(url: localUrl, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "jpg"), quality: self.imageQuality);
                                 completionHandler(.success(.file(url, fileInfo)));
                             } catch {
                                 completionHandler(.failure(error));
@@ -483,7 +489,7 @@ class ShareViewController: UITableViewController {
                         return;
                     }
                     do {
-                        let localUrl = try self.copyFileLocally(url: url);
+                        let localUrl = try copyFileLocally(url: url);
                         completionHandler(.success(.file(localUrl, ShareFileInfo.from(url: url, defaultSuffix: nil))));
                     } catch {
                         completionHandler(.failure(error));
@@ -512,19 +518,7 @@ class ShareViewController: UITableViewController {
             completionHandler(.failure(ShareError.noAccessError));
         }
     }
-        
-    private func copyFileLocally(url: URL) throws -> URL {
-        let filename = url.lastPathComponent;
-        var suffix: String = "";
-        if let idx = filename.lastIndex(of: ".") {
-            suffix = String(filename.suffix(from: idx));
-        }
-        
-        let tmpUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + suffix, isDirectory: false);
-        try FileManager.default.copyItem(at: url, to: tmpUrl);
-        return tmpUrl;
-    }
-    
+            
     func show(error: Error) {
         showAlert(title: NSLocalizedString("Failure", comment: "alert title"), message: (error as? ShareError)?.message ?? error.localizedDescription);
     }
@@ -585,3 +579,16 @@ class ShareViewController: UITableViewController {
 //    }
     
 }
+
+private func copyFileLocally(url: URL) throws -> URL {
+    let filename = url.lastPathComponent;
+    var suffix: String = "";
+    if let idx = filename.lastIndex(of: ".") {
+        suffix = String(filename.suffix(from: idx));
+    }
+    
+    let tmpUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + suffix, isDirectory: false);
+    try FileManager.default.copyItem(at: url, to: tmpUrl);
+    return tmpUrl;
+}
+

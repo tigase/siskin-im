@@ -30,7 +30,7 @@ public enum ConversationFeature {
     case httpFileUpload
 }
 
-public protocol Conversation: ConversationProtocol, ConversationKey, DisplayableIdWithKeyProtocol {
+public protocol Conversation: ConversationProtocol, ConversationKey, DisplayableIdWithKeyProtocol, Sendable {
         
     var status: Presence.Show? { get }
     var statusPublisher: Published<Presence.Show?>.Publisher { get }
@@ -98,7 +98,7 @@ extension Conversation {
 
 public typealias LastConversationActivity = LastChatActivity
 
-public struct LastChatActivity {
+public struct LastChatActivity: Sendable {
     let timestamp: Date;
     let sender: ConversationEntrySender;
     let payload: LastChatActivityType?;
@@ -114,7 +114,7 @@ public struct LastChatActivity {
     
 }
 
-public enum LastChatActivityType {
+public enum LastChatActivityType: Sendable {
     case message(message: String)
     case attachment
     case invitation

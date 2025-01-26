@@ -78,7 +78,6 @@ extension ChatViewInputBar {
     
 }
 
-// FIXME: According to Apple documentation URLSessionDelegate is Sendable
 extension BaseChatViewController: URLSessionDelegate {
         
     func checkIfEnabledOrAsk(completionHandler: @escaping ()->Void) -> Bool {

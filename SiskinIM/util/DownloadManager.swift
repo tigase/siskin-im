@@ -1,48 +1,89 @@
-//
-// DownloadManager.swift
-//
-// Siskin IM
-// Copyright (C) 2019 "Tigase, Inc." <office@tigase.com>
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program. Look for COPYING file in the top folder.
-// If not, see https://www.gnu.org/licenses/.
-//
+    //
+    // DownloadManager.swift
+    //
+    // Siskin IM
+    // Copyright (C) 2019 "Tigase, Inc." <office@tigase.com>
+    //
+    // This program is free software: you can redistribute it and/or modify
+    // it under the terms of the GNU General Public License as published by
+    // the Free Software Foundation, either version 3 of the License, or
+    // (at your option) any later version.
+    //
+    // This program is distributed in the hope that it will be useful,
+    // but WITHOUT ANY WARRANTY; without even the implied warranty of
+    // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    // GNU General Public License for more details.
+    //
+    // You should have received a copy of the GNU General Public License
+    // along with this program. Look for COPYING file in the top folder.
+    // If not, see https://www.gnu.org/licenses/.
+    //
 
-import Foundation
-import MobileCoreServices
-import Martin
-import Shared
-import CryptoKit
-import MartinOMEMO
+    import Foundation
+    import MobileCoreServices
+    import Martin
+    import Shared
+    import CryptoKit
+    import MartinOMEMO
 
-class DownloadManager: NSObject {
+extension UnfairLock {
+    func append<X: Equatable>(_ item: X) where State == Array<X> {
+        return with({
+            $0.append(item);
+        })
+    }
+    func contains<X: Equatable>(_ item: X) -> Bool where State == Array<X> {
+        return with({
+            $0.contains(item);
+        })
+    }
+    func removeAll<X>(where fn: (X)->Bool) where State == Array<X> {
+        with({ items in
+            items = items.filter({ !fn($0) })
+        })
+    }
+}
+
+extension UnfairLock {
+    public subscript<Key,Value>(key: Key) -> Value? where State == [Key:Value] {
+        get {
+            return with({
+                $0[key]
+            })
+        }
+        set {
+            return with({
+                $0[key] = newValue
+            })
+        }
+    }
+
+    
+    public func removeValue<Key,Value>(forKey key: Key) -> Value? where State == [Key:Value] {
+        return with({
+            $0.removeValue(forKey: key)
+        })
+    }
+}
+
+@preconcurrency
+class DownloadManager: NSObject, @unchecked Sendable {
     
     static let instance = DownloadManager();
     
     private let queue = DispatchQueue(label: "download_manager_queue");
     
-    private var itemDownloadInProgress: [Int] = [];
+    private let itemDownloadInProgress = UnfairLock(state: [Int]());
     
     private var downloadSession: URLSession!;
     
-    private var inProgress: [URLSessionDownloadTask: Item] = [:];
-    
+    private let inProgress = UnfairLock(state: [URLSessionDownloadTask: Item]())
+
     private override init() {
         super.init();
         downloadSession = URLSession(configuration: URLSession.shared.configuration, delegate: self, delegateQueue: nil);
     }
-    
+        
     func downloadInProgress(for item: ConversationEntry) -> Bool {
         return queue.sync {
             return self.itemDownloadInProgress.contains(item.id);
@@ -95,9 +136,7 @@ class DownloadManager: NSObject {
                     SettingsStore.sharedDefaults.set(params, forKey: "upload-\(hash)");
                 }
                 guard !handled else {
-                    self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
-                        return item.id != id;
-                    });
+                    self.itemDownloadInProgress.removeAll(where: { $0 == item.id });
                     return true;
                 }
             }
@@ -112,36 +151,29 @@ class DownloadManager: NSObject {
                 }
             }
             
-            retrieveHeaders(session: downloadSession, url: url, completionHandler: { headersResult in
-                switch headersResult {
-                case .success(let suggestedFilename, let expectedSize, let mimeType):
-                    let isTooBig = expectedSize > maxSize;
-                    
+            Task {
+                do {
+                    let headersResult = try await retrieveHeaders(session: downloadSession, url: url)
+                    let isTooBig = headersResult.expectedSize > maxSize;
                     DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
-                        appendix.filesize = Int(expectedSize);
-                        appendix.mimetype = mimeType;
-                        appendix.filename = suggestedFilename;
+                        appendix.filesize = Int(headersResult.expectedSize);
+                        appendix.mimetype = headersResult.mimeType;
+                        appendix.filename = headersResult.suggestedFilename;
                         if isTooBig {
                             appendix.state = .tooBig;
                         }
                     });
-                    
                     guard !isTooBig else {
                         self.queue.async {
-                            self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
-                                return item.id != id;
-                            });
+                            self.itemDownloadInProgress.removeAll(where: { $0 == item.id });
                         }
                         return;
                     }
-                                        
-                    self.download(session: self.downloadSession, url: url, expectedSize: expectedSize, completionHandler: { result in
+                    self.download(session: self.downloadSession, url: url, expectedSize: headersResult.expectedSize, completionHandler: { result in
                         switch result {
                         case .success((let downloadedUrl, let filename)):
                             self.queue.sync {
-                                self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
-                                    return item.id != id;
-                                });
+                                self.itemDownloadInProgress.removeAll(where: { $0 == item.id });
                             }
                             if let encryptionKey = encryptionKey {
                                 do {
@@ -175,28 +207,28 @@ class DownloadManager: NSObject {
                                 appendix.state = statusCode == 404 ? .gone : .error;
                             });
                             self.queue.sync {
-                                self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
-                                    return item.id != id;
-                                });
+                                self.itemDownloadInProgress.removeAll(where: { $0 == item.id });
                             }
                         }
                     });
-                    break;
-                case .failure(let statusCode):
+                    
+                } catch {
+                    var state = ChatAttachmentAppendix.State.error;
+                    if case .responseError(statusCode: 404) = error as? DownloadError {
+                        state = .gone;
+                    }
                     DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
-                        appendix.state = statusCode == 404 ? .gone : .error;
+                        appendix.state = state;
                     });
                     self.queue.async {
-                        self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
-                            return item.id != id;
-                        });
+                        self.itemDownloadInProgress.removeAll(where: { $0 == item.id });
                     }
                 }
-            })
+            }
             return true;
         }
     }
-    
+        
     func download(session: URLSession, url: URL, expectedSize: Int64, completionHandler: @escaping (Result<(URL,String), DownloadError>)->Void) {
         let request = URLRequest(url: url);
         let task = session.downloadTask(with: request);
@@ -213,30 +245,27 @@ class DownloadManager: NSObject {
         return extensionString
     }
     
-    func retrieveHeaders(session: URLSession, url: URL, completionHandler: @escaping (HeadersResult)->Void) {
+    func retrieveHeaders(session: URLSession, url: URL) async throws -> HeadersResult {
         var request = URLRequest(url: url);
         request.httpMethod = "HEAD";
-        session.dataTask(with: request) { (data, resp, error) in
-            guard let response = resp as? HTTPURLResponse else {
-                completionHandler(.failure(statusCode: 500));
-                return;
-            }
-            
-            switch response.statusCode {
-            case 200:
-                completionHandler(.success(suggestedFilename: response.suggestedFilename, expectedSize: response.expectedContentLength, mimeType: response.mimeType))
-            default:
-                completionHandler(.failure(statusCode: response.statusCode));
-            }
-        }.resume();
+        let (data, resp) = try await session.data(for: request)
+        guard let response = resp as? HTTPURLResponse else {
+            throw DownloadError.responseError(statusCode: 500);
+        }
+        switch response.statusCode {
+        case 200:
+            return .init(suggestedFilename: response.suggestedFilename, expectedSize: response.expectedContentLength, mimeType: response.mimeType);
+        default:
+            throw DownloadError.responseError(statusCode: response.statusCode);
+        }
     }
-    
+        
     class Item {
         let maxSize: Int64;
         let completionHandler: (Result<(URL,String), DownloadError>)->Void;
         init(maxSize: Int64, completionHandler: @escaping (Result<(URL,String), DownloadError>)->Void) {
-            self.completionHandler = completionHandler;
-            self.maxSize = maxSize;
+                self.completionHandler = completionHandler;
+                self.maxSize = maxSize;
         }
 
         func completed(location: URL, filename: String) {
@@ -257,11 +286,12 @@ class DownloadManager: NSObject {
 
     }
     
-    enum HeadersResult {
-        case success(suggestedFilename: String?, expectedSize: Int64, mimeType: String?)
-        case failure(statusCode: Int)
+    struct HeadersResult: Sendable {
+        let suggestedFilename: String?;
+        let expectedSize: Int64
+        let mimeType: String?
     }
-        
+            
     enum DownloadError: Error {
         case networkError(error: Error)
         case responseError(statusCode: Int)
@@ -279,7 +309,7 @@ extension DownloadManager: URLSessionDownloadDelegate {
         }) else {
             return;
         }
-        
+
         if let filename = downloadTask.response?.suggestedFilename {
             item.completed(location: location, filename: filename);
         } else if let mimeType = downloadTask.response?.mimeType, let filenameExt = DownloadManager.mimeTypeToExtension(mimeType: mimeType) {
@@ -290,7 +320,7 @@ extension DownloadManager: URLSessionDownloadDelegate {
             item.completed(location: location, filename: location.lastPathComponent);
         }
     }
-    
+        
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         guard let downloadTask = task as? URLSessionDownloadTask, let item = queue.sync(execute: {
             return self.inProgress.removeValue(forKey: downloadTask);
@@ -299,7 +329,7 @@ extension DownloadManager: URLSessionDownloadDelegate {
         }
         item.completed(withError: error);
     }
-    
+        
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         guard let sizeLimit = queue.sync(execute: {
             return self.inProgress[downloadTask]?.maxSize;

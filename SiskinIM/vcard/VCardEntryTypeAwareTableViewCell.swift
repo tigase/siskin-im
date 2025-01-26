@@ -29,16 +29,18 @@ class VCardEntryTypeAwareTableViewCell: UITableViewCell, UIPickerViewDelegate, U
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
-        let typePicker = UIPickerView();
-        typePicker.dataSource = self;
-        typePicker.delegate = self;
-        typeView.inputView = typePicker;
-        if #available(iOS 13.0, *) {
-            let btn = UIButton(type: .detailDisclosure);
-            btn.isEnabled = false;
-            btn.setImage(UIImage(systemName: "chevron.right"), for: .normal);
-            typeView.rightView = btn;
-            typeView.rightViewMode = .always;
+        MainActor.assumeIsolated {
+            let typePicker = UIPickerView();
+            typePicker.dataSource = self;
+            typePicker.delegate = self;
+            typeView.inputView = typePicker;
+            if #available(iOS 13.0, *) {
+                let btn = UIButton(type: .detailDisclosure);
+                btn.isEnabled = false;
+                btn.setImage(UIImage(systemName: "chevron.right"), for: .normal);
+                typeView.rightView = btn;
+                typeView.rightViewMode = .always;
+            }
         }
     }
     

@@ -24,7 +24,7 @@ import Martin
 import WebRTC
 import Combine
 
-protocol JingleSessionActionDelegate: AnyObject {
+protocol JingleSessionActionDelegate: AnyObject, Sendable {
     
     func received(action: JingleManager.Session.Action);
     

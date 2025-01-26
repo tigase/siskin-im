@@ -23,19 +23,18 @@
 import Foundation
 import Security
 import Martin
-import Combine
+@preconcurrency import Combine
 import TigaseSQLite3
 
 open class AccountManager {
     
     private static let serviceName = "SiskinIM";
-    private static let queue = DispatchQueue(label: "AccountManager");
-    private static var _accounts: [BareJID: Account] = [:];
+    private static let _accounts: UnfairLock<[BareJID: Account]> = UnfairLock(state: [:]);
     
     public static var accounts: [Account] {
-        return queue.sync {
-            return Array(_accounts.values);
-        }
+        return _accounts.with({
+            Array($0.values)
+        })
     }
     
     public static let accountEventsPublisher = PassthroughSubject<Event,Never>();
@@ -43,14 +42,14 @@ open class AccountManager {
 //    public static let saltedPasswordCache = AccountManagerScramSaltedPasswordCache();
     
     public static func initialize() throws {
-        try queue.sync {
-            try reloadAccounts();
-        }
+        try _accounts.with({ _accounts in
+            try reloadAccounts(_accounts: &_accounts);
+        })
     }
     
     @available(*, deprecated, message: "Will be removed in future versions after account data conversion is completed")
     public static func convertOldAccounts() throws {
-        try queue.sync {
+        try _accounts.with({ _accounts in
             guard _accounts.isEmpty else {
                 return;
             }
@@ -100,8 +99,8 @@ open class AccountManager {
                     UserDefaults.standard.removeObject(forKey: key);
                 }
             }
-            try reloadAccounts();
-        }
+            try reloadAccounts(_accounts: &_accounts);
+        })
     }
     
     @available(*, deprecated, message: "Will be removed in future versions after account data conversion is completed")
@@ -126,11 +125,11 @@ open class AccountManager {
         return AccountOld(name: jid, data: dict);
     }
     
-    private static func reloadAccounts() throws {
+    private static func reloadAccounts(_accounts: inout [BareJID: Account]) throws {
 //        self._accounts.removeAll();
         let accounts = try DBAccountStore.list();
         for source in accounts {
-            if var account = self._accounts[source.name] {
+            if var account = _accounts[source.name] {
                 if let credentials = credentials(for: account.name) {
                     account.credentials = credentials;
                     account.serverEndpoint = source.serverEndpoint;
@@ -138,40 +137,41 @@ open class AccountManager {
                     account.push = source.push;
                     account.enabled = source.enabled;
                     account.additional = source.additional;
-                    self._accounts[account.name] = account;
+                    _accounts[account.name] = account;
                     
+                    let acc = account;
                     DispatchQueue.main.async {
-                        self.accountEventsPublisher.send(account.enabled ? .enabled(account, false) : .disabled(account));
+                        self.accountEventsPublisher.send(acc.enabled ? .enabled(acc, false) : .disabled(acc));
                     }
                 }
             } else {
                 var account = source;
                 if let credentials = credentials(for: account.name) {
                     account.credentials = credentials;
-                    self._accounts[account.name] = account;
+                    _accounts[account.name] = account;
                 }
             }
         }
     }
     
     public static func activeAccounts() -> [Account] {
-        return queue.sync {
+        return _accounts.with({ _accounts in
             return _accounts.values.filter({ $0.enabled });
-        }
+        })
     }
     
     public static func accountNames() -> [BareJID] {
-        return self.queue.sync {
+        return _accounts.with({ _accounts in
             return _accounts.keys.sorted(by: { (j1, j2) -> Bool in
                 j1.description.compare(j2.description) == .orderedAscending;
             });
-        }
+        })
     }
 
     public static func account(for jid: BareJID) -> Account? {
-        return self.queue.sync {
-            return self._accounts[jid];
-        }
+        return _accounts.with({ _accounts in
+            return _accounts[jid];
+        })
     }
     
     private static func credentials(for account: BareJID) -> Credentials? {
@@ -235,7 +235,7 @@ open class AccountManager {
     }
     
     public static func modifyAccount(for jid: BareJID, _ block: @escaping (inout Account)->Void) throws {
-        try self.queue.sync {
+        try _accounts.with({ _accounts in
             let oldValue = _accounts[jid];
             
             var newValue = oldValue ?? Account(uuid: UUID(),name: jid, enabled: true);
@@ -255,18 +255,19 @@ open class AccountManager {
                 try DBAccountStore.create(account: newValue);
             }
                          
-            self._accounts[newValue.name] = newValue;
+            _accounts[newValue.name] = newValue;
                         
             let reconnect = oldValue?.credentials.password != newValue.credentials.password || oldValue?.acceptedCertificate != newValue.acceptedCertificate || oldValue?.enabled != newValue.enabled || oldValue?.serverEndpoint != newValue.serverEndpoint || oldValue?.omemoDeviceId != newValue.omemoDeviceId;
             
+            let newValue1 = newValue;
             DispatchQueue.main.async {
-                self.accountEventsPublisher.send(newValue.enabled ? .enabled(newValue, reconnect) : .disabled(newValue));
+                self.accountEventsPublisher.send(newValue1.enabled ? .enabled(newValue1, reconnect) : .disabled(newValue1));
             }
-        }
+        })
     }
 
     public static func deleteAccount(for jid: BareJID) throws {
-        try queue.sync {
+        try _accounts.with({ _accounts in
             var query = AccountManager.accountQuery(jid.description);
             query.removeValue(forKey: String(kSecMatchLimit));
             query.removeValue(forKey: String(kSecReturnAttributes));
@@ -275,7 +276,7 @@ open class AccountManager {
                 throw error;
             }
             
-            guard let account = self._accounts.removeValue(forKey: jid) else {
+            guard let account = _accounts.removeValue(forKey: jid) else {
                 return;
             }
             NotificationEncryptionKeys.set(key: nil, for: account.name);
@@ -283,7 +284,7 @@ open class AccountManager {
             DispatchQueue.main.async {
                 self.accountEventsPublisher.send(.removed(account));
             }
-        }
+        })
     }
     
     private static func deleteAccountOldCredentials(for jid: BareJID) throws {

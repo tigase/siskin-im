@@ -116,7 +116,7 @@ extension BaseChatViewController: PHPickerViewControllerDelegate {
         }
     }
     
-    private func handleLoaded(imageUrl url: URL?, error: Error?) {
+    private nonisolated func handleLoaded(imageUrl url: URL?, error: Error?) {
         guard let url = url, error == nil else {
             DispatchQueue.main.async {
                 self.showAlert(shareError: .noAccessError);
@@ -136,12 +136,14 @@ extension BaseChatViewController: PHPickerViewControllerDelegate {
                 try await upload(imageUrl: localUrl, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "jpg"));
             } catch ShareError.cancelled {
             } catch {
-                self.showAlert(error: error);
+                await MainActor.run(body: {
+                    self.showAlert(error: error);
+                });
             }
         }
     }
     
-    private func handleLoaded(movieUrl url: URL?, error: Error?) {
+    private nonisolated func handleLoaded(movieUrl url: URL?, error: Error?) {
         guard let url = url, error == nil else {
             DispatchQueue.main.async {
                 self.showAlert(shareError: .noAccessError);
@@ -161,7 +163,9 @@ extension BaseChatViewController: PHPickerViewControllerDelegate {
                 try await upload(movieUrl: localUrl, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "mov"));
             } catch ShareError.cancelled {
             } catch {
-                self.showAlert(error: error);
+                await MainActor.run(body: {
+                    self.showAlert(error: error);
+                })
             }
         }
     }
@@ -256,22 +260,6 @@ extension BaseChatViewController: UIImagePickerControllerDelegate, UINavigationC
         try await uploadFile(url: fileUrl, filename: fileInfo.filenameWithSuffix);
     }
         
-    private func copyFileLocally(url: URL) -> URL? {
-        let filename = url.lastPathComponent;
-        var suffix: String = "";
-        if let idx = filename.lastIndex(of: ".") {
-            suffix = String(filename.suffix(from: idx));
-        }
-        
-        let tmpUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + suffix, isDirectory: false);
-        do {
-            try FileManager.default.copyItem(at: url, to: tmpUrl);
-        } catch {
-            return nil;
-        }
-        return tmpUrl;
-    }
-        
     private func uploadFile(url fileUrl: URL, filename: String) async throws {
         let uploaded = try await self.share(filename: filename, url: fileUrl);
 
@@ -284,4 +272,20 @@ extension BaseChatViewController: UIImagePickerControllerDelegate, UINavigationC
         try await self.sendAttachment(originalUrl: fileUrl, uploadedUrl: uploaded.url.absoluteString, appendix: appendix);
     }
     
+}
+
+private func copyFileLocally(url: URL) -> URL? {
+    let filename = url.lastPathComponent;
+    var suffix: String = "";
+    if let idx = filename.lastIndex(of: ".") {
+        suffix = String(filename.suffix(from: idx));
+    }
+    
+    let tmpUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + suffix, isDirectory: false);
+    do {
+        try FileManager.default.copyItem(at: url, to: tmpUrl);
+    } catch {
+        return nil;
+    }
+    return tmpUrl;
 }

@@ -23,9 +23,9 @@ import Foundation
 import Martin
 import UserNotifications
 import Combine
-import TigaseLogging
+@preconcurrency import TigaseLogging
 
-class MucEventHandler: XmppServiceExtension {
+final class MucEventHandler: XmppServiceExtension, Sendable {
         
     static let instance = MucEventHandler();
 
@@ -163,7 +163,7 @@ class MucEventHandler: XmppServiceExtension {
     }
 }
 
-class CustomMucModule: MucModule {
+class CustomMucModule: MucModule, @unchecked Sendable {
     
     override func join(room: RoomProtocol, fetchHistory: RoomHistoryFetch) async throws -> RoomJoinResult {
         let result = try await super.join(room: room, fetchHistory: fetchHistory);

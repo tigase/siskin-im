@@ -23,10 +23,11 @@ import Foundation
 import Martin
 import MartinOMEMO
 import os
-import Combine
-import TigaseLogging
+@preconcurrency import Combine
+@preconcurrency import TigaseLogging
 import Shared
 
+@preconcurrency
 class MessageEventHandler: XmppServiceExtension {
     
     public static let instance = MessageEventHandler();
@@ -98,12 +99,13 @@ class MessageEventHandler: XmppServiceExtension {
     }
     
     private var cancellables: Set<AnyCancellable> = [];
+    private let queue = DispatchQueue(label: "MessageEventHandlerQueue");
     
     init() {
         DBChatHistoryStore.instance.markedAsRead.filter({ !$0.onlyLocally }).sink(receiveValue: { [weak self] marked in
             self?.sendDisplayed(marked);
         }).store(in: &cancellables);
-        MessageEventHandler.eventsPublisher.receive(on: MessageEventHandler.syncSinceQueue).sink(receiveValue: { [weak self] event in
+        MessageEventHandler.eventsPublisher.receive(on: queue).sink(receiveValue: { [weak self] event in
             self?.syncStateChanged(event);
         }).store(in: &cancellables);
     }
@@ -359,24 +361,23 @@ class MessageEventHandler: XmppServiceExtension {
         }
     }
     
-    private static var syncSinceQueue = DispatchQueue(label: "syncSinceQueue");
-    private static var syncSince: [BareJID: Date] = [:];
+    private static let syncSince: UnfairLock<[BareJID:Date]> = UnfairLock(state: [:]);
         
     static func scheduleMessageSync(for account: BareJID) {
         if let syncMessagesSince = DBChatHistoryStore.instance.lastMessageTimestamp(for: account) {
             // use last "received" stable stanza id for account MAM archive in case of MAM:2?
-            syncSinceQueue.async {
-                self.syncSince[account] = syncMessagesSince;
-            }
+            syncSince.with({
+                $0[account] = syncMessagesSince
+            })
         }
     }
         
     static func syncMessagesScheduled(for client: XMPPClient) {
-        syncSinceQueue.async {
-            let syncMessagesSince = syncSince.removeValue(forKey: client.userBareJid);
-            Task {
-                try await syncMessages(for: client, since: syncMessagesSince);
-            }
+        let syncMessagesSince = syncSince.with({
+            $0.removeValue(forKey: client.userBareJid);
+        })
+        Task {
+            try await syncMessages(for: client, since: syncMessagesSince);
         }
     }
         

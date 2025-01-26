@@ -79,6 +79,7 @@ class BadgedButton: UIButton {
     
 }
 
+@MainActor
 private var badgeHandle: UInt8 = 0
 
 class BadgedBarButtonItem: UIBarButtonItem {
@@ -834,6 +835,7 @@ class ChatsListViewController: UITableViewController, UISearchResultsUpdating {
         }
     }
     
+    @preconcurrency
     class ChatsDataSource {
         
         weak var controller: ChatsListViewController?;
@@ -860,29 +862,32 @@ class ChatsListViewController: UITableViewController, UISearchResultsUpdating {
             let oldItems = self.items;
             
             let diffs = newItems.difference(from: oldItems).inferringMoves();
-            var removed: [Int] = [];
-            var inserted: [Int] = [];
-            var moved: [(Int,Int)] = [];
+            var _removed: [Int] = [];
+            var _inserted: [Int] = [];
+            var _moved: [(Int,Int)] = [];
             for action in diffs {
                 switch action {
                 case .remove(let offset, _, let to):
                     if let idx = to {
-                        moved.append((offset, idx));
+                        _moved.append((offset, idx));
                     } else {
-                        removed.append(offset);
+                        _removed.append(offset);
                     }
                 case .insert(let offset, _, let from):
                     if from == nil {
-                        inserted.append(offset);
+                        _inserted.append(offset);
                     }
                 }
             }
             
-            guard (!removed.isEmpty) || (!moved.isEmpty) || (!inserted.isEmpty) else {
+            guard (!_removed.isEmpty) || (!_moved.isEmpty) || (!_inserted.isEmpty) else {
                 return;
             }
             
-            let updateFn = {
+            let moved = _moved;
+            let removed = _removed;
+            let inserted = _inserted;
+            let updateFn: (@MainActor @Sendable ()->Void) = {
                 self.items = newItems;
                 self.controller?.tableView.beginUpdates();
                 if !removed.isEmpty {
@@ -901,8 +906,6 @@ class ChatsListViewController: UITableViewController, UISearchResultsUpdating {
                 DispatchQueue.main.sync {
                     updateFn();
                 }
-            } else {
-                updateFn();
             }
         }
                 

@@ -220,11 +220,12 @@ class RegisterAccountController: DataFormController {
     }
     
     func retrieveRegistrationForm(domain: String, acceptedCertificate: SSLCertificateInfo?) {
-        self.task = InBandRegistrationModule.AccountRegistrationAsyncTask(domainName: domain, preauth: self.preauth);
-        task?.acceptedSslCertificate = acceptedCertificate;
+        let task = InBandRegistrationModule.AccountRegistrationAsyncTask(domainName: domain, preauth: self.preauth);
+        task.acceptedSslCertificate = acceptedCertificate;
+        self.task = task;
         Task {
             do {
-                let result = try await task!.retrieveForm();
+                let result = try await task.retrieveForm();
                 await MainActor.run(body: {
                     self.nextButton.isEnabled = true;
                     self.hideIndicator();

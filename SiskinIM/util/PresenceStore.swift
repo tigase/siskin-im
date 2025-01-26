@@ -23,6 +23,7 @@ import Foundation
 import Martin
 import Combine
 
+@preconcurrency
 class PresenceStore: Martin.PresenceStore {
     
     public static let instance = PresenceStore.init();

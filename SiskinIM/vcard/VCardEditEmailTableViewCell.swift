@@ -36,12 +36,14 @@ class VCardEditEmailTableViewCell: VCardEntryTypeAwareTableViewCell, UITextField
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
-        let typePicker = UIPickerView();
-        typePicker.dataSource = self;
-        typePicker.delegate = self;
-        typeView.inputView = typePicker;
-        
-        emailView.delegate = self;
+        MainActor.assumeIsolated {
+            let typePicker = UIPickerView();
+            typePicker.dataSource = self;
+            typePicker.delegate = self;
+            typeView.inputView = typePicker;
+            
+            emailView.delegate = self;
+        }
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {

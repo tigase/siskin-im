@@ -20,7 +20,7 @@
 //
 
 import UIKit
-import UserNotifications
+@preconcurrency import UserNotifications
 import Martin
 import Shared
 import WebRTC
@@ -89,7 +89,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UNUserNotificationCenter.current().setNotificationCategories(Set(categories));
         
         
-        CallManager.initializeCallManager();
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.serverCertificateError), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.pushNotificationRegistrationFailed), name: Notification.Name("pushNotificationsRegistrationFailed"), object: nil);
         AccountManager.accountEventsPublisher.sink(receiveValue: { [weak self] action in
@@ -160,6 +159,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
 
+    @MainActor
     func applicationKeepOnlineOnAwayFinished(_ application: UIApplication) {
         let taskId = backgroundTaskId;
         guard taskId != .invalid else {
@@ -176,7 +176,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func applicationWillEnterForeground(_ application: UIApplication) {
-        CallManager.initializeCallManager();
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
         UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
             let toDiscard = notifications.filter({(notification) in
@@ -560,10 +559,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                     completionHandler(.newData);
                                     return;
                                 }
-                                CallManager.instance?.endCall(on: account.bareJid, with: payload.sender.bareJid, sid: sid, completionHandler: {
+                                Task {
+                                    await CallManager.instance?.endCall(on: account.bareJid, with: payload.sender.bareJid, sid: sid);
                                     self.logger.debug("ended call");
                                     completionHandler(.newData);
-                                })
+                                }
                                 return;
                             }
                         }

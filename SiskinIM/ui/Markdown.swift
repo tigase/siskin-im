@@ -20,7 +20,7 @@
 //
 
 import UIKit
-import TigaseLogging
+@preconcurrency import TigaseLogging
 
 extension unichar: ExpressibleByUnicodeScalarLiteral {
     public typealias UnicodeScalarLiteralType = UnicodeScalar
@@ -30,9 +30,12 @@ extension unichar: ExpressibleByUnicodeScalarLiteral {
     }
 }
 
+@preconcurrency
 class Markdown {
     
-    static let quoteParagraphStyle: NSParagraphStyle = {
+    private static let instance = Markdown();
+    
+    private let quoteParagraphStyle: NSParagraphStyle = {
         var paragraphStyle = NSMutableParagraphStyle();
         paragraphStyle.headIndent = 16;
         paragraphStyle.firstLineHeadIndent = 4;
@@ -40,7 +43,7 @@ class Markdown {
         return paragraphStyle;
     }();
     
-    static let codeParagraphStyle: NSParagraphStyle = {
+    private let codeParagraphStyle: NSParagraphStyle = {
         var paragraphStyle = NSMutableParagraphStyle();
         paragraphStyle.headIndent = 10;
         paragraphStyle.tailIndent = -10;
@@ -48,6 +51,8 @@ class Markdown {
         paragraphStyle.alignment = .natural;
         return paragraphStyle;
     }();
+    
+    init() {}
     
     static func font(withTextStyle textStyle: UIFont.TextStyle, andTraits traits: UIFontDescriptor.SymbolicTraits) -> UIFont {
         let preferredFont = UIFont.preferredFont(forTextStyle: textStyle);
@@ -196,7 +201,7 @@ class Markdown {
                             msg.addAttribute(.font, value: codeFont, range: NSRange(location: codeStart, length: idx - codeStart));
 
                             if isBlock {
-                                msg.addAttribute(.paragraphStyle, value: codeParagraphStyle, range: NSRange(location: codeStart, length: idx - codeStart));
+                                msg.addAttribute(.paragraphStyle, value: instance.codeParagraphStyle, range: NSRange(location: codeStart, length: idx - codeStart));
                             }
                                                                                     
                             if idx - codeStart > 1 {
@@ -245,7 +250,7 @@ class Markdown {
                         if idx < message.length {
                             let range = NSRange(location: quoteStart!, length: idx - quoteStart!);
                             logger.debug("message possibly causing a crash: \(message), range: \(range), length: \(message.length)");
-                            msg.addAttribute(.paragraphStyle, value: Markdown.quoteParagraphStyle, range: range);
+                            msg.addAttribute(.paragraphStyle, value: Markdown.instance.quoteParagraphStyle, range: range);
                         }
                         quoteStart = nil;
                     }
@@ -261,7 +266,7 @@ class Markdown {
         }
 
         if (quoteStart != nil) {
-            msg.addAttribute(.paragraphStyle, value: Markdown.quoteParagraphStyle, range: NSRange(location: quoteStart!, length: idx - quoteStart!));
+            msg.addAttribute(.paragraphStyle, value: Markdown.instance.quoteParagraphStyle, range: NSRange(location: quoteStart!, length: idx - quoteStart!));
             quoteStart = nil;
         }
 
@@ -296,7 +301,7 @@ extension String {
         "😟": [":-(", ":("]
     ];
     
-    static var emojis: [String:String] = Dictionary(uniqueKeysWithValues: String.emojisList.flatMap({ (arg0) -> [(String,String)] in
+    static let emojis: [String:String] = Dictionary(uniqueKeysWithValues: String.emojisList.flatMap({ (arg0) -> [(String,String)] in
         let (k, list) = arg0
         return list.map { v in return (v, k)};
     }));

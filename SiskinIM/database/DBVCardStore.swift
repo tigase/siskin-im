@@ -21,7 +21,7 @@
 
 import Foundation
 import Martin
-import TigaseSQLite3
+@preconcurrency import TigaseSQLite3
 
 extension Query {
 
@@ -31,6 +31,7 @@ extension Query {
     
 }
 
+@preconcurrency 
 class DBVCardStore {
     
     public static let VCARD_UPDATED = Notification.Name("vcardUpdated");

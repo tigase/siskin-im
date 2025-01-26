@@ -66,7 +66,7 @@ class LinkPreviewChatTableViewCell: BaseChatTableViewCell {
                 guard meta != nil else {
                     return;
                 }
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [weak self] in
                     guard let that = self, that.url == url else {
                         return;
                     }

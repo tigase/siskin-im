@@ -29,28 +29,30 @@ class DeviceMemoryUsageTableViewCell: UITableViewCell {
         
     override func awakeFromNib() {
         super.awakeFromNib();
-        chartView.translatesAutoresizingMaskIntoConstraints = false;
-        contentView.addSubview(chartView);
-        NSLayoutConstraint.activate([
-            contentView.topAnchor.constraint(equalTo: chartView.topAnchor, constant: -20),
-            contentView.leadingAnchor.constraint(equalTo: chartView.leadingAnchor, constant: -20),
-            contentView.trailingAnchor.constraint(equalTo: chartView.trailingAnchor, constant: 20),
-            contentView.bottomAnchor.constraint(equalTo: chartView.bottomAnchor, constant: 20)
-        ]);
-        
-        chartView.maximumValue = Double(diskSpace.total);
-        
-        let downloadsSize = DownloadStore.instance.size;
-        let metadataSize = MetadataCache.instance.size;
-        
-        let usedByUs = downloadsSize + metadataSize;
-        
-        chartView.items = [
-            .init(color: .systemYellow, value: Double(downloadsSize), name: NSLocalizedString("Downloads", comment: "memory usage label")),
-            .init(color: .systemGreen, value: Double(metadataSize), name: NSLocalizedString("Link previews", comment: "memory usage label")),
-            .init(color: .lightGray, value: Double(diskSpace.used - usedByUs), name: NSLocalizedString("Other apps", comment: "memory usage label")),
-            .init(color: .systemGray, value: Double(diskSpace.free), name: NSLocalizedString("Free", comment: "memory usage label"))
-        ]
+        MainActor.assumeIsolated {
+            chartView.translatesAutoresizingMaskIntoConstraints = false;
+            contentView.addSubview(chartView);
+            NSLayoutConstraint.activate([
+                contentView.topAnchor.constraint(equalTo: chartView.topAnchor, constant: -20),
+                contentView.leadingAnchor.constraint(equalTo: chartView.leadingAnchor, constant: -20),
+                contentView.trailingAnchor.constraint(equalTo: chartView.trailingAnchor, constant: 20),
+                contentView.bottomAnchor.constraint(equalTo: chartView.bottomAnchor, constant: 20)
+            ]);
+            
+            chartView.maximumValue = Double(diskSpace.total);
+            
+            let downloadsSize = DownloadStore.instance.size;
+            let metadataSize = MetadataCache.instance.size;
+            
+            let usedByUs = downloadsSize + metadataSize;
+            
+            chartView.items = [
+                .init(color: .systemYellow, value: Double(downloadsSize), name: NSLocalizedString("Downloads", comment: "memory usage label")),
+                .init(color: .systemGreen, value: Double(metadataSize), name: NSLocalizedString("Link previews", comment: "memory usage label")),
+                .init(color: .lightGray, value: Double(diskSpace.used - usedByUs), name: NSLocalizedString("Other apps", comment: "memory usage label")),
+                .init(color: .systemGray, value: Double(diskSpace.free), name: NSLocalizedString("Free", comment: "memory usage label"))
+            ]
+        }
     }
     
     struct DiskSpace {

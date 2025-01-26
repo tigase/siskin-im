@@ -24,7 +24,7 @@ import Martin
 import Combine
 import os
 
-class AvatarEventHandler: XmppServiceExtension {
+final class AvatarEventHandler: XmppServiceExtension, Sendable {
     
     static let instance = AvatarEventHandler();
 

@@ -24,6 +24,7 @@ import Martin
 import UIKit
 import Combine
 
+@preconcurrency
 public class Contact: DisplayableIdWithKeyProtocol {
 
     public let key: Key;
@@ -66,13 +67,13 @@ public class Contact: DisplayableIdWithKeyProtocol {
         ContactManager.instance.release(key);
     }
     
-    public struct Key: Hashable, Equatable {
+    public struct Key: Hashable, Equatable, Sendable {
         public let account: BareJID;
         public let jid: BareJID;
         public let type: KeyType
     }
 
-    public enum KeyType: Hashable, Equatable {
+    public enum KeyType: Hashable, Equatable, Sendable {
         case buddy
         case occupant(nickname: String)
         case participant(id: String)
@@ -84,6 +85,7 @@ public class Contact: DisplayableIdWithKeyProtocol {
     
 }
 
+@preconcurrency
 public class ContactManager {
     
     public let queue = DispatchQueue(label: "contactManager");

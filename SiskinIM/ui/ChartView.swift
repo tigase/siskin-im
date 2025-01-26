@@ -139,9 +139,11 @@ class UsageChartView: UIStackView {
         
         override func awakeFromNib() {
             super.awakeFromNib();
-            isOpaque = false;
-            setContentHuggingPriority(.defaultLow, for: .horizontal);
-            setContentHuggingPriority(.defaultLow, for: .vertical);
+            MainActor.assumeIsolated {
+                isOpaque = false;
+                setContentHuggingPriority(.defaultLow, for: .horizontal);
+                setContentHuggingPriority(.defaultLow, for: .vertical);
+            }
         }
         
         override func draw(_ rect: CGRect) {

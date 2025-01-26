@@ -23,6 +23,7 @@ import Foundation
 import LinkPresentation
 import Martin
 
+@preconcurrency
 class MetadataCache {
 
     static let instance = MetadataCache();
@@ -91,7 +92,7 @@ class MetadataCache {
         }
     }
     
-    func generateMetadata(for url: URL, withId id: String, completionHandler: @escaping (LPLinkMetadata?)->Void) {
+    func generateMetadata(for url: URL, withId id: String, completionHandler: @escaping @Sendable (LPLinkMetadata?)->Void) {
         queue.async {
             if let queue = self.inProgress[url] {
                 queue.addOperation {

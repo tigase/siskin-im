@@ -23,6 +23,7 @@ import Foundation
 import UIKit
 import Martin
 
+@preconcurrency
 class DownloadStore {
     
     static let instance = DownloadStore();

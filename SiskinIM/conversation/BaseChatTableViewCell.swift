@@ -101,13 +101,15 @@ class BaseChatTableViewCell: UITableViewCell, UIDocumentInteractionControllerDel
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
-        if avatarView != nil {
-            avatarView!.layer.masksToBounds = true;
-            avatarView!.layer.cornerRadius = avatarView!.frame.height / 2;
+        MainActor.assumeIsolated {
+            if avatarView != nil {
+                avatarView!.layer.masksToBounds = true;
+                avatarView!.layer.cornerRadius = avatarView!.frame.height / 2;
+            }
+            stateView?.textColor = UIColor.secondaryLabel;
+            nicknameView?.textColor = UIColor.secondaryLabel;
+            nicknameView?.font = UIFontMetrics(forTextStyle: .footnote).scaledFont(for: UIFont(descriptor: UIFont.preferredFont(forTextStyle: .footnote).fontDescriptor.withSymbolicTraits(.traitBold)!, size: 0));
         }
-        stateView?.textColor = UIColor.secondaryLabel;
-        nicknameView?.textColor = UIColor.secondaryLabel;
-        nicknameView?.font = UIFontMetrics(forTextStyle: .footnote).scaledFont(for: UIFont(descriptor: UIFont.preferredFont(forTextStyle: .footnote).fontDescriptor.withSymbolicTraits(.traitBold)!, size: 0));
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {

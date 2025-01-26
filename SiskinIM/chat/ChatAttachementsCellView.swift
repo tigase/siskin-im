@@ -6,6 +6,7 @@
 //  Copyright © 2020 Tigase, Inc. All rights reserved.
 //
 
+@preconcurrency import Foundation
 import UIKit
 import MobileCoreServices
 import Martin

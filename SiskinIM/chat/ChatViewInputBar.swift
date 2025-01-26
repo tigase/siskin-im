@@ -203,7 +203,7 @@ class ChatViewInputBar: UIView, UITextViewDelegate, NSTextStorageDelegate {
         bottomStackView.addArrangedSubview(button);
     }
     
-    func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorage.EditActions, range editedRange: NSRange, changeInLength delta: Int) {
+    nonisolated func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorage.EditActions, range editedRange: NSRange, changeInLength delta: Int) {
         let fullRange = NSRange(0..<textStorage.length);
         textStorage.fixAttributes(in: fullRange);
         //textStorage.setAttributes([.font: self.font!], range: fullRange);
@@ -216,7 +216,7 @@ class ChatViewInputBar: UIView, UITextViewDelegate, NSTextStorageDelegate {
 }
 
 
-
+@MainActor
 protocol ChatViewInputBarDelegate: AnyObject {
     
     func sendMessage();
@@ -408,7 +408,9 @@ class VoiceRecordingView: UIView, AVAudioRecorderDelegate {
         recordingStartTime = Date();
         updateTime();
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { [weak self] _ in
-            self?.updateTime();
+            DispatchQueue.main.async { [weak self] in
+                self?.updateTime();
+            }
         })
         
         let settings = encoding.settings;
@@ -549,11 +551,11 @@ class VoiceRecordingView: UIView, AVAudioRecorderDelegate {
         self.hideVoiceRecordingView(self);
     }
     
-    func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
+    nonisolated func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
 
     }
     
-    func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: Error?) {
+    nonisolated func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: Error?) {
         
     }
 }

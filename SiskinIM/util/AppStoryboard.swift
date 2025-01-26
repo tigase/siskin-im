@@ -29,14 +29,17 @@ enum AppStoryboard: String {
     case Settings = "Settings"
     case Account = "Account"
     
+    @MainActor
     var instance: UIStoryboard {
         return UIStoryboard(name: self.rawValue, bundle: Bundle.main);
     }
     
+    @MainActor
     func instantiateViewController(withIdentifier identifier: String) -> UIViewController {
         return instance.instantiateViewController(withIdentifier: identifier);
     }
     
+    @MainActor
     func instantiateViewController<T: UIViewController>(ofClass: T.Type) -> T {
         let storyboardID = ofClass.storyboardID;
         return instance.instantiateViewController(withIdentifier: storyboardID) as! T;

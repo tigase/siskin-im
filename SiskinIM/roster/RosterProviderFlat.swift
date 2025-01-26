@@ -25,6 +25,7 @@ import Martin
 import Combine
 import UIKit
 
+@preconcurrency
 public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>, RosterProvider {
     
     private var items: [RosterProviderFlatItem] = [];
@@ -84,7 +85,7 @@ public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>,
     }
 }
 
-public class RosterProviderFlatItem: RosterProviderItem, Hashable {
+public final class RosterProviderFlatItem: RosterProviderItem, Hashable {
     
     public static func == (lhs: RosterProviderFlatItem, rhs: RosterProviderFlatItem) -> Bool {
         return lhs.account == rhs.account && lhs.jid == rhs.jid && lhs.displayName == rhs.displayName;

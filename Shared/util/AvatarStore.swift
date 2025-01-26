@@ -21,7 +21,7 @@
 
 import UIKit
 import Martin
-import TigaseSQLite3
+@preconcurrency import TigaseSQLite3
 
 extension Query {
     static let avatarFindHash = Query("SELECT type, hash FROM avatars_cache WHERE account = :account AND jid = :jid");
@@ -148,7 +148,7 @@ public struct AvatarHash: Comparable, Equatable {
     }
 }
 
-public enum AvatarType: String, Comparable {
+public enum AvatarType: String, Comparable, Sendable {
     public static func < (lhs: AvatarType, rhs: AvatarType) -> Bool {
         return lhs.value < rhs.value;
     }

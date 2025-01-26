@@ -35,5 +35,6 @@ public class NotificationEncryptionKeys {
     }
 }
 
+extension UserDefaults: @unchecked Sendable {}
 
 

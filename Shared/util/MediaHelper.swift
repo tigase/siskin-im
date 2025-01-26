@@ -22,6 +22,8 @@
 import UIKit
 import AVKit
 
+extension AVAssetExportSession: @unchecked Sendable {}
+
 public struct ShareFileInfo: Sendable {
     
     public let filename: String;

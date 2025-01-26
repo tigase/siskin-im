@@ -45,7 +45,7 @@ extension XMPPClient: Hashable {
     
 }
 
-
+@preconcurrency
 open class XmppService {
     
     public static let SERVER_CERTIFICATE_ERROR = Notification.Name("serverCertificateError");
@@ -101,6 +101,8 @@ open class XmppService {
     fileprivate let dnsSrvResolverCache: DNSSrvResolverCache;
     fileprivate let dnsSrvResolver: DNSSrvResolver;
         
+    private let systemName = UnfairLock<String?>(state: nil);
+    
     init() {
         self.dnsSrvResolverCache = DNSSrvResolverWithCache.InMemoryCache(store: DNSSrvDiskCache(cacheDirectoryName: "dns-cache"));
         self.dnsSrvResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(directTlsEnabled: true), cache: self.dnsSrvResolverCache);
@@ -160,7 +162,11 @@ open class XmppService {
         }
     }
     
+    @MainActor
     open func initialize() {
+        systemName.with({
+            $0 = UIDevice.current.systemName;
+        })
         for account in AccountManager.activeAccounts() {
             let client = self.initializeClient(for: account);
             self.queue.sync {
@@ -233,7 +239,10 @@ open class XmppService {
     }
     
     private func connect(client: XMPPClient, for account: Account) {
-        client.configure(for: account);
+        Task {
+            await client.configure(for: account);
+            try! client.login(lastSeeOtherHost: account.lastEndpoint);
+        }
 //        switch account.resourceType {
 //        case .automatic:
 //            client.connectionConfiguration.resource = nil;
@@ -247,8 +256,6 @@ open class XmppService {
 //        if let streamFeaturesModule: StreamFeaturesModuleWithPipelining = client.modulesManager.moduleOrNil(.streamFeatures) as? StreamFeaturesModuleWithPipelining {
 //            streamFeaturesModule.enabled = Settings.xmppPipelining;
 //        }
-        
-        try! client.login(lastSeeOtherHost: account.lastEndpoint);
     }
         
     private class ClientCancellables {
@@ -323,6 +330,7 @@ open class XmppService {
         clients.forEach(task);
     }
     
+    @MainActor
     open func backgroundTaskFinished() {
 //        guard applicationState != .active else {
 //            return;
@@ -433,8 +441,7 @@ open class XmppService {
         _ = client.modulesManager.register(ResourceBinderModule());
         _ = client.modulesManager.register(SessionEstablishmentModule());
         _ = client.modulesManager.register(DiscoveryModule(identity: DiscoveryModule.Identity(category: "client", type: "pc", name: (Bundle.main.infoDictionary!["CFBundleName"] as! String))));
-        _ = client.modulesManager.register(SoftwareVersionModule(version: SoftwareVersionModule.SoftwareVersion(name: Bundle.main.infoDictionary!["CFBundleName"] as! String, version: Bundle.main.infoDictionary!["CFBundleVersion"] as! String, os: UIDevice.current.systemName)));
-
+        _ = client.modulesManager.register(SoftwareVersionModule(version: SoftwareVersionModule.SoftwareVersion(name: Bundle.main.infoDictionary!["CFBundleName"] as! String, version: Bundle.main.infoDictionary!["CFBundleVersion"] as! String, os: systemName.with({ $0 }))));
         _ = client.modulesManager.register(RosterModule(rosterManager: RosterManagerBase(store: DBRosterStore.instance)));
 
         _ = client.modulesManager.register(VCardTempModule());

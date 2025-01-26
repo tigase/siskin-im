@@ -60,8 +60,10 @@ class ContactBasicTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
-        avatarView.layer.masksToBounds = true;
-        avatarView.layer.cornerRadius = avatarView.frame.width / 2;
+        MainActor.assumeIsolated {
+            avatarView.layer.masksToBounds = true;
+            avatarView.layer.cornerRadius = avatarView.frame.width / 2;
+        }
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {

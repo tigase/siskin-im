@@ -20,17 +20,20 @@
 //
 
 import UIKit
-import CallKit
+@preconcurrency import CallKit
 import PushKit
-import WebRTC
-import Martin
+@preconcurrency import WebRTC
+@preconcurrency import Martin
 import TigaseLogging
 import Shared
 import Combine
 import Intents
 import CryptoKit
 
-class CallManager: NSObject, CXProviderDelegate {    
+extension RTCIceCandidate: @unchecked Sendable {}
+
+@preconcurrency
+class CallManager: NSObject, CXProviderDelegate {
     
     static var isAvailable: Bool {
         let userLocale = NSLocale.current
@@ -44,18 +47,8 @@ class CallManager: NSObject, CXProviderDelegate {
         }
     }
     
-    private(set) static var instance: CallManager? = nil;
-    
-    static func initializeCallManager() {
-        if isAvailable {
-            if instance == nil {
-                instance = CallManager();
-            }
-        } else {
-            instance = nil;
-        }
-    }
-    
+    static let instance: CallManager? = { isAvailable ? CallManager() : nil }();
+        
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "CallManager")
     
     private let pushRegistry: PKPushRegistry;
@@ -105,6 +98,7 @@ class CallManager: NSObject, CXProviderDelegate {
 //        delegate?.callStateChanged(self);
 //    }
     
+    @preconcurrency
     private class ActiveCalls {
 
         public var publisher: Published<[CallBase]>.Publisher {
@@ -211,15 +205,7 @@ class CallManager: NSObject, CXProviderDelegate {
         
         self.logger.debug("reporting incoming call: \(call.uuid)")
         do {
-            let _: Void = try await withUnsafeThrowingContinuation({ continuation in
-                self.provider.reportNewIncomingCall(with: call.uuid, update: update, completion: { err in
-                    guard let error = err else {
-                        continuation.resume(returning: Void());
-                        return;
-                    }
-                    continuation.resume(throwing: error);
-                })
-            })
+            let _: Void = try await self.provider.reportNewIncomingCall(with: call.uuid, update: update);
             activeCalls.register(call: call);
     
             self.queue.sync {
@@ -271,13 +257,12 @@ class CallManager: NSObject, CXProviderDelegate {
     
     func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
         self.logger.debug("starting call: \(action.uuid)")
-
-        guard let call = activeCalls.call(forUUID: action.callUUID) else {
-            action.fail();
-            return;
-        }
         
         Task {
+            guard let call = activeCalls.call(forUUID: action.callUUID) else {
+                action.fail();
+                return;
+            }
             do {
                 try await call.start();
                 action.fulfill(withDateStarted: Date())
@@ -354,6 +339,7 @@ class CallManager: NSObject, CXProviderDelegate {
         self.logger.debug("operation timed out! for: \(action.uuid)");
     }
     
+    @MainActor
     static func showCallController(completionHandler: (VideoCallController)->Void) {
         var topController = UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.rootViewController;
         while (topController?.presentedViewController != nil) {
@@ -380,10 +366,12 @@ class CallManager: NSObject, CXProviderDelegate {
         guard activeCalls.call(forUUID: call.uuid) != nil else {
             return;
         }
-        let endCallAction = CXEndCallAction(call: call.uuid);
-        let transaction = CXTransaction(action: endCallAction);
-        callController.request(transaction) { error in
-            if let error = error {
+        Task {
+            let endCallAction = CXEndCallAction(call: call.uuid);
+            let transaction = CXTransaction(action: endCallAction);
+            do {
+                try await callController.request(transaction)
+            } catch {
                 #if targetEnvironment(simulator)
                 call.reset();
                 #else
@@ -393,35 +381,31 @@ class CallManager: NSObject, CXProviderDelegate {
         }
     }
     
-    func endCall(on account: BareJID, with jid: BareJID, sid: String, completionHandler: @escaping ()->Void) {
+    func endCall(on account: BareJID, with jid: BareJID, sid: String) async {
         logger.debug("endCall(on account) called");
-        queue.async {
-            guard let call = self.activeCalls.call(forAccount: account, jid: jid, sid: sid) else {
-                completionHandler();
-                return;
-            }
-            let endCallAction = CXEndCallAction(call: call.uuid);
-            let transaction = CXTransaction(action: endCallAction);
-            self.callController.request(transaction) { error in
-                call.reset();
-                completionHandler();
-            }
+        guard let call = self.activeCalls.call(forAccount: account, jid: jid, sid: sid) else {
+            return;
+        }
+        let endCallAction = CXEndCallAction(call: call.uuid);
+        let transaction = CXTransaction(action: endCallAction);
+        do {
+            try await self.callController.request(transaction)
+        } catch {
+            call.reset();
         }
     }
     
-    func endCall(on account: BareJID, sid: String, completionHandler: (()->Void)? = nil) {
+    func endCall(on account: BareJID, sid: String) async {
         logger.debug("endCall(on account) called");
-        queue.async {
-            guard let call = self.activeCalls.call(forAccount: account, sid: sid) else {
-                completionHandler?();
-                return;
-            }
-            let endCallAction = CXEndCallAction(call: call.uuid);
-            let transaction = CXTransaction(action: endCallAction);
-            self.callController.request(transaction) { error in
-                call.reset();
-                completionHandler?();
-            }
+        guard let call = self.activeCalls.call(forAccount: account, sid: sid) else {
+            return;
+        }
+        let endCallAction = CXEndCallAction(call: call.uuid);
+        let transaction = CXTransaction(action: endCallAction);
+        do {
+            try await self.callController.request(transaction)
+        } catch {
+            call.reset();
         }
     }
 
@@ -906,7 +890,7 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
     
     private func initiateWebRTC(iceServers: [RTCIceServer], offerMedia media: [Media]) throws {
         logger.debug("intiating WebRTC with iceServers: \(iceServers)")
-        self.currentConnection = VideoCallController.initiatePeerConnection(iceServers: iceServers, withDelegate: self);
+        self.currentConnection = JingleManager.initiatePeerConnection(iceServers: iceServers, withDelegate: self);
         if self.currentConnection != nil {
             if media.contains(.audio) {
                 let avsession = AVAudioSession.sharedInstance()
@@ -914,7 +898,7 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
                 try avsession.setPreferredIOBufferDuration(0.005)
                 //try avsession.setPreferredSampleRate(4_410)
 
-                self.localAudioTrack = VideoCallController.peerConnectionFactory.audioTrack(withTrackId: "audio-" + UUID().uuidString);
+                self.localAudioTrack = JingleManager.instance.connectionFactory.audioTrack(withTrackId: "audio-" + UUID().uuidString);
                 if let localAudioTrack = self.localAudioTrack {
                     self.currentConnection?.add(localAudioTrack, streamIds: ["RTCmS"]);
                 }
@@ -925,9 +909,9 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
             let hasAvPermission = AVCaptureDevice.authorizationStatus(for: .video) == .authorized;
             #endif
             if media.contains(.video) && hasAvPermission {
-                let videoSource = VideoCallController.peerConnectionFactory.videoSource();
+                let videoSource = JingleManager.instance.connectionFactory.videoSource();
                 self.localVideoSource = videoSource;
-                let localVideoTrack = VideoCallController.peerConnectionFactory.videoTrack(with: videoSource, trackId: "video-" + UUID().uuidString);
+                let localVideoTrack = JingleManager.instance.connectionFactory.videoTrack(with: videoSource, trackId: "video-" + UUID().uuidString);
                 self.localVideoTrack = localVideoTrack;
                 #if targetEnvironment(simulator)
                 let localVideoCapturer = RTCFileVideoCapturer(delegate: videoSource)
@@ -1117,13 +1101,13 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
     
     private func generateOfferAndSet(peerConnection: RTCPeerConnection, creatorProvider: @escaping (String)->Jingle.Content.Creator, localRole: Jingle.Content.Creator) async throws -> SDP {
         logger.debug("\(self), generating offer");
-        let sdpOffer = try await peerConnection.offer(for: VideoCallController.defaultCallConstraints);
+        let sdpOffer = try await peerConnection.offer(for: JingleManager.defaultCallConstraints);
         return try await setLocalDescription(peerConnection: peerConnection, sdp: sdpOffer, creatorProvider: creatorProvider, localRole: localRole);
     }
         
     private func generateAnswerAndSet(peerConnection: RTCPeerConnection, creatorProvider: @escaping (String)->Jingle.Content.Creator, localRole: Jingle.Content.Creator) async throws -> SDP {
         logger.debug("\(self), generating answer");
-        let sdpAnswer = try await peerConnection.answer(for: VideoCallController.defaultCallConstraints);
+        let sdpAnswer = try await peerConnection.answer(for: JingleManager.defaultCallConstraints);
         return try await setLocalDescription(peerConnection: peerConnection, sdp: sdpAnswer, creatorProvider: creatorProvider, localRole: localRole);
     }
     
@@ -1169,6 +1153,7 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
 
 }
 
+@preconcurrency
 protocol CallDelegate: AnyObject {
     
     func callDidStart(_ sender: Call);
@@ -1216,9 +1201,10 @@ extension CallManager: PKPushRegistryDelegate {
                                         completion();
                                     }
                                 } else {
-                                    self.endCall(on: account, with: sender.bareJid, sid: payload.sid, completionHandler: {
+                                    Task {
+                                        await self.endCall(on: account, with: sender.bareJid, sid: payload.sid);
                                         self.logger.debug("ended call");
-                                    })
+                                    }
                                 }
                                 return;
                             }

@@ -21,7 +21,7 @@
 
 import Foundation
 import Martin
-import TigaseSQLite3
+@preconcurrency import TigaseSQLite3
 
 extension Query {
     static let capsFindFeaturesForNode = Query("SELECT feature FROM caps_features WHERE node = :node");
@@ -32,6 +32,7 @@ extension Query {
     static let capsCountFeaturesForNode = Query("SELECT count(feature) FROM caps_features WHERE node = :node");
 }
 
+@preconcurrency
 class DBCapabilitiesCache: CapabilitiesCache {
     
     public static let instance = DBCapabilitiesCache();

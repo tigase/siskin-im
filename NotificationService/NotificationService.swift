@@ -20,15 +20,16 @@
 //
 
 import BackgroundTasks
-import UserNotifications
+@preconcurrency import UserNotifications
 import UIKit
 import Shared
 import Martin
 import os.log
-import TigaseSQLite3
+@preconcurrency import TigaseSQLite3
 import Intents
 import CryptoKit
 
+@preconcurrency
 class NotificationService: UNNotificationServiceExtension {
 
     var contentHandler: ((UNNotificationContent) -> Void)? {
@@ -61,30 +62,30 @@ class NotificationService: UNNotificationServiceExtension {
                                     Task {
                                         let content = await NotificationsManagerHelper.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: payload.sender.bareJid, nickname: payload.nickname, body: payload.message, provider: provider);
                                         await MainActor.run(body: {
-                                            contentHandler(content);
+                                            self.callContentHandler(content);
                                         })
                                     }
                                     return;
                                 }
                             }
                         }
-                        contentHandler(bestAttemptContent)
+                        self.callContentHandler(bestAttemptContent)
                     } else {
                         self.debug("got plain push with", bestAttemptContent.userInfo[AnyHashable("sender")] as? String as Any, bestAttemptContent.userInfo[AnyHashable("body")] as? String as Any, bestAttemptContent.userInfo[AnyHashable("unread-messages")] as? Int as Any, bestAttemptContent.userInfo[AnyHashable("nickname")] as? String as Any);
                         Task {
                             let content = await NotificationsManagerHelper.prepareNewMessageNotification(content: bestAttemptContent, account: account, sender: JID(bestAttemptContent.userInfo[AnyHashable("sender")] as? String)?.bareJid, nickname: bestAttemptContent.userInfo[AnyHashable("nickname")] as? String, body: bestAttemptContent.userInfo[AnyHashable("body")] as? String, provider: provider);
                             await MainActor.run(body: {
-                                contentHandler(content);
+                                self.callContentHandler(content);
                             })
                         }
                     }
                 }
                 return;
             } else {
-                contentHandler(bestAttemptContent);
+                self.callContentHandler(bestAttemptContent);
             }
         } else {
-            contentHandler(request.content);
+            self.callContentHandler(request.content);
         }
 //        if #available(iOS 13.0, *) {
 //            let taskRequest = BGAppRefreshTaskRequest(identifier: "org.tigase.messenger.mobile.refresh");
@@ -130,12 +131,22 @@ class NotificationService: UNNotificationServiceExtension {
         os_log("%{public}@", log: OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SiskinPush"), "\(Date()): \(data)");
     }
     
+    private func callContentHandler(_ content: UNNotificationContent) {
+        if let contentHandler = contentHandler {
+            contentHandler(content);
+        }
+        contentHandler = nil;
+        bestAttemptContent = nil;
+    }
+    
     override func serviceExtensionTimeWillExpire() {
         // Called just before the extension will be terminated by the system.
         // Use this as an opportunity to deliver your "best attempt" at modified content, otherwise the original push payload will be used.
         if let contentHandler = contentHandler, let bestAttemptContent =  bestAttemptContent {
             contentHandler(bestAttemptContent)
         }
+        contentHandler = nil;
+        bestAttemptContent = nil;
     }
 
 }
