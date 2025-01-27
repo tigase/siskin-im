@@ -20,7 +20,7 @@
 //
 
 import Foundation
-@preconcurrency import TigaseSQLite3
+import TigaseSQLite3
 import Martin
 @preconcurrency import TigaseLogging
 
@@ -86,39 +86,39 @@ extension Element: DatabaseConvertibleStringValue {
     }
 }
 
-extension Cursor {
-    
+extension Row {
+//
     public func jid(for column: String) -> JID? {
         return JID(string(for: column));
     }
-    
-    public func jid(at column: Int) -> JID? {
-        return JID(string(at: column));
-    }
-    
-    public subscript(index: Int) -> JID? {
-        return JID(string(at: index));
-    }
-    
+//    
+//    public func jid(at column: Int) -> JID? {
+//        return JID(string(at: column));
+//    }
+//    
+//    public subscript(index: Int) -> JID? {
+//        return JID(string(at: index));
+//    }
+//    
     public subscript(column: String) -> JID? {
         return JID(string(for: column));
     }
 }
-
-extension Cursor {
-    
+//
+extension Row {
+//
     public func bareJid(for column: String) -> BareJID? {
         return BareJID(string(for: column));
     }
-    
-    public func bareJid(at column: Int) -> BareJID? {
-        return BareJID(string(at: column));
-    }
-    
-    public subscript(index: Int) -> BareJID? {
-        return BareJID(string(at: index));
-    }
-    
+//    
+//    public func bareJid(at column: Int) -> BareJID? {
+//        return BareJID(string(at: column));
+//    }
+//    
+//    public subscript(index: Int) -> BareJID? {
+//        return BareJID(string(at: index));
+//    }
+//    
     public subscript(column: String) -> BareJID? {
         return BareJID(string(for: column));
     }

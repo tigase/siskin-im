@@ -620,8 +620,10 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
         
         nonisolated func videoView(_ videoView: RTCVideoRenderer, didChangeVideoSize videoSize: CGSize) {
             #if targetEnvironment(simulator)
-            self.videoSize = videoSize;
-            self.setNeedsLayout();
+            DispatchQueue.main.async {
+                self.videoSize = videoSize;
+                self.setNeedsLayout();
+            }
             #endif
         }
         

@@ -25,7 +25,7 @@ import UIKit
 import Shared
 import Martin
 import os.log
-@preconcurrency import TigaseSQLite3
+import TigaseSQLite3
 import Intents
 import CryptoKit
 
@@ -174,7 +174,7 @@ class ExtensionNotificationManagerProvider: NotificationManagerProvider {
     
     func conversationNotificationDetails(for account: BareJID, with jid: BareJID) -> ConversationNotificationDetails {
         let options = try! Database.main.reader({ database in
-            return try database.select(query: .conversationNotificationDetails, cached: false, params: ["account": account, "jid": jid]).mapFirst({ cursor -> ConversationOptionsProtocol in
+            return try database.select(query: .conversationNotificationDetails, cached: false, params: ["account": account, "jid": jid]).first.flatMap({ cursor -> ConversationOptionsProtocol in
                 let type = ConversationType(rawValue: cursor.int(for: "type")!) ?? .chat;
                 switch type {
                 case .chat:
@@ -194,7 +194,7 @@ class ExtensionNotificationManagerProvider: NotificationManagerProvider {
         switch options {
         case let options as ChatOptions:
             let name = try! Database.main.reader({ database in
-                return try database.select(query: .buddyName, cached: false, params: ["account": account, "jid": jid]).mapFirst({ $0.string(for: "name") });
+                return try database.select(query: .buddyName, cached: false, params: ["account": account, "jid": jid]).first.flatMap({ $0.string(for: "name") });
             }) ?? jid.description;
             return ConversationNotificationDetails(name: name, notifications: options.notifications, type: .chat, nick: nil);
         case let options as RoomOptions:
@@ -209,7 +209,7 @@ class ExtensionNotificationManagerProvider: NotificationManagerProvider {
     func countBadge(withThreadId: String?) async -> Int {
         var unreadChats = await NotificationsManagerHelper.unreadChatsThreadIds();
         try? Database.main.reader({ database in
-            return try database.select(query: .listUnreadThreads, cached: false, params: []).mapAll({ cursor in
+            return try database.select(query: .listUnreadThreads, cached: false, params: []).compactMap({ cursor in
                 if let account = cursor.bareJid(for: "account"), let jid = cursor.bareJid(for: "jid") {
                     return "account=\(account.description)|sender=\(jid.description)"
                 }

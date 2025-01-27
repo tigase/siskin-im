@@ -21,7 +21,7 @@
 
 import UIKit
 import Martin
-@preconcurrency import TigaseSQLite3
+import TigaseSQLite3
 
 extension Query {
     static let avatarFindHash = Query("SELECT type, hash FROM avatars_cache WHERE account = :account AND jid = :jid");
@@ -66,8 +66,8 @@ open class AvatarStore {
         
     open func avatarHash(for jid: BareJID, on account: BareJID) -> [AvatarHash] {
         return try! Database.main.reader({ database in
-            try database.select(query: .avatarFindHash, params: ["account": account, "jid": jid]).mapAll({ cursor -> AvatarHash? in
-                guard let type = AvatarType(rawValue: cursor["type"]!), let hash: String = cursor["hash"] else {
+            try database.select(query: .avatarFindHash, params: ["account": account, "jid": jid]).compactMap({ cursor -> AvatarHash? in
+                guard let type = AvatarType(rawValue: cursor.string(for: "type")!), let hash = cursor.string(for: "hash") else {
                     return nil;
                 }
                 return AvatarHash(type: type, hash: hash);

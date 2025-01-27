@@ -21,7 +21,7 @@
 
 import Foundation
 import Martin
-@preconcurrency import TigaseSQLite3
+import TigaseSQLite3
 
 extension Query {
     static let accountsList = Query("SELECT uuid, name, enabled, server_endpoint, roster_version, status_message, push, last_endpoint, additional FROM accounts");
@@ -47,7 +47,7 @@ public class DBAccountStore {
         guard from.name == to.name else {
             throw XMPPError(condition: .not_acceptable);
         }
-        var params: [String: Any] = [:];
+        var params: [String: Encodable?] = [:];
         if from.enabled != to.enabled {
             params["enabled"] = to.enabled;
         }
@@ -82,8 +82,8 @@ public class DBAccountStore {
     
     static func list() throws -> [Account] {
         return try Database.main.reader({ reader in
-            try reader.select(query: .accountsList, params: [:]).mapAll({ cursor in
-                return Account(uuid: UUID(uuidString: cursor.string(for: "uuid")!)!, name: cursor.bareJid(for: "name")!, enabled: cursor.bool(for: "enabled"), serverEndpoint: cursor.object(for: "server_endpoint"), lastEndpoint: cursor.object(for: "last_endpoint"), rosterVersion: cursor.string(for: "roster_version"), statusMessage: cursor.string(for: "status_message"), push: cursor.object(for: "push")!, additional: cursor.object(for: "additional")!);
+            try reader.select(query: .accountsList, params: [:]).map({ cursor in
+                return Account(uuid: UUID(uuidString: cursor.string(for: "uuid")!)!, name: cursor.bareJid(for: "name")!, enabled: cursor.bool(for: "enabled")!, serverEndpoint: cursor.object(for: "server_endpoint"), lastEndpoint: cursor.object(for: "last_endpoint"), rosterVersion: cursor.string(for: "roster_version"), statusMessage: cursor.string(for: "status_message"), push: cursor.object(for: "push")!, additional: cursor.object(for: "additional")!);
             })
         })
     }

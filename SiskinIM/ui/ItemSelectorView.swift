@@ -79,9 +79,9 @@ struct ItemSelectorView<ItemType: SelectableItem>: View {
         })
     }
     
-    struct ItemView<ItemType: SelectableItem>: View {
+    struct ItemView<IItemType: SelectableItem>: View {
         
-        var value: ItemType;
+        var value: IItemType;
         
         var body: some View {
             HStack {

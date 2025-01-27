@@ -22,7 +22,7 @@ import UIKit
 import Social
 import Shared
 import Martin
-@preconcurrency import TigaseSQLite3
+import TigaseSQLite3
 import MobileCoreServices
 import Combine
 
@@ -103,7 +103,7 @@ class ShareViewController: UITableViewController {
         
         let accounts = Set(AccountManager.activeAccounts().map({ $0.name }));
         rosterItems = try! Database.main.reader({ database in
-            try! database.select(query: .selectRosterItems, cached: false, params: []).mapAll({ c -> RosterItem? in
+            try! database.select(query: .selectRosterItems, cached: false, params: []).compactMap({ c -> RosterItem? in
                 guard let account = c.bareJid(for: "account"), accounts.contains(account), let jid = c.bareJid(for: "jid") else {
                     return nil;
                 }

@@ -21,7 +21,7 @@
 
 import Foundation
 import Martin
-@preconcurrency import TigaseSQLite3
+import TigaseSQLite3
 
 extension Query {
     static let capsFindFeaturesForNode = Query("SELECT feature FROM caps_features WHERE node = :node");
