@@ -295,7 +295,8 @@ class SettingsStore: ObservableObject, @unchecked Sendable {
         }
         
         var icon: UIImage? {
-            return UIImage(named: self.rawValue);
+            let iconName = String(self.rawValue.suffix(from: self.rawValue.index(self.rawValue.startIndex, offsetBy: 3)))
+            return UIImage(named: iconName);
         }
         
         var id: AppIcon {

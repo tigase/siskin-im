@@ -22,7 +22,7 @@
 import Foundation
 import Martin
 
-extension XMPPError: LocalizedError {
+extension XMPPError: @retroactive LocalizedError {
 
     public var errorDescription: String? {
         let codes = [applicationCondition?.description, condition.rawValue].compactMap({ $0 }).joined(separator: ", ");
@@ -39,7 +39,7 @@ extension XMPPError: LocalizedError {
 
 }
 
-extension ErrorCondition: LocalizedError {
+extension ErrorCondition: @retroactive LocalizedError {
 
     public var recoverySuggestion: String? {
         switch type {

@@ -23,7 +23,7 @@ import Foundation
 import Martin
 import UserNotifications
 import Combine
-@preconcurrency import TigaseLogging
+import os
 
 final class MucEventHandler: XmppServiceExtension, Sendable {
         
@@ -70,7 +70,7 @@ final class MucEventHandler: XmppServiceExtension, Sendable {
                                 }
                             } else {
                                 DBChatMarkersStore.instance.syncCompleted(forAccount: room.account, with: room.jid);
-                                let result = try await room.rejoin(fetchHistory: .from(timestamp))
+                                _ = try await room.rejoin(fetchHistory: .from(timestamp))
                             }
                         } else {
                             DBChatMarkersStore.instance.syncCompleted(forAccount: room.account, with: room.jid);

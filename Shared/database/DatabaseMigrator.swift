@@ -22,7 +22,7 @@
 import Foundation
 import Martin
 import TigaseSQLite3
-import TigaseLogging
+import os
 import CoreLocation
 
 final public class DatabaseMigrator: DatabaseSchemaMigrator {

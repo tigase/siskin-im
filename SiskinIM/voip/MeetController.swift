@@ -23,7 +23,7 @@ import UIKit
 @preconcurrency import WebRTC
 import Combine
 import Martin
-import TigaseLogging
+import os
 
 class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoViewDelegate, CallDelegate {
     

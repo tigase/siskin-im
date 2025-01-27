@@ -121,7 +121,7 @@ open class SiskinPushNotificationsModule: TigasePushNotificationsModule, @unchec
     }
         
     public func unregisterDeviceAndDisable(registration: PushRegistration) async throws {
-        if let context = self.context {
+        if self.context != nil {
             try await withThrowingTaskGroup(of: Void.self, returning: Void.self, body: { group in
                 group.addTask {
                     do {

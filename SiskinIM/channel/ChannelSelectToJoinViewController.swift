@@ -21,7 +21,7 @@
 
 import UIKit
 import Martin
-import TigaseLogging
+import os
 import Shared
 
 class ChannelSelectToJoinViewController: UITableViewController, UISearchResultsUpdating, ChannelSelectAccountAndComponentControllerDelgate {

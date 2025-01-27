@@ -23,8 +23,8 @@ import UIKit
 @preconcurrency import CallKit
 import PushKit
 @preconcurrency import WebRTC
-@preconcurrency import Martin
-import TigaseLogging
+import Martin
+import os
 import Shared
 import Combine
 import Intents
@@ -1184,7 +1184,7 @@ extension CallManager: PKPushRegistryDelegate {
                 if let key = NotificationEncryptionKeys.key(for: account), let data = Data(base64Encoded: encryped), let iv = Data(base64Encoded: ivStr) {
                     logger.debug("got encrypted voip push with known key");
                     if let decoded = try? AES.GCM.open(.init(nonce: .init(data: iv), ciphertext: data, tag: Data()), using: SymmetricKey(data: key)) {
-                        logger.debug("got decrypted voip data: \(String(data: decoded, encoding: .utf8) as Any)");
+                        logger.debug("got decrypted voip data: \(String(data: decoded, encoding: .utf8))");
                         if let payload = try? JSONDecoder().decode(VoIPPayload.self, from: decoded) {
                             logger.debug("decoded voip payload successfully!");
                             if let sender = payload.sender, let client = XmppService.instance.getClient(for: account) {

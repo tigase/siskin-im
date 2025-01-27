@@ -26,7 +26,7 @@ import Martin
 import MartinOMEMO
 import Combine
 import Shared
-import TigaseLogging
+import os
 import CryptoKit
 
 extension Presence.Show: Codable {
@@ -435,7 +435,7 @@ open class XmppService {
         _ = client.modulesManager.register(StreamFeaturesModule());
         _ = client.modulesManager.register(StreamManagementModule(mode: .resumption, maxResumptionTimeout: 90));
         _ = client.modulesManager.register(SaslModule());
-        let sasl2 = client.modulesManager.register(Sasl2Module());
+        _ = client.modulesManager.register(Sasl2Module());
         // if you do not want Pipelining you may use StreamFeaturesModule instead StreamFeaturesModuleWithPipelining
         //_ = client.modulesManager.register(StreamFeaturesModule());
         _ = client.modulesManager.register(ResourceBinderModule());

@@ -24,7 +24,7 @@ import Shared
 import WebRTC
 import Martin
 import UserNotifications
-import TigaseLogging
+import os
 
 @preconcurrency 
 class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {

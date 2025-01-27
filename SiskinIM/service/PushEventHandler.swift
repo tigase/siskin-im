@@ -22,7 +22,7 @@
 import Foundation
 import Martin
 import Combine
-import TigaseLogging
+import os
 import Shared
 
 @preconcurrency

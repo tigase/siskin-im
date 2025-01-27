@@ -21,7 +21,7 @@
 
 import Foundation
 import Martin
-@preconcurrency import TigaseLogging
+import os
 
 open class HTTPFileUploadHelper {
     

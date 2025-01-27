@@ -22,7 +22,7 @@
 import Foundation
 import TigaseSQLite3
 import Martin
-@preconcurrency import TigaseLogging
+import os
 
 extension DatabasePool {
     
@@ -64,7 +64,7 @@ extension Database {
     
 }
 
-extension JID: DatabaseConvertibleStringValue {
+extension JID: @retroactive DatabaseConvertibleStringValue {
     
     public func encode() -> String {
         return self.description;
@@ -72,7 +72,7 @@ extension JID: DatabaseConvertibleStringValue {
     
 }
 
-extension BareJID: DatabaseConvertibleStringValue {
+extension BareJID: @retroactive DatabaseConvertibleStringValue {
     
     public func encode() -> String {
         return self.description;
@@ -80,7 +80,7 @@ extension BareJID: DatabaseConvertibleStringValue {
     
 }
 
-extension Element: DatabaseConvertibleStringValue {
+extension Element: @retroactive DatabaseConvertibleStringValue {
     public func encode() -> String {
         return self.description;
     }

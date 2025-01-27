@@ -25,7 +25,6 @@ import UserNotifications
 import os
 import Shared
 import Combine
-import TigaseLogging
 
 public class NotificationManager: @unchecked Sendable {
 
@@ -37,7 +36,7 @@ public class NotificationManager: @unchecked Sendable {
     
     private let queue = DispatchQueue(label: "NotificationManager");
     private var cancellables: Set<AnyCancellable> = [];
-    private let logger = TigaseLogging.Logger(subsystem: Bundle.main.bundleIdentifier!, category: "NotificationManager");
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "NotificationManager");
     
     private init() {
         self.provider = MainNotificationManagerProvider();

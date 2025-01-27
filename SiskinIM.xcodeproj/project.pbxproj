@@ -217,7 +217,6 @@
 		FEA303AD24696604004A3B3E /* VCardTextEditCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA303AC24696604004A3B3E /* VCardTextEditCell.swift */; };
 		FEA308D01F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA308CF1F27A063002EF4C0 /* NavigationControllerWrappingSegue.swift */; };
 		FEA518B1266159B900523EF2 /* TigaseSQLite3 in Frameworks */ = {isa = PBXBuildFile; productRef = FEA518B0266159B900523EF2 /* TigaseSQLite3 */; };
-		FEA518C2266165A100523EF2 /* TigaseLogging in Frameworks */ = {isa = PBXBuildFile; productRef = FEA518C1266165A100523EF2 /* TigaseLogging */; };
 		FEA6DCB8271890090079DBEC /* ShareLocationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA6DCB7271890090079DBEC /* ShareLocationController.swift */; };
 		FEA6DCBA2719DF230079DBEC /* ShareLocationSearchResultsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA6DCB92719DF230079DBEC /* ShareLocationSearchResultsController.swift */; };
 		FEA6DCBC271A01770079DBEC /* LocationChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA6DCBB271A01770079DBEC /* LocationChatTableViewCell.swift */; };
@@ -700,7 +699,6 @@
 			files = (
 				FE759FDE2371989B001E78D9 /* libsqlite3.tbd in Frameworks */,
 				FE9C435B289BD3E500699EDF /* Martin in Frameworks */,
-				FEA518C2266165A100523EF2 /* TigaseLogging in Frameworks */,
 				FEA518B1266159B900523EF2 /* TigaseSQLite3 in Frameworks */,
 				FE392E03289AF47D006AA914 /* MartinOMEMO in Frameworks */,
 				FE759FE82371C972001E78D9 /* libxml2.tbd in Frameworks */,
@@ -1364,7 +1362,6 @@
 			name = Shared;
 			packageProductDependencies = (
 				FEA518B0266159B900523EF2 /* TigaseSQLite3 */,
-				FEA518C1266165A100523EF2 /* TigaseLogging */,
 				FE392E02289AF47D006AA914 /* MartinOMEMO */,
 				FE9C435A289BD3E500699EDF /* Martin */,
 			);
@@ -1469,7 +1466,6 @@
 			mainGroup = FE94E5181CCBA74F00FAE755;
 			packageReferences = (
 				FEA5189D2661573F00523EF2 /* XCRemoteSwiftPackageReference "tigase-sqlite3.swift" */,
-				FEA518C0266165A100523EF2 /* XCRemoteSwiftPackageReference "tigase-logging.swift" */,
 				FE392E01289AF3B4006AA914 /* XCRemoteSwiftPackageReference "MartinOMEMO" */,
 			);
 			productRefGroup = FE94E5221CCBA74F00FAE755 /* Products */;
@@ -2180,7 +2176,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
@@ -2298,6 +2294,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES = YES;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -2357,6 +2354,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES = YES;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
 				VALIDATE_PRODUCT = YES;
@@ -2505,16 +2503,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tigase/tigase-sqlite3.swift.git";
 			requirement = {
-				kind = upToNextMinorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
-		FEA518C0266165A100523EF2 /* XCRemoteSwiftPackageReference "tigase-logging.swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/tigase/tigase-logging.swift.git";
-			requirement = {
-				kind = upToNextMinorVersion;
-				minimumVersion = 1.0.0;
+				branch = "swift-6";
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -2533,11 +2523,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FEA5189D2661573F00523EF2 /* XCRemoteSwiftPackageReference "tigase-sqlite3.swift" */;
 			productName = TigaseSQLite3;
-		};
-		FEA518C1266165A100523EF2 /* TigaseLogging */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FEA518C0266165A100523EF2 /* XCRemoteSwiftPackageReference "tigase-logging.swift" */;
-			productName = TigaseLogging;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

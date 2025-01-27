@@ -26,7 +26,7 @@ import Shared
 import WebRTC
 import BackgroundTasks
 import Combine
-import TigaseLogging
+import os
 import Intents
 import CryptoKit
 
@@ -147,7 +147,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         let application = UIApplication.shared;
         backgroundTaskId = application.beginBackgroundTask {
-            self.logger.debug("keep online on away background task \(self.backgroundTaskId) expired");
+            self.logger.debug("keep online on away background task \(self.backgroundTaskId.rawValue) expired");
             self.applicationKeepOnlineOnAwayFinished(application);
         }
         if backgroundTaskId == .invalid {
@@ -155,7 +155,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             XmppService.instance.updateApplicationState(.suspended);
         } else {
             let taskId = backgroundTaskId;
-            logger.debug("keep online task \(taskId) started");
+            logger.debug("keep online task \(taskId.rawValue) started");
         }
     }
 
@@ -166,12 +166,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return;
         }
         backgroundTaskId = .invalid;
-        logger.debug("keep online task \(taskId) expired");
+        logger.debug("keep online task \(taskId.rawValue) expired");
         XmppService.instance.updateApplicationState(.suspended);
         XmppService.instance.backgroundTaskFinished();
-        logger.debug("keep online calling end background task \(taskId)");
+        logger.debug("keep online calling end background task \(taskId.rawValue)");
         scheduleAppRefresh();
-        logger.debug("keep online task \(taskId) ended");
+        logger.debug("keep online task \(taskId.rawValue) ended");
         application.endBackgroundTask(taskId);
     }
     
@@ -293,7 +293,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         guard let xmppUri = XmppUri(url: url) else {
             return false;
         }
-        logger.debug("got xmpp url with jid: \(xmppUri.jid), action: \(xmppUri.action as Any), params: \(xmppUri.dict as Any)");
+        logger.debug("got xmpp url with jid: \(xmppUri.jid), action: \(xmppUri.action), params: \(xmppUri.dict)");
 
         if let action = xmppUri.action {
             self.open(xmppUri: xmppUri, action: action);
@@ -444,7 +444,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         XmppService.instance.preformFetch(completionHandler: {(result) in
             let fetchEnd = Date();
             let time = fetchEnd.timeIntervalSince(fetchStart);
-            self.logger.debug("fetched data in \(time) seconds with result = \(result)");
+            self.logger.debug("fetched data in \(time) seconds with result = \(result.rawValue)");
             self.backgroundFetchInProgress = false;
             task.setTaskCompleted(success: result != .failed);
         });
@@ -549,7 +549,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 if let encryped = userInfo["encrypted"] as? String, let ivStr = userInfo["iv"] as? String, let key = NotificationEncryptionKeys.key(for: account.bareJid), let data = Data(base64Encoded: encryped), let iv = Data(base64Encoded: ivStr) {
                     logger.debug("got encrypted push with known key");
                     if let decoded = try? AES.GCM.open(.init(nonce: .init(data: iv), ciphertext: data, tag: Data()), using: SymmetricKey(data: key)) {
-                        logger.debug("got decrypted data: \(String(data: decoded, encoding: .utf8) as Any)");
+                        logger.debug("got decrypted data: \(String(data: decoded, encoding: .utf8))");
                         if let payload = try? JSONDecoder().decode(Payload.self, from: decoded) {
                             logger.debug("decoded payload successfully!");
                             // we require `media` to be present (even empty) in incoming push for jingle session initiation,
