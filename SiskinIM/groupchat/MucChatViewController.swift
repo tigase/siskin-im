@@ -53,11 +53,11 @@ class MucChatViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
         
-        room.context!.$state.map({ $0 == .connected() }).combineLatest(room.$state).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (connected, state) in
+        room.context!.$state.map({ @Sendable in $0 == .connected() }).combineLatest(room.$state).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (connected, state) in
             self?.titleView?.refresh(connected: connected, state: state);
             self?.navigationItem.rightBarButtonItem?.isEnabled = state == .joined;
         }).store(in: &cancellables);
-        room.displayNamePublisher.map({ $0 }).assign(to: \.name, on: self.titleView).store(in: &cancellables);
+        room.displayNamePublisher.map({ @Sendable in $0 }).receive(on: DispatchQueue.main).assign(to: \.name, on: self.titleView).store(in: &cancellables);
         room.avatar.combineLatest(room.displayNamePublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] avatar, name in
             self?.titleView.avatarView.set(name: nil, avatar: avatar ?? AvatarManager.instance.defaultGroupchatAvatar);
         }).store(in: &cancellables);

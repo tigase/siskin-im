@@ -124,16 +124,16 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         self.creationTimestamp = creationTimestamp;
         self.displayable = ChannelDisplayableId(displayName: options.name ?? channelJid.description, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: channelJid, mucNickname: nil)), description: options.description);
         super.init(context: context, jid: channelJid, id: id, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
-        context.$state.sink(receiveValue: { [weak self] state in
+        context.$state.sink(receiveValue: { @Sendable [weak self] state in
             self?.connectionState = state;
         }).store(in: &cancellables);
-        (context.module(.httpFileUpload) as! HttpFileUploadModule).isAvailablePublisher.combineLatest(context.$state, { isAvailable, state -> [ConversationFeature] in
+        (context.module(.httpFileUpload) as! HttpFileUploadModule).isAvailablePublisher.combineLatest(context.$state, { @Sendable isAvailable, state -> [ConversationFeature] in
             if case .connected(_) = state {
                 return isAvailable ? [.httpFileUpload] : [];
             } else {
                 return [];
             }
-        }).sink(receiveValue: { [weak self] value in
+        }).sink(receiveValue: { @Sendable [weak self] value in
             self?.update(features: value);
         }).store(in: &cancellables);
 

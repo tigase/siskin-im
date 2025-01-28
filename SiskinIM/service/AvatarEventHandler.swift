@@ -85,7 +85,7 @@ final class AvatarEventHandler: XmppServiceExtension, Sendable {
     private let vcardFetchQueue = VCardDownloadQueue();
     
     func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
-        client.module(.presence).presencePublisher.filter({ $0.presence.type != .error }).sink(receiveValue: { [weak client] e in
+        client.module(.presence).presencePublisher.filter({ @Sendable in $0.presence.type != .error }).sink(receiveValue: { @Sendable [weak client] e in
             guard let client = client else {
                 return;
             }
@@ -126,7 +126,7 @@ final class AvatarEventHandler: XmppServiceExtension, Sendable {
                 }
             }
         }).store(in: &cancellables);
-        client.module(.pepUserAvatar).avatarChangePublisher.sink(receiveValue: { [weak client] e in
+        client.module(.pepUserAvatar).avatarChangePublisher.sink(receiveValue: { @Sendable [weak client] e in
             guard let account = client?.userBareJid else {
                 return;
             }

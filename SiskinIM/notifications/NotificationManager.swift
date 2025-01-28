@@ -40,7 +40,7 @@ public class NotificationManager: @unchecked Sendable {
     
     private init() {
         self.provider = MainNotificationManagerProvider();
-        MessageEventHandler.eventsPublisher.receive(on: queue).sink(receiveValue: { [weak self] event in
+        MessageEventHandler.eventsPublisher.receive(on: queue).sink(receiveValue: { @Sendable [weak self] event in
             switch event {
             case .started(let account, let jid):
                 self?.syncStarted(for: account, with: jid);
@@ -48,10 +48,10 @@ public class NotificationManager: @unchecked Sendable {
                 self?.syncCompleted(for: account, with: jid);
             }
         }).store(in: &cancellables);
-        DBChatHistoryStore.instance.markedAsRead.receive(on: queue).sink(receiveValue: { [weak self] marked in
+        DBChatHistoryStore.instance.markedAsRead.receive(on: queue).sink(receiveValue: { @Sendable [weak self] marked in
             self?.markAsRead(on: marked.account, with: marked.jid, itemsIds: marked.messages.map({ $0.id }), before: marked.before);
         }).store(in: &cancellables);
-        DBChatStore.instance.unreadMessageCountPublisher.delay(for: 0.1, scheduler: self.queue).throttle(for: 0.1, scheduler: self.queue, latest: true).sink(receiveValue: { [weak self] value in
+        DBChatStore.instance.unreadMessageCountPublisher.delay(for: 0.1, scheduler: self.queue).throttle(for: 0.1, scheduler: self.queue, latest: true).sink(receiveValue: { @Sendable  [weak self] value in
             guard let that = self else {
                 return;
             }
@@ -59,7 +59,7 @@ public class NotificationManager: @unchecked Sendable {
                 await that.updateApplicationIconBadgeNumber();
             }
         }).store(in: &cancellables);
-        NotificationCenter.default.publisher(for: XmppService.AUTHENTICATION_ERROR).sink(receiveValue: { [weak self] notification in
+        NotificationCenter.default.publisher(for: XmppService.AUTHENTICATION_ERROR).sink(receiveValue: { @Sendable [weak self] notification in
             let account = notification.object as! BareJID;
             let error = notification.userInfo!["error"] as! SaslError;
             self?.authentication(error: error, on: account);

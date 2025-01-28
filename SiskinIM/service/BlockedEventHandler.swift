@@ -29,12 +29,12 @@ final class BlockedEventHandler: XmppServiceExtension, Sendable {
     }
     
     func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
-        var prev: [JID] = [];
-        client.module(.blockingCommand).$blockedJids.map({ $0 ?? []}).sink(receiveValue: { [weak client] blockedJids in
+        client.module(.blockingCommand).$blockedJids.map({ @Sendable in $0 ?? []}).sink(receiveValue: { @Sendable [weak client] blockedJids in
             guard let client = client else {
                 return;
             }
 
+            var prev: [JID] = [];
             let prevSet = Set(prev);
             let blockedSet = Set(blockedJids);
             

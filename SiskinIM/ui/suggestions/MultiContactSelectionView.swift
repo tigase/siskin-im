@@ -98,11 +98,11 @@ class MultiContactSelectionViewController: UITableViewController, UISearchContro
         override func viewDidLoad() {
             super.viewDidLoad();
             tableView.register(SelectedItemCellView.self, forCellReuseIdentifier: "selectedItem");
-            DBRosterStore.instance.$items.combineLatest(Settings.$rosterDisplayHiddenGroup, $queryString).throttle(for: 0.1, scheduler: queue, latest: true).map({ items, displayHidden, query -> [RosterItem] in
+            DBRosterStore.instance.$items.combineLatest(Settings.$rosterDisplayHiddenGroup, $queryString).throttle(for: 0.1, scheduler: queue, latest: true).map({ @Sendable items, displayHidden, query -> [RosterItem] in
                 let notHidden = (displayHidden ? items : items.filter({ !$0.groups.contains("Hidden") }));
                 return Array(query.isEmpty ? notHidden : notHidden.filter({ $0.name?.lowercased().contains(query) ?? false || $0.jid.description.lowercased().contains(query)}));
-            }).sink(receiveValue: { [weak self] items in
-                self?.updateItems(items: items);
+            }).receive(on: DispatchQueue.main).map({ [weak self] in (self?.items, $0) }).receive(on: queue).sink(receiveValue: { @Sendable [weak self] oldItems, items in
+                self?.updateItems(oldItems: oldItems ?? [], newItems: items);
             }).store(in: &cancellables);
         }
         
@@ -121,8 +121,7 @@ class MultiContactSelectionViewController: UITableViewController, UISearchContro
             return items.count;
         }
         
-        func updateItems(items: [RosterItem]) {
-            let oldItems = self.items;
+        nonisolated func updateItems(oldItems: [Item], newItems items: [RosterItem]) {
             let newItems: [Item] = items.compactMap({ item in
                 guard let account = item.context?.userBareJid else {
                     return nil;
@@ -162,7 +161,7 @@ class MultiContactSelectionViewController: UITableViewController, UISearchContro
         }
     }
     
-    struct Item: Hashable, Comparable {
+    struct Item: Hashable, Comparable, Sendable {
         static func < (lhs: MultiContactSelectionViewController.Item, rhs: MultiContactSelectionViewController.Item) -> Bool {
             return lhs.displayName.lowercased() < rhs.displayName.lowercased();
         }

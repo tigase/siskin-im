@@ -24,13 +24,13 @@ import Martin
 import Combine
 import Shared
 
-open class DNSSrvDiskCache: DNSSrvResolverWithCache.DiskCache {
+open class DNSSrvDiskCache: DNSSrvResolverWithCache.DiskCache, @unchecked Sendable {
     
     private var cancellable: AnyCancellable?;
     
     public override init(cacheDirectoryName: String) {
         super.init(cacheDirectoryName: cacheDirectoryName);
-        self.cancellable = AccountManager.accountEventsPublisher.sink(receiveValue: { event in
+        self.cancellable = AccountManager.accountEventsPublisher.sink(receiveValue: { @Sendable event in
             switch event {
             case .disabled(let account), .removed(let account):
                 self.store(for: account.name.domain, result: nil);

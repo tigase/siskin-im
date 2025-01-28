@@ -27,12 +27,12 @@ class ChatAttachmentsController: UICollectionViewController, UICollectionViewDel
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
         let conversation = self.conversation!;
-        DBChatHistoryStore.instance.events.compactMap({ it -> ConversationEntry? in
+        DBChatHistoryStore.instance.events.compactMap({ @Sendable it -> ConversationEntry? in
             if case .updated(let item) = it {
                 return item;
             }
             return nil;
-        }).filter({ item in
+        }).filter({ @Sendable item in
             if case .attachment(_, _) = item.payload, item.conversation.account == conversation.account && item.conversation.jid == conversation.jid {
                 return true;
             }

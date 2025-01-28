@@ -24,8 +24,7 @@ import Martin
 import Combine
 import Shared
 
-@preconcurrency
-class NewFeaturesDetector: XmppServiceExtension {
+class NewFeaturesDetector: XmppServiceExtension, @unchecked Sendable {
     
     public static let instance = NewFeaturesDetector();
     
@@ -43,10 +42,10 @@ class NewFeaturesDetector: XmppServiceExtension {
         
     func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
         let account = client.userBareJid;
-        client.module(.disco).$accountDiscoResult.receive(on: queue).filter({ !$0.features.isEmpty }).map({ ServerFeature.from(info: $0) }).sink(receiveValue: { [weak self] newFeatures in
+        client.module(.disco).$accountDiscoResult.receive(on: queue).filter({ @Sendable in !$0.features.isEmpty }).map({ @Sendable in ServerFeature.from(info: $0) }).sink(receiveValue: { @Sendable [weak self] newFeatures in
             self?.newFeatures(newFeatures, for: account);
         }).store(in: &cancellables);
-        client.module(.disco).$accountDiscoResult.receive(on: queue).filter({ $0.features.isEmpty && $0.identities.isEmpty }).sink(receiveValue: { [weak self] _ in
+        client.module(.disco).$accountDiscoResult.receive(on: queue).filter({ @Sendable in $0.features.isEmpty && $0.identities.isEmpty }).sink(receiveValue: { @Sendable [weak self] _ in
             self?.removeFeatures(for: account);
         }).store(in: &cancellables);
     }

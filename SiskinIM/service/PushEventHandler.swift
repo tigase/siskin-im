@@ -25,8 +25,7 @@ import Combine
 import os
 import Shared
 
-@preconcurrency
-open class PushEventHandler: XmppServiceExtension {
+open class PushEventHandler: XmppServiceExtension, @unchecked Sendable {
     
     static let instance = PushEventHandler();
     
@@ -83,7 +82,7 @@ open class PushEventHandler: XmppServiceExtension {
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "PushEventHandler");
     
     public func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
-        Settings.$enablePush.map({ $0 ?? false }).combineLatest(client.module(.disco).$accountDiscoResult).sink(receiveValue: { [weak client, weak self] enable, features in
+        Settings.$enablePush.map({ $0 ?? false }).combineLatest(client.module(.disco).$accountDiscoResult).sink(receiveValue: { @Sendable [weak client, weak self] enable, features in
             guard let client = client, client.state == .connected() else {
                 return;
             }
@@ -93,7 +92,7 @@ open class PushEventHandler: XmppServiceExtension {
 
     
     init() {
-        DBChatStore.instance.conversationsEventsPublisher.sink(receiveValue: { [weak self] event in
+        DBChatStore.instance.conversationsEventsPublisher.sink(receiveValue: { @Sendable [weak self] event in
             switch event {
             case .destroyed(let conversation):
                 self?.conversationDestroyed(conversation);

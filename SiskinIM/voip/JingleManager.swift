@@ -78,7 +78,7 @@ class JingleManager: JingleSessionManager, @unchecked Sendable {
         return queue.sync {
             let session = Session(context: context, jid: jid, sid: sid, role: role, initiationType: initiationType);
             self.connections.append(session);
-            self.cancellables[sid] = session.$state.removeDuplicates().sink(receiveValue: { [weak self, weak session] state in
+            self.cancellables[sid] = session.$state.removeDuplicates().sink(receiveValue: { @Sendable [weak self, weak session] state in
                 guard state == .terminated, let session = session else {
                     return;
                 }

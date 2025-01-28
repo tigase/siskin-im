@@ -115,12 +115,10 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
         chatViewInputBar.addBottomButton(locationButton);
         
         setColors();
-        DBChatStore.instance.conversationsEventsPublisher.sink(receiveValue: { [weak self] event in
+        DBChatStore.instance.conversationsEventsPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] event in
             switch event {
             case .destroyed(let conversation):
-                DispatchQueue.main.async {
-                    self?.closed(conversation: conversation);
-                }
+                self?.closed(conversation: conversation);
             case .created(_):
                 break;
             }

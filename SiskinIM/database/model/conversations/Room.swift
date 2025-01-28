@@ -139,7 +139,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     init(context: Context, jid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, options: RoomOptions) {
         self.displayable = RoomDisplayableId(displayName: options.name ?? jid.description, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: jid, mucNickname: nil)), description: nil);
         super.init( context: context, jid: jid, id: id, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
-        (context.module(.httpFileUpload) as! HttpFileUploadModule).isAvailablePublisher.combineLatest(self.statePublisher, self.$roomFeatures, { isAvailable, state, roomFeatures -> [ConversationFeature] in
+        (context.module(.httpFileUpload) as! HttpFileUploadModule).isAvailablePublisher.combineLatest(self.statePublisher, self.$roomFeatures, { @Sendable isAvailable, state, roomFeatures -> [ConversationFeature] in
             var features: [ConversationFeature] = [];
             if state == .joined {
                 if isAvailable {
@@ -150,7 +150,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
                 }
             }
             return features;
-        }).sink(receiveValue: { [weak self] value in self?.update(features: value); }).store(in: &cancellables);
+        }).sink(receiveValue: { @Sendable [weak self] value in self?.update(features: value); }).store(in: &cancellables);
     }
 
     public override func isLocal(sender: ConversationEntrySender) -> Bool {

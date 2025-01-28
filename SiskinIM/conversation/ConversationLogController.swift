@@ -72,7 +72,7 @@ class ConversationLogController: UIViewController, ConversationDataSourceDelegat
     
     override func viewWillAppear(_ animated: Bool) {
         if let conversation = self.conversation {
-            XmppService.instance.$applicationState.filter({ $0 == .active }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] _ in
+            XmppService.instance.$applicationState.filter({ @Sendable in $0 == .active }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] _ in
                 self?.markAsReadUpToNewestVisibleRow();
             }).store(in: &cancellables);
             newestVisibleDateSubject.onlyGreater().throttledSink(for: 0.5, scheduler: DispatchQueue.main, receiveValue: { date in

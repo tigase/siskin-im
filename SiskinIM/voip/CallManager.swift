@@ -32,8 +32,7 @@ import CryptoKit
 
 extension RTCIceCandidate: @unchecked Sendable {}
 
-@preconcurrency
-class CallManager: NSObject, CXProviderDelegate {
+class CallManager: NSObject, CXProviderDelegate, @unchecked Sendable {
     
     static var isAvailable: Bool {
         let userLocale = NSLocale.current
@@ -85,7 +84,7 @@ class CallManager: NSObject, CXProviderDelegate {
         pushRegistry.delegate = self;
         pushRegistry.desiredPushTypes = [.voIP];
         activeCalls.publisher.map({ !$0.isEmpty }).assign(to: \.onCall, on: XmppService.instance).store(in: &cancellables);
-        activeCalls.publisher.map({ !$0.isEmpty }).sink(receiveValue: { callInProgress in
+        activeCalls.publisher.map({ !$0.isEmpty }).sink(receiveValue: { @Sendable callInProgress in
             DispatchQueue.main.async {
                 UIApplication.shared.isIdleTimerDisabled = callInProgress;
             }
@@ -478,7 +477,7 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
     }
     fileprivate(set) var session: JingleManager.Session? {
         didSet {
-            session?.$state.removeDuplicates().sink(receiveValue: { [weak self] state in
+            session?.$state.removeDuplicates().sink(receiveValue: { @Sendable [weak self] state in
                 guard let that = self else {
                     return;
                 }
@@ -1176,7 +1175,7 @@ extension CallManager: PKPushRegistryDelegate {
         PushEventHandler.instance.pushkitDeviceId = tokenString;
     }
     
-    func pushRegistry(_ registry: PKPushRegistry, didReceiveIncomingPushWith payload: PKPushPayload, for type: PKPushType, completion: @escaping () -> Void) {
+    func pushRegistry(_ registry: PKPushRegistry, didReceiveIncomingPushWith payload: PKPushPayload, for type: PKPushType) async {
         // need to redesign that.. it is impossible to cancel a call via pushkit..
         if let account = BareJID(payload.dictionaryPayload["account"] as? String) {
             logger.debug("voip push for account: \(account)");
@@ -1192,19 +1191,14 @@ extension CallManager: PKPushRegistryDelegate {
                                 if let media = payload.media {
                                     let session = JingleManager.instance.open(for: client, with: sender, sid: payload.sid, role: .responder, initiationType: .message);
                                     let call = Call(client: client, with: sender.bareJid, sid: payload.sid, direction: .incoming, media: media);
-                                    Task {
-                                        do {
-                                            try await self.reportIncomingCall(call);
-                                        } catch {
-                                            try? await session.decline();
-                                        }
-                                        completion();
+                                    do {
+                                        try await self.reportIncomingCall(call);
+                                    } catch {
+                                        try? await session.decline();
                                     }
                                 } else {
-                                    Task {
-                                        await self.endCall(on: account, with: sender.bareJid, sid: payload.sid);
-                                        self.logger.debug("ended call");
-                                    }
+                                    await self.endCall(on: account, with: sender.bareJid, sid: payload.sid);
+                                    self.logger.debug("ended call");
                                 }
                                 return;
                             }
@@ -1217,12 +1211,12 @@ extension CallManager: PKPushRegistryDelegate {
         let uuid = UUID();
         let update = CXCallUpdate();
         update.remoteHandle = CXHandle(type: .generic, value: "Unknown");
-        provider.reportNewIncomingCall(with: uuid, update: update, completion: { error in
-            if error == nil {
-                self.provider.reportCall(with: uuid, endedAt: Date(), reason: .remoteEnded);
-            }
-            completion();
-        })
+        do {
+            try await provider.reportNewIncomingCall(with: uuid, update: update);
+            self.provider.reportCall(with: uuid, endedAt: Date(), reason: .remoteEnded);
+        } catch {
+            // nothing to do..
+        }
     }
             
             

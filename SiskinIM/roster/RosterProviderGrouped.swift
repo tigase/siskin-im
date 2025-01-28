@@ -23,8 +23,7 @@ import UIKit
 import Shared
 import Martin
 
-@preconcurrency
-public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGroupedItem>, RosterProvider {
+public class RosterProviderGrouped: RosterProviderAbstract<RosterProviderGroupedItem>, RosterProvider, @unchecked Sendable {
     
     private var groups = [RosterProviderGroup]();
     

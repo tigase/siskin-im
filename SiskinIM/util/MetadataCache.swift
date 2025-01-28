@@ -23,8 +23,7 @@ import Foundation
 import LinkPresentation
 import Martin
 
-@preconcurrency
-class MetadataCache {
+class MetadataCache: @unchecked Sendable {
 
     static let instance = MetadataCache();
 

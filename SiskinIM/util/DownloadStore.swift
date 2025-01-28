@@ -23,8 +23,7 @@ import Foundation
 import UIKit
 import Martin
 
-@preconcurrency
-class DownloadStore {
+class DownloadStore: @unchecked Sendable {
     
     static let instance = DownloadStore();
 

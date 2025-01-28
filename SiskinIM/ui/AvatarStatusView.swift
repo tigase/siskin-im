@@ -42,7 +42,7 @@ class AvatarStatusView: UIView {
                     self?.avatarImageView.set(name: name, avatar: image);
                 }).store(in: &cancellables);
             }
-            displayableId?.statusPublisher.map({ AvatarStatusView.getStatusImage($0) }).assign(to: \.image, on: statusImageView).store(in: &cancellables);
+            displayableId?.statusPublisher.map({ @Sendable in AvatarStatusView.getStatusImage($0) }).receive(on: DispatchQueue.main).assign(to: \.image, on: statusImageView).store(in: &cancellables);
         }
     }
     
@@ -110,7 +110,7 @@ class AvatarStatusView: UIView {
         }
     }
         
-    static func getStatusImage(_ status: Presence.Show?) -> UIImage? {
+    nonisolated static func getStatusImage(_ status: Presence.Show?) -> UIImage? {
         // default color as for offline contact
         var image:UIImage? = UIImage(systemName: "circle.fill")?.withTintColor(UIColor.systemGray, renderingMode: .alwaysOriginal)
         if status != nil {

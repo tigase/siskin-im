@@ -79,7 +79,7 @@ class AccountSettingsViewController: UITableViewController {
         
         AvatarManager.instance.avatarPublisher(for: .init(account: account, jid: account, mucNickname: nil)).receive(on: DispatchQueue.main).assign(to: \.image, on: avatarView).store(in: &cancellables);
         
-        XmppService.instance.$connectedClients.map({ [weak self] clients in clients.first(where: { c in c.userBareJid == self?.account }) }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] _ in
+        XmppService.instance.$connectedClients.receive(on: DispatchQueue.main).map({ [weak self] clients in clients.first(where: { c in c.userBareJid == self?.account }) }).sink(receiveValue: { [weak self] _ in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 self?.updateView();
             }

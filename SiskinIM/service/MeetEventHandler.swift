@@ -38,7 +38,7 @@ final class MeetEventHandler: XmppServiceExtension, @unchecked Sendable {
     }
     
     func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
-        client.module(.meet).eventsPublisher.sink(receiveValue: { event in
+        client.module(.meet).eventsPublisher.sink(receiveValue: { @Sendable event in
             switch event {
             case .inivitation(let action, let sender):
                 switch action {
@@ -75,7 +75,7 @@ final class MeetEventHandler: XmppServiceExtension, @unchecked Sendable {
                 break;
             }
         }).store(in: &cancellables);
-        client.module(.disco).$accountDiscoResult.receive(on: self.queue).sink(receiveValue: { [weak self] info in
+        client.module(.disco).$accountDiscoResult.receive(on: self.queue).sink(receiveValue: { @Sendable [weak self] info in
             self?.supportedAccounts.removeAll(where: { $0 != client.userBareJid });
             if !info.features.isEmpty {
                 guard let that = self else {

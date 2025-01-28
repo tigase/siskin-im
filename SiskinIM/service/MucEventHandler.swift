@@ -32,13 +32,13 @@ final class MucEventHandler: XmppServiceExtension, Sendable {
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "MucEventHandler");
     
     func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
-        client.$state.filter({
+        client.$state.filter({ @Sendable in
             if case .connected(let resumed) = $0 {
                 return !resumed
             } else {
                 return false;
             }
-        }).sink(receiveValue: { [weak client] state in
+        }).sink(receiveValue: { @Sendable [weak client] state in
             guard let client = client else {
                 return;
             }
@@ -84,7 +84,7 @@ final class MucEventHandler: XmppServiceExtension, Sendable {
                 }
             }
         }).store(in: &cancellables);
-        client.module(.muc).messagesPublisher.sink(receiveValue: { e in
+        client.module(.muc).messagesPublisher.sink(receiveValue: { @Sendable e in
             let room = e.room as! Room;
             if let subject = e.message.subject {
                 // how can we find room from here?
@@ -102,7 +102,7 @@ final class MucEventHandler: XmppServiceExtension, Sendable {
             }
             DBChatHistoryStore.instance.append(for: room, message: e.message, source: .stream);
         }).store(in: &cancellables);
-        client.module(.muc).inivitationsPublisher.sink(receiveValue: { [weak client] invitation in
+        client.module(.muc).inivitationsPublisher.sink(receiveValue: { @Sendable [weak client] invitation in
             guard let client = client, invitation.roomJid.localPart != nil else {
                 return;
             }
@@ -115,7 +115,7 @@ final class MucEventHandler: XmppServiceExtension, Sendable {
                 
             InvitationManager.instance.addMucInvitation(for: client.userBareJid, roomJid: invitation.roomJid, invitation: invitation);
         }).store(in: &cancellables);
-        client.module(.pepBookmarks).$currentBookmarks.drop(while: { it in !Settings.enableBookmarksSync }).sink(receiveValue: { [weak client] bookmarks in
+        client.module(.pepBookmarks).$currentBookmarks.drop(while: { @Sendable it in !Settings.enableBookmarksSync }).sink(receiveValue: { [weak client] bookmarks in
             guard let client = client else {
                 return;
             }
@@ -146,7 +146,7 @@ final class MucEventHandler: XmppServiceExtension, Sendable {
             content.userInfo = ["account": context.userBareJid.description, "roomJid": room.roomJid.description, "nickname": room.nickname, "id": "room-join-error"];
         }
         let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
-        UNUserNotificationCenter.current().add(request) { (error) in
+        UNUserNotificationCenter.current().add(request) { @Sendable (error) in
         }
         
         context.module(.muc).leave(room: room);

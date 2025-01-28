@@ -72,8 +72,7 @@ extension Query {
     static let messagesCountUnsent = Query("SELECT count(id) FROM chat_history WHERE state = \(ConversationEntryState.outgoing(.unsent).rawValue)");
 }
 
-@preconcurrency
-class DBChatHistoryStore {
+class DBChatHistoryStore: @unchecked Sendable {
 
     static let MESSAGE_NEW = Notification.Name("messageAdded");
     static let MESSAGE_UPDATED = Notification.Name("messageUpdated");

@@ -30,7 +30,7 @@ import os
 import Intents
 import CryptoKit
 
-@UIApplicationMain
+@main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
     fileprivate let backgroundRefreshTaskIdentifier = "org.tigase.messenger.mobile.refresh";
@@ -64,7 +64,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         default:
             break;
         }
-        Settings.$appearance.map({ $0.uiInterfaceStyle }).receive(on: DispatchQueue.main).sink(receiveValue: { value in
+        Settings.$appearance.map({ @Sendable in $0.uiInterfaceStyle }).receive(on: DispatchQueue.main).sink(receiveValue: { value in
             for window in application.windows {
                 window.overrideUserInterfaceStyle = value;
             }
@@ -73,13 +73,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UINavigationBar.appearance().tintColor = UIColor(named: "tintColor");
         _ = NotificationManager.instance;
         XmppService.instance.initialize();
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
-            if let error = error {
-                self.logger.debug("error while requesting notifications authorization: \(error)");
-            } else {
-                DispatchQueue.main.async {
+        Task {
+            do {
+                let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]);
+                await MainActor.run(body: {
                     application.registerForRemoteNotifications();
-                }
+                })
+            } catch {
+                self.logger.debug("error while requesting notifications authorization: \(error)");
             }
         }
         UNUserNotificationCenter.current().delegate = self.notificationCenterDelegate;
@@ -91,7 +92,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.serverCertificateError), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.pushNotificationRegistrationFailed), name: Notification.Name("pushNotificationsRegistrationFailed"), object: nil);
-        AccountManager.accountEventsPublisher.sink(receiveValue: { [weak self] action in
+        AccountManager.accountEventsPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] action in
             guard case .removed(_) = action else {
                 return;
             }

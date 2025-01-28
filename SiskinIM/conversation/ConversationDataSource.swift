@@ -77,7 +77,7 @@ public enum ConversationLoadType: Sendable {
 
 // FIXME: Consider making this async.. maybe actor?
 @preconcurrency
-class ConversationDataSource {
+class ConversationDataSource: @unchecked Sendable {
 
     enum State {
         case uninitialized
@@ -91,7 +91,7 @@ class ConversationDataSource {
     
     var conversation: Conversation? {
         didSet {
-            conversation?.markersPublisher.receive(on: self.queue).sink(receiveValue: { [weak self] markers in
+            conversation?.markersPublisher.receive(on: self.queue).sink(receiveValue: { @Sendable [weak self] markers in
                 self?.update(markers: markers);
             }).store(in: &cancellables);
         }
@@ -119,7 +119,7 @@ class ConversationDataSource {
         NotificationCenter.default.addObserver(self, selector: #selector(messageNew), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(messageUpdated(_:)), name: DBChatHistoryStore.MESSAGE_UPDATED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(messageRemoved(_:)), name: DBChatHistoryStore.MESSAGE_REMOVED, object: nil);
-        Settings.$linkPreviews.dropFirst().sink(receiveValue: { [weak self] _ in
+        Settings.$linkPreviews.dropFirst().sink(receiveValue: { @Sendable  [weak self] _ in
             guard let that = self else {
                 return;
             }

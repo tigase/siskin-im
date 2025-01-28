@@ -120,7 +120,9 @@ class RosterItemEditViewController: UITableViewController, UIPickerViewDataSourc
             fieldsWithErrors.append(accountTextField);
         }
         guard fieldsWithErrors.isEmpty else {
-            fieldsWithErrors.forEach(self.blinkError(_:));
+            for field in fieldsWithErrors {
+                self.blinkError(field);
+            }
             return;
         }
         jid = JID(jidTextField.text!);

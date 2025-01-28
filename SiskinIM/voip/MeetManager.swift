@@ -116,11 +116,11 @@ final class Meet: CallBase, @unchecked Sendable {
             }
         }
         
-        client.module(.meet).eventsPublisher.receive(on: Meet.queue).filter({ $0.meetJid == self.jid }).sink(receiveValue: { [weak self] event in
+        client.module(.meet).eventsPublisher.receive(on: Meet.queue).filter({ @Sendable in $0.meetJid == self.jid }).sink(receiveValue: { @Sendable [weak self] event in
             self?.handle(event: event);
         }).store(in: &cancellables);
         
-        PresenceStore.instance.bestPresenceEvents.filter({ $0.jid == self.jid && ($0.presence == nil || $0.presence?.type == .unavailable) }).sink(receiveValue: { _ in
+        PresenceStore.instance.bestPresenceEvents.filter({ @Sendable in $0.jid == self.jid && ($0.presence == nil || $0.presence?.type == .unavailable) }).sink(receiveValue: { @Sendable _ in
             call.reset();
         }).store(in: &cancellables);
         

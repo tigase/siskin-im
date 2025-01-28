@@ -55,7 +55,7 @@ class ContactsSettingsViewController: UITableViewController {
             let cell = tableView.dequeueReusableCell(withIdentifier: "RosterTypeTableViewCell", for: indexPath ) as! SwitchTableViewCell;
             cell.bind({ cell in
                 cell.assign(from: Settings.$rosterType.map({ $0 == .grouped ? true : false }).eraseToAnyPublisher());
-                cell.sink(map: { $0 ? .grouped : .flat }, to: \.rosterType, on: Settings);
+                cell.sink(map: { @Sendable in $0 ? .grouped : .flat }, to: \.rosterType, on: Settings);
             })
             return cell;
         case .rosterDisplayHiddenGroup:

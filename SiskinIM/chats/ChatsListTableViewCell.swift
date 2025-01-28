@@ -24,16 +24,14 @@ import UIKit
 import Martin
 import Combine
 
-class ChatsListTableViewCell: UITableViewCell {
-
-    private static let throttlingQueue = DispatchQueue(label: "ChatCellViewThrottlingQueue");
+struct ChatMessageCellFormatter {
     
-    private static let relativeForamtter: RelativeDateTimeFormatter = {
+    private static let relativeForamtter = UnfairLock<RelativeDateTimeFormatter>(state: {
             let formatter = RelativeDateTimeFormatter();
             formatter.dateTimeStyle = .named;
             formatter.unitsStyle = .short;
             return formatter;
-        }();
+        }());
     
     fileprivate static let todaysFormatter = ({()-> DateFormatter in
         var f = DateFormatter();
@@ -53,21 +51,26 @@ class ChatsListTableViewCell: UITableViewCell {
         //        f.timeStyle = .NoStyle;
         return f;
     })();
-    
-    private static func formatTimestamp(_ ts: Date, _ now: Date) -> String {
+
+    static func formatTimestamp(_ ts: Date, _ now: Date) -> String {
         let flags: Set<Calendar.Component> = [.minute, .hour, .day, .year];
         var components = Calendar.current.dateComponents(flags, from: now, to: ts);
         if (components.day! >= -1) {
             components.second = 0;
-            return relativeForamtter.localizedString(from: components);
+            return relativeForamtter.with { $0.localizedString(from: components) }
         }
         if (components.year! != 0) {
-            return ChatsListTableViewCell.fullFormatter.string(from: ts);
+            return fullFormatter.string(from: ts);
         } else {
-            return ChatsListTableViewCell.defaultFormatter.string(from: ts);
+            return defaultFormatter.string(from: ts);
         }
     }
-    
+}
+
+class ChatsListTableViewCell: UITableViewCell {
+
+    private static let throttlingQueue = DispatchQueue(label: "ChatCellViewThrottlingQueue");
+        
     // MARK: Properties
     @IBOutlet var nameLabel: UILabel!
     @IBOutlet var avatarStatusView: AvatarStatusView! {
@@ -93,12 +96,12 @@ class ChatsListTableViewCell: UITableViewCell {
     private var conversation: Conversation? {
         didSet {
             cancellables.removeAll();
-            conversation?.displayNamePublisher.map({ $0 }).assign(to: \.text, on: nameLabel).store(in: &cancellables);
+            conversation?.displayNamePublisher.map({ @Sendable in $0 }).assign(to: \.text, on: nameLabel).store(in: &cancellables);
             avatarStatusView.displayableId = conversation;
             conversation?.unreadPublisher.throttleFixed(for: 0.1, scheduler: ChatsListTableViewCell.throttlingQueue, latest: true).removeDuplicates().receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
                 self?.set(unread: value);
             }).store(in: &cancellables);
-            conversation?.timestampPublisher.throttleFixed(for: 0.1, scheduler: ChatsListTableViewCell.throttlingQueue, latest: true).combineLatest(CurrentTimePublisher.publisher).map({ (value, now) in ChatsListTableViewCell.formatTimestamp(value, now) }).receive(on: DispatchQueue.main).assign(to: \.text, on: timestampLabel).store(in: &cancellables);
+            conversation?.timestampPublisher.throttleFixed(for: 0.1, scheduler: ChatsListTableViewCell.throttlingQueue, latest: true).combineLatest(CurrentTimePublisher.publisher).map({ @Sendable (value, now) in ChatMessageCellFormatter.formatTimestamp(value, now) }).receive(on: DispatchQueue.main).assign(to: \.text, on: timestampLabel).store(in: &cancellables);
             if let account = conversation?.account {
                 conversation?.lastActivityPublisher.throttleFixed(for: 0.1, scheduler: ChatsListTableViewCell.throttlingQueue, latest: true).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
                     self?.set(lastActivity: value, account: account);

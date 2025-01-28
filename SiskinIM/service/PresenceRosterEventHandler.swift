@@ -31,7 +31,7 @@ final class PresenceRosterEventHandler: XmppServiceExtension, Sendable {
     }
     
     func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
-        XmppService.instance.expectedStatus.sink(receiveValue: { [weak client] status in
+        XmppService.instance.expectedStatus.sink(receiveValue: { @Sendable [weak client] status in
             if let presenceModule = client?.module(.presence) {
                 presenceModule.initialPresence = status.sendInitialPresence;
                 if status.sendInitialPresence {
@@ -39,7 +39,7 @@ final class PresenceRosterEventHandler: XmppServiceExtension, Sendable {
                 }
             }
         }).store(in: &cancellables);
-        client.module(.presence).subscriptionPublisher.sink(receiveValue: { [weak client] change in
+        client.module(.presence).subscriptionPublisher.sink(receiveValue: { @Sendable [weak client] change in
             guard let client = client else {
                 return;
             }

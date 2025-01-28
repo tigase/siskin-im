@@ -57,13 +57,13 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
     init(context: Context, jid: BareJID, id: Int, lastActivity: LastConversationActivity, unread: Int, options: ChatOptions) {
         let contact = ContactManager.instance.contact(for: .init(account: context.userBareJid, jid: jid, type: .buddy));
         super.init(context: context, jid: jid, id: id, lastActivity: lastActivity, unread: unread, options: options, displayableId: contact);
-        (context.module(.httpFileUpload) as! HttpFileUploadModule).isAvailablePublisher.combineLatest(context.$state, { isAvailable, state -> [ConversationFeature] in
+        (context.module(.httpFileUpload) as! HttpFileUploadModule).isAvailablePublisher.combineLatest(context.$state, { @Sendable isAvailable, state -> [ConversationFeature] in
             if case .connected(_) = state {
                 return isAvailable ? [.httpFileUpload, .omemo] : [.omemo];
             } else {
                 return [.omemo];
             }
-        }).sink(receiveValue: { [weak self] value in
+        }).sink(receiveValue: { @Sendable [weak self] value in
             self?.update(features: value);
         }).store(in: &cancellables);
     }

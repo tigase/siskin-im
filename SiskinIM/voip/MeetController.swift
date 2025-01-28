@@ -103,19 +103,19 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
     
     private var meet: Meet? {
         didSet {
-            meet?.$outgoingCall.sink(receiveValue: { [weak self] call in
+            meet?.$outgoingCall.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] call in
                 guard let that = self else {
                     return;
                 }
                 call?.delegate = that;
             }).store(in: &cancellables);
-            meet?.$incomingCall.sink(receiveValue: { [weak self] call in
+            meet?.$incomingCall.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] call in
                 guard let that = self else {
                     return;
                 }
                 call?.delegate = that;
             }).store(in: &cancellables);
-            meet?.$publishers.sink(receiveValue: { [weak self] publishers in
+            meet?.$publishers.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] publishers in
                 var dict: [String: MeetModule.Publisher] = [:];
                 for publisher in publishers {
                     for stream in publisher.streams {
@@ -536,7 +536,7 @@ class MeetController: UIViewController, UICollectionViewDataSource, RTCVideoView
         func set(item: Item, account: BareJID, publishersPublisher: Published<[String:MeetModule.Publisher]>.Publisher) {
             self.videoTrack = item.videoTrack;
             self.item = item;
-            publisherCancellable = publishersPublisher.map({ $0[item.mid]?.jid }).removeDuplicates().map({ j -> Contact? in
+            publisherCancellable = publishersPublisher.map({ @Sendable in $0[item.mid]?.jid }).removeDuplicates().map({ @Sendable j -> Contact? in
                 if let jid = j {
                     return ContactManager.instance.contact(for: .init(account: account, jid: jid, type: .buddy));
                 }

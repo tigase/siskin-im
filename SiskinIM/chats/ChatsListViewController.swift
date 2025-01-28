@@ -290,7 +290,7 @@ class ChatsListViewController: UITableViewController, UISearchResultsUpdating {
 //            return (clients.count - connectedClients.count) + AccountManager.accountNames().filter({(name)->Bool in
 //                return AccountSettings.lastError(for: name) != nil
 //            }).count;
-        XmppService.instance.$clients.combineLatest(XmppService.instance.$connectedClients).map({ (clients, connectedClients) -> Int in
+        XmppService.instance.$clients.combineLatest(XmppService.instance.$connectedClients).map({ @Sendable (clients, connectedClients) -> Int in
             return (clients.count - connectedClients.count);
         }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
             self?.settingsButton.setBadge(text: value == 0 ? nil : "\(value)")
@@ -332,7 +332,7 @@ class ChatsListViewController: UITableViewController, UISearchResultsUpdating {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        DBChatStore.instance.unreadMessageCountPublisher.throttle(for: 0.1, scheduler: DispatchQueue.main, latest: true).map({ $0 == 0 ? nil : "\($0)" }).sink(receiveValue: { [weak self] value in
+        DBChatStore.instance.unreadMessageCountPublisher.throttle(for: 0.1, scheduler: DispatchQueue.main, latest: true).map({ @Sendable in $0 == 0 ? nil : "\($0)" }).sink(receiveValue: { [weak self] value in
             self?.navigationController?.tabBarItem.badgeValue = value;
         }).store(in: &cancellables);
         Settings.$recentsMessageLinesNo.removeDuplicates().receive(on: DispatchQueue.main).sink(receiveValue: { _ in
@@ -835,8 +835,7 @@ class ChatsListViewController: UITableViewController, UISearchResultsUpdating {
         }
     }
     
-    @preconcurrency
-    class ChatsDataSource {
+    class ChatsDataSource: @unchecked Sendable {
         
         weak var controller: ChatsListViewController?;
 
@@ -852,7 +851,7 @@ class ChatsListViewController: UITableViewController, UISearchResultsUpdating {
         init(controller: ChatsListViewController) {
             self.controller = controller;
             
-            DBChatStore.instance.conversationsPublisher.throttleFixed(for: 0.1, scheduler: self.dispatcher, latest: true).sink(receiveValue: { [weak self] items in
+            DBChatStore.instance.conversationsPublisher.throttleFixed(for: 0.1, scheduler: self.dispatcher, latest: true).sink(receiveValue: { @Sendable [weak self] items in
                 self?.update(items: items);
             }).store(in: &cancellables);
         }

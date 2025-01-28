@@ -31,8 +31,7 @@ struct AvatarWeakRef {
     weak var avatar: Avatar?;
 }
 
-@preconcurrency
-public class Avatar: Publisher {
+public class Avatar: Publisher, @unchecked Sendable {
 
     private struct AvatarSubscription: Subscription {
         
@@ -58,39 +57,34 @@ public class Avatar: Publisher {
         
     }
 
-    private struct AvatarSubscriber<Input,Failure: Error>: Subscriber {
+    private struct AvatarSubscriber<Input,Failure: Error>: Subscriber, @unchecked Sendable {
                
         let combineIdentifier = CombineIdentifier();
 
-        private let receiveInput: (Input) -> Subscribers.Demand;
-        private let receiveCompletion: (Subscribers.Completion<Failure>) -> Void;
-        private let receiveSubscription: (Subscription)->Void;
+        private let avatar: Avatar;
+        private let subscriber: any Subscriber<Input,Failure>;
+//        private let receiveInput: (Input) -> Subscribers.Demand;
+//        private let receiveCompletion: (Subscribers.Completion<Failure>) -> Void;
+//        private let receiveSubscription: (Subscription)->Void;
         
         init<S: Subscriber>(avatar: Avatar, subscriber: S) where Input == S.Input, Failure == S.Failure {
-            self.receiveInput = { input in
-                subscriber.receive(input);
-            }
-            self.receiveCompletion = { completion in
-                subscriber.receive(completion: completion);
-            }
-            self.receiveSubscription = { subscription in
-                subscriber.receive(subscription: AvatarSubscription(avatar: avatar, subscription: subscription));
-            }
+            self.avatar = avatar;
+            self.subscriber = subscriber;
         }
         
         @inlinable
         func receive(subscription: Subscription) {
-            receiveSubscription(subscription);
+            self.subscriber.receive(subscription: AvatarSubscription(avatar: self.avatar, subscription: subscription));
         }
         
         @inlinable
         func receive(_ input: Input) -> Subscribers.Demand {
-            receiveInput(input);
+            self.subscriber.receive(input);
         }
         
         @inlinable
         func receive(completion: Subscribers.Completion<Failure>) {
-            receiveCompletion(completion);
+            self.subscriber.receive(completion: completion);
         }
         
     }
@@ -115,7 +109,7 @@ public class Avatar: Publisher {
     
     init(key: Key) {
         self.key = key;
-        self.publisher = $hash.filter({ .notReady != $0 }).map({
+        self.publisher = $hash.filter({ @Sendable in .notReady != $0 }).map({ @Sendable in
             switch $0 {
             case .notReady:
                 return nil;
@@ -145,8 +139,7 @@ public class Avatar: Publisher {
 
 }
 
-@preconcurrency
-class AvatarManager {
+class AvatarManager: @unchecked Sendable {
 
     public static let instance = AvatarManager();
 

@@ -31,8 +31,7 @@ extension Query {
     
 }
 
-@preconcurrency 
-class DBVCardStore {
+class DBVCardStore: @unchecked Sendable {
     
     public static let VCARD_UPDATED = Notification.Name("vcardUpdated");
     public static let instance = DBVCardStore();
@@ -74,7 +73,7 @@ class DBVCardStore {
         }
     }
     
-    class VCardItem {
+    final class VCardItem: Sendable {
         
         let vcard: VCard;
         let account: BareJID;

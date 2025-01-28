@@ -31,7 +31,7 @@ final class MixEventHandler: XmppServiceExtension, Sendable {
     }
     
     func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
-        client.$state.sink(receiveValue: { [weak client] state in
+        client.$state.sink(receiveValue: { @Sendable [weak client] state in
             guard let client = client, case .connected(let resumed) = state, !resumed else {
                 return;
             }
@@ -49,7 +49,7 @@ final class MixEventHandler: XmppServiceExtension, Sendable {
                 });
             }
         }).store(in: &cancellables);
-        client.module(.mix).participantsEvents.sink(receiveValue: { event in
+        client.module(.mix).participantsEvents.sink(receiveValue: { @Sendable event in
             guard case .joined(let participant) = event, let channel = participant.channel else {
                 return;
             }
@@ -62,7 +62,7 @@ final class MixEventHandler: XmppServiceExtension, Sendable {
                 _ = try await VCardManager.instance.refreshVCard(for: jid, on: channel.account);
             }
         }).store(in: &cancellables);
-        client.module(.mix).messagesPublisher.sink(receiveValue: { e in
+        client.module(.mix).messagesPublisher.sink(receiveValue: { @Sendable e in
             DBChatHistoryStore.instance.append(for: e.channel as! Channel, message: e.message, source: .stream);
         }).store(in: &cancellables);
     }

@@ -276,7 +276,7 @@ class StatusTableViewCell: UITableViewCell {
     private var cancellables: Set<AnyCancellable> = [];
     
     public func initialize() {
-        Settings.$statusType.sink(receiveValue: { [weak self] type in
+        Settings.$statusType.receive(on: DispatchQueue.main).sink(receiveValue: {  [weak self] type in
             if type == nil {
                 self?.statusIcon.isHidden = true;
             } else {
@@ -284,13 +284,13 @@ class StatusTableViewCell: UITableViewCell {
                 self?.statusIcon.isHidden = false;
             }
         }).store(in: &cancellables)
-        Settings.$statusType.map({ [weak self] type in
+        Settings.$statusType.receive(on: DispatchQueue.main).map({ [weak self] type in
             if let value = type {
                 return self?.statusNames[value];
             } else {
                 return NSLocalizedString("Automatic", comment: "presence status");
             }
         }).assign(to: \.text, on: statusTypeLabel).store(in: &cancellables)
-        Settings.$statusMessage.assign(to: \.text, on: statusMessage).store(in: &cancellables)
+        Settings.$statusMessage.receive(on: DispatchQueue.main).assign(to: \.text, on: statusMessage).store(in: &cancellables)
     }
 }

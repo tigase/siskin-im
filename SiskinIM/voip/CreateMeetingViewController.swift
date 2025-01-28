@@ -53,7 +53,7 @@ class CreateMeetingViewController: MultiContactSelectionViewController {
         
         $client.receive(on: DispatchQueue.main).map({ $0?.userBareJid }).assign(to: \.account, on: statusView).store(in: &cancellables);
         
-        $client.compactMap({ $0 }).sink(receiveValue: { [weak self] client in
+        $client.compactMap({ @Sendable in $0 }).sink(receiveValue: { [weak self] client in
             guard case .connected(_) =  client.state else {
                 DispatchQueue.main.async {
                     let alert = UIAlertController(title: NSLocalizedString("Error", comment: "alert title"), message: NSLocalizedString("Default account is not connected. Please select a different account.", comment: "alert body"), preferredStyle: .alert);

@@ -36,16 +36,15 @@ extension Query {
     static let mamSyncUpdatePeriodAfter = Query("UPDATE chat_history_sync SET from_id = :after WHERE id = :id");
     static let mamSyncUpdatePeriodTo = Query("UPDATE chat_history_sync SET to_timestamp = :to_timestamp WHERE id = :id");
 }
-
-@preconcurrency 
-class DBChatHistorySyncStore {
+ 
+class DBChatHistorySyncStore: @unchecked Sendable {
     
     static let instance = DBChatHistorySyncStore()
         
     private var cancellables: Set<AnyCancellable> = [];
     
     init() {
-        AccountManager.accountEventsPublisher.sink(receiveValue: { [weak self] event in
+        AccountManager.accountEventsPublisher.sink(receiveValue: { @Sendable [weak self] event in
             self?.accountChanged(event);
         }).store(in: &cancellables)
     }

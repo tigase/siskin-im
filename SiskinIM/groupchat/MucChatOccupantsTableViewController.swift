@@ -25,7 +25,7 @@ import Combine
 
 class MucChatOccupantsTableViewController: UITableViewController {
     
-    private class ParticipantsGroup: Equatable, Hashable {
+    private class ParticipantsGroup: Equatable, Hashable, @unchecked Sendable {
         static func == (lhs: ParticipantsGroup, rhs: ParticipantsGroup) -> Bool {
             return lhs.role == rhs.role;
         }
@@ -90,8 +90,8 @@ class MucChatOccupantsTableViewController: UITableViewController {
     var room: Room! {
         didSet {
             cancellables.removeAll();
-            room.occupantsPublisher.throttle(for: 0.1, scheduler: self.queue, latest: true).sink(receiveValue: { [weak self] value in
-                self?.update(participants: value);
+            room.occupantsPublisher.throttle(for: 0.1, scheduler: self.queue, latest: true).receive(on: DispatchQueue.main).map({ [weak self] in (self?.groups, $0)}).receive(on: self.queue).sink(receiveValue: { @Sendable [weak self] groups, value in
+                self?.update(oldGroups: groups ?? [], participants: value);
             }).store(in: &cancellables);
         }
     }
@@ -124,8 +124,7 @@ class MucChatOccupantsTableViewController: UITableViewController {
         super.viewWillDisappear(animated);
     }
     
-    private func update(participants: [MucOccupant]) {
-        let oldGroups = self.groups;
+    private nonisolated func update(oldGroups: [ParticipantsGroup], participants: [MucOccupant]) {
         let newGroups = allRoles.map({ role in ParticipantsGroup(role: role, participants: participants.filter({ $0.role == role }).sorted(by: { (i1,i2) -> Bool in i1.nickname.lowercased() < i2.nickname.lowercased() })) }).filter({ !$0.participants.isEmpty });
 
         let allChanges = newGroups.calculateChanges(from: oldGroups);

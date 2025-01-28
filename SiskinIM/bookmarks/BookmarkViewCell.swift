@@ -32,7 +32,7 @@ public class BookmarkViewCell: UITableViewCell {
     
     private var avatar: Avatar? {
         didSet {
-            avatar?.map({ $0 ?? AvatarManager.instance.defaultGroupchatAvatar }).receive(on: DispatchQueue.main).assign(to: \.avatar, on: avatarView).store(in: &cancellables);
+            avatar?.receive(on: DispatchQueue.main).map({ $0 ?? AvatarManager.instance.defaultGroupchatAvatar }).assign(to: \.avatar, on: avatarView).store(in: &cancellables);
         }
     }
     

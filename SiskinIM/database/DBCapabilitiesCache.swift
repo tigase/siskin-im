@@ -32,8 +32,7 @@ extension Query {
     static let capsCountFeaturesForNode = Query("SELECT count(feature) FROM caps_features WHERE node = :node");
 }
 
-@preconcurrency
-class DBCapabilitiesCache: CapabilitiesCache {
+class DBCapabilitiesCache: CapabilitiesCache, @unchecked Sendable {
     
     public static let instance = DBCapabilitiesCache();
     

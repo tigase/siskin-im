@@ -50,11 +50,11 @@ class ChannelViewController: BaseChatViewControllerWithDataSourceAndContextMenuA
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        channel.context!.$state.map({ $0 == .connected() }).combineLatest(channel.optionsPublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (connected, options) in
+        channel.context!.$state.map({ @Sendable in $0 == .connected() }).combineLatest(channel.optionsPublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (connected, options) in
             self?.titleView?.refresh(connected: connected, options: options);
             self?.navigationItem.rightBarButtonItem?.isEnabled = options.state == .joined;
         }).store(in: &cancellables);
-        channel.displayNamePublisher.map({ $0 }).assign(to: \.name, on: self.titleView).store(in: &cancellables);
+        channel.displayNamePublisher.map({ @Sendable in $0 }).receive(on: DispatchQueue.main).assign(to: \.name, on: self.titleView).store(in: &cancellables);
         channel.avatar.combineLatest(channel.displayNamePublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] avatar, name in
             self?.titleView.avatarView.set(name: nil, avatar: avatar ?? AvatarManager.instance.defaultGroupchatAvatar);
         }).store(in: &cancellables);

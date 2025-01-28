@@ -25,8 +25,7 @@ import Martin
 import Combine
 import UIKit
 
-@preconcurrency
-public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>, RosterProvider {
+public class RosterProviderFlat: RosterProviderAbstract<RosterProviderFlatItem>, RosterProvider, @unchecked Sendable {
     
     private var items: [RosterProviderFlatItem] = [];
     

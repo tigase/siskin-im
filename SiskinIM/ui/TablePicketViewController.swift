@@ -83,11 +83,11 @@ class TablePickerViewController<Value>: UITableViewController where Value: Equat
     }
     
     func sink<Root>(to keyPath: ReferenceWritableKeyPath<Root, Value>, on object: Root) {
-        $selected.map({ self.options[$0] }).assign(to: keyPath, on: object).store(in: &cancellables);
+        $selected.receive(on: DispatchQueue.main).map({ self.options[$0] }).assign(to: keyPath, on: object).store(in: &cancellables);
     }
     
     func sink(receiveValue: @escaping (Value)->Void) {
-        $selected.map({ self.options[$0] }).sink(receiveValue: receiveValue).store(in: &cancellables);
+        $selected.receive(on: DispatchQueue.main).map({ self.options[$0] }).sink(receiveValue: receiveValue).store(in: &cancellables);
     }
 }
 

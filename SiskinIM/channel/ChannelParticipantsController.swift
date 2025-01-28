@@ -35,8 +35,8 @@ class ChannelParticipantsController: UITableViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        channel.participantsPublisher.throttle(for: 0.2, scheduler: queue, latest: true).sink(receiveValue: { [weak self] participants in
-            self?.update(participants: participants);
+        channel.participantsPublisher.throttle(for: 0.2, scheduler: queue, latest: true).receive(on: DispatchQueue.main).map({ newParticipants in (self.participants, newParticipants) }).receive(on: queue).sink(receiveValue: { @Sendable [weak self] oldParticipants, newParticipants in
+            self?.update(oldParticipants: oldParticipants, newParticipants: newParticipants);
         }).store(in: &cancellables);
         if channel.permissions?.contains(.changeConfig) ?? false, let mixModule = channel.context?.module(.mix) {
             self.operationStarted(message: NSLocalizedString("Refreshing…", comment: "channel participants view operation"));
@@ -135,8 +135,7 @@ class ChannelParticipantsController: UITableViewController {
         }
     }
     
-    private func update(participants: [MixParticipant]) {
-        let oldParticipants = self.participants;
+    private nonisolated func update(oldParticipants: [MixParticipant], newParticipants participants: [MixParticipant]) {
         let newParticipants = participants.sorted(by: { (p1,p2) -> Bool in
             return (p1.nickname ?? p1.id).caseInsensitiveCompare(p2.nickname ?? p2.id) == .orderedAscending;
         });

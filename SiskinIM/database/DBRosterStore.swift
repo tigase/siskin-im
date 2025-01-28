@@ -73,8 +73,7 @@ final class AccountRoster: @unchecked Sendable {
     
 }
 
-@preconcurrency
-open class DBRosterStore: RosterStore {
+open class DBRosterStore: RosterStore, @unchecked Sendable {
     
     public typealias RosterItem = Siskin.RosterItem
     
@@ -225,8 +224,7 @@ open class DBRosterStore: RosterStore {
 
 }
 
-@preconcurrency
-public class RosterItem: Martin.RosterItemBase, Identifiable, Hashable {
+public class RosterItem: Martin.RosterItemBase, Identifiable, Hashable, @unchecked Sendable {
     
     public static func == (lhs: RosterItem, rhs: RosterItem) -> Bool {
         return lhs.id == rhs.id;

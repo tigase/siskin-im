@@ -23,7 +23,7 @@ import Foundation
 import Combine
 
 @preconcurrency
-struct CurrentTimePublisher {
+struct CurrentTimePublisher: @unchecked Sendable {
 
     public static var publisher: CurrentValueSubject<Date,Never> {
         return instance.publisher;

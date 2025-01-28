@@ -30,8 +30,7 @@ extension unichar: ExpressibleByUnicodeScalarLiteral {
     }
 }
 
-@preconcurrency
-class Markdown {
+class Markdown: @unchecked Sendable {
     
     private static let instance = Markdown();
     

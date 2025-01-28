@@ -30,7 +30,7 @@ struct AppearanceSettingsView: View {
     init() {
         self.appearance = Settings.appearance;
         let state = self._appearance;
-        Settings.$appearance.sink(receiveValue: { newValue in
+        Settings.$appearance.receive(on: DispatchQueue.main).sink(receiveValue: { newValue in
             state.wrappedValue = newValue;
         }).store(in: &cancellables);
     }

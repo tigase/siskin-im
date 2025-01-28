@@ -29,8 +29,7 @@ import TigaseSQLite3
 import Intents
 import CryptoKit
 
-@preconcurrency
-class NotificationService: UNNotificationServiceExtension {
+class NotificationService: UNNotificationServiceExtension, @unchecked Sendable {
 
     var contentHandler: ((UNNotificationContent) -> Void)? {
         didSet {
@@ -38,7 +37,7 @@ class NotificationService: UNNotificationServiceExtension {
         }
     }
     var bestAttemptContent: UNMutableNotificationContent?
-
+    
     override func didReceive(_ request: UNNotificationRequest, withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {
         self.contentHandler = contentHandler
         bestAttemptContent = (request.content.mutableCopy() as? UNMutableNotificationContent)

@@ -45,8 +45,7 @@ extension XMPPClient: Hashable {
     
 }
 
-@preconcurrency
-open class XmppService {
+open class XmppService: @unchecked Sendable {
     
     public static let SERVER_CERTIFICATE_ERROR = Notification.Name("serverCertificateError");
     public static let AUTHENTICATION_ERROR = Notification.Name("authenticationFailure");
@@ -112,23 +111,23 @@ open class XmppService {
             Status(show: type, message: (messsage?.isEmpty ?? true) ? nil : messsage, shouldConnect: true, sendInitialPresence: true);
         }).assign(to: \.status, on: self).store(in: &cancellables);
         
-        expectedStatus.map({ status in
+        expectedStatus.map({ @Sendable status in
             return status.shouldConnect
-        }).removeDuplicates().sink(receiveValue: { [weak self] available in
+        }).removeDuplicates().sink(receiveValue: { @Sendable [weak self] available in
             if available {
                 self?.connectClients(ignoreCheck: true);
             } else {
                 self?.disconnectClients(force: !NetworkMonitor.shared.isNetworkAvailable);
             }
         }).store(in: &cancellables);
-        expectedStatus.combineLatest($connectedClients.map({ !$0.isEmpty })).map({ status, connected in
+        expectedStatus.combineLatest($connectedClients.map({ @Sendable in !$0.isEmpty })).map({ @Sendable status, connected in
             if !connected {
                 return status.with(show: nil);
             }
             return status;
         }).sink(receiveValue: { [weak self] status in self?.currentStatus = status }).store(in: &cancellables);
                 
-        AccountManager.accountEventsPublisher.receive(on: self.queue).sink(receiveValue: { [weak self] event in
+        AccountManager.accountEventsPublisher.receive(on: self.queue).sink(receiveValue: { @Sendable [weak self] event in
             self?.accountChanged(event: event);
         }).store(in: &cancellables);
     }
@@ -342,7 +341,7 @@ open class XmppService {
         }
     }
     
-    private class FetchState {
+    private class FetchState: @unchecked Sendable {
         private var accountsInProgress: Set<BareJID>;
         private var completionHandler: (()->Void);
         var cancellables: Set<AnyCancellable> = [];
@@ -402,12 +401,12 @@ open class XmppService {
         });
         self.fetchState = fetchState;
 
-        MessageEventHandler.eventsPublisher.compactMap({ event in
+        MessageEventHandler.eventsPublisher.compactMap({ @Sendable event in
             guard case .finished(let account, let jid) = event, jid == nil else {
                 return nil;
             }
             return account;
-        }).sink(receiveValue: { [weak fetchState] account in
+        }).sink(receiveValue: { @Sendable [weak fetchState] account in
             fetchState?.completed(for: account);
         }).store(in: &fetchState.cancellables);
 
@@ -497,20 +496,20 @@ open class XmppService {
         self.clientCancellables[account.name] = clientCancellables;
                         
         client.$state.subscribe(account.state).store(in: &clientCancellables.cancellables);
-        client.$state.dropFirst().sink(receiveValue: { state in self.changedState(state, for: client) }).store(in: &clientCancellables.cancellables);
+        client.$state.dropFirst().sink(receiveValue: { @Sendable state in self.changedState(state, for: client) }).store(in: &clientCancellables.cancellables);
                     
         for ext in extensions {
             ext.register(for: client, cancellables: &clientCancellables.cancellables);
         }
                                     
-        client.$state.combineLatest($applicationState).sink(receiveValue: { [weak client] (clientState, applicationState) in
+        client.$state.combineLatest($applicationState).sink(receiveValue: { @Sendable [weak client] (clientState, applicationState) in
             if clientState == .connected() {
                 _ = client?.module(.csi).setState(applicationState == .active);
             }
         }).store(in: &clientCancellables.cancellables);
         
         let accountJid = account.name;
-        client.connectionConfiguration.credentialsPublisher.sink(receiveValue: { newCredentials in
+        client.connectionConfiguration.credentialsPublisher.sink(receiveValue: { @Sendable newCredentials in
             do {
                 self.logger.debug("storing changed credentials: \(String(data: try! JSONEncoder().encode(newCredentials), encoding: .utf8)!)");
                 try AccountManager.modifyAccount(for: accountJid, { account in

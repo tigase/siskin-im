@@ -85,8 +85,7 @@ public class Contact: DisplayableIdWithKeyProtocol {
     
 }
 
-@preconcurrency
-public class ContactManager {
+public class ContactManager: @unchecked Sendable {
     
     public let queue = DispatchQueue(label: "contactManager");
     public static let instance = ContactManager();
@@ -95,7 +94,7 @@ public class ContactManager {
     private var cancellables: Set<AnyCancellable> = [];
     
     public init() {
-        PresenceStore.instance.bestPresenceEvents.receive(on: queue).sink(receiveValue: { [weak self] event in
+        PresenceStore.instance.bestPresenceEvents.receive(on: queue).sink(receiveValue: { @Sendable [weak self] event in
             self?.update(presence: event.presence, for: .init(account: event.account, jid: event.jid, type: .buddy));
         }).store(in: &cancellables);
     }

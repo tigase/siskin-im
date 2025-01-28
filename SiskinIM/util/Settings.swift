@@ -28,7 +28,7 @@ import SwiftUI
 @propertyWrapper
 struct Setting<T>: DynamicProperty {
     private let key: ReferenceWritableKeyPath<SettingsStore, T>;
-    @ObservedObject private var settings = Settings;
+    private var settings = Settings;
 
     var wrappedValue: T {
         get {
@@ -316,13 +316,13 @@ class SettingsStore: ObservableObject, @unchecked Sendable {
         Task {
             appIcon = AppIcon(rawValue: await UIApplication.shared.alternateIconName ?? "") ?? .default
         }
-        $sharingViaHttpUpload.sink(receiveValue: { value in
+        $sharingViaHttpUpload.sink(receiveValue: { @Sendable value in
             SettingsStore.sharedDefaults.setValue(value, forKey: "SharingViaHttpUpload");
         }).store(in: &cancellables);
-        $imageQuality.sink(receiveValue: { value in
+        $imageQuality.sink(receiveValue: { @Sendable value in
             SettingsStore.sharedDefaults.setValue(value.rawValue, forKey: "imageQuality");
         }).store(in: &cancellables);
-        $videoQuality.sink(receiveValue: { value in
+        $videoQuality.sink(receiveValue: { @Sendable value in
             SettingsStore.sharedDefaults.setValue(value.rawValue, forKey: "videoQuality");
         }).store(in: &cancellables);
     }
