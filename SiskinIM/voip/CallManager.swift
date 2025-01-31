@@ -612,12 +612,32 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
     }
     
     func accept(offerMedia: [Media]) async throws {
+        guard let session = self.session else {
+            reset();
+            return;
+        }
+
         await MainActor.run(body: {
             CallManager.showCallController(completionHandler: { controller in
                 self.delegate = controller;
             });
         })
-        try await self.accept(offerMedia: media);
+        
+        changeState(.connecting);
+        do {
+            try initiateWebRTC(iceServers: await discoverIceServers(), offerMedia: media);
+            guard self.currentConnection != nil else {
+                self.reject();
+                return;
+            }
+            try await session.accept();
+            self.connectRemoteSDPPublishers(session: session);
+        } catch {
+            self.reject();
+        }
+    }
+    
+    func accept(offerMedia media: [Media]) {
     }
     
     func end() {
@@ -945,26 +965,7 @@ final class Call: NSObject, CallBase, JingleSessionActionDelegate, @unchecked Se
         }
     }
 
-    func accept(offerMedia media: [Media]) {
-        guard let session = self.session else {
-            reset();
-            return;
-        }
-        changeState(.connecting);
-        Task {
-            do {
-                try initiateWebRTC(iceServers: await discoverIceServers(), offerMedia: media);
-                guard self.currentConnection != nil else {
-                    self.reject();
-                    return;
-                }
-                try await session.accept();
-                self.connectRemoteSDPPublishers(session: session);
-            } catch {
-                self.reject();
-            }
-        }
-    }
+    
     
     func reject() {
         guard let session = self.session else {
