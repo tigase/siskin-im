@@ -49,7 +49,7 @@ class AccountSettingsViewController: UITableViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        navigationItem.title = account.description;
+        navigationItem.title = account!.description;
                 
         let config = AccountManager.account(for: account);
         enabledSwitch.isOn = config?.enabled ?? false;
