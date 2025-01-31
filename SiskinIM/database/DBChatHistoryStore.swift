@@ -286,8 +286,17 @@ class DBChatHistoryStore: @unchecked Sendable {
 
         let timestamp = Date(timeIntervalSince1970: Double(Int64((inTimestamp ?? Date()).timeIntervalSince1970 * 1000)) / 1000);
 
-        if let stableId = serverMsgId, self.findItemId(for: conversation.account, serverMsgId: stableId) != nil {
-            return;
+        if let stableId = serverMsgId {
+            if self.findItemId(for: conversation.account, serverMsgId: stableId) != nil {
+                return;
+            }
+        } else if let originId = stanzaId, (message.type == .chat || message.type == .normal) {
+            if let item = self.findItem(for: conversation, originId: originId, sender: sender) {
+                if (abs(item.timestamp.timeIntervalSince(timestamp)) < 60.0) {
+                    // duplicated message sent from MAM archive (mostly MAM:1 and not MAM:2)
+                    return;
+                }
+            }
         }
         
         if let originId = stanzaId, message.type == .groupchat || direction == .outgoing, let existingMessageId = self.findItemId(for: conversation, originId: originId, sender: sender) {
