@@ -50,7 +50,13 @@ class AccountSettingsViewController: UITableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
         navigationItem.title = account.description;
-        
+                
+        let config = AccountManager.account(for: account);
+        enabledSwitch.isOn = config?.enabled ?? false;
+        nicknameLabel.text = config?.nickname;
+        archivingEnabledSwitch.isOn = false;
+        pushNotificationsForAwaySwitch.isOn = (config?.push.registration != nil) && config?.push.enableForAway ?? false;
+
         AccountManager.accountEventsPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] event in
             switch event {
             case .enabled(let account,_), .disabled(let account), .removed(let account):
@@ -59,14 +65,6 @@ class AccountSettingsViewController: UITableViewController {
                 }
             }
         }).store(in: &cancellables);
-        
-        let config = AccountManager.account(for: account);
-        enabledSwitch.isOn = config?.enabled ?? false;
-        nicknameLabel.text = config?.nickname;
-        archivingEnabledSwitch.isOn = false;
-        pushNotificationsForAwaySwitch.isOn = (config?.push.registration != nil) && config?.push.enableForAway ?? false;
-
-        updateView();
         
         Task {
             let vcard = await DBVCardStore.instance.vcard(for: account);
@@ -172,6 +170,7 @@ class AccountSettingsViewController: UITableViewController {
         if let mamModule = client?.module(.mam), mamModule.isAvailable {
             Task {
                 do {
+                    print("requesting MAM settings for account: \(mamModule.context!.userBareJid)")
                     let settings = try await mamModule.settings();
                     DispatchQueue.main.async {
                         self.archivingEnabledSwitch.isEnabled = true;
