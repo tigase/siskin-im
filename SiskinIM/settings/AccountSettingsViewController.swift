@@ -158,6 +158,9 @@ class AccountSettingsViewController: UITableViewController {
     }
     
     func updateView() {
+        guard let account = account else {
+            return;
+        }
         let client = XmppService.instance.getClient(for: account);
         if let pushModule = client?.module(.push) as? SiskinPushNotificationsModule {
             pushNotificationsForAwaySwitch.isEnabled = AccountManager.account(for: account)?.push.registration != nil && pushModule.isSupported(extension: TigasePushNotificationsModule.PushForAway.self);
@@ -170,7 +173,7 @@ class AccountSettingsViewController: UITableViewController {
         if let mamModule = client?.module(.mam), mamModule.isAvailable {
             Task {
                 do {
-                    print("requesting MAM settings for account: \(mamModule.context!.userBareJid)")
+                    print("requesting MAM settings for account: \(account)")
                     let settings = try await mamModule.settings();
                     DispatchQueue.main.async {
                         self.archivingEnabledSwitch.isEnabled = true;
