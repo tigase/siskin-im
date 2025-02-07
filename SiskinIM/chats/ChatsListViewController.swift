@@ -290,11 +290,6 @@ class ChatsListViewController: UITableViewController, UISearchResultsUpdating {
 //            return (clients.count - connectedClients.count) + AccountManager.accountNames().filter({(name)->Bool in
 //                return AccountSettings.lastError(for: name) != nil
 //            }).count;
-        XmppService.instance.$clients.combineLatest(XmppService.instance.$connectedClients).map({ @Sendable (clients, connectedClients) -> Int in
-            return (clients.count - connectedClients.count);
-        }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
-            self?.settingsButton.setBadge(text: value == 0 ? nil : "\(value)")
-        }).store(in: &cancellables);
     }
     
     func updateSearchResults(for searchController: UISearchController) {
@@ -332,6 +327,11 @@ class ChatsListViewController: UITableViewController, UISearchResultsUpdating {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
+        XmppService.instance.$clients.combineLatest(XmppService.instance.$connectedClients).map({ @Sendable (clients, connectedClients) -> Int in
+            return (clients.count - connectedClients.count);
+        }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
+            self?.settingsButton.setBadge(text: value == 0 ? nil : "\(value)")
+        }).store(in: &cancellables);
         DBChatStore.instance.unreadMessageCountPublisher.throttle(for: 0.1, scheduler: DispatchQueue.main, latest: true).map({ @Sendable in $0 == 0 ? nil : "\($0)" }).sink(receiveValue: { [weak self] value in
             self?.navigationController?.tabBarItem.badgeValue = value;
         }).store(in: &cancellables);
