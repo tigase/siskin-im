@@ -823,7 +823,7 @@
 "Push Notifications" = "Push-Benachrichtigungen";
 
 /* alert body */
-"Push notifications are enabled for %@. They need to be disabled before account can be removed and it is not possible to at this time. Please try again later." = "Push-Benachrichtigungen sind für %@ aktiviert. Diese müssen deaktiviert werden, bevor das Konto entfernt werden kann, und das ist derzeit nicht möglich. Bitte versuche es später noch einmal.";
+"Push notifications are enabled for %@. They should be disabled before account can be removed and it is not possible to at this time.\nDo you wish to remove account from the application anyway?" = "Push-Benachrichtigungen sind für %@ aktiviert. Diese müssen deaktiviert werden, bevor das Konto entfernt werden kann, und das ist derzeit nicht möglich.\nMöchten Sie das Konto trotzdem aus der Anwendung entfernen?";
 
 /* push notifications registration failure message */
 "Push notifications not available" = "Push-Benachrichtigungen nicht verfügbar";

@@ -39,7 +39,7 @@ public class DBAccountStore {
     
     static func delete(account: Account) throws {
         try Database.main.writer({ writer in
-            try writer.delete(query: .accountDelete, params: ["name", account.name]);
+            try writer.delete(query: .accountDelete, params: ["name": account.name]);
         })
     }
     

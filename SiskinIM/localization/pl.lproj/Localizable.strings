@@ -804,7 +804,7 @@
 "Push Notifications" = "Powiadomienia Push";
 
 /* alert body */
-"Push notifications are enabled for %@. They need to be disabled before account can be removed and it is not possible to at this time. Please try again later." = "Powiadomienia push są włączone dla %@. Muszą zostać one wyłączone nim konto zostanie usunięte a nie jest to obecnie możliwe. Proszę spróbować później.";
+"Push notifications are enabled for %@. They should be disabled before account can be removed and it is not possible to at this time.\nDo you wish to remove account from the application anyway?" = "Powiadomienia push są włączone dla %@. Powinny one zostać wyłączone nim konto zostanie usunięte a nie jest to obecnie możliwe.\nCzy mimo to chcesz usunąć konto z aplikacji?";
 
 /* push notifications registration failure message */
 "Push notifications not available" = "Powiadomienia push są niedostępne";

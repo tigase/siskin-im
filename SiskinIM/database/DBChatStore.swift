@@ -80,23 +80,27 @@ open class DBChatStore: ContextLifecycleAware, @unchecked Sendable {
 
     public func close(conversation: Conversation) -> Bool {
         return queue.sync {
-            guard accountsConversations.remove(conversation) else {
-                return false;
-            }
-            conversationsEventsPublisher.send(.destroyed(conversation));
-            try! Database.main.writer({ database in
-                try database.delete(query: .chatDelete, params: ["id": conversation.id]);
-            });
-            if conversation is Room {
-                DispatchQueue.global().async {
-                    DBChatHistorySyncStore.instance.removeSyncPeriods(forAccount: conversation.account, component: conversation.jid);
-                }
-            }
-            if conversation.unread > 0 {
-                DBChatHistoryStore.instance.markAsRead(for: conversation, before: Date());
-            }
-            return true;
+            _close(conversation: conversation);
         }
+    }
+    
+    private func _close(conversation: Conversation) -> Bool {
+        guard accountsConversations.remove(conversation) else {
+            return false;
+        }
+        conversationsEventsPublisher.send(.destroyed(conversation));
+        try! Database.main.writer({ database in
+            try database.delete(query: .chatDelete, params: ["id": conversation.id]);
+        });
+        if conversation is Room {
+            DispatchQueue.global().async {
+                DBChatHistorySyncStore.instance.removeSyncPeriods(forAccount: conversation.account, component: conversation.jid);
+            }
+        }
+        if conversation.unread > 0 {
+            DBChatHistoryStore.instance.markAsRead(for: conversation, before: Date());
+        }
+        return true;
     }
 
     func convert<T: Conversation>(items: [Conversation]) -> [T] {
@@ -123,7 +127,7 @@ open class DBChatStore: ContextLifecycleAware, @unchecked Sendable {
         queue.async {
             if let items = self.accountsConversations.conversations(for: account) {
                 for conversation in items {
-                    _ = self.close(conversation: conversation);
+                    _ = self._close(conversation: conversation);
                 }
             }
         }

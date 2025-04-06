@@ -424,8 +424,11 @@ class AccountSettingsViewController: UITableViewController {
                                 removeAccount(account, removeFromServer);
                             } catch {
                                 await MainActor.run(body: {
-                                    let alert = UIAlertController(title: NSLocalizedString("Account removal", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Push notifications are enabled for %@. They need to be disabled before account can be removed and it is not possible to at this time. Please try again later.", comment: "alert body"), account.description), preferredStyle: .alert);
-                                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "button label"), style: .default, handler: nil));
+                                    let alert = UIAlertController(title: NSLocalizedString("Account removal", comment: "alert title"), message: String.localizedStringWithFormat(NSLocalizedString("Push notifications are enabled for %@. They should be disabled before account can be removed and it is not possible to at this time.\nDo you wish to remove account from the application anyway?", comment: "alert body"), account.description), preferredStyle: .alert);
+                                    alert.addAction(UIAlertAction(title: NSLocalizedString("Remove from application", comment: "button label"), style: .destructive, handler: { action in
+                                        removeAccount(account, false);
+                                    }))
+                                    alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "button label"), style: .default, handler: nil));
                                     self.present(alert, animated: true, completion: nil);
                                 })
                             }

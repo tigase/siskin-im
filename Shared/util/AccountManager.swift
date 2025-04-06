@@ -143,12 +143,16 @@ open class AccountManager {
                     DispatchQueue.main.async {
                         self.accountEventsPublisher.send(acc.enabled ? .enabled(acc, false) : .disabled(acc));
                     }
+//                } else {
+//                    try DBAccountStore.delete(account: account)
                 }
             } else {
                 var account = source;
                 if let credentials = credentials(for: account.name) {
                     account.credentials = credentials;
                     _accounts[account.name] = account;
+//                } else {
+//                    try DBAccountStore.delete(account: account)
                 }
             }
         }
@@ -275,10 +279,11 @@ open class AccountManager {
             if let error = AccountManagerError(status: SecItemDelete(query as CFDictionary)) {
                 throw error;
             }
-            
+                        
             guard let account = _accounts.removeValue(forKey: jid) else {
                 return;
             }
+            try? DBAccountStore.delete(account: account);
             NotificationEncryptionKeys.set(key: nil, for: account.name);
             
             DispatchQueue.main.async {
