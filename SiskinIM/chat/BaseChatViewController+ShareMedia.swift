@@ -107,9 +107,9 @@ extension BaseChatViewController: PHPickerViewControllerDelegate {
         
         if let provider = results.first?.itemProvider {
             if provider.canLoadObject(ofClass: UIImage.self) {
-                provider.loadFileRepresentation(forTypeIdentifier: "public.image", completionHandler: self.handleLoaded(imageUrl:error:));
-            } else if provider.hasItemConformingToTypeIdentifier("public.movie") {
-                provider.loadFileRepresentation(forTypeIdentifier: "public.movie", completionHandler: self.handleLoaded(movieUrl:error:));
+                provider.loadFileRepresentation(forTypeIdentifier: UTType.image.identifier, completionHandler: self.handleLoaded(imageUrl:error:));
+            } else if provider.hasItemConformingToTypeIdentifier(UTType.video.identifier) {
+                provider.loadFileRepresentation(forTypeIdentifier: UTType.video.identifier, completionHandler: self.handleLoaded(movieUrl:error:));
             } else {
                 showAlert(shareError: .noAccessError);
             }
@@ -225,7 +225,7 @@ extension BaseChatViewController: UIImagePickerControllerDelegate, UINavigationC
     
     func upload(imageUrl url: URL, fileInfo: ShareFileInfo) async throws {
         let quality = try await MediaHelper.askImageQuality(controller: self, forceQualityQuestion: self.askMediaQuality);
-        let (fileUrl, fileInfo) = try MediaHelper.compressImage(url: url, fileInfo: ShareFileInfo(filename: UUID().uuidString, suffix: "jpg"), quality: quality);
+        let (fileUrl, fileInfo) = try MediaHelper.compressImage(url: url, fileInfo: fileInfo, quality: quality);
         
         defer {
             try? FileManager.default.removeItem(at: fileUrl);

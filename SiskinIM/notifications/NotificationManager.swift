@@ -177,12 +177,11 @@ public class NotificationManager: @unchecked Sendable {
         notifyNewMessage(account: conversation.account, sender: conversation.jid, nickname: entry.sender.nickname, body: body, date: entry.timestamp);
     }
         
+    @MainActor
     func updateApplicationIconBadgeNumber() async {
         let count = await provider.countBadge(withThreadId: nil);
         self.logger.debug("setting badge to: \(count)");
-        DispatchQueue.main.async {
-            UIApplication.shared.applicationIconBadgeNumber = count;
-        }
+        UIApplication.shared.applicationIconBadgeNumber = count;
     }
     
     struct NotificationQueueKey: Hashable {

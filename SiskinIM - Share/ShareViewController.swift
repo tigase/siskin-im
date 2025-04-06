@@ -25,6 +25,7 @@ import Martin
 import TigaseSQLite3
 import MobileCoreServices
 import Combine
+import UniformTypeIdentifiers
 
 extension Query {
     
@@ -401,6 +402,7 @@ class ShareViewController: UITableViewController {
         _ = client.modulesManager.register(AuthModule());
         _ = client.modulesManager.register(StreamFeaturesModule());
         _ = client.modulesManager.register(SaslModule());
+        _ = client.modulesManager.register(Sasl2Module());
         _ = client.modulesManager.register(ResourceBinderModule());
         _ = client.modulesManager.register(SessionEstablishmentModule());
         _ = client.modulesManager.register(DiscoveryModule());
@@ -436,8 +438,8 @@ class ShareViewController: UITableViewController {
     
     private func extractAttachments(completionHandler: @escaping @Sendable (sending Result<Attachment,Error>)->Void) {
         if let provider = (self.extensionContext?.inputItems.first as? NSExtensionItem)?.attachments?.first {
-            if provider.hasItemConformingToTypeIdentifier(kUTTypeVideo as String) {
-                provider.loadFileRepresentation(forTypeIdentifier: kUTTypeVideo as String, completionHandler: { url, error in
+            if provider.hasItemConformingToTypeIdentifier(UTType.video.identifier) {
+                provider.loadFileRepresentation(forTypeIdentifier: UTType.video.identifier, completionHandler: { url, error in
                     guard let url = url else {
                         completionHandler(.failure(error!));
                         return;
@@ -459,31 +461,46 @@ class ShareViewController: UITableViewController {
                         completionHandler(.failure(error))
                     }
                 });
-            } else if provider.hasItemConformingToTypeIdentifier(kUTTypeImage as String) {
-                provider.loadFileRepresentation(forTypeIdentifier: kUTTypeImage as String, completionHandler: { url, error in
-                    guard let url = url else {
-                        completionHandler(.failure(error!));
+            } else if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
+                let suggestedName = provider.suggestedName;
+                provider.loadItem(forTypeIdentifier: UTType.image.identifier, options: nil, completionHandler: { item, error in
+                    if let error {
+                        completionHandler(.failure(error));
                         return;
                     }
-                    do {
-                        let localUrl = try copyFileLocally(url: url);
-                        Task {
-                            defer {
-                                try? FileManager.default.removeItem(at: localUrl);
+                    switch item {
+                    case let url as URL:
+                        do {
+                            let localUrl = try copyFileLocally(url: url);
+                            Task {
+                                defer {
+                                    try? FileManager.default.removeItem(at: localUrl);
+                                }
+                                do {
+                                    let (url,fileInfo) = try await MediaHelper.compressImage(url: localUrl, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "jpg"), quality: self.imageQuality);
+                                    completionHandler(.success(.file(url, fileInfo)));
+                                } catch {
+                                    completionHandler(.failure(error));
+                                }
                             }
+                        } catch {
+                            completionHandler(.failure(error))
+                        }
+                    case let image as UIImage:
+                        Task {
                             do {
-                                let (url,fileInfo) = try await MediaHelper.compressImage(url: localUrl, fileInfo: ShareFileInfo.from(url: url, defaultSuffix: "jpg"), quality: self.imageQuality);
+                                let (url,fileInfo) = try await MediaHelper.compressImage(image: image, fileInfo: ShareFileInfo(filename: suggestedName ?? "image", suffix: "jpg"), quality: self.imageQuality);
                                 completionHandler(.success(.file(url, fileInfo)));
                             } catch {
                                 completionHandler(.failure(error));
                             }
                         }
-                    } catch {
-                        completionHandler(.failure(error))
+                    default:
+                        completionHandler(.failure(ShareError.unknownError));
                     }
-                });
-            } else if provider.hasItemConformingToTypeIdentifier(kUTTypeFileURL as String) {
-                provider.loadItem(forTypeIdentifier: kUTTypeURL as String, options: nil, completionHandler: { (item, error) in
+                })
+            } else if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
+                provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil, completionHandler: { (item, error) in
                     guard let url = item as? URL else {
                         completionHandler(.failure(error!));
                         return;
@@ -495,16 +512,16 @@ class ShareViewController: UITableViewController {
                         completionHandler(.failure(error));
                     }
                 });
-            } else if provider.hasItemConformingToTypeIdentifier(kUTTypeURL as String) {
-                provider.loadItem(forTypeIdentifier: kUTTypeURL as String, options: nil, completionHandler: { (item, error) in
+            } else if provider.hasItemConformingToTypeIdentifier(UTType.url.identifier) {
+                provider.loadItem(forTypeIdentifier: UTType.url.identifier, options: nil, completionHandler: { (item, error) in
                     guard let url = item as? URL else {
                         completionHandler(.failure(error!));
                         return;
                     }
                     completionHandler(.success(.link(url)));
                 })
-            } else if provider.hasItemConformingToTypeIdentifier(kUTTypeText as String) {
-                provider.loadItem(forTypeIdentifier: kUTTypeText as String, options: nil, completionHandler: { (item, error) in
+            } else if provider.hasItemConformingToTypeIdentifier(UTType.text.identifier) {
+                provider.loadItem(forTypeIdentifier: UTType.text.identifier, options: nil, completionHandler: { (item, error) in
                     guard let text = item as? String else {
                         completionHandler(.failure(error!));
                         return;

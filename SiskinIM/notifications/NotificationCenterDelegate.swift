@@ -26,17 +26,22 @@ import Martin
 import UserNotifications
 import os
 
-@preconcurrency 
+extension UNUserNotificationCenter: @unchecked @retroactive Sendable {}
+extension UNNotificationResponse: @unchecked @retroactive Sendable {}
+extension UNNotification: @unchecked @retroactive Sendable {}
+
+@preconcurrency
 class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
 
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "NotificationCenterDelegate");
     
+    @MainActor
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
         switch NotificationCategory.from(identifier: notification.request.content.categoryIdentifier) {
         case .MESSAGE:
             let account = notification.request.content.userInfo["account"] as? String;
             let sender = notification.request.content.userInfo["sender"] as? String;
-            if (await AppDelegate.isChatVisible(account: account, with: sender) && XmppService.instance.applicationState == .active) {
+            if (AppDelegate.isChatVisible(account: account, with: sender) && XmppService.instance.applicationState == .active) {
                 return []
             } else {
                return [.banner, .list, .sound];
@@ -46,6 +51,7 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         }
     }
     
+    @MainActor
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
         let content = response.notification.request.content;
          
@@ -215,14 +221,14 @@ class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
         }
         
         guard let senderJid = BareJID(userInfo["sender"] as? String) else {
-            Task {
+            Task { @MainActor in
                 await NotificationManager.instance.updateApplicationIconBadgeNumber();
             }
             return;
         }
 
         if response.actionIdentifier == UNNotificationDismissActionIdentifier {
-            Task {
+            Task { @MainActor in
                 await NotificationManager.instance.updateApplicationIconBadgeNumber();
             }
         } else {
