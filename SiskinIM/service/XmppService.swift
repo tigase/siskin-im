@@ -213,7 +213,7 @@ open class XmppService: @unchecked Sendable {
         queue.async {
             for client in self.clients.values {
                 Task {
-                    try await client.disconnect(force: true);
+                    try await client.disconnect(force: force);
                 }
             }
         }
