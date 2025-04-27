@@ -84,7 +84,7 @@ class AccountSettingsViewController: UITableViewController {
         }).store(in: &cancellables);
         
         let localDeviceId = Int32(bitPattern: config?.omemoDeviceId ?? 0);
-        if let omemoIdentity = DBOMEMOStore.instance.identities(forAccount: self.account, andName: self.account.description).first(where: { (identity) -> Bool in
+        if let omemoIdentity = DBOMEMOStore.instance.identities(forAccount: self.account, andName: self.account!.description).first(where: { (identity) -> Bool in
             return identity.address.deviceId == localDeviceId;
         }) {
             var fingerprint = String(omemoIdentity.fingerprint.dropFirst(2));
