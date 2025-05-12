@@ -278,7 +278,7 @@ class ChannelJoinViewController: UITableViewController {
                             features.insert(.membersOnly);
                         }
                         (room as! Room).updateRoom(name: name);
-                        (room as! Room).roomFeatures = features;
+                        await (room as! Room).roomFeatures(roomFeatures: features);
                         Task {
                             var vcard = VCard();
                             if let binval = avatar?.scaled(maxWidthOrHeight: 512.0)?.jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
@@ -363,7 +363,7 @@ class ChannelJoinViewController: UITableViewController {
                             }
                         }
                         (room as! Room).updateRoom(name: info.identities.first(where: { $0.category == "conference" })?.name?.trimmingCharacters(in: .whitespacesAndNewlines))
-                        (room as! Room).roomFeatures = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
+                        await (room as! Room).roomFeatures(roomFeatures: Set(info.features.compactMap(Room.Feature.init(rawValue:))));
                         Task {
                             do {
                                 _ = try await (room as! Room).registerForTigasePushNotification(true);
