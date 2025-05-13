@@ -82,11 +82,11 @@ open class PushEventHandler: XmppServiceExtension, @unchecked Sendable {
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "PushEventHandler");
     
     public func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
-        Settings.$enablePush.map({ $0 ?? false }).combineLatest(client.module(.disco).$accountDiscoResult).sink(receiveValue: { @Sendable [weak client, weak self] enable, features in
+        Settings.$enablePush.map({ $0 ?? false }).combineLatest(client.module(.push).$isAvailable).sink(receiveValue: { @Sendable [weak client, weak self] enable, isPushAvailable in
             guard let client = client, client.state == .connected() else {
                 return;
             }
-            self?.updatePushRegistration(for: client, features: features.features, shouldEnable: enable);
+            self?.updatePushRegistration(for: client, features: client.module(.push).accountFeatures, shouldEnable: enable);
         }).store(in: &cancellables);
     }
 
