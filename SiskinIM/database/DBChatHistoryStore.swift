@@ -306,6 +306,8 @@ class DBChatHistoryStore: @unchecked Sendable {
             if self.findItemId(for: conversation.account, serverMsgId: stableId) != nil {
                 return;
             }
+        } else if message.type == .groupchat, let stanzaId = remoteMsgId, self.findItemId(for: conversation, remoteMsgId: stanzaId) != nil {
+            return;
         } else if let originId = stanzaId, (message.type == .chat || message.type == .normal) {
             if let item = self.findItem(for: conversation, originId: originId, sender: sender) {
                 if (abs(item.timestamp.timeIntervalSince(timestamp)) < 60.0) {
