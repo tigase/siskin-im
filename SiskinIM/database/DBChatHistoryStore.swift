@@ -335,11 +335,6 @@ class DBChatHistoryStore: @unchecked Sendable {
             return;
         }
 
-        if let retractedId = message.messageRetractionId, let originId = stanzaId {
-            self.retractMessageSync(for: conversation, stanzaId: retractedId, sender: sender, retractionStanzaId: originId, retractionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
-            return;
-        }
-        
         if message.type == .groupchat, let moderation = message.moderated {
             switch moderation.retraction {
             case .retract(let stanzaIdToRetract):
@@ -353,6 +348,11 @@ class DBChatHistoryStore: @unchecked Sendable {
             return;
         }
 
+        if let retractedId = message.messageRetractionId, let originId = stanzaId {
+            self.retractMessageSync(for: conversation, stanzaId: retractedId, sender: sender, retractionStanzaId: originId, retractionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
+            return;
+        }
+        
         let (decryptedBody, encryption) = MessageEventHandler.prepareBody(message: message, forAccount: conversation.account, serverMsgId: serverMsgId);
         
         guard let body = decryptedBody ?? (mixInvitation != nil ? "Invitation" : nil) else {
