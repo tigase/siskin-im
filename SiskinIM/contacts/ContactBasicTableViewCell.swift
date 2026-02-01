@@ -40,7 +40,7 @@ class ContactBasicTableViewCell: UITableViewCell {
                     fn = "\(given) \(surname)";
                 }
             }
-            nameView.text = fn ?? jid.description;
+            nameView.text = fn ?? jid?.description;
             
             let org = vcard?.organizations.first?.name;
             let role = vcard?.role;
@@ -52,7 +52,7 @@ class ContactBasicTableViewCell: UITableViewCell {
             }
             
             avatarView.image = AvatarManager.instance.avatar(for: jid, on: account) ?? AvatarManager.instance.defaultAvatar;
-            jidView.text = jid.description;
+            jidView.text = jid?.description;
             accountView.text = String.localizedStringWithFormat(NSLocalizedString("using %@", comment: "account info label"), account.description);
         }
     }

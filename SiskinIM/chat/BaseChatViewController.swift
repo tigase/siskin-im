@@ -74,7 +74,7 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
         super.viewDidLoad()
         chatViewInputBar.placeholder = String.localizedStringWithFormat(NSLocalizedString("from %@…", comment: "conversation view input field placeholder"), conversation.account.description);
 
-        navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem;
+        updateDisplayModeButton()
         navigationItem.leftItemsSupplementBackButton = true;
 
         self.view.addSubview(chatViewInputBar);
@@ -271,4 +271,26 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
         self.sendMessage();
     }
     
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        updateDisplayModeButton()
+    }
+    
+    private func updateDisplayModeButton() {
+        guard let splitVC = splitViewController else {
+            navigationItem.leftBarButtonItem = nil
+            return
+        }
+            
+        // Only show the button when it makes sense
+        let shouldShowButton = traitCollection.horizontalSizeClass == .regular &&
+                                !splitVC.isCollapsed &&
+                                splitVC.displayMode != .oneBesideSecondary
+            
+        if shouldShowButton {
+            navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem
+        } else {
+            navigationItem.leftBarButtonItem = nil
+        }
+    }
 }
