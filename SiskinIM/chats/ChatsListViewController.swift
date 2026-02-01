@@ -176,7 +176,7 @@ class ChatsListViewController: UITableViewController, UISearchResultsUpdating {
             searchController?.searchBar.autocorrectionType  = .no;
             searchController?.searchBar.isTranslucent = true;
             searchController?.searchBar.placeholder = NSLocalizedString("Chat with…", comment: "placeholder for text field to search for conversation to open")
-                        
+                      
             navigationItem.searchController = searchController;
             navigationItem.hidesSearchBarWhenScrolling = true;
             searchResultsView.selection = { [weak self] selected in
@@ -290,6 +290,14 @@ class ChatsListViewController: UITableViewController, UISearchResultsUpdating {
 //            return (clients.count - connectedClients.count) + AccountManager.accountNames().filter({(name)->Bool in
 //                return AccountSettings.lastError(for: name) != nil
 //            }).count;
+        
+        if #available(iOS 17.0, *) {
+            registerForTraitChanges([UITraitUserInterfaceStyle.self,
+                                    UITraitHorizontalSizeClass.self]) { (self: Self, previousTraitCollection) in
+                self.setColors()
+                self.updateNavBarColors()
+            }
+        }
     }
     
     func updateSearchResults(for searchController: UISearchController) {
@@ -381,7 +389,7 @@ class ChatsListViewController: UITableViewController, UISearchResultsUpdating {
             addMucButton.menu = UIMenu(title: "", children: [newPrivateGC, newPublicGC, joinGC, deferedItems]);
         }
     }
-    
+        
     private func animate() {
         guard let coordinator = self.transitionCoordinator else {
             return;
@@ -398,15 +406,27 @@ class ChatsListViewController: UITableViewController, UISearchResultsUpdating {
         appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialDark);
         navigationController?.navigationBar.standardAppearance = appearance;
         navigationController?.navigationBar.scrollEdgeAppearance = appearance;
+        navigationController?.navigationBar.compactAppearance = appearance;
         searchController?.searchBar.barStyle = .black;
         searchController?.searchBar.tintColor = UIColor.white;
         navigationController?.navigationBar.barTintColor = UIColor(named: "chatslistBackground");
         navigationController?.navigationBar.tintColor = UIColor.white;
+        
+//        if #available(iOS 18.0, *) {
+//            navigationItem.leftBarButtonItem?.tintColor = UIColor.white;
+//            navigationItem.leftBarButtonItems?.forEach { $0.tintColor = UIColor.white; }
+//            navigationItem.rightBarButtonItem?.tintColor = UIColor.white;
+//            navigationItem.rightBarButtonItems?.forEach { $0.tintColor = UIColor.white; }
+//        }
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection);
-        updateNavBarColors();
+        guard #available(iOS 17.0, *) else {
+            setColors()
+            updateNavBarColors();
+            return;
+        }
     }
     
     func updateNavBarColors() {

@@ -123,6 +123,13 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
                 break;
             }
         }).store(in: &cancellables);
+        
+        if #available(iOS 17.0, *) {
+            registerForTraitChanges([UITraitUserInterfaceStyle.self,
+                                    UITraitHorizontalSizeClass.self]) { (self: Self, previousTraitCollection) in
+                self.updateDisplayModeButton()
+            }
+        }
     }
     
     @objc func shareLocation(_ sender: Any) {
@@ -273,7 +280,10 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
-        updateDisplayModeButton()
+        guard #available(iOS 17.0, *) else {
+            updateDisplayModeButton()
+            return
+        }
     }
     
     private func updateDisplayModeButton() {
@@ -282,10 +292,9 @@ class BaseChatViewController: UIViewController, UITextViewDelegate, ChatViewInpu
             return
         }
             
-        // Only show the button when it makes sense
         let shouldShowButton = traitCollection.horizontalSizeClass == .regular &&
-                                !splitVC.isCollapsed &&
-                                splitVC.displayMode != .oneBesideSecondary
+                !splitVC.isCollapsed &&
+                splitVC.displayMode != .oneBesideSecondary
             
         if shouldShowButton {
             navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem
