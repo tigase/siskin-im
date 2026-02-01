@@ -97,7 +97,10 @@ class AvatarStatusView: UIView {
         }
     }
     
-    static func statusColor(_ status: Presence.Show) -> UIColor {
+    nonisolated static func statusColor(_ status: Presence.Show?) -> UIColor {
+        guard let status else {
+            return UIColor.systemGray;
+        }
         switch status {
         case .chat:
             return .green;
@@ -113,8 +116,8 @@ class AvatarStatusView: UIView {
     nonisolated static func getStatusImage(_ status: Presence.Show?) -> UIImage? {
         // default color as for offline contact
         var image:UIImage? = UIImage(systemName: "circle.fill")?.withTintColor(UIColor.systemGray, renderingMode: .alwaysOriginal)
-        if status != nil {
-            switch status! {
+        if let status = status {
+            switch status {
             case .chat:
                 image = UIImage(systemName: "asterisk.circle.fill")?.withTintColor(UIColor.green, renderingMode: .alwaysOriginal);
             case .online:
