@@ -49,7 +49,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad();
-        if account != nil {
+        if let account = self.account {
             jidTextField.text = account;
             jidTextField.isEnabled = false;
             if let acc = AccountManager.account(for: BareJID(account)!) {

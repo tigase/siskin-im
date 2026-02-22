@@ -25,7 +25,7 @@ import Combine
 
 class ServerFeaturesViewController: UITableViewController {
 
-    var client: XMPPClient!;
+    var client: XMPPClient?;
 
     private var features: [Feature] = [];
 
@@ -35,7 +35,7 @@ class ServerFeaturesViewController: UITableViewController {
         super.viewWillAppear(animated);
         
         let allFeatures = loadFeatures();
-        client.module(.disco).$serverDiscoResult.receive(on: DispatchQueue.main).map({ it -> [Feature] in
+        client?.module(.disco).$serverDiscoResult.receive(on: DispatchQueue.main).map({ it -> [Feature] in
             return allFeatures.filter({ $0.matches(it.features) });
         }).sink(receiveValue: { [weak self] features in
             self?.features = features;
