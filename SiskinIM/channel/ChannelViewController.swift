@@ -165,28 +165,34 @@ class ChannelTitleView: UIView {
         
     func refresh(connected: Bool, options: ChannelOptions) {
         if connected {
-            let statusIcon = NSTextAttachment();
-                
-            var show: Presence.Show?;
-            var desc = NSLocalizedString("Not connected", comment: "channel status label");
-            switch options.state {
-            case .joined:
-                show = Presence.Show.online;
-                desc = NSLocalizedString("Joined", comment: "channel status label");
-            case .left:
-                show = nil;
-                desc = NSLocalizedString("Not joined", comment: "channel status label");
+            let desc = switch options.state {
+                case .joined: NSLocalizedString("Joined", comment: "channel status label");
+                case .left: NSLocalizedString("Not joined", comment: "channel status label");
             }
-                
-            statusIcon.image = AvatarStatusView.getStatusImage(show);
-            let height = statusView.font.pointSize;
-            statusIcon.bounds = CGRect(x: 0, y: -2, width: height, height: height);
-                
-            let statusText = NSMutableAttributedString(attributedString: NSAttributedString(attachment: statusIcon));
+            let show: Presence.Show? = switch options.state {
+                case .joined: Presence.Show.online;
+                case .left: nil;
+            }
+            
+            let statusText = NSMutableAttributedString(attributedString: statusIconText(show: show, height: statusView.font.pointSize))
             statusText.append(NSAttributedString(string: desc));
             statusView.attributedText = statusText;
         } else {
             statusView.text = "\u{26A0} \(NSLocalizedString("Not connected", comment: "channel status label"))!";
         }
     }
+    
+    
+    private func statusIconText(show: Presence.Show?, height: CGFloat) -> NSAttributedString {
+        let statusIcon = NSTextAttachment();
+        statusIcon.image = AvatarStatusView.getStatusImage(show);
+        statusIcon.bounds = CGRect(x: 0, y: -2, width: height, height: height);
+
+        if #available(iOS 18.0, *) {
+            return NSAttributedString(attachment: statusIcon, attributes: [.foregroundColor: AvatarStatusView.statusColor(show)])
+        } else {
+            return NSAttributedString(attachment: statusIcon)
+        };
+    }
+
 }
