@@ -314,7 +314,7 @@ class AccountSettingsViewController: UITableViewController {
         } else if let surname = vcard?.surname, let given = vcard?.givenName {
             fullNameTextView.text = "\(given) \(surname)";
         } else {
-            fullNameTextView.text = account.description;
+            fullNameTextView.text = account?.description ?? "";
         }
         
         let company = vcard?.organizations.first?.name;

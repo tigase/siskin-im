@@ -220,7 +220,11 @@ class RegisterAccountController: DataFormController {
     }
     
     func retrieveRegistrationForm(domain: String, acceptedCertificate: SSLCertificateInfo?) {
-        let task = InBandRegistrationModule.AccountRegistrationAsyncTask(domainName: domain, preauth: self.preauth);
+        let client = XMPPClient()
+        client.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
+            options.networkProcessorProviders.append(SSLProcessorProvider());
+        })
+        let task = InBandRegistrationModule.AccountRegistrationAsyncTask(client: client, domainName: domain, preauth: self.preauth);
         task.acceptedSslCertificate = acceptedCertificate;
         self.task = task;
         Task {
