@@ -262,10 +262,22 @@ class ChannelJoinViewController: UITableViewController {
             self.operationStarted(message: NSLocalizedString("Creating channel…", comment: "channel join view operation label"))
             Task {
                 do {
-                    try await mucModule.roomConfiguration(form, of: JID(BareJID(localPart: roomName, domain: mucServer)));
+                    var configured = false;
+                    do {
+                        try await mucModule.roomConfiguration(form, of: JID(BareJID(localPart: roomName, domain: mucServer)));
+                        configured = true;
+                    } catch {
+                        // some servers may reject creation of room by sending configuration with item-not-found
+                        guard (error as? XMPPError)?.condition == .item_not_found else {
+                            throw error;
+                        }
+                    }
                     let r = try await mucModule.join(roomName: roomName, mucServer: mucServer, nickname: nick);
                     switch r {
                     case .created(let room), .joined(let room):
+                        Task {
+                            try? await mucModule.roomConfiguration(form, of: JID(BareJID(localPart: roomName, domain: mucServer)));
+                        }
                         if createBookmark {
                             Task {
                                 try await client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: name.isEmpty ? room.jid.localPart : name, jid: JID(room.jid), autojoin: autojoin, nick: nick, password: nil));
