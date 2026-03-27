@@ -297,7 +297,11 @@ class ChatTitleView: BaseConversationTitleView {
                         }
                     }
                     let statusText = NSMutableAttributedString(string: encryption == .none ? "" : "\u{1F512} ");
-                    statusText.append(NSAttributedString(attachment: statusIcon));
+                    if #available(iOS 18.0, *) {
+                        statusText.append(NSAttributedString(attachment: statusIcon, attributes: [.foregroundColor: AvatarStatusView.statusColor(self.statusShow)]))
+                    } else {
+                        statusText.append(NSAttributedString(attachment: statusIcon))
+                    };
                     statusText.append(NSAttributedString(string: desc!));
                     self.statusView.attributedText = statusText;
                 }

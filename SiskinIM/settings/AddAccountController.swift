@@ -50,7 +50,7 @@ class AddAccountController: UITableViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad();
         if let account = self.account {
-            jidTextField.text = account;
+            jidTextField.text = account.description;
             jidTextField.isEnabled = false;
             if let acc = AccountManager.account(for: BareJID(account)!) {
                 connectivitySettings.disableTLS13 = acc.disableTLS13;

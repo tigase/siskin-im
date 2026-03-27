@@ -306,6 +306,16 @@ class DBChatHistoryStore: @unchecked Sendable {
             if self.findItemId(for: conversation.account, serverMsgId: stableId) != nil {
                 return;
             }
+            
+            // workaround for Openfire advertising MAM:2 without support for XEP-0359
+            if let originId = stanzaId, (message.type == .chat || message.type == .normal) {
+                if let item = self.findItem(for: conversation, originId: originId, sender: sender) {
+                    if (abs(item.timestamp.timeIntervalSince(timestamp)) < 60.0) {
+                        // duplicated message sent from MAM archive (mostly MAM:1 and not MAM:2)
+                        return;
+                    }
+                }
+            }
         } else if message.type == .groupchat, let stanzaId = remoteMsgId, self.findItemId(for: conversation, remoteMsgId: stanzaId) != nil {
             return;
         } else if let originId = stanzaId, (message.type == .chat || message.type == .normal) {
