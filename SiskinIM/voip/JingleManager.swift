@@ -156,13 +156,23 @@ class JingleManager: JingleSessionManager, @unchecked Sendable {
         return Set(support);
     }
     
-    func messageInitiation(for context: Context, from jid: JID, action: Jingle.MessageInitiationAction) throws {
+    func messageInitiation(for context: Context, from jid: JID, action: Jingle.MessageInitiationAction, timestamp: Date?) throws {
         switch action {
         case .propose(let id, let descriptions):
+            // ignore call proposals delayed over 90s (most likely from offline storage)
+            if let timestamp, (Date().timeIntervalSince(timestamp) > 90) {
+                return;
+            }
             if case .connected(_) = context.state {
-                guard (!context.module(.disco).accountDiscoResult.features.contains("tigase:push:jingle:0")) && AccountManager.account(for: context.userBareJid)?.push.registration != nil else {
+                switch DispatchQueue.main.sync(execute: { UIApplication.shared.applicationState }) {
+                case .active, .background:
+                    break;
+                default:
                     return;
                 }
+//                guard (!context.module(.disco).accountDiscoResult.features.contains("tigase:push:jingle:0")) && AccountManager.account(for: context.userBareJid)?.push.registration != nil else {
+//                    return;
+//                }
             }
             
             guard self.session(for: context.userBareJid, with: jid, sid: id) == nil else {

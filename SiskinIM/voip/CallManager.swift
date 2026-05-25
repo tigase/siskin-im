@@ -108,10 +108,10 @@ class CallManager: NSObject, CXProviderDelegate, @unchecked Sendable {
         private let lock = UnfairLock();
         private var callsByUuid: [UUID: CallBase] = [:];
         
-        func reportIncoming(call: CallBase) throws -> CallBase {
-            return try lock.with({
-                guard self.calls.allSatisfy({ !call.isEqual($0) }) else {
-                   throw XMPPError(condition: .conflict, message: "Call already registered!");
+        func reportIncoming(call: CallBase) -> CallBase {
+            return lock.with({
+                if let call = self.calls.first(where: { call.isEqual($0) }) {
+                    return call;
                 }
                 
                 if let c = call as? Call {
@@ -177,7 +177,7 @@ class CallManager: NSObject, CXProviderDelegate, @unchecked Sendable {
     private let activeCalls = ActiveCalls();
     
     func reportIncomingCall(_ inCall: CallBase) async throws {
-        let call = try activeCalls.reportIncoming(call: inCall);
+        let call = activeCalls.reportIncoming(call: inCall);
         if let meet = call as? Meet, let c = inCall as? Call {
             self.queue.sync {
                 c.ringing();
@@ -211,6 +211,14 @@ class CallManager: NSObject, CXProviderDelegate, @unchecked Sendable {
                 call.ringing();
             }
         } catch {
+            if let error = error as? CXErrorCodeIncomingCallError {
+                switch error.code {
+                case CXErrorCodeIncomingCallError.callUUIDAlreadyExists:
+                    return;
+                default:
+                    break;
+                }
+            }
             self.callEnded(call);
     
             if AVCaptureDevice.authorizationStatus(for: .audio) != .authorized {
