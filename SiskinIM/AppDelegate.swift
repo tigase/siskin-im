@@ -101,12 +101,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }).store(in: &cancellables);
 
-        (self.window?.rootViewController as? UISplitViewController)?.preferredDisplayMode = .oneBesideSecondary;
-        if AccountManager.accounts.isEmpty {
-            self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SetupViewController");
-        }
                 
         return true
+    }
+
+    func configureInitialInterface() {
+        (window?.rootViewController as? UISplitViewController)?.preferredDisplayMode = .oneBesideSecondary
+
+        if AccountManager.accounts.isEmpty {
+            window?.rootViewController = UIStoryboard(name: "Main", bundle: nil)
+                .instantiateViewController(withIdentifier: "SetupViewController")
+        }
     }
     
     func showSetup(value: Bool) {

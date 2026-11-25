@@ -104,7 +104,7 @@ class ShareLocationController: UIViewController, MKMapViewDelegate, CLLocationMa
         setCurrentLocation(CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude), zoomIn: false);
     }
     
-    @available(iOS, obsoleted: 15, message: "We are using CLLocationButton now!")
+//    @available(iOS, obsoleted: 15, message: "We are using CLLocationButton now!")
     @objc func requestCurrentLocationPreiOS15(_ sender: UIButton) {
         if locationManager.authorizationStatus == .authorizedWhenInUse || locationManager.authorizationStatus == .authorizedAlways {
             requestCurrentLocation();
@@ -138,7 +138,7 @@ class ShareLocationController: UIViewController, MKMapViewDelegate, CLLocationMa
         locationManager.requestLocation();
     }
     
-    @available(iOS, obsoleted: 15, message: "We are using CLLocationButton now!")
+//    @available(iOS, obsoleted: 15, message: "We are using CLLocationButton now!")
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         Task {
             await MainActor.run {

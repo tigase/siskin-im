@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		962AB88530B5E05000E82623 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962AB88430B5E04B00E82623 /* SceneDelegate.swift */; };
 		FE00157D2017617B00490340 /* StreamFeaturesCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE00157C2017617B00490340 /* StreamFeaturesCache.swift */; };
 		FE00157F2019090300490340 /* ExperimentalSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE00157E2019090300490340 /* ExperimentalSettingsViewController.swift */; };
 		FE01ADA91E224CF400FA7E65 /* SiskinPushNotificationsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE01ADA81E224CF400FA7E65 /* SiskinPushNotificationsModule.swift */; };
@@ -354,6 +355,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		962AB88430B5E04B00E82623 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		FE00157C2017617B00490340 /* StreamFeaturesCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamFeaturesCache.swift; sourceTree = "<group>"; };
 		FE00157E2019090300490340 /* ExperimentalSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperimentalSettingsViewController.swift; sourceTree = "<group>"; };
 		FE01ADA81E224CF400FA7E65 /* SiskinPushNotificationsModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SiskinPushNotificationsModule.swift; sourceTree = "<group>"; };
@@ -1132,6 +1134,7 @@
 		FE94E5231CCBA74F00FAE755 /* SiskinIM */ = {
 			isa = PBXGroup;
 			children = (
+				962AB88430B5E04B00E82623 /* SceneDelegate.swift */,
 				FE7607DA2812BC2B009C2A93 /* bookmarks */,
 				FE9D4DA226BE9EFD00DD295A /* foreman.mp4 */,
 				FEDE00A1266BE4300019CC1C /* notifications */,
@@ -1764,6 +1767,7 @@
 				FE1977C429830FE900E2C096 /* AppearanceSettingsView.swift in Sources */,
 				FEF19F102348A046005CFE9A /* PresenceRosterEventHandler.swift in Sources */,
 				FE94E5251CCBA74F00FAE755 /* AppDelegate.swift in Sources */,
+				962AB88530B5E05000E82623 /* SceneDelegate.swift in Sources */,
 				FEF80DB21CDBBBFE005645A7 /* AccountSettingsViewController.swift in Sources */,
 				FEDE00A8266BE4740019CC1C /* NotificationManager.swift in Sources */,
 				FEA303AB24694447004A3B3E /* VCardAvatarEditCell.swift in Sources */,
@@ -2007,7 +2011,7 @@
 					"$(SDK_DIR)/usr/include/libxml2",
 				);
 				INFOPLIST_FILE = "SiskinIM - Share/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2040,7 +2044,7 @@
 					"$(SDK_DIR)/usr/include/libxml2",
 				);
 				INFOPLIST_FILE = "SiskinIM - Share/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2075,7 +2079,7 @@
 					"$(SDK_DIR)/usr/include/libxml2/**",
 				);
 				INFOPLIST_FILE = NotificationService/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2114,7 +2118,7 @@
 					"$(SDK_DIR)/usr/include/libxml2/**",
 				);
 				INFOPLIST_FILE = NotificationService/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2159,7 +2163,7 @@
 				);
 				INFOPLIST_FILE = Shared/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2213,7 +2217,7 @@
 				);
 				INFOPLIST_FILE = Shared/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2402,7 +2406,7 @@
 					"$(SDK_DIR)/usr/include/libxml2/**",
 				);
 				INFOPLIST_FILE = SiskinIM/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2441,7 +2445,7 @@
 					"$(SDK_DIR)/usr/include/libxml2/**",
 				);
 				INFOPLIST_FILE = SiskinIM/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
